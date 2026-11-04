@@ -21,7 +21,7 @@ async function open(name: string) {
     const plugin = (window as any).app.plugins.plugins.tasknotes;
     await plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(path));
   }, `${folder}/${name}.md`);
-  await expect(page.locator('.modal').getByPlaceholder('Task title...')).toBeVisible();
+  await expect(page.locator('.modal textarea.title-input')).toBeVisible();
 }
 
 test.beforeAll(async () => {

@@ -44,6 +44,7 @@ export interface TaskModalActionMenuContextOptions {
 export interface TaskModalActionIconStateOptions {
 	statusConfigs?: readonly StatusConfig[];
 	priorityConfigs?: readonly PriorityConfig[];
+	timeFormat?: "12" | "24";
 }
 
 export function createTaskModalActionMenuState(
@@ -109,5 +110,6 @@ export function buildTaskModalActionIconState(
 		defaultPriority: getDefaultTaskModalPriority(priorityConfigs),
 		statusConfigs,
 		priorityConfigs,
+		timeFormat: options.timeFormat ?? "24",
 	};
 }

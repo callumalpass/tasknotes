@@ -631,7 +631,7 @@ tags:
 		await expect(event).toBeVisible({ timeout: 10000 });
 		await event.click();
 		await page.waitForTimeout(800);
-		const titleInput = page.locator('.modal textarea.title-input-detailed');
+		const titleInput = page.locator('.modal textarea.title-input');
 		await expect(titleInput).toHaveValue('Future calendar edit');
 		await titleInput.fill("Future calendar edit updated");
 		await page.waitForTimeout(400);

@@ -531,13 +531,12 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 			},
 		});
 
-		// Set up blur handler
-		if (this.options.onBlur !== defaultProperties.onBlur) {
-			this.editor.cm.contentDOM.addEventListener("blur", () => {
-				this.app.keymap.popScope(this.scope);
-				if (this._loaded) this.options.onBlur(this);
-			});
-		}
+		// Set up blur handler. The scope must always be released: left on the stack, it
+		// masks the host modal's scope and Escape stops closing the modal.
+		this.editor.cm.contentDOM.addEventListener("blur", () => {
+			this.app.keymap.popScope(this.scope);
+			if (this._loaded) this.options.onBlur(this);
+		});
 
 		// Set up focus handler
 		this.editor.cm.contentDOM.addEventListener("focusin", () => {

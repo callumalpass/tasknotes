@@ -66,22 +66,22 @@ describe("Issue #1469: convert current note to task save", () => {
 	function createInitializedModal() {
 		const modal = new TaskEditModal(app, plugin, { task, onTaskUpdated });
 		(modal as any).task = task;
-		(modal as any).title = task.title;
-		(modal as any).status = task.status;
-		(modal as any).priority = task.priority;
-		(modal as any).dueDate = "";
-		(modal as any).scheduledDate = "";
-		(modal as any).contexts = "";
-		(modal as any).projects = "";
-		(modal as any).tags = "";
+		(modal as any).form.values.title = task.title;
+		(modal as any).form.values.status = task.status;
+		(modal as any).form.values.priority = task.priority;
+		(modal as any).form.values.dueDate = "";
+		(modal as any).form.values.scheduledDate = "";
+		(modal as any).form.values.contexts = "";
+		(modal as any).form.values.projects = "";
+		(modal as any).form.values.tags = "";
 		(modal as any).initialTags = "";
-		(modal as any).timeEstimate = 0;
-		(modal as any).recurrenceRule = "";
-		(modal as any).recurrenceAnchor = "scheduled";
-		(modal as any).reminders = [];
-		(modal as any).details = task.details;
+		(modal as any).form.values.timeEstimate = 0;
+		(modal as any).form.values.recurrenceRule = "";
+		(modal as any).form.values.recurrenceAnchor = "scheduled";
+		(modal as any).form.values.reminders = [];
+		(modal as any).form.values.details = task.details;
 		(modal as any).originalDetails = task.details;
-		(modal as any).userFields = {};
+		(modal as any).form.values.userFields = {};
 		(modal as any).isConvertingNoteToTask = true;
 		return modal;
 	}

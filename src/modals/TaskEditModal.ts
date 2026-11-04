@@ -4,18 +4,15 @@ import { msg } from "@lingui/core/macro";
 import { App, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal } from "./TaskModal";
+import type { TaskModalLeadingButton, TaskModalOverflowAction } from "./taskModalActionButtons";
+import type { TaskSaveOutcome } from "./taskModalSave";
 import { TaskDependency, TaskInfo } from "../types";
-import {
-	formatDateTimeForDisplay,
-	formatTimestampForDisplay,
-	getCurrentTimestamp,
-} from "../utils/dateUtils";
+import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
 import { extractTaskInfo, calculateTotalTimeSpent, formatTime } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
-import { ConfirmationModal, showConfirmationModal } from "./ConfirmationModal";
+import { showConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates } from "./taskEditChanges";
-import { createTaskModalActionButtons } from "./taskModalActionButtons";
 import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
 import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
@@ -36,10 +33,10 @@ export interface TaskEditOptions {
 }
 
 export class TaskEditModal extends TaskModal {
+	protected readonly mode = "edit";
+	protected isExpanded = true;
 	private task: TaskInfo;
 	private options: TaskEditOptions;
-	private metadataContainer: HTMLElement;
-	private editModalKeyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 	// Changed from Set to array for consistency with other state management
 	private completedInstancesChanges: string[] = [];
 	private skippedInstancesChanges: string[] = [];
@@ -48,8 +45,6 @@ export class TaskEditModal extends TaskModal {
 	private pendingBlockingUpdates: BlockingUpdates = { added: [], removed: [], raw: {} };
 	private unresolvedBlockingEntries: string[] = [];
 	private initialTags = "";
-	private isShowingConfirmation = false;
-	private pendingClose = false;
 	private isConvertingNoteToTask = false;
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskEditOptions) {
@@ -66,10 +61,6 @@ export class TaskEditModal extends TaskModal {
 		return this.t(msg({ message: "Edit task", context: "modals.taskEdit.title" }));
 	}
 
-	protected isEditMode(): boolean {
-		return true;
-	}
-
 	protected focusTitleInput(): void {
 		if (this.isMobileLikeEnvironment()) {
 			return;
@@ -78,10 +69,16 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	async initializeFormData(): Promise<void> {
+		this.completedInstancesChanges = [];
+		this.skippedInstancesChanges = [];
+
+		// Refresh task data from file before opening
+		await this.refreshTaskData();
+
 		const formState = buildTaskEditFormStateFromTask({
 			app: this.app,
 			task: this.task,
-			details: this.details,
+			details: this.form.values.details,
 			settings: {
 				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 				taskTag: this.plugin.settings.taskTag,
@@ -92,31 +89,31 @@ export class TaskEditModal extends TaskModal {
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
 
-		this.title = formState.title;
-		this.dueDate = formState.dueDate;
-		this.scheduledDate = formState.scheduledDate;
-		this.priority = formState.priority;
-		this.status = formState.status;
-		this.contexts = formState.contexts;
+		this.form.values.title = formState.title;
+		this.form.values.dueDate = formState.dueDate;
+		this.form.values.scheduledDate = formState.scheduledDate;
+		this.form.values.priority = formState.priority;
+		this.form.values.status = formState.status;
+		this.form.values.contexts = formState.contexts;
 
 		// Initialize projects using the new method that handles both old and new formats
 		if (formState.hasValidProjects) {
 			this.initializeProjectsFromStrings(formState.projectValues);
 		} else {
-			this.projects = "";
+			this.form.values.projects = "";
 			this.selectedProjectItems = [];
 		}
 
-		this.tags = formState.tags;
+		this.form.values.tags = formState.tags;
 		this.initialTags = formState.initialTags;
-		this.timeEstimate = formState.timeEstimate;
-		this.recurrenceRule = formState.recurrenceRule;
-		this.recurrenceAnchor = formState.recurrenceAnchor;
-		this.reminders = formState.reminders;
+		this.form.values.timeEstimate = formState.timeEstimate;
+		this.form.values.recurrenceRule = formState.recurrenceRule;
+		this.form.values.recurrenceAnchor = formState.recurrenceAnchor;
+		this.form.values.reminders = formState.reminders;
 		this.attachmentEntries = createLinkedAttachmentEntries(this.task.attachments, this.task.path);
-		this.details = formState.details;
+		this.form.values.details = formState.details;
 		this.originalDetails = formState.originalDetails;
-		this.userFields = formState.userFields;
+		this.form.values.userFields = formState.userFields;
 
 		// Initialize subtasks (tasks that have this task as a project)
 		await this.initializeSubtasks();
@@ -142,50 +139,6 @@ export class TaskEditModal extends TaskModal {
 		showTaskModalReminderContextMenu(this.getActionMenuContext(), event, this.task);
 	}
 
-	onOpen(): void {
-		void this.openEditModal();
-	}
-
-	private async openEditModal(): Promise<void> {
-		// Clear any previous completion changes
-		this.completedInstancesChanges = [];
-		this.skippedInstancesChanges = [];
-
-		// Refresh task data from file before opening
-		await this.refreshTaskData();
-
-		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal", "expanded");
-		if (this.plugin.settings.enableModalSplitLayout) {
-			this.containerEl.addClass("split-layout-enabled");
-		}
-		this.modalEl.addClass("mod-tasknotes");
-
-		// Set the modal title using the standard Obsidian approach (preserves close button)
-		this.titleEl.setText(this.getModalTitle());
-
-		// Add global keyboard shortcut handler for CMD/Ctrl+Enter
-		this.editModalKeyboardHandler = (e: KeyboardEvent) => {
-			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-				e.preventDefault();
-				void (async () => {
-					if ((await this.handleSave()) !== false) {
-						this.forceClose();
-					}
-				})();
-			}
-		};
-		this.containerEl.addEventListener("keydown", this.editModalKeyboardHandler);
-
-		void this.initializeFormData().then(() => {
-			this.createModalContent();
-			// Render projects list after modal content is created
-			this.renderProjectsList();
-			// Update icon states after creating the action bar
-			this.updateIconStates();
-			this.focusTitleInput();
-		});
-	}
-
 	private async refreshTaskData(): Promise<void> {
 		try {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
@@ -199,8 +152,8 @@ export class TaskEditModal extends TaskModal {
 			}
 
 			const content = await this.app.vault.read(file);
-			this.details = this.extractDetailsFromContent(content);
-			this.originalDetails = this.details;
+			this.form.values.details = this.extractDetailsFromContent(content);
+			this.originalDetails = this.form.values.details;
 
 			// Check if this file is actually a task (has task tag/property)
 			// If not, keep the original task data (e.g., for "convert note to task" flow)
@@ -212,7 +165,7 @@ export class TaskEditModal extends TaskModal {
 				// File is not yet a task - keep the original task data passed to constructor
 				// This preserves user's default settings for status/priority during conversion
 				this.isConvertingNoteToTask = true;
-				this.task.details = this.details;
+				this.task.details = this.form.values.details;
 				return;
 			}
 
@@ -221,7 +174,7 @@ export class TaskEditModal extends TaskModal {
 			const cachedTaskInfo = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 
 			if (cachedTaskInfo) {
-				cachedTaskInfo.details = this.details;
+				cachedTaskInfo.details = this.form.values.details;
 				this.task = cachedTaskInfo;
 				this.options.task = cachedTaskInfo;
 			} else {
@@ -236,7 +189,7 @@ export class TaskEditModal extends TaskModal {
 				);
 
 				if (freshTaskInfo) {
-					freshTaskInfo.details = this.details;
+					freshTaskInfo.details = this.form.values.details;
 					this.task = freshTaskInfo;
 					this.options.task = freshTaskInfo;
 				}
@@ -248,13 +201,6 @@ export class TaskEditModal extends TaskModal {
 				error: error,
 			});
 		}
-	}
-
-	/**
-	 * Edit modal has no primary input at top - title is in the details section
-	 */
-	protected createPrimaryInput(container: HTMLElement): void {
-		// No-op: Edit modal shows title in the details section, not at top
 	}
 
 	/**
@@ -271,126 +217,17 @@ export class TaskEditModal extends TaskModal {
 		this.createMetadataSection(container);
 	}
 
-	/**
-	 * Force close the modal without checking for unsaved changes.
-	 * Use this after a successful save or when discarding is intentional.
-	 */
-	forceClose(): void {
-		this.pendingClose = true;
-		super.close();
-	}
-
-	/**
-	 * Override close() to detect unsaved changes and prompt user.
-	 * This method is synchronous to match Obsidian's Modal.close() signature.
-	 */
-	close(): void {
-		// If we're already forcing close or showing confirmation, proceed
-		if (this.pendingClose) {
-			this.pendingClose = false;
-			super.close();
-			return;
-		}
-
-		// Prevent re-entrancy if confirmation is already showing
-		if (this.isShowingConfirmation) {
-			return;
-		}
-
-		// Check for unsaved changes
-		const changes = this.getChanges();
-		const hasChanges = Object.keys(changes).length > 0;
-
-		if (!hasChanges) {
-			// No changes, close immediately
-			super.close();
-			return;
-		}
-
-		// Show confirmation modal asynchronously
-		void this.showUnsavedChangesConfirmation();
-	}
-
-	/**
-	 * Show confirmation modal for unsaved changes.
-	 * Handles the async flow separately from the synchronous close() method.
-	 */
-	private async showUnsavedChangesConfirmation(): Promise<void> {
-		this.isShowingConfirmation = true;
-
-		try {
-			const result = await this.showThreeButtonConfirmation();
-
-			if (result === "save") {
-				// User wants to save - attempt save and close on success
-				try {
-					if ((await this.handleSave()) !== false) {
-						this.forceClose();
-					}
-				} catch (error) {
-					// Save failed - stay open so user can fix issues
-					// handleSave() already shows a notice with the error
-					tasknotesLogger.error("Save failed during close confirmation:", {
-						category: "persistence",
-						operation: "save-close-confirmation",
-						error: error,
-					});
-				}
-			} else if (result === "discard") {
-				// User wants to discard changes
-				this.forceClose();
-			}
-			// result === "cancel" - do nothing, user wants to keep editing
-		} finally {
-			this.isShowingConfirmation = false;
-		}
-	}
-
-	/**
-	 * Show a three-button confirmation dialog for unsaved changes.
-	 * Returns: "save" | "discard" | "cancel"
-	 */
-	private showThreeButtonConfirmation(): Promise<"save" | "discard" | "cancel"> {
-		return new Promise((resolve) => {
-			const modal = new ConfirmationModal(this.app, {
-				title: this.t(msg({ message: "Unsaved changes", context: "modals.task.unsavedChanges.title" })),
-				message: this.t(msg({ message: "You have unsaved changes. Do you want to save them?", context: "modals.task.unsavedChanges.message" })),
-				confirmText: this.t(msg({ message: "Save changes", context: "modals.task.unsavedChanges.save" })),
-				cancelText: this.t(msg({ message: "Discard changes", context: "modals.task.unsavedChanges.discard" })),
-				thirdButtonText: this.t(msg({ message: "Keep editing", context: "modals.task.unsavedChanges.cancel" })),
-				defaultToConfirm: true,
-				onThirdButton: () => resolve("cancel"),
-			});
-
-			void modal.show().then((confirmed) => {
-				if (confirmed) {
-					resolve("save");
-				} else {
-					resolve("discard");
-				}
-			});
-		});
-	}
-
-	onClose(): void {
-		// Clean up keyboard handler
-		if (this.editModalKeyboardHandler) {
-			this.containerEl.removeEventListener("keydown", this.editModalKeyboardHandler);
-			this.editModalKeyboardHandler = null;
-		}
-
-		// Base class handles detailsMarkdownEditor cleanup
-		super.onClose();
+	protected hasUnsavedChanges(): boolean {
+		return Object.keys(this.getChanges()).length > 0 || this.hasSubtaskChanges();
 	}
 
 	private createMetadataSection(container: HTMLElement): void {
-		this.metadataContainer = container.createDiv("metadata-container");
+		const metadataContainer = container.createEl("details", { cls: "metadata-container" });
 
-		const metadataLabel = this.metadataContainer.createDiv("detail-label");
+		const metadataLabel = metadataContainer.createEl("summary", { cls: "detail-label" });
 		metadataLabel.textContent = this.t(msg({ message: "Task information", context: "modals.taskEdit.sections.taskInfo" }));
 
-		const metadataContent = this.metadataContainer.createDiv("metadata-content");
-		const timeFormat = this.plugin.settings.calendarViewSettings?.timeFormat ?? "24";
+		const metadataContent = metadataContainer.createDiv("metadata-content");
 
 		// Total tracked time
 		const totalTimeSpent = calculateTotalTimeSpent(this.task.timeEntries || []);
@@ -399,24 +236,6 @@ export class TaskEditModal extends TaskModal {
 				metadataContent,
 				this.t(msg({ message: "Total tracked time:", context: "modals.taskEdit.metadata.totalTrackedTime" })),
 				formatTime(totalTimeSpent)
-			);
-		}
-
-		// Due date
-		if (this.task.due) {
-			this.createMetadataItem(
-				metadataContent,
-				this.t(msg({ message: "Due:", context: "modals.taskEdit.metadata.due" })),
-				formatDateTimeForDisplay(this.task.due, { userTimeFormat: timeFormat })
-			);
-		}
-
-		// Scheduled date
-		if (this.task.scheduled) {
-			this.createMetadataItem(
-				metadataContent,
-				this.t(msg({ message: "Scheduled:", context: "modals.taskEdit.metadata.scheduled" })),
-				formatDateTimeForDisplay(this.task.scheduled, { userTimeFormat: timeFormat })
 			);
 		}
 
@@ -454,10 +273,9 @@ export class TaskEditModal extends TaskModal {
 		item.createSpan("metadata-value").textContent = value;
 	}
 
-	async handleSave(): Promise<boolean | void> {
+	async handleSave(): Promise<TaskSaveOutcome> {
 		if (!this.validateForm()) {
-			new Notice(this.t(msg({ message: "Please enter a task title", context: "modals.taskEdit.notices.titleRequired" })));
-			return false;
+			return { status: "failed" };
 		}
 
 		try {
@@ -479,8 +297,7 @@ export class TaskEditModal extends TaskModal {
 
 			if (!hasTaskChanges && !hasBlockingChanges && !hasSubtaskChanges) {
 				new Notice(this.t(msg({ message: "No changes to save", context: "modals.taskEdit.notices.noChanges" })));
-				this.close();
-				return;
+				return { status: "saved" };
 			}
 
 			let updatedTask = this.task;
@@ -505,7 +322,7 @@ export class TaskEditModal extends TaskModal {
 					const updatedDetails = stringifyUnknown(
 						(changes as Record<string, unknown>).details
 					);
-					this.details = updatedDetails;
+					this.form.values.details = updatedDetails;
 					this.originalDetails = updatedDetails;
 				}
 			}
@@ -551,6 +368,7 @@ export class TaskEditModal extends TaskModal {
 
 			this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
 			this.unresolvedBlockingEntries = [];
+			return { status: "saved" };
 		} catch (error) {
 			tasknotesLogger.error("Failed to update task:", {
 				category: "validation",
@@ -559,7 +377,7 @@ export class TaskEditModal extends TaskModal {
 			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
 			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(message) }));
-			return false;
+			return { status: "failed" };
 		}
 	}
 
@@ -567,28 +385,28 @@ export class TaskEditModal extends TaskModal {
 		const result = buildTaskEditChangesFromModalState({
 			app: this.app,
 			task: this.task,
-			title: this.title,
-			dueDate: this.dueDate,
-			scheduledDate: this.scheduledDate,
-			priority: this.priority,
-			status: this.status,
-			contexts: this.contexts,
-			projects: this.projects,
-			tags: this.tags,
+			title: this.form.values.title,
+			dueDate: this.form.values.dueDate,
+			scheduledDate: this.form.values.scheduledDate,
+			priority: this.form.values.priority,
+			status: this.form.values.status,
+			contexts: this.form.values.contexts,
+			projects: this.form.values.projects,
+			tags: this.form.values.tags,
 			initialTags: this.initialTags,
-			timeEstimate: this.timeEstimate,
-			recurrenceRule: this.recurrenceRule,
-			recurrenceAnchor: this.recurrenceAnchor,
-			reminders: this.reminders,
+			timeEstimate: this.form.values.timeEstimate,
+			recurrenceRule: this.form.values.recurrenceRule,
+			recurrenceAnchor: this.form.values.recurrenceAnchor,
+			reminders: this.form.values.reminders,
 			blockedByItems: this.blockedByItems,
 			initialBlockedBy: this.initialBlockedBy,
 			blockingItems: this.blockingItems,
 			initialBlockingPaths: this.initialBlockingPaths,
-			details: this.details,
+			details: this.form.values.details,
 			originalDetails: this.originalDetails,
 			completedInstancesChanges: this.completedInstancesChanges,
 			skippedInstancesChanges: this.skippedInstancesChanges,
-			userFields: this.userFields,
+			userFields: this.form.values.userFields,
 			settings: {
 				userFields: this.plugin.settings?.userFields,
 				taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
@@ -620,7 +438,7 @@ export class TaskEditModal extends TaskModal {
 		return result.changes;
 	}
 
-	protected async openTaskNote(): Promise<void> {
+	private async openTaskNote(): Promise<void> {
 		try {
 			// Get the file from the task path
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
@@ -630,12 +448,13 @@ export class TaskEditModal extends TaskModal {
 				return;
 			}
 
+			if (!(await this.resolveUnsavedChanges())) return;
+
 			// Open the file in a new leaf
 			const leaf = this.app.workspace.getLeaf(true);
 			await leaf.openFile(file);
 
-			// Close the modal
-			this.close();
+			this.forceClose();
 		} catch (error) {
 			tasknotesLogger.error("Failed to open task note:", {
 				category: "persistence",
@@ -647,6 +466,8 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private async archiveTask(): Promise<void> {
+		if (!(await this.resolveUnsavedChanges())) return;
+
 		try {
 			const updatedTask = await this.plugin.taskService.toggleArchive(this.task);
 
@@ -665,8 +486,7 @@ export class TaskEditModal extends TaskModal {
 			const actionText = this.t(actionKey);
 			new Notice(this.t(msg({ message: "Task {action} successfully", context: "modals.taskEdit.notices.archiveSuccess" }), { action: actionText }));
 
-			// Close the modal
-			this.close();
+			this.forceClose();
 		} catch (error) {
 			tasknotesLogger.error("Failed to archive task:", {
 				category: "persistence",
@@ -707,42 +527,38 @@ export class TaskEditModal extends TaskModal {
 		}
 	}
 
-	protected createActionButtons(container: HTMLElement): void {
-		createTaskModalActionButtons(this.getActionButtonContext(), {
-			container,
-			leadingButtons: [
-				{
-					className: "tn-task-modal__open-note-button",
-					text: this.t(msg({ message: "Open note", context: "modals.task.buttons.openNote" })),
-					onClick: () => {
-						void this.openTaskNote();
-					},
+	protected getLeadingButtons(): TaskModalLeadingButton[] {
+		return [
+			{
+				className: "tn-task-modal__open-note-button",
+				text: this.t(msg({ message: "Open note", context: "modals.task.buttons.openNote" })),
+				onClick: () => {
+					void this.openTaskNote();
 				},
-				{
-					className: "mod-warning tn-task-modal__archive-button",
-					text: this.task.archived
-						? this.t(msg({ message: "Unarchive", context: "modals.taskEdit.buttons.unarchive" }))
-						: this.t(msg({ message: "Archive", context: "modals.taskEdit.buttons.archive" })),
-					onClick: () => {
-						void this.archiveTask();
-					},
-				},
-				{
-					className: "mod-warning tn-task-modal__delete-button",
-					text: this.t(msg({ message: "Delete", context: "contextMenus.task.delete" })),
-					onClick: () => {
-						void this.deleteTask();
-					},
-				},
-			],
-			onSave: () => this.handleSave(),
-			onSaved: () => {
-				this.forceClose();
 			},
-			onCancel: () => {
-				this.close();
+		];
+	}
+
+	protected getOverflowActions(): TaskModalOverflowAction[] {
+		return [
+			{
+				title: this.task.archived
+					? this.t(msg({ message: "Unarchive", context: "modals.taskEdit.buttons.unarchive" }))
+					: this.t(msg({ message: "Archive", context: "modals.taskEdit.buttons.archive" })),
+				icon: "archive",
+				onClick: () => {
+					void this.archiveTask();
+				},
 			},
-		});
+			{
+				title: this.t(msg({ message: "Delete", context: "contextMenus.task.delete" })),
+				icon: "trash",
+				warning: true,
+				onClick: () => {
+					void this.deleteTask();
+				},
+			},
+		];
 	}
 
 	protected async initializeSubtasks(): Promise<void> {
@@ -807,9 +623,6 @@ export class TaskEditModal extends TaskModal {
 
 		this.initialSubtaskFiles = result.nextInitialSubtaskFiles;
 	}
-
-	// Start expanded for edit modal - override parent property
-	protected isExpanded = true;
 }
 
 /* eslint-enable @typescript-eslint/no-non-null-assertion -- Re-enable after the modal implementation. */

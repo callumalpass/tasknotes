@@ -21,11 +21,31 @@ export interface CreateTaskModalTextFieldOptions {
 export interface CreateTaskModalTimeEstimateFieldOptions {
 	container: HTMLElement;
 	value: number;
-	onChange: (value: number) => void;
+	/** Receives null when the text is not a duration. */
+	onChange: (value: number | null) => void;
 }
 
-export function parseTaskModalTimeEstimate(value: string): number {
-	return parseInt(value) || 0;
+const TIME_ESTIMATE_PART = /(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes)(?![a-z])/gi;
+
+/** Minutes for "45", "1h", "1.5h", "1h 30m" or "1:30"; null when the text is not a duration. */
+export function parseTaskModalTimeEstimate(value: string): number | null {
+	const text = value.trim();
+	if (!text) return 0;
+	if (/^\d+$/.test(text)) return parseInt(text, 10);
+
+	const clock = /^(\d+):([0-5]\d)$/.exec(text);
+	if (clock) return parseInt(clock[1], 10) * 60 + parseInt(clock[2], 10);
+
+	let minutes = 0;
+	const unparsed = text.replace(TIME_ESTIMATE_PART, (_match, amount: string, unit: string) => {
+		minutes += parseFloat(amount) * (unit.toLowerCase().startsWith("h") ? 60 : 1);
+		return "";
+	});
+	return unparsed.trim() || minutes === 0 ? null : Math.round(minutes);
+}
+
+export function formatTaskModalTimeEstimate(minutes: number): string {
+	return minutes > 0 ? minutes.toString() : "";
 }
 
 export function createTaskModalContextsField(
@@ -34,7 +54,6 @@ export function createTaskModalContextsField(
 ): HTMLInputElement {
 	let inputEl: HTMLInputElement | null = null;
 	const setting = new Setting(options.container);
-	setting.settingEl.addClass("tn-task-modal__wide-text-setting");
 	setting.setName(context.translate(msg({ message: "Contexts", context: "modals.task.contextsLabel" }))).addText((text) => {
 		text.setPlaceholder(context.translate(msg({ message: "context1, context2", context: "modals.task.contextsPlaceholder" })))
 			.setValue(options.value)
@@ -57,7 +76,6 @@ export function createTaskModalTagsField(
 ): HTMLInputElement {
 	let inputEl: HTMLInputElement | null = null;
 	const setting = new Setting(options.container);
-	setting.settingEl.addClass("tn-task-modal__wide-text-setting");
 	setting.setName(context.translate(msg({ message: "Tags", context: "modals.task.tagsLabel" }))).addText((text) => {
 		text.setPlaceholder(context.translate(msg({ message: "tag1, tag2", context: "modals.task.tagsPlaceholder" })))
 			.setValue(options.value)
@@ -85,13 +103,18 @@ export function createTaskModalTimeEstimateField(
 		.setName(context.translate(msg({ message: "Time estimate (minutes)", context: "modals.task.timeEstimateLabel" })))
 		.addText((text) => {
 			text.setPlaceholder(context.translate(msg({ message: "30", context: "modals.task.timeEstimatePlaceholder" })))
-				.setValue(options.value.toString())
+				.setValue(formatTaskModalTimeEstimate(options.value))
 				.onChange((value) => {
 					options.onChange(parseTaskModalTimeEstimate(value));
 				});
 
 			inputEl = text.inputEl;
 			context.attachMobileKeyboardScrollGuard(text.inputEl);
+			// Show what will be saved: "1h" becomes "60" once the field is left.
+			text.inputEl.addEventListener("blur", () => {
+				const minutes = parseTaskModalTimeEstimate(text.inputEl.value);
+				if (minutes !== null) text.inputEl.value = formatTaskModalTimeEstimate(minutes);
+			});
 		});
 
 	if (!inputEl) {

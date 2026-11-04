@@ -1,5 +1,7 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
+import { Menu, setIcon, setTooltip } from "obsidian";
+
 export interface TaskModalActionButtonContext {
 	translate: (key: MessageDescriptor) => string;
 }
@@ -10,12 +12,18 @@ export interface TaskModalLeadingButton {
 	onClick: () => void;
 }
 
+export interface TaskModalOverflowAction {
+	title: string;
+	icon: string;
+	warning?: boolean;
+	onClick: () => void;
+}
+
 export interface CreateTaskModalActionButtonsOptions {
 	container: HTMLElement;
 	leadingButtons?: readonly TaskModalLeadingButton[];
-	/** Resolves false when validation or saving failed and the modal must stay open. */
-	onSave: () => Promise<boolean | void>;
-	onSaved: () => void;
+	overflowActions?: readonly TaskModalOverflowAction[];
+	onSave: () => void;
 	onCancel: () => void;
 }
 
@@ -35,35 +43,46 @@ export function createTaskModalActionButtons(
 		button.addEventListener("click", buttonConfig.onClick);
 	}
 
+	if (options.overflowActions?.length) {
+		createOverflowButton(buttonContainer, context, options.overflowActions);
+	}
+
 	const saveButton = buttonContainer.createEl("button", {
 		cls: "mod-cta",
 		text: context.translate(msg({ message: "Save", context: "modals.task.buttons.save" })),
 	});
-
-	saveButton.addEventListener("click", () => {
-		void runTaskModalSaveAction(saveButton, options.onSave, options.onSaved);
-	});
+	saveButton.addEventListener("click", options.onSave);
 
 	const cancelButton = buttonContainer.createEl("button", {
 		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
-
 	cancelButton.addEventListener("click", options.onCancel);
 
 	return buttonContainer;
 }
 
-export async function runTaskModalSaveAction(
-	saveButton: HTMLButtonElement,
-	onSave: () => Promise<boolean | void>,
-	onSaved: () => void
-): Promise<void> {
-	saveButton.disabled = true;
-	try {
-		if ((await onSave()) !== false) {
-			onSaved();
+function createOverflowButton(
+	container: HTMLElement,
+	context: TaskModalActionButtonContext,
+	actions: readonly TaskModalOverflowAction[]
+): void {
+	const label = context.translate(msg({ message: "More actions", context: "modals.task.buttons.moreActions" }));
+	const button = container.createEl("button", {
+		cls: "clickable-icon tn-task-modal__overflow-button",
+		attr: { "aria-label": label, "aria-haspopup": "menu" },
+	});
+	setIcon(button, "more-horizontal");
+	setTooltip(button, label, { placement: "top" });
+
+	button.addEventListener("click", () => {
+		const menu = new Menu();
+		for (const action of actions) {
+			menu.addItem((item) => {
+				item.setTitle(action.title).setIcon(action.icon).onClick(action.onClick);
+				if (action.warning) item.setWarning(true);
+			});
 		}
-	} finally {
-		saveButton.disabled = false;
-	}
+		const rect = button.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom });
+	});
 }

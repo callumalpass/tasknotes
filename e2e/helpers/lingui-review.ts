@@ -48,15 +48,12 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
     await column(key).locator(".kanban-view__add-task-button").click();
     const modal = page.locator(".modal").filter({ has: page.locator(".title-input, .title-input-detailed") }).last();
     await expect(modal).toBeVisible();
-    // Native quick entry is CodeMirror; parsed values reach detailed inputs
-    // only through the real fill-form action (or save), not on each keystroke.
+    // Native quick entry is CodeMirror; parsed values reach the detailed inputs as it is typed.
     const editor = modal.locator('.title-input:visible, .title-input-detailed:visible, .cm-content[contenteditable="true"]:visible').first();
     if (await editor.getAttribute("contenteditable") === "true") {
       await editor.click();
       await editor.press("ControlOrMeta+A");
       await editor.pressSequentially(title);
-      const label = await page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), generateMessageId("Fill form from natural language", "modals.taskCreation.actions.fillFromNaturalLanguage"));
-      await modal.getByLabel(label, { exact: true }).click();
     } else await editor.fill(title);
     await expect(modal.locator(".title-input-detailed")).toHaveValue(title);
     await modal.locator(".modal-button-container .mod-cta").click();

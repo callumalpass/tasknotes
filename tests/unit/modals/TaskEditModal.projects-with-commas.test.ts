@@ -36,13 +36,13 @@ describe('TaskEditModal - projects with commas', () => {
     const modal = new TaskEditModal(mockApp, mockPlugin, { task });
 
     // Set fields directly to avoid dependency on metadataCache during init
-    (modal as any).title = task.title;
-    (modal as any).status = task.status;
-    (modal as any).priority = task.priority;
-    (modal as any).projects = '[[Money, Org & Adm]]';
-    (modal as any).contexts = (task as any).contexts || '';
-    (modal as any).tags = (task as any).tags?.join(', ') || '';
-    (modal as any).timeEstimate = (task as any).timeEstimate || 0;
+    (modal as any).form.values.title = task.title;
+    (modal as any).form.values.status = task.status;
+    (modal as any).form.values.priority = task.priority;
+    (modal as any).form.values.projects = '[[Money, Org & Adm]]';
+    (modal as any).form.values.contexts = (task as any).contexts || '';
+    (modal as any).form.values.tags = (task as any).tags?.join(', ') || '';
+    (modal as any).form.values.timeEstimate = (task as any).timeEstimate || 0;
 
     // Call private getChanges directly
     const changes = (modal as any).getChanges();
