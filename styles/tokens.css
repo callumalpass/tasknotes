@@ -34,6 +34,18 @@
     --tn-radius-xl: 12px;
     --tn-radius-full: 999px;
 
+    --tn-segmented-gap: var(--tn-space-half);
+    --tn-segmented-padding: var(--tn-space-half);
+    --tn-segmented-radius: var(--tn-radius-md);
+    --tn-segmented-bg: var(--tn-bg-secondary);
+    --tn-segmented-item-height: var(--tn-control-sm);
+    --tn-segmented-item-radius: var(--tn-radius-sm);
+    --tn-segmented-selected-bg: var(--tn-bg-primary);
+    --tn-segmented-selected-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+    --tn-calendar-status-line: 2px;
+    --tn-calendar-event-tint: 8%;
+    --tn-glyph-size: 14px;
+
     /* Surfaces and text come from the theme */
     --tn-bg-primary: var(--background-primary);
     --tn-bg-secondary: var(--background-secondary);

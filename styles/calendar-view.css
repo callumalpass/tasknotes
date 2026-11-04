@@ -230,7 +230,7 @@
 /* Calendar Day - Today State */
 .tasknotes-plugin .calendar-view__day--today,
 .tasknotes-plugin .mini-calendar-view__day--today {
-    background: var(--tn-interactive-hover);
+    background: transparent;
     color: var(--tn-interactive-accent);
     font-weight: 600;
     box-shadow: none;
@@ -239,7 +239,7 @@
 
 .tasknotes-plugin .calendar-view__day--today::after,
 .tasknotes-plugin .mini-calendar-view__day--today::after {
-    content: '';
+    content: none;
     position: absolute;
     bottom: 2px;
     left: 50%;
@@ -771,10 +771,10 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 10%, transparent);
+    background: transparent;
     color: var(--tn-interactive-accent);
-    font-weight: 700;
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 85%, transparent);
+    font-weight: var(--tn-font-weight-semibold);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today::after {
@@ -790,8 +790,8 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 25%, transparent);
-    box-shadow: inset 0 0 0 2px var(--tn-interactive-accent);
+    background: var(--tn-selected);
+    box-shadow: none;
 }
 
 .tasknotes-plugin .mini-calendar-view__day--outside-month {

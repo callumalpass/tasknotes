@@ -3,13 +3,27 @@ import { viewToBases, type ItemArg } from "@tasknotes/calendar";
 import type TaskNotesPlugin from "../main";
 import type { CalendarEventProps } from "./calendarEngine";
 import { isCalendarBatchTarget } from "./calendarBatchMove";
-import { applyTimeblockStyling, generateTimeblockTooltip, applyRecurringTaskStyling, generateTaskTooltip, addTaskHoverPreview } from "./calendar-core";
+import { applyTimeblockStyling, generateTimeblockTooltip, applyRecurringTaskStyling, generateTaskTooltip, addTaskHoverPreview, getTargetDateForEvent } from "./calendar-core";
 import { appendCalendarAttachmentIndicator, decorateCalendarIcsEventElement, getCalendarRelatedNoteTooltip, normalizeCalendarRelatedNoteCount } from "./calendarEventMount";
-import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
+import { filterEmptyProjects, sanitizeForCssClass, getEffectiveTaskStatus } from "../utils/helpers";
+import { eventApiFromItem } from "./calendarEngine";
+import type { TaskInfo } from "../types";
+import { createTaskGlyphs } from "../ui/taskGlyphs";
 
 interface CalendarPresentationContext {
  plugin: TaskNotesPlugin;
  rootElement: HTMLElement | null;
+}
+
+export function decorateCalendarTaskGlyphs(element: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin): void {
+	const status = plugin.statusManager.getStatusConfig(task.status);
+	element.dataset.status = task.status;
+	element.dataset.priority = task.priority;
+	element.style.setProperty("--tn-calendar-status-color", status?.color || "var(--text-muted)");
+	const title = element.querySelector<HTMLElement>(".tnc-item-title");
+	if (!title) return;
+	title.querySelector(".tn-task-glyphs")?.remove();
+	title.prepend(createTaskGlyphs(element.ownerDocument, task, plugin));
 }
 
 export function suppressCalendarContextMenuOnMobile(element: HTMLElement): void {
@@ -76,6 +90,10 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 		// Add data attributes and classes for tasks
 		if (taskInfo && taskInfo.path) {
 			attachCalendarTaskHoverLink(context.rootElement, el, taskInfo.path);
+			const status = taskInfo.recurrence
+				? getEffectiveTaskStatus(taskInfo, getTargetDateForEvent({ event: eventApiFromItem(arg.item) }), context.plugin.statusManager.getCompletedStatuses()[0])
+				: taskInfo.status;
+			decorateCalendarTaskGlyphs(el, { ...taskInfo, status }, context.plugin);
 
 			// Add tag classes to tasks
 			if (taskInfo.tags && taskInfo.tags.length > 0) {

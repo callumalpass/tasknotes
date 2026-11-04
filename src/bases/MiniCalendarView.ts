@@ -17,6 +17,7 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 import { ICSEvent, TaskInfo } from "../types";
+import { createTaskGlyphs } from "../ui/taskGlyphs";
 import {
 	formatDateForStorage,
 	getTodayLocal,
@@ -1648,6 +1649,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		onChooseNote: (note: NoteEntry | null) => void
 	) {
 		super(app);
+		this.containerEl.addClass("tasknotes-plugin");
 		this.plugin = plugin;
 		this.notes = notes;
 		this.onChooseNote = onChooseNote;
@@ -1674,10 +1676,12 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		const container = el.createDiv({ cls: "note-selector-modal__suggestion" });
 
 		// Title
-		container.createDiv({
+		const title = container.createDiv({
 			cls: "note-selector-modal__title",
 			text: note.title,
 		});
+		const task = note.kind === "note" ? this.plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
+		if (task) title.prepend(createTaskGlyphs(el.ownerDocument, task, this.plugin));
 
 		const subtitle = note.kind === "external" ? note.sourceName || note.path : note.path;
 

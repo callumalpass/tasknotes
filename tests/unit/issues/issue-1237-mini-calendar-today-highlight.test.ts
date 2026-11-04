@@ -11,7 +11,7 @@ import * as path from "path";
 const cssFilePath = path.resolve(__dirname, "../../../styles/calendar-view.css");
 
 describe("Issue #1237: Mini Calendar today highlight", () => {
-	it("uses a visible ring and tint for today's Mini Calendar day", () => {
+	it("keeps today's accent numeral distinct even when another date is selected", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 		const todayBlock = extractCssBlock(
 			cssContent,
@@ -22,10 +22,13 @@ describe("Issue #1237: Mini Calendar today highlight", () => {
 			".tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected"
 		);
 
-		expect(todayBlock).toContain("background: color-mix");
-		expect(todayBlock).toContain("box-shadow: inset 0 0 0 2px");
-		expect(todayBlock).not.toContain("background: none");
-		expect(selectedTodayBlock).toContain("box-shadow: inset 0 0 0 2px");
+		expect(todayBlock).toContain("background: transparent");
+		expect(todayBlock).toContain("color: var(--tn-interactive-accent)");
+		expect(todayBlock).toContain("font-weight: var(--tn-font-weight-semibold)");
+		expect(todayBlock).toContain("box-shadow: none");
+		expect(selectedTodayBlock).toContain("background: var(--tn-selected)");
+		expect(selectedTodayBlock).not.toContain("color:");
+		expect(selectedTodayBlock).toContain("box-shadow: none");
 	});
 });
 

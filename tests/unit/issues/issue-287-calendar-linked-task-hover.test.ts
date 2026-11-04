@@ -37,7 +37,7 @@ describe("Issue #287: linked calendar task hover states", () => {
 	it("highlights other events of the hovered task only", () => {
 		const root = document.createElement("div");
 		const view = Object.create(CalendarView.prototype) as CalendarView;
-		Object.assign(view, { rootElement: root, plugin: {} });
+		Object.assign(view, { rootElement: root, plugin: { statusManager: { getStatusConfig: () => null } } });
 
 		const source = mountEvent(view, root, "Tasks/A \"quoted\".md");
 		const sibling = mountEvent(view, root, "Tasks/A \"quoted\".md");

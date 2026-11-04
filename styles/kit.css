@@ -104,41 +104,80 @@
 }
 
 /* Segmented control */
-.tn-segmented {
+.tasknotes-plugin .tn-segmented,
+.tasknotes-plugin .tnc-toolbar-group.tnc-toolbar-views {
     display: inline-flex;
-    gap: var(--tn-space-half);
-    padding: var(--tn-space-half);
-    border-radius: var(--tn-radius-md);
-    background: var(--tn-bg-secondary);
+    gap: var(--tn-segmented-gap);
+    padding: var(--tn-segmented-padding);
+    border: none;
+    border-radius: var(--tn-segmented-radius);
+    background: var(--tn-segmented-bg);
+    flex-wrap: nowrap;
 }
 
-.tn-segmented__item {
-    height: var(--tn-control-sm);
+.tasknotes-plugin .tn-segmented__item,
+.tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view {
+    height: var(--tn-segmented-item-height);
+    min-height: var(--tn-segmented-item-height);
     padding: 0 var(--tn-space-2);
     border: none;
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-segmented-item-radius);
     background: transparent;
     box-shadow: none;
     color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     cursor: pointer;
-    transition: color var(--tn-transition-fast), background-color var(--tn-transition-fast);
 }
 
-.tn-segmented__item:hover {
+.tasknotes-plugin .tn-segmented__item:hover,
+.tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view:hover {
+    background: transparent;
     color: var(--tn-text-normal);
 }
 
-.tn-segmented__item.is-selected {
-    background: var(--tn-bg-primary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+.tasknotes-plugin .tn-segmented__item.is-selected,
+.tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view[aria-pressed="true"] {
+    background: var(--tn-segmented-selected-bg);
+    box-shadow: var(--tn-segmented-selected-shadow);
     color: var(--tn-text-normal);
 }
 
-.tn-segmented__item:focus-visible {
+.tasknotes-plugin .tn-segmented__item:focus-visible,
+.tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view:focus-visible {
     outline: 2px solid var(--tn-focus-ring);
     outline-offset: 1px;
+}
+
+.tasknotes-plugin .tn-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    padding: var(--tn-space-half) var(--tn-space-1);
+    border: none;
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-secondary);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-normal);
+    white-space: nowrap;
+}
+
+.tn-task-glyphs {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    margin-right: var(--tn-space-1);
+    vertical-align: text-bottom;
+}
+
+.tn-task-glyphs__status,
+.tn-task-glyphs__priority,
+.tn-task-glyphs svg {
+    display: inline-flex;
+    width: var(--tn-glyph-size);
+    height: var(--tn-glyph-size);
+    flex: none;
 }
 
 /* Popover */
