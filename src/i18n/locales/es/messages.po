@@ -3784,7 +3784,7 @@ msgctxt "modals.calendarEventCreation.createButton"
 msgid "Create event"
 msgstr "Crear evento"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 msgctxt "ui.audit.createExternal"
 msgid "Create external calendar event"
 msgstr "Crear evento de calendario externo"
@@ -3860,7 +3860,7 @@ msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "Crear subtarea"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
@@ -3877,7 +3877,7 @@ msgctxt "settings.integrations.basesIntegration.createDefaultFiles.description"
 msgid "Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten."
 msgstr "Crea los archivos .base predeterminados en el directorio TaskNotes/Views/. Los archivos existentes no se sobrescribirán."
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 msgctxt "ui.audit.createEntry"
 msgid "Create time entry"
 msgstr "Crear entrada de tiempo"
@@ -3887,7 +3887,7 @@ msgctxt "modals.timeblockCreation.createButton"
 msgid "Create timeblock"
 msgstr "Crear bloque de tiempo"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 #: src/components/TaskContextMenu.ts
 #: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.heading"

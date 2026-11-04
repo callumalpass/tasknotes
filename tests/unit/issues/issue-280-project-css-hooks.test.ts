@@ -25,7 +25,7 @@ describe("Issue #280: project-specific view CSS hooks", () => {
 	});
 
 	it("adds project-derived classes to calendar task events", () => {
-		const source = readRepoFile("src/bases/CalendarView.ts");
+		const source = readRepoFile("src/bases/calendarEventPresentation.ts");
 
 		expect(source).toContain("filterEmptyProjects(taskInfo.projects || [])");
 		expect(source).toContain("sanitizeForCssClass(project)");
