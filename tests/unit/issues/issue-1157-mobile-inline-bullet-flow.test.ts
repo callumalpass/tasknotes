@@ -19,25 +19,14 @@ function readRule(css: string, selector: string): string {
 describe("Issue #1157: mobile inline task cards in markdown bullets", () => {
 	it("keeps the mobile inline card wrapper in text flow inside list items", () => {
 		const css = readRepoFile("styles/task-inline-widget.css");
-		const mobileInlineRule = readRule(
-			css,
-			"body.is-mobile .tasknotes-plugin .task-card--layout-inline"
-		);
-		const mobileInlineInnerRule = readRule(
-			css,
-			"body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__main-row,\nbody.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__content"
-		);
-
-		expect(mobileInlineRule).toMatch(/display:\s*inline;/);
-		expect(mobileInlineRule).not.toMatch(/display:\s*inline-flex;/);
-		expect(mobileInlineRule).toMatch(/white-space:\s*normal;/);
-		expect(mobileInlineRule).toMatch(/vertical-align:\s*baseline;/);
-		expect(mobileInlineInnerRule).toMatch(/display:\s*inline;/);
-		const titleRule = readRule(css, "body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__title-text");
-		expect(mobileInlineRule).toContain("--tn-mobile-inline-title-reserve: calc(2 * var(--tn-mobile-inline-indicator-size) + var(--tn-mobile-inline-menu-size) + 0.85em)");
-		expect(titleRule).toContain("max-width: max(0px, calc(100% - var(--tn-mobile-inline-title-reserve)))");
-		expect(titleRule).toMatch(/display:\s*inline-block;/);
-		expect(titleRule).toMatch(/white-space:\s*nowrap;/);
-		expect(titleRule).not.toMatch(/\d+(vw|em)/);
+		const inlineRule = readRule(css, ".tasknotes-plugin .task-card--layout-inline");
+		const contentRule = readRule(css, ".tasknotes-plugin .task-card--layout-inline .task-card__main-row,\n.tasknotes-plugin .task-card--layout-inline .task-card__content");
+		expect(inlineRule).toMatch(/display:\s*inline-flex;/);
+		expect(inlineRule).toContain("max-width: calc(100% - 1ch)");
+		expect(inlineRule).toMatch(/vertical-align:\s*middle;/);
+		expect(contentRule).toMatch(/display:\s*inline-flex;/);
+		expect(contentRule).toMatch(/flex-wrap:\s*nowrap;/);
+		expect(contentRule).toMatch(/min-width:\s*0;/);
+		expect(css).toMatch(/\.task-card--layout-inline \.task-card__title,[\s\S]*?text-overflow:\s*ellipsis;/);
 	});
 });

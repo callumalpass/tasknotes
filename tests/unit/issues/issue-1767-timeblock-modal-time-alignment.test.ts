@@ -83,7 +83,7 @@ describe("Issue #1767: timeblock creation time row alignment", () => {
 		document.body.innerHTML = "";
 	});
 
-	it("renders start and end time settings as matching top-level rows", () => {
+	it("renders start and end time controls as matching adjacent composer chips", () => {
 		const modal = new TimeblockCreationModal(app, createMockPlugin(), {
 			date: "2026-05-16",
 			startTime: "10:00",
@@ -92,16 +92,20 @@ describe("Issue #1767: timeblock creation time row alignment", () => {
 
 		modal.onOpen();
 
-		const startRow = findDirectChild(modal.contentEl, "Start time");
-		const endRow = findDirectChild(modal.contentEl, "End time");
+		const properties = modal.contentEl.querySelector(".tn-modal__properties") as HTMLElement;
+		const startRow = findDirectChild(properties, "Start time");
+		const endRow = findDirectChild(properties, "End time");
 
 		expect(modal.contentEl.querySelector(".timeblock-time-container")).toBeNull();
 		expect(startRow).toBeDefined();
 		expect(endRow).toBeDefined();
 		expect(startRow?.textContent).not.toContain("End time");
 		expect(endRow?.textContent).not.toContain("Start time");
-		expect(startRow?.parentElement).toBe(modal.contentEl);
-		expect(endRow?.parentElement).toBe(modal.contentEl);
+		expect(startRow?.parentElement).toBe(properties);
+		expect(endRow?.parentElement).toBe(properties);
+		expect(startRow?.className).toBe(endRow?.className);
+		expect(startRow?.querySelector("input")?.value).toBe("10:00");
+		expect(endRow?.querySelector("input")?.value).toBe("10:30");
 		expect(startRow?.nextElementSibling).toBe(endRow);
 	});
 

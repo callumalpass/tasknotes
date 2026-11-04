@@ -32,7 +32,7 @@ function extractCssBlock(css: string, selector: string): string {
 }
 
 describe("Issue #2222: settings integrations tab visibility", () => {
-	it("keeps every tab reachable in one horizontally scrollable row", () => {
+	it("keeps every tab reachable by wrapping within the pane", () => {
 		const css = readRepoFile("styles/settings-view.css");
 		const toolbarBlock = extractCssBlock(
 			css,
@@ -44,8 +44,8 @@ describe("Issue #2222: settings integrations tab visibility", () => {
 		);
 
 		expect(toolbarBlock).toContain("flex-wrap: wrap;");
-		expect(tabNavBlock).toContain("flex-wrap: nowrap;");
-		expect(tabNavBlock).toContain("overflow-x: auto;");
+		expect(tabNavBlock).toContain("flex-wrap: wrap;");
+		expect(tabNavBlock).toContain("min-width: 0;");
 		expect(tabNavBlock).not.toContain("overflow: hidden;");
 		const tabButtonBlock = extractCssBlock(css, ".tasknotes-plugin .settings-view__tab-button");
 		expect(tabButtonBlock).toContain("flex-shrink: 0;");

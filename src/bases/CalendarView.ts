@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
+import { renderEmptyState } from "../ui/kit/emptyState";
 import {
 	Calendar,
 	basesLayoutOptions,
@@ -1180,7 +1181,6 @@ export class CalendarView extends BasesViewBase {
 				},
 			},
 			onRangeChange: (view) => {
-				this.syncCalendarViewLabels();
 				if (this.visibleView && sameRange(this.visibleView, view)) return;
 				if (this.visibleView) {
 					this.plugin.taskSelectionService?.clearSelection();
@@ -1209,6 +1209,18 @@ export class CalendarView extends BasesViewBase {
 			onExternalDrop: (arg) => void this.handleExternalTaskDrop(arg),
 			itemDidMount: (arg) => this.handleEventDidMount(arg),
 			listItemContent: (arg) => this.renderListItem(arg),
+			...{
+				listEmptyContent: () => {
+					const container = createElementInDocument(this.containerEl.ownerDocument, "div");
+					renderEmptyState(container, {
+						message: t(msg({ message: "No tasks in this view.", context: "empty task view" }), "No tasks in this view."),
+						actionLabel: t(msg({ message: "New", context: "common.new" }), "New"),
+						actionKey: "C",
+						onAction: () => { void this.createFileForView(""); },
+					});
+					return container;
+				},
+			},
 		};
 	}
 
@@ -1306,7 +1318,6 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyLayoutClasses(): void {
-		this.syncCalendarViewLabels();
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
@@ -1315,29 +1326,6 @@ export class CalendarView extends BasesViewBase {
 			"advanced-calendar-view__calendar--week-numbers",
 			this.viewOptions.weekNumbers === true
 		);
-	}
-
-	private syncCalendarViewLabels(): void {
-		const compact = {
-			month: this.plugin.i18n.translate(msg({ message: "M", context: "views.basesCalendar.buttonText.month" })),
-			week: this.plugin.i18n.translate(msg({ message: "W", context: "views.basesCalendar.buttonText.week" })),
-			day: this.plugin.i18n.translate(msg({ message: "D", context: "views.basesCalendar.buttonText.day" })),
-			year: this.plugin.i18n.translate(msg({ message: "Y", context: "views.basesCalendar.buttonText.year" })),
-			list: this.plugin.i18n.translate(msg({ message: "L", context: "views.basesCalendar.buttonText.list" })),
-			days: this.plugin.i18n.translate(msg({ message: "{count}D", context: "views.basesCalendar.buttonText.customDays" }), { count: this.viewOptions.customDayCount.toString() }),
-		};
-		for (const [view, label] of Object.entries(compact)) {
-			const button = this.calendarEl?.querySelector<HTMLElement>(`.tnc-btn-view-${view}`);
-			if (!button || button.querySelector(".tn-calendar-view-label")) continue;
-			const full = createElementInDocument(button.ownerDocument, "span");
-			full.className = "tn-calendar-view-label";
-			full.textContent = button.textContent;
-			const short = createElementInDocument(button.ownerDocument, "span");
-			short.className = "tn-calendar-view-abbreviation";
-			short.textContent = label;
-			short.setAttribute("aria-hidden", "true");
-			button.replaceChildren(full, short);
-		}
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {

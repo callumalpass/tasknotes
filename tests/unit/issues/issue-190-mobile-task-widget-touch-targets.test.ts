@@ -34,24 +34,18 @@ describe("Issue #190: mobile task widget touch targets", () => {
 		expect(secondaryRules).toContain("min-height: var(--tn-mobile-task-card-indicator-size)");
 	});
 
-	it("uses smaller inline widgets on Obsidian mobile without changing touch-capable desktop rules", () => {
-		const css = readRepoFile("styles/task-card-bem.css") + readRepoFile("styles/task-inline-widget.css");
-
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline \.task-card__content\s*\{[^}]*white-space:\s*normal;/s
-		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline \.task-card__metadata\s*\{[^}]*display:\s*inline-flex;[^}]*max-width:\s*calc\(100% - 0\.25em\);[^}]*overflow-x:\s*auto;/s
-		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline \.task-card__priority-dot\s*\{[^}]*width:\s*var\(--tn-mobile-inline-indicator-size\);[^}]*height:\s*var\(--tn-mobile-inline-indicator-size\);[^}]*padding:\s*5px;[^}]*background-clip:\s*content-box;/s
-		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline \.task-card__context-menu\s*\{[^}]*width:\s*var\(--tn-mobile-inline-menu-size\);[^}]*height:\s*var\(--tn-mobile-inline-menu-size\);[^}]*opacity:\s*1;/s
-		);
-		expect(css).toMatch(
-			/@media \(pointer: coarse\)\s*\{[\s\S]*body:not\(\.is-mobile\) \.tasknotes-plugin \.task-card--layout-inline \.task-card__priority-dot\s*\{[^}]*width:\s*28px;[^}]*height:\s*28px;[^}]*background-clip:\s*content-box;/s
-		);
+	it("keeps inline controls touchable without applying mobile sizing to desktop", () => {
+		const css = readRepoFile("styles/task-inline-widget.css");
+		const mobileControls = css.slice(css.indexOf("body.is-mobile .tasknotes-plugin .task-card--layout-inline :is("));
+		const rules = mobileControls.slice(0, mobileControls.indexOf("}"));
+		for (const control of ["status-dot", "priority-dot", "context-menu"]) {
+			expect(rules).toContain(".task-card__" + control);
+		}
+		expect(rules).toContain("width: var(--tn-touch-target)");
+		expect(rules).toContain("height: var(--tn-touch-target)");
+		expect(rules).toContain("opacity: 1");
+		expect(css).toMatch(/\.task-card--layout-inline \.task-card__priority-dot\s*\{[^}]*width:\s*var\(--tn-glyph\);/s);
+		expect(css).toMatch(/\.task-card--layout-inline \.task-card__content\s*\{[^}]*display:\s*inline-flex;[^}]*flex-wrap:\s*nowrap;/s);
 	});
 
 	it("keeps mobile-only modal and settings refinements scoped to Obsidian mobile", () => {

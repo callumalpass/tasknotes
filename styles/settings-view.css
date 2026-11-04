@@ -8,10 +8,13 @@
 .modal.mod-settings .tasknotes-settings {
     box-sizing: border-box;
     display: block;
+    container-type: inline-size;
+    min-width: 0;
+    padding: 0;
 }
 
 body:not(.is-mobile) .modal.mod-settings .tasknotes-settings {
-    padding-inline: var(--size-4-8);
+    padding-inline: 0;
 }
 
 body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab-content > .setting-group {
@@ -41,6 +44,8 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     flex-shrink: 0;
     justify-content: flex-end;
     margin-inline-start: auto;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .tasknotes-plugin .settings-header-link {
@@ -55,6 +60,9 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     font-size: var(--font-ui-small);
     font-weight: 500;
     line-height: 1.4;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .tasknotes-plugin .settings-header-link:hover {
@@ -74,10 +82,11 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 
 /* Tab Navigation Container */
 .tasknotes-plugin .settings-view__tab-nav {
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    flex: 1 1 100%;
-    flex-wrap: nowrap;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
     gap: var(--tn-space-half);
     min-width: 0;
     width: auto;
@@ -87,9 +96,25 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     border: 1px solid var(--tn-hairline);
     border-radius: var(--tn-radius-lg);
     background: var(--background-secondary);
-    overflow-x: auto;
+    overflow-x: visible;
     white-space: nowrap;
     scrollbar-width: thin;
+}
+
+.tasknotes-plugin .settings-view__tab-select {
+    display: none;
+    width: 100%;
+    min-width: 0;
+}
+
+@container (max-width: 360px) {
+    .tasknotes-plugin .settings-view__tab-nav {
+        display: none;
+    }
+
+    .tasknotes-plugin .settings-view__tab-select {
+        display: block;
+    }
 }
 
 .tasknotes-plugin .settings-view__tab-button {
@@ -97,6 +122,8 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     box-sizing: border-box;
     white-space: nowrap;
     flex-shrink: 0;
+    max-width: 100%;
+    height: auto;
     min-height: 28px;
     padding: 3px 9px;
     border: 1px solid transparent;
@@ -128,7 +155,7 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     border-color: var(--tn-hairline);
 }
 
-@media (max-width: 700px) {
+@container (max-width: 700px) {
     .tasknotes-plugin .settings-view__toolbar {
         align-items: flex-start;
         flex-direction: column;
@@ -142,6 +169,11 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     .tasknotes-plugin .settings-view__tab-nav {
         width: 100%;
         flex: 0 1 auto;
+    }
+
+    .tasknotes-plugin .settings-view__tab-button {
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 }
 

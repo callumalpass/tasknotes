@@ -660,6 +660,156 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     outline: 2px solid var(--tn-focus-ring);
     outline-offset: 1px;
 }
+
+.tasknotes-plugin.tn-modal--composer {
+    width: min(640px, calc(100vw - var(--tn-space-8)));
+    max-height: calc(100dvh - var(--tn-space-8));
+    padding: 0;
+    overflow: hidden;
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__content {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__body {
+    padding: var(--tn-space-6);
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__title,
+.tasknotes-plugin.tn-modal--composer .tn-modal__description {
+    display: block;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: var(--tn-space-2) 0;
+    resize: vertical;
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__title {
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    padding-inline-end: var(--tn-space-5);
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__description {
+    min-height: 96px;
+    margin-bottom: var(--tn-space-3);
+}
+
+.tasknotes-plugin .tn-modal__properties,
+.tasknotes-plugin .tn-modal__time {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    flex-wrap: wrap;
+}
+
+.tasknotes-plugin .tn-modal__properties {
+    gap: var(--tn-space-2);
+    margin-bottom: var(--tn-space-4);
+}
+
+.tasknotes-plugin .tn-modal__time {
+    flex-wrap: nowrap;
+}
+
+.tasknotes-plugin .tn-modal__time .tn-select {
+    min-width: 0;
+    padding: 0 var(--tn-space-half);
+    border: none;
+    background: transparent;
+}
+
+.tasknotes-plugin .tn-modal__property-icon svg {
+    width: var(--tn-glyph-size);
+    height: var(--tn-glyph-size);
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__footer {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--tn-space-2);
+    margin: 0;
+    padding: var(--tn-space-3) var(--tn-space-6);
+    border-top: 1px solid var(--tn-hairline);
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.tasknotes-plugin.tn-modal--composer .tn-modal__footer button.mod-warning {
+    background: var(--background-primary);
+    color: var(--tn-danger);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-modal__color {
+    max-width: 100%;
+}
+
+.tasknotes-plugin .tn-modal__color > summary {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-2);
+}
+
+.tasknotes-plugin .tn-modal__palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tn-space-2);
+    padding-block: var(--tn-space-3);
+}
+
+.tasknotes-plugin .tn-modal__swatch {
+    display: inline-block;
+    flex-shrink: 0;
+    width: var(--tn-control-sm);
+    height: var(--tn-control-sm);
+    padding: 0;
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-full);
+    background: var(--tn-swatch-color);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-modal__swatch[aria-pressed="true"] {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+}
+
+.tasknotes-plugin .tn-modal__color-value {
+    max-width: 100%;
+}
+
+.tasknotes-plugin .tn-report-horizons {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--tn-space-6);
+}
+
+.tasknotes-plugin :is(.stats-view__section, .pomodoro-stats-view__section, .settings-view__tab-content) .setting-item-heading .setting-item-name,
+.tasknotes-release-notes-view h3 {
+    font-size: var(--tn-type-md);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+@container (max-width: 620px) {
+    .tasknotes-plugin .tn-report-horizons {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--tn-space-4);
+    }
+}
 .tasknotes-plugin:focus-within .tn-task-focused {
 	outline: var(--tn-space-half) solid var(--tn-focus-ring);
 	outline-offset: calc(-1 * var(--tn-space-half));

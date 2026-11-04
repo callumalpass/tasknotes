@@ -99,7 +99,8 @@ export class PomodoroStatsView extends ItemView {
 		});
 
 		// Today's stats
-		const todaySection = container.createDiv({
+		const horizons = container.createDiv({ cls: "tn-report-horizons" });
+		const todaySection = horizons.createDiv({
 			cls: "pomodoro-stats-section pomodoro-stats-view__section",
 		});
 		new Setting(todaySection)
@@ -110,7 +111,7 @@ export class PomodoroStatsView extends ItemView {
 		});
 
 		// This week's stats
-		const weekSection = container.createDiv({
+		const weekSection = horizons.createDiv({
 			cls: "pomodoro-stats-section pomodoro-stats-view__section",
 		});
 		new Setting(weekSection).setName(this.t(msg({ message: "This week", context: "views.pomodoroStats.sections.week" }))).setHeading();
@@ -119,7 +120,7 @@ export class PomodoroStatsView extends ItemView {
 		});
 
 		// Overall stats
-		const overallSection = container.createDiv({
+		const overallSection = horizons.createDiv({
 			cls: "pomodoro-stats-section pomodoro-stats-view__section",
 		});
 		new Setting(overallSection)

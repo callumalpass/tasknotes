@@ -45,7 +45,7 @@ describe("Issue #2212: settings layout in Obsidian settings modal", () => {
 		expect(css).not.toContain(".tasknotes-settings.vertical-tab-content");
 	});
 
-	it("keeps a compact desktop gutter around the TaskNotes settings view", () => {
+	it("inherits the host gutter without nesting another desktop gutter", () => {
 		const css = readRepoFile("styles/settings-view.css");
 
 		const desktopRootBlock = extractCssBlock(
@@ -53,7 +53,7 @@ describe("Issue #2212: settings layout in Obsidian settings modal", () => {
 			"body:not(.is-mobile) .modal.mod-settings .tasknotes-settings"
 		);
 
-		expect(desktopRootBlock).toContain("padding-inline: var(--size-4-8);");
+		expect(desktopRootBlock).toContain("padding-inline: 0;");
 	});
 
 	it("left-aligns native SettingGroup sections beneath the TaskNotes tab bar", () => {

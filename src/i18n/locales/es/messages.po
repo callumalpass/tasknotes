@@ -345,11 +345,6 @@ msgctxt "calendar view hint"
 msgid "{count}-day view"
 msgstr "Vista de {count} días"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.customDays"
-msgid "{count}D"
-msgstr "{count}D"
-
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTiming display"
 msgid "{date} at {time}"
@@ -785,11 +780,6 @@ msgctxt "ui/taskCardProperties: timeEstimate display"
 msgid "{value1} estimated"
 msgstr "{value1} estimados"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.onOpen display"
-msgid "{value1} from {startTime} to {endTime}"
-msgstr "{value1} de {startTime} a {endTime}"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
@@ -1101,16 +1091,6 @@ msgctxt "contextMenus.ics.markdown.descriptionHeading"
 msgid "### Description"
 msgstr "### Descripción"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
 #: src/views/PomodoroView.ts
 msgctxt "timer add duration button"
 msgid "+{duration}"
@@ -1211,11 +1191,6 @@ msgctxt "settings.appearance.timeSettings.startTime.placeholder"
 msgid "06:00"
 msgstr "06:00"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimePlaceholder"
-msgid "09:00"
-msgstr "09:00"
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
@@ -1240,11 +1215,6 @@ msgstr "1 hora antes"
 msgctxt "contextMenus.task.quickReminders.oneHour"
 msgid "1 hour before"
 msgstr "1 hora antes"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimePlaceholder"
-msgid "11:00"
-msgstr "11:00"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twelveHour"
@@ -1390,6 +1360,11 @@ msgstr "Absoluto (fecha/hora específica)"
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
 msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "Los recordatorios absolutos deben usar at:YYYY-MM-DDTHH:MM o una fecha y hora ISO completa"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Accent"
+msgstr "Acento"
 
 #: src/bases/BasesViewBase.ts
 #: src/bases/CalendarView.ts
@@ -2363,6 +2338,11 @@ msgstr "Bloqueando {count} tareas"
 msgctxt "ui/taskCardProperties: blockingTasks text"
 msgid "Blocking: "
 msgstr "Bloquea: "
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Blue"
+msgstr "Azul"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.defaults.header.bodyTemplate"
@@ -3929,7 +3909,6 @@ msgstr "Crear bloque de tiempo"
 
 #: src/bases/calendarCreationMenu.ts
 #: src/components/TaskContextMenu.ts
-#: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.heading"
 msgid "Create timeblock"
 msgstr "Crear bloque de tiempo"
@@ -4197,6 +4176,11 @@ msgctxt "settings.appearance.calendarView.description"
 msgid "Customize the appearance and behavior of the calendar view."
 msgstr "Personalizar la apariencia y comportamiento de la vista de calendario."
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Cyan"
+msgstr "Cian"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.cycleCurrentTaskPriority"
 msgid "Cycle current task priority"
@@ -4206,11 +4190,6 @@ msgstr "Cambiar prioridad de la tarea actual"
 msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "Cambiar estado de la tarea actual"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.day"
-msgid "D"
-msgstr "D"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
@@ -4324,11 +4303,6 @@ msgctxt "modals.calendarEventCreation.dateTimeLabel"
 msgid "Date & time: "
 msgstr "Fecha y hora: "
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.dateTimeLabel"
-msgid "Date & time: "
-msgstr "Fecha y hora: "
-
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.dateCreated.name"
 msgid "Date created"
@@ -4364,11 +4338,6 @@ msgstr "Rango de fechas"
 msgctxt "settings.defaults.reminders.fields.date"
 msgid "Date:"
 msgstr "Fecha:"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.dateLabel"
-msgid "Date: "
-msgstr "Fecha: "
 
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.dates"
@@ -5173,11 +5142,6 @@ msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "Editar entradas de tiempo (seleccionar tarea)"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.editHeading"
-msgid "Edit timeblock"
-msgstr "Editar bloque de tiempo"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
 msgid "Edit timer duration"
@@ -5310,6 +5274,7 @@ msgid "End on {date}"
 msgstr "Terminar en {date}"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.endTimeLabel"
 msgid "End time"
 msgstr "Hora de fin"
@@ -6741,16 +6706,6 @@ msgctxt "generated Bases column name"
 msgid "Focus minutes"
 msgstr "Minutos de concentración"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "Enfoque en nuevas funciones, sin interrupciones"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "Enfoque en nuevas funciones, sin interrupciones"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Focus time"
@@ -6983,6 +6938,11 @@ msgstr "Entendido"
 msgctxt "views.pomodoro.status.breakPrompt"
 msgid "Great work! Time for a {length} break"
 msgstr "¡Buen trabajo! Hora de un descanso {length}"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Green"
+msgstr "Verde"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.group"
@@ -7521,11 +7481,6 @@ msgctxt "interaction help"
 msgid "Keyboard shortcuts"
 msgstr "Atajos de teclado"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.list"
-msgid "L"
-msgstr "L"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.label"
 msgid "Label:"
@@ -7857,11 +7812,6 @@ msgstr "Descansos largos"
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
 msgstr "Baja"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.month"
-msgid "M"
-msgstr "M"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurring.maintainOffsetName"
@@ -8325,6 +8275,7 @@ msgid "Never refreshed"
 msgstr "Nunca actualizado"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
 #: src/bases/TaskListView.ts
@@ -8843,6 +8794,7 @@ msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "No hay tareas con entradas de tiempo para editar"
 
+#: src/bases/CalendarView.ts
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "empty task view"
@@ -9454,16 +9406,6 @@ msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
 msgid "Operation failed"
 msgstr "La operación falló"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "Color opcional para el bloque de tiempo"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "Color opcional para el bloque de tiempo"
-
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionDesc"
 msgid "Optional description for the event"
@@ -9493,6 +9435,11 @@ msgstr "Ubicación opcional para el evento"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
 msgstr "Duración opcional de la sesión de trabajo para action=start"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Orange"
+msgstr "Naranja"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.organization.title"
@@ -9723,6 +9670,11 @@ msgstr "Elegir fecha de {field}"
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "Elegir fecha y hora…"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Pink"
+msgstr "Rosa"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -10144,6 +10096,11 @@ msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "Eventos basados en propiedades"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Purple"
+msgstr "Morado"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Quick (<30m)"
@@ -10269,6 +10226,11 @@ msgstr "Tareas recurrentes"
 msgctxt "notices.commands.repeatRecurring"
 msgid "Recurring tasks already track each occurrence"
 msgstr "Las tareas recurrentes ya registran cada instancia"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Red"
+msgstr "Rojo"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
@@ -11628,6 +11590,7 @@ msgid "Start time"
 msgstr "Hora de inicio"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.startTimeLabel"
 msgid "Start time"
 msgstr "Hora de inicio"
@@ -13174,16 +13137,6 @@ msgctxt "modals.icsNoteCreation.titleDesc"
 msgid "Title for the new content"
 msgstr "Título para el nuevo contenido"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.titleDesc"
-msgid "Title for your timeblock"
-msgstr "Título del bloque de tiempo"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.titleDesc"
-msgid "Title for your timeblock"
-msgstr "Título del bloque de tiempo"
-
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.titleRequired"
 msgid "Title is required"
@@ -14079,11 +14032,6 @@ msgctxt "settings.features.notifications.soundVolumeDesc"
 msgid "Volume for task reminder sounds (0-100)"
 msgstr "Volumen de los sonidos de recordatorio de tareas (0-100)"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.week"
-msgid "W"
-msgstr "S"
-
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
@@ -14404,16 +14352,6 @@ msgctxt "settings.integrations.webhooks.events.taskUnarchived.description"
 msgid "When tasks are unarchived"
 msgstr "Cuando se desarchivan las tareas"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimeDesc"
-msgid "When the timeblock ends"
-msgstr "Cuándo termina el bloque de tiempo"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimeDesc"
-msgid "When the timeblock starts"
-msgstr "Cuándo comienza el bloque de tiempo"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.description"
 msgid "When time tracking starts"
@@ -14459,11 +14397,6 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Duración del trabajo"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.year"
-msgid "Y"
-msgstr "A"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
@@ -14504,6 +14437,11 @@ msgstr "Cada año el {date}"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
 msgid "Yearly recurrence"
 msgstr "Recurrencia anual"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Yellow"
+msgstr "Amarillo"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"

@@ -963,7 +963,14 @@ export class MiniCalendarView extends BasesViewBase {
 
 			// Add hover preview tooltip using Obsidian's built-in tooltip
 			const tooltipText = this.createNotePreviewText(notesForDay);
-			setTooltip(dayEl, tooltipText, { placement: "top" });
+			const dateLabel = dayEl.getAttribute("aria-label") || "";
+			const dateName = dayEl.createSpan({
+				text: dateLabel,
+				attr: { id: `mini-calendar-date-${crypto.randomUUID()}`, hidden: "" },
+			});
+			setTooltip(dayEl, `${dateLabel}\n${tooltipText}`, { placement: "top" });
+			dayEl.setAttribute("aria-labelledby", dateName.id);
+			dayEl.setAttribute("aria-description", tooltipText);
 
 			this.renderExternalEventIndicators(dayEl, notesForDay);
 		}

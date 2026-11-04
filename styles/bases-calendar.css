@@ -67,7 +67,7 @@
 
 .tasknotes-plugin .tnc-toolbar-start {
     flex: 1 1 auto;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
 
 .tasknotes-plugin .tnc-toolbar-start > .tnc-btn,
@@ -214,20 +214,6 @@
 .tasknotes-plugin .tn-calendar-deadline-marker svg {
     width: var(--tn-glyph-size);
     height: var(--tn-glyph-size);
-}
-
-.tasknotes-plugin .tn-calendar-view-abbreviation {
-    display: none;
-}
-
-@container (max-width: 640px) {
-    .tasknotes-plugin .tn-calendar-view-label {
-        display: none;
-    }
-
-    .tasknotes-plugin .tn-calendar-view-abbreviation {
-        display: inline;
-    }
 }
 
 @container (max-width: 180px) {

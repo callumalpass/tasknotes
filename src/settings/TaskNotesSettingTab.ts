@@ -27,6 +27,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	plugin: TaskNotesPlugin;
 	private activeTab = "general";
 	private tabContents: Record<string, HTMLElement> = {};
+	private tabSelect?: HTMLSelectElement;
 	private readonly cardExpansionState = new CardExpansionState();
 	private debouncedSave: DebouncedFunction<() => Promise<void>> = debounce(
 		() => this.plugin.saveSettings(),
@@ -103,10 +104,22 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			this.activeTab = "general";
 		}
 
+		const activeTab = tabs.find((tab) => tab.id === this.activeTab) ?? tabs[0];
+		const tabSelect = settingsToolbar.createEl("select", {
+			cls: "tn-select settings-view__tab-select",
+			attr: { "aria-label": translate(activeTab.nameKey) },
+		});
+		this.tabSelect = tabSelect;
+		tabSelect.addEventListener("change", () => {
+			this.switchTab(tabSelect.value, false);
+		});
+
 		// Create tab buttons
 		tabs.forEach((tab) => {
 			const isActive = this.activeTab === tab.id;
 			const label = translate(tab.nameKey);
+			tabSelect.createEl("option", { value: tab.id, text: label });
+			if (isActive) tabSelect.value = tab.id;
 			const tabButton = tabNav.createEl("button", {
 				text: label,
 				cls: isActive
@@ -140,7 +153,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 
 		// Add documentation link alongside tabs
-		const docsHeader = tabNav.createDiv("settings-header");
+		const docsHeader = settingsToolbar.createDiv("settings-header");
 		const docsLink = docsHeader.createEl("a", {
 			text: translate(msg({ message: "Documentation", context: "settings.header.documentation" })),
 			href: "https://tasknotes.dev",
@@ -179,10 +192,15 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		this.cardExpansionState.restore(container, tab.id);
 	}
 
-	private switchTab(tabId: string): void {
+	private switchTab(tabId: string, focusTab = true): void {
 		// Update active tab state
 		// const previousTab = this.activeTab;
 		this.activeTab = tabId;
+		if (this.tabSelect) {
+			this.tabSelect.value = tabId;
+			const label = this.tabSelect.selectedOptions[0]?.text;
+			if (label) this.tabSelect.setAttribute("aria-label", label);
+		}
 
 		// Update tab button states
 		this.containerEl.querySelectorAll(".settings-tab-button").forEach((button) => {
@@ -216,7 +234,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 			const activeTabButton = this.containerEl.querySelector(
 				`#tab-button-${tabId}`
 			) as HTMLElement;
-			if (activeTabButton) {
+			if (activeTabButton && focusTab) {
 				activeTabButton.focus();
 			}
 		}, 50);
