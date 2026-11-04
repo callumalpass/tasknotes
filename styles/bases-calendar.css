@@ -113,10 +113,11 @@
     font-weight: var(--tn-font-weight-medium);
 }
 
+/* background-color only: the shorthand would wipe the hour lines the library draws as a background image. */
 .tasknotes-plugin .tnc-col.is-today,
 .tasknotes-plugin .tnc-dg-day.is-today,
 .tasknotes-plugin .tnc-list-day.is-today {
-    background: var(--tn-bg-primary);
+    background-color: var(--tn-bg-primary);
     color: var(--tn-text-normal);
 }
 
@@ -144,6 +145,7 @@
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator) {
     border-width: 0 0 0 var(--tn-calendar-status-line);
+    border-radius: 0 var(--tn-radius-sm) var(--tn-radius-sm) 0;
     border-left-color: var(--tn-calendar-status-color, var(--tnc-border, var(--c)));
     border-left-style: solid;
     background: color-mix(in srgb, var(--tn-calendar-status-color, var(--c)) var(--tn-calendar-event-tint), var(--tn-bg-primary));
