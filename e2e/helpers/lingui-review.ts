@@ -45,7 +45,7 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
     await expect.poll(() => page.locator(".workspace-leaf.mod-active .kanban-view__column").evaluateAll(columns => columns.map(column => column.getAttribute("data-group")))).toEqual(keys);
   }
   async function createInColumn(key: string, title: string) {
-    await column(key).locator(".kanban-view__add-task-button").click();
+    await column(key).locator(".kanban-view__column-header .kanban-view__add-task-button").click();
     const modal = page.locator(".modal").filter({ has: page.locator(".title-input, .title-input-detailed") }).last();
     await expect(modal).toBeVisible();
     // Native quick entry is CodeMirror; parsed values reach the detailed inputs as it is typed.
@@ -79,7 +79,7 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
       const label = await page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), noneId);
       await expect(column("None").locator(".kanban-view__column-title")).toContainText(label);
       if (locale !== "en") expect(label).not.toBe("None");
-      await source().dragTo(column("None").locator(".kanban-view__cards"), { targetPosition: { x: 30, y: 5 } });
+      await source().dragTo(column("None").locator(".kanban-view__column-header"), { targetPosition: { x: 30, y: 5 } });
       await expect.poll(async () => Object.hasOwn((await frontmatter()) ?? {}, "review_group")).toBe(false);
       const createdEmpty = await createInColumn("None", `Created empty ${locale}`);
       expect(createdEmpty.review_group == null).toBe(true);
@@ -88,7 +88,7 @@ export async function runLinguiReview(page: Page, output: string): Promise<void>
       expect(groupOrder["note.review_group"]).toEqual(["work", "None"]);
       await openBase("note.review_flag", "Flags", ["True", "None", "False"]);
       await expect(column("False").locator(`.kanban-view__card-wrapper[data-task-path="${folder}/Source.md"]`)).toHaveCount(1);
-      await source().dragTo(column("True").locator(".kanban-view__cards"), { targetPosition: { x: 30, y: 5 } });
+      await source().dragTo(column("True").locator(".kanban-view__column-header"), { targetPosition: { x: 30, y: 5 } });
       await expect.poll(async () => (await frontmatter())?.review_flag).toBe(true);
       const createdTrue = await createInColumn("True", `Created true ${locale}`);
       expect(createdTrue.review_flag).toBe(true);

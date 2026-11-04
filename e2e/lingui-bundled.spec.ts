@@ -137,6 +137,7 @@ test("Italian and German native dates, persisted pickers and Italian NLP remain 
 			await expect(due).toHaveAttribute("aria-label", /2026/);
 			await page.screenshot({ path: `test-results/lingui-bundled/${locale}-italian-nlp.png` });
 			await modal.getByRole("button", { name: cores.get(locale)!._(keyMap["common.cancel"].id), exact: true }).click();
+			await page.getByRole("button", { name: cores.get(locale)!._(keyMap["modals.task.unsavedChanges.discard"].id), exact: true }).click();
 			await expect(modal).toHaveCount(0);
 			report[locale] = { dates: formattedDates, nlpLanguage: "it", parsedTitle: "Comprare latte", due: "2026-12-25", pickersPersisted: true };
 		}
