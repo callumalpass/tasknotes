@@ -84,4 +84,26 @@ describe("taskModalActionBar", () => {
 		expect(icons.map((icon) => icon.dataset.type)).toEqual(["status", "due-date"]);
 		expect(Array.from(container.querySelectorAll(".action-icon"))).toEqual(icons);
 	});
+
+	it.each(["ctrlKey", "metaKey", "altKey", "shiftKey"])(
+		"leaves %s Enter and Space to the modal",
+		(modifier) => {
+			const container = document.createElement("div");
+			const onClick = jest.fn();
+			const bubbled = jest.fn();
+			container.addEventListener("keydown", bubbled);
+			const icon = createTaskModalActionIcon(container, {
+				iconName: "circle",
+				tooltip: "Status",
+				onClick,
+			});
+			for (const key of ["Enter", " "]) {
+				icon.dispatchEvent(
+					new KeyboardEvent("keydown", { key, [modifier]: true, bubbles: true })
+				);
+			}
+			expect(onClick).not.toHaveBeenCalled();
+			expect(bubbled).toHaveBeenCalledTimes(2);
+		}
+	);
 });

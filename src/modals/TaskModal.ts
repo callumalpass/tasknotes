@@ -162,6 +162,7 @@ export abstract class TaskModal extends Modal {
 	private focusGuards: TaskModalFocusGuards;
 	private unsubscribeForm: (() => void) | null = null;
 	private saveInFlight: Promise<boolean> | null = null;
+	private submitInFlight: Promise<boolean> | null = null;
 	private isShowingConfirmation = false;
 	private pendingClose = false;
 	private isModalOpen = false;
@@ -439,13 +440,18 @@ export abstract class TaskModal extends Modal {
 	}
 
 	/** Save and close. Save, the keyboard shortcuts and the close prompt all end up here. */
-	protected async submit(options: TaskSubmitOptions = {}): Promise<boolean> {
-		const saved = await this.runSave(options);
-		if (saved) {
-			this.forceClose();
-			this.afterSubmit(options);
-		}
-		return saved;
+	protected submit(options: TaskSubmitOptions = {}): Promise<boolean> {
+		this.submitInFlight ??= (async () => {
+			const saved = await this.runSave(options);
+			if (saved) {
+				this.forceClose();
+				this.afterSubmit(options);
+			}
+			return saved;
+		})().finally(() => {
+			this.submitInFlight = null;
+		});
+		return this.submitInFlight;
 	}
 
 	protected afterSubmit(_options: TaskSubmitOptions): void {
@@ -472,6 +478,8 @@ export abstract class TaskModal extends Modal {
 
 	/** Close without checking for unsaved changes. */
 	forceClose(): void {
+		this.propertyPicker?.close();
+		this.propertyPicker = undefined;
 		this.pendingClose = true;
 		super.close();
 	}
@@ -569,17 +577,18 @@ export abstract class TaskModal extends Modal {
 
 		// Add global keyboard shortcut handler for CMD/Ctrl+Enter
 		this.keyboardHandler = (e: KeyboardEvent) => {
-			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-				// Skip if event comes from a markdown editor (which has its own handler)
-				const target = e.target as HTMLElement;
-				if (target.closest(".cm-editor")) {
-					return;
-				}
+			if (
+				e.key === "Enter" &&
+				(e.ctrlKey || e.metaKey) &&
+				!e.isComposing &&
+				!this.isShowingConfirmation
+			) {
 				e.preventDefault();
+				e.stopImmediatePropagation();
 				void this.handleSubmitShortcut(e.shiftKey);
 			}
 		};
-		this.containerEl.addEventListener("keydown", this.keyboardHandler);
+		this.containerEl.addEventListener("keydown", this.keyboardHandler, true);
 
 		this.unsubscribeForm = this.form.subscribe(() => this.syncFormControls());
 
@@ -1199,7 +1208,11 @@ export abstract class TaskModal extends Modal {
 	): Promise<void> {
 		const anchor = event.currentTarget as HTMLElement;
 		this.propertyPicker?.close();
-		const picker = await showTaskModalPropertyPicker(this.getActionMenuContext(), property, anchor);
+		const picker = await showTaskModalPropertyPicker(
+			this.getActionMenuContext(),
+			property,
+			anchor
+		);
 		if (!this.isModalOpen) picker?.close();
 		else this.propertyPicker = picker;
 	}
@@ -1576,7 +1589,7 @@ export abstract class TaskModal extends Modal {
 
 		// Clean up keyboard handler
 		if (this.keyboardHandler) {
-			this.containerEl.removeEventListener("keydown", this.keyboardHandler);
+			this.containerEl.removeEventListener("keydown", this.keyboardHandler, true);
 			this.keyboardHandler = null;
 		}
 		this.focusGuards.destroy();

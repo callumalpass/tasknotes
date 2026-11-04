@@ -287,6 +287,21 @@ describe('TaskEditModal - Unsaved Changes Detection', () => {
   });
 
   describe('User confirmation choices', () => {
+    it('coalesces the complete submit lifecycle, not only the write', async () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      let finishSave!: (outcome: { status: 'saved' }) => void;
+      const save = jest.spyOn(modal, 'handleSave').mockImplementation(() => new Promise(resolve => { finishSave = resolve; }));
+      const close = jest.spyOn(modal, 'forceClose');
+      const after = jest.spyOn(modal as any, 'afterSubmit');
+      const first = (modal as any).submit();
+      const second = (modal as any).submit();
+      finishSave({ status: 'saved' });
+      await Promise.all([first, second]);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(close).toHaveBeenCalledTimes(1);
+      expect(after).toHaveBeenCalledTimes(1);
+    });
+
     it('should save and close when user confirms save', async () => {
       modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
       initializeModalFields(modal, mockTask);
