@@ -350,7 +350,7 @@ msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTimin
 msgid "{date} at {time}"
 msgstr "{date} {time}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "statistics daily time tooltip"
 msgid "{date}: {duration}"
 msgstr "{date}: {duration}"
@@ -580,7 +580,7 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, other {캘린더 이벤트 {length, number}개에 연결됨}}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
 msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
 msgstr "{length, plural, other {작업 {length, number}개 표시 중}}"
@@ -765,7 +765,7 @@ msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles} 외 {count}개"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "views/StatsView: StatsView.renderProgressCircle display"
 msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
 msgstr "{total, plural, other {{completed, number}/{total, number}개 작업}}"
@@ -1427,12 +1427,12 @@ msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
 msgstr "동작"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.activeOnly"
 msgid "Active only"
 msgstr "활성 작업만"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.activeProjects"
 msgid "Active projects"
 msgstr "활성 프로젝트"
@@ -1452,7 +1452,7 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "활성:"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.activity"
 msgid "Activity over time (last 30 days)"
 msgstr "시간에 따른 활동 (지난 30일)"
@@ -1781,7 +1781,7 @@ msgctxt "settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnli
 msgid "All events deleted and unlinked"
 msgstr "모든 이벤트가 삭제되고 연결 해제되었습니다"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.allTasks"
 msgid "All project tasks"
 msgstr "모든 프로젝트 작업"
@@ -1791,7 +1791,7 @@ msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "모든 작업 링크가 제거되었습니다"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.allTasks"
 msgid "All tasks"
 msgstr "모든 작업"
@@ -2227,12 +2227,12 @@ msgctxt "views.pomodoroStats.stats.average"
 msgid "Avg length"
 msgstr "평균 시간"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.average"
 msgid "Avg per task"
 msgstr "작업당 평균"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.avgTimePerTask"
 msgid "Avg time per task"
 msgstr "작업당 평균 시간"
@@ -3150,7 +3150,7 @@ msgctxt "views.pomodoroStats.recents.status.completed"
 msgid "Completed"
 msgstr "완료됨"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "완료됨"
@@ -3195,7 +3195,7 @@ msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "예정일에 완료"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.completedOnly"
 msgid "Completed only"
 msgstr "완료된 작업만"
@@ -3215,7 +3215,7 @@ msgctxt "settings.taskProperties.taskStatuses.fields.completed"
 msgid "Completed:"
 msgstr "완료됨:"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
 msgid "Completed: "
 msgstr "완료: "
@@ -3255,7 +3255,7 @@ msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "완료 또는 건너뛰기 시"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.completionRate"
 msgid "Completion rate"
 msgstr "완료율"
@@ -8706,7 +8706,7 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "시간을 추적할 수 있는 작업이 없습니다"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.noTasks"
 msgid "No tasks found"
 msgstr "작업을 찾을 수 없습니다"
@@ -8736,7 +8736,7 @@ msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "아직 시간 기록이 없습니다"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.stats.project.noTracking"
 msgid "No time tracking data"
 msgstr "시간 추적 데이터가 없습니다"
@@ -9942,7 +9942,7 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "프로젝트"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "프로젝트"
@@ -12457,7 +12457,7 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.description"
 msgid "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.)."
 msgstr "TaskNotes는 Obsidian 베이스 파일 (.base)을 사용하여 뷰를 구동합니다. 이 파일들은 시작 시 존재하지 않으면 현재 설정 (작업 식별, 필드 매핑, 상태 등)으로 자동 생성됩니다."
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
 msgstr "작업"
@@ -12823,7 +12823,7 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "타임라인 뷰를 열 때 스크롤할 시간 (HH:MM 형식)"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.timeTrackedEstimated"
 msgid "Time tracked / estimated"
 msgstr "기록 시간 / 예상 시간"
@@ -13272,17 +13272,17 @@ msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
 msgid "Total pomos"
 msgstr "총 뽀모도로"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.totalTasks"
 msgid "Total tasks"
 msgstr "총 작업"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.totalTasks"
 msgid "Total tasks"
 msgstr "총 작업"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.totalTime"
 msgid "Total time"
 msgstr "총 시간"
