@@ -286,7 +286,7 @@
 .tasknotes-plugin.tasknotes-inline-widget,
 .tasknotes-plugin .task-inline-preview--reading-mode { font-family: inherit; font-size: inherit; vertical-align: baseline; }
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata-date--overdue { color: var(--tn-danger); }
-.tasknotes-plugin .task-card--layout-inline .task-card__metadata-date--today { color: var(--tn-warning); }
+.tasknotes-plugin .task-card--layout-inline .task-card__metadata-date--today.task-card__metadata-date--due { color: var(--tn-warning); }
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline {
     /* Percentages use the containing line's width, including its indentation.

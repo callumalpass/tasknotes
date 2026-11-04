@@ -539,16 +539,25 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
 }
 
 .tn-picker__label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .tn-picker__detail {
     margin-left: auto;
     color: var(--tn-text-faint);
     font-size: var(--tn-type-xs);
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 45%;
+}
+
+.tasknotes-plugin .tn-task-date[data-tn-date-urgency="today"] {
+    color: var(--tn-warning);
+}
+
+.tasknotes-plugin .tn-task-date[data-tn-date-urgency="overdue"] {
+    color: var(--tn-danger);
 }
 
 .tn-picker__row.is-selected .tn-picker__label {

@@ -13,6 +13,7 @@ import {
 	renderStatusGlyph,
 	statusGlyphState,
 	unconfiguredValueLabel,
+	hasVisiblePriority,
 } from "./kit/glyphs";
 
 type StatusConfig = ReturnType<TaskNotesPlugin["statusManager"]["getStatusConfig"]>;
@@ -246,7 +247,11 @@ export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const { mainRow, task, plugin, visibleProperties, onClick } = config;
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
-	if (!shouldShowPriorityIndicator(visibleProperties, plugin) || !mainRow) {
+	if (
+		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
+		!mainRow ||
+		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
+	) {
 		return null;
 	}
 
@@ -270,7 +275,10 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const existingPriorityDot = card.querySelector<HTMLElement>(".task-card__priority-dot");
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
-	if (!shouldShowPriorityIndicator(visibleProperties, plugin)) {
+	if (
+		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
+		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
+	) {
 		existingPriorityDot?.remove();
 		return null;
 	}

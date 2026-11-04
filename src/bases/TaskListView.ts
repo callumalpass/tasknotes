@@ -65,6 +65,7 @@ import {
 	groupTasksByTaskListSubProperty,
 	getTaskListPropertyValue,
 	stringifyTaskListGroupValue,
+	orderTaskListGroups,
 	type TaskListGroup,
 	type TaskListHeaderItem,
 	type TaskListRenderItem,
@@ -533,7 +534,8 @@ export class TaskListView extends BasesViewBase {
 			const subGroups = groupTasksByTaskListSubProperty(
 				groupTasks,
 				this.subGroupPropertyId,
-				pathToProps
+				pathToProps,
+				(property, left, right) => this.comparePresentationGroupKeys(property, left, right)
 			);
 
 			for (const [subKey, subTasks] of subGroups) {
@@ -2951,7 +2953,8 @@ export class TaskListView extends BasesViewBase {
 		const groupedTasks = groupTasksByTaskListSubProperty(
 			renderTasks,
 			this.subGroupPropertyId!,
-			pathToProps
+			pathToProps,
+			(property, left, right) => this.comparePresentationGroupKeys(property, left, right)
 		);
 		const allGroupedTasks = groupTasksByTaskListSubProperty(
 			candidateTasks,
@@ -2998,9 +3001,21 @@ export class TaskListView extends BasesViewBase {
 		this.lastFlatPaths = taskNotes.map((task) => task.path);
 	}
 
+	private comparePresentationGroupKeys(property: string, left: string, right: string): number {
+		const field = this.plugin.fieldMapper.lookupMappingKey(property.replace(/^(note\.|task\.)/, ""));
+		if (field === "status") return this.plugin.statusManager.getStatusOrder(left) - this.plugin.statusManager.getStatusOrder(right);
+		if (field === "priority") return this.plugin.priorityManager.getPriorityWeight(right) - this.plugin.priorityManager.getPriorityWeight(left);
+		return 0;
+	}
+
+	private getPresentationOrderedGroups(): TaskListGroup[] {
+		return orderTaskListGroups(this.dataAdapter.getGroupedData() as TaskListGroup[],
+			this.getGroupByPropertyId() ?? "", (property, left, right) => this.comparePresentationGroupKeys(property, left, right));
+	}
+
 	private async renderGrouped(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
-		const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+		const groups = this.getPresentationOrderedGroups();
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
@@ -3030,6 +3045,7 @@ export class TaskListView extends BasesViewBase {
 			? this.getGroupingPathProperties()
 			: new Map<string, Record<string, unknown>>();
 		const items = buildTaskListGroupedRenderItems({
+			compareGroupKeys: (property, left, right) => this.comparePresentationGroupKeys(property, left, right),
 			groups,
 			taskNotes: renderTasks,
 			subGroupPropertyId: this.subGroupPropertyId,
@@ -3790,14 +3806,16 @@ export class TaskListView extends BasesViewBase {
 			const groupedTasks = groupTasksByTaskListSubProperty(
 				renderTasks,
 				this.subGroupPropertyId,
-				pathToProps
+				pathToProps,
+				(property, left, right) => this.comparePresentationGroupKeys(property, left, right)
 			);
 			this.applyGroupingSnapshot(this.createSubPropertyHierarchySnapshot(groupedTasks));
 			items = buildTaskListSubPropertyRenderItems(groupedTasks, this.collapsedGroups);
 		} else {
-			const groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+			const groups = this.getPresentationOrderedGroups();
 			this.applyGroupingSnapshot(this.createGroupedHierarchySnapshot(groups, renderTasks));
 			items = buildTaskListGroupedRenderItems({
+				compareGroupKeys: (property, left, right) => this.comparePresentationGroupKeys(property, left, right),
 				groups,
 				taskNotes: renderTasks,
 				subGroupPropertyId: this.subGroupPropertyId,

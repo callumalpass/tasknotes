@@ -2,6 +2,7 @@ import type { TaskInfo } from "../../../src/types";
 import type { BasesDataItem } from "../../../src/bases/helpers";
 import {
 	buildTaskListGroupedRenderItems,
+	orderTaskListGroups,
 	buildTaskListGroupedScopePaths,
 	buildTaskListPathProperties,
 	buildTaskListSubPropertyRenderItems,
@@ -22,6 +23,18 @@ function task(path: string, title = path): TaskInfo {
 }
 
 describe("taskListGrouping", () => {
+	it("orders configured groups without changing source entries or unrelated Bases ordering", () => {
+		const groups = ["completed", "active", "unconfigured", "triage"].map(key => ({ key, entries: [] }));
+		const order = ["triage", "active", "completed"];
+		const compare = (property: string, left: string, right: string) => {
+			if (property !== "status") return 0;
+			const rank = (key: string) => order.includes(key) ? order.indexOf(key) : order.length;
+			return rank(left) - rank(right);
+		};
+		expect(orderTaskListGroups(groups, "status", compare).map(group => group.key)).toEqual([...order, "unconfigured"]);
+		expect(orderTaskListGroups(groups, "project", compare)).toEqual(groups);
+		expect(groups.map(group => group.key)).toEqual(["completed", "active", "unconfigured", "triage"]);
+	});
 	it("builds path properties with cached formula outputs", () => {
 		const dataItems: BasesDataItem[] = [
 			{

@@ -175,6 +175,14 @@
     text-overflow: ellipsis;
 }
 
+.tasknotes-plugin .tnc-dg-day.is-other-month {
+    background: var(--tn-bg-secondary);
+}
+
+.tasknotes-plugin .tnc-dg-day.is-other-month .tnc-dg-num {
+    color: var(--tn-text-faint);
+}
+
 .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -194,10 +202,6 @@
     border-left-style: dotted;
     border-left-color: var(--tn-text-muted);
     background: var(--tn-bg-primary);
-}
-
-.tasknotes-plugin .tnc-item[data-event-type="due"] .tn-task-glyphs {
-    display: none;
 }
 
 .tasknotes-plugin .tn-calendar-deadline-marker {
@@ -227,7 +231,7 @@
 }
 
 @container (max-width: 180px) {
-    .tasknotes-plugin .tnc-item .tn-task-glyphs__priority,
+    .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tn-task-glyphs__priority,
     .tasknotes-plugin .tnc-item .tn-calendar-attachment-indicator,
     .tasknotes-plugin .tnc-item .tnc-item-time {
         display: none;
@@ -240,7 +244,7 @@
 }
 
 @container (max-width: 110px) {
-    .tasknotes-plugin .tnc-item .tn-task-glyphs {
+    .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tn-task-glyphs {
         display: none;
     }
 }

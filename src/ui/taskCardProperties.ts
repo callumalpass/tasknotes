@@ -581,6 +581,9 @@ export function renderPropertyMetadata(
 	if (!hasValidValue(value)) {
 		return null;
 	}
+	if (propertyId === "file.name" && String(extractBasesValue(value)).replace(/\.md$/u, "") === task.title) {
+		return null;
+	}
 
 	const element = container.createSpan({
 		cls: `task-card__metadata-property task-card__metadata-property--${propertyId.replace(":", "-")}`,
@@ -902,7 +905,7 @@ function renderDueDateProperty(
 		dueDateText = tTaskCard(plugin, "dueLabel", { label: dueLabel, display });
 	}
 
-	renderDateValue(element, due, "flag", dueDateText, plugin);
+	renderDateValue(element, due, "flag-triangle-right", dueDateText, plugin);
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--due");
 	if (isDueOverdue) {
 		element.classList.add("task-card__metadata-date--overdue");

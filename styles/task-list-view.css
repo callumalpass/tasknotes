@@ -115,8 +115,8 @@
     align-items: center;
     gap: var(--tn-space-1);
     justify-content: flex-start;
-    padding: var(--tn-space-2) 0 var(--tn-space-1);
-    margin-bottom: var(--tn-space-1);
+    padding: var(--tn-space-1) 0;
+    margin-bottom: 0;
     border-bottom: none;
     position: relative;
     font-size: var(--tn-type-sm);
@@ -140,7 +140,7 @@
 .tn-tasknotesTaskList .task-list-subgroup + .task-list-subgroup,
 .tn-tasknotesTaskList .virtual-scroller__content > .task-group:not([data-virtual-index="0"]) {
     border-top: 1px solid var(--tn-hairline);
-    margin-top: var(--tn-space-2);
+    margin-top: var(--tn-space-1);
     padding-top: var(--tn-space-1);
 }
 

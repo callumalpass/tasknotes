@@ -1,8 +1,15 @@
 import { DEFAULT_STATUSES } from "../../../src/settings/defaults";
-import { priorityGlyphState, renderPriorityGlyph, renderStatusGlyph, statusGlyphState } from "../../../src/ui/kit/glyphs";
+import { hasVisiblePriority, priorityGlyphState, renderPriorityGlyph, renderStatusGlyph, statusGlyphState } from "../../../src/ui/kit/glyphs";
 import { taskDateLabel } from "../../../src/ui/kit/dateLabel";
 
 describe("shared task identity", () => {
+	it("omits the seeded empty priority only when the workflow has no priorities", () => {
+		expect(hasVisiblePriority(undefined, [])).toBe(false);
+		expect(hasVisiblePriority("", [])).toBe(false);
+		expect(hasVisiblePriority("none", [])).toBe(false);
+		expect(hasVisiblePriority("retired-priority", [])).toBe(true);
+		expect(hasVisiblePriority("none", [{ value: "none", weight: 7 }])).toBe(true);
+	});
 	it("starts the seeded active workflow with an empty ring without reserving editable values", () => {
 		expect(statusGlyphState("open", DEFAULT_STATUSES)).toEqual({ kind: "open", progress: 0 });
 		expect(statusGlyphState("none", DEFAULT_STATUSES).kind).toBe("unset");

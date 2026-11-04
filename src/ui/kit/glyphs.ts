@@ -1,6 +1,7 @@
 import { setIcon } from "obsidian";
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../../i18n/runtime";
+import { DEFAULT_PRIORITIES } from "../../settings/defaults";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const RING_RADIUS = 6.25;
@@ -127,6 +128,15 @@ export type PriorityGlyphState =
 interface RankedPriority {
 	value: string;
 	weight: number;
+}
+
+export function hasVisiblePriority(
+	value: string | undefined,
+	priorities: readonly RankedPriority[]
+): boolean {
+	if (priorities.length) return true;
+	const emptyValue = DEFAULT_PRIORITIES.find((priority) => priority.weight === 0)?.value;
+	return Boolean(value && value !== emptyValue);
 }
 
 /**

@@ -26,7 +26,7 @@ export function cleanupTaskCardMetadata(metadataLine: HTMLElement): void {
 	metadataObservers.delete(metadataLine);
 }
 
-function fitMetadata(values: HTMLElement, metadataLine: HTMLElement): void {
+export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement): void {
 	const atoms: HTMLElement[] = [];
 	const groups: Array<{ property: HTMLElement; chips: HTMLElement[] }> = [];
 	for (const property of Array.from(values.children) as HTMLElement[]) {
@@ -55,16 +55,30 @@ function fitMetadata(values: HTMLElement, metadataLine: HTMLElement): void {
 		for (const atom of atoms) atom.hidden = false;
 		for (const group of groups) group.property.hidden = false;
 		summary.hidden = true;
-		if (values.scrollWidth <= values.clientWidth) return;
+		const availableWidth = values.getBoundingClientRect().width;
+		const fits = () =>
+			[...atoms, summary].every((element) => {
+				if (element.hidden) return true;
+				const right = element.getBoundingClientRect().right;
+				return right <= values.getBoundingClientRect().left + availableWidth + 0.5;
+			});
+		if (fits()) return;
 		summary.hidden = false;
-		const hidden: string[] = [];
-		for (const atom of [...atoms].reverse()) {
-			hidden.unshift(atom.getAttribute("aria-label") || atom.textContent || "");
-			atom.hidden = true;
-			for (const group of groups) group.property.hidden = group.chips.every((chip) => chip.hidden);
-			summary.textContent = `+${hidden.length}`;
-			if (values.scrollWidth <= values.clientWidth) break;
+		summary.textContent = `+${atoms.length}`;
+		for (const atom of atoms) atom.hidden = true;
+		for (const group of groups) group.property.hidden = true;
+		for (const atom of atoms) {
+			atom.hidden = false;
+			for (const group of groups)
+				group.property.hidden = group.chips.every((chip) => chip.hidden);
+			if (!fits()) atom.hidden = true;
 		}
+		for (const group of groups)
+			group.property.hidden = group.chips.every((chip) => chip.hidden);
+		const hidden = atoms
+			.filter((atom) => atom.hidden)
+			.map((atom) => atom.getAttribute("aria-label") || atom.textContent || "");
+		summary.textContent = `+${hidden.length}`;
 		const label = hidden.join(" · ");
 		summary.setAttribute("aria-label", label);
 		setTooltip(summary, label, { placement: "top" });
@@ -340,7 +354,7 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		);
 		if (date) slot.appendChild(date);
 	}
-	fitMetadata(values, metadataLine);
+	fitTaskCardMetadata(values, metadataLine);
 	return metadataElements;
 }
 
