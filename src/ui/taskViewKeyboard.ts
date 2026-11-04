@@ -1,5 +1,5 @@
 import { msg } from "@lingui/core/macro";
-import { Scope, Notice } from "obsidian";
+import { Scope, Notice, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { uiText } from "../i18n/runtime";
@@ -37,6 +37,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	let rangeAnchor: string | null = null;
 	let rangeBase: string[] = [];
 	let keyboardFocus = false;
+	let paintedCard: HTMLElement | undefined;
+	let highlightTimer: number | undefined;
+	let arrivalPath: string | undefined;
+	let revealFrame: number | undefined;
 	let pending = false;
 	const selection = plugin.taskSelectionService;
 	const scope = new Scope(plugin.app.scope);
@@ -68,34 +72,56 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		);
 		if (!focusedPath) return;
 		const card = cardFor(focusedPath);
-		if (keyboardFocus) card?.classList.add("tn-task-focused");
+		if (arrivalPath === focusedPath && !card && revealFrame === undefined) {
+			revealFrame = root.ownerDocument.defaultView?.requestAnimationFrame(() => {
+				revealFrame = undefined;
+				if (focusedPath) options.reveal(focusedPath);
+			});
+		}
+		if (keyboardFocus) {
+			card?.classList.add("tn-task-focused");
+			if (card && paintedCard && card !== paintedCard && paintedCard.dataset.taskPath === focusedPath) {
+				if (arrivalPath === focusedPath) {
+					arrivalPath = undefined;
+					options.reveal(focusedPath);
+					card.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+				}
+				card.classList.add("tn-task-arrived");
+				root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
+				highlightTimer = root.ownerDocument.defaultView?.setTimeout(() => card.classList.remove("tn-task-arrived"), 1200);
+			}
+		}
+		if (card) paintedCard = card;
 	};
 	const observer = new MutationObserver(paint);
 	observer.observe(root, { childList: true, subtree: true });
+	const taskUpdated = plugin.emitter.on("task-updated", (event: { originalTask?: TaskInfo; updatedTask?: TaskInfo }) => {
+		if (event.originalTask?.path !== focusedPath || !event.updatedTask) return;
+		focusedPath = event.updatedTask.path;
+		arrivalPath = focusedPath;
+	});
 	const pointer = (event: PointerEvent) => {
 		const target = event.target as HTMLElement;
 		const card = target.closest<HTMLElement>(".task-card[data-task-path]");
 		if (!card) return;
 		focusedPath = card.dataset.taskPath ?? null;
 		rangeAnchor = null;
-		keyboardFocus = false;
+		keyboardFocus = true;
 		paint();
 		if (!target.closest("button, a, input, textarea, select, [contenteditable], [role=button]"))
 			root.focus({ preventScroll: true });
 	};
 	const help = () => {
-		const overlay = openPopover({ anchor: root });
+		const overlay = openPopover({ anchor: helpButton });
 		overlay.el.setAttribute("role", "dialog");
 		overlay.el.setAttribute(
 			"aria-label",
 			uiText(msg({ message: "Keyboard shortcuts", context: "interaction help" }))
 		);
+		overlay.el.createDiv({ cls: "tn-popover__title", text: uiText(msg({ message: "Keyboard shortcuts", context: "interaction help" })) });
 		const list = overlay.el.createDiv({ cls: "tn-picker__list" });
 		for (const [key, label] of [
-			["ArrowUp", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
-			["ArrowDown", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
-			["K", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
-			["J", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
+			["ArrowUp+ArrowDown+K+J", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
 			[
 				"Shift+ArrowDown",
 				uiText(msg({ message: "Extend selection", context: "interaction shortcut" })),
@@ -116,7 +142,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			["/", uiText(msg({ message: "Search", context: "interaction shortcut" }))],
 			["Mod+K", uiText(msg({ message: "Actions", context: "interaction shortcut" }))],
 		]) {
-			const row = list.createDiv({ cls: "tn-picker__row" });
+			const row = list.createDiv({ cls: "tn-shortcut-row" });
 			row.createSpan({ text: label });
 			renderKeyHint(row, key);
 		}
@@ -124,6 +150,14 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		list.focus();
 		overlay.reposition();
 	};
+	const helpButton = root.ownerDocument.win.createEl("button");
+	helpButton.className = "tn-shortcut-help clickable-icon";
+	helpButton.type = "button";
+	helpButton.setAttribute("aria-label", uiText(msg({ message: "Keyboard shortcuts", context: "interaction help" })));
+	setIcon(helpButton, "circle-help");
+	const toolbar = root.closest(".bases-view")?.parentElement?.querySelector(".bases-toolbar");
+	(toolbar ?? root).appendChild(helpButton);
+	helpButton.addEventListener("click", help);
 	const handle = async (event: KeyboardEvent) => {
 		const target = event.target as HTMLElement;
 		if (
@@ -352,6 +386,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	root.addEventListener("keydown", listener);
 	root.addEventListener("pointerdown", pointer);
 	return () => {
+		helpButton.remove();
+		root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
+		if (revealFrame !== undefined) root.ownerDocument.defaultView?.cancelAnimationFrame(revealFrame);
+		plugin.emitter.offref(taskUpdated);
 		releaseScope();
 		root.removeEventListener("focusin", focusScope);
 		root.removeEventListener("focusout", releaseScope);

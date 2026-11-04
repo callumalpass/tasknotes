@@ -1,3 +1,6 @@
+import { setIcon } from "obsidian";
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../../i18n/runtime";
 import { renderKeyHint } from "./keyHint";
 import { openPopover, type PopoverHandle, type PopoverOptions } from "./popover";
 
@@ -17,6 +20,8 @@ export interface ListPickerOptions
 	items: readonly PickerItem[];
 	placeholder: string;
 	emptyText: string;
+	unfilteredEmptyText?: string;
+	showUnfilteredEmptyText?: boolean;
 	/** Multi-select pickers stay open and toggle. */
 	multiple?: boolean;
 	/** Offered as the last row when nothing matches exactly, for free-text values. */
@@ -43,6 +48,12 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		attr: { type: "text", placeholder: options.placeholder, "aria-label": options.placeholder },
 	});
 	const list = el.createDiv({ cls: "tn-picker__list", attr: { role: "listbox" } });
+	if (options.multiple) list.setAttribute("aria-multiselectable", "true");
+	const footer = el.createDiv({ cls: "tn-picker__footer" });
+	renderKeyHint(footer, "Enter");
+	footer.createSpan({ text: uiText(msg({ message: "Select", context: "contextMenus.date.modal.select" })) });
+	renderKeyHint(footer, "Escape");
+	footer.createSpan({ text: uiText(msg({ message: "to dismiss", context: "modals.unscheduledTasksSelector.instructions.dismiss" })) });
 
 	const items = options.items.map((item) => ({ ...item }));
 	let visible: PickerItem[] = [];
@@ -55,7 +66,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		rows().forEach((row, index) => {
 			const active = index === activeIndex;
 			row.classList.toggle("is-active", active);
-			row.setAttribute("aria-selected", String(active));
+			row.setAttribute("aria-selected", String(!!visible[index]?.selected));
 			if (active) row.scrollIntoView({ block: "nearest" });
 		});
 	};
@@ -65,9 +76,12 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			item.selected = !item.selected;
 			options.onChoose(item);
 			render();
+			activeIndex = Math.max(0, visible.findIndex((candidate) => candidate.id === item.id));
+			paintActive();
 			return;
 		}
 		popover.close();
+		if (item.selected) return;
 		options.onChoose(item);
 	};
 
@@ -89,7 +103,10 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		list.empty();
 		const query = input.value;
 		visible = items.filter((item) => matchesPickerQuery(item, query));
+		if (options.multiple) visible.sort((left, right) => Number(!!right.selected) - Number(!!left.selected));
 		createRow = null;
+		const unfilteredNotice = !query && options.showUnfilteredEmptyText;
+		if (unfilteredNotice) list.createDiv({ cls: "tn-picker__empty", text: options.unfilteredEmptyText });
 
 		for (const [index, item] of visible.entries()) {
 			const row = list.createDiv({
@@ -99,13 +116,15 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			row.classList.toggle("is-selected", !!item.selected);
 			const leading = row.createSpan({ cls: "tn-picker__leading" });
 			item.renderLeading?.(leading);
+			const check = row.createSpan({ cls: "tn-picker__check" });
+			if (item.selected) setIcon(check, "check");
 			row.createSpan({
 				cls: "tn-picker__label",
 				text: item.label,
 				attr: { title: item.label },
 			});
 			if (item.detail) row.createSpan({ cls: "tn-picker__detail", text: item.detail });
-			renderKeyHint(row, item.keyHint ?? "Enter");
+			if (item.keyHint && item.keyHint !== "Enter") renderKeyHint(row, item.keyHint);
 			row.addEventListener("pointermove", () => {
 				if (activeIndex === index) return;
 				activeIndex = index;
@@ -121,12 +140,11 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			createRow.setAttribute("aria-disabled", String(options.canCreate?.(trimmed) === false));
 			createRow.createSpan({ cls: "tn-picker__leading" });
 			createRow.createSpan({ cls: "tn-picker__label", text: options.createLabel(trimmed) });
-			renderKeyHint(createRow, "Enter");
 			createRow.addEventListener("click", create);
 		}
 
 		const rowCount = visible.length + (createRow ? 1 : 0);
-		if (rowCount === 0) list.createDiv({ cls: "tn-picker__empty", text: options.emptyText });
+		if (rowCount === 0 && !unfilteredNotice) list.createDiv({ cls: "tn-picker__empty", text: query ? options.emptyText : options.unfilteredEmptyText ?? options.emptyText });
 		activeIndex = Math.min(activeIndex, Math.max(0, rowCount - 1));
 		paintActive();
 		popover.reposition();
@@ -152,7 +170,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	});
 
 	render();
-	const firstSelected = options.multiple ? -1 : visible.findIndex((item) => item.selected);
+	const firstSelected = visible.findIndex((item) => item.selected);
 	if (firstSelected > 0) {
 		activeIndex = firstSelected;
 		paintActive();

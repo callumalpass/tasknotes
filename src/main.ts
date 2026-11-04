@@ -1,4 +1,5 @@
 import { uiData } from "./i18n/dataText";
+import { dismissTooltips } from "./ui/kit/popover";
 import { displayError } from "./i18n/runtime";
 import { configLabel } from "./i18n/configLabels";
 import { uiText } from "./i18n/runtime";
@@ -314,6 +315,10 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async onload() {
+		this.registerDomEvent(document, "keydown", () => dismissTooltips(document), true);
+		this.registerEvent(this.app.workspace.on("active-leaf-change", () => {
+			dismissTooltips(activeDocument);
+		}));
 		// Create the promise and store its resolver
 		this.readyPromise = new Promise((resolve) => {
 			this.resolveReady = resolve;
@@ -1217,6 +1222,7 @@ export default class TaskNotesPlugin extends Plugin {
 		value: TaskInfo[keyof TaskInfo],
 		options: {
 			silent?: boolean;
+			suppressNotice?: boolean;
 			completionDate?: string;
 			onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void;
 			confirmClearInstances?: (cleared: {
@@ -1245,7 +1251,7 @@ export default class TaskNotesPlugin extends Plugin {
 				confirmClearInstances,
 			});
 
-			if (!options.silent && !cancelledByUser) {
+			if (!options.silent && !options.suppressNotice && !cancelledByUser) {
 				if (property === "status") {
 					const statusValue = typeof value === "string" ? value : String(value);
 					const statusConfig = this.statusManager.getStatusConfig(statusValue);

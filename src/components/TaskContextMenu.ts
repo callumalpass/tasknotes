@@ -1,4 +1,5 @@
-import { renderTaskMenuKeyHint } from "../ui/kit/menu";
+import { renderTaskMenuKeyHint, renderPriorityMenuGlyph } from "../ui/kit/menu";
+import { changeTaskProperty, archiveTasksWithUndo } from "../ui/taskPropertyPickers";
 import { TaskCompletionMenu } from "./task-context-menu/completion";
 import { TaskRelationshipMenu } from "./task-context-menu/relationships";
 import { TaskPropertyMenu } from "./task-context-menu/properties";
@@ -106,7 +107,7 @@ export class TaskContextMenu {
 			item.setTitle(
 				this.t(msg({ message: "Priority", context: "contextMenus.task.priority" }))
 			);
-			item.setIcon("star");
+			renderPriorityMenuGlyph(item, task.priority, plugin.priorityManager.getPrioritiesByWeight());
 
 			const submenu = getSubmenu(item);
 			this.properties.addPriorityOptions(submenu, task, plugin);
@@ -134,7 +135,7 @@ export class TaskContextMenu {
 				task.due,
 				async (value: string | null) => {
 					try {
-						await plugin.updateTaskProperty(task, "due", value || undefined);
+						await changeTaskProperty(plugin, [task], "due", value || undefined);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
@@ -178,7 +179,7 @@ export class TaskContextMenu {
 				task.scheduled,
 				async (value: string | null) => {
 					try {
-						await plugin.updateTaskProperty(task, "scheduled", value || undefined);
+						await changeTaskProperty(plugin, [task], "scheduled", value || undefined);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
@@ -235,7 +236,7 @@ export class TaskContextMenu {
 				currentRecurrence,
 				async (value: string | null) => {
 					try {
-						await plugin.updateTaskProperty(task, "recurrence", value || undefined);
+						await changeTaskProperty(plugin, [task], "recurrence", value || undefined);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
@@ -317,8 +318,8 @@ export class TaskContextMenu {
 					const modal = new ReminderModal(plugin.app, plugin, task, (reminders) => {
 						void (async () => {
 							try {
-								await plugin.updateTaskProperty(
-									task,
+								await changeTaskProperty(
+									plugin, [task],
 									"reminders",
 									reminders.length > 0 ? reminders : undefined
 								);
@@ -359,7 +360,7 @@ export class TaskContextMenu {
 					subItem.setIcon("trash");
 					subItem.onClick(async () => {
 						try {
-							await plugin.updateTaskProperty(task, "reminders", undefined);
+							await changeTaskProperty(plugin, [task], "reminders", undefined);
 							this.options.onUpdate?.();
 						} catch (error) {
 							tasknotesLogger.error("Error clearing reminders:", {
@@ -989,7 +990,7 @@ export class TaskContextMenu {
 			item.setIcon(task.archived ? "archive-restore" : "archive");
 			item.onClick(async () => {
 				try {
-					await plugin.toggleTaskArchive(task);
+					await archiveTasksWithUndo(plugin, [task], !task.archived);
 					this.options.onUpdate?.();
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);

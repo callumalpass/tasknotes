@@ -80,15 +80,16 @@ export function tasksForPropertyAction(
 	);
 }
 
-export async function changeTaskProperty(
+export async function changeTaskProperty<Property extends keyof TaskInfo>(
 	plugin: TaskNotesPlugin,
 	tasks: readonly TaskInfo[],
-	property: TaskPickerProperty,
-	value: PropertyValue | ((task: TaskInfo) => PropertyValue)
+	property: Property,
+	value: TaskInfo[Property] | ((task: TaskInfo) => TaskInfo[Property])
 ): Promise<void> {
 	const undo: Array<() => Promise<unknown>> = [];
-	try {
-		for (const task of tasks) {
+	let failed = false;
+	for (const task of tasks) {
+		try {
 			const before = await plugin.cacheManager.getTaskInfo(task.path);
 			if (!before) throw new Error(`Missing task: ${task.path}`);
 			const parent =
@@ -107,8 +108,9 @@ export async function changeTaskProperty(
 			const updated = await plugin.updateTaskProperty(
 				before,
 				property,
-				typeof value === "function" ? value(before) : value,
+				typeof value === "function" ? (value as (task: TaskInfo) => TaskInfo[Property])(before) : value,
 				{
+					suppressNotice: true,
 					onRecurringParentUpdated: (original, next) => {
 						parentTransition = {
 							original: structuredClone(original),
@@ -299,18 +301,21 @@ export async function changeTaskProperty(
 						true
 					);
 			});
+		} catch {
+			failed = true;
 		}
-	} catch {
-		reportFailure();
-	} finally {
-		if (undo.length) showTaskUndo(undo);
 	}
+	showTaskUndo(undo, failed);
 }
 
-export function showTaskUndo(undo: Array<() => Promise<unknown>>): void {
+export function showTaskUndo(undo: Array<() => Promise<unknown>>, failed = false): void {
+	const count = undo.length;
+	if (!count && !failed) return;
+	const updated = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}", context: "interaction feedback" }), { count });
+	const failure = uiText(msg({ message: "Could not update tasks", context: "interaction failure" }));
 	showToast({
-		message: uiText(msg({ message: "Tasks updated", context: "interaction feedback" })),
-		action: {
+		message: failed ? `${failure} · ${updated}` : updated,
+		action: count ? {
 			label: uiText(msg({ message: "Undo", context: "interaction undo" })),
 			run: () => {
 				void (async () => {
@@ -323,7 +328,7 @@ export function showTaskUndo(undo: Array<() => Promise<unknown>>): void {
 					}
 				})();
 			},
-		},
+		} : undefined,
 	});
 }
 
@@ -333,8 +338,9 @@ export async function archiveTasksWithUndo(
 	archived = true
 ): Promise<void> {
 	const undo: Array<() => Promise<unknown>> = [];
-	try {
-		for (const task of tasks) {
+	let failed = false;
+	for (const task of tasks) {
+		try {
 			const before = await plugin.cacheManager.getTaskInfo(task.path);
 			if (!before || before.archived === archived) continue;
 			const after = await plugin.taskService.toggleArchive(before);
@@ -360,11 +366,11 @@ export async function archiveTasksWithUndo(
 					{ tags: before.tags }
 				);
 			});
+		} catch {
+			failed = true;
 		}
-	} catch {
-		reportFailure();
 	}
-	if (undo.length) showTaskUndo(undo);
+	showTaskUndo(undo, failed);
 }
 
 export async function openTaskPropertyPicker(
@@ -400,7 +406,7 @@ export async function openTaskPropertyChoices(
 		items = configs.map((config) => ({
 			id: config.value,
 			label: configLabel(config),
-			selected: tasks.every((task) => task[property] === config.value),
+			selected: tasks.every((task) => task[property] === config.value || (property === "priority" && !task.priority && "weight" in config && config.weight === 0)),
 			renderLeading: (host) => {
 				if (config.color) host.style.color = config.color;
 				if (config.icon) setIcon(host, config.icon);
@@ -423,15 +429,25 @@ export async function openTaskPropertyChoices(
 					id: value,
 					label: value,
 					selected: tasks.every((candidate) => candidate[property] === value),
+					detail: uiText(msg({ message: "Current value is not configured", context: "interaction picker" })),
+					renderLeading: (host) => property === "status"
+						? renderStatusGlyph(host, statusGlyphState(value, plugin.statusManager.getAllStatuses()))
+						: renderPriorityGlyph(host, priorityGlyphState(value, plugin.priorityManager.getAllPriorities())),
 				});
 		}
-		if (property === "priority") items.push({ id: "", label: clear });
+		if (property === "priority" && (configs.length || tasks.some((task) => !!task.priority)) && !configs.some((config) => "weight" in config && config.weight === 0)) items.push({ id: "", label: clear, selected: tasks.every((task) => !task.priority) });
 		return openListPicker({
 			anchor,
 			app: plugin.app,
 			items,
 			placeholder: label,
-			emptyText: clear,
+			emptyText: property === "priority"
+				? uiText(msg({ message: "No matching priorities", context: "interaction picker" }))
+				: uiText(msg({ message: "No matching statuses", context: "interaction picker" })),
+			unfilteredEmptyText: property === "priority"
+				? uiText(msg({ message: "No priorities configured", context: "interaction picker" }))
+				: uiText(msg({ message: "No statuses configured", context: "interaction picker" })),
+			showUnfilteredEmptyText: !configs.length,
 			onChoose: (item) => apply(item.id),
 		});
 	}
@@ -455,6 +471,12 @@ export async function openTaskPropertyChoices(
 			label: option.label,
 			renderLeading: option.icon ? (host) => setIcon(host, option.icon as string) : undefined,
 		}));
+		if (currentValue) items.unshift({
+			id: "current",
+			label: currentValue,
+			selected: true,
+			renderLeading: (host) => setIcon(host, "calendar"),
+		});
 		items.push(
 			{
 				id: "custom",
@@ -462,7 +484,7 @@ export async function openTaskPropertyChoices(
 					msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })
 				),
 			},
-			{ id: "clear", label: clear }
+			{ id: "clear", label: clear, selected: !currentValue }
 		);
 		return openListPicker({
 			anchor,
@@ -479,6 +501,7 @@ export async function openTaskPropertyChoices(
 				if (date) apply(date);
 			},
 			onChoose: (item) => {
+				if (item.id === "current") return;
 				if (item.id === "clear") {
 					apply(undefined);
 					return;
@@ -523,7 +546,10 @@ export async function openTaskPropertyChoices(
 		placeholder: label,
 		emptyText: clear,
 		multiple: true,
-		items: [...values].sort().map((value) => ({
+		items: [...values].sort((left, right) =>
+			Number(tasks.every((task) => task[property]?.includes(right))) -
+			Number(tasks.every((task) => task[property]?.includes(left))) || left.localeCompare(right)
+		).map((value) => ({
 			id: value,
 			label: value,
 			selected: tasks.every((task) => task[property]?.includes(value)),

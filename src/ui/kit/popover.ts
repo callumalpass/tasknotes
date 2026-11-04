@@ -36,7 +36,8 @@ export function placePopover(
 	const below = anchor.bottom + ANCHOR_GAP;
 	const above = anchor.top - ANCHOR_GAP - size.height;
 	const fitsBelow = below + size.height <= viewport.height - VIEWPORT_MARGIN;
-	const top = fitsBelow || above < VIEWPORT_MARGIN ? below : above;
+	const preferred = fitsBelow || above < VIEWPORT_MARGIN ? below : above;
+	const top = Math.min(preferred, viewport.height - size.height - VIEWPORT_MARGIN);
 	return { left, top: Math.max(VIEWPORT_MARGIN, top) };
 }
 
@@ -44,6 +45,10 @@ let current: PopoverHandle | null = null;
 
 export function closeActivePopover(): void {
 	current?.close();
+}
+
+export function dismissTooltips(doc: Document): void {
+	doc.querySelectorAll(".tooltip").forEach((tooltip) => tooltip.remove());
 }
 
 /** One popover at a time, mounted on the anchor's window so pop-outs work. */
@@ -64,6 +69,7 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	});
 
 	const reposition = () => {
+		el.setCssProps({ "--tn-popover-height": `${Math.max(0, win.innerHeight - VIEWPORT_MARGIN * 2)}px` });
 		const rect = isElementAnchor(anchor)
 			? anchor.getBoundingClientRect()
 			: { left: anchor.x, top: anchor.y, bottom: anchor.y };
@@ -89,6 +95,7 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 		handle.close();
 	};
 	const onKeyDown = (event: KeyboardEvent) => {
+		dismissTooltips(doc);
 		if (event.key !== "Escape") return;
 		event.preventDefault();
 		event.stopImmediatePropagation();
@@ -106,6 +113,8 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 			doc.removeEventListener("click", onClick, true);
 			win.removeEventListener("keydown", onKeyDown, true);
 			win.removeEventListener("blur", handle.close);
+			win.removeEventListener("resize", reposition);
+			doc.removeEventListener("scroll", reposition, true);
 			el.remove();
 			if (current === handle) current = null;
 			returnFocus?.focus?.();
@@ -123,6 +132,8 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	doc.addEventListener("click", onClick, true);
 	win.addEventListener("keydown", onKeyDown, true);
 	win.addEventListener("blur", handle.close);
+	win.addEventListener("resize", reposition);
+	doc.addEventListener("scroll", reposition, true);
 	current = handle;
 	return handle;
 }

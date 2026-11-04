@@ -48,9 +48,18 @@ export function keyLabel(key: string): string {
 	return mac ?? SYMBOL_KEYS[key] ?? namedKey(key) ?? (key.length === 1 ? key.toUpperCase() : key);
 }
 
+export function shouldShowKeyHints(doc: Document): boolean {
+	return !Platform.isMobile && !doc.body.classList.contains("is-mobile") &&
+		!doc.defaultView?.matchMedia?.("(pointer: coarse)").matches;
+}
+
 /** Renders keycaps for a combo such as "Mod+K" or "Shift+J". */
 export function renderKeyHint(container: HTMLElement, combo: string): HTMLElement {
 	const hint = container.createSpan({ cls: "tn-key-hint", attr: { "aria-hidden": "true" } });
+	if (!shouldShowKeyHints(container.ownerDocument)) {
+		hint.hidden = true;
+		return hint;
+	}
 	for (const key of combo.split("+")) {
 		hint.createEl("kbd", { cls: "tn-key", text: keyLabel(key) });
 	}

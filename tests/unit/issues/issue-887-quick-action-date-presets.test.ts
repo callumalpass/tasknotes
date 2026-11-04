@@ -3,6 +3,9 @@ import { App } from "obsidian";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ changeTaskProperty: jest.fn() }));
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
@@ -119,7 +122,7 @@ describe("Issue #887: quick-action date presets", () => {
 
 		await action?.execute(task, plugin, new Date("2026-05-18T12:00:00+10:00"));
 
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "scheduled", "2026-05-19");
+		expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [task], "scheduled", "2026-05-19");
 		expect(plugin.openScheduledDateModal).not.toHaveBeenCalled();
 	});
 
