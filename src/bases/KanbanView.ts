@@ -1,5 +1,5 @@
+import { renderKanbanHeaderGlyph, resolveKanbanStatusColor } from "./kanbanStatusPresentation";
 import { KanbanDragPreview } from "./kanbanDragPreview";
-import { resolveKanbanStatusColor } from "./kanbanStatusPresentation";
 import { createKanbanCardScroller } from "./kanbanCardScroller";
 import { displayError } from "../i18n/runtime";
 import { configLabel } from "../i18n/configLabels";
@@ -1242,6 +1242,7 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 		countEl.textContent = `${count}`;
+		row?.classList.toggle("kanban-view__swimlane-row--empty", count === 0);
 	}
 
 	private async confirmLargeReorder(
@@ -1666,19 +1667,18 @@ export class KanbanView extends BasesViewBase {
 			dragHandle.setAttribute("aria-hidden", "true");
 			setIcon(dragHandle, "grip-vertical");
 
-			// Status icon (when consolidation enabled and grouped by status)
-			if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
-				const statusConfig = this.plugin.statusManager.getStatusConfig(columnKey);
-				if (statusConfig?.icon) {
-					const iconEl = headerCell.createSpan({ cls: "kanban-view__column-icon" });
-					iconEl.style.color = statusConfig.color;
-					setIcon(iconEl, statusConfig.icon);
-				}
+			if (groupByPropertyId && this.isStatusGroupingProperty(groupByPropertyId)) {
+				renderKanbanHeaderGlyph(
+					headerCell,
+					this.findStatusConfigForGroupKey(columnKey),
+					this.plugin.statusManager.getAllStatuses()
+				);
 			}
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
 			this.renderGroupTitleWrapper(titleContainer, columnKey, false, true);
 			this.renderColumnCount(headerCell, columnKey, columnTaskCounts.get(columnKey) ?? 0);
+			this.createAddTaskButton(headerCell, groupByPropertyId, columnKey);
 
 			// Setup column header drag handlers for swimlane mode
 			this.setupColumnHeaderDragHandlers(headerCell);
@@ -1715,6 +1715,7 @@ export class KanbanView extends BasesViewBase {
 				(sum, tasks) => sum + tasks.length,
 				0
 			);
+			row.classList.toggle("kanban-view__swimlane-row--empty", totalTasks === 0);
 			labelCell.createDiv({
 				cls: "kanban-view__swimlane-count",
 				text: `${totalTasks}`,
@@ -1834,14 +1835,12 @@ export class KanbanView extends BasesViewBase {
 		dragHandle.setAttribute("aria-hidden", "true");
 		setIcon(dragHandle, "grip-vertical");
 
-		// Status icon (when consolidation enabled and grouped by status)
-		if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
-			const statusConfig = this.plugin.statusManager.getStatusConfig(groupKey);
-			if (statusConfig?.icon) {
-				const iconEl = header.createSpan({ cls: "kanban-view__column-icon" });
-				iconEl.style.color = statusConfig.color;
-				setIcon(iconEl, statusConfig.icon);
-			}
+		if (groupByPropertyId && this.isStatusGroupingProperty(groupByPropertyId)) {
+			renderKanbanHeaderGlyph(
+				header,
+				this.findStatusConfigForGroupKey(groupKey),
+				this.plugin.statusManager.getAllStatuses()
+			);
 		}
 
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
@@ -1849,6 +1848,7 @@ export class KanbanView extends BasesViewBase {
 
 		this.renderColumnCount(header, groupKey, tasks.length);
 		this.createColumnCollapseButton(header, column, groupKey, groupByPropertyId);
+		this.createAddTaskButton(header, groupByPropertyId, groupKey);
 
 		// Setup column header drag handlers
 		this.setupColumnHeaderDragHandlers(header);
@@ -2853,6 +2853,7 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private clearTouchDragState(): void {
+		this.boardEl?.classList.remove("kanban-view__board--task-dragging");
 		for (const element of this.touchDragSources) {
 			element.classList.remove(
 				"kanban-view__touch-drag-source",
@@ -3149,6 +3150,7 @@ export class KanbanView extends BasesViewBase {
 				inCurrentTaskElements: this.currentTaskElements.has(draggedTaskPath),
 				isNestedSource: draggedTaskPath !== task.path,
 			});
+			this.boardEl?.classList.add("kanban-view__board--task-dragging");
 			setElementDragImage(e, dragImageSource, "kanban-view__drag-image");
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
@@ -3307,6 +3309,7 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("dragend", (e: DragEvent) => {
 			e.stopPropagation();
+			this.boardEl?.classList.remove("kanban-view__board--task-dragging");
 			this.debugLog("DRAGEND-FIRED", {
 				draggedTask: task.path.split("/").pop(),
 				draggedTaskPath: this.draggedTaskPath?.split("/").pop() || "(already null)",
@@ -3623,6 +3626,7 @@ export class KanbanView extends BasesViewBase {
 	): void {
 		this.touchDragActive = true;
 		this.touchDragType = "task";
+		this.boardEl?.classList.add("kanban-view__board--task-dragging");
 		// Use containerEl.ownerDocument to support pop-out windows
 		this.containerEl.ownerDocument.addEventListener(
 			"contextmenu",

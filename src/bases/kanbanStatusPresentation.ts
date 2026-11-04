@@ -1,3 +1,23 @@
+import { setIcon } from "obsidian";
+import type { StatusConfig } from "../types";
+import { renderStatusGlyph, statusGlyphState } from "../ui/kit/glyphs";
+
+export function renderKanbanHeaderGlyph(
+	header: HTMLElement,
+	status: StatusConfig | undefined,
+	statuses: readonly StatusConfig[]
+): void {
+	const host = header.createSpan({
+		cls: "kanban-view__column-icon",
+		attr: { "aria-hidden": "true" },
+	});
+	if (status?.icon) {
+		setIcon(host, status.icon);
+	} else {
+		renderStatusGlyph(host, statusGlyphState(status?.value ?? "", statuses));
+	}
+}
+
 export function resolveKanbanStatusColor(element: HTMLElement, color: string): string | null {
 	const doc = element.ownerDocument;
 	const probe = doc.win.createSpan();
