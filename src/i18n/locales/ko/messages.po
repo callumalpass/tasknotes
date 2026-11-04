@@ -785,11 +785,6 @@ msgctxt "ui/taskCardProperties: timeEstimate display"
 msgid "{value1} estimated"
 msgstr "예상 시간 {value1}"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.onOpen display"
-msgid "{value1} from {startTime} to {endTime}"
-msgstr "{value1}: {startTime}~{endTime}"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
@@ -1100,16 +1095,6 @@ msgctxt "contextMenus.ics.markdown.descriptionHeading"
 msgid "### Description"
 msgstr "### 설명"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
 #: src/views/PomodoroView.ts
 msgctxt "timer add duration button"
 msgid "+{duration}"
@@ -1210,11 +1195,6 @@ msgctxt "settings.appearance.timeSettings.startTime.placeholder"
 msgid "06:00"
 msgstr "06:00"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimePlaceholder"
-msgid "09:00"
-msgstr "09:00"
-
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
@@ -1239,11 +1219,6 @@ msgstr "1시간 전"
 msgctxt "contextMenus.task.quickReminders.oneHour"
 msgid "1 hour before"
 msgstr "1시간 전"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimePlaceholder"
-msgid "11:00"
-msgstr "11:00"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twelveHour"
@@ -1389,6 +1364,11 @@ msgstr "절대적 (특정 날짜/시간)"
 msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
 msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "절대 시간 리마인더는 at:YYYY-MM-DDTHH:MM 또는 전체 ISO 날짜·시간을 사용해야 합니다"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Accent"
+msgstr "강조색"
 
 #: src/bases/BasesViewBase.ts
 #: src/bases/CalendarView.ts
@@ -2362,6 +2342,11 @@ msgstr "{count}개의 작업을 차단 중"
 msgctxt "ui/taskCardProperties: blockingTasks text"
 msgid "Blocking: "
 msgstr "차단 대상: "
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Blue"
+msgstr "파랑"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.defaults.header.bodyTemplate"
@@ -3927,7 +3912,6 @@ msgstr "타임블록 만들기"
 
 #: src/bases/calendarCreationMenu.ts
 #: src/components/TaskContextMenu.ts
-#: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.heading"
 msgid "Create timeblock"
 msgstr "타임블록 만들기"
@@ -4195,6 +4179,11 @@ msgctxt "settings.appearance.calendarView.description"
 msgid "Customize the appearance and behavior of the calendar view."
 msgstr "캘린더 뷰의 외관과 동작을 사용자 지정합니다."
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Cyan"
+msgstr "청록"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.cycleCurrentTaskPriority"
 msgid "Cycle current task priority"
@@ -4322,11 +4311,6 @@ msgctxt "modals.calendarEventCreation.dateTimeLabel"
 msgid "Date & time: "
 msgstr "날짜 및 시간: "
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.dateTimeLabel"
-msgid "Date & time: "
-msgstr "날짜 및 시간: "
-
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.dateCreated.name"
 msgid "Date created"
@@ -4362,11 +4346,6 @@ msgstr "날짜 범위"
 msgctxt "settings.defaults.reminders.fields.date"
 msgid "Date:"
 msgstr "날짜:"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.dateLabel"
-msgid "Date: "
-msgstr "날짜: "
 
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.dates"
@@ -5170,11 +5149,6 @@ msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "시간 기록 편집 (작업 선택)"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.editHeading"
-msgid "Edit timeblock"
-msgstr "타임블록 편집"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
 msgid "Edit timer duration"
@@ -5307,6 +5281,7 @@ msgid "End on {date}"
 msgstr "{date}에 종료"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.endTimeLabel"
 msgid "End time"
 msgstr "종료 시간"
@@ -6738,16 +6713,6 @@ msgctxt "generated Bases column name"
 msgid "Focus minutes"
 msgstr "집중 시간(분)"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "새 기능에 집중, 방해 금지"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "새 기능에 집중, 방해 금지"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Focus time"
@@ -6980,6 +6945,11 @@ msgstr "확인"
 msgctxt "views.pomodoro.status.breakPrompt"
 msgid "Great work! Time for a {length} break"
 msgstr "수고하셨습니다! {length} 휴식을 취할 시간입니다"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Green"
+msgstr "초록"
 
 #: src/bases/TaskListView.ts
 msgctxt "views.taskList.reorder.scope.group"
@@ -8320,6 +8290,7 @@ msgid "Never refreshed"
 msgstr "새로 고친 적 없음"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
 #: src/bases/TaskListView.ts
@@ -8837,6 +8808,7 @@ msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "편집할 시간 기록이 있는 작업이 없습니다"
 
+#: src/bases/CalendarView.ts
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "empty task view"
@@ -9443,16 +9415,6 @@ msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
 msgid "Operation failed"
 msgstr "작업에 실패했습니다"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "타임블록의 선택적 색상"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "타임블록의 선택적 색상"
-
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionDesc"
 msgid "Optional description for the event"
@@ -9482,6 +9444,11 @@ msgstr "이벤트의 선택적 위치"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
 msgstr "action=start에 사용할 작업 세션 시간 재정의(선택 사항)"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Orange"
+msgstr "주황"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.organization.title"
@@ -9712,6 +9679,11 @@ msgstr "{field} 날짜 선택"
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "날짜 및 시간 선택..."
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Pink"
+msgstr "분홍"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -10132,6 +10104,11 @@ msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "속성 기반 이벤트"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Purple"
+msgstr "보라"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Quick (<30m)"
@@ -10257,6 +10234,11 @@ msgstr "반복 작업"
 msgctxt "notices.commands.repeatRecurring"
 msgid "Recurring tasks already track each occurrence"
 msgstr "반복 작업은 이미 각 회차를 기록합니다"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Red"
+msgstr "빨강"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
@@ -11616,6 +11598,7 @@ msgid "Start time"
 msgstr "시작 시간"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.startTimeLabel"
 msgid "Start time"
 msgstr "시작 시간"
@@ -13157,16 +13140,6 @@ msgctxt "modals.icsNoteCreation.titleDesc"
 msgid "Title for the new content"
 msgstr "새 콘텐츠의 제목"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.titleDesc"
-msgid "Title for your timeblock"
-msgstr "타임블록 제목"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.titleDesc"
-msgid "Title for your timeblock"
-msgstr "타임블록 제목"
-
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.titleRequired"
 msgid "Title is required"
@@ -14385,16 +14358,6 @@ msgctxt "settings.integrations.webhooks.events.taskUnarchived.description"
 msgid "When tasks are unarchived"
 msgstr "작업이 보관 해제될 때"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimeDesc"
-msgid "When the timeblock ends"
-msgstr "타임블록 종료 시간"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimeDesc"
-msgid "When the timeblock starts"
-msgstr "타임블록 시작 시간"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.description"
 msgid "When time tracking starts"
@@ -14485,6 +14448,11 @@ msgstr "매년 {date}"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
 msgid "Yearly recurrence"
 msgstr "연간 반복"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Yellow"
+msgstr "노랑"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
