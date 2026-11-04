@@ -3,11 +3,12 @@
 .task-card-note-widget {
     display: block;
     box-sizing: border-box;
-    border-radius: var(--radius-s);
-    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--tn-radius-none);
+    border: none;
+    border-top: 1px solid var(--tn-hairline);
     margin-block: var(--tn-space-2);
     margin-inline: var(--file-margins, 0);
-    padding: var(--tn-space-1);
+    padding: var(--tn-space-2) 0;
 }
 
 /* Keep widget aligned with the centered readable column when enabled */
@@ -32,7 +33,31 @@
     margin-block-end: var(--p-spacing);
 }
 
-.task-card-note-widget__card {
+.tasknotes-plugin .task-card.task-card-note-widget__card {
+    --tag-background: inherit;
+    --tag-color: inherit;
+    --tag-radius: inherit;
+
     /* Reset margins for the inner task card */
     margin: 0;
+    border: 0;
+    padding-inline: 0;
+    background: transparent;
+}
+
+.task-card-note-widget .task-card__metadata {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--tn-space-1);
+}
+
+.tasknotes-plugin.task-card-note-widget .task-card__tag,
+.tasknotes-plugin.task-card-note-widget .task-card__metadata-property .tag {
+    display: inline-flex;
+    align-items: center;
+    background: var(--tag-background);
+    color: var(--tag-color);
+    border-radius: var(--tag-radius);
+    font-size: var(--tn-type-xs);
+    padding: var(--tn-space-half) var(--tn-space-1);
 }

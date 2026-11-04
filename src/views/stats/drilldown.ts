@@ -83,7 +83,10 @@ export function renderDrilldownContent(owner: Component, plugin: TaskNotesPlugin
 
 	// Add filter controls for tasks
 	const taskFilters = tasksHeaderContainer.createDiv({ cls: "stats-view__task-filters" });
-	const statusFilter = taskFilters.createEl("select", { cls: "stats-view__filter-select" });
+	const statusFilter = taskFilters.createEl("select", {
+		cls: "tn-select stats-view__filter-select",
+		attr: { "aria-label": plugin.i18n.translate(msg({ message: "All project tasks", context: "views.stats.project.allTasks" })) },
+	});
 	statusFilter.createEl("option", {
 		value: "all",
 		text: plugin.i18n.translate(msg({ message: "All tasks", context: "views.stats.filters.allTasks" })),
@@ -137,7 +140,20 @@ export function renderDrilldownContent(owner: Component, plugin: TaskNotesPlugin
 		});
 
 		if (filteredTasks.length === 0) {
-			renderEmptyState(taskList, { message: plugin.i18n.translate(msg({ message: "No tasks found", context: "views.stats.noTasks" })) });
+			renderEmptyState(taskList, {
+				message: plugin.i18n.translate(msg({ message: "No tasks found", context: "views.stats.noTasks" })),
+				actionLabel: data.tasks.length > 0
+					? plugin.i18n.translate(msg({ message: "All tasks", context: "views.stats.filters.allTasks" }))
+					: plugin.i18n.translate(msg({ message: "New", context: "common.new" })),
+				onAction: () => {
+					if (data.tasks.length === 0) {
+						plugin.openTaskCreationModal();
+						return;
+					}
+					statusFilter.value = "all";
+					renderTasks("all");
+				},
+			});
 			return;
 		}
 

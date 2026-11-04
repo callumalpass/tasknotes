@@ -72,7 +72,11 @@ export function renderActivityChart(plugin: TaskNotesPlugin, container: HTMLElem
 
 	const maxTime = Math.max(...timeByDay.map((d) => d.timeSpent));
 	if (maxTime === 0) {
-		renderEmptyState(container, { message: plugin.i18n.translate(msg({ message: "No time tracking data", context: "views.stats.project.noTracking" })) });
+		renderEmptyState(container, {
+			message: plugin.i18n.translate(msg({ message: "No time tracking data", context: "views.stats.project.noTracking" })),
+			actionLabel: plugin.i18n.translate(msg({ message: "Pomodoro", context: "views.pomodoro.title" })),
+			onAction: () => { void plugin.activatePomodoroView(); },
+		});
 		return;
 	}
 

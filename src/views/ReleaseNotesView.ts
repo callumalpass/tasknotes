@@ -94,7 +94,7 @@ export class ReleaseNotesView extends ItemView {
 			/^> \[!info\] TaskNotes v5 beta\r?\n(?:>[^\n]*(?:\n|$))*/gm,
 			""
 		);
-		const transformedNotes = this.transformIssueLinks(notes);
+		const transformedNotes = this.transformIssueLinks(notes.replace(/^# .+(?:\r?\n|$)/, ""));
 		const releaseContent = versionData.isCurrent
 			? `${this.plugin.i18n.translate(msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.", context: "views.releaseNotes.baseFilesNotice" }))}\n\n${transformedNotes}`
 			: transformedNotes;
@@ -113,6 +113,9 @@ export class ReleaseNotesView extends ItemView {
 
 		// Header (clickable to toggle)
 		const header = section.createDiv({ cls: "release-notes-version-header" });
+		header.setAttribute("role", "button");
+		header.tabIndex = 0;
+		header.setAttribute("aria-expanded", String(isExpanded));
 		// Left side: version and date
 		const headerLeft = header.createDiv({ cls: "release-notes-version-info" });
 
@@ -157,11 +160,17 @@ export class ReleaseNotesView extends ItemView {
 		// Toggle functionality
 		header.addEventListener("click", () => {
 			const isCurrentlyExpanded = content.style.display !== "none";
+			header.setAttribute("aria-expanded", String(!isCurrentlyExpanded));
 			content.style.display = isCurrentlyExpanded ? "none" : "block";
 			setIcon(chevron, isCurrentlyExpanded ? "chevron-right" : "chevron-down");
 			if (!isCurrentlyExpanded) {
 				void renderIfNeeded();
 			}
+		});
+		header.addEventListener("keydown", (event) => {
+			if (event.key !== "Enter" && event.key !== " ") return;
+			event.preventDefault();
+			header.click();
 		});
 	}
 
@@ -176,9 +185,7 @@ export class ReleaseNotesView extends ItemView {
 		// Header with version
 		const header = container.createDiv({ cls: "release-notes-header" });
 		header.createEl("h1", {
-			text: this.plugin.i18n.translate(msg({ message: "What''s new in TaskNotes {version}", context: "views.releaseNotes.header" }), {
-				version: this.version,
-			}),
+			text: this.plugin.i18n.translate(msg({ message: "What''s new in TaskNotes", context: "views.releaseNotes.header" })),
 		});
 
 		// Star message with GitHub link

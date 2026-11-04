@@ -77,6 +77,13 @@ export function renderOverviewStats(plugin: TaskNotesPlugin, container: HTMLElem
 
 export function renderTimeRangeStats(plugin: TaskNotesPlugin, container: HTMLElement, stats: TimeRangeStats) {
 	container.empty();
+	if (stats.overall.totalTasks === 0 && stats.overall.totalTimeSpent === 0 && stats.overall.totalTimeEstimate === 0) {
+		container.createEl("p", {
+			cls: "stats-view__period-summary",
+			text: plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })),
+		});
+		return;
+	}
 
 	const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
 

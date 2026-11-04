@@ -730,16 +730,6 @@ msgctxt "services.instantTaskConvert.notices.partialConversion"
 msgid "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
 msgstr "{successCount, plural, other {转换了{successCount, number}个任务。{failureCount, number}个失败。}}"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.running"
-msgid "{time} left · Ends at {endTime}"
-msgstr "剩余 {time} · 结束于 {endTime}"
-
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.ready"
-msgid "{time} planned · {count} completed today"
-msgstr "已计划 {time} · 今天已完成 {count} 个"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -771,14 +761,9 @@ msgid "{total, plural, one {{completed, number}/{total, number} task} other {{co
 msgstr "{total, plural, other {{completed, number}/{total, number} 个任务}}"
 
 #: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.paused"
-msgid "{type} paused · {time} left"
-msgstr "{type} 已暂停 · 剩余 {time}"
-
-#: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
-msgid "{type} ready · {time} planned"
-msgstr "{type} 已就绪 · 已计划 {time}"
+msgid "{type} ready"
+msgstr "{type}已就绪"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
@@ -2946,6 +2931,11 @@ msgstr "清除计划日期"
 
 #: src/bases/components/SearchBox.ts
 msgctxt "bases/components/SearchBox: SearchBox.render display"
+msgid "Clear search"
+msgstr "清除搜索"
+
+#: src/bases/basesSearchUi.ts
+msgctxt "empty state action"
 msgid "Clear search"
 msgstr "清除搜索"
 
@@ -5332,6 +5322,11 @@ msgstr "结束时间必须在开始时间之后"
 msgctxt "modals.icsNoteCreation.endLabel"
 msgid "End: "
 msgstr "结束："
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.meta.running"
+msgid "Ends at {endTime}"
+msgstr "于{endTime}结束"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.textPlaceholder"
@@ -8297,8 +8292,11 @@ msgid "Never refreshed"
 msgstr "从未刷新"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
 #: src/bases/TaskListView.ts
+#: src/views/stats/drilldown.ts
+#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "新建"
@@ -8455,6 +8453,12 @@ msgstr "未找到进行中的时间跟踪会话"
 msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "未找到正在进行的时间跟踪会话"
+
+#: src/views/PomodoroStatsView.ts
+#: src/views/stats/summary.ts
+msgctxt "statistics empty period"
+msgid "No activity in this period."
+msgstr "此期间没有活动。"
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -8745,16 +8749,6 @@ msgid "No task link found"
 msgstr "找不到任务链接"
 
 #: src/bases/KanbanView.ts
-msgctxt "bases/KanbanView: KanbanView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "此 Base 中未找到 TaskNotes 任务。"
-
-#: src/bases/TaskListView.ts
-msgctxt "bases/TaskListView: TaskListView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "此 Base 中未找到 TaskNotes 任务。"
-
-#: src/bases/KanbanView.ts
 msgctxt "views.kanban.noTasks"
 msgid "No tasks"
 msgstr "没有任务"
@@ -8789,6 +8783,12 @@ msgstr "没有找到要导出的任务"
 msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "没有任务有时间记录可供编辑"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "empty task view"
+msgid "No tasks in this view."
+msgstr "此视图中没有任务。"
 
 #: src/bases/basesSearchUi.ts
 msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
@@ -9730,6 +9730,7 @@ msgid "Plugin data"
 msgstr "插件数据"
 
 #: src/views/PomodoroView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "番茄钟"
@@ -11553,6 +11554,7 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "开始日期属性"
 
+#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
@@ -13497,11 +13499,6 @@ msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "True"
 msgstr "是"
 
-#: src/bases/basesSearchUi.ts
-msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
-msgid "Try a different search term or clear the search"
-msgstr "请尝试其他搜索词或清除搜索"
-
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.tue"
 msgid "Tue"
@@ -14241,8 +14238,8 @@ msgstr "显示内容"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
-msgid "What''s new in TaskNotes {version}"
-msgstr "TaskNotes {version} 的新功能"
+msgid "What''s new in TaskNotes"
+msgstr "TaskNotes新动态"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.title"

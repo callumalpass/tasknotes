@@ -730,16 +730,6 @@ msgctxt "services.instantTaskConvert.notices.partialConversion"
 msgid "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
 msgstr "{successCount, plural, one {Convertita {successCount, number} attività. Conversioni non riuscite: {failureCount, number}.} other {Convertite {successCount, number} attività. Conversioni non riuscite: {failureCount, number}.}}"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.running"
-msgid "{time} left · Ends at {endTime}"
-msgstr "Tempo rimanente: {time} · Fine alle {endTime}"
-
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.ready"
-msgid "{time} planned · {count} completed today"
-msgstr "Durata prevista: {time} · Completati oggi: {count}"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -771,14 +761,9 @@ msgid "{total, plural, one {{completed, number}/{total, number} task} other {{co
 msgstr "{total, plural, one {{completed, number}/{total, number} attività} other {{completed, number}/{total, number} attività}}"
 
 #: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.paused"
-msgid "{type} paused · {time} left"
-msgstr "{type} in pausa · Tempo rimanente: {time}"
-
-#: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
-msgid "{type} ready · {time} planned"
-msgstr "{type} pronta · Durata prevista: {time}"
+msgid "{type} ready"
+msgstr "{type} pronto"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
@@ -2949,6 +2934,11 @@ msgstr "Rimuovi data pianificata"
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Clear search"
 msgstr "Pulisci ricerca"
+
+#: src/bases/basesSearchUi.ts
+msgctxt "empty state action"
+msgid "Clear search"
+msgstr "Cancella ricerca"
 
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
@@ -5333,6 +5323,11 @@ msgstr "L'ora di fine deve essere dopo l'ora di inizio"
 msgctxt "modals.icsNoteCreation.endLabel"
 msgid "End: "
 msgstr "Fine: "
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.meta.running"
+msgid "Ends at {endTime}"
+msgstr "Termina alle {endTime}"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.textPlaceholder"
@@ -8298,8 +8293,11 @@ msgid "Never refreshed"
 msgstr "Mai aggiornato"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
 #: src/bases/TaskListView.ts
+#: src/views/stats/drilldown.ts
+#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "Nuovo"
@@ -8456,6 +8454,12 @@ msgstr "Non è stata trovata alcuna sessione attiva di monitoraggio del tempo"
 msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "Nessuna sessione attiva di monitoraggio del tempo"
+
+#: src/views/PomodoroStatsView.ts
+#: src/views/stats/summary.ts
+msgctxt "statistics empty period"
+msgid "No activity in this period."
+msgstr "Nessuna attività in questo periodo."
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -8746,16 +8750,6 @@ msgid "No task link found"
 msgstr "Nessun collegamento all’attività trovato"
 
 #: src/bases/KanbanView.ts
-msgctxt "bases/KanbanView: KanbanView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "Nessuna attività TaskNotes trovata per questa Base."
-
-#: src/bases/TaskListView.ts
-msgctxt "bases/TaskListView: TaskListView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "Nessuna attività TaskNotes trovata per questa Base."
-
-#: src/bases/KanbanView.ts
 msgctxt "views.kanban.noTasks"
 msgid "No tasks"
 msgstr "Nessuna attività"
@@ -8790,6 +8784,12 @@ msgstr "Nessuna attività trovata da esportare"
 msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "Nessuna attività ha registrazioni di tempo da modificare"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "empty task view"
+msgid "No tasks in this view."
+msgstr "Nessuna attività in questa vista."
 
 #: src/bases/basesSearchUi.ts
 msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
@@ -9731,6 +9731,7 @@ msgid "Plugin data"
 msgstr "Dati del plugin"
 
 #: src/views/PomodoroView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "Pomodoro"
@@ -11554,6 +11555,7 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "Proprietà della data di inizio"
 
+#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
@@ -13498,11 +13500,6 @@ msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "True"
 msgstr "Vero"
 
-#: src/bases/basesSearchUi.ts
-msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
-msgid "Try a different search term or clear the search"
-msgstr "Prova un termine di ricerca diverso o cancella la ricerca"
-
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.tue"
 msgid "Tue"
@@ -14242,8 +14239,8 @@ msgstr "Cosa mostrare"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
-msgid "What''s new in TaskNotes {version}"
-msgstr "Cosa c'è di nuovo in TaskNotes {version}"
+msgid "What''s new in TaskNotes"
+msgstr "Novità di TaskNotes"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.title"

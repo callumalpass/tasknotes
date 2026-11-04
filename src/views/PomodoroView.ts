@@ -1,7 +1,7 @@
 import { uiNumber, uiDuration } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { ItemView, WorkspaceLeaf, EventRef, setTooltip } from "obsidian";
+import { ItemView, WorkspaceLeaf, EventRef, setTooltip, setIcon } from "obsidian";
 import { showNotice } from "../ui/kit/notice";
 import TaskNotesPlugin from "../main";
 import {
@@ -87,6 +87,7 @@ export class PomodoroView extends ItemView {
 	private skipBreakButton: HTMLButtonElement | null = null;
 	private isEditingTimer = false;
 	private isTaskSelectorOpen = false;
+	private progressDisplay: HTMLProgressElement | null = null;
 	private todaysPomodoros = 0;
 
 	// Cache stat elements to avoid innerHTML
@@ -292,6 +293,7 @@ export class PomodoroView extends ItemView {
 		this.statusDisplay = null;
 		this.sessionMetaDisplay = null;
 		this.progressContainer = null;
+		this.progressDisplay = null;
 		this.startButton = null;
 		this.pauseButton = null;
 		this.stopButton = null;
@@ -354,6 +356,10 @@ export class PomodoroView extends ItemView {
 				"aria-label": this.t(msg({ message: "Timer duration", context: "views.pomodoro.timer.inputLabel" })),
 			},
 		});
+		this.progressDisplay = timerOverlay.createEl("progress", {
+			cls: "pomodoro-view__progress-line",
+			attr: { max: "1", value: "0", "aria-label": this.getDisplayText() },
+		});
 
 		// Time adjustment controls
 		const timeControls = timerOverlay.createDiv({ cls: "pomodoro-view__time-controls" });
@@ -387,7 +393,7 @@ export class PomodoroView extends ItemView {
 		});
 
 		this.taskSelectButton = taskButtonsContainer.createEl("button", {
-			cls: "pomodoro-view__task-select-button",
+			cls: "tn-btn pomodoro-view__task-select-button",
 			text: this.t(msg({ message: "Choose task...", context: "views.pomodoro.buttons.chooseTask" })),
 		});
 
@@ -411,18 +417,18 @@ export class PomodoroView extends ItemView {
 
 		this.startButton = primaryControls.createEl("button", {
 			text: this.t(msg({ message: "Start focus", context: "views.pomodoro.buttons.startFocus" })),
-			cls: "pomodoro-view__start-button",
+			cls: "tn-btn tn-btn--primary pomodoro-view__start-button",
 		});
 
 		this.pauseButton = primaryControls.createEl("button", {
 			text: this.t(msg({ message: "Pause", context: "views.pomodoro.buttons.pause" })),
-			cls: "pomodoro-view__pause-button",
+			cls: "tn-btn pomodoro-view__pause-button",
 		});
 		this.pauseButton.addClass("pomodoro-view__pause-button--hidden");
 
 		this.stopButton = primaryControls.createEl("button", {
 			text: this.t(msg({ message: "Stop", context: "views.pomodoro.buttons.stop" })),
-			cls: "pomodoro-view__stop-button",
+			cls: "tn-btn pomodoro-view__stop-button",
 		});
 		this.stopButton.addClass("pomodoro-view__stop-button--hidden");
 
@@ -439,8 +445,8 @@ export class PomodoroView extends ItemView {
 		this.statsDisplay = statsSection.createDiv({ cls: "pomodoro-view__stats" });
 
 		// Create minimal stat elements
-		const pomodoroStat = this.statsDisplay.createDiv({
-			cls: "pomodoro-view__stat pomodoro-view__stat--clickable",
+		const pomodoroStat = this.statsDisplay.createEl("button", {
+			cls: "tn-btn tn-btn--ghost pomodoro-view__stat pomodoro-view__stat--clickable",
 		});
 		this.statElements.pomodoros = pomodoroStat.createSpan({
 			cls: "pomodoro-view__stat-value",
@@ -674,7 +680,7 @@ export class PomodoroView extends ItemView {
 				unarchivedTasks,
 				(selectedTask) => {
 					this.isTaskSelectorOpen = false;
-					void this.selectTask(selectedTask);
+					if (selectedTask) void this.selectTask(selectedTask);
 				},
 				{ targetDate }
 			);
@@ -724,6 +730,7 @@ export class PomodoroView extends ItemView {
 				this.taskSelectButton.removeAttribute("title");
 				this.taskSelectButton.addClass("pomodoro-view__task-select-button--no-task");
 			}
+			setIcon(this.taskSelectButton.createSpan(), "chevron-down");
 		}
 
 		// Update clear button visibility
@@ -871,7 +878,7 @@ export class PomodoroView extends ItemView {
 			this.statElements.pomodoros &&
 			this.statElements.pomodoros.textContent !== uiNumber(this.todaysPomodoros)
 		) {
-			this.statElements.pomodoros.textContent = this.todaysPomodoros.toString();
+			this.statElements.pomodoros.textContent = uiNumber(this.todaysPomodoros);
 		}
 		this.contentEl
 			.querySelector(".pomodoro-view")
@@ -996,39 +1003,33 @@ export class PomodoroView extends ItemView {
 			return;
 		}
 
-		const formattedTime = formatPomodoroTime(state.timeRemaining, { padMinutes: false });
 		let text: string;
+		const duration = state.currentSession ? state.currentSession.plannedDuration * 60 : state.timeRemaining;
+		if (this.progressDisplay) {
+			this.progressDisplay.value = duration > 0 ? Math.max(0, Math.min(1, 1 - state.timeRemaining / duration)) : 0;
+		}
 
 		if (state.currentSession) {
-			const sessionLabel = this.getSessionTypeLabel(state.currentSession.type);
 			if (state.isRunning) {
 				const projectedEndTime = formatTime(
 					new Date(getProjectedPomodoroEndTimeMs(state.timeRemaining, nowMs)),
 					this.plugin.settings.calendarViewSettings.timeFormat
 				);
-				text = this.t(msg({ message: "{time} left · Ends at {endTime}", context: "views.pomodoro.meta.running" }), {
-					time: formattedTime,
+				text = this.t(msg({ message: "Ends at {endTime}", context: "views.pomodoro.meta.running" }), {
 					endTime: projectedEndTime,
 				});
 			} else {
-				text = this.t(msg({ message: "{type} paused · {time} left", context: "views.pomodoro.meta.paused" }), {
-					type: sessionLabel,
-					time: formattedTime,
-				});
+				text = "";
 			}
 		} else if (
 			state.nextSessionType === "short-break" ||
 			state.nextSessionType === "long-break"
 		) {
-			text = this.t(msg({ message: "{type} ready · {time} planned", context: "views.pomodoro.meta.breakReady" }), {
+			text = this.t(msg({ message: "{type} ready", context: "views.pomodoro.meta.breakReady" }), {
 				type: this.getSessionTypeLabel(state.nextSessionType),
-				time: formattedTime,
 			});
 		} else {
-			text = this.t(msg({ message: "{time} planned · {count} completed today", context: "views.pomodoro.meta.ready" }), {
-				time: formattedTime,
-				count: this.todaysPomodoros,
-			});
+			text = "";
 		}
 
 		if (this.sessionMetaDisplay.textContent !== text)
@@ -1158,7 +1159,7 @@ export class PomodoroView extends ItemView {
 				this.statElements.pomodoros &&
 				this.statElements.pomodoros.textContent !== uiNumber(stats.pomodorosCompleted)
 			) {
-				this.statElements.pomodoros.textContent = stats.pomodorosCompleted.toString();
+				this.statElements.pomodoros.textContent = uiNumber(stats.pomodorosCompleted);
 			}
 
 			this.updateDisplay();

@@ -375,7 +375,6 @@
     color: var(--tn-text-normal);
 }
 
-.tasknotes-plugin .stats-view__filter-select,
 .tasknotes-plugin .stats-view__filter-input {
     padding: var(--tn-space-1);
     border: 1px solid var(--tn-border-color);
@@ -385,11 +384,27 @@
     font-size: var(--tn-type-xs);
 }
 
-.tasknotes-plugin .stats-view__filter-select:focus,
 .tasknotes-plugin .stats-view__filter-input:focus {
     outline: none;
     border-color: var(--tn-interactive-accent);
     box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.tasknotes-plugin .stats-view__header .setting-item {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.tasknotes-plugin .stats-view__overview-grid,
+.tasknotes-plugin .stats-view__stats-grid {
+    max-width: 560px;
+}
+
+.tasknotes-plugin .stats-view__period-summary {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+    margin: var(--tn-space-2) 0;
 }
 
 .tasknotes-plugin .stats-view__custom-dates {

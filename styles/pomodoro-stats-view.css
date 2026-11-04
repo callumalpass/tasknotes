@@ -81,6 +81,23 @@
     gap: var(--tn-space-2);
 }
 
+.tasknotes-plugin .pomodoro-stats-view__section .setting-item {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid,
+.tasknotes-plugin .pomodoro-stats-view__stats-grid {
+    max-width: 560px;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__period-summary {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+    margin: var(--tn-space-2) 0;
+}
+
 .tasknotes-plugin .pomodoro-stats-view__section-title {
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-semibold);

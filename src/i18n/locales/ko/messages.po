@@ -730,16 +730,6 @@ msgctxt "services.instantTaskConvert.notices.partialConversion"
 msgid "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
 msgstr "{successCount, plural, other {작업 {successCount, number}개 변환, {failureCount, number}개 실패.}}"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.running"
-msgid "{time} left · Ends at {endTime}"
-msgstr "{time} 남음 · {endTime}에 종료"
-
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.ready"
-msgid "{time} planned · {count} completed today"
-msgstr "{time} 예정 · 오늘 {count}개 완료"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -771,14 +761,9 @@ msgid "{total, plural, one {{completed, number}/{total, number} task} other {{co
 msgstr "{total, plural, other {{completed, number}/{total, number}개 작업}}"
 
 #: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.paused"
-msgid "{type} paused · {time} left"
-msgstr "{type} 일시 중지 · {time} 남음"
-
-#: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
-msgid "{type} ready · {time} planned"
-msgstr "{type} 준비됨 · {time} 예정"
+msgid "{type} ready"
+msgstr "{type} 준비 완료"
 
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
@@ -2946,6 +2931,11 @@ msgstr "예정일 지우기"
 
 #: src/bases/components/SearchBox.ts
 msgctxt "bases/components/SearchBox: SearchBox.render display"
+msgid "Clear search"
+msgstr "검색 지우기"
+
+#: src/bases/basesSearchUi.ts
+msgctxt "empty state action"
 msgid "Clear search"
 msgstr "검색 지우기"
 
@@ -5332,6 +5322,11 @@ msgstr "종료 시간은 시작 시간 이후여야 합니다"
 msgctxt "modals.icsNoteCreation.endLabel"
 msgid "End: "
 msgstr "종료: "
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.meta.running"
+msgid "Ends at {endTime}"
+msgstr "{endTime}에 종료"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.textPlaceholder"
@@ -8297,8 +8292,11 @@ msgid "Never refreshed"
 msgstr "새로 고친 적 없음"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
 #: src/bases/TaskListView.ts
+#: src/views/stats/drilldown.ts
+#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "새로 만들기"
@@ -8455,6 +8453,12 @@ msgstr "진행 중인 시간 추적 세션을 찾을 수 없습니다"
 msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "진행 중인 시간 추적 세션을 찾을 수 없습니다"
+
+#: src/views/PomodoroStatsView.ts
+#: src/views/stats/summary.ts
+msgctxt "statistics empty period"
+msgid "No activity in this period."
+msgstr "이 기간에는 활동이 없습니다."
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -8745,16 +8749,6 @@ msgid "No task link found"
 msgstr "작업 링크를 찾을 수 없습니다"
 
 #: src/bases/KanbanView.ts
-msgctxt "bases/KanbanView: KanbanView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "이 베이스에서 TaskNotes 작업을 찾을 수 없습니다."
-
-#: src/bases/TaskListView.ts
-msgctxt "bases/TaskListView: TaskListView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "이 베이스에서 TaskNotes 작업을 찾을 수 없습니다."
-
-#: src/bases/KanbanView.ts
 msgctxt "views.kanban.noTasks"
 msgid "No tasks"
 msgstr "작업 없음"
@@ -8789,6 +8783,12 @@ msgstr "내보낼 작업을 찾을 수 없습니다"
 msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "편집할 시간 기록이 있는 작업이 없습니다"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "empty task view"
+msgid "No tasks in this view."
+msgstr "이 보기에는 작업이 없습니다."
 
 #: src/bases/basesSearchUi.ts
 msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
@@ -9730,6 +9730,7 @@ msgid "Plugin data"
 msgstr "플러그인 데이터"
 
 #: src/views/PomodoroView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "뽀모도로"
@@ -11553,6 +11554,7 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "시작일 속성"
 
+#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
@@ -13497,11 +13499,6 @@ msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "True"
 msgstr "참"
 
-#: src/bases/basesSearchUi.ts
-msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
-msgid "Try a different search term or clear the search"
-msgstr "다른 검색어를 사용하거나 검색을 지우세요"
-
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.tue"
 msgid "Tue"
@@ -14241,8 +14238,8 @@ msgstr "표시할 항목"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
-msgid "What''s new in TaskNotes {version}"
-msgstr "TaskNotes {version}의 새로운 기능"
+msgid "What''s new in TaskNotes"
+msgstr "TaskNotes의 새로운 기능"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.title"

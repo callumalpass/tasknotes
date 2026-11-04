@@ -27,8 +27,6 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
    SETTINGS HEADER
    ================================================ */
 
-/* Wrap instead of clipping: at constrained pane widths the horizontal
-   overflow used to hide the final tab (Integrations) entirely (#2222). */
 .tasknotes-plugin .settings-view__toolbar {
     display: flex;
     align-items: center;
@@ -78,18 +76,19 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 .tasknotes-plugin .settings-view__tab-nav {
     display: flex;
     align-items: center;
-    flex: 1 1 36rem;
-    flex-wrap: wrap;
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
     gap: var(--tn-space-half);
     min-width: 0;
     width: auto;
     max-width: 100%;
     margin-bottom: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    overflow: visible;
-    white-space: normal;
+    padding: var(--tn-space-1);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-lg);
+    background: var(--background-secondary);
+    overflow-x: auto;
+    white-space: nowrap;
     scrollbar-width: thin;
 }
 
@@ -126,6 +125,7 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 .tasknotes-plugin .settings-view__tab-button.is-active {
     background: var(--background-primary);
     color: var(--text-normal);
+    border-color: var(--tn-hairline);
 }
 
 @media (max-width: 700px) {

@@ -62,8 +62,8 @@
     margin: 0 auto;
     width: 100%;
     height: auto;
-    min-height: 160px;
-    padding: var(--tn-space-8) 0;
+    min-height: 0;
+    padding: var(--tn-space-4) 0;
 }
 
 /* Progress SVG */
@@ -164,6 +164,27 @@
     max-width: 100%;
 }
 
+.tasknotes-plugin .pomodoro-view__session-meta:empty {
+    display: none;
+}
+
+.tasknotes-plugin .pomodoro-view__progress-line {
+    appearance: none;
+    width: min(240px, 80%);
+    height: var(--tn-space-half);
+    margin: var(--tn-space-3) 0;
+    border: none;
+    background: var(--tn-hairline);
+}
+
+.tasknotes-plugin .pomodoro-view__progress-line::-webkit-progress-bar {
+    background: var(--tn-hairline);
+}
+
+.tasknotes-plugin .pomodoro-view__progress-line::-webkit-progress-value {
+    background: var(--tn-text-muted);
+}
+
 .tasknotes-plugin .pomodoro-view__status--work {
     color: var(--tn-status-in-progress-color, var(--tn-interactive-accent));
 }
@@ -207,12 +228,7 @@
 
 /* Hide task display when empty with slide animation */
 .tasknotes-plugin .pomodoro-view__task-display:empty {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-20px);
-    margin: 0 auto;
-    padding: 0 var(--tn-space-2);
-    min-height: 0;
+    display: none;
 }
 
 .tasknotes-plugin .pomodoro-view__task-display--no-task {
@@ -270,23 +286,9 @@
 
 /* Use consistent button system for task select button */
 .tasknotes-plugin .pomodoro-view__task-select-button {
-    background: transparent;
-    color: var(--tn-text-normal);
-    border: none;
-    box-shadow: none;
-    flex: 1;
-    white-space: nowrap;
-}
-
-.tasknotes-plugin .pomodoro-view__task-select-button:hover {
-    background: var(--tn-interactive-hover);
-    border: none;
-    box-shadow: none;
-}
-
-.tasknotes-plugin .pomodoro-view__task-select-button--no-task {
-    color: var(--tn-text-muted);
-    font-style: italic;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Use consistent button system for task clear button */
@@ -366,21 +368,10 @@
 /* Primary Control Buttons */
 /* Use consistent button system with primary accent background preserved */
 .tasknotes-plugin .pomodoro-view__start-button {
-    background: var(--tn-interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-    box-shadow: none;
-    min-width: 200px;
-}
-
-.tasknotes-plugin .pomodoro-view__start-button:hover {
-    background: var(--tn-interactive-accent-hover);
-    box-shadow: none;
+    min-width: 160px;
 }
 
 /* Remove all borders and shadows from other pomodoro buttons */
-.tasknotes-plugin .pomodoro-view__pause-button,
-.tasknotes-plugin .pomodoro-view__stop-button,
 .tasknotes-plugin .pomodoro-view__skip-break-button,
 .tasknotes-plugin .pomodoro-view__time-adjust-button {
     border: none;
@@ -395,7 +386,7 @@
 }
 
 .tasknotes-plugin .pomodoro-view__pause-button {
-    min-width: 200px;
+    min-width: 100px;
 }
 
 .tasknotes-plugin .pomodoro-view__stop-button {
@@ -518,7 +509,7 @@
 .tasknotes-plugin .pomodoro-view__stat-value {
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-bold);
-    color: var(--tn-interactive-accent);
+    color: var(--tn-text-muted);
     margin: 0;
 }
 
@@ -542,8 +533,8 @@
     .tasknotes-plugin .pomodoro-view__progress-container {
         width: 100%;
         height: auto;
-        min-height: 160px;
-        padding: var(--tn-space-8) 0;
+        min-height: 0;
+        padding: var(--tn-space-4) 0;
     }
     
     .tasknotes-plugin .pomodoro-view__timer-display {
@@ -561,7 +552,7 @@
     }
     
     .tasknotes-plugin .pomodoro-view__primary-controls {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         gap: var(--tn-space-1);
     }
@@ -569,7 +560,7 @@
     .tasknotes-plugin .pomodoro-view__start-button,
     .tasknotes-plugin .pomodoro-view__pause-button,
     .tasknotes-plugin .pomodoro-view__stop-button {
-        width: 100%;
+        width: auto;
         max-width: 250px;
     }
     
@@ -583,8 +574,8 @@
     .tasknotes-plugin .pomodoro-view__progress-container {
         width: 100%;
         height: auto;
-        min-height: 160px;
-        padding: var(--tn-space-8) 0;
+        min-height: 0;
+        padding: var(--tn-space-4) 0;
     }
     
     .tasknotes-plugin .pomodoro-view__timer-display {
@@ -676,14 +667,14 @@
 }
 
 .tasknotes-plugin.pomodoro-view--very-narrow .pomodoro-view__primary-controls {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--tn-space-half);
 }
 
 .tasknotes-plugin.pomodoro-view--very-narrow .pomodoro-view__start-button,
 .tasknotes-plugin.pomodoro-view--very-narrow .pomodoro-view__pause-button,
 .tasknotes-plugin.pomodoro-view--very-narrow .pomodoro-view__stop-button {
-    width: 100%;
+    width: auto;
     max-width: 200px;
     font-size: var(--tn-type-xs);
     padding: var(--tn-space-1);

@@ -839,7 +839,10 @@ export abstract class BasesViewBase extends Component {
 	 * Call this when search produces no matches.
 	 */
 	protected renderSearchNoResults(container: HTMLElement): void {
-		renderBasesSearchNoResults(container, this.currentSearchTerm);
+		renderBasesSearchNoResults(container, this.currentSearchTerm, () => {
+			this.searchBox?.setValue("");
+			this.handleSearch("");
+		});
 	}
 
 	// =====================

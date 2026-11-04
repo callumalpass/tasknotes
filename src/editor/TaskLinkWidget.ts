@@ -41,7 +41,10 @@ export class TaskLinkWidget extends WidgetType {
 			"scheduled",
 			"recurrence",
 		];
-		const visibleProperties = convertInternalToUserProperties(internalProperties, this.plugin);
+		const visibleProperties = convertInternalToUserProperties(
+			this.taskInfo.isBlocked ? [...new Set([...internalProperties, "blocked"])] : internalProperties,
+			this.plugin
+		);
 
 		// Create a wrapper span with the tasknotes-plugin class for CSS scoping
 		const wrapper = activeWindow.createSpan();
@@ -123,6 +126,8 @@ export class TaskLinkWidget extends WidgetType {
 			this.taskInfo.due === other.taskInfo.due &&
 			this.taskInfo.scheduled === other.taskInfo.scheduled &&
 			this.taskInfo.recurrence === other.taskInfo.recurrence &&
+			this.taskInfo.isBlocked === other.taskInfo.isBlocked &&
+			JSON.stringify(this.taskInfo.blockedBy) === JSON.stringify(other.taskInfo.blockedBy) &&
 			this.displayText === other.displayText &&
 			this.subpath === other.subpath &&
 			this.originalText === other.originalText &&
