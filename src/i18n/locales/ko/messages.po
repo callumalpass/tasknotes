@@ -9152,7 +9152,6 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "미완료"
 
-#: src/bases/KanbanView.ts
 #: src/ui/taskCardContextMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
@@ -12179,11 +12178,6 @@ msgstr "작업 생성됨"
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "작업을 만들었지만 후속 단계가 실패했습니다: {message}"
-
-#: src/bases/KanbanView.ts
-msgctxt "kanban creation feedback"
-msgid "Task created, but hidden by the current view"
-msgstr "작업을 만들었지만 현재 보기에서는 숨겨져 있습니다"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "bases creation feedback"

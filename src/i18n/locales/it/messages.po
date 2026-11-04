@@ -9153,7 +9153,6 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "Aperta"
 
-#: src/bases/KanbanView.ts
 #: src/ui/taskCardContextMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
@@ -12180,11 +12179,6 @@ msgstr "Attività creata"
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Attività creata, ma un passaggio successivo non è riuscito: {message}"
-
-#: src/bases/KanbanView.ts
-msgctxt "kanban creation feedback"
-msgid "Task created, but hidden by the current view"
-msgstr "Attività creata, ma nascosta nella vista attuale"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "bases creation feedback"

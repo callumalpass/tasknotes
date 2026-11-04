@@ -3725,7 +3725,7 @@ test.describe('Issue #1352 - Preserve time when updating dates', () => {
       const app = (window as any).app;
       return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter?.scheduled;
     }, original.path)).toBe(expected);
-    await expect(page.locator('.tn-toast').last()).toContainText('1 task updated');
+    await expect(page.locator('.tn-toast__message').last()).toHaveText(`Scheduled date → ${expected}`);
     await page.locator('.tn-toast').last().getByRole('button', { name: 'Undo', exact: true }).click();
     await expect.poll(() => page.evaluate(async path => {
       const plugin = (window as any).app.plugins.plugins.tasknotes;

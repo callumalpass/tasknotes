@@ -1,5 +1,4 @@
 import { renderEmptyState } from "../ui/kit/emptyState";
-import { showToast } from "../ui/kit/toast";
 import { changeTaskProperty, showTaskUndo, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
 import { buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
 import { createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
@@ -4092,22 +4091,6 @@ export class KanbanView extends BasesViewBase {
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
 		// For kanban, just do full refresh since cards might move columns
 		this.debouncedRefresh();
-	}
-
-	protected onViewTaskCreated(task: TaskInfo): void {
-		super.onViewTaskCreated(task);
-		const win = this.containerEl.ownerDocument.defaultView ?? window;
-		const timer = win.setTimeout(() => {
-			if (!this.rootElement?.isConnected || this.getVisibleTaskPaths().includes(task.path)) return;
-			showToast({
-				message: uiText(msg({ message: "Task created, but hidden by the current view", context: "kanban creation feedback" })),
-				action: {
-					label: uiText(msg({ message: "Open", context: "ui.audit.open" })),
-					run: () => { void this.plugin.app.workspace.openLinkText(task.path, "", false); },
-				},
-			});
-		}, 1500);
-		this.register(() => win.clearTimeout(timer));
 	}
 
 	/**

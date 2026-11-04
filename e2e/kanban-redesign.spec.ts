@@ -245,7 +245,7 @@ test('batch drops aggregate Undo while stale axis receipts refuse to replace new
     await plugin.updateTaskProperty(await plugin.cacheManager.getTaskInfo(path), 'priority', 'normal', { suppressNotice: true });
   }, `${folder}/${titles[0]}.md`);
   await page.locator('.tn-toast__action').click();
-  await expect(page.locator('.tn-toast__message')).toHaveText('Could not update tasks');
+  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated · Cannot undo: the note has changed.');
   expect(await readTask(titles[0])).toMatchObject({ status: 'waiting', priority: 'normal' });
 });
 
@@ -425,8 +425,15 @@ test('default and eight long custom statuses stay composed in both themes at des
           width: element.clientWidth, overflow: element.scrollWidth > element.clientWidth,
           height: element.getBoundingClientRect().height,
           titleHeight: element.querySelector('.task-card__title-text')!.getBoundingClientRect().height,
+          titleLineHeight: parseFloat(getComputedStyle(element.querySelector('.task-card__title-text')!).lineHeight),
+          titleClamp: getComputedStyle(element.querySelector('.task-card__title-text')!).webkitLineClamp,
+          metadataAligned: Array.from(element.querySelectorAll('.task-card__metadata > *')).filter(child => child.getBoundingClientRect().height).every(child => {
+            const bounds = child.getBoundingClientRect();
+            const row = element.querySelector('.task-card__metadata')!.getBoundingClientRect();
+            return Math.abs((bounds.top + bounds.bottom) / 2 - (row.top + row.bottom) / 2) <= 1;
+          }),
         })));
-        expect(cards.every(card => !card.overflow && card.height < 90 && card.titleHeight < 24)).toBe(true);
+        expect(cards.every(card => !card.overflow && card.titleClamp === '2' && card.titleHeight <= card.titleLineHeight * 2 + 1 && card.metadataAligned && card.height < 90)).toBe(true);
         if (!custom) await expect(page.locator('.kanban-view__column[data-group="none"]')).toHaveClass(/--collapsed/);
         if (custom) await expect(board).toHaveClass(/--overflow/);
         await page.mouse.move(width - 30, 760);
@@ -562,7 +569,29 @@ test('horizontal keyboard navigation reaches adjacent columns across empty swiml
 
 test('keyboard creation outside a board filter offers Open without modifying the filter', async () => {
   const page = instance.page;
+  const content = await page.evaluate(async path => {
+    const app = (window as any).app;
+    return app.vault.read(app.vault.getAbstractFileByPath(path));
+  }, boardPath);
+  const config = parse(content);
+  config.filters.and.push('file.name.contains("release checklist")');
+  const filteredContent = stringify(config);
+  await page.evaluate(async ({ path, content }) => {
+    const app = (window as any).app;
+    await app.vault.modify(app.vault.getAbstractFileByPath(path), content);
+  }, { path: boardPath, content: filteredContent });
+  await expect(page.locator('.kanban-view__card-wrapper')).toHaveCount(1);
   const title = `Outside board filter ${Date.now()}`;
+  await page.evaluate(() => {
+    const messages: string[] = [];
+    const observer = new MutationObserver(records => {
+      for (const record of records) for (const node of Array.from(record.addedNodes)) {
+        if (node instanceof HTMLElement && node.matches('.tn-toast')) messages.push(node.textContent ?? '');
+      }
+    });
+    observer.observe(document.body, { childList: true });
+    (window as any).creationFeedback = { messages, observer };
+  });
   await page.locator('.tn-tasknotesKanban').focus();
   await page.keyboard.press('c');
   const modal = page.locator('.modal.mod-tasknotes');
@@ -571,12 +600,22 @@ test('keyboard creation outside a board filter offers Open without modifying the
   await modal.locator('button.mod-cta').click();
   await expect(modal).toHaveCount(0);
   const toast = page.locator('.tn-toast');
-  await expect(toast).toContainText('Task created, but hidden by the current view');
+  await expect(toast).toContainText('Task created, but hidden by this view');
+  expect(await page.evaluate(() => {
+    const feedback = (window as any).creationFeedback;
+    feedback.observer.disconnect();
+    return feedback.messages.filter((message: string) => message.includes('Task created, but hidden'));
+  })).toHaveLength(1);
   const path = await page.evaluate(async title => {
     const plugin = (window as any).app.plugins.plugins.tasknotes;
     return (await plugin.cacheManager.getAllTasks()).find((task: any) => task.title === title)?.path;
   }, title);
   expect(path).toBeTruthy();
+  expect(path).toMatch(new RegExp(`^${folder}/`));
+  expect(await page.evaluate(async path => {
+    const app = (window as any).app;
+    return app.vault.read(app.vault.getAbstractFileByPath(path));
+  }, boardPath)).toBe(filteredContent);
   try {
     await toast.getByRole('button', { name: 'Open', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).app.workspace.getActiveFile()?.path)).toBe(path);
