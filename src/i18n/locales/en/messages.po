@@ -7072,7 +7072,7 @@ msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "Hide completed tasks from overdue"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.actions.hideDetailedOptions"
 msgid "Hide detailed options"
 msgstr "Hide detailed options"
@@ -8184,6 +8184,12 @@ msgstr "Monthly recurrence"
 msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "More actions"
+
+#: src/components/RecurrenceContextMenu.ts
+#: src/modals/TaskModal.ts
+msgctxt "task modal field disclosure"
+msgid "More fields"
+msgstr "More fields"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -11291,7 +11297,7 @@ msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "Show current time indicator"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.actions.showDetailedOptions"
 msgid "Show detailed options"
 msgstr "Show detailed options"

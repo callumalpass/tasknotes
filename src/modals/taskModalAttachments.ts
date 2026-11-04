@@ -62,7 +62,9 @@ export function createVaultAttachmentEntry(path: string): TaskModalAttachmentEnt
 	return { kind: "linked", reference: canonicalAttachmentReference(path), path };
 }
 
-export function getLinkedAttachmentReferences(entries: readonly TaskModalAttachmentEntry[]): string[] {
+export function getLinkedAttachmentReferences(
+	entries: readonly TaskModalAttachmentEntry[]
+): string[] {
 	return entries.flatMap((entry) => (entry.kind === "linked" ? [entry.reference] : []));
 }
 
@@ -209,22 +211,51 @@ export class TaskModalAttachmentsField {
 			.setName(options.label)
 			.addButton((button) => {
 				button
-					.setButtonText(t(msg({ message: "Add from vault", context: "modals.task.attachments.addFromVaultButton" })))
-					.setTooltip(t(msg({ message: "Attach an existing vault file", context: "modals.task.attachments.addFromVaultTooltip" })))
+					.setButtonText(
+						t(
+							msg({
+								message: "Add from vault",
+								context: "modals.task.attachments.addFromVaultButton",
+							})
+						)
+					)
+					.setTooltip(
+						t(
+							msg({
+								message: "Attach an existing vault file",
+								context: "modals.task.attachments.addFromVaultTooltip",
+							})
+						)
+					)
 					.onClick(() => {
 						options.pickVaultFile((file) => this.addVaultFile(file));
 					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost", "task-attachments-add"]);
+				button.buttonEl.addClasses(["tn-btn", "tn-btn--sm", "task-attachments-add"]);
 				this.addButtonEl = button.buttonEl;
 			})
 			.addButton((button) => {
 				button
-					.setButtonText(t(msg({ message: "Import file", context: "modals.task.attachments.importButton" })))
-					.setTooltip(t(msg({ message: "Choose a file from this device. It is copied into the vault when the task is saved.", context: "modals.task.attachments.importTooltip" })))
+					.setButtonText(
+						t(
+							msg({
+								message: "Import file",
+								context: "modals.task.attachments.importButton",
+							})
+						)
+					)
+					.setTooltip(
+						t(
+							msg({
+								message:
+									"Choose a file from this device. It is copied into the vault when the task is saved.",
+								context: "modals.task.attachments.importTooltip",
+							})
+						)
+					)
 					.onClick(() => {
 						this.fileInput.click();
 					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost", "task-attachments-import"]);
+				button.buttonEl.addClasses(["tn-btn", "tn-btn--sm", "task-attachments-import"]);
 			});
 
 		this.listEl = this.fieldEl.createEl("ul", { cls: "task-attachments-list" });
@@ -310,7 +341,10 @@ export class TaskModalAttachmentsField {
 			const itemEl = this.listEl.createEl("li", { cls: "task-attachment-item" });
 			itemEl.dataset.index = String(index);
 
-			const iconEl = itemEl.createSpan({ cls: "task-attachment-icon", attr: { "aria-hidden": "true" } });
+			const iconEl = itemEl.createSpan({
+				cls: "task-attachment-icon",
+				attr: { "aria-hidden": "true" },
+			});
 			setIcon(iconEl, entry.kind === "pending" ? "upload" : "paperclip");
 
 			const infoEl = itemEl.createDiv({ cls: "task-attachment-info" });
@@ -324,7 +358,13 @@ export class TaskModalAttachmentsField {
 					text: name,
 					attr: {
 						type: "button",
-						"aria-label": t(msg({ message: "Open {name}", context: "modals.task.attachments.openAriaLabel" }), { name }),
+						"aria-label": t(
+							msg({
+								message: "Open {name}",
+								context: "modals.task.attachments.openAriaLabel",
+							}),
+							{ name }
+						),
 					},
 				});
 				openButton.addEventListener("click", () => this.options.openAttachment(path));
@@ -336,13 +376,23 @@ export class TaskModalAttachmentsField {
 				itemEl.addClass("task-attachment-item--pending");
 				infoEl.createDiv({
 					cls: "task-attachment-hint",
-					text: t(msg({ message: "Copied into the vault when the task is saved", context: "modals.task.attachments.pendingHint" })),
+					text: t(
+						msg({
+							message: "Copied into the vault when the task is saved",
+							context: "modals.task.attachments.pendingHint",
+						})
+					),
 				});
 			} else if (missing) {
 				itemEl.addClass("task-attachment-item--unresolved");
 				infoEl.createDiv({
 					cls: "task-attachment-hint",
-					text: t(msg({ message: "File not found", context: "modals.task.attachments.missingHint" })),
+					text: t(
+						msg({
+							message: "File not found",
+							context: "modals.task.attachments.missingHint",
+						})
+					),
 				});
 			} else if (entry.path && entry.path !== name) {
 				infoEl.createDiv({ cls: "task-attachment-path", text: entry.path });
@@ -353,21 +403,39 @@ export class TaskModalAttachmentsField {
 				up: this.createIconButton(
 					actionsEl,
 					"arrow-up",
-					t(msg({ message: "Move {name} up", context: "modals.task.attachments.moveUpAriaLabel" }), { name }),
+					t(
+						msg({
+							message: "Move {name} up",
+							context: "modals.task.attachments.moveUpAriaLabel",
+						}),
+						{ name }
+					),
 					index === 0,
 					() => this.move(index, -1)
 				),
 				down: this.createIconButton(
 					actionsEl,
 					"arrow-down",
-					t(msg({ message: "Move {name} down", context: "modals.task.attachments.moveDownAriaLabel" }), { name }),
+					t(
+						msg({
+							message: "Move {name} down",
+							context: "modals.task.attachments.moveDownAriaLabel",
+						}),
+						{ name }
+					),
 					index === entries.length - 1,
 					() => this.move(index, 1)
 				),
 				remove: this.createIconButton(
 					actionsEl,
 					"x",
-					t(msg({ message: "Remove {name} from this task", context: "modals.task.attachments.removeAriaLabel" }), { name }),
+					t(
+						msg({
+							message: "Remove {name} from this task",
+							context: "modals.task.attachments.removeAriaLabel",
+						}),
+						{ name }
+					),
 					false,
 					() => this.remove(index)
 				),

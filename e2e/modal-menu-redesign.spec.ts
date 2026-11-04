@@ -66,6 +66,11 @@ test.afterAll(async () => {
   }
 });
 
+test.beforeEach(async () => {
+  await page.evaluate(() => document.body.classList.remove('is-mobile'));
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+});
+
 for (const theme of ['theme-light', 'theme-dark']) {
   for (const mode of ['create', 'edit']) {
     test(`${theme}: ${mode} modal pickers keep changes in the draft until save`, async () => {
@@ -87,6 +92,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const titleInput = mode === 'create'
         ? modal.locator('.tn-task-modal__markdown-editor--nlp .cm-content')
         : modal.locator('.title-input');
+      if (mode === 'edit') await expect.poll(() => titleInput.evaluate((element: HTMLTextAreaElement) => element.selectionStart === element.value.length && element.selectionEnd === element.value.length)).toBe(true);
       await titleInput.fill(title);
       const status = modal.locator('[data-type="status"]');
       await status.click();
@@ -375,6 +381,7 @@ test('project selector and delete confirmation retain native cancellation', asyn
     plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
   }, taskPath);
   const modal = page.locator('.modal.mod-tasknotes');
+  await modal.locator('.tn-task-modal__details-toggle').click();
   await modal.getByText('Add to project', { exact: true }).click();
   const selector = page.locator('.prompt.tn-modal');
   await expect(selector.locator('input')).toBeVisible();

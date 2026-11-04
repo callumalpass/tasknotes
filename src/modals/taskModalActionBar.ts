@@ -40,7 +40,13 @@ export function createTaskModalActionIcon(
 
 	iconContainer.addEventListener("click", activate);
 	iconContainer.addEventListener("keydown", (event) => {
-		if (event.key === "Enter" || event.key === " ") {
+		if (
+			(event.key === "Enter" || event.key === " ") &&
+			!event.ctrlKey &&
+			!event.metaKey &&
+			!event.altKey &&
+			!event.shiftKey
+		) {
 			activate(event);
 		}
 	});

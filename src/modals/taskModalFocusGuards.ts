@@ -24,18 +24,21 @@ export class TaskModalFocusGuards {
 	private mobileKeyboardFocusCleanups: Array<() => void> = [];
 	private mobileKeyboardScrollTimers: number[] = [];
 	private activeMobileKeyboardInput: HTMLElement | null = null;
+	private titleFocusTimer: number | undefined;
 
 	constructor(elements: TaskModalFocusGuardElements) {
 		this.elements = elements;
 	}
 
-	focusTitleInput(input: TaskModalTitleInputElement): void {
+	focusTitleInput(input: TaskModalTitleInputElement, selectAll = true): void {
 		const win = this.getWindow();
-		win.setTimeout(() => {
+		win.clearTimeout(this.titleFocusTimer);
+		this.titleFocusTimer = win.setTimeout(() => {
 			if (this.elements.containerEl.querySelector(".tn-popover")) return;
 			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
 			input.focus({ preventScroll: true });
-			input.select();
+			if (selectAll) input.select();
+			else input.setSelectionRange(input.value.length, input.value.length);
 			this.restoreTitleFocusScrollPositions(this.pendingTitleFocusScrollPositions);
 		}, this.getInitialFocusDelay());
 	}
@@ -58,11 +61,15 @@ export class TaskModalFocusGuards {
 		this.guardedTitleInputs.add(input);
 
 		const capture = () => {
+			this.getWindow().clearTimeout(this.titleFocusTimer);
 			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
 		};
 
 		input.addEventListener("pointerdown", capture, { capture: true });
 		input.addEventListener("touchstart", capture, { capture: true });
+		const cancelInitialFocus = () => this.getWindow().clearTimeout(this.titleFocusTimer);
+		input.addEventListener("keydown", cancelInitialFocus);
+		input.addEventListener("input", cancelInitialFocus);
 		input.addEventListener("focus", () => {
 			if (!this.pendingTitleFocusScrollPositions) return;
 			this.scheduleTitleFocusScrollRestore(this.pendingTitleFocusScrollPositions);
@@ -124,6 +131,7 @@ export class TaskModalFocusGuards {
 	}
 
 	destroy(): void {
+		this.getWindow().clearTimeout(this.titleFocusTimer);
 		for (const cleanup of this.mobileKeyboardFocusCleanups) {
 			cleanup();
 		}

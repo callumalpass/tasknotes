@@ -224,7 +224,7 @@ describe("taskModalProjects", () => {
 		});
 
 		expect(container.querySelectorAll(".task-project-item")).toHaveLength(2);
-		expect(container.querySelector(".task-card__project-link")?.textContent).toBe("Alpha.md");
+		expect(container.querySelector(".task-card__project-link")?.textContent).toBe("Alpha");
 		expect(container.querySelector(".task-project-path")?.textContent).toBe(
 			"Projects/Alpha.md"
 		);

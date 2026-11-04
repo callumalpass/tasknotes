@@ -31,7 +31,7 @@ describe("Issue #1939: mobile details editor fallback width", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 
 		expect(cssContent).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\.details-editor-fallback\s*\{[^}]*min-height:\s*140px;[^}]*max-height:\s*32vh;/s
+			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\.details-editor-fallback\s*\{[^}]*min-height:\s*var\(--tn-control-md\);[^}]*max-height:\s*32vh;/s
 		);
 	});
 });
