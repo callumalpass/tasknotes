@@ -2,7 +2,7 @@ import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { App, Modal, Notice, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Notice, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -478,6 +478,7 @@ export abstract class TaskModal extends Modal {
 
 	/** Close without checking for unsaved changes. */
 	forceClose(): void {
+		if (this.pendingClose) return;
 		this.propertyPicker?.close();
 		this.propertyPicker = undefined;
 		this.pendingClose = true;
@@ -489,18 +490,14 @@ export abstract class TaskModal extends Modal {
 	 * Modal.close() signature; the prompt runs separately.
 	 */
 	close(): void {
-		if (this.pendingClose) {
-			this.pendingClose = false;
-			super.close();
-			return;
-		}
+		if (this.pendingClose || this.saveInFlight) return;
 
 		if (this.isShowingConfirmation) {
 			return;
 		}
 
 		if (!this.hasUnsavedChanges()) {
-			super.close();
+			this.forceClose();
 			return;
 		}
 
@@ -565,6 +562,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	onOpen() {
+		this.pendingClose = false;
 		this.isModalOpen = true;
 		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal");
 		if (this.plugin.settings.enableModalSplitLayout) {
@@ -634,6 +632,7 @@ export abstract class TaskModal extends Modal {
 		this.createDetailsSection(container);
 		this.createActionBar(this.splitLeftColumn);
 		this.detailsContainer.before(this.actionBar);
+		if (this.projectsList) this.actionBar.after(this.projectsList);
 
 		// Hook for subclasses to add additional sections to left column
 		this.createAdditionalSections(this.splitLeftColumn);
@@ -698,7 +697,55 @@ export abstract class TaskModal extends Modal {
 	protected createActionBar(container: HTMLElement): void {
 		this.actionBar = container.createDiv("tn-task-modal__action-bar");
 		this.createCoreActionIcons(this.actionBar);
+		const toggle = createTaskModalActionIcon(this.actionBar, {
+			iconName: this.isExpanded ? "chevron-up" : "chevron-down",
+			tooltip: this.getDetailedFormToggleLabel(),
+			chip: true,
+			onClick: (icon) => {
+				this.toggleDetailedForm();
+				const glyph = icon.querySelector<HTMLElement>(".icon");
+				if (glyph) setIcon(glyph, this.isExpanded ? "chevron-up" : "chevron-down");
+				setTooltip(icon, this.getDetailedFormToggleLabel(), { placement: "top" });
+				icon.setAttribute("aria-expanded", String(this.isExpanded));
+			},
+		});
+		toggle.addClass("tn-task-modal__details-toggle");
+		const label = toggle.querySelector<HTMLElement>(".action-icon__label");
+		if (label)
+			label.textContent = this.t(
+				msg({ message: "More fields", context: "task modal field disclosure" })
+			);
+		toggle.setAttribute("aria-expanded", String(this.isExpanded));
 		this.updateIconStates();
+	}
+
+	private getDetailedFormToggleLabel(): string {
+		return this.isExpanded
+			? this.t(
+					msg({
+						message: "Hide detailed options",
+						context: "modals.taskCreation.actions.hideDetailedOptions",
+					})
+				)
+			: this.t(
+					msg({
+						message: "Show detailed options",
+						context: "modals.taskCreation.actions.showDetailedOptions",
+					})
+				);
+	}
+
+	private toggleDetailedForm(): void {
+		if (!this.isExpanded) {
+			this.expandModal();
+			return;
+		}
+		this.isExpanded = false;
+		setTaskModalDetailsCollapsed(
+			{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
+			true
+		);
+		this.containerEl.removeClass("expanded");
 	}
 
 	protected createCoreActionIcons(container: HTMLElement): HTMLElement[] {
@@ -1363,7 +1410,8 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected focusTitleInput(): void {
-		if (this.titleInput) this.focusGuards.focusTitleInput(this.titleInput);
+		if (this.titleInput)
+			this.focusGuards.focusTitleInput(this.titleInput, this.mode === "create");
 	}
 
 	protected getInitialFocusDelay(): number {

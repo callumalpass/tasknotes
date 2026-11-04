@@ -87,6 +87,28 @@ describe("taskModalFocusGuards", () => {
 		expect(focus).not.toHaveBeenCalled();
 	});
 
+	it("places the edit caret at the end without selecting the title", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+		input.value = "Review launch";
+		guards.focusTitleInput(input, false);
+		jest.runOnlyPendingTimers();
+		expect(input.selectionStart).toBe(input.value.length);
+		expect(input.selectionEnd).toBe(input.value.length);
+	});
+
+	it("cancels delayed title focus when the modal closes", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+		const focus = jest.spyOn(input, "focus");
+		guards.focusTitleInput(input);
+		guards.destroy();
+		jest.runOnlyPendingTimers();
+		expect(focus).not.toHaveBeenCalled();
+	});
+
 	it("scrolls mobile keyboard fields into view and cleans up on destroy", () => {
 		const elements = createElements();
 		const guards = new TaskModalFocusGuards(elements);

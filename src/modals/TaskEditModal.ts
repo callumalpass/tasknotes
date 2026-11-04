@@ -34,7 +34,6 @@ export interface TaskEditOptions {
 
 export class TaskEditModal extends TaskModal {
 	protected readonly mode = "edit";
-	protected isExpanded = true;
 	private task: TaskInfo;
 	private options: TaskEditOptions;
 	// Changed from Set to array for consistency with other state management
@@ -110,7 +109,10 @@ export class TaskEditModal extends TaskModal {
 		this.form.values.recurrenceRule = formState.recurrenceRule;
 		this.form.values.recurrenceAnchor = formState.recurrenceAnchor;
 		this.form.values.reminders = formState.reminders;
-		this.attachmentEntries = createLinkedAttachmentEntries(this.task.attachments, this.task.path);
+		this.attachmentEntries = createLinkedAttachmentEntries(
+			this.task.attachments,
+			this.task.path
+		);
 		this.form.values.details = formState.details;
 		this.originalDetails = formState.originalDetails;
 		this.form.values.userFields = formState.userFields;
@@ -225,7 +227,9 @@ export class TaskEditModal extends TaskModal {
 		const metadataContainer = container.createEl("details", { cls: "metadata-container" });
 
 		const metadataLabel = metadataContainer.createEl("summary", { cls: "detail-label" });
-		metadataLabel.textContent = this.t(msg({ message: "Task information", context: "modals.taskEdit.sections.taskInfo" }));
+		metadataLabel.textContent = this.t(
+			msg({ message: "Task information", context: "modals.taskEdit.sections.taskInfo" })
+		);
 
 		const metadataContent = metadataContainer.createDiv("metadata-content");
 
@@ -234,7 +238,12 @@ export class TaskEditModal extends TaskModal {
 		if (totalTimeSpent > 0) {
 			this.createMetadataItem(
 				metadataContent,
-				this.t(msg({ message: "Total tracked time:", context: "modals.taskEdit.metadata.totalTrackedTime" })),
+				this.t(
+					msg({
+						message: "Total tracked time:",
+						context: "modals.taskEdit.metadata.totalTrackedTime",
+					})
+				),
 				formatTime(totalTimeSpent)
 			);
 		}
@@ -288,15 +297,28 @@ export class TaskEditModal extends TaskModal {
 
 			if (this.unresolvedBlockingEntries.length > 0 && !hasBlockingChanges) {
 				new Notice(
-					this.t(msg({ message: "Could not resolve: {entries}", context: "modals.taskEdit.notices.blockingUnresolved" }), {
-						entries: this.unresolvedBlockingEntries.join(", "),
-					})
+					this.t(
+						msg({
+							message: "Could not resolve: {entries}",
+							context: "modals.taskEdit.notices.blockingUnresolved",
+						}),
+						{
+							entries: this.unresolvedBlockingEntries.join(", "),
+						}
+					)
 				);
 				this.unresolvedBlockingEntries = [];
 			}
 
 			if (!hasTaskChanges && !hasBlockingChanges && !hasSubtaskChanges) {
-				new Notice(this.t(msg({ message: "No changes to save", context: "modals.taskEdit.notices.noChanges" })));
+				new Notice(
+					this.t(
+						msg({
+							message: "No changes to save",
+							context: "modals.taskEdit.notices.noChanges",
+						})
+					)
+				);
 				return { status: "saved" };
 			}
 
@@ -348,9 +370,15 @@ export class TaskEditModal extends TaskModal {
 
 			if (this.unresolvedBlockingEntries.length > 0) {
 				new Notice(
-					this.t(msg({ message: "Could not resolve: {entries}", context: "modals.taskEdit.notices.blockingUnresolved" }), {
-						entries: this.unresolvedBlockingEntries.join(", "),
-					})
+					this.t(
+						msg({
+							message: "Could not resolve: {entries}",
+							context: "modals.taskEdit.notices.blockingUnresolved",
+						}),
+						{
+							entries: this.unresolvedBlockingEntries.join(", "),
+						}
+					)
 				);
 			}
 
@@ -360,10 +388,23 @@ export class TaskEditModal extends TaskModal {
 
 			if (hasTaskChanges) {
 				new Notice(
-					this.t(msg({ message: "Task \"{title}\" updated successfully", context: "modals.taskEdit.notices.updateSuccess" }), { title: updatedTask.title })
+					this.t(
+						msg({
+							message: 'Task "{title}" updated successfully',
+							context: "modals.taskEdit.notices.updateSuccess",
+						}),
+						{ title: updatedTask.title }
+					)
 				);
 			} else if (hasBlockingChanges) {
-				new Notice(this.t(msg({ message: "Dependencies updated", context: "modals.taskEdit.notices.dependenciesUpdateSuccess" })));
+				new Notice(
+					this.t(
+						msg({
+							message: "Dependencies updated",
+							context: "modals.taskEdit.notices.dependenciesUpdateSuccess",
+						})
+					)
+				);
 			}
 
 			this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
@@ -376,7 +417,15 @@ export class TaskEditModal extends TaskModal {
 				error: error,
 			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
-			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(message) }));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to update task: {message}",
+						context: "modals.taskEdit.notices.updateFailure",
+					}),
+					{ message: displayError(message) }
+				)
+			);
 			return { status: "failed" };
 		}
 	}
@@ -444,7 +493,15 @@ export class TaskEditModal extends TaskModal {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
 
 			if (!(file instanceof TFile)) {
-				new Notice(this.t(msg({ message: "Could not find task file: {path}", context: "modals.taskEdit.notices.fileMissing" }), { path: this.task.path }));
+				new Notice(
+					this.t(
+						msg({
+							message: "Could not find task file: {path}",
+							context: "modals.taskEdit.notices.fileMissing",
+						}),
+						{ path: this.task.path }
+					)
+				);
 				return;
 			}
 
@@ -461,7 +518,14 @@ export class TaskEditModal extends TaskModal {
 				operation: "open-task-note",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to open task note", context: "modals.taskEdit.notices.openNoteFailure" })));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to open task note",
+						context: "modals.taskEdit.notices.openNoteFailure",
+					})
+				)
+			);
 		}
 	}
 
@@ -482,9 +546,20 @@ export class TaskEditModal extends TaskModal {
 			// Show success message
 			const actionKey = updatedTask.archived
 				? msg({ message: "archived", context: "modals.taskEdit.archiveAction.archived" })
-				: msg({ message: "unarchived", context: "modals.taskEdit.archiveAction.unarchived" });
+				: msg({
+						message: "unarchived",
+						context: "modals.taskEdit.archiveAction.unarchived",
+					});
 			const actionText = this.t(actionKey);
-			new Notice(this.t(msg({ message: "Task {action} successfully", context: "modals.taskEdit.notices.archiveSuccess" }), { action: actionText }));
+			new Notice(
+				this.t(
+					msg({
+						message: "Task {action} successfully",
+						context: "modals.taskEdit.notices.archiveSuccess",
+					}),
+					{ action: actionText }
+				)
+			);
 
 			this.forceClose();
 		} catch (error) {
@@ -493,17 +568,38 @@ export class TaskEditModal extends TaskModal {
 				operation: "archive-task",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to archive task", context: "modals.taskEdit.notices.archiveFailure" })));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to archive task",
+						context: "modals.taskEdit.notices.archiveFailure",
+					})
+				)
+			);
 		}
 	}
 
 	private async deleteTask(): Promise<void> {
 		const confirmed = await showConfirmationModal(this.app, {
-			title: this.t(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })),
-			message: this.t(msg({ message: "Are you sure you want to delete \"{title}\"? This moves the task note to Obsidian trash.", context: "modals.taskEdit.deleteConfirmation.message" }), {
-				title: this.task.title,
-			}),
-			confirmText: this.t(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.confirm" })),
+			title: this.t(
+				msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })
+			),
+			message: this.t(
+				msg({
+					message:
+						'Are you sure you want to delete "{title}"? This moves the task note to Obsidian trash.',
+					context: "modals.taskEdit.deleteConfirmation.message",
+				}),
+				{
+					title: this.task.title,
+				}
+			),
+			confirmText: this.t(
+				msg({
+					message: "Delete task",
+					context: "modals.taskEdit.deleteConfirmation.confirm",
+				})
+			),
 			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
 			isDestructive: true,
 		});
@@ -514,7 +610,15 @@ export class TaskEditModal extends TaskModal {
 
 		try {
 			await this.plugin.taskService.deleteTask(this.task);
-			new Notice(this.t(msg({ message: "Task \"{title}\" deleted successfully", context: "modals.taskEdit.notices.deleteSuccess" }), { title: this.task.title }));
+			new Notice(
+				this.t(
+					msg({
+						message: 'Task "{title}" deleted successfully',
+						context: "modals.taskEdit.notices.deleteSuccess",
+					}),
+					{ title: this.task.title }
+				)
+			);
 			this.forceClose();
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
@@ -523,7 +627,15 @@ export class TaskEditModal extends TaskModal {
 				operation: "delete-task",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message: displayError(message) }));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to delete task: {message}",
+						context: "modals.taskEdit.notices.deleteFailure",
+					}),
+					{ message: displayError(message) }
+				)
+			);
 		}
 	}
 
@@ -531,7 +643,9 @@ export class TaskEditModal extends TaskModal {
 		return [
 			{
 				className: "tn-task-modal__open-note-button",
-				text: this.t(msg({ message: "Open note", context: "modals.task.buttons.openNote" })),
+				text: this.t(
+					msg({ message: "Open note", context: "modals.task.buttons.openNote" })
+				),
 				onClick: () => {
 					void this.openTaskNote();
 				},
@@ -543,8 +657,15 @@ export class TaskEditModal extends TaskModal {
 		return [
 			{
 				title: this.task.archived
-					? this.t(msg({ message: "Unarchive", context: "modals.taskEdit.buttons.unarchive" }))
-					: this.t(msg({ message: "Archive", context: "modals.taskEdit.buttons.archive" })),
+					? this.t(
+							msg({
+								message: "Unarchive",
+								context: "modals.taskEdit.buttons.unarchive",
+							})
+						)
+					: this.t(
+							msg({ message: "Archive", context: "modals.taskEdit.buttons.archive" })
+						),
 				icon: "archive",
 				onClick: () => {
 					void this.archiveTask();

@@ -33,9 +33,13 @@ export function createCompletionsCalendarSection(
 		return;
 	}
 
-	const calendarContainer = container.createDiv("completions-calendar-container");
-	const calendarLabel = calendarContainer.createDiv("detail-label");
-	calendarLabel.textContent = options.translate(msg({ message: "Completions", context: "modals.taskEdit.sections.completions" }));
+	const calendarContainer = container.createEl("details", {
+		cls: "completions-calendar-container",
+	});
+	const calendarLabel = calendarContainer.createEl("summary", { cls: "detail-label" });
+	calendarLabel.textContent = options.translate(
+		msg({ message: "Completions", context: "modals.taskEdit.sections.completions" })
+	);
 
 	const calendarContent = calendarContainer.createDiv("completions-calendar-content");
 	createRecurringCalendar(calendarContent, options);
@@ -83,7 +87,9 @@ function renderCalendarMonth(
 		cls: "recurring-calendar__nav",
 		attr: {
 			type: "button",
-			"aria-label": options.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
+			"aria-label": options.translate(
+				msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })
+			),
 		},
 	});
 	setIcon(prevButton, "chevron-left");
@@ -99,7 +105,9 @@ function renderCalendarMonth(
 		cls: "recurring-calendar__nav",
 		attr: {
 			type: "button",
-			"aria-label": options.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
+			"aria-label": options.translate(
+				msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })
+			),
 		},
 	});
 	setIcon(nextButton, "chevron-right");
@@ -140,7 +148,13 @@ function renderCalendarMonth(
 			dayElement.addClass("recurring-calendar__day--contextable");
 			dayElement.setAttribute(
 				"aria-label",
-				options.translate(msg({ message: "Occurrence {date}", context: "modals.taskEdit.occurrenceDate" }), { date: dayStr })
+				options.translate(
+					msg({
+						message: "Occurrence {date}",
+						context: "modals.taskEdit.occurrenceDate",
+					}),
+					{ date: dayStr }
+				)
 			);
 		}
 		if (completedInstances.has(dayStr)) {
@@ -191,7 +205,14 @@ function showOccurrenceContextMenu(
 	const menu = new Menu();
 
 	menu.addItem((item) => {
-		item.setTitle(options.translate(msg({ message: "Open or create occurrence note", context: "modals.actionPalette.openOccurrence" })));
+		item.setTitle(
+			options.translate(
+				msg({
+					message: "Open or create occurrence note",
+					context: "modals.actionPalette.openOccurrence",
+				})
+			)
+		);
 		item.setIcon("file-plus");
 		item.onClick(async () => {
 			await openOrCreateOccurrenceNote({
@@ -208,7 +229,15 @@ function showOccurrenceContextMenu(
 	menu.addItem((item) => {
 		item.setTitle(
 			options.translate(
-				isCompleted ? msg({ message: "Mark incomplete for this date", context: "contextMenus.task.markIncomplete" }) : msg({ message: "Mark complete for this date", context: "contextMenus.task.markComplete" })
+				isCompleted
+					? msg({
+							message: "Mark incomplete for this date",
+							context: "contextMenus.task.markIncomplete",
+						})
+					: msg({
+							message: "Mark complete for this date",
+							context: "contextMenus.task.markComplete",
+						})
 			)
 		);
 		item.setIcon(isCompleted ? "x" : "check");
@@ -224,7 +253,12 @@ function showOccurrenceContextMenu(
 	menu.addItem((item) => {
 		item.setTitle(
 			options.translate(
-				isSkipped ? msg({ message: "Unskip instance", context: "contextMenus.task.unskipInstance" }) : msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" })
+				isSkipped
+					? msg({
+							message: "Unskip instance",
+							context: "contextMenus.task.unskipInstance",
+						})
+					: msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" })
 			)
 		);
 		item.setIcon(isSkipped ? "undo" : "x-circle");

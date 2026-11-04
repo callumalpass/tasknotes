@@ -116,12 +116,7 @@ function updateDateIcon(
 
 	if (value) {
 		icon.classList.add("has-value");
-		setChipLabel(
-			icon,
-			context.translate(keys.activeKey, {
-				value: formatTaskModalChipDate(value, context, state.timeFormat),
-			})
-		);
+		setChipLabel(icon, formatTaskModalChipDate(value, context, state.timeFormat));
 		const fullDate = formatDateTimeForDisplay(value, { userTimeFormat: state.timeFormat });
 		setTooltip(icon, context.translate(keys.activeKey, { value: fullDate }), {
 			placement: "top",
@@ -216,7 +211,7 @@ function updateConfiguredValueIcon(
 	}
 ): void {
 	const label = context.translate(options.activeTooltipKey, { value: options.label });
-	setChipLabel(icon, label);
+	setChipLabel(icon, options.label);
 	icon.setAttribute("aria-label", label);
 	icon.dataset.valueState = options.isActive ? "set" : "default";
 
@@ -227,7 +222,7 @@ function updateConfiguredValueIcon(
 		});
 	} else {
 		icon.classList.remove("has-value");
-		setTooltip(icon, context.translate(options.defaultTooltipKey), { placement: "top" });
+		setTooltip(icon, label, { placement: "top" });
 	}
 
 	const iconElement = icon.querySelector<HTMLElement>(".icon");

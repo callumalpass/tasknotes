@@ -181,7 +181,8 @@ test.describe("fields", () => {
 	test("chips show current values and the edit form leads with the title", async () => {
 		await openEdit(`Chips ${Date.now()}`, { due: "2030-06-26T14:30" });
 
-		await expect(chip("due-date")).toContainText("Due: Jun 26, 2030");
+		await expect(chip("due-date")).toContainText("Jun 26, 2030");
+		await expect(chip("due-date")).toHaveAttribute("aria-label", /Due: Jun 26, 2030/);
 		await expect(modal().locator("textarea.title-input")).toBeFocused();
 		await expect(modal().locator("details.metadata-container")).not.toHaveAttribute("open");
 

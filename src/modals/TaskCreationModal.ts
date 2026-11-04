@@ -1,6 +1,6 @@
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
-import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
+import { App, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal, type TaskSubmitOptions } from "./TaskModal";
 import { TaskInfo } from "../types";
@@ -25,7 +25,6 @@ import {
 import { applyTaskCreationSubtaskAssignments } from "./taskCreationSubtasks";
 import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import type { TaskFormNaturalLanguageLayer } from "./taskFormModel";
-import { setTaskModalDetailsCollapsed } from "./taskModalLayout";
 import type { TaskModalProjectItem } from "./taskModalProjects";
 import { runTaskSaveFollowUps, type TaskSaveOutcome } from "./taskModalSave";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -163,7 +162,15 @@ export class TaskCreationModal extends TaskModal {
 			"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--nlp"
 		);
 		editorContainer.setAttribute("role", "textbox");
-		editorContainer.setAttribute("aria-label", this.t(msg({ message: "Buy groceries tomorrow at 3pm @home #errands", context: "modals.taskCreation.nlPlaceholder" })));
+		editorContainer.setAttribute(
+			"aria-label",
+			this.t(
+				msg({
+					message: "Buy groceries tomorrow at 3pm @home #errands",
+					context: "modals.taskCreation.nlPlaceholder",
+				})
+			)
+		);
 		editorContainer.setAttribute("aria-multiline", "true");
 
 		try {
@@ -174,7 +181,12 @@ export class TaskCreationModal extends TaskModal {
 			// Create embeddable markdown editor with autocomplete
 			this.nlMarkdownEditor = createEmbeddableMarkdownEditor(this.app, editorContainer, {
 				value: "",
-				placeholder: this.t(msg({ message: "Buy groceries tomorrow at 3pm @home #errands", context: "modals.taskCreation.nlPlaceholder" })),
+				placeholder: this.t(
+					msg({
+						message: "Buy groceries tomorrow at 3pm @home #errands",
+						context: "modals.taskCreation.nlPlaceholder",
+					})
+				),
 				cls: "nlp-editor",
 				extensions: [
 					...nlpAutocomplete,
@@ -295,39 +307,6 @@ export class TaskCreationModal extends TaskModal {
 		return this.nlMarkdownEditor?.value ?? "";
 	}
 
-	protected createActionBar(container: HTMLElement): void {
-		this.actionBar = container.createDiv("tn-task-modal__action-bar");
-		this.createCoreActionIcons(this.actionBar);
-
-		if (this.usesNaturalLanguage()) {
-			const toggle = this.createActionIcon(
-				this.actionBar,
-				this.isExpanded ? "chevron-up" : "chevron-down",
-				this.getDetailedFormToggleLabel(),
-				(icon) => {
-					this.toggleDetailedForm();
-					const iconEl = icon.querySelector(".icon");
-					if (iconEl) {
-						setIcon(
-							iconEl as HTMLElement,
-							this.isExpanded ? "chevron-up" : "chevron-down"
-						);
-					}
-					setTooltip(icon, this.getDetailedFormToggleLabel(), { placement: "top" });
-				}
-			);
-			toggle.addClass("tn-task-modal__details-toggle");
-		}
-
-		this.updateIconStates();
-	}
-
-	private getDetailedFormToggleLabel(): string {
-		return this.isExpanded
-			? this.t(msg({ message: "Hide detailed options", context: "modals.taskCreation.actions.hideDetailedOptions" }))
-			: this.t(msg({ message: "Show detailed options", context: "modals.taskCreation.actions.showDetailedOptions" }));
-	}
-
 	/** Keep the form in step with the text: each change replaces what the last parse set. */
 	private syncNaturalLanguageInput(): void {
 		const input = this.getNLPInputValue().trim();
@@ -388,20 +367,6 @@ export class TaskCreationModal extends TaskModal {
 			(item) => !manualItems.includes(item)
 		);
 		this.renderProjectsList();
-	}
-
-	private toggleDetailedForm(): void {
-		if (!this.isExpanded) {
-			this.expandModal();
-			return;
-		}
-
-		this.isExpanded = false;
-		setTaskModalDetailsCollapsed(
-			{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
-			true
-		);
-		this.containerEl.removeClass("expanded");
 	}
 
 	async initializeFormData(): Promise<void> {
@@ -478,7 +443,15 @@ export class TaskCreationModal extends TaskModal {
 				error: error,
 			});
 			const message = getTaskCreationFailureNoticeMessage(error);
-			new Notice(this.t(msg({ message: "Failed to create task: {message}", context: "modals.taskCreation.notices.failure" }), { message: displayError(message) }));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to create task: {message}",
+						context: "modals.taskCreation.notices.failure",
+					}),
+					{ message: displayError(message) }
+				)
+			);
 			return { status: "failed" };
 		}
 
@@ -493,9 +466,17 @@ export class TaskCreationModal extends TaskModal {
 				error: error,
 			});
 			new Notice(
-				this.t(msg({ message: "Task created, but a follow-up step failed: {message}", context: "modals.taskCreation.notices.followUpFailure" }), {
-					message: displayError(error instanceof Error ? error.message : String(error)),
-				})
+				this.t(
+					msg({
+						message: "Task created, but a follow-up step failed: {message}",
+						context: "modals.taskCreation.notices.followUpFailure",
+					}),
+					{
+						message: displayError(
+							error instanceof Error ? error.message : String(error)
+						),
+					}
+				)
 			);
 		};
 
@@ -521,9 +502,18 @@ export class TaskCreationModal extends TaskModal {
 						error: error,
 					});
 					new Notice(
-						this.t(msg({ message: "Task created, but some attachments could not be imported: {message}", context: "modals.taskCreation.notices.attachmentImportFailure" }), {
-							message: displayError(error instanceof Error ? error.message : String(error)),
-						})
+						this.t(
+							msg({
+								message:
+									"Task created, but some attachments could not be imported: {message}",
+								context: "modals.taskCreation.notices.attachmentImportFailure",
+							}),
+							{
+								message: displayError(
+									error instanceof Error ? error.message : String(error)
+								),
+							}
+						)
 					);
 				},
 			},
@@ -571,20 +561,40 @@ export class TaskCreationModal extends TaskModal {
 		);
 		if (filenameNotice === "shortened") {
 			new Notice(
-				this.t(msg({ message: "Task \"{title}\" created successfully (filename shortened due to length)", context: "modals.taskCreation.notices.successShortened" }), {
-					title: createdTask.title,
-				})
+				this.t(
+					msg({
+						message:
+							'Task "{title}" created successfully (filename shortened due to length)',
+						context: "modals.taskCreation.notices.successShortened",
+					}),
+					{
+						title: createdTask.title,
+					}
+				)
 			);
 		} else if (filenameNotice === "sanitized") {
 			new Notice(
-				this.t(msg({ message: "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property.", context: "modals.taskCreation.notices.successFilenameSanitized" }), {
-					title: createdTask.title,
-					filename: file.basename,
-				})
+				this.t(
+					msg({
+						message:
+							'Task "{title}" created as file "{filename}". Filenames cannot contain some characters, so the full title is kept in the title property.',
+						context: "modals.taskCreation.notices.successFilenameSanitized",
+					}),
+					{
+						title: createdTask.title,
+						filename: file.basename,
+					}
+				)
 			);
 		} else {
 			new Notice(
-				this.t(msg({ message: "Task \"{title}\" created successfully", context: "modals.taskCreation.notices.success" }), { title: createdTask.title })
+				this.t(
+					msg({
+						message: 'Task "{title}" created successfully',
+						context: "modals.taskCreation.notices.success",
+					}),
+					{ title: createdTask.title }
+				)
 			);
 		}
 	}
@@ -595,9 +605,15 @@ export class TaskCreationModal extends TaskModal {
 		const blockingUpdates = buildCreationBlockingUpdates(this.blockingItems);
 		if (blockingUpdates.unresolved.length > 0) {
 			new Notice(
-				this.t(msg({ message: "Could not resolve: {entries}", context: "modals.taskCreation.notices.blockingUnresolved" }), {
-					entries: blockingUpdates.unresolved.join(", "),
-				})
+				this.t(
+					msg({
+						message: "Could not resolve: {entries}",
+						context: "modals.taskCreation.notices.blockingUnresolved",
+					}),
+					{
+						entries: blockingUpdates.unresolved.join(", "),
+					}
+				)
 			);
 		}
 		if (blockingUpdates.added.length === 0) return createdTask;
@@ -628,7 +644,14 @@ export class TaskCreationModal extends TaskModal {
 				operation: "open-created-task-note",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Task created, but the task note could not be opened.", context: "modals.taskCreation.notices.openCreatedTaskFailure" })));
+			new Notice(
+				this.t(
+					msg({
+						message: "Task created, but the task note could not be opened.",
+						context: "modals.taskCreation.notices.openCreatedTaskFailure",
+					})
+				)
+			);
 		}
 	}
 

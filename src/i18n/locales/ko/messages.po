@@ -7054,7 +7054,7 @@ msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "기한 지난 항목에서 완료된 작업 숨기기"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.actions.hideDetailedOptions"
 msgid "Hide detailed options"
 msgstr "상세 옵션 숨기기"
@@ -8156,6 +8156,12 @@ msgstr "월간 반복"
 msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "추가 작업"
+
+#: src/components/RecurrenceContextMenu.ts
+#: src/modals/TaskModal.ts
+msgctxt "task modal field disclosure"
+msgid "More fields"
+msgstr "추가 필드"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -11257,7 +11263,7 @@ msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "현재 시간 표시기 표시"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.actions.showDetailedOptions"
 msgid "Show detailed options"
 msgstr "상세 옵션 보기"

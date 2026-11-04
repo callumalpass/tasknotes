@@ -649,6 +649,7 @@ export class CustomRecurrenceModal extends Modal {
 	) {
 		super(app);
 		applyModalShell(this);
+		this.modalEl.addClass("tn-recurrence-modal");
 		this.currentValue = currentValue;
 		this.recurrenceAnchor = currentAnchor;
 		this.scheduledDate = scheduledDate;
@@ -793,12 +794,24 @@ export class CustomRecurrenceModal extends Modal {
 			}
 		};
 
-		contentEl.createEl("h2", {
-			text: this.translate(
+		this.titleEl.setText(
+			this.translate(
 				msg({
 					message: "Custom recurrence",
 					context: "components.recurrenceContextMenu.customRecurrenceModal.title",
 				})
+			)
+		);
+		const advanced = contentEl.createEl("details", { cls: "tn-modal__disclosure" });
+		advanced.open = Boolean(
+			this.dtstartTime ||
+				this.recurrenceAnchor === "completion" ||
+				this.endType !== "never" ||
+				(this.frequency === "DAILY" && this.byDay.length > 0)
+		);
+		advanced.createEl("summary", {
+			text: this.translate(
+				msg({ message: "More fields", context: "task modal field disclosure" })
 			),
 		});
 
@@ -834,7 +847,7 @@ export class CustomRecurrenceModal extends Modal {
 			});
 
 		// Start time selection
-		new Setting(contentEl)
+		new Setting(advanced)
 			.setName(
 				this.translate(
 					msg({
@@ -861,7 +874,7 @@ export class CustomRecurrenceModal extends Modal {
 			});
 
 		// Recurrence anchor selection
-		new Setting(contentEl)
+		new Setting(advanced)
 			.setName(
 				this.translate(
 					msg({
@@ -1458,7 +1471,7 @@ export class CustomRecurrenceModal extends Modal {
 		);
 
 		// End condition
-		new Setting(contentEl)
+		new Setting(advanced)
 			.setName(
 				this.translate(
 					msg({
@@ -1478,7 +1491,7 @@ export class CustomRecurrenceModal extends Modal {
 				)
 			);
 
-		const endConditionContainer = contentEl.createDiv("end-condition-container");
+		const endConditionContainer = advanced.createDiv("end-condition-container");
 
 		// Never ends
 		const neverRadio = endConditionContainer.createEl("label", { cls: "radio-option" });
@@ -1634,6 +1647,8 @@ export class CustomRecurrenceModal extends Modal {
 
 		this.updateFrequencySpecificVisibility = () => {
 			const useFlexibleInterval = this.recurrenceAnchor === "completion";
+			if (this.frequency === "DAILY") advanced.append(byDaySetting.settingEl);
+			else advanced.before(byDaySetting.settingEl);
 			byDaySetting.settingEl.style.display =
 				(this.frequency === "DAILY" || this.frequency === "WEEKLY") && !useFlexibleInterval
 					? "flex"
@@ -1646,46 +1661,11 @@ export class CustomRecurrenceModal extends Modal {
 		this.updateFrequencySpecificVisibility();
 
 		// Buttons
-		const buttonContainer = contentEl.createDiv("button-container");
-		buttonContainer.classList.remove(
-			"tn-static-display-block-2a1b75c9",
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		buttonContainer.classList.add("tn-static-display-flex-75816cae");
-		buttonContainer.classList.remove(
-			"tn-static-justify-content-center-03c4bb6f",
-			"tn-static-justify-content-space-between-a562f4fd"
-		);
-		buttonContainer.classList.add("tn-static-justify-content-flex-end-455f8cca");
-		buttonContainer.classList.remove(
-			"tn-static-display-flex-8bb39979",
-			"tn-static-gap-0-5rem-ce2fca4d",
-			"tn-static-gap-10px-f3d7ce77",
-			"tn-static-gap-12px-ed7b3d87",
-			"tn-static-gap-6px-f0abc1db"
-		);
-		buttonContainer.classList.add("tn-static-gap-8px-33fcd4c3");
-		buttonContainer.classList.remove(
-			"tn-static-font-size-12px-b0cc7e05",
-			"tn-static-margin-top-0-5rem-3dc98b5e",
-			"tn-static-margin-top-0-d462248a",
-			"tn-static-margin-top-12px-91e0f558",
-			"tn-static-margin-top-1rem-2239d6d5",
-			"tn-static-margin-top-20px-a26bda7d",
-			"tn-static-margin-top-30px-2fbbbcd4",
-			"tn-static-margin-top-4px-96ad6099",
-			"tn-static-margin-top-8px-8a77e5a3",
-			"tn-static-margin-top-8px-f4f01e68"
-		);
-		buttonContainer.classList.add("tn-static-margin-top-16px-1b0f4999");
+		contentEl.append(advanced);
+		const buttonContainer = contentEl.createDiv("modal-button-container");
 
 		const cancelButton = buttonContainer.createEl("button", {
+			cls: "tn-btn",
 			text: this.translate(
 				msg({
 					message: "Cancel",
@@ -1704,7 +1684,7 @@ export class CustomRecurrenceModal extends Modal {
 					context: "components.recurrenceContextMenu.customRecurrenceModal.save",
 				})
 			),
-			cls: "mod-cta",
+			cls: "mod-cta tn-btn tn-btn--primary",
 		});
 		renderModalSubmitHint(saveButton);
 		saveButton.addEventListener("click", () => {

@@ -111,7 +111,7 @@ describe("Issue #1903: mobile edit task modal", () => {
 				cssContent,
 				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar"
 			)
-		).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
+		).toContain("flex-wrap: wrap");
 		expect(
 			extractCssBlock(
 				cssContent,
@@ -131,7 +131,7 @@ describe("Issue #1903: mobile edit task modal", () => {
 			)
 		).toContain("grid-column: auto");
 		expect(cssContent).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\{[^}]*min-height:\s*140px/s
+			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\{[^}]*min-height:\s*var\(--tn-control-md\)/s
 		);
 	});
 });
