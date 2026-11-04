@@ -18,14 +18,14 @@ describe("Issue #982: Obsidian text font size inheritance", () => {
 		expect(css).toContain("--tn-type-lg: calc(var(--tn-type-base) * 1.125)");
 	});
 
-	it("keeps mobile task cards tied to the Obsidian text size instead of compact desktop tokens", () => {
+	it("keeps mobile titles at the Obsidian text size and metadata above the UI size floor", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__title\s*\{[^}]*font-size:\s*var\(--tn-type-base\);/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-type-sm\),\s*var\(--font-ui-small,\s*var\(--tn-type-sm\)\)\);/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-type-xs\),\s*var\(--font-ui-small,\s*var\(--tn-type-xs\)\)\);/s
 		);
 	});
 });

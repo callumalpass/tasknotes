@@ -96,6 +96,8 @@
 
 /* Count element within group headers */
 .tn-bases-tasknotes-list .task-group-header .agenda-view__item-count {
+    flex: none;
+    white-space: nowrap;
     margin-left: var(--tn-space-1);
     margin-right: 0;
 }
@@ -110,6 +112,25 @@
 .tn-tasknotesTaskList .tn-search-box {
 	flex: 1;
 	min-width: 0;
+}
+
+.tasknotes-plugin .tn-search-box__input {
+    border-radius: var(--tn-radius-md);
+}
+
+.tasknotes-view-active .bases-toolbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-width: 0;
+}
+
+.tasknotes-view-active .bases-toolbar > * {
+    flex-shrink: 0;
+    max-width: 100%;
+}
+
+.tasknotes-view-active .bases-toolbar > .tn-bases-new-task-btn {
+    margin-inline: 0;
 }
 
 /* Own the vertical scroll so group headers can stick relative to this container.

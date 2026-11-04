@@ -87,11 +87,15 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 - Left cluster is fixed-width so titles align across rows.
 - Title truncates with an ellipsis. Hover or focus can reveal the full title via tooltip.
 - Right cluster is right-aligned. Dates sit in a fixed column so they align down the list.
+- Metadata values are atomic: overflow becomes a focusable `+N` with all hidden values in its tooltip. No chip truncation, masks or word-breaking. Explicit file-name columns retain the name without `.md`.
+- Scheduled dates use a calendar, deadlines a flag. `taskDateLabel` in `src/ui/kit/dateLabel.ts` is the shared relative-date formatter: Yesterday/Today/Tomorrow, otherwise `MMM d` (with year outside this year), plus the configured time.
+- Workflow glyphs follow configured order. The seeded unassigned status (stable ID `none`, not its editable value) is dashed and excluded from progress ranking; the first active status is an empty ring. Custom icons always win. Unknown status/priority values use a neutral question glyph, never the None glyph, with their raw value and unconfigured state in the accessible label.
 - Chips (tags, contexts, projects) are neutral with a small colour dot when the user has one configured.
 - Indicators (recurring, reminder, subtasks progress, details, blocked, blocking) are 14px glyphs in `--text-faint`, hidden when absent. Blocked is the only one with colour.
 - `⋯` appears on hover and focus only.
 - Completed tasks: muted title, no strikethrough animation, filled check.
-- Below a container width of 480px the row wraps to two lines: title, then metadata. Kanban cards always use that shape.
+- Below a container width of 760px the title and metadata stack, preserving complete date labels and chip overflow. Kanban cards always use that shape.
+- Titles always stay on one line. Below 260px metadata yields completely to the title. Selection is a quiet tint; only the keyboard-focused row has a focus ring. Mobile actions reveal on focus/selection; long-press retains the context menu and focuses the row, revealing its move handle after dismissal.
 
 ## Views
 

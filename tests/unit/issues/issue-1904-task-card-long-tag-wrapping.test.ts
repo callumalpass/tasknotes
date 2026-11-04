@@ -19,7 +19,7 @@ function extractCssBlock(css: string, selector: string): string {
 }
 
 describe("Issue #1904: task card long tag wrapping", () => {
-	it("allows tag metadata and long tag pills to wrap within card width", () => {
+	it("keeps long tags atomic and moves overflow into a counted summary instead of horizontal scrolling", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 		const stackedCss = css.slice(css.indexOf("@container tn-task-card (max-width: 480px)", css.indexOf(".tasknotes-plugin .task-card__metadata-property--tags")));
 		const tagsPropertyBlock = extractCssBlock(stackedCss, ".tasknotes-plugin .task-card__metadata-property--tags");
@@ -28,13 +28,19 @@ describe("Issue #1904: task card long tag wrapping", () => {
 			".tasknotes-plugin .task-card__metadata-property--tags :where(.tag)"
 		);
 
-		expect(tagsPropertyBlock).toContain("flex-wrap: wrap");
+		expect(tagsPropertyBlock).toContain("flex-wrap: nowrap");
 		expect(tagsPropertyBlock).toContain("align-items: flex-start");
-		expect(tagBlock).toContain("flex: 0 1 auto");
+		expect(tagBlock).toContain("flex: none");
 		expect(tagBlock).toContain("min-width: 0");
-		expect(tagBlock).toContain("max-width: 100%");
-		expect(tagBlock).toContain("overflow-wrap: anywhere");
-		expect(tagBlock).toContain("word-break: break-word");
-		expect(css).toMatch(/@container tn-task-card \(max-width: 480px\)\s*\{\s*\.tasknotes-plugin \.task-card__metadata-property--tags :where\(\.tag\)\s*\{\s*white-space: normal/);
+		expect(tagBlock).toContain("max-width: none");
+		expect(tagBlock).toContain("overflow-wrap: normal");
+		expect(tagBlock).toContain("word-break: normal");
+		const valuesBlock = extractCssBlock(css, ".tasknotes-plugin .task-card__metadata-values");
+		expect(valuesBlock).toContain("min-width: 0");
+		expect(valuesBlock).toContain("overflow: hidden");
+		const renderer = readRepoFile("src/ui/taskCardMetadata.ts");
+		expect(renderer).toContain('cls: "task-card__metadata-overflow"');
+		expect(renderer).toContain('setTooltip(summary, label');
+		expect(renderer).toContain('atom.hidden = true');
 	});
 });
