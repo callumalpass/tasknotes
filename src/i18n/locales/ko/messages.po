@@ -13293,7 +13293,6 @@ msgid "today"
 msgstr "오늘"
 
 #: src/components/DateContextMenu.ts
-#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "오늘"
@@ -13401,7 +13400,6 @@ msgid "tomorrow"
 msgstr "내일"
 
 #: src/components/DateContextMenu.ts
-#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "내일"
