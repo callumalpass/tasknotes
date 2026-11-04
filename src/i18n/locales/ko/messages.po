@@ -11111,11 +11111,6 @@ msgctxt "modals.task.actions.due"
 msgid "Set due date"
 msgstr "마감일 설정"
 
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.dueTitle"
-msgid "Set due date"
-msgstr "마감일 설정"
-
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.dueFor"
 msgid "Set due for {date}"
@@ -11148,11 +11143,6 @@ msgstr "리마인더 설정"
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.actions.scheduled"
-msgid "Set scheduled date"
-msgstr "예정일 설정"
-
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.scheduledTitle"
 msgid "Set scheduled date"
 msgstr "예정일 설정"
 

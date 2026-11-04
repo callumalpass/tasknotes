@@ -24,7 +24,7 @@ import {
 	withVaultFileMutation,
 } from "../services/VaultMutationService";
 import { openListPicker, type PickerItem } from "./kit/listPicker";
-import type { PopoverOptions } from "./kit/popover";
+import type { PopoverHandle, PopoverOptions } from "./kit/popover";
 import { showToast } from "./kit/toast";
 import {
 	renderPriorityGlyph,
@@ -43,6 +43,8 @@ export type TaskPickerProperty =
 	| "projects";
 
 type PropertyValue = string | string[] | undefined;
+export type TaskPickerValues = Pick<TaskInfo, TaskPickerProperty>;
+export type TaskPropertyChoice = PropertyValue | ((task: TaskPickerValues) => PropertyValue);
 
 export function taskPropertyLabel(property: TaskPickerProperty): string {
 	switch (property) {
@@ -372,12 +374,23 @@ export async function openTaskPropertyPicker(
 	anchor: PopoverOptions["anchor"]
 ): Promise<void> {
 	if (!tasks.length) return;
-	const clear = uiText(msg({ message: "Clear", context: "interaction clear" }));
-	const label = taskPropertyLabel(property);
 	let changes = Promise.resolve();
-	const apply = (value: PropertyValue | ((task: TaskInfo) => PropertyValue)) => {
+	const apply = (value: TaskPropertyChoice) => {
 		changes = changes.then(() => changeTaskProperty(plugin, tasks, property, value));
 	};
+	await openTaskPropertyChoices(plugin, property, tasks, anchor, apply);
+}
+
+export async function openTaskPropertyChoices(
+	plugin: TaskNotesPlugin,
+	property: TaskPickerProperty,
+	tasks: readonly TaskPickerValues[],
+	anchor: PopoverOptions["anchor"],
+	apply: (value: TaskPropertyChoice) => void
+): Promise<PopoverHandle | undefined> {
+	if (!tasks.length) return;
+	const clear = uiText(msg({ message: "Clear", context: "interaction clear" }));
+	const label = taskPropertyLabel(property);
 	let items: PickerItem[] = [];
 	if (property === "status" || property === "priority") {
 		const configs =
@@ -413,14 +426,14 @@ export async function openTaskPropertyPicker(
 				});
 		}
 		if (property === "priority") items.push({ id: "", label: clear });
-		openListPicker({
+		return openListPicker({
 			anchor,
+			app: plugin.app,
 			items,
 			placeholder: label,
 			emptyText: clear,
 			onChoose: (item) => apply(item.id),
 		});
-		return;
 	}
 	if (property === "due" || property === "scheduled") {
 		const parser = NaturalLanguageParser.fromPlugin(plugin);
@@ -451,8 +464,9 @@ export async function openTaskPropertyPicker(
 			},
 			{ id: "clear", label: clear }
 		);
-		openListPicker({
+		return openListPicker({
 			anchor,
+			app: plugin.app,
 			items,
 			placeholder: label,
 			emptyText: label,
@@ -492,20 +506,20 @@ export async function openTaskPropertyPicker(
 				} else apply(option.value ?? undefined);
 			},
 		});
-		return;
 	}
 	const allTasks = await plugin.cacheManager.getAllTasks();
 	const values = new Set(allTasks.flatMap((task) => task[property] ?? []));
 	for (const task of tasks) for (const value of task[property] ?? []) values.add(value);
 	const toggle = (value: string, selected: boolean) =>
-		apply((task: TaskInfo) => {
+		apply((task) => {
 			const previous = task[property] ?? [];
 			return selected
 				? [...new Set([...previous, value])]
 				: previous.filter((entry) => entry !== value);
 		});
-	openListPicker({
+	return openListPicker({
 		anchor,
+		app: plugin.app,
 		placeholder: label,
 		emptyText: clear,
 		multiple: true,

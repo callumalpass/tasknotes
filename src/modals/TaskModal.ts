@@ -84,14 +84,13 @@ import {
 	createTaskModalActionMenuState,
 } from "./taskModalActionState";
 import {
-	showTaskModalDateContextMenu,
-	showTaskModalPriorityContextMenu,
+	showTaskModalPropertyPicker,
 	showTaskModalRecurrenceContextMenu,
 	showTaskModalReminderContextMenu,
-	showTaskModalStatusContextMenu,
 	type TaskModalActionMenuContext,
 	type TaskModalActionMenuState,
 } from "./taskModalActionMenus";
+import type { PopoverHandle } from "../ui/kit/popover";
 import {
 	addTaskModalProjectItemsFromStrings,
 	createTaskModalProjectItemFromFile,
@@ -159,6 +158,7 @@ export abstract class TaskModal extends Modal {
 		userFields: {},
 	});
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
+	private propertyPicker: PopoverHandle | undefined = undefined;
 	private focusGuards: TaskModalFocusGuards;
 	private unsubscribeForm: (() => void) | null = null;
 	private saveInFlight: Promise<boolean> | null = null;
@@ -1193,16 +1193,27 @@ export abstract class TaskModal extends Modal {
 		if (this.titleInput) resizeTaskModalTitleTextarea(this.titleInput);
 	}
 
-	protected showDateContextMenu(_event: UIEvent, type: "due" | "scheduled"): void {
-		showTaskModalDateContextMenu(this.getActionMenuContext(), type);
+	private async showPropertyPicker(
+		event: UIEvent,
+		property: "status" | "priority" | "due" | "scheduled"
+	): Promise<void> {
+		const anchor = event.currentTarget as HTMLElement;
+		this.propertyPicker?.close();
+		const picker = await showTaskModalPropertyPicker(this.getActionMenuContext(), property, anchor);
+		if (!this.isModalOpen) picker?.close();
+		else this.propertyPicker = picker;
+	}
+
+	protected showDateContextMenu(event: UIEvent, type: "due" | "scheduled"): void {
+		void this.showPropertyPicker(event, type);
 	}
 
 	protected showStatusContextMenu(event: UIEvent): void {
-		showTaskModalStatusContextMenu(this.getActionMenuContext(), event);
+		void this.showPropertyPicker(event, "status");
 	}
 
 	protected showPriorityContextMenu(event: UIEvent): void {
-		showTaskModalPriorityContextMenu(this.getActionMenuContext(), event);
+		void this.showPropertyPicker(event, "priority");
 	}
 
 	protected showRecurrenceContextMenu(event: UIEvent): void {
@@ -1557,6 +1568,8 @@ export abstract class TaskModal extends Modal {
 	}
 
 	onClose(): void {
+		this.propertyPicker?.close();
+		this.propertyPicker = undefined;
 		this.isModalOpen = false;
 		this.unsubscribeForm?.();
 		this.unsubscribeForm = null;

@@ -113,6 +113,7 @@
     /* Controls */
     --tn-control-sm: 24px;
     --tn-control-md: 28px;
+    --tn-touch-target: 40px;
     --tn-row-height: 34px;
     --tn-row-height-compact: 28px;
     --tn-glyph: 16px;
