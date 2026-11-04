@@ -697,7 +697,8 @@ export class StatsView extends ItemView {
 		dateRangeLabel.textContent = this.plugin.i18n.translate(msg({ message: "Date range", context: "views.stats.sections.dateRange" }));
 
 		const dateRangeSelect = dateRangeContainer.createEl("select", {
-			cls: "stats-view__filter-select",
+			cls: "tn-select stats-view__filter-select",
+			attr: { "aria-label": dateRangeLabel.textContent ?? "" },
 		});
 		const dateOptions = [
 			{ value: "all", text: this.plugin.i18n.translate(msg({ message: "All time", context: "views.stats.timeRanges.allTime" })) },
@@ -752,6 +753,7 @@ export class StatsView extends ItemView {
 			value: this.currentFilters.minTimeSpent.toString(),
 			placeholder: "0",
 		});
+		minTimeInput.setAttribute("aria-label", minTimeLabel.textContent ?? "");
 
 		this.registerDomEvent(minTimeInput, "input", () => {
 			this.currentFilters.minTimeSpent = parseInt(minTimeInput.value) || 0;
@@ -914,7 +916,11 @@ export class StatsView extends ItemView {
 		container.empty();
 
 		if (projects.length === 0) {
-			renderEmptyState(container, { message: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })) });
+			renderEmptyState(container, {
+				message: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })),
+				actionLabel: this.plugin.i18n.translate(msg({ message: "New", context: "common.new" })),
+				onAction: () => this.plugin.openTaskCreationModal(),
+			});
 			return;
 		}
 

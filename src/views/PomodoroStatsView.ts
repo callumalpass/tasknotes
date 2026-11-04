@@ -237,7 +237,11 @@ export class PomodoroStatsView extends ItemView {
 		container.empty();
 
 		if (recentSessions.length === 0) {
-			renderEmptyState(container, { message: this.t(msg({ message: "No sessions recorded yet", context: "views.pomodoroStats.recents.empty" })) });
+			renderEmptyState(container, {
+				message: this.t(msg({ message: "No sessions recorded yet", context: "views.pomodoroStats.recents.empty" })),
+				actionLabel: this.t(msg({ message: "Start focus", context: "views.pomodoro.buttons.startFocus" })),
+				onAction: () => { void this.plugin.activatePomodoroView(); },
+			});
 			return;
 		}
 
@@ -446,6 +450,13 @@ export class PomodoroStatsView extends ItemView {
 
 	private renderStatsGrid(container: HTMLElement, stats: PomodoroHistoryStats) {
 		container.empty();
+		if (stats.pomodorosCompleted === 0 && stats.totalMinutes === 0 && stats.currentStreak === 0) {
+			container.createEl("p", {
+				cls: "pomodoro-stats-view__period-summary",
+				text: this.t(msg({ message: "No activity in this period.", context: "statistics empty period" })),
+			});
+			return;
+		}
 
 		// Completed pomodoros
 		const pomodorosCard = container.createDiv({

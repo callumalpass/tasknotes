@@ -4175,7 +4175,12 @@ export class KanbanView extends BasesViewBase {
 
 	private renderEmptyState(): void {
 		if (!this.boardEl) return;
-		renderEmptyState(this.boardEl, { message: uiText(msg({ message: "No tasknotes tasks found for this base.", context: "bases/KanbanView: KanbanView.renderEmptyState display" })) });
+		renderEmptyState(this.boardEl, {
+			message: uiText(msg({ message: "No tasks in this view.", context: "empty task view" })),
+			actionLabel: uiText(msg({ message: "New", context: "common.new" })),
+			actionKey: "C",
+			onAction: () => { void this.createFileForView(); },
+		});
 	}
 
 	private renderNoGroupByError(): void {

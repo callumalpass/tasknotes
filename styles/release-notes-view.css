@@ -5,6 +5,22 @@
     line-height: var(--line-height-normal);
 }
 
+.tasknotes-release-notes-view .callout {
+    --callout-color: var(--mono-rgb-100);
+
+    background: var(--background-secondary);
+    color: var(--text-muted);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    padding: var(--tn-space-3);
+    font-size: var(--tn-type-sm);
+}
+
+.tasknotes-release-notes-view .release-notes-version-header:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+}
+
 .tasknotes-release-notes-view .release-notes-announcement {
     margin-bottom: var(--size-4-5);
     padding: 0 0 var(--tn-space-4);

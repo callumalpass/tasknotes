@@ -3375,11 +3375,12 @@ export class TaskListView extends BasesViewBase {
 		renderEmptyState(this.itemsContainer, {
 			message: uiText(
 				msg({
-					message: "No tasknotes tasks found for this base.",
-					context: "bases/TaskListView: TaskListView.renderEmptyState display",
+					message: "No tasks in this view.",
+					context: "empty task view",
 				})
 			),
 			actionLabel: uiText(msg({ message: "New", context: "common.new" })),
+			actionKey: "C",
 			onAction: () => {
 				void this.createFileForView();
 			},

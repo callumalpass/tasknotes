@@ -199,8 +199,8 @@
 }
 .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot {
     display: inline-block;
-    width: 0.7em;
-    height: 0.7em;
+    width: var(--tn-glyph);
+    height: var(--tn-glyph);
     margin: 0 0.25em 0 0;
     border-width: 1.5px;
     vertical-align: baseline;
@@ -209,8 +209,8 @@
 
 .tasknotes-plugin .task-card--layout-inline .task-card__priority-dot--icon {
     display: inline-flex;
-    width: 0.95em;
-    height: 0.95em;
+    width: var(--tn-glyph);
+    height: var(--tn-glyph);
     transform: translateY(0.12em);
 }
 .tasknotes-plugin .task-card--layout-inline .task-card__recurring-indicator,
@@ -257,6 +257,12 @@
     display: inline;
     margin: 0 0.75em 0 0;
     vertical-align: baseline;
+}
+
+.tasknotes-plugin .task-card--layout-inline .task-card__metadata-pill--blocked {
+    color: var(--tn-warning);
+    background: transparent;
+    padding: 0;
 }
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata-separator {
     display: inline;

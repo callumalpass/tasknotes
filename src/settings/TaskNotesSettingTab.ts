@@ -140,7 +140,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 
 		// Add documentation link alongside tabs
-		const docsHeader = settingsToolbar.createDiv("settings-header");
+		const docsHeader = tabNav.createDiv("settings-header");
 		const docsLink = docsHeader.createEl("a", {
 			text: translate(msg({ message: "Documentation", context: "settings.header.documentation" })),
 			href: "https://tasknotes.dev",

@@ -1,12 +1,19 @@
 import { test, expect, type Page } from '@playwright/test';
+import { stringify } from 'yaml';
 import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let originalSettings: Record<string, unknown>;
 const folder = `Surfaces-${Date.now()}`;
+const testTheme = process.env.TASKNOTES_E2E_SURFACES_THEME;
 
 test.beforeAll(async () => {
   instance = await launchObsidian();
+  if (testTheme) {
+    await instance.page.evaluate(async theme => {
+      await (window as any).app.customCss.setTheme(theme);
+    }, testTheme);
+  }
   await setObsidianViewport(instance.page, { width: 1180, height: 800 });
   originalSettings = await instance.page.evaluate(async folder => {
     const app = (window as any).app;
@@ -30,13 +37,21 @@ test.beforeAll(async () => {
     plugin.priorityManager.updatePriorities(plugin.settings.customPriorities);
     await plugin.saveSettings();
     await app.vault.createFolder(folder);
-    for (const [name, status, priority] of [['Review', 'review', 'urgent'], ['Unknown', 'retired', 'unconfigured'], ['Custom', 'done', 'urgent']]) {
-      await app.vault.create(`${folder}/${name}.md`, `---\ntitle: ${name}\ntags: [task]\n${plugin.fieldMapper.toUserField('status')}: ${status}\n${plugin.fieldMapper.toUserField('priority')}: ${priority}\n${plugin.fieldMapper.toUserField('due')}: 2026-11-01\nprojects: ["[[Surface project]]"]\n---\n`);
+    for (const [name, status, priority] of [['Unknown', 'retired', 'unconfigured'], ['Review', 'review', 'urgent'], ['Custom', 'done', 'urgent']]) {
+      await app.vault.create(`${folder}/${name}.md`, `---\ntitle: ${name}\ntags: [task, design]\n${plugin.fieldMapper.toUserField('status')}: ${status}\n${plugin.fieldMapper.toUserField('priority')}: ${priority}\n${plugin.fieldMapper.toUserField('due')}: 2026-11-01\n${name === 'Review' ? `${plugin.fieldMapper.toUserField('blockedBy')}: ["[[${folder}/Unknown]]"]\n` : ''}projects: ["[[Surface project]]"]\n---\n`);
     }
     await app.vault.create(`${folder}/Prose.md`, `# A working note\n\nBefore [[${folder}/Review]] and after.\n\nA missing configuration: [[${folder}/Unknown]].\n\nKeep the cursor here.\n\nA custom icon: [[${folder}/Custom]].\n`);
     (window as any).surfaceTestLeaf = app.workspace.getLeaf(true);
     return original;
   }, folder);
+  await expect.poll(() => instance.page.evaluate(path => {
+    const app = (window as any).app;
+    const file = app.vault.getAbstractFileByPath(path);
+    return Boolean(file && app.metadataCache.getFileCache(file)?.frontmatter);
+  }, `${folder}/Unknown.md`)).toBe(true);
+  await expect.poll(() => instance.page.evaluate(async path => {
+    return Boolean((await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(path))?.isBlocked);
+  }, `${folder}/Review.md`)).toBe(true);
 });
 
 test.afterAll(async () => {
@@ -54,6 +69,7 @@ test.afterAll(async () => {
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
     }, { folder, settings: originalSettings });
+    if (testTheme) await instance.page.evaluate(async () => { await (window as any).app.customCss.setTheme(''); });
   } finally {
     await closeObsidian(instance);
   }
@@ -82,9 +98,12 @@ async function appearance(theme: string, mobile: boolean) {
 }
 
 async function screenshot(name: string, page: Page = instance.page) {
+  await page.locator('.view-content, .tasknotes-release-notes-view').evaluateAll(elements => elements.forEach(element => { element.scrollTop = 0; }));
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await page.waitForTimeout(200);
-  await page.screenshot({ path: `test-results/surfaces/${name}.png` });
+  const viewport = page.viewportSize()!;
+  const themeDirectory = testTheme ? `${testTheme}/` : '';
+  await page.screenshot({ path: `test-results/surfaces/${themeDirectory}${name}.png`, clip: { x: 0, y: 0, ...viewport } });
 }
 
 async function expectTouchTargets(selector: string, page: Page = instance.page) {
@@ -109,12 +128,37 @@ test('timer retains edit, focus, pause, resume and stop without a decorative rin
   await page.locator('.pomodoro-view__timer-input').fill('12:30');
   await page.locator('.pomodoro-view__timer-input').press('Enter');
   await expect(display).toHaveText('12:30');
+  await page.locator('.pomodoro-view__add-time').click();
+  await expect(display).toHaveText('13:30');
+  await page.locator('.pomodoro-view__subtract-time').click();
+  await expect(display).toHaveText('12:30');
   await page.locator('.pomodoro-view__start-button').click();
   await expect(page.locator('.pomodoro-view__pause-button')).toBeVisible();
+  await expect(page.locator('.pomodoro-view__progress-line')).toHaveCount(1);
+  await expect(page.locator('.pomodoro-view__session-meta')).toContainText('Ends at');
+  await expect(page.locator('.pomodoro-view__session-meta')).not.toContainText('left');
+  expect(await page.locator('.pomodoro-view__pause-button').evaluate(element => getComputedStyle(element).borderTopStyle)).toBe('solid');
+  for (const theme of ['theme-light', 'theme-dark']) {
+    for (const mobile of [false, true]) {
+      await appearance(theme, mobile);
+      await screenshot(`timer-running-${theme}-${mobile ? 'mobile' : 'desktop'}`);
+    }
+  }
   await page.locator('.pomodoro-view__pause-button').click();
   await expect(page.locator('.pomodoro-view__start-button')).toContainText('Resume');
   await page.locator('.pomodoro-view__start-button').click();
   await page.locator('.pomodoro-view__stop-button').click();
+  await expect(page.locator('.pomodoro-view__session-meta')).toBeEmpty();
+  await page.locator('.pomodoro-view__task-select-button').click();
+  await expect(page.locator('.suggestion-container, .prompt').first()).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.locator('.pomodoro-view__task-select-button').click();
+  await page.locator('.prompt input').fill('Review');
+  await page.locator(`.suggestion-item .task-card[data-task-path="${folder}/Review.md"]`).click();
+  await expect(page.locator('.pomodoro-view__task-card-container .task-card__metadata-date')).toBeVisible();
+  await page.locator('.pomodoro-view__task-select-button').click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator(`.pomodoro-view__task-card-container .task-card[data-task-path="${folder}/Review.md"]`)).toBeVisible();
   for (const theme of ['theme-light', 'theme-dark']) {
     for (const mobile of [false, true]) {
       await appearance(theme, mobile);
@@ -122,6 +166,8 @@ test('timer retains edit, focus, pause, resume and stop without a decorative rin
       await screenshot(`timer-${theme}-${mobile ? 'mobile' : 'desktop'}`);
     }
   }
+  await page.locator('.pomodoro-view__task-clear-button').click();
+  await expect(page.locator('.pomodoro-view__task-card-container .task-card')).toHaveCount(0);
 });
 
 test('typographic reports, release notes and all settings tabs in both themes and mobile', async () => {
@@ -137,6 +183,8 @@ test('typographic reports, release notes and all settings tabs in both themes an
         if (type === 'tasknotes-stats-view') {
           await expect(page.locator('.stats-view__overview-card').first()).toBeVisible();
           expect(await page.locator('.stats-view__overview-grid').evaluate(element => getComputedStyle(element).display)).toBe('flex');
+          await expect(page.locator('.tn-select.stats-view__filter-select')).toBeVisible();
+          expect(await page.locator('.stats-view__header .setting-item').evaluate(element => getComputedStyle(element).paddingLeft)).toBe('0px');
         }
         if (type === 'tasknotes-release-notes') {
           const header = page.locator('.release-notes-version-header').nth(1);
@@ -150,7 +198,7 @@ test('typographic reports, release notes and all settings tabs in both themes an
       }
       const settingsPage = await openTaskNotesSettings(page);
       try {
-        await settingsPage.setViewportSize({ width: mobile ? 640 : 1180, height: 800 });
+        await setObsidianViewport(settingsPage, { width: mobile ? 640 : 1180, height: 800 });
         await settingsPage.evaluate(({ theme, mobile }) => {
           document.body.classList.remove('theme-light', 'theme-dark');
           document.body.classList.add(theme);
@@ -158,6 +206,7 @@ test('typographic reports, release notes and all settings tabs in both themes an
         }, { theme, mobile });
         const tabs = settingsPage.locator('.settings-view__tab-button');
         await expect(tabs).toHaveCount(6);
+        expect(await settingsPage.locator('.settings-view__tab-nav').evaluate(element => getComputedStyle(element).flexWrap)).toBe('nowrap');
         for (let index = 0; index < 6; index++) {
           await tabs.nth(index).click();
           await expect(tabs.nth(index)).toHaveAttribute('aria-selected', 'true');
@@ -177,6 +226,46 @@ test('typographic reports, release notes and all settings tabs in both themes an
         if (mobile) await expectTouchTargets('.settings-view__tab-button, .tasknotes-settings__card-input, .checkbox-container, .tasknotes-settings__card-header button', settingsPage);
       } finally {
         await closeObsidianSettings(page, settingsPage);
+      }
+    }
+  }
+});
+
+test('empty list and board actions create tasks and search clearing restores results', async () => {
+  const page = instance.page;
+  for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
+    for (const populated of [false, true]) {
+      const path = `${folder}/${type}-${populated}.base`;
+      const content = stringify({
+        filters: { and: [`file.inFolder("${folder}${populated ? '' : '/Missing'}")`, 'file.hasTag("task")'] },
+        views: [{ type, name: 'Surface', groupBy: type === 'tasknotesKanban' ? { property: 'status', direction: 'ASC' } : undefined,
+          enableSearch: true, order: ['status', 'priority', 'due'] }],
+      });
+      await page.evaluate(async ({ path, content }) => {
+        const app = (window as any).app;
+        const file = await app.vault.create(path, content);
+        await (window as any).surfaceTestLeaf.openFile(file);
+      }, { path, content });
+      if (populated) {
+        const search = page.locator('.tn-search-box__input:visible');
+        await search.fill('no-such-surface-task');
+        const clear = page.locator('.tn-empty').getByRole('button', { name: 'Clear search' });
+        await expect(clear).toBeVisible();
+        await clear.click();
+        await expect(search).toHaveValue('');
+        await expect(page.locator('.tn-search-no-results')).toHaveCount(0);
+        await expect(page.locator('.workspace-leaf.mod-active .task-card').first()).toBeVisible();
+      } else {
+        await expect(page.locator('.tn-empty__message')).toHaveText('No tasks in this view.');
+        for (const theme of ['theme-light', 'theme-dark']) {
+          for (const mobile of [false, true]) {
+            await appearance(theme, mobile);
+            await screenshot(`empty-${type}-${theme}-${mobile ? 'mobile' : 'desktop'}`);
+          }
+        }
+        await page.locator('.tn-empty').getByRole('button', { name: 'New', exact: true }).click();
+        await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
+        await page.keyboard.press('Escape');
       }
     }
   }
@@ -203,9 +292,20 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
         await expect(cards.nth(2).locator('.task-card__status-dot .lucide-rocket')).toBeAttached();
         await expect(cards.nth(1).locator('[data-tn-glyph="unset"]').first()).toBeAttached();
         await expect(cards.first().locator('.task-card__metadata-date--overdue')).toBeAttached();
+        await expect(cards.first().locator('.task-card__metadata-pill--blocked')).toBeVisible();
         if (mobile) await expectTouchTargets('.task-card--layout-inline .task-card__status-dot, .task-card--layout-inline .task-card__priority-dot, .task-card--layout-inline .task-card__metadata-date, .task-card--layout-inline .task-card__context-menu');
         await screenshot(`inline-${mode}-${theme}-${mobile ? 'mobile' : 'desktop'}`);
       }
+      await page.evaluate(async path => {
+        const app = (window as any).app;
+        await (window as any).surfaceTestLeaf.openFile(app.vault.getAbstractFileByPath(path), { state: { mode: 'preview' } });
+      }, `${folder}/Review.md`);
+      await expect(page.locator('.task-card-note-widget')).toBeVisible();
+      const nativeTag = page.locator('.metadata-property[data-property-key="tags"] .multi-select-pill').first();
+      const widgetTag = page.locator('.task-card-note-widget .tag').first();
+      await expect(widgetTag).toBeVisible();
+      await expect(widgetTag).toHaveCSS('background-color', await nativeTag.evaluate(element => getComputedStyle(element).backgroundColor));
+      await screenshot(`task-note-${theme}-${mobile ? 'mobile' : 'desktop'}`);
     }
   }
 });

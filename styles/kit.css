@@ -46,6 +46,12 @@
     cursor: default;
 }
 
+.tasknotes-plugin .tn-btn svg {
+    width: var(--tn-glyph);
+    height: var(--tn-glyph);
+    flex: 0 0 auto;
+}
+
 .tasknotes-plugin .tn-btn--primary,
 .mod-tasknotes .tn-btn--primary {
     background: var(--interactive-accent);
@@ -535,6 +541,9 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 
 .tasknotes-plugin .tn-empty {
     display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    align-self: flex-start;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -543,6 +552,23 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     color: var(--tn-text-muted);
     font-size: var(--tn-type-sm);
     text-align: center;
+}
+
+.tasknotes-plugin .tn-select {
+    appearance: auto;
+    min-height: var(--tn-control-md);
+    padding: var(--tn-space-1) var(--tn-space-2);
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    color: var(--tn-text-normal);
+    background: var(--background-secondary);
+    font-size: var(--tn-type-sm);
+    cursor: pointer;
+}
+
+.tasknotes-plugin .tn-select:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: 1px;
 }
 .tasknotes-plugin:focus-within .tn-task-focused {
 	outline: var(--tn-space-half) solid var(--tn-focus-ring);
