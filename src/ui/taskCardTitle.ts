@@ -23,8 +23,13 @@ export interface UpdateTaskCardTitleOptions extends TaskCardTitleOptions {
 }
 
 export function getTaskCardTitleText(task: TaskInfo, displayText?: string): string {
-	return uiData(stringifyUnknown(displayText).trim(), "User-customized task display text; preserve vault content") ||
-		uiData(stringifyUnknown(task.title), "User-authored task title; preserve vault content");
+	return (
+		uiData(
+			stringifyUnknown(displayText).trim(),
+			"User-customized task display text; preserve vault content"
+		) ||
+		uiData(stringifyUnknown(task.title), "User-authored task title; preserve vault content")
+	);
 }
 
 export function renderTaskCardTitleText(
@@ -42,6 +47,7 @@ export function renderTaskCardTitleText(
 	};
 
 	renderTextWithLinks(container, getTaskCardTitleText(task, displayText), linkServices);
+	container.title = getTaskCardTitleText(task, displayText);
 }
 
 export function syncTaskCardTitleCompletion(card: HTMLElement, isCompleted: boolean): void {

@@ -8229,6 +8229,7 @@ msgid "Never refreshed"
 msgstr "Mai aggiornato"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/TaskListView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "Nuovo"

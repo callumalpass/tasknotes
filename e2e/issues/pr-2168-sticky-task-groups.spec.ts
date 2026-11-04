@@ -62,8 +62,8 @@ for (const count of [40, 160]) {
         await expect(pin.locator('.task-group')).toHaveCount(2);
         await expect(pin).toHaveAttribute('aria-hidden', 'true');
         await expect(pin.locator('button').first()).toHaveAttribute('tabindex', '-1');
-        const key = await pin.locator('button').last().getAttribute('data-group-key');
-        await pin.locator('button').last().click();
+        const key = await pin.locator('.task-group-toggle').last().getAttribute('data-group-key');
+        await pin.locator('.task-group-toggle').last().click();
         await expect.poll(() => page.evaluate(() => (window as any).app.workspace.activeLeaf.view.controller.view.getEphemeralState().collapsedSubGroups)).toContain(key);
       } else {
         const parent = items.locator('.task-list-group > .task-group').first();
@@ -72,7 +72,7 @@ for (const count of [40, 160]) {
           const p = await parent.boundingBox(), s = await sub.boundingBox();
           return s!.y >= p!.y + p!.height - 1;
         }).toBe(true);
-        await sub.locator('button').click();
+        await sub.locator('.task-group-toggle').click();
         await expect(items.locator('.task-group.is-collapsed').first()).toBeVisible();
       }
       await page.screenshot({ path: `test-results/pr-2168-${count}-${theme}.png` });
