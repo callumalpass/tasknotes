@@ -157,7 +157,7 @@
     align-items: center;
     gap: 4px;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: var(--tn-radius-xl);
     font-size: var(--tn-type-2xs);
     font-weight: 500;
     white-space: nowrap;
@@ -256,10 +256,10 @@
     align-items: center;
     justify-content: center;
     padding: 1px 5px;
-    border-radius: 3px;
+    border-radius: var(--tn-radius-sm);
     background-color: var(--background-modifier-border);
     color: var(--text-faint);
-    font-size: 10px;
+    font-size: var(--tn-type-2xs);
     font-weight: 500;
     font-family: var(--font-monospace);
 }

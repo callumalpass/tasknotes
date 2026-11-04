@@ -9,7 +9,7 @@ function readRepoFile(relativePath: string): string {
 
 describe("Issue #1968: mobile inline task overlay containment", () => {
 	it("keeps card container queries off inline task overlays", () => {
-		const css = readRepoFile("styles/task-card-bem.css");
+		const css = readRepoFile("styles/task-card-bem.css") + readRepoFile("styles/task-inline-widget.css");
 
 		expect(css).toMatch(
 			/\.tasknotes-plugin \.task-card\s*\{[^}]*container:\s*tn-task-card \/ inline-size;/s

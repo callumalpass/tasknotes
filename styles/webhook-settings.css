@@ -19,9 +19,9 @@
   padding: 2rem;
   background: var(--background-modifier-form-field);
   border: 1px dashed var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--tn-radius-lg);
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: var(--tn-type-md);
 }
 
 .tasknotes-webhooks-empty-icon {
@@ -38,7 +38,7 @@
 .tasknotes-webhook-card {
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--tn-radius-lg);
   padding: 0;
   overflow: hidden;
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -77,7 +77,7 @@
 
 .tasknotes-webhook-url {
   font-family: var(--font-monospace);
-  font-size: 0.85rem;
+  font-size: var(--tn-type-sm);
   color: var(--text-normal);
   font-weight: 500;
   text-overflow: ellipsis;
@@ -96,8 +96,8 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.8rem;
+  border-radius: var(--tn-radius-xl);
+  font-size: var(--tn-type-sm);
   font-weight: 500;
   transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
 }
@@ -140,7 +140,7 @@
 
 .tasknotes-webhook-detail-row.warning {
   background: rgba(var(--color-yellow-rgb), 0.1);
-  border-radius: 4px;
+  border-radius: var(--tn-radius-sm);
   padding: 0.5rem 0.75rem;
   margin-left: -0.75rem;
   margin-right: -0.75rem;
@@ -183,7 +183,7 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.85rem;
+  font-size: var(--tn-type-sm);
 }
 
 .tasknotes-webhook-stat-success {
@@ -214,10 +214,10 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--tn-radius-sm);
   background: var(--background-primary);
   color: var(--text-normal);
-  font-size: 0.85rem;
+  font-size: var(--tn-type-sm);
   cursor: var(--cursor-link, pointer);
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
@@ -314,7 +314,7 @@
 }
 
 .tasknotes-webhook-modal .setting-item-description {
-  font-size: 0.85rem;
+  font-size: var(--tn-type-sm);
   color: var(--text-muted);
   line-height: 1.4;
 }
@@ -329,19 +329,19 @@
 }
 
 .tasknotes-webhook-modal-icon {
-  font-size: 1.5rem;
+  font-size: var(--tn-type-xl);
   display: flex;
   align-items: center;
   color: var(--interactive-accent);
   padding: 0.5rem;
   background: rgba(var(--interactive-accent-rgb), 0.1);
-  border-radius: 8px;
+  border-radius: var(--tn-radius-lg);
 }
 
 .tasknotes-webhook-modal-title {
   margin: 0;
   color: var(--text-normal);
-  font-size: 1.4rem;
+  font-size: var(--tn-type-xl);
   font-weight: 600;
 }
 
@@ -364,12 +364,12 @@
   color: var(--interactive-accent);
   padding: 0.25rem;
   background: rgba(var(--interactive-accent-rgb), 0.1);
-  border-radius: 4px;
+  border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-webhook-modal-subsection-header h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--tn-type-lg);
   font-weight: 600;
   color: var(--text-normal);
 }
@@ -389,7 +389,7 @@
 .tasknotes-webhook-transform-help {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--tn-radius-lg);
   padding: 1.25rem;
   margin-top: 1rem;
   max-width: 100%;
@@ -425,7 +425,7 @@
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--background-modifier-border);
-  font-size: 0.9rem;
+  font-size: var(--tn-type-md);
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -447,10 +447,10 @@
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--tn-radius-md);
   background: var(--background-primary);
   color: var(--text-normal);
-  font-size: 0.9rem;
+  font-size: var(--tn-type-md);
   font-weight: 500;
   cursor: var(--cursor-link, pointer);
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
@@ -488,7 +488,7 @@
 }
 
 .tasknotes-webhook-modal-btn-icon {
-  font-size: 0.9rem;
+  font-size: var(--tn-type-md);
   line-height: 1;
   display: flex;
   align-items: center;
@@ -502,7 +502,7 @@
 
 .tasknotes-webhook-secret-title {
   justify-content: center;
-  font-size: 1.125rem;
+  font-size: var(--tn-type-lg);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -513,7 +513,7 @@
 
 .tasknotes-webhook-secret-content {
   margin-bottom: var(--tn-space-3);
-  font-size: 0.9rem;
+  font-size: var(--tn-type-md);
   line-height: 1.4;
 }
 
@@ -524,10 +524,10 @@
   cursor: var(--cursor-link, pointer);
   background: var(--background-modifier-form-field);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 3px;
+  border-radius: var(--tn-radius-sm);
   padding: 0.2rem 0.4rem;
   font-family: var(--font-monospace);
-  font-size: 0.85rem;
+  font-size: var(--tn-type-sm);
   margin: 0 0.25rem;
 }
 

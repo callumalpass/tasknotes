@@ -99,7 +99,7 @@
     height: 16px;
     border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
     border-top: 2px solid var(--tn-text-muted);
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     animation: spin 1s linear infinite;
     flex-shrink: 0;
 }
@@ -224,7 +224,7 @@
     box-shadow: none;
     background: transparent;
     color: var(--tn-text-muted);
-    font-size: 14px;
+    font-size: var(--tn-type-md);
     line-height: 1;
     cursor: var(--cursor-link, pointer);
 }
@@ -242,7 +242,7 @@
 .tasknotes-plugin .task-subgroups-container { margin-left: var(--tn-space-3); }
 .tasknotes-plugin .task-subgroup-header { display:flex; align-items:center; gap: var(--tn-space-half); cursor: pointer; padding: 2px 0; font-size: var(--tn-type-sm); font-weight: var(--tn-font-weight-medium); }
 .tasknotes-plugin .task-subgroup-header .agenda-view__item-count { margin-left: auto; }
-.tasknotes-plugin .task-subgroup-toggle { display: inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border:none; background:transparent; color: var(--tn-text-normal); font-size: 12px; line-height: 1; }
+.tasknotes-plugin .task-subgroup-toggle { display: inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border:none; background:transparent; color: var(--tn-text-normal); font-size: var(--tn-type-xs); line-height: 1; }
 .tasknotes-plugin .task-subgroup-toggle .chevron { transition: transform var(--tn-transition-fast); }
 .tasknotes-plugin .task-subgroup .task-subgroup-toggle .chevron,
 .tasknotes-plugin .task-subgroup .task-subgroup-toggle svg { transform: rotate(90deg); }
@@ -258,7 +258,7 @@
 }
 
 .tasknotes-plugin .task-group[data-level="sub"] .task-group-header {
-    font-size: 0.95em;
+    font-size: var(--tn-type-md);
     font-weight: 500;
     color: var(--tn-text-muted);
     padding: var(--tn-space-half) var(--tn-space-1);

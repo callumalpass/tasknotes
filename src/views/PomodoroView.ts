@@ -1,7 +1,8 @@
 import { uiNumber, uiDuration } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { ItemView, WorkspaceLeaf, Notice, EventRef, setTooltip } from "obsidian";
+import { ItemView, WorkspaceLeaf, EventRef, setTooltip } from "obsidian";
+import { showNotice } from "../ui/kit/notice";
 import TaskNotesPlugin from "../main";
 import {
 	POMODORO_VIEW_TYPE,
@@ -21,7 +22,6 @@ import { getTaskWithInstanceStatus, isTaskInstanceCompleted } from "../utils/tas
 import {
 	formatPomodoroTime,
 	getProjectedPomodoroEndTimeMs,
-	getSessionDurationSeconds,
 	getSessionRemainingSeconds,
 	parsePomodoroDurationInput,
 } from "../utils/pomodoroTime";
@@ -72,7 +72,6 @@ export class PomodoroView extends ItemView {
 	private timerInput: HTMLInputElement | null = null;
 	private statusDisplay: HTMLElement | null = null;
 	private sessionMetaDisplay: HTMLElement | null = null;
-	private progressCircle: SVGCircleElement | null = null;
 	private progressContainer: HTMLElement | null = null;
 	private startButton: HTMLButtonElement | null = null;
 	private pauseButton: HTMLButtonElement | null = null;
@@ -100,8 +99,6 @@ export class PomodoroView extends ItemView {
 	private resizeTimeout: number | null = null;
 	private resizeWindow: Window | null = null;
 	private functionListeners: (() => void)[] = [];
-	private currentCircleSize = 300;
-	private currentCircumference = 0;
 	private lastLayoutSize: PomodoroLayoutSize | null = null;
 	private responsiveClass: string | null = null;
 	private workspaceListeners: EventRef[] = [];
@@ -265,8 +262,6 @@ export class PomodoroView extends ItemView {
 		this.displayStateKey = null;
 		this.lastLayoutSize = null;
 		this.responsiveClass = null;
-		this.currentCircleSize = 300;
-		this.currentCircumference = 0;
 		this.taskCardDirty = false;
 		this.visibilityObserver?.disconnect();
 		this.visibilityObserver = null;
@@ -296,7 +291,6 @@ export class PomodoroView extends ItemView {
 		this.timerInput = null;
 		this.statusDisplay = null;
 		this.sessionMetaDisplay = null;
-		this.progressCircle = null;
 		this.progressContainer = null;
 		this.startButton = null;
 		this.pauseButton = null;
@@ -319,7 +313,7 @@ export class PomodoroView extends ItemView {
 	async render() {
 		const container = this.contentEl.createDiv({ cls: "tasknotes-plugin pomodoro-view" });
 
-		// Timer display with progress circle
+		// Timer display
 		const timerSection = container.createDiv({ cls: "pomodoro-view__timer-section" });
 
 		const timerHeader = timerSection.createDiv({ cls: "pomodoro-view__timer-header" });
@@ -335,43 +329,6 @@ export class PomodoroView extends ItemView {
 		this.progressContainer = timerSection.createDiv({
 			cls: "pomodoro-view__progress-container",
 		});
-
-		// Create SVG progress circle
-		const svg = activeWindow.createSvg("svg");
-		svg.setAttribute("class", "pomodoro-view__progress-svg");
-		svg.setAttribute("width", "300");
-		svg.setAttribute("height", "300");
-		svg.setAttribute("viewBox", "0 0 300 300");
-		this.progressContainer.appendChild(svg);
-
-		// Background circle
-		const bgCircle = activeWindow.createSvg("circle");
-		bgCircle.setAttributeNS(null, "cx", "150");
-		bgCircle.setAttributeNS(null, "cy", "150");
-		bgCircle.setAttributeNS(null, "r", "140");
-		bgCircle.setAttributeNS(null, "fill", "none");
-		bgCircle.setAttributeNS(null, "stroke", "var(--tn-border-color)");
-		bgCircle.setAttributeNS(null, "stroke-width", "2");
-		svg.appendChild(bgCircle);
-
-		// Progress circle
-		this.progressCircle = activeWindow.createSvg("circle");
-		this.progressCircle.setAttributeNS(null, "cx", "150");
-		this.progressCircle.setAttributeNS(null, "cy", "150");
-		this.progressCircle.setAttributeNS(null, "r", "140");
-		this.progressCircle.setAttributeNS(null, "fill", "none");
-		this.progressCircle.setAttributeNS(null, "stroke", "var(--tn-interactive-accent)");
-		this.progressCircle.setAttributeNS(null, "stroke-width", "4");
-		this.progressCircle.setAttributeNS(null, "stroke-linecap", "round");
-
-		// Calculate circumference: 2 * π * radius
-		const radius = 140;
-		const circumference = 2 * Math.PI * radius;
-
-		this.progressCircle.setAttributeNS(null, "stroke-dasharray", circumference.toString());
-		this.progressCircle.setAttributeNS(null, "stroke-dashoffset", circumference.toString());
-		this.progressCircle.addClass("pomodoro-view__progress-circle");
-		svg.appendChild(this.progressCircle);
 
 		// Timer display overlay
 		const timerOverlay = this.progressContainer.createDiv({
@@ -691,82 +648,8 @@ export class PomodoroView extends ItemView {
 		// CSS owns typography, shared by the timer label and editable input.
 		pomodoroContainer.style.setProperty("--pomodoro-scale", responsiveScale.toString());
 
-		// Update progress circle size based on available space
-		this.updateProgressCircleSize(containerWidth, containerHeight);
 	}
 
-	private updateProgressCircleSize(containerWidth: number, containerHeight: number): void {
-		if (!this.progressContainer) return;
-
-		const svg = this.progressContainer.querySelector(
-			".pomodoro-view__progress-svg"
-		) as SVGElement;
-		if (!svg) return;
-
-		// Calculate optimal size based on both container width and height
-		// Use the smaller dimension but consider both
-		const availableSpace = Math.min(containerWidth * 0.8, containerHeight * 0.4); // Leave margins
-
-		let size: number;
-		if (containerWidth <= 200) {
-			size = Math.max(120, Math.min(availableSpace, containerWidth - 40)); // Tiny: very small circle
-		} else if (containerWidth <= 250) {
-			size = Math.max(150, Math.min(availableSpace, containerWidth - 50)); // Extra narrow: small circle
-		} else if (containerWidth <= 300) {
-			size = Math.max(180, Math.min(availableSpace, containerWidth - 60)); // Very narrow: compact circle
-		} else if (containerWidth <= 350) {
-			size = Math.max(200, Math.min(availableSpace, containerWidth - 70)); // Narrow: medium-small circle
-		} else if (containerWidth <= 400) {
-			size = Math.max(230, Math.min(availableSpace, containerWidth - 80)); // Small: medium circle
-		} else if (containerWidth <= 500) {
-			size = Math.max(250, Math.min(availableSpace, containerWidth - 100)); // Medium-small: larger circle
-		} else if (containerWidth <= 600) {
-			size = Math.max(280, Math.min(availableSpace, 300)); // Medium: standard size
-		} else {
-			size = Math.max(300, Math.min(availableSpace, containerWidth * 0.5, 400)); // Wide: up to 400px
-		}
-
-		// Only update if size has changed to prevent unnecessary DOM manipulation
-		if (size === this.currentCircleSize) {
-			return;
-		}
-
-		this.currentCircleSize = size;
-
-		// Update SVG and container dimensions
-		svg.setAttribute("width", size.toString());
-		svg.setAttribute("height", size.toString());
-		svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
-
-		this.progressContainer.style.width = `${size}px`;
-		this.progressContainer.style.height = `${size}px`;
-
-		// Update circle positions and radius
-		const center = size / 2;
-		const radius = center - 20; // Leave some margin for stroke
-
-		const circles = svg.querySelectorAll("circle");
-		circles.forEach((circle) => {
-			circle.setAttribute("cx", center.toString());
-			circle.setAttribute("cy", center.toString());
-			circle.setAttribute("r", radius.toString());
-		});
-
-		// Update stroke-dasharray for progress circle and store the new circumference
-		if (this.progressCircle) {
-			const circumference = 2 * Math.PI * radius;
-			this.currentCircumference = circumference;
-			this.progressCircle.setAttribute("stroke-dasharray", circumference.toString());
-			// Reset stroke-dashoffset to full circumference (no progress)
-			this.progressCircle.setAttribute("stroke-dashoffset", circumference.toString());
-
-			// Re-apply current progress with new circumference
-			if (this.plugin.pomodoroService) {
-				const state = this.plugin.pomodoroService.getState();
-				this.updateProgress(state);
-			}
-		}
-	}
 
 	private async openTaskSelector() {
 		if (this.isTaskSelectorOpen) {
@@ -780,7 +663,7 @@ export class PomodoroView extends ItemView {
 			const targetDate = new Date();
 
 			if (unarchivedTasks.length === 0) {
-				new Notice(this.t(msg({ message: "No unarchived tasks found. Create some tasks first.", context: "views.pomodoro.notices.noTasks" })));
+				showNotice(this.t(msg({ message: "No unarchived tasks found. Create some tasks first.", context: "views.pomodoro.notices.noTasks" })));
 				this.isTaskSelectorOpen = false;
 				return;
 			}
@@ -802,7 +685,7 @@ export class PomodoroView extends ItemView {
 				operation: "opening-task-selector",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to load tasks", context: "views.pomodoro.notices.loadFailed" })));
+			showNotice(this.t(msg({ message: "Failed to load tasks", context: "views.pomodoro.notices.loadFailed" })));
 		}
 	}
 
@@ -973,7 +856,6 @@ export class PomodoroView extends ItemView {
 			state.timeRemaining = getSessionRemainingSeconds(state.currentSession, nowMs);
 		}
 		this.updateTimer(state.timeRemaining);
-		this.updateProgress(state);
 		this.updateSessionMeta(state, nowMs);
 
 		const stateKey = JSON.stringify([
@@ -1199,7 +1081,7 @@ export class PomodoroView extends ItemView {
 		this.timerDisplay.removeClass("pomodoro-view__timer-display--hidden");
 
 		if (parsedSeconds === null) {
-			new Notice(this.t(msg({ message: "Enter a duration like 10, 10:30, or 1:30:00.", context: "views.pomodoro.notices.invalidDuration" })));
+			showNotice(this.t(msg({ message: "Enter a duration like 10, 10:30, or 1:30:00.", context: "views.pomodoro.notices.invalidDuration" })));
 			const state = this.plugin.pomodoroService?.getState();
 			if (state && this.isViewVisible()) {
 				this.updateTimer(state.timeRemaining);
@@ -1253,50 +1135,6 @@ export class PomodoroView extends ItemView {
 		}
 	}
 
-	private updateProgress(state: PomodoroState) {
-		if (!this.progressCircle) return;
-
-		// Use current circumference if available, otherwise calculate from current attributes
-		let circumference = this.currentCircumference;
-		if (circumference === 0) {
-			// Fallback: get current radius from the progress circle
-			const radiusAttr = this.progressCircle.getAttribute("r");
-			const radius = radiusAttr ? parseInt(radiusAttr) : 140;
-			circumference = 2 * Math.PI * radius;
-			this.currentCircumference = circumference;
-		}
-
-		const progress = state.currentSession
-			? Math.max(
-					0,
-					Math.min(
-						1,
-						1 - state.timeRemaining / getSessionDurationSeconds(state.currentSession)
-					)
-				)
-			: 0;
-
-		// Calculate stroke-dashoffset (progress goes clockwise)
-		const offset = circumference - progress * circumference;
-
-		// Update progress circle
-		if (this.progressCircle.getAttribute("stroke-dashoffset") !== offset.toString()) {
-			this.progressCircle.setAttributeNS(null, "stroke-dashoffset", offset.toString());
-		}
-
-		for (const type of ["work", "short-break", "long-break"]) {
-			this.progressCircle.classList.toggle(
-				`pomodoro-view__progress-circle--${type}`,
-				type === state.currentSession?.type
-			);
-		}
-
-		// Add warning class for last minute
-		this.progressCircle.classList.toggle(
-			"pomodoro-view__progress-circle--warning",
-			Boolean(state.currentSession) && state.timeRemaining <= 60 && state.timeRemaining > 0
-		);
-	}
 
 	private async updateStats() {
 		const generation = this.openGeneration;

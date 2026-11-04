@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../../ui/kit/emptyState";
 import type { Component } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 import type { TaskInfo } from "../../types";
@@ -136,10 +137,7 @@ export function renderDrilldownContent(owner: Component, plugin: TaskNotesPlugin
 		});
 
 		if (filteredTasks.length === 0) {
-			taskList.createDiv({
-				cls: "stats-view__no-data",
-				text: plugin.i18n.translate(msg({ message: "No tasks found", context: "views.stats.noTasks" })),
-			});
+			renderEmptyState(taskList, { message: plugin.i18n.translate(msg({ message: "No tasks found", context: "views.stats.noTasks" })) });
 			return;
 		}
 

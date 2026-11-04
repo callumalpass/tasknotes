@@ -126,7 +126,7 @@
 .tasknotes-plugin .tnc-ym-day.is-today .tnc-ym-num,
 .tasknotes-plugin .tnc-strip-day.is-today .tnc-strip-num {
     padding: 0;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     background: transparent;
     color: var(--interactive-accent);
     font-weight: var(--tn-font-weight-semibold);
@@ -145,7 +145,7 @@
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator) {
     border-width: 0 0 0 var(--tn-calendar-status-line);
-    border-radius: 0 var(--tn-radius-sm) var(--tn-radius-sm) 0;
+    border-radius: var(--tn-radius-none) var(--tn-radius-sm) var(--tn-radius-sm) var(--tn-radius-none);
     border-left-color: var(--tn-calendar-status-color, var(--tnc-border, var(--c)));
     border-left-style: solid;
     background: color-mix(in srgb, var(--tn-calendar-status-color, var(--c)) var(--tn-calendar-event-tint), var(--tn-bg-primary));

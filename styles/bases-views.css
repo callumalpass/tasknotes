@@ -26,7 +26,7 @@
 	cursor: var(--cursor-link, pointer);
 	display: flex;
 	font: inherit;
-	font-size: var(--font-ui-small, 13px);
+	font-size: var(--font-ui-small);
 	gap: var(--size-4-1);
 	height: auto;
 	margin: var(--size-2-1);
@@ -179,7 +179,7 @@
     box-shadow: none;
     background: transparent;
     color: var(--tn-text-muted);
-    font-size: 14px;
+    font-size: var(--tn-type-md);
     line-height: 1;
     cursor: var(--cursor-link, pointer);
 }
@@ -214,7 +214,7 @@
 }
 
 .tn-tasknotesTaskList .task-group[data-level="sub"] .task-group-header {
-    font-size: 0.95em;
+    font-size: var(--tn-type-md);
     font-weight: 500; /* Less bold than primary */
     color: var(--tn-text-muted);
     padding: var(--tn-space-half) var(--tn-space-1);
@@ -431,7 +431,7 @@ body.is-mobile .tn-bases-kanban-column {
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--tn-hairline);
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     min-width: max-content;
     overflow: hidden;
 }

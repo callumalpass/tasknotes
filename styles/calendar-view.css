@@ -90,7 +90,7 @@
 .tasknotes-plugin .mini-calendar-view__nav-button {
     width: 32px;
     height: 32px;
-    font-size: 16px;
+    font-size: var(--tn-type-base);
     font-weight: 500;
     border: none;
     box-shadow: none;
@@ -143,7 +143,7 @@
     height: 16px;
     border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
     border-top: 2px solid var(--tn-text-muted);
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     animation: spin 1s linear infinite;
     flex-shrink: 0;
 }
@@ -153,7 +153,7 @@
 .tasknotes-plugin .mini-calendar-view__grid-container {
     margin-bottom: var(--tn-space-2);
     background: transparent;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     padding: 0;
     box-shadow: none;
 }
@@ -246,7 +246,7 @@
     transform: translateX(-50%);
     width: 4px;
     height: 4px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     background: var(--tn-interactive-accent);
 }
 
@@ -303,7 +303,7 @@
 .tasknotes-plugin .mini-calendar-view__day-indicator {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     display: inline-block;
     margin: var(--tn-space-half);
 }
@@ -336,7 +336,7 @@
 .tasknotes-plugin .mini-calendar-view__external-event-dot {
     width: 4px;
     height: 4px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     background-color: var(--tn-interactive-accent);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--tn-bg-primary) 35%, transparent);
     flex: 0 0 auto;
@@ -348,7 +348,7 @@
     position: absolute;
     width: 8px;
     height: 8px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     transition: background-color var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
 }
 
@@ -594,7 +594,7 @@
 .tasknotes-plugin .mini-calendar-view__legend-dot {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     flex-shrink: 0;
 }
 
@@ -731,7 +731,7 @@
 
 .tasknotes-plugin .mini-calendar-view__grid {
     border: none;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     background: transparent;
     gap: 1px;
     outline: none;
@@ -867,7 +867,7 @@
     .tasknotes-plugin .mini-calendar-view__nav-button {
         width: 28px;
         height: 28px;
-        font-size: 14px;
+        font-size: var(--tn-type-md);
     }
     
     .tasknotes-plugin .calendar-view__day,
@@ -918,7 +918,7 @@
     right: 2px;
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     display: inline-block;
 }
 
@@ -973,7 +973,7 @@
     height: 16px;
     border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
     border-top: 2px solid var(--tn-text-muted);
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     animation: spin 1s linear infinite;
     flex-shrink: 0;
 }

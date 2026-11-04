@@ -4,6 +4,8 @@
 .tasknotes-plugin {
     /* Type */
     /* Scales with Obsidian's font size setting. Absolute units so pop-out roots can't shrink it. */
+    --tn-type-hidden: 0;
+    --tn-type-timer: clamp(var(--tn-type-xl), calc(var(--tn-type-base) * 4 * var(--pomodoro-scale, 1)), calc(var(--tn-type-base) * 4));
     --tn-type-base: var(--font-text-size, 16px);
     --tn-type-2xs: calc(var(--tn-type-base) * 0.6875);
     --tn-type-xs: calc(var(--tn-type-base) * 0.75);
@@ -28,6 +30,8 @@
     --tn-space-8: 32px;
 
     /* Radius */
+    --tn-radius-none: 0;
+    --tn-radius-xs: 2px;
     --tn-radius-sm: 4px;
     --tn-radius-md: 6px;
     --tn-radius-lg: 8px;
@@ -164,7 +168,7 @@
 body.is-mobile .tasknotes-plugin {
     --tn-row-height: 44px;
     --tn-row-height-compact: 40px;
-    --tn-control-md: 36px;
+    --tn-control-md: var(--tn-touch-target);
     --tn-nested-task-indent: 12px;
     --tn-nested-task-padding: 10px;
     --tn-mobile-task-card-indicator-size: 24px;

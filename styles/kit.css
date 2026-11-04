@@ -2,6 +2,9 @@
 
 .tn-glyph {
     display: block;
+    width: var(--tn-glyph);
+    height: var(--tn-glyph);
+    flex-shrink: 0;
 }
 
 /* Buttons */
@@ -216,7 +219,7 @@
     padding: 0 var(--tn-space-3);
     border: none;
     border-bottom: 1px solid var(--tn-hairline);
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     background: transparent;
     box-shadow: none;
     font-size: var(--tn-type-sm);
@@ -325,6 +328,14 @@
 }
 
 /* Empty state */
+.tasknotes-plugin.tn-notice {
+    font-family: var(--font-interface);
+    font-size: var(--tn-type-sm);
+    line-height: 1.5;
+    color: inherit;
+    background: transparent;
+}
+
 .tasknotes-plugin .tn-empty {
     display: flex;
     flex-direction: column;
@@ -335,4 +346,9 @@
     color: var(--tn-text-muted);
     font-size: var(--tn-type-sm);
     text-align: center;
+}
+
+body.is-mobile .tasknotes-plugin .tn-btn {
+    min-height: var(--tn-touch-target);
+    min-width: var(--tn-touch-target);
 }

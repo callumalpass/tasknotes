@@ -25,7 +25,7 @@ describe("Issue #982: Obsidian text font size inheritance", () => {
 			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__title\s*\{[^}]*font-size:\s*var\(--tn-type-base\);/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-type-sm\),\s*var\(--font-ui-small,\s*13px\)\);/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-type-sm\),\s*var\(--font-ui-small,\s*var\(--tn-type-sm\)\)\);/s
 		);
 	});
 });

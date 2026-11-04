@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../ui/kit/emptyState";
 import { uiDuration, formatUIDate } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -23,7 +24,7 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 import { createDefaultStatsFilters, normalizeStatsFilters, filterStatsVisibleTasks, getVisibleStatsProjectNames, STATS_FILTERS_STORAGE_KEY } from "./stats/model";
 import type { StatsFilters, ProjectStats, OverallStats, TimeRangeStats, ProjectDrilldownData, TimeByDay, TrendDataPoint } from "./stats/model";
-import { renderProgressCircle, renderSparkline } from "./stats/charts";
+import { renderCompletion, renderSparkline } from "./stats/charts";
 import { renderOverviewStats, renderTimeRangeStats } from "./stats/summary";
 export { normalizeStatsFilters, filterStatsVisibleTasks, getVisibleStatsProjectNames } from "./stats/model";
 export type { StatsFilters, VisibleStatsProjectNamesOptions } from "./stats/model";
@@ -913,10 +914,7 @@ export class StatsView extends ItemView {
 		container.empty();
 
 		if (projects.length === 0) {
-			container.createDiv({
-				cls: "stats-no-data stats-view__no-data",
-				text: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })),
-			});
+			renderEmptyState(container, { message: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })) });
 			return;
 		}
 
@@ -975,7 +973,7 @@ export class StatsView extends ItemView {
 			const progressContainer = contentGrid.createDiv({
 				cls: "stats-view__progress-container",
 			});
-			renderProgressCircle(
+			renderCompletion(
 				progressContainer,
 				completionRate,
 				project.completedTaskCount,

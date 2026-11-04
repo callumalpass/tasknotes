@@ -97,6 +97,7 @@
 		"obsidian": "^1.13.1",
 		"obsidian-test-mocks": "^3.11.0",
 		"obsidian-typings": "^6.37.0",
+		"postcss-value-parser": "^4.2.0",
 		"prettier": "^3.6.2",
 		"stylelint": "^17.11.0",
 		"ts-jest": "^29.1.1",

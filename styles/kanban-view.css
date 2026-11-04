@@ -130,7 +130,7 @@
 
 .tasknotes-plugin .kanban-view__board::-webkit-scrollbar-thumb {
     background: var(--tn-border-color);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-plugin .kanban-view__board::-webkit-scrollbar-thumb:hover {
@@ -160,7 +160,7 @@
     height: 16px;
     border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
     border-top: 2px solid var(--tn-text-muted);
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     animation: spin 1s linear infinite;
     flex-shrink: 0;
 }
@@ -310,7 +310,7 @@
     position: sticky;
     top: 0;
     z-index: 5;
-    border-radius: var(--tn-radius-lg) var(--tn-radius-lg) 0 0;
+    border-radius: var(--tn-radius-lg) var(--tn-radius-lg) var(--tn-radius-none) var(--tn-radius-none);
     cursor: grab;
     user-select: none;
     transition: opacity var(--tn-motion-fast) var(--tn-ease), transform var(--tn-motion-fast) var(--tn-ease);

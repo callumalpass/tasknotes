@@ -36,7 +36,7 @@
 .advanced-calendar-view__popout-blocked h3 {
     margin: 0 0 8px;
     color: var(--text-normal);
-    font-size: 1rem;
+    font-size: var(--tn-type-base);
     font-weight: 600;
 }
 
@@ -75,16 +75,16 @@
     max-height: 100px;
     overflow-y: auto;
     white-space: pre-wrap;
-    font-size: 0.9em;
+    font-size: var(--tn-type-sm);
     margin-top: 0.25rem;
     padding: 0.5rem;
     background: var(--background-secondary);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
 }
 
 /* ICS Context Menu */
 .ics-event-context-menu {
-    font-size: 0.9em;
+    font-size: var(--tn-type-sm);
 }
 
 .ics-context-menu-item:hover {
@@ -93,12 +93,12 @@
 
 /* Timeblock Help Text */
 .advanced-calendar-view__help-text {
-    font-size: 0.85em;
+    font-size: var(--tn-type-sm);
     color: var(--text-muted);
     margin-top: 0.5rem;
     padding: 0.5rem;
     background: var(--background-secondary);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     border: 1px solid var(--background-modifier-border);
     border-inline-start-color: var(--color-accent);
 }
@@ -106,7 +106,7 @@
 /* Timeblock Events */
 .fc-timeblock-event {
     opacity: 0.65;
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     border-width: 1px;
     border-style: solid;
     transition: opacity 0.2s ease, box-shadow 0.2s ease;
@@ -119,7 +119,7 @@
 
 /* Task Events */
 .fc-task-event {
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     border-width: 1px;
 }
 
@@ -146,7 +146,7 @@
     margin-bottom: 1rem;
     padding: 0.75rem;
     background: var(--background-secondary);
-    border-radius: 6px;
+    border-radius: var(--tn-radius-md);
     text-align: center;
 }
 
@@ -158,20 +158,20 @@
 }
 
 .timeblock-help-text {
-    font-size: 0.85em;
+    font-size: var(--tn-type-sm);
     color: var(--text-muted);
     margin-top: 1rem;
     padding: 0.75rem;
     background: var(--background-secondary);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     line-height: 1.4;
 }
 
 .timeblock-help-text code {
     background: var(--background-primary);
     padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-size: 0.9em;
+    border-radius: var(--tn-radius-sm);
+    font-size: var(--tn-type-sm);
 }
 
 /* Attachment Selection Styles */
@@ -183,11 +183,11 @@
 .timeblock-attachments-empty {
     color: var(--text-muted);
     font-style: italic;
-    font-size: 0.9em;
+    font-size: var(--tn-type-sm);
     padding: 0.5rem;
     text-align: center;
     background: var(--background-secondary);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
 }
 
 .timeblock-attachment-item {
@@ -197,7 +197,7 @@
     padding: 0.5rem;
     margin-bottom: 0.25rem;
     background: var(--background-secondary);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     border: 1px solid var(--background-modifier-border);
 }
 
@@ -217,7 +217,7 @@
 }
 
 .timeblock-attachment-path {
-    font-size: 0.85em;
+    font-size: var(--tn-type-sm);
     color: var(--text-muted);
     margin-top: 0.2rem;
     word-break: break-all;
@@ -227,10 +227,10 @@
     background: none;
     border: none;
     color: var(--text-muted);
-    font-size: 1.2em;
+    font-size: var(--tn-type-lg);
     cursor: var(--cursor-link, pointer);
     padding: 0.2rem 0.5rem;
-    border-radius: 3px;
+    border-radius: var(--tn-radius-sm);
     margin-left: 0.5rem;
     flex-shrink: 0;
 }
@@ -310,7 +310,7 @@ body.is-mobile .timeblock-attachment-remove {
 }
 
 .attachment-path {
-    font-size: 0.85em;
+    font-size: var(--tn-type-sm);
     color: var(--text-muted);
     margin-top: 0.2rem;
 }
@@ -320,11 +320,11 @@ body.is-mobile .timeblock-attachment-remove {
     max-height: 100px;
     overflow-y: auto;
     white-space: pre-wrap;
-    font-size: 0.9em;
+    font-size: var(--tn-type-sm);
     margin-top: 0.25rem;
     padding: 0.5rem;
     background: var(--background-secondary);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
 }
 
 .timeblock-attachments {
@@ -348,14 +348,14 @@ body.is-mobile .timeblock-attachment-remove {
     gap: 1rem;
     padding: 0.75rem;
     border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     margin-bottom: 0.5rem;
 }
 
 .settings-status-indicator {
     width: 12px;
     height: 12px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     flex-shrink: 0;
 }
 
@@ -382,7 +382,7 @@ body.is-mobile .timeblock-attachment-remove {
 }
 
 .ics-subscription-url {
-    font-size: 0.85em;
+    font-size: var(--tn-type-sm);
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -391,12 +391,12 @@ body.is-mobile .timeblock-attachment-remove {
 }
 
 .ics-subscription-meta {
-    font-size: 0.8em;
+    font-size: var(--tn-type-xs);
     color: var(--text-muted);
 }
 
 .ics-subscription-error {
-    font-size: 0.8em;
+    font-size: var(--tn-type-xs);
     color: var(--text-error);
     margin-top: 0.25rem;
 }
@@ -412,7 +412,7 @@ body.is-mobile .timeblock-attachment-remove {
     color: var(--text-normal);
     border: none;
     box-shadow: none;
-    font-size: 0.8em;
+    font-size: var(--tn-type-xs);
 }
 
 .ics-subscription-actions button:hover {
@@ -445,7 +445,7 @@ body.is-mobile .timeblock-attachment-remove {
     margin: 1rem 0;
     padding: 1rem;
     border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     background: var(--background-secondary);
 }
 
@@ -485,7 +485,7 @@ body.is-mobile .timeblock-attachment-remove {
     flex: 1;
     padding: 0.5rem;
     border: 1px solid var(--background-modifier-border);
-    border-radius: 3px;
+    border-radius: var(--tn-radius-sm);
     background: var(--background-primary);
     color: var(--text-normal);
 }
@@ -495,7 +495,7 @@ body.is-mobile .timeblock-attachment-remove {
     width: 40px;
     height: 30px;
     border: 1px solid var(--background-modifier-border);
-    border-radius: 3px;
+    border-radius: var(--tn-radius-sm);
     cursor: var(--cursor-link, pointer);
 }
 
@@ -504,7 +504,7 @@ body.is-mobile .timeblock-attachment-remove {
     width: 80px;
     padding: 0.5rem;
     border: 1px solid var(--background-modifier-border);
-    border-radius: 3px;
+    border-radius: var(--tn-radius-sm);
     background: var(--background-primary);
     color: var(--text-normal);
 }
@@ -597,9 +597,9 @@ body.is-mobile .timeblock-attachment-remove {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border: none;
-    border-radius: 6px;
+    border-radius: var(--tn-radius-md);
     cursor: var(--cursor-link, pointer);
-    font-size: 0.85rem;
+    font-size: var(--tn-type-sm);
     font-weight: 500;
     transition: background-color 0.2s ease;
 }
@@ -661,9 +661,9 @@ body.is-mobile .timeblock-attachment-remove {
     background: var(--interactive-normal);
     color: var(--text-normal);
     border: 1px solid var(--background-modifier-border);
-    border-radius: 6px;
+    border-radius: var(--tn-radius-md);
     padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
+    font-size: var(--tn-type-sm);
     cursor: var(--cursor-link, pointer);
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

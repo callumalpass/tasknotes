@@ -1,5 +1,6 @@
 import stylelint from "stylelint";
 import selectorParser from "postcss-selector-parser";
+import valueParser from "postcss-value-parser";
 
 const { createPlugin, utils } = stylelint;
 
@@ -7,6 +8,30 @@ const noHasRuleName = "tasknotes/no-has";
 const obsidianBrowserSupportRuleName = "tasknotes/obsidian-browser-support";
 const scopedSelectorsRuleName = "tasknotes/scoped-selectors";
 const noFixedPositionRuleName = "tasknotes/no-fixed-position";
+const designTokensRuleName = "tasknotes/design-tokens";
+
+const designTokensRule = createPlugin(designTokensRuleName, (enabled) => {
+	return (root, result) => {
+		const filePath = (root.source?.input?.file ?? "").replaceAll("\\", "/");
+		if (!enabled || !filePath.includes("/styles/") || filePath.endsWith("/styles/tokens.css") || filePath.includes("/docs-builder/")) return;
+		root.walkDecls((declaration) => {
+			const property = declaration.prop.toLowerCase();
+			const isDimension = property === "font" || property === "font-size" || property.endsWith("-font-size") || property.endsWith("radius");
+			let rawValue = false;
+			valueParser(declaration.value).walk((node) => {
+				if (node.type !== "word") return;
+				if (/^#[\da-f]{3,8}$/iu.test(node.value) || (isDimension && /^[+-]?(?:\d*\.)?\d+(?:[a-z]+|%)?$/iu.test(node.value))) rawValue = true;
+			});
+			if (!rawValue) return;
+			utils.report({
+				message: "Use design tokens for font sizes, radii and hex colours; raw values belong in styles/tokens.css.",
+				node: declaration,
+				result,
+				ruleName: designTokensRuleName,
+			});
+		});
+	};
+});
 
 const noHasRule = createPlugin(noHasRuleName, (enabled) => {
 	return (root, result) => {
@@ -309,12 +334,14 @@ const warning = { severity: "warning" };
 
 export default {
 	plugins: [
+		designTokensRule,
 		noHasRule,
 		obsidianBrowserSupportRule,
 		scopedSelectorsRule,
 		noFixedPositionRule,
 	],
 	rules: {
+		[designTokensRuleName]: true,
 		"color-hex-length": [
 			"long",
 			{

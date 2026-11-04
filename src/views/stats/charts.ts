@@ -1,54 +1,17 @@
+import { renderEmptyState } from "../../ui/kit/emptyState";
 import type TaskNotesPlugin from "../../main";
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../../i18n/runtime";
 import { uiPercent, uiDuration, formatUIDate } from "../../i18n/formatters";
 import type { TrendDataPoint, TimeByDay } from "./model";
 
-export function renderProgressCircle(
+export function renderCompletion(
 	container: HTMLElement,
 	percentage: number,
 	completed: number,
 	total: number
 ) {
-	const size = 60;
-	const strokeWidth = 5;
-	const radius = (size - strokeWidth) / 2;
-	const circumference = 2 * Math.PI * radius;
-	const offset = circumference - (percentage / 100) * circumference;
-
-	const svg = activeWindow.createSvg("svg");
-	svg.setAttribute("width", size.toString());
-	svg.setAttribute("height", size.toString());
-	svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
-	svg.classList.add("stats-view__progress-circle-svg");
-
-	const backgroundCircle = activeWindow.createSvg("circle");
-	backgroundCircle.setAttribute("cx", (size / 2).toString());
-	backgroundCircle.setAttribute("cy", (size / 2).toString());
-	backgroundCircle.setAttribute("r", radius.toString());
-	backgroundCircle.classList.add("stats-view__progress-circle-bg");
-
-	const foregroundCircle = activeWindow.createSvg("circle");
-	foregroundCircle.setAttribute("cx", (size / 2).toString());
-	foregroundCircle.setAttribute("cy", (size / 2).toString());
-	foregroundCircle.setAttribute("r", radius.toString());
-	foregroundCircle.setAttribute("stroke-dasharray", `${circumference} ${circumference}`);
-	foregroundCircle.setAttribute("stroke-dashoffset", offset.toString());
-	foregroundCircle.classList.add("stats-view__progress-circle-fg");
-
-	const text = activeWindow.createSvg("text");
-	text.setAttribute("x", "50%");
-	text.setAttribute("y", "50%");
-	text.setAttribute("dy", "0.3em");
-	text.setAttribute("text-anchor", "middle");
-	text.classList.add("stats-view__progress-circle-text");
-	text.textContent = uiPercent(Math.round(percentage));
-
-	svg.appendChild(backgroundCircle);
-	svg.appendChild(foregroundCircle);
-	svg.appendChild(text);
-
-	container.appendChild(svg);
+	container.createDiv({ cls: "stats-view__completion-value", text: uiPercent(Math.round(percentage)) });
 
 	const label = container.createDiv({ cls: "stats-view__progress-label" });
 	label.textContent = uiText(msg({ message: "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}", context: "views/StatsView: StatsView.renderProgressCircle display" }), { completed: completed, total: total });
@@ -109,10 +72,7 @@ export function renderActivityChart(plugin: TaskNotesPlugin, container: HTMLElem
 
 	const maxTime = Math.max(...timeByDay.map((d) => d.timeSpent));
 	if (maxTime === 0) {
-		container.createDiv({
-			cls: "stats-view__no-data",
-			text: plugin.i18n.translate(msg({ message: "No time tracking data", context: "views.stats.project.noTracking" })),
-		});
+		renderEmptyState(container, { message: plugin.i18n.translate(msg({ message: "No time tracking data", context: "views.stats.project.noTracking" })) });
 		return;
 	}
 

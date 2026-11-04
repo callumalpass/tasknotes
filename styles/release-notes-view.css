@@ -1,16 +1,16 @@
 .tasknotes-release-notes-view .release-notes-announcement,
 .tasknotes-release-notes-view .release-notes-version-content {
-    font-family: var(--font-text);
-    font-size: var(--font-text-size);
+    font-family: var(--font-interface);
+    font-size: var(--tn-type-sm);
     line-height: var(--line-height-normal);
 }
 
 .tasknotes-release-notes-view .release-notes-announcement {
     margin-bottom: var(--size-4-5);
-    padding: var(--size-4-4);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-m);
-    background: var(--background-secondary);
+    padding: 0 0 var(--tn-space-4);
+    border-bottom: 1px solid var(--tn-hairline);
+    color: var(--tn-text-normal);
+    background: var(--tn-bg-primary);
 }
 
 .tasknotes-release-notes-view .release-notes-announcement > :first-child {
@@ -19,4 +19,75 @@
 
 .tasknotes-release-notes-view .release-notes-announcement > :last-child {
     margin-bottom: 0;
+}
+
+.tasknotes-release-notes-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--tn-space-6);
+    color: var(--tn-text-normal);
+    background: var(--tn-bg-primary);
+}
+
+.tasknotes-release-notes-view h1 {
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-semibold);
+}
+
+.tasknotes-release-notes-view .release-notes-version-section {
+    border-bottom: 1px solid var(--tn-hairline);
+}
+
+.tasknotes-release-notes-view .release-notes-version-header,
+.tasknotes-release-notes-view .release-notes-version-info {
+    display: flex;
+    align-items: baseline;
+    gap: var(--tn-space-3);
+}
+
+.tasknotes-release-notes-view .release-notes-version-header {
+    justify-content: space-between;
+    padding: var(--tn-space-4) 0;
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-release-notes-view .release-notes-version-info {
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.tasknotes-release-notes-view .release-notes-version-info h2 {
+    margin: 0;
+    font-size: var(--tn-type-md);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+.tasknotes-release-notes-view .release-notes-date,
+.tasknotes-release-notes-view .release-notes-current,
+.tasknotes-release-notes-view .release-notes-chevron {
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-release-notes-view .release-notes-chevron svg {
+    width: var(--tn-glyph);
+    height: var(--tn-glyph);
+}
+
+.tasknotes-release-notes-view .release-notes-version-content {
+    padding-bottom: var(--tn-space-6);
+    overflow-wrap: anywhere;
+}
+
+.tasknotes-release-notes-view .release-notes-footer {
+    padding-block: var(--tn-space-6);
+    font-size: var(--tn-type-sm);
+}
+
+body.is-mobile .tasknotes-release-notes-container {
+    padding: var(--tn-space-3);
+}
+
+body.is-mobile .tasknotes-release-notes-view .release-notes-version-header {
+    min-height: var(--tn-touch-target);
 }

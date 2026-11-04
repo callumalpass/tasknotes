@@ -18,7 +18,7 @@
     /* Visual Styling - Todoist minimal style */
     background-color: transparent;
     border: none;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     border-inline-start: 1px solid transparent; /* Transparent by default */
     
     /* Interactions & Accessibility - Simplified */
@@ -64,7 +64,7 @@
 .tasknotes-plugin .note-card:first-child,
 .tasknotes-plugin .note-card:last-child,
 .tasknotes-plugin .note-card:first-child:last-child {
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
 }
 
 /* =================================================================
@@ -279,7 +279,7 @@
     background-color: var(--tn-bg-primary);
     border: none;
     border-bottom: 1px solid var(--tn-border-color);
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     cursor: var(--cursor-link, pointer);
     transition: background-color var(--tn-transition-fast);
 }

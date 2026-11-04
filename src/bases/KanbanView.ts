@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../ui/kit/emptyState";
 import { renderKanbanHeaderGlyph, resolveKanbanStatusColor } from "./kanbanStatusPresentation";
 import { KanbanDragPreview } from "./kanbanDragPreview";
 import { createKanbanCardScroller } from "./kanbanCardScroller";
@@ -4174,12 +4175,7 @@ export class KanbanView extends BasesViewBase {
 
 	private renderEmptyState(): void {
 		if (!this.boardEl) return;
-		// Use containerEl.ownerDocument for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-		const empty = createElementInDocument(doc, "div");
-		empty.className = "tn-bases-empty";
-		empty.textContent = uiText(msg({ message: "No tasknotes tasks found for this base.", context: "bases/KanbanView: KanbanView.renderEmptyState display" }));
-		this.boardEl.appendChild(empty);
+		renderEmptyState(this.boardEl, { message: uiText(msg({ message: "No tasknotes tasks found for this base.", context: "bases/KanbanView: KanbanView.renderEmptyState display" })) });
 	}
 
 	private renderNoGroupByError(): void {
