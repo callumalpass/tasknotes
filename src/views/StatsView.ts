@@ -164,10 +164,8 @@ export class StatsView extends ItemView {
 		});
 
 		// Filters section
-		const filtersSection = container.createDiv({ cls: "stats-section stats-view__section" });
-		new Setting(filtersSection)
-			.setName(this.plugin.i18n.translate(msg({ message: "Filters", context: "views.stats.sections.filters" })))
-			.setHeading();
+		const filtersSection = container.createEl("details", { cls: "stats-section stats-view__section stats-view__filter-disclosure" });
+		filtersSection.createEl("summary", { text: this.plugin.i18n.translate(msg({ message: "Filters", context: "views.stats.sections.filters" })) });
 		this.filtersEl = filtersSection.createDiv({ cls: "stats-filters stats-view__filters" });
 		this.renderFilters();
 
@@ -180,22 +178,24 @@ export class StatsView extends ItemView {
 			cls: "stats-overview-grid stats-view__overview-grid",
 		});
 
+		const horizons = container.createDiv({ cls: "tn-report-horizons" });
+
 		// Today's stats
-		const todaySection = container.createDiv({ cls: "stats-section stats-view__section" });
+		const todaySection = horizons.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(todaySection)
 			.setName(this.plugin.i18n.translate(msg({ message: "Today", context: "views.stats.sections.today" })))
 			.setHeading();
 		this.todayStatsEl = todaySection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
 
 		// This week's stats
-		const weekSection = container.createDiv({ cls: "stats-section stats-view__section" });
+		const weekSection = horizons.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(weekSection)
 			.setName(this.plugin.i18n.translate(msg({ message: "This week", context: "views.stats.sections.thisWeek" })))
 			.setHeading();
 		this.weekStatsEl = weekSection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
 
 		// This month's stats
-		const monthSection = container.createDiv({ cls: "stats-section stats-view__section" });
+		const monthSection = horizons.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(monthSection)
 			.setName(this.plugin.i18n.translate(msg({ message: "This month", context: "views.stats.sections.thisMonth" })))
 			.setHeading();

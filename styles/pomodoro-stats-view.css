@@ -89,7 +89,7 @@
 
 .tasknotes-plugin .pomodoro-stats-view__overview-grid,
 .tasknotes-plugin .pomodoro-stats-view__stats-grid {
-    max-width: 560px;
+    max-width: none;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__period-summary {
@@ -226,10 +226,11 @@
     grid-template-columns: auto auto auto 1fr auto;
     gap: var(--tn-space-2);
     align-items: center;
-    padding: var(--tn-space-2);
-    background: var(--tn-bg-secondary);
-    border-radius: var(--tn-radius-md);
-    border: 1px solid var(--tn-border-color);
+    padding: var(--tn-space-3) 0;
+    background: transparent;
+    border-radius: var(--tn-radius-none);
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
     transition: background-color var(--tn-transition-fast);
 }
 
@@ -242,14 +243,14 @@
     color: var(--tn-text-muted);
     font-weight: var(--tn-font-weight-medium);
     min-width: 100px;
-    font-family: var(--font-monospace);
+    font-variant-numeric: tabular-nums;
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-duration {
     font-size: var(--tn-type-xs);
     color: var(--tn-text-normal);
     font-weight: var(--tn-font-weight-semibold);
-    font-family: var(--font-monospace);
+    font-variant-numeric: tabular-nums;
     min-width: 60px;
 }
 
@@ -265,13 +266,13 @@
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-status--completed {
-    background: var(--tn-success);
-    color: var(--tn-bg-primary);
+    background: transparent;
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-status--interrupted {
-    background: var(--tn-color-error);
-    color: var(--tn-bg-primary);
+    background: transparent;
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-task {
@@ -305,7 +306,7 @@
     border-color: var(--tn-border-color);
 }
 
-@media (max-width: 768px) {
+@container (max-width: 768px) {
     .tasknotes-plugin.pomodoro-stats-view {
         padding: var(--tn-space-2);
         gap: var(--tn-space-2);
@@ -334,28 +335,48 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__session-item {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) auto auto;
         gap: var(--tn-space-1);
-        text-align: center;
+        text-align: start;
     }
     
     .tasknotes-plugin .pomodoro-stats-view__session-date,
     .tasknotes-plugin .pomodoro-stats-view__session-duration,
     .tasknotes-plugin .pomodoro-stats-view__session-task {
         min-width: auto;
-        text-align: center;
+        text-align: start;
     }
     
     .tasknotes-plugin .pomodoro-stats-view__session-status {
-        justify-self: center;
+        justify-self: end;
+        grid-column: 2;
+        grid-row: 2;
+        min-width: 0;
+        padding: 0;
     }
 
     .tasknotes-plugin .pomodoro-stats-view__session-delete-button {
-        justify-self: center;
+        justify-self: end;
+        grid-column: 3;
+        grid-row: 1 / span 2;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-duration {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: end;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-task {
+        grid-column: 1;
+        grid-row: 2;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 }
 
-@media (max-width: 480px) {
+@container (max-width: 480px) {
     .tasknotes-plugin.pomodoro-stats-view {
         padding: var(--tn-space-1);
     }

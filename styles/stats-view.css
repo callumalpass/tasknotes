@@ -42,6 +42,23 @@
     gap: var(--tn-space-2);
 }
 
+.tasknotes-plugin .stats-view__filter-disclosure {
+    display: block;
+    border-bottom: 1px solid var(--tn-hairline);
+    padding-bottom: var(--tn-space-3);
+}
+
+.tasknotes-plugin .stats-view__filter-disclosure > summary {
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: var(--tn-type-sm);
+    width: fit-content;
+}
+
+.tasknotes-plugin .stats-view__filter-disclosure[open] > summary {
+    margin-bottom: var(--tn-space-3);
+}
+
 .tasknotes-plugin .stats-view__section .setting-item {
     border: none;
     padding: 0;
@@ -398,7 +415,7 @@
 
 .tasknotes-plugin .stats-view__overview-grid,
 .tasknotes-plugin .stats-view__stats-grid {
-    max-width: 560px;
+    max-width: none;
 }
 
 .tasknotes-plugin .stats-view__period-summary {
