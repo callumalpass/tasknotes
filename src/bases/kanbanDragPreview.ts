@@ -29,11 +29,11 @@ export class KanbanDragPreview {
 			? sourceElement
 			: sourceElement.querySelector(".task-card");
 		if (sourceCard) {
-			preview.classList.add("kanban-view__card-wrapper");
+			const wrapper = preview.createDiv({ cls: "kanban-view__card-wrapper" });
 			const card = sourceCard.cloneNode(true) as HTMLElement;
 			card.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
 			card.removeAttribute("id");
-			preview.appendChild(card);
+			wrapper.appendChild(card);
 		} else {
 			preview.appendChild(titleEl);
 		}
@@ -46,6 +46,7 @@ export class KanbanDragPreview {
 		this.floatingDragPreviewHeight = rect.height;
 		preview.setCssProps({
 			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
+			"--tn-kanban-drag-preview-height": `${rect.height}px`,
 			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
 		});
 

@@ -1,4 +1,5 @@
 import { renderEmptyState } from "../ui/kit/emptyState";
+import { showToast } from "../ui/kit/toast";
 import { renderKanbanHeaderGlyph, resolveKanbanStatusColor } from "./kanbanStatusPresentation";
 import { KanbanDragPreview } from "./kanbanDragPreview";
 import { createKanbanCardScroller } from "./kanbanCardScroller";
@@ -261,6 +262,7 @@ export class KanbanView extends BasesViewBase {
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
 	/** Collapsed column values keyed by grouping property, saved in the .base view config. */
 	private collapsedColumns: Record<string, string[]> = {};
+	private expandedEmptyColumns = new Set<string>();
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
@@ -673,6 +675,7 @@ export class KanbanView extends BasesViewBase {
 			} else {
 				await this.renderFlat(groups, allGroups);
 			}
+			this.updateBoardLayout();
 			this.restoreCollapseButtonFocus(focusedCollapseColumn);
 		} catch (error: unknown) {
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error rendering:", {
@@ -1678,7 +1681,10 @@ export class KanbanView extends BasesViewBase {
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
 			this.renderGroupTitleWrapper(titleContainer, columnKey, false, true);
+			setTooltip(titleContainer, this.getGroupDisplayTitle(columnKey, groupByPropertyId));
+			headerCell.dataset.empty = String((columnTaskCounts.get(columnKey) ?? 0) === 0);
 			this.renderColumnCount(headerCell, columnKey, columnTaskCounts.get(columnKey) ?? 0);
+			this.createColumnCollapseButton(headerCell, headerCell, columnKey, groupByPropertyId);
 			this.createAddTaskButton(headerCell, groupByPropertyId, columnKey);
 
 			// Setup column header drag handlers for swimlane mode
@@ -1812,6 +1818,7 @@ export class KanbanView extends BasesViewBase {
 		column.className = "kanban-view__column";
 		column.style.width = `${this.columnWidth}px`;
 		column.setAttribute("data-group", groupKey);
+		column.dataset.empty = String(tasks.length === 0);
 		this.applyStatusColor(
 			column,
 			groupKey,
@@ -1846,6 +1853,7 @@ export class KanbanView extends BasesViewBase {
 
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
 		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
+		setTooltip(titleContainer, this.getGroupDisplayTitle(groupKey, groupByPropertyId));
 
 		this.renderColumnCount(header, groupKey, tasks.length);
 		this.createColumnCollapseButton(header, column, groupKey, groupByPropertyId);
@@ -1900,6 +1908,7 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		const collapseProperty = groupByPropertyId ?? "";
+		setTooltip(button, this.getGroupDisplayTitle(groupKey, groupByPropertyId));
 		column.dataset.collapseProperty = collapseProperty;
 		column.dataset.collapseValue = groupKey;
 		this.applyColumnCollapsedState(column);
@@ -1914,9 +1923,13 @@ export class KanbanView extends BasesViewBase {
 		button.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			const collapsed = !this.isColumnCollapsed(collapseProperty, groupKey);
+			const collapsed = !column.classList.contains("kanban-view__column--collapsed");
+			const expansionKey = JSON.stringify([collapseProperty, groupKey]);
+			if (collapsed) this.expandedEmptyColumns.delete(expansionKey);
+			else this.expandedEmptyColumns.add(expansionKey);
 			this.saveColumnCollapsed(collapseProperty, groupKey, collapsed);
 			this.applyColumnCollapsedState(column);
+			this.updateBoardLayout();
 			if (!collapsed) this.columnScrollers.get(groupKey)?.recalculate();
 		});
 	}
@@ -1927,7 +1940,7 @@ export class KanbanView extends BasesViewBase {
 		if (!board || !focused?.matches(".kanban-view__column-collapse-button") || !board.contains(focused)) {
 			return null;
 		}
-		const column = focused.closest<HTMLElement>(".kanban-view__column");
+		const column = focused.closest<HTMLElement>(".kanban-view__column, .kanban-view__column-header-cell");
 		if (!column) return null;
 		return {
 			property: column.dataset.collapseProperty ?? "",
@@ -1938,7 +1951,7 @@ export class KanbanView extends BasesViewBase {
 	private restoreCollapseButtonFocus(target: { property: string; value: string } | null): void {
 		if (!target || !this.boardEl) return;
 		for (const column of Array.from(
-			this.boardEl.querySelectorAll<HTMLElement>(".kanban-view__column")
+			this.boardEl.querySelectorAll<HTMLElement>(".kanban-view__column, .kanban-view__column-header-cell")
 		)) {
 			if (
 				column.dataset.collapseProperty === target.property &&
@@ -1953,17 +1966,54 @@ export class KanbanView extends BasesViewBase {
 	private applyColumnCollapsedState(column: HTMLElement): void {
 		const button = column.querySelector<HTMLElement>(".kanban-view__column-collapse-button");
 		if (!button) return;
-		const collapsed = this.isColumnCollapsed(
+		const expansionKey = JSON.stringify([column.dataset.collapseProperty ?? "", column.dataset.collapseValue ?? ""]);
+		const collapsed = (column.dataset.empty === "true" && !this.expandedEmptyColumns.has(expansionKey) && !this.pinnedColumns.includes(column.dataset.collapseValue ?? "")) || this.isColumnCollapsed(
 			column.dataset.collapseProperty ?? "",
 			column.dataset.collapseValue ?? ""
 		);
 		column.classList.toggle("kanban-view__column--collapsed", collapsed);
+		column.classList.toggle("kanban-view__column--empty-rail", collapsed && column.dataset.empty === "true");
 		column.dataset.collapsed = String(collapsed);
 		column.style.width = collapsed
 			? "var(--tn-kanban-collapsed-column-width, 48px)"
 			: `${this.columnWidth}px`;
 		button.setAttribute("aria-expanded", String(!collapsed));
 		setIcon(button, collapsed ? "chevron-right" : "chevron-left");
+	}
+
+	private updateBoardLayout(): void {
+		const board = this.boardEl;
+		if (!board || this.draggedTaskPath || this.touchDragActive) return;
+		const swimlanes = board.classList.contains("kanban-view__board--swimlanes");
+		const columns = Array.from(board.querySelectorAll<HTMLElement>(
+			swimlanes ? ".kanban-view__column-header-cell" : ".kanban-view__column"
+		));
+		const labelWidth = swimlanes ? (board.clientWidth < 480 ? 72 : 96) : 0;
+		const collapsedColumns = columns.filter(column => column.classList.contains("kanban-view__column--collapsed"));
+		const collapsedCount = collapsedColumns.length;
+		const collapsedWidth = collapsedColumns.reduce((total, column) => total + (column.getBoundingClientRect().width || 48), 0);
+		const openCount = columns.length - collapsedCount;
+		const available = board.clientWidth - labelWidth - 16 - collapsedWidth - Math.max(0, columns.length - 1) * (swimlanes ? 0 : 8);
+		const width = board.clientWidth < 480
+			? Math.min(this.columnWidth, Math.max(156, board.clientWidth - labelWidth - 44))
+			: Math.min(this.columnWidth, Math.max(208, available / Math.max(1, openCount)));
+		const tracks = columns.map(column => {
+			const collapsed = column.classList.contains("kanban-view__column--collapsed");
+			const track = collapsed ? "var(--tn-kanban-collapsed-column-width, 48px)" : `${width}px`;
+			column.style.width = track;
+			return track;
+		});
+		board.style.setProperty("--kanban-swimlane-label-width", `${labelWidth}px`);
+		board.style.setProperty("--kanban-column-width", `${width}px`);
+		if (swimlanes) {
+			for (const row of Array.from(board.querySelectorAll<HTMLElement>(".kanban-view__swimlane-row"))) {
+				row.style.gridTemplateColumns = `${labelWidth}px ${tracks.join(" ")}`;
+				Array.from(row.querySelectorAll<HTMLElement>(".kanban-view__swimlane-column")).forEach((cell, index) => {
+					cell.classList.toggle("kanban-view__column--collapsed", columns[index]?.classList.contains("kanban-view__column--collapsed") ?? false);
+				});
+			}
+		}
+		board.classList.toggle("kanban-view__board--overflow", board.scrollWidth > board.clientWidth + 1);
 	}
 
 	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
@@ -3205,6 +3255,7 @@ export class KanbanView extends BasesViewBase {
 			});
 
 			this.cleanupFloatingDragPreview();
+			this.stopAutoScroll();
 
 			// Restore collapsed dragged cards' inline styles
 			for (const path of this.draggedTaskPaths) {
@@ -3970,11 +4021,30 @@ export class KanbanView extends BasesViewBase {
 		this.rootElement?.appendChild(board);
 		this.boardEl = board;
 		this.registerBoardListeners();
+		const observer = new ResizeObserver(() => this.updateBoardLayout());
+		observer.observe(board);
+		this.register(() => observer.disconnect());
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
 		// For kanban, just do full refresh since cards might move columns
 		this.debouncedRefresh();
+	}
+
+	protected onViewTaskCreated(task: TaskInfo): void {
+		super.onViewTaskCreated(task);
+		const win = this.containerEl.ownerDocument.defaultView ?? window;
+		const timer = win.setTimeout(() => {
+			if (!this.rootElement?.isConnected || this.getVisibleTaskPaths().includes(task.path)) return;
+			showToast({
+				message: uiText(msg({ message: "Task created, but hidden by the current view", context: "kanban creation feedback" })),
+				action: {
+					label: uiText(msg({ message: "Open", context: "ui.audit.open" })),
+					run: () => { void this.plugin.app.workspace.openLinkText(task.path, "", false); },
+				},
+			});
+		}, 1500);
+		this.register(() => win.clearTimeout(timer));
 	}
 
 	/**
@@ -4353,6 +4423,37 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
+	protected getHorizontalTaskPath(path: string | null, direction: number): string | null {
+		const board = this.boardEl;
+		if (!board) return null;
+		const initialPath = path ?? this.getVisibleTaskPaths()[direction > 0 ? 0 : this.getVisibleTaskPaths().length - 1];
+		const source = initialPath ? this.currentTaskElements.get(initialPath) : null;
+		if (!path && initialPath) return initialPath;
+		const sourceCell = source?.closest<HTMLElement>(".kanban-view__column, .kanban-view__swimlane-column");
+		const row = sourceCell?.parentElement ?? board;
+		const columns = Array.from(row.querySelectorAll<HTMLElement>(":scope > .kanban-view__column, :scope > .kanban-view__swimlane-column"));
+		let index = sourceCell ? columns.indexOf(sourceCell) + direction : direction > 0 ? 0 : columns.length - 1;
+		while (index >= 0 && index < columns.length) {
+			const column = columns[index];
+			if (!column.classList.contains("kanban-view__column--collapsed")) {
+				const destinations = column.classList.contains("kanban-view__swimlane-column")
+					? Array.from(board.querySelectorAll<HTMLElement>(".kanban-view__swimlane-column")).filter(cell => cell.dataset.column === column.dataset.column)
+					: [column];
+				const cards = destinations.flatMap(cell => Array.from(cell.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper[data-task-path]")));
+				const sourceY = source?.getBoundingClientRect().top ?? 0;
+				cards.sort((first, second) => Math.abs(first.getBoundingClientRect().top - sourceY) - Math.abs(second.getBoundingClientRect().top - sourceY));
+				if (cards[0]?.dataset.taskPath) return cards[0].dataset.taskPath;
+				for (const destination of destinations) {
+					const key = destination.dataset.group ?? this.getColumnScrollerKey(destination.dataset.column ?? "", destination.dataset.swimlane ?? null);
+					const virtual = this.columnScrollers.get(key)?.getItems();
+					if (virtual?.length) return virtual[0].path;
+				}
+			}
+			index += direction;
+		}
+		return path;
+	}
+
 	/**
 	 * Check if the view is currently grouped by the status property
 	 */
@@ -4377,7 +4478,13 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private registerBoardListeners(): void {
-		// Task cards now handle their own events - no delegation needed
+		if (!this.boardEl) return;
+		this.registerDomEvent(this.boardEl, "dragover", event => {
+			if (this.draggedTaskPath) this.handleAutoScroll(event.clientX);
+		}, { capture: true });
+		this.registerDomEvent(this.boardEl, "dragleave", event => {
+			if (!this.boardEl?.contains(event.relatedTarget as Node | null)) this.stopAutoScroll();
+		});
 	}
 
 	private unregisterBoardListeners(): void {

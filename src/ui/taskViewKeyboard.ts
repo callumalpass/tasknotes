@@ -29,6 +29,7 @@ export interface TaskViewKeyboardOptions {
 	create: () => void;
 	search: () => void;
 	refreshSelection: () => void;
+	horizontal?: (path: string | null, direction: number) => string | null;
 }
 
 export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () => void {
@@ -96,6 +97,12 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			["ArrowDown", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
 			["K", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
 			["J", uiText(msg({ message: "Move focus", context: "interaction shortcut" }))],
+			...(options.horizontal ? [
+				["ArrowLeft", uiText(msg({ message: "Move between columns", context: "interaction shortcut" }))],
+				["ArrowRight", uiText(msg({ message: "Move between columns", context: "interaction shortcut" }))],
+				["H", uiText(msg({ message: "Move between columns", context: "interaction shortcut" }))],
+				["L", uiText(msg({ message: "Move between columns", context: "interaction shortcut" }))],
+			] : []),
 			[
 				"Shift+ArrowDown",
 				uiText(msg({ message: "Extend selection", context: "interaction shortcut" })),
@@ -109,7 +116,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			["E", uiText(msg({ message: "Edit task", context: "interaction shortcut" }))],
 			["Space", uiText(msg({ message: "Preview", context: "interaction shortcut" }))],
 			...Object.entries(PROPERTY_KEYS).map(([key, property]) => [
-				key,
+				key === "h" && options.horizontal ? "Shift+H" : key,
 				taskPropertyLabel(property),
 			]),
 			["C", uiText(msg({ message: "Create task", context: "interaction shortcut" }))],
@@ -137,9 +144,11 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			return;
 		const key = event.key.toLowerCase();
 		const mod = event.metaKey || event.ctrlKey;
+		if (!mod && target.closest("button, a, [role=button]") && ["enter", " "].includes(key)) return;
 		if (mod && key !== "k" && key !== "a") return;
 		if (
 			event.shiftKey &&
+			!(key === "h" && options.horizontal) &&
 			!["arrowup", "arrowdown", "arrowleft", "arrowright", "j", "k", "?"].includes(key)
 		)
 			return;
@@ -161,6 +170,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 				"p",
 				"d",
 				"h",
+				...(options.horizontal ? ["l"] : []),
 				"t",
 				"c",
 				"/",
@@ -199,6 +209,18 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (mod && key === "a") {
 			selection.enterSelectionMode();
 			selection.selectAll(paths);
+			return;
+		}
+		if (!mod && !event.shiftKey && options.horizontal && ["arrowleft", "arrowright", "h", "l"].includes(key)) {
+			const next = options.horizontal(focusedPath, ["arrowleft", "h"].includes(key) ? -1 : 1);
+			if (next) {
+				focusedPath = next;
+				keyboardFocus = true;
+				rangeAnchor = null;
+				options.reveal(next);
+				cardFor(next)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+				paint();
+			}
 			return;
 		}
 		if (!mod && ["arrowup", "arrowdown", "arrowleft", "arrowright", "j", "k"].includes(key)) {
