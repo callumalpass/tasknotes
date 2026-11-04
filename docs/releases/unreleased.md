@@ -48,6 +48,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Preserved the translated action label on Kanban column collapse buttons when showing their tooltips.
   - Thanks to @nesyeklaf for the collapsible-column contribution.
+- Prevented delayed title focus from stealing typing after another task-modal field is focused.
+  - Thanks to @3zra47 for reporting tag-edit persistence problems.
 - Fixed pressing the save shortcut twice in quick succession creating the task twice.
 - Fixed a failed follow-up step, such as updating a dependency, leaving the create modal open so that saving again created a second task. The modal now closes and a notice explains what failed.
 - Fixed text in the natural language input being dropped when the task also had a prefilled title.

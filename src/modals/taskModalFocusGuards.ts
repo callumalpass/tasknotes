@@ -35,6 +35,12 @@ export class TaskModalFocusGuards {
 		win.clearTimeout(this.titleFocusTimer);
 		this.titleFocusTimer = win.setTimeout(() => {
 			if (this.elements.containerEl.querySelector(".tn-popover")) return;
+			const focused = this.elements.containerEl.ownerDocument.activeElement;
+			if (
+				focused !== input &&
+				focused?.matches("input, textarea, select, [contenteditable='true']") &&
+				this.elements.containerEl.contains(focused)
+			) return;
 			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
 			input.focus({ preventScroll: true });
 			if (selectAll) input.select();

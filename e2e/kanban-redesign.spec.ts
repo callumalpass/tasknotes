@@ -23,6 +23,10 @@ function cell(column: string, lane: string): Locator {
 
 test.beforeEach(async () => {
   instance = await launchObsidian();
+  const storageWarning = instance.page.locator('.notice').filter({ hasText: 'Secrets are stored without encryption because no secret store is available on this system.' });
+  if (await storageWarning.isVisible()) {
+    await storageWarning.getByText("Don't show again", { exact: true }).click();
+  }
   inputSession = await instance.page.context().newCDPSession(instance.page);
   await setObsidianViewport(instance.page, { width: 1180, height: 800 });
   originalSettings = await instance.page.evaluate(async ({ folder, boardPath, content }) => {
