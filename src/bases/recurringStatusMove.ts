@@ -1,5 +1,5 @@
 import { msg } from "@lingui/core/macro";
-import { Notice } from "obsidian";
+import { showToast } from "../ui/kit/toast";
 import type TaskNotesPlugin from "../main";
 import { uiText } from "../i18n/runtime";
 import type { TaskInfo } from "../types";
@@ -18,6 +18,7 @@ export type RecurringStatusMove = {
 	status: string | null;
 	shownOccurrence: ShownOccurrence | undefined;
 	getOccurrenceDate: OccurrenceDate;
+	onUndo?: (undo: () => Promise<boolean>) => void;
 };
 
 /** The occurrence a rendered card acts on, read when the user acts rather than when the write lands. */
@@ -45,6 +46,7 @@ export async function completeOccurrenceForStatusMove({
 	status,
 	shownOccurrence,
 	getOccurrenceDate,
+	onUndo,
 }: RecurringStatusMove): Promise<boolean> {
 	const { cacheManager, statusManager } = plugin;
 	if (status === null || !statusManager.isCompletedStatus(status)) return false;
@@ -63,18 +65,19 @@ export async function completeOccurrenceForStatusMove({
 		);
 	};
 	if (!isStillOpen(task)) {
-		new Notice(
-			uiText(
+		showToast({
+			message: uiText(
 				msg({
 					message: "That occurrence was already completed, skipped or rescheduled.",
 					context: "views.recurringStatusMove.stale",
 				})
-			)
-		);
+			),
+		});
 		return true;
 	}
 	await plugin.toggleRecurringTaskComplete(task, getOccurrenceDate(task), {
 		onlyIf: isStillOpen,
+		...(onUndo ? { onUndo } : {}),
 	});
 	return true;
 }

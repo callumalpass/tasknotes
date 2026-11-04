@@ -325,16 +325,6 @@ msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count} days"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
-msgid "{count} dependency added"
-msgstr "{count} dependency added"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingAdded"
-msgid "{count} dependent task added"
-msgstr "{count} dependent task added"
-
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
 msgid "{count} fewer than yesterday"
@@ -4728,16 +4718,6 @@ msgstr "Dependencies updated"
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
 msgid "Dependency"
 msgstr "Dependency"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByRemoved"
-msgid "Dependency removed"
-msgstr "Dependency removed"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
-msgid "Dependent task removed"
-msgstr "Dependent task removed"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
@@ -10268,11 +10248,6 @@ msgstr "Recurring parent not found"
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
 msgstr "Recurring task change undone."
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.occurrenceCompleted"
-msgid "Recurring task instance completed"
-msgstr "Recurring task instance completed"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurringSection.header"

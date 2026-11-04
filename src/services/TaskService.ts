@@ -1935,7 +1935,9 @@ export class TaskService {
 		currentTask: TaskInfo,
 		addedBlockedTaskPaths: string[],
 		removedBlockedTaskPaths: string[],
-		rawEntries: Record<string, TaskDependency | string> = {}
+		rawEntries: Record<string, TaskDependency | string> = {},
+		updateBlockedTask: (task: TaskInfo, updates: Partial<TaskInfo>) => Promise<unknown> =
+			(task, updates) => this.updateTask(task, updates)
 	): Promise<void> {
 		// This method is called when the current task's "blocking" list is updated in the UI.
 		// The current task is the one blocking other tasks.
@@ -1960,7 +1962,7 @@ export class TaskService {
 				continue;
 			}
 
-			await this.updateTask(blockedTask, updates);
+			await updateBlockedTask(blockedTask, updates);
 		}
 
 		// Add current task to the blockedBy field of tasks it's now blocking
@@ -1984,7 +1986,7 @@ export class TaskService {
 				continue;
 			}
 
-			await this.updateTask(blockedTask, updates);
+			await updateBlockedTask(blockedTask, updates);
 		}
 	}
 

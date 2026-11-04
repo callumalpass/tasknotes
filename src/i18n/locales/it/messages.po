@@ -325,16 +325,6 @@ msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count} giorni"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
-msgid "{count} dependency added"
-msgstr "Dipendenze aggiunte: {count}"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingAdded"
-msgid "{count} dependent task added"
-msgstr "Attività dipendenti aggiunte: {count}"
-
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
 msgid "{count} fewer than yesterday"
@@ -4728,16 +4718,6 @@ msgstr "Dipendenze aggiornate"
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
 msgid "Dependency"
 msgstr "Dipendenza"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByRemoved"
-msgid "Dependency removed"
-msgstr "Dipendenza rimossa"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
-msgid "Dependent task removed"
-msgstr "Attività dipendente rimossa"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
@@ -10268,11 +10248,6 @@ msgstr "Attività principale della ricorrenza non trovata"
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
 msgstr "Modifica all’attività ricorrente annullata."
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.occurrenceCompleted"
-msgid "Recurring task instance completed"
-msgstr "Occorrenza dell’attività ricorrente completata"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurringSection.header"

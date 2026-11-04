@@ -1,3 +1,4 @@
+import { showToast } from "../ui/kit/toast";
 import { displayError } from "../i18n/runtime";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
@@ -6,7 +7,6 @@ import { msg } from "@lingui/core/macro";
 import {
 	App,
 	setIcon,
-	Notice,
 	TAbstractFile,
 	TFile,
 	moment as obsidianMoment,
@@ -238,10 +238,10 @@ export class TaskActionPaletteModal {
 				const currentSession = this.plugin.getActiveTimeSession(task);
 				if (currentSession) {
 					await this.plugin.stopTimeTracking(task);
-					new Notice(this.plugin.i18n.translate(msg({ message: "Time tracking stopped", context: "modals.actionPalette.trackingStopped" })));
+					showToast({ message: this.plugin.i18n.translate(msg({ message: "Time tracking stopped", context: "modals.actionPalette.trackingStopped" })) });
 				} else {
 					await this.plugin.startTimeTracking(task);
-					new Notice(this.plugin.i18n.translate(msg({ message: "Time tracking started", context: "modals.actionPalette.trackingStarted" })));
+					showToast({ message: this.plugin.i18n.translate(msg({ message: "Time tracking started", context: "modals.actionPalette.trackingStarted" })) });
 				}
 			},
 		});
@@ -309,9 +309,6 @@ export class TaskActionPaletteModal {
 				},
 				execute: async (task, plugin, targetDate) => {
 					await plugin.toggleRecurringTaskComplete(task, targetDate);
-					new Notice(
-						this.plugin.i18n.translate(msg({ message: "Recurring task instance completed", context: "modals.actionPalette.occurrenceCompleted" }))
-					);
 				},
 			});
 
@@ -401,13 +398,9 @@ export class TaskActionPaletteModal {
 				execute: async (task) => {
 					try {
 						await navigator.clipboard.writeText(task.title);
-						new Notice(
-							this.plugin.i18n.translate(msg({ message: "Task title copied to clipboard", context: "contextMenus.task.notices.copyTitleSuccess" }))
-						);
+						showToast({ message: this.plugin.i18n.translate(msg({ message: "Task title copied to clipboard", context: "contextMenus.task.notices.copyTitleSuccess" })) });
 					} catch {
-						new Notice(
-							this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" }))
-						);
+						showToast({ message: this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })) });
 					}
 				},
 			},
@@ -425,14 +418,10 @@ export class TaskActionPaletteModal {
 						if (file instanceof TFile) {
 							const linkText = this.plugin.app.metadataCache.fileToLinktext(file, "");
 							await navigator.clipboard.writeText(`[[${linkText}]]`);
-							new Notice(
-								this.plugin.i18n.translate(msg({ message: "Task link copied to clipboard", context: "modals.actionPalette.linkCopied" }))
-							);
+							showToast({ message: this.plugin.i18n.translate(msg({ message: "Task link copied to clipboard", context: "modals.actionPalette.linkCopied" })) });
 						}
 					} catch {
-						new Notice(
-							this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" }))
-						);
+						showToast({ message: this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })) });
 					}
 				},
 			},
@@ -562,15 +551,13 @@ export class TaskActionPaletteModal {
 	): Promise<void> {
 		try {
 			if (!(projectFile instanceof TFile)) {
-				new Notice(
-					this.plugin.i18n.translate(
+				showToast({ message: this.plugin.i18n.translate(
 						msg({ message: "Failed to open project selector", context: "contextMenus.task.organization.notices.projectSelectFailed" })
-					)
-				);
+					) });
 				return;
 			}
 
-			await addTaskToProject(this.plugin, task, projectFile);
+			await addTaskToProject(this.plugin, task, projectFile, async (current, projects) => (await changeTaskProperty(this.plugin, [current], "projects", projects))[0] ?? null, message => { showToast({ message }); });
 		} catch (error) {
 			tasknotesLogger.error("Failed to add task to project:", {
 				category: "persistence",
@@ -578,11 +565,9 @@ export class TaskActionPaletteModal {
 				details: { taskPath: task.path },
 				error: error instanceof Error ? error.message : String(error),
 			});
-			new Notice(
-				this.plugin.i18n.translate(
+			showToast({ message: this.plugin.i18n.translate(
 					msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })
-				)
-			);
+				) });
 		}
 	}
 
@@ -651,7 +636,7 @@ export class TaskActionPaletteModal {
 			// Refresh task data to ensure we have the latest information
 			const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 			if (!freshTask) {
-				new Notice(this.plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
+				showToast({ message: this.plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })) });
 				return;
 			}
 
@@ -664,11 +649,9 @@ export class TaskActionPaletteModal {
 				details: { actionId: action.id, taskPath: this.task.path },
 				error: errorMessage,
 			});
-			new Notice(
-				this.plugin.i18n.translate(msg({ message: "Failed to execute action: {message}", context: "modals.actionPalette.actionFailed" }), {
+			showToast({ message: this.plugin.i18n.translate(msg({ message: "Failed to execute action: {message}", context: "modals.actionPalette.actionFailed" }), {
 					message: displayError(errorMessage),
-				})
-			);
+				}) });
 		}
 	}
 }

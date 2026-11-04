@@ -1,9 +1,10 @@
+import { showToast } from "../../ui/kit/toast";
 import { configLabel } from "../../i18n/configLabels";
 import { changeTaskProperty } from "../../ui/taskPropertyPickers";
 import { displayError } from "../../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Menu, Notice } from "obsidian";
+import { Menu } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TaskInfo } from "../../types";
 import { DateContextMenu } from "../DateContextMenu";
@@ -48,8 +49,7 @@ export class TaskPropertyMenu {
 							details: { taskPath: task.path },
 							error: errorMessage,
 						});
-						new Notice(
-							this.t(
+						showToast({ message: this.t(
 								msg({
 									message: "Failed to update task status: {message}",
 									context: "notices.interface.statusFailed",
@@ -57,8 +57,7 @@ export class TaskPropertyMenu {
 								{
 									message: displayError(errorMessage),
 								}
-							)
-						);
+							) });
 					}
 				});
 
@@ -105,8 +104,7 @@ export class TaskPropertyMenu {
 							details: { taskPath: task.path },
 							error: errorMessage,
 						});
-						new Notice(
-							this.t(
+						showToast({ message: this.t(
 								msg({
 									message: "Failed to update task: {message}",
 									context: "modals.taskEdit.notices.updateFailure",
@@ -114,8 +112,7 @@ export class TaskPropertyMenu {
 								{
 									message: displayError(errorMessage),
 								}
-							)
-						);
+							) });
 					}
 				});
 			});
@@ -326,12 +323,13 @@ export class TaskPropertyMenu {
 	): Promise<void> {
 		const fieldLabel = this.getCustomFieldLabel(field);
 		try {
-			const updatedTask = await plugin.updateTaskProperty(
-				task,
+			const [updatedTask] = await changeTaskProperty(
+				plugin,
+				[task],
 				field.key as keyof TaskInfo,
 				value || undefined
 			);
-			Object.assign(task, updatedTask);
+			if (updatedTask) Object.assign(task, updatedTask);
 			this.options.onUpdate?.();
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -341,8 +339,7 @@ export class TaskPropertyMenu {
 				details: { taskPath: task.path, field: field.key },
 				error: errorMessage,
 			});
-			new Notice(
-				this.t(
+			showToast({ message: this.t(
 					msg({
 						message: "Failed to update {field}: {message}",
 						context: "contextMenus.task.notices.updateCustomDateFailure",
@@ -351,8 +348,7 @@ export class TaskPropertyMenu {
 						field: fieldLabel,
 						message: displayError(errorMessage),
 					}
-				)
-			);
+				) });
 		}
 	}
 	getStatusOptions(task: TaskInfo, plugin: TaskNotesPlugin) {

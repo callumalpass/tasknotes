@@ -325,16 +325,6 @@ msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count}日間"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
-msgid "{count} dependency added"
-msgstr "{count}件の依存関係が追加されました"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingAdded"
-msgid "{count} dependent task added"
-msgstr "{count}件の依存タスクが追加されました"
-
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
 msgid "{count} fewer than yesterday"
@@ -4727,16 +4717,6 @@ msgstr "依存関係が更新されました"
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
 msgid "Dependency"
 msgstr "依存関係"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByRemoved"
-msgid "Dependency removed"
-msgstr "依存関係が削除されました"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
-msgid "Dependent task removed"
-msgstr "依存タスクが削除されました"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
@@ -10267,11 +10247,6 @@ msgstr "元の繰り返しタスクが見つかりません"
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
 msgstr "繰り返しタスクの変更を元に戻しました。"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.occurrenceCompleted"
-msgid "Recurring task instance completed"
-msgstr "繰り返しタスクのこの回を完了しました"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurringSection.header"

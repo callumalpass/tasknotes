@@ -1,5 +1,5 @@
 import { msg } from "@lingui/core/macro";
-import { Notice, TFile, setIcon } from "obsidian";
+import { TFile, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { configLabel } from "../i18n/configLabels";
@@ -47,6 +47,18 @@ type PropertyValue = string | string[] | undefined;
 export type TaskPickerValues = Pick<TaskInfo, TaskPickerProperty>;
 export type TaskPropertyChoice = PropertyValue | ((task: TaskPickerValues) => PropertyValue);
 
+export interface TaskUndoFeedback {
+	undo: Array<() => Promise<unknown>>;
+	failed: boolean;
+}
+
+export function updateTaskProjectsWithUndo(
+	plugin: TaskNotesPlugin
+): (task: TaskInfo, projects: string[]) => Promise<TaskInfo | null> {
+	return async (task, projects) =>
+		(await changeTaskProperty(plugin, [task], "projects", projects))[0] ?? null;
+}
+
 export function taskPropertyLabel(property: TaskPickerProperty): string {
 	switch (property) {
 		case "status":
@@ -67,7 +79,9 @@ export function taskPropertyLabel(property: TaskPickerProperty): string {
 }
 
 function reportFailure(): void {
-	new Notice(uiText(msg({ message: "Could not update tasks", context: "interaction failure" })));
+	showToast({
+		message: uiText(msg({ message: "Could not update tasks", context: "interaction failure" })),
+	});
 }
 
 export function tasksForPropertyAction(
@@ -85,13 +99,16 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 	plugin: TaskNotesPlugin,
 	tasks: readonly TaskInfo[],
 	property: Property,
-	value: TaskInfo[Property] | ((task: TaskInfo) => TaskInfo[Property])
-): Promise<void> {
+	value: TaskInfo[Property] | ((task: TaskInfo) => TaskInfo[Property]),
+	feedback?: TaskUndoFeedback
+): Promise<TaskInfo[]> {
 	const undo: Array<() => Promise<unknown>> = [];
+	const updatedTasks: TaskInfo[] = [];
 	let failed = false;
 	for (const task of tasks) {
 		try {
-			const before = await plugin.cacheManager.getTaskInfo(task.path);
+			const cached = await plugin.cacheManager.getTaskInfo(task.path);
+			const before = cached ? structuredClone(cached) : null;
 			if (!before) throw new Error(`Missing task: ${task.path}`);
 			const parent =
 				property === "status" && before.recurrence_parent
@@ -109,7 +126,9 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			const updated = await plugin.updateTaskProperty(
 				before,
 				property,
-				typeof value === "function" ? (value as (task: TaskInfo) => TaskInfo[Property])(before) : value,
+				typeof value === "function"
+					? (value as (task: TaskInfo) => TaskInfo[Property])(before)
+					: value,
 				{
 					suppressNotice: true,
 					onRecurringParentUpdated: (original, next) => {
@@ -121,6 +140,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 				}
 			);
 			const modified = plugin.fieldMapper.toUserField("dateModified");
+			updatedTasks.push(updated);
 			const entries = await Promise.all(
 				snapshots.map(async (snapshot) => {
 					const after = await plugin.app.vault.read(snapshot.file);
@@ -131,28 +151,33 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 							previous.frontmatter,
 							next.frontmatter,
 							modified
-						).filter((change) =>
-							[
-								property,
-								"scheduled",
-								"due",
-								"recurrence",
-								"recurrenceAnchor",
-								"recurrenceOriginalDate",
-								"completeInstances",
-								"skippedInstances",
-								"completedDate",
-								"googleCalendarExceptionEventId",
-								"googleCalendarExceptionOriginalScheduled",
-								"googleCalendarMovedOriginalDates",
-							].some(
-								(field) =>
-									plugin.fieldMapper.toUserField(
-										field as Parameters<
-											typeof plugin.fieldMapper.toUserField
-										>[0]
-									) === change.property
-							)
+						).filter(
+							(change) =>
+								(change.property === property &&
+									plugin.settings.userFields?.some(
+										(field) => field.key === property
+									)) ||
+								[
+									property,
+									"scheduled",
+									"due",
+									"recurrence",
+									"recurrenceAnchor",
+									"recurrenceOriginalDate",
+									"completeInstances",
+									"skippedInstances",
+									"completedDate",
+									"googleCalendarExceptionEventId",
+									"googleCalendarExceptionOriginalScheduled",
+									"googleCalendarMovedOriginalDates",
+								].some(
+									(field) =>
+										plugin.fieldMapper.toUserField(
+											field as Parameters<
+												typeof plugin.fieldMapper.toUserField
+											>[0]
+										) === change.property
+								)
 						),
 						beforeBody: next.body,
 						afterBody: next.body,
@@ -178,6 +203,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 					].filter(
 						(key) =>
 							key !== "dateModified" &&
+							key !== "customProperties" &&
 							JSON.stringify(previousValues[key as keyof TaskInfo]) !==
 								JSON.stringify(nextValues[key as keyof TaskInfo])
 					);
@@ -285,6 +311,13 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 							Object.assign(restored, {
 								[key]: entry.original?.[key as keyof TaskInfo],
 							});
+						const restoredContent = readCompletionContent(
+							await plugin.app.vault.read(entry.file)
+						);
+						restored.customProperties = plugin.fieldMapper.mapFromFrontmatter(
+							restoredContent.frontmatter,
+							entry.file.path
+						).customProperties;
 						plugin.cacheManager.updateTaskInfoInCache(entry.file.path, restored);
 						restoredTasks.push({ file: entry.file, current, restored });
 					}
@@ -306,30 +339,49 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			failed = true;
 		}
 	}
-	showTaskUndo(undo, failed);
+	if (feedback) {
+		feedback.undo.push(...undo);
+		feedback.failed ||= failed;
+	} else showTaskUndo(undo, failed);
+	return updatedTasks;
 }
 
-export function showTaskUndo(undo: Array<() => Promise<unknown>>, failed = false): void {
-	const count = undo.length;
+export function showTaskUndo(
+	undo: Array<() => Promise<unknown>>,
+	failed = false,
+	count = undo.length
+): void {
 	if (!count && !failed) return;
-	const updated = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}", context: "interaction feedback" }), { count });
-	const failure = uiText(msg({ message: "Could not update tasks", context: "interaction failure" }));
+	const updated = uiText(
+		msg({
+			message: "{count, plural, one {# task updated} other {# tasks updated}}",
+			context: "interaction feedback",
+		}),
+		{ count }
+	);
+	const failure = uiText(
+		msg({ message: "Could not update tasks", context: "interaction failure" })
+	);
 	showToast({
-		message: failed ? `${failure} · ${updated}` : updated,
-		action: count ? {
-			label: uiText(msg({ message: "Undo", context: "interaction undo" })),
-			run: () => {
-				void (async () => {
-					for (const restore of undo.reverse()) {
-						try {
-							await restore();
-						} catch {
-							reportFailure();
-						}
-					}
-				})();
-			},
-		} : undefined,
+		message: failed ? (count ? `${failure} · ${updated}` : failure) : updated,
+		action: undo.length
+			? {
+					label: uiText(msg({ message: "Undo", context: "interaction undo" })),
+					run: () => {
+						void (async () => {
+							let undoFailed = false;
+							for (const restore of [...undo].reverse()) {
+								try {
+									await restore();
+								} catch {
+									undoFailed = true;
+								}
+							}
+							if (undoFailed) reportFailure();
+						})();
+					},
+				}
+			: undefined,
 	});
 }
 
@@ -383,7 +435,7 @@ export async function openTaskPropertyPicker(
 	if (!tasks.length) return;
 	let changes = Promise.resolve();
 	const apply = (value: TaskPropertyChoice) => {
-		changes = changes.then(() => changeTaskProperty(plugin, tasks, property, value));
+		changes = changes.then(async () => { await changeTaskProperty(plugin, tasks, property, value); });
 	};
 	await openTaskPropertyChoices(plugin, property, tasks, anchor, apply);
 }

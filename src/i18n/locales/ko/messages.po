@@ -325,16 +325,6 @@ msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count}일"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
-msgid "{count} dependency added"
-msgstr "{count}개의 종속성이 추가되었습니다"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingAdded"
-msgid "{count} dependent task added"
-msgstr "{count}개의 종속 작업이 추가되었습니다"
-
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
 msgid "{count} fewer than yesterday"
@@ -4727,16 +4717,6 @@ msgstr "종속성이 업데이트되었습니다"
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
 msgid "Dependency"
 msgstr "의존성"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByRemoved"
-msgid "Dependency removed"
-msgstr "종속성이 제거되었습니다"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
-msgid "Dependent task removed"
-msgstr "종속 작업이 제거되었습니다"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
@@ -10267,11 +10247,6 @@ msgstr "상위 반복 작업을 찾을 수 없습니다"
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
 msgstr "반복 작업 변경을 취소했습니다."
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.occurrenceCompleted"
-msgid "Recurring task instance completed"
-msgstr "반복 작업의 회차가 완료되었습니다"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurringSection.header"

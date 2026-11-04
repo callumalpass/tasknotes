@@ -107,6 +107,6 @@ describe("Issue #2069: Quick Actions add project action", () => {
 		expect(closeSpy.mock.invocationCallOrder[0]).toBeLessThan(
 			mockProjectSelectModalOpen.mock.invocationCallOrder[0]
 		);
-		expect(addTaskToProject).toHaveBeenCalledWith(plugin, task, projectFile);
+		expect(addTaskToProject).toHaveBeenCalledWith(plugin, task, projectFile, expect.any(Function), expect.any(Function));
 	});
 });

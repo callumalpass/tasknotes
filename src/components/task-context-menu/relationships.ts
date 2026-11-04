@@ -1,7 +1,8 @@
+import { showToast } from "../../ui/kit/toast";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { changeTaskProperty } from "../../ui/taskPropertyPickers";
-import { Menu, Notice, TFile, type TAbstractFile } from "obsidian";
+import { changeTaskProperty, updateTaskProjectsWithUndo } from "../../ui/taskPropertyPickers";
+import { Menu, TFile, type TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TaskDependency, TaskInfo } from "../../types";
 import { addTaskToProject, assignTaskAsSubtask } from "../../services/taskRelationshipActions";
@@ -87,21 +88,13 @@ export class TaskRelationshipMenu {
 						item.onClick(async () => {
 							try {
 								const remaining = blockedByEntries.filter((_, i) => i !== index);
-								const updatedTask = await plugin.updateTaskProperty(
-									task,
+								const [updatedTask] = await changeTaskProperty(
+									plugin,
+									[task],
 									"blockedBy",
 									remaining.length > 0 ? remaining : undefined
 								);
 								Object.assign(task, updatedTask);
-								new Notice(
-									this.t(
-										msg({
-											message: "Dependency removed",
-											context:
-												"contextMenus.task.dependencies.notices.blockedByRemoved",
-										})
-									)
-								);
 								this.options.onUpdate?.();
 							} catch (error) {
 								tasknotesLogger.error("Failed to remove blocked-by dependency:", {
@@ -109,15 +102,15 @@ export class TaskRelationshipMenu {
 									operation: "remove-blocked-by-dependency",
 									error: error,
 								});
-								new Notice(
-									this.t(
+								showToast({
+									message: this.t(
 										msg({
 											message: "Failed to update dependencies",
 											context:
 												"contextMenus.task.dependencies.notices.updateFailed",
 										})
-									)
-								);
+									),
+								});
 							}
 						});
 					});
@@ -170,21 +163,19 @@ export class TaskRelationshipMenu {
 									task,
 									[],
 									[path],
-									{}
+									{},
+									async (blockedTask, updates) =>
+										changeTaskProperty(
+											plugin,
+											[blockedTask],
+											"blockedBy",
+											updates.blockedBy
+										)
 								);
 								const refreshed = await plugin.cacheManager.getTaskInfo(task.path);
 								if (refreshed) {
 									Object.assign(task, refreshed);
 								}
-								new Notice(
-									this.t(
-										msg({
-											message: "Dependent task removed",
-											context:
-												"contextMenus.task.dependencies.notices.blockingRemoved",
-										})
-									)
-								);
 								this.options.onUpdate?.();
 							} catch (error) {
 								tasknotesLogger.error("Failed to remove blocking dependency:", {
@@ -192,15 +183,15 @@ export class TaskRelationshipMenu {
 									operation: "remove-blocking-dependency",
 									error: error,
 								});
-								new Notice(
-									this.t(
+								showToast({
+									message: this.t(
 										msg({
 											message: "Failed to update dependencies",
 											context:
 												"contextMenus.task.dependencies.notices.updateFailed",
 										})
-									)
-								);
+									),
+								});
 							}
 						});
 					});
@@ -272,14 +263,14 @@ export class TaskRelationshipMenu {
 			const candidates = allTasks.filter(filter);
 
 			if (candidates.length === 0) {
-				new Notice(
-					this.t(
+				showToast({
+					message: this.t(
 						msg({
 							message: "No matching tasks available",
 							context: "contextMenus.task.dependencies.notices.noEligibleTasks",
 						})
-					)
-				);
+					),
+				});
 				return;
 			}
 
@@ -293,14 +284,14 @@ export class TaskRelationshipMenu {
 				operation: "open-task-selector-dependencies",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to update dependencies",
 						context: "contextMenus.task.dependencies.notices.updateFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -329,18 +320,8 @@ export class TaskRelationshipMenu {
 				return;
 			}
 
-			const updatedTask = await plugin.updateTaskProperty(task, "blockedBy", combined);
+			const [updatedTask] = await changeTaskProperty(plugin, [task], "blockedBy", combined);
 			Object.assign(task, updatedTask);
-
-			new Notice(
-				this.t(
-					msg({
-						message: "{count} dependency added",
-						context: "contextMenus.task.dependencies.notices.blockedByAdded",
-					}),
-					{ count: 1 }
-				)
-			);
 			this.options.onUpdate?.();
 		} catch (error) {
 			tasknotesLogger.error("Failed to add blocked-by dependency via selector:", {
@@ -348,14 +329,14 @@ export class TaskRelationshipMenu {
 				operation: "add-blocked-by-dependency-via-selector",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to update dependencies",
 						context: "contextMenus.task.dependencies.notices.updateFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -382,28 +363,22 @@ export class TaskRelationshipMenu {
 				),
 				reltype: DEFAULT_DEPENDENCY_RELTYPE,
 			};
-			await plugin.taskService.updateBlockingRelationships(task, [blockedPath], [], {
-				[blockedPath]: rawEntry,
-			});
+			await plugin.taskService.updateBlockingRelationships(
+				task,
+				[blockedPath],
+				[],
+				{
+					[blockedPath]: rawEntry,
+				},
+				async (blockedTask, updates) =>
+					changeTaskProperty(plugin, [blockedTask], "blockedBy", updates.blockedBy)
+			);
 
 			const refreshed = await plugin.cacheManager.getTaskInfo(task.path);
 			if (refreshed) {
 				Object.assign(task, refreshed);
-			} else if (Array.isArray(task.blocking)) {
-				task.blocking = Array.from(new Set([...task.blocking, blockedPath]));
-			} else {
-				task.blocking = [blockedPath];
 			}
 
-			new Notice(
-				this.t(
-					msg({
-						message: "{count} dependent task added",
-						context: "contextMenus.task.dependencies.notices.blockingAdded",
-					}),
-					{ count: 1 }
-				)
-			);
 			this.options.onUpdate?.();
 		} catch (error) {
 			tasknotesLogger.error("Failed to add blocking dependency via selector:", {
@@ -411,14 +386,14 @@ export class TaskRelationshipMenu {
 				operation: "add-blocking-dependency-via-selector",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to update dependencies",
 						context: "contextMenus.task.dependencies.notices.updateFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -589,14 +564,14 @@ export class TaskRelationshipMenu {
 				operation: "update-task-contexts",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to update contexts",
 						context: "contextMenus.task.organization.notices.updateContextsFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -704,14 +679,14 @@ export class TaskRelationshipMenu {
 				operation: "update-task-tags",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to update tags",
 						context: "contextMenus.task.notices.updateTagsFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -728,14 +703,14 @@ export class TaskRelationshipMenu {
 				operation: "open-project-selector",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to open project selector",
 						context: "contextMenus.task.organization.notices.projectSelectFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -747,14 +722,14 @@ export class TaskRelationshipMenu {
 			const candidates = allTasks.filter((candidate) => candidate.path !== task.path);
 
 			if (candidates.length === 0) {
-				new Notice(
-					this.t(
+				showToast({
+					message: this.t(
 						msg({
 							message: "No eligible tasks available to assign as subtasks",
 							context: "contextMenus.task.organization.notices.noEligibleSubtasks",
 						})
-					)
-				);
+					),
+				});
 				return;
 			}
 
@@ -768,14 +743,14 @@ export class TaskRelationshipMenu {
 				operation: "open-subtask-assignment-selector",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to open subtask selector",
 						context: "contextMenus.task.organization.notices.subtaskSelectFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -786,18 +761,26 @@ export class TaskRelationshipMenu {
 	): Promise<void> {
 		try {
 			if (!(projectFile instanceof TFile)) {
-				new Notice(
-					this.t(
+				showToast({
+					message: this.t(
 						msg({
 							message: "Failed to open project selector",
 							context: "contextMenus.task.organization.notices.projectSelectFailed",
 						})
-					)
-				);
+					),
+				});
 				return;
 			}
 
-			const updatedTask = await addTaskToProject(plugin, task, projectFile);
+			const updatedTask = await addTaskToProject(
+				plugin,
+				task,
+				projectFile,
+				updateTaskProjectsWithUndo(plugin),
+				(message) => {
+					showToast({ message });
+				}
+			);
 			if (updatedTask) {
 				Object.assign(task, updatedTask);
 				this.options.onUpdate?.();
@@ -808,14 +791,14 @@ export class TaskRelationshipMenu {
 				operation: "add-task-project",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to add task to project",
 						context: "contextMenus.task.organization.notices.addToProjectFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 
@@ -827,18 +810,26 @@ export class TaskRelationshipMenu {
 		try {
 			const currentTaskFile = plugin.app.vault.getAbstractFileByPath(task.path);
 			if (!(currentTaskFile instanceof TFile)) {
-				new Notice(
-					this.t(
+				showToast({
+					message: this.t(
 						msg({
 							message: "Current task file not found",
 							context: "contextMenus.task.organization.notices.currentTaskNotFound",
 						})
-					)
-				);
+					),
+				});
 				return;
 			}
 
-			const updatedSubtask = await assignTaskAsSubtask(plugin, currentTaskFile, subtask);
+			const updatedSubtask = await assignTaskAsSubtask(
+				plugin,
+				currentTaskFile,
+				subtask,
+				updateTaskProjectsWithUndo(plugin),
+				(message) => {
+					showToast({ message });
+				}
+			);
 			if (updatedSubtask) {
 				Object.assign(subtask, updatedSubtask);
 				this.options.onUpdate?.();
@@ -849,14 +840,14 @@ export class TaskRelationshipMenu {
 				operation: "assign-task-as-subtask",
 				error: error,
 			});
-			new Notice(
-				this.t(
+			showToast({
+				message: this.t(
 					msg({
 						message: "Failed to add task as subtask",
 						context: "contextMenus.task.organization.notices.addAsSubtaskFailed",
 					})
-				)
-			);
+				),
+			});
 		}
 	}
 

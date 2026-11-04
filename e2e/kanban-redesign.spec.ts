@@ -162,7 +162,10 @@ async function expectNativeDrop(lane: string) {
       (window as any).kanbanDrops.push({ column: cell?.dataset.column, lane: cell?.dataset.swimlane });
     }, true);
   });
-  await source.scrollIntoViewIfNeeded();
+  await expect(async () => {
+    await expect(source).toBeVisible();
+    await source.scrollIntoViewIfNeeded();
+  }).toPass({ timeout: 5000 });
   const bounds = await source.boundingBox();
   expect(bounds).not.toBeNull();
   await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + 20);
@@ -191,6 +194,60 @@ async function expectNativeDrop(lane: string) {
 
 test('native mouse drag persists a drop into an empty lane', () => expectNativeDrop('low'));
 test('native mouse drag persists a drop into an empty cell', () => expectNativeDrop('normal'));
+
+test('diagonal native drops offer one Undo restoring both axes without replacing unrelated edits', async () => {
+  const page = instance.page;
+  const title = 'Review the release checklist and outstanding dependencies';
+  const before = await readTask(title);
+  await expectNativeDrop('low');
+  await expect(page.locator('.tn-toast')).toHaveCount(1);
+  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated');
+  await expect(page.locator('.notice:visible')).toHaveCount(0);
+  await page.evaluate(async path => {
+    const app = (window as any).app;
+    await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter.integrationNote = 'keep this'; });
+  }, `${folder}/${title}.md`);
+  await page.locator('.tn-toast__action').click();
+  await expect.poll(async () => {
+    const task = await readTask(title);
+    return [task.status, task.priority, task.integrationNote];
+  }).toEqual([before.status, before.priority, 'keep this']);
+});
+
+test('batch drops aggregate Undo while stale axis receipts refuse to replace newer values', async () => {
+  const page = instance.page;
+  const titles = ['Review the release checklist and outstanding dependencies', 'Align the board metadata'];
+  const before = await Promise.all(titles.map(readTask));
+  await page.evaluate(paths => {
+    const selection = (window as any).app.plugins.plugins.tasknotes.taskSelectionService;
+    selection.enterSelectionMode();
+    for (const path of paths) selection.addToSelection(path);
+  }, titles.map(title => `${folder}/${title}.md`));
+  const source = page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${titles[0]}.md"]`);
+  const transfer = await page.evaluateHandle(() => new DataTransfer());
+  await source.dispatchEvent('dragstart', { dataTransfer: transfer });
+  const target = cell('waiting', 'low');
+  const bounds = (await target.boundingBox())!;
+  const event = { dataTransfer: transfer, clientX: bounds.x + 10, clientY: bounds.y + 10 };
+  await target.dispatchEvent('dragover', event);
+  await target.dispatchEvent('drop', event);
+  await source.dispatchEvent('dragend', { dataTransfer: transfer });
+  await expect.poll(async () => (await Promise.all(titles.map(readTask))).map(task => [task.status, task.priority])).toEqual([['waiting', 'low'], ['waiting', 'low']]);
+  await expect(page.locator('.tn-toast__message')).toHaveText('2 tasks updated');
+  await expect(page.locator('.notice:visible')).toHaveCount(0);
+  await page.locator('.tn-toast__action').click();
+  await expect.poll(async () => (await Promise.all(titles.map(readTask))).map(task => [task.status, task.priority])).toEqual(before.map(task => [task.status, task.priority]));
+  await transfer.dispose();
+  await expectNativeDrop('low');
+  await page.evaluate(async path => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    await plugin.updateTaskProperty(await plugin.cacheManager.getTaskInfo(path), 'priority', 'normal', { suppressNotice: true });
+  }, `${folder}/${titles[0]}.md`);
+  await page.locator('.tn-toast__action').click();
+  await expect(page.locator('.tn-toast__message')).toHaveText('Could not update tasks');
+  expect(await readTask(titles[0])).toMatchObject({ status: 'waiting', priority: 'normal' });
+});
 
 test('repeated real drags below an empty swimlane keep every destination stable', async () => {
   const page = instance.page;
@@ -379,6 +436,40 @@ test('default and eight long custom statuses stay composed in both themes at des
           expect(image.readUInt32BE(20)).toBe(800);
         }).toPass({ timeout: 5000 });
       }
+    }
+  }
+});
+
+test('selection, keyboard focus and two-line overflow stay distinct across themes and widths', async () => {
+  const page = instance.page;
+  await openPopulatedBoard(true);
+  const root = page.locator('.tn-tasknotesKanban');
+  await root.focus();
+  await page.keyboard.press('j');
+  const selectedPath = await root.locator('.tn-task-focused').getAttribute('data-task-path');
+  await page.keyboard.press('x');
+  await page.keyboard.press('j');
+  await expect(root.locator('.task-card--selected')).toHaveCount(1);
+  await expect(root.locator('.task-card--selected')).toHaveAttribute('data-task-path', selectedPath!);
+  await expect(root.locator('.tn-task-focused')).not.toHaveAttribute('data-task-path', selectedPath!);
+  for (const theme of ['theme-light', 'theme-dark']) {
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark');
+      document.body.classList.add(theme);
+    }, theme);
+    for (const width of [1180, 400]) {
+      await setObsidianViewport(page, { width, height: 800 });
+      await page.evaluate(() => (window as any).app.workspace.leftSplit.collapse());
+      const selected = root.locator('.task-card--selected');
+      const focused = root.locator('.tn-task-focused');
+      await expect(selected).toBeInViewport();
+      await expect(focused).toBeInViewport();
+      await expect(selected.locator('.task-card__metadata-overflow')).toBeVisible();
+      await expect(selected.locator('.task-card__metadata-overflow')).toHaveAttribute('aria-label', /accessibility/);
+      await expect(selected).not.toHaveCSS('background-color', await focused.evaluate(element => getComputedStyle(element).backgroundColor));
+      const image = await page.screenshot({ clip: { x: 0, y: 0, width, height: 800 }, path: `test-results/kanban-round1/selection-focus-${theme}-${width}.png` });
+      expect(image.readUInt32BE(16)).toBe(width);
+      expect(image.readUInt32BE(20)).toBe(800);
     }
   }
 });

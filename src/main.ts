@@ -19,6 +19,8 @@ type Nullable<T> = T | null;
 
 import { completeRecurringTaskWithUndo } from "./services/task-service/recurringCompletionUndo";
 import { showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
+import { updateTaskProjectsWithUndo } from "./ui/taskPropertyPickers";
+import { showToast } from "./ui/kit/toast";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -1305,7 +1307,7 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(
 		task: TaskInfo,
 		date?: Date,
-		options?: RecurringCompletionOptions
+		options?: RecurringCompletionOptions & { onUndo?: (undo: () => Promise<boolean>) => void }
 	): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
@@ -1316,7 +1318,8 @@ export default class TaskNotesPlugin extends Plugin {
 				options
 			);
 			if (changed) {
-				showRecurringCompletionNotice(
+				if (options?.onUndo) options.onUndo(undo);
+				else showRecurringCompletionNotice(
 					this,
 					updatedTask,
 					formatDateForStorage(targetDate),
@@ -1331,7 +1334,7 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "toggle-recurring-task-completion",
 				error: error,
 			});
-			new Notice(this.i18n.translate(msg({ message: "Failed to update recurring task", context: "notices.commands.recurringUpdateFailed" })));
+			if (!options?.onUndo) showToast({ message: this.i18n.translate(msg({ message: "Failed to update recurring task", context: "notices.commands.recurringUpdateFailed" })) });
 			throw error;
 		}
 	}
@@ -2050,27 +2053,23 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			const activeFile = this.app.workspace.getActiveFile();
 			if (!activeFile) {
-				new Notice(this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })));
+				showToast({ message: this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })) });
 				return;
 			}
 
 			const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
 			if (!taskInfo) {
-				new Notice(
-					this.i18n.translate(
+				showToast({ message: this.i18n.translate(
 						msg({ message: "Current file is not a task", context: "settings.integrations.googleCalendarExport.notices.notATask" })
-					)
-				);
+					) });
 				return;
 			}
 
 			const selector = new ProjectSelectModal(this.app, this, (projectFile) => {
 				if (!(projectFile instanceof TFile)) {
-					new Notice(
-						this.i18n.translate(
+					showToast({ message: this.i18n.translate(
 							msg({ message: "Failed to open project selector", context: "contextMenus.task.organization.notices.projectSelectFailed" })
-						)
-					);
+						) });
 					return;
 				}
 				void this.addSelectedProjectToTask(taskInfo, projectFile);
@@ -2082,9 +2081,7 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "add-project-current-task",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })) });
 		}
 	}
 
@@ -2092,16 +2089,14 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			const activeFile = this.app.workspace.getActiveFile();
 			if (!activeFile) {
-				new Notice(this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })));
+				showToast({ message: this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })) });
 				return;
 			}
 
 			const allTasks = await this.cacheManager.getAllTasks();
 			const candidates = allTasks.filter((candidate) => candidate.path !== activeFile.path);
 			if (candidates.length === 0) {
-				new Notice(
-					this.i18n.translate(msg({ message: "No eligible tasks available to assign as subtasks", context: "contextMenus.task.organization.notices.noEligibleSubtasks" }))
-				);
+				showToast({ message: this.i18n.translate(msg({ message: "No eligible tasks available to assign as subtasks", context: "contextMenus.task.organization.notices.noEligibleSubtasks" })) });
 				return;
 			}
 
@@ -2115,24 +2110,20 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "add-subtask-current-note",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to open subtask selector", context: "contextMenus.task.organization.notices.subtaskSelectFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to open subtask selector", context: "contextMenus.task.organization.notices.subtaskSelectFailed" })) });
 		}
 	}
 
 	private async addSelectedProjectToTask(task: TaskInfo, projectFile: TFile): Promise<void> {
 		try {
-			await addTaskToProject(this, task, projectFile);
+			await addTaskToProject(this, task, projectFile, updateTaskProjectsWithUndo(this), message => { showToast({ message }); });
 		} catch (error) {
 			tasknotesLogger.error("Failed to add selected project to task:", {
 				category: "persistence",
 				operation: "add-selected-project-task",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })) });
 		}
 	}
 
@@ -2141,16 +2132,14 @@ export default class TaskNotesPlugin extends Plugin {
 		subtask: TaskInfo
 	): Promise<void> {
 		try {
-			await assignTaskAsSubtask(this, parentFile, subtask);
+			await assignTaskAsSubtask(this, parentFile, subtask, updateTaskProjectsWithUndo(this), message => { showToast({ message }); });
 		} catch (error) {
 			tasknotesLogger.error("Failed to assign selected subtask to current note:", {
 				category: "persistence",
 				operation: "assign-selected-subtask-current-note",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to add task as subtask", context: "contextMenus.task.organization.notices.addAsSubtaskFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to add task as subtask", context: "contextMenus.task.organization.notices.addAsSubtaskFailed" })) });
 		}
 	}
 

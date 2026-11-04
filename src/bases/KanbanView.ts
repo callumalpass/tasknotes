@@ -1,5 +1,7 @@
 import { renderEmptyState } from "../ui/kit/emptyState";
 import { showToast } from "../ui/kit/toast";
+import { changeTaskProperty, showTaskUndo, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
+import { applyTaskMovementUndo, buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
 import { renderKanbanHeaderGlyph, resolveKanbanStatusColor } from "./kanbanStatusPresentation";
 import { KanbanDragPreview } from "./kanbanDragPreview";
 import { createKanbanCardScroller } from "./kanbanCardScroller";
@@ -3627,6 +3629,8 @@ export class KanbanView extends BasesViewBase {
 		// Read before queueing: a drop acts on the occurrence its card showed, not
 		// on whatever the series has advanced to by the time the queue reaches it.
 		const droppedOccurrences = this.getDroppedOccurrences(taskPath, options);
+		const feedback: TaskUndoFeedback = { undo: [], failed: false };
+		let updatedWithoutUndo = 0;
 		try {
 			await this.dropQueue.enqueue(taskPath, async () => {
 				// Suppress renders immediately — dragend clears draggedTaskPath
@@ -3770,8 +3774,20 @@ export class KanbanView extends BasesViewBase {
 						status: getKanbanDropStatusValue(dropPlan),
 						shownOccurrence: droppedOccurrences.get(path),
 						getOccurrenceDate: getKanbanTaskActionDate,
+						onUndo: (undo) => feedback.undo.push(async () => {
+							if (!(await undo())) throw new Error("Occurrence changed since drop");
+						}),
 					});
 					if (isSettled) continue;
+					const taskUndo: TaskUndoFeedback = { undo: [], failed: false };
+					let registeredTaskUndo = false;
+					const finishTaskUndo = () => {
+						if (!taskUndo.undo.length || registeredTaskUndo) return;
+						registeredTaskUndo = true;
+						feedback.undo.push(async () => {
+							for (const restore of [...taskUndo.undo].reverse()) await restore();
+						});
+					};
 
 					// Compute sort_order first (read-only — no file writes yet)
 					let sortOrderPlan = null;
@@ -3836,9 +3852,22 @@ export class KanbanView extends BasesViewBase {
 						});
 					}
 
+					const currentTask = await this.plugin.cacheManager.getTaskInfo(path);
+					if (currentTask?.recurrence_parent && getKanbanDropStatusValue(dropPlan) !== null) {
+						await changeTaskProperty(this.plugin, [currentTask], "status", getKanbanDropStatusValue(dropPlan) ?? "", taskUndo);
+						finishTaskUndo();
+						feedback.failed ||= taskUndo.failed;
+						if (taskUndo.failed) continue;
+						if (dropPlan.groupByTaskProp === "status") dropPlan.needsGroupUpdate = false;
+						if (dropPlan.swimlaneTaskProp === "status") dropPlan.needsSwimlaneUpdate = false;
+					}
+
 					// Skip file write if nothing to change
 					const needsWrite = kanbanDropPlanNeedsWrite(dropPlan, sortOrderPlan !== null);
-					if (!needsWrite) continue;
+					if (!needsWrite) {
+						finishTaskUndo();
+						continue;
+					}
 
 					const file = this.plugin.app.vault.getAbstractFileByPath(path);
 					if (!file || !(file instanceof TFile)) continue;
@@ -3850,7 +3879,9 @@ export class KanbanView extends BasesViewBase {
 					}
 
 					// Single atomic write: groupBy + swimlane + sort_order
+					let changes: TaskMovementUndoChange[] = [];
 					await processVaultFrontMatter(this.plugin.app, file, (fm) => {
+						const before = structuredClone(fm);
 						applyKanbanTaskDropFrontmatterPlan(fm, dropPlan, {
 							coerceGroupValue: (frontmatterKey, groupKey) =>
 								this.coerceGroupKeyForFrontmatter(frontmatterKey, groupKey),
@@ -3876,7 +3907,12 @@ export class KanbanView extends BasesViewBase {
 							fm[statusDerivativePlan.dateModifiedField] =
 								statusDerivativePlan.dateModifiedValue;
 						}
+						changes = buildTaskMovementUndo(before, fm, this.plugin.fieldMapper.toUserField("dateModified"))
+							.filter(change => !sortOrderPlan?.additionalWrites.length || change.property !== sortOrderField);
 					});
+					if (changes.length) taskUndo.undo.push(this.createDropUndo(file, changes));
+					if (!taskUndo.undo.length && sortOrderPlan) updatedWithoutUndo++;
+					finishTaskUndo();
 
 					this.debugLog("ATOMIC-WRITE-DONE", {
 						taskFile: path.split("/").pop(),
@@ -3974,12 +4010,14 @@ export class KanbanView extends BasesViewBase {
 				}
 			}); // end dropQueue.enqueue
 		} catch (error) {
+			feedback.failed = true;
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error updating task:", {
 				category: "persistence",
 				operation: "updating-task",
 				error: error,
 			});
 		} finally {
+			showTaskUndo(feedback.undo, feedback.failed, feedback.undo.length + updatedWithoutUndo);
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
 				this.postDropRefreshRequested = true;
@@ -3994,6 +4032,41 @@ export class KanbanView extends BasesViewBase {
 				}
 			}
 		}
+	}
+
+	private createDropUndo(file: TFile, changes: readonly TaskMovementUndoChange[]): () => Promise<void> {
+		return async () => {
+			if (this.plugin.app.vault.getAbstractFileByPath(file.path) !== file)
+				throw new Error("Task file no longer exists");
+			const current = await this.plugin.cacheManager.getTaskInfo(file.path);
+			let restored: TaskInfo | undefined;
+			await processVaultFrontMatter(this.plugin.app, file, frontmatter => {
+				if (!applyTaskMovementUndo(frontmatter, changes)) {
+					tasknotesLogger.warn("Kanban drop undo refused a stale receipt", {
+						category: "persistence", operation: "undo-task-drop", details: { taskPath: file.path },
+					});
+					throw new Error("Task changed since drop");
+				}
+				frontmatter[this.plugin.fieldMapper.toUserField("dateModified")] = getCurrentTimestamp();
+				if (current) {
+					restored = { ...current, ...this.plugin.fieldMapper.mapFromFrontmatter(frontmatter, file.path) };
+					for (const change of changes) {
+						const property = this.plugin.fieldMapper.lookupMappingKey(change.property) ??
+							this.plugin.settings.userFields?.find(field => field.key === change.property)?.key;
+						if (property && !change.hadBefore) Object.assign(restored, { [property]: undefined });
+					}
+				}
+			});
+			if (current && restored) {
+				this.plugin.cacheManager.updateTaskInfoInCache(file.path, restored);
+				for (const change of changes) {
+					const property = (this.plugin.fieldMapper.lookupMappingKey(change.property) ??
+						this.plugin.settings.userFields?.find(field => field.key === change.property)?.key) as keyof TaskInfo | undefined;
+					if (property) await this.plugin.taskService.applyPropertyChangeSideEffects(file, current, restored, property, current[property], restored[property], undefined, true);
+				}
+			}
+			this.debouncedRefresh();
+		};
 	}
 
 	private getDroppedOccurrences(
