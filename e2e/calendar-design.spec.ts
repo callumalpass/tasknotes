@@ -151,6 +151,7 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
       });
       await setObsidianViewport(page, { width, height: 800 });
       const calendar = page.locator('.workspace-leaf.mod-active .tnc');
+      await expect(calendar.locator('.tnc-toolbar-views .tnc-btn-view')).toHaveText(['Year', 'Month', 'Week', '3 days', 'Day', 'List']);
       for (const mode of ['month', 'week', 'days', 'day', 'year', 'list']) {
         await calendar.locator(`.tnc-btn-view-${mode}`).click();
         await expect(calendar.locator(`.tnc-btn-view-${mode}`)).toHaveAttribute('aria-pressed', 'true');
@@ -310,7 +311,13 @@ test('empty agendas remain legible at desktop and narrow widths', async () => {
     for (const width of [1180, 400]) {
       await setObsidianViewport(page, { width, height: 800 });
       await page.evaluate(width => document.body.classList.toggle('is-mobile', width === 400), width);
-      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toBeVisible();
+      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toHaveText('Nothing scheduled');
+      const root = page.locator('.workspace-leaf.mod-active .advanced-calendar-view');
+      await root.focus();
+      await page.keyboard.press('c');
+      await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.modal.mod-tasknotes')).toHaveCount(0);
       await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-empty.png`, clip: { x: 0, y: 0, width, height: 800 } });
     }
   }

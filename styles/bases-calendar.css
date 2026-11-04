@@ -58,6 +58,7 @@
 }
 
 .tasknotes-plugin .tnc-title {
+    order: -1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -73,6 +74,10 @@
 .tasknotes-plugin .tnc-toolbar-start > .tnc-btn,
 .tasknotes-plugin .tnc-toolbar-nav {
     flex-shrink: 0;
+}
+
+.tasknotes-plugin .tnc-toolbar-nav {
+    order: -1;
 }
 
 .tasknotes-plugin .tnc-btn {

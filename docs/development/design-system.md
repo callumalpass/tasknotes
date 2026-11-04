@@ -176,11 +176,13 @@ end-clipped dates, an attached menu and room for following punctuation. They do
 not establish a size-query container; configured metadata retains the shared
 overflow-summary and context-menu paths. Mobile controls retain touch targets.
 
-Empty calendar lists use the shared empty-state renderer with a creation action.
-The calendar library owns responsive full-name view selection and the empty-list
-content hook. Until the prepared library revision is published and repinned,
-those two additions require the locally linked `@tasknotes/calendar` build; no
-vendored calendar output is changed here.
+The calendar library owns responsive view selection and the empty-list content
+hook. Published `@tasknotes/calendar` 0.1.6 safely ignores the prepared empty-list
+hook: it retains its "Nothing scheduled" label, and the shared `c` shortcut opens
+task creation. Its view buttons retain full names, accessible labels and all six
+working choices at narrow widths. The enhanced compact dropdown and shared
+empty-state creation button require the prepared library revision to be published
+and repinned; no vendored calendar output is changed here.
 
 Shared menu surfaces use `--tn-menu-radius`, `--tn-menu-shadow` and `--tn-menu-padding`, inheriting native Obsidian menu values. `--tn-picker-width` controls the shared picker width, constrained to the viewport. `.tn-picker__check`, `.tn-picker__footer`, `.tn-shortcut-help` and `.tn-task-arrived` provide hooks for applied values, keyboard guidance and restrained destination feedback; reduced motion disables the destination transition.
 

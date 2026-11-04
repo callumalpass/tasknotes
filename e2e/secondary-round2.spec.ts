@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
@@ -234,11 +235,22 @@ test('populated mini calendar keeps the date name and describes its notes', asyn
 
 test('empty agenda offers task creation and narrow views use full names', async () => {
   const page = instance.page;
+  const publishedFallback = JSON.parse(readFileSync('node_modules/@tasknotes/calendar/package.json', 'utf8')).version === '0.1.6';
   await openFile('Empty.base');
   for (const theme of ['theme-light', 'theme-dark']) for (const [width, mobile] of [[1180, false], [400, false], [400, true]] as const) {
     await appearance(page, theme, width, mobile);
-    await expect(page.locator('.tnc-list-empty .tn-empty')).toBeVisible();
-    if (width === 400) {
+    if (publishedFallback) {
+      await expect(page.locator('.tnc-list-empty')).toHaveText('Nothing scheduled');
+      await expect(page.locator('.tnc-toolbar-view-select')).toHaveCount(0);
+      await expect(page.locator('.tnc-toolbar-views .tnc-btn-view')).toHaveText(['Year', 'Month', 'Week', '3 days', 'Day', 'List']);
+      await page.locator('.tnc-btn-view-week').click();
+      await expect(page.locator('.tnc-btn-view-week')).toHaveAttribute('aria-pressed', 'true');
+      await page.locator('.tnc-btn-view-list').click();
+      await expect(page.locator('.tnc-list-empty')).toHaveText('Nothing scheduled');
+    } else {
+      await expect(page.locator('.tnc-list-empty .tn-empty')).toBeVisible();
+    }
+    if (width === 400 && !publishedFallback) {
       const select = page.locator('.tnc-toolbar-view-select');
       await expect(select).toBeVisible();
       await expect(page.locator('.tnc-toolbar-views')).toBeHidden();
@@ -248,7 +260,12 @@ test('empty agenda offers task creation and narrow views use full names', async 
     }
     await capture(`agenda-${theme}-${width}-${mobile}`);
   }
-  await page.locator('.tnc-list-empty').getByRole('button', { name: 'New' }).click();
+  if (publishedFallback) {
+    await page.locator('.workspace-leaf.mod-active .advanced-calendar-view').focus();
+    await page.keyboard.press('c');
+  } else {
+    await page.locator('.tnc-list-empty').getByRole('button', { name: 'New' }).click();
+  }
   await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
   await page.keyboard.press('Escape');
 });
