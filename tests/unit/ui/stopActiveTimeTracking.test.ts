@@ -1,4 +1,8 @@
 import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+jest.mock("../../../src/ui/taskMutationUndo", () => ({
+	captureTaskUndo: async (_plugin: unknown, _task: unknown, operation: () => Promise<unknown>) => ({ task: await operation() }),
+}));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ showTaskUndo: jest.fn() }));
 import { msg } from "@lingui/core/macro";
 import { TaskActionCoordinator } from "../../../src/ui/TaskActionCoordinator";
 import { openTaskSelector } from "../../../src/modals/TaskSelectorWithCreateModal";
@@ -11,6 +15,8 @@ const task = { path: "Tasks/Work.md", title: "Work", timeEntries: [{ startTime: 
 const other = { ...task, path: "Tasks/Other.md", title: "Other" };
 function createCoordinator(tasks: TaskInfo[] = [task]) {
 	const plugin = {
+		app: { vault: {} },
+		fieldMapper: { toUserField: (field: string) => field },
 		cacheManager: {
 			getAllTasks: jest.fn().mockResolvedValue(tasks),
 			getTaskInfo: jest.fn(async (path: string) => tasks.find(t => t.path === path) ?? null),

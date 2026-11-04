@@ -4,10 +4,8 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { getDatePart, parseDateToLocal } from "../utils/dateUtils";
 import { getNextUncompletedOccurrence } from "../core/recurrence";
-import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showToast } from "./kit/toast";
 
-const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionNotice" });
 
 export function showRecurringCompletionNotice(
 	plugin: TaskNotesPlugin,
@@ -53,44 +51,14 @@ export function showRecurringCompletionNotice(
 					})
 				);
 	showToast({
+		undoScope: plugin.app.vault,
 		message: `${task.title} · ${result} · ${next}`,
 		durationMs: 15000,
 		action: {
 			label: translate(msg({ message: "Undo", context: "notices.recurringCompletion.undo" })),
-			run: () => {
-				void (async () => {
-					try {
-						const restored = await undo();
-						showToast({
-							message: translate(
-								restored
-									? msg({
-											message: "Recurring task change undone.",
-											context: "notices.recurringCompletion.undone",
-										})
-									: msg({
-											message:
-												"Cannot undo: this occurrence or its schedule has changed.",
-											context: "notices.recurringCompletion.conflict",
-										})
-							),
-						});
-					} catch (error) {
-						tasknotesLogger.error("Recurring completion undo failed", {
-							category: "persistence",
-							operation: "recurring-completion-undo",
-							error,
-						});
-						showToast({
-							message: translate(
-								msg({
-									message: "Could not undo the recurring task change.",
-									context: "notices.recurringCompletion.failed",
-								})
-							),
-						});
-					}
-				})();
+			run: async () => {
+				if (!(await undo())) throw new Error("Occurrence changed since completion");
+				showToast({ message: translate(msg({ message: "Recurring task change undone.", context: "notices.recurringCompletion.undone" })) });
 			},
 		},
 	});

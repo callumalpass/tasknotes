@@ -1,5 +1,9 @@
 import { observeTranslation as mockObserveTranslation } from "../../helpers/real-i18n";
 import { App } from "obsidian";
+import { parse, stringify } from "yaml";
+import { serialize, deserialize } from "node:v8";
+
+beforeAll(() => { globalThis.structuredClone = value => deserialize(serialize(value)); });
 import { TimeblockCreationModal } from "../../../src/modals/TimeblockCreationModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 import { getDailyNote } from "obsidian-daily-notes-interface";
@@ -19,6 +23,7 @@ jest.mock("../../../src/modals/TaskSelectorWithCreateModal", () => ({
 
 function createMockPlugin() {
 	return {
+		fieldMapper: { toUserField: () => "dateModified" },
 		i18n: {
 			translate: mockObserveTranslation(),
 		},
@@ -58,6 +63,13 @@ describe("TimeblockCreationModal frontmatter fence detection", () => {
 		const existingContent =
 			'---\ndescription: "Section A --- Section B"\n---\n\n# Daily Note Content\n';
 		const dailyNote = await app.vault.create("Daily/2026-05-16.md", existingContent);
+		jest.spyOn(app.fileManager, 'processFrontMatter').mockImplementation(async (file, update) => {
+			const content = await app.vault.read(file);
+			const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(content)!;
+			const frontmatter = parse(match[1]);
+			update(frontmatter);
+			await app.vault.modify(file, `---\n${stringify(frontmatter)}---\n${match[2]}`);
+		});
 		(getDailyNote as jest.Mock).mockReturnValue(dailyNote);
 
 		const plugin = createMockPlugin();
@@ -74,7 +86,7 @@ describe("TimeblockCreationModal frontmatter fence detection", () => {
 		await (modal as any).handleSubmit();
 
 		const finalContent = await app.vault.read(dailyNote);
-		expect(finalContent).toContain("description: Section A --- Section B");
+		expect(parse(finalContent.split('\n---\n')[0].slice(4)).description).toBe("Section A --- Section B");
 		expect(finalContent).toContain("# Daily Note Content");
 		expect(finalContent).toContain("Focus block");
 	});

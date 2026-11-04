@@ -19,7 +19,8 @@ type Nullable<T> = T | null;
 
 import { completeRecurringTaskWithUndo } from "./services/task-service/recurringCompletionUndo";
 import { showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
-import { updateTaskProjectsWithUndo } from "./ui/taskPropertyPickers";
+import { showTaskUndo, updateTaskProjectsWithUndo } from "./ui/taskPropertyPickers";
+import { captureTaskUndo } from "./ui/taskMutationUndo";
 import { showToast } from "./ui/kit/toast";
 import {
 	createDailyNote,
@@ -1311,7 +1312,7 @@ export default class TaskNotesPlugin extends Plugin {
 	): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const { updatedTask, completed, changed, undo } = await completeRecurringTaskWithUndo(
+			const { updatedTask, occurrenceDate, completed, changed, undo } = await completeRecurringTaskWithUndo(
 				this,
 				task,
 				targetDate,
@@ -1322,7 +1323,7 @@ export default class TaskNotesPlugin extends Plugin {
 				else showRecurringCompletionNotice(
 					this,
 					updatedTask,
-					formatDateForStorage(targetDate),
+					occurrenceDate,
 					completed,
 					undo
 				);
@@ -1341,13 +1342,15 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async toggleTaskArchive(task: TaskInfo): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.taskService.toggleArchive(task);
-			new Notice(
-				this.i18n.translate(
+			const receipt = await captureTaskUndo(this, task, () => this.taskService.toggleArchive(task));
+			if (!receipt.task) throw new Error(`Missing archived task: ${task.path}`);
+			const updatedTask = receipt.task;
+			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.app.vault,
+				`${task.title} · ${this.i18n.translate(
 					updatedTask.archived
 						? msg({ message: "Task archived", context: "notices.commands.archived" })
 						: msg({ message: "Task unarchived", context: "notices.commands.unarchived" })
-				)
+				)}`
 			);
 			return updatedTask;
 		} catch (error) {
@@ -1356,7 +1359,7 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "toggle-task-archive",
 				error: error,
 			});
-			new Notice(this.i18n.translate(msg({ message: "Failed to update task archive status", context: "notices.commands.archiveFailed" })));
+			showTaskUndo([], true, 0, this.app.vault, task.title);
 			throw error;
 		}
 	}

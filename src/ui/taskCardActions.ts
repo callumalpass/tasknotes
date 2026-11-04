@@ -115,7 +115,7 @@ export function createStatusCycleHandler(
 									if (!(await result.undo()))
 										throw new Error("Task changed since completion");
 								},
-							]);
+							], false, 1, plugin.app.vault);
 					}
 					const updated = await plugin.cacheManager.getTaskInfo(fresh.path);
 					if (updated) {

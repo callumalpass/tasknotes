@@ -8,7 +8,6 @@ import {
 	Vault,
 	App,
 	parseYaml,
-	stringifyYaml,
 	getFrontMatterInfo,
 } from "obsidian";
 import { format } from "date-fns";
@@ -33,7 +32,7 @@ import { combineDateAndTime, parseDateToLocal } from "./dateUtils";
 import { normalizeFrontmatterTag } from "./taskIdentificationFrontmatter";
 import { normalizeThemeColor } from "./themeColors";
 import { createTaskNotesLogger } from "./tasknotesLogger";
-import { modifyVaultFile } from "../core/VaultMutationService";
+import { processVaultFrontMatter } from "../core/VaultMutationService";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/Helpers" });
 
@@ -791,13 +790,16 @@ export function createCopiedTimeblock(
 /**
  * Updates a timeblock in a daily note's frontmatter
  */
+export type TimeblockWriteObserver = (file: TFile, before: Record<string, unknown>, after: Record<string, unknown>) => void;
+
 export async function updateTimeblockInDailyNote(
 	app: App,
 	timeblockId: string,
 	oldDate: string,
 	newDate: string,
 	newStartTime: string,
-	newEndTime: string
+	newEndTime: string,
+	onWrite?: TimeblockWriteObserver
 ): Promise<void> {
 	const { getDailyNote, getAllDailyNotes, appHasDailyNotesPluginLoaded } = await import(
 		"obsidian-daily-notes-interface"
@@ -830,12 +832,12 @@ export async function updateTimeblockInDailyNote(
 
 	// If moving to same date, just update times
 	if (oldDate === newDate) {
-		await updateTimeblockTimes(app, oldDailyNote, timeblockId, newStartTime, newEndTime);
+		await updateTimeblockTimes(app, oldDailyNote, timeblockId, newStartTime, newEndTime, onWrite);
 		return;
 	}
 
 	// Remove from old date
-	await removeTimeblockFromDailyNote(app, oldDailyNote, timeblockId);
+	await removeTimeblockFromDailyNote(app, oldDailyNote, timeblockId, onWrite);
 
 	// Add to new date with updated times
 	const updatedTimeblock: TimeBlock = {
@@ -844,7 +846,7 @@ export async function updateTimeblockInDailyNote(
 		endTime: newEndTime,
 	};
 
-	await addTimeblockToDailyNote(app, newDate, updatedTimeblock);
+	await addTimeblockToDailyNote(app, newDate, updatedTimeblock, onWrite);
 }
 
 /**
@@ -855,10 +857,11 @@ export async function copyTimeblockToDailyNote(
 	date: string,
 	timeblock: TimeBlock,
 	newStartTime: string,
-	newEndTime: string
+	newEndTime: string,
+	onWrite?: TimeblockWriteObserver
 ): Promise<TimeBlock> {
 	const copiedTimeblock = createCopiedTimeblock(timeblock, newStartTime, newEndTime);
-	await addTimeblockToDailyNote(app, date, copiedTimeblock);
+	await addTimeblockToDailyNote(app, date, copiedTimeblock, onWrite);
 	return copiedTimeblock;
 }
 
@@ -870,7 +873,8 @@ async function updateTimeblockTimes(
 	dailyNote: TFile,
 	timeblockId: string,
 	newStartTime: string,
-	newEndTime: string
+	newEndTime: string,
+	onWrite?: TimeblockWriteObserver
 ): Promise<void> {
 	const content = await app.vault.read(dailyNote);
 	const frontmatter =
@@ -890,7 +894,7 @@ async function updateTimeblockTimes(
 	frontmatter.timeblocks[timeblockIndex].endTime = newEndTime;
 
 	// Save back to file
-	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
+	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content, onWrite);
 }
 
 /**
@@ -899,7 +903,8 @@ async function updateTimeblockTimes(
 async function removeTimeblockFromDailyNote(
 	app: App,
 	dailyNote: TFile,
-	timeblockId: string
+	timeblockId: string,
+	onWrite?: TimeblockWriteObserver
 ): Promise<void> {
 	const content = await app.vault.read(dailyNote);
 	const frontmatter =
@@ -913,7 +918,7 @@ async function removeTimeblockFromDailyNote(
 	frontmatter.timeblocks = frontmatter.timeblocks.filter((tb) => tb.id !== timeblockId);
 
 	// Save back to file
-	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
+	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content, onWrite);
 }
 
 /**
@@ -922,7 +927,8 @@ async function removeTimeblockFromDailyNote(
 async function addTimeblockToDailyNote(
 	app: App,
 	date: string,
-	timeblock: TimeBlock
+	timeblock: TimeBlock,
+	onWrite?: TimeblockWriteObserver
 ): Promise<void> {
 	const { createDailyNote, getDailyNote, getAllDailyNotes } = await import(
 		"obsidian-daily-notes-interface"
@@ -961,7 +967,7 @@ async function addTimeblockToDailyNote(
 	frontmatter.timeblocks.push(timeblock);
 
 	// Save back to file
-	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content);
+	await updateDailyNoteFrontmatter(app, dailyNote, frontmatter, content, onWrite);
 }
 
 /**
@@ -971,24 +977,19 @@ async function updateDailyNoteFrontmatter(
 	app: App,
 	dailyNote: TFile,
 	frontmatter: DailyNoteFrontmatterWithTimeblocks,
-	originalContent: string
+	originalContent: string,
+	onWrite?: TimeblockWriteObserver
 ): Promise<void> {
-	// Get body content (everything after frontmatter), using Obsidian's own fence
-	// detection so a `---` inside a frontmatter value can't be mistaken for the
-	// closing fence.
-	const info = getFrontMatterInfo(originalContent);
-	const body = info.exists ? originalContent.slice(info.contentStart) : originalContent;
-
-	// Convert frontmatter back to YAML
-	const frontmatterText = stringifyYaml(frontmatter);
-
-	// Reconstruct file content
-	const newContent = `---\n${frontmatterText}---\n${body}`;
-
-	// Write back to file
-	await modifyVaultFile(app, dailyNote, newContent);
-
-	// Native metadata cache will automatically update
+	const original = (extractFrontmatter(originalContent) as DailyNoteFrontmatterWithTimeblocks | null) || {};
+	let before: Record<string, unknown> = {};
+	let after: Record<string, unknown> = {};
+	await processVaultFrontMatter(app, dailyNote, current => {
+		if (JSON.stringify(current.timeblocks) !== JSON.stringify(original.timeblocks)) throw new Error("Timeblocks changed during update");
+		before = structuredClone(current);
+		current.timeblocks = frontmatter.timeblocks;
+		after = structuredClone(current);
+	});
+	onWrite?.(dailyNote, before, after);
 }
 
 /**

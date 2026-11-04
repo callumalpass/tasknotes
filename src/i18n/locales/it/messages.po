@@ -199,7 +199,6 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[Errore di formula]"
 
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -290,10 +289,20 @@ msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr "{count, plural, one {# promemoria impostato} other {# promemoria impostati}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback archive"
+msgid "{count, plural, one {# task archived} other {# tasks archived}}"
+msgstr "{count, plural, one {# attività archiviata} other {# attività archiviate}}"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, one {# attività selezionata} other {# attività selezionate}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback unarchive"
+msgid "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+msgstr "{count, plural, one {# attività ripristinata dall’archivio} other {# attività ripristinate dall’archivio}}"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction feedback"
@@ -1392,7 +1401,6 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "I promemoria assoluti devono usare at:YYYY-MM-DDTHH:MM o una data e un’ora ISO complete"
 
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1939,11 +1947,6 @@ msgstr "Archivia attività"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "Archivia questa attività"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.archived"
-msgid "archived"
-msgstr "archiviata"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
@@ -2757,10 +2760,10 @@ msgctxt "services/TaskService: TaskService.unskipMaterializedOccurrence display"
 msgid "Cannot resolve occurrence parent"
 msgstr "Impossibile individuare l’attività principale dell’occorrenza"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.conflict"
-msgid "Cannot undo: this occurrence or its schedule has changed."
-msgstr "Impossibile annullare: l’occorrenza o la relativa pianificazione è cambiata."
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo conflict"
+msgid "Cannot undo: the note has changed."
+msgstr "Impossibile annullare: la nota è stata modificata."
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoConflict"
@@ -3746,11 +3749,6 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "Impossibile risolvere: {entries}"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.failed"
-msgid "Could not undo the recurring task change."
-msgstr "Impossibile annullare la modifica all’attività ricorrente."
-
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
@@ -4708,11 +4706,6 @@ msgstr "Dipendenze"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Dependencies"
 msgstr "Dipendenze"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
-msgid "Dependencies updated"
-msgstr "Dipendenze aggiornate"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
@@ -5815,11 +5808,6 @@ msgctxt "contextMenus.task.organization.notices.addToProjectFailed"
 msgid "Failed to add task to project"
 msgstr "Impossibile aggiungere l’attività al progetto"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveFailure"
-msgid "Failed to archive task"
-msgstr "Impossibile archiviare l’attività"
-
 #: src/main.ts
 msgctxt "notices.commands.batchConversionFailed"
 msgid "Failed to batch convert tasks. Please try again."
@@ -6172,11 +6160,6 @@ msgid "Failed to migrate Pomodoro data. Please try again or check the console fo
 msgstr "Impossibile migrare i dati di Pomodoro. Riprova o controlla la console per i dettagli."
 
 #: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockMoveFailed"
-msgid "Failed to move timeblock: {message}"
-msgstr "Impossibile spostare il blocco temporale: {message}"
-
-#: src/bases/calendar-core.ts
 #: src/main.ts
 msgctxt "notices.commands.dailyNoteOpenFailed"
 msgid "Failed to navigate to daily note: {message}"
@@ -6343,11 +6326,6 @@ msgctxt "services.instantTaskConvert.notices.replaceLineFailed"
 msgid "Failed to replace task line."
 msgstr "Impossibile sostituire la riga dell’attività."
 
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockResizeFailed"
-msgid "Failed to resize timeblock: {message}"
-msgstr "Impossibile ridimensionare il blocco temporale: {message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "Failed to resolve moved task file: {newPath}"
@@ -6363,11 +6341,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "Impossibile salvare la password del calendario"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeEntryEditor.saveFailed"
-msgid "Failed to save time entries"
-msgstr "Impossibile salvare le registrazioni di tempo"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.failed"
 msgid "Failed to show properties menu"
@@ -6382,11 +6355,6 @@ msgstr "Impossibile avviare il server API di TaskNotes. Controlla la console per
 msgctxt "modals.timeTracking.startFailed"
 msgid "Failed to start time tracking"
 msgstr "Impossibile avviare il monitoraggio del tempo"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.trackingStopFailed"
-msgid "Failed to stop time tracking"
-msgstr "Impossibile interrompere il monitoraggio del tempo"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogleFailed"
@@ -6483,11 +6451,6 @@ msgstr "Impossibile aggiornare le etichette"
 msgctxt "notices.commands.taskUpdateFailed"
 msgid "Failed to update task"
 msgstr "Aggiornamento dell'attività non riuscito"
-
-#: src/main.ts
-msgctxt "notices.commands.archiveFailed"
-msgid "Failed to update task archive status"
-msgstr "Impossibile aggiornare lo stato di archiviazione dell’attività"
 
 #: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeFailure"
@@ -9212,6 +9175,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "La {week} occorrenza del {day} di ogni mese."
 
+#: src/modals/TaskCreationModal.ts
+msgctxt "interaction created open"
+msgid "Open"
+msgstr "Apri"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -11667,11 +11635,6 @@ msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "Inizio: "
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeTracking.started"
-msgid "Started tracking time for: {taskTitle}"
-msgstr "Monitoraggio del tempo avviato per: {taskTitle}"
-
 #: src/settings/tabs/taskProperties/projectsPropertyCard.ts
 msgctxt "settings.appearance.projectAutosuggest.quickReference.staticText"
 msgid "Static text: literal:My Custom Label"
@@ -12179,11 +12142,6 @@ msgctxt "modals.taskEdit.notices.updateSuccess"
 msgid "Task \"{title}\" updated successfully"
 msgstr "Attività «{title}» aggiornata correttamente"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveSuccess"
-msgid "Task {action} successfully"
-msgstr "Operazione «{action}» completata sull’attività"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12609,11 +12567,6 @@ msgctxt "settings.integrations.autoExport.notices.exportSuccess"
 msgid "Tasks exported successfully"
 msgstr "Attività esportate correttamente"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponed"
-msgid "Tasks postponed: {count}. Failed: {failed}."
-msgstr "Attività posticipate: {count}. Non riuscite: {failed}."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
 msgid "Template for custom ICS event filenames"
@@ -12984,7 +12937,6 @@ msgctxt "services/TaskService: TaskService.startTimeTrackingLocked display"
 msgid "Time tracking is already active for this task"
 msgstr "Il monitoraggio del tempo è già attivo per questa attività"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStarted"
 msgid "Time tracking started"
@@ -12995,7 +12947,6 @@ msgctxt "settings.features.timeTracking.stopNotificationName"
 msgid "Time tracking stop notification"
 msgstr "Notifica di interruzione del monitoraggio del tempo"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
@@ -13610,11 +13561,6 @@ msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList 
 msgid "Unarchive task"
 msgstr "Ripristina attività"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.unarchived"
-msgid "unarchived"
-msgstr "ripristinata"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
@@ -13834,11 +13780,6 @@ msgstr "Intervallo di aggiornamento (tra 5 e 1440 minuti)"
 msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "Aggiorna promemoria"
-
-#: src/bases/CalendarView.ts
-msgctxt "notices.audit.update"
-msgid "Update tasks"
-msgstr "Aggiorna attività"
 
 #: src/main.ts
 msgctxt "notices.commands.basesUpdated"

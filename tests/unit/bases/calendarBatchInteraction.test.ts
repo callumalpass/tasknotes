@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { showToast } from "../../../src/ui/kit/toast";
 import { buildCalendarEntries, planCalendarEdit, type CalendarEntry, type CalendarChange } from "@tasknotes/model/calendar";
 import { CalendarView } from "../../../src/bases/CalendarView";
 import { eventApiFromItem, type CalendarEventItem, type CalendarEventChange } from "../../../src/bases/calendarEngine";
@@ -6,6 +6,18 @@ import { DEFAULT_FIELD_MAPPING } from "../../../src/core/defaultFieldMapping";
 import { createI18nService } from "../../../src/i18n";
 import { TaskFactory } from "../../helpers/mock-factories";
 import type { TaskInfo } from "../../../src/types";
+
+jest.mock("../../../src/ui/kit/toast", () => ({ showToast: jest.fn() }));
+jest.mock("../../../src/ui/taskMutationUndo", () => ({
+	captureTaskUndo: async (plugin: any, before: TaskInfo, operation: () => Promise<TaskInfo>) => {
+		const after = await operation();
+		return { task: after, undo: async () => {
+			const current = await plugin.cacheManager.getTaskInfo(before.path);
+			if (current.scheduled !== after.scheduled || current.due !== after.due) throw new Error("Note changed");
+			plugin.restore(before);
+		} };
+	},
+}));
 
 function harness(failSecond = false) {
 	const initial = [0, 1].map(i => TaskFactory.createTask({ id: `batch-${i}`, path: `Tasks/${i}.md`, scheduled: `2026-11-0${2+i}T09:00` }));
@@ -26,20 +38,15 @@ function harness(failSecond = false) {
 	const view = Object.assign(Object.create(CalendarView.prototype), {
 		calendarItems: items, calendarTimezone: "UTC", batchMoveInProgress: false,
 		containerEl: document.createElement("div"), refreshAfterDirectCalendarTaskWrite: jest.fn(), refreshTaskItems: jest.fn(),
-		plugin: { i18n: createI18nService(), fieldMapper: { getMapping: () => DEFAULT_FIELD_MAPPING },
+		plugin: { app: { vault: {} }, restore: (task: TaskInfo) => tasks.set(task.path, task), i18n: createI18nService(), fieldMapper: { getMapping: () => DEFAULT_FIELD_MAPPING },
 			cacheManager: { getTaskInfo: jest.fn(async path => tasks.get(path)) }, taskService: { applyCalendarEdit: apply } },
 	}) as { moveSelectedCalendarTasks(info: CalendarEventChange, paths: string[]): Promise<void>; batchMoveInProgress: boolean; refreshTaskItems: jest.Mock };
 	return { initial, tasks, view, info, apply };
 }
-function undoButton(): HTMLButtonElement {
-	const calls = (Notice as unknown as jest.Mock).mock.calls;
-	for (const [content] of [...calls].reverse()) {
-		if (content instanceof DocumentFragment) {
-			const button = content.querySelector("button");
-			if (button) return button;
-		}
-	}
-	throw new Error("Missing Undo action");
+function undoAction() {
+	const options = jest.mocked(showToast).mock.calls.at(-1)?.[0];
+	expect(options?.action?.label).toBe("Undo");
+	return options!;
 }
 async function settle() { await new Promise(resolve => setTimeout(resolve, 0)); }
 beforeEach(() => jest.clearAllMocks());
@@ -59,18 +66,18 @@ it("reports partial failure and Undo restores only the successfully moved task",
 	expect(view.refreshTaskItems).toHaveBeenCalledTimes(1);
 	expect(tasks.get(initial[0].path)?.scheduled).toBe("2026-11-03T09:00");
 	expect(tasks.get(initial[1].path)?.scheduled).toBe(initial[1].scheduled);
-	const button = undoButton();
-	expect(button.parentNode?.textContent).toContain("successful: 1; failed: 1");
-	button.click(); await settle();
+	const toast = undoAction();
+	expect(toast.message).toContain("Could not update tasks");
+	await toast.action!.run();
 	expect(tasks.get(initial[0].path)?.scheduled).toBe(initial[0].scheduled);
-	expect(apply).toHaveBeenCalledTimes(3);
+	expect(apply).toHaveBeenCalledTimes(2);
 });
 
 it("Undo preserves later date changes and restores unaffected tasks", async () => {
 	const { initial, tasks, view, info } = harness();
 	await view.moveSelectedCalendarTasks(info, initial.map(task => task.path));
 	tasks.set(initial[0].path, { ...initial[0], scheduled: "2026-11-20T18:00" });
-	undoButton().click(); await settle();
+	await expect(undoAction().action!.run()).rejects.toThrow("Note changed");
 	expect(tasks.get(initial[0].path)?.scheduled).toBe("2026-11-20T18:00");
 	expect(tasks.get(initial[1].path)?.scheduled).toBe(initial[1].scheduled);
 });

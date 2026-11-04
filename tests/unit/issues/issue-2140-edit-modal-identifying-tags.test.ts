@@ -1,4 +1,8 @@
 import type { App } from "obsidian";
+jest.mock("../../../src/ui/taskMutationUndo", () => ({
+	captureTaskUndo: async (_plugin: unknown, _task: unknown, operation: () => Promise<unknown>) => ({ task: await operation() }),
+}));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ showTaskUndo: jest.fn() }));
 import { createI18nService } from "../../../src/i18n";
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import {

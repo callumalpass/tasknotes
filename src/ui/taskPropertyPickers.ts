@@ -3,6 +3,7 @@ import { TFile, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { configLabel } from "../i18n/configLabels";
+import { captureTaskUndo } from "./taskMutationUndo";
 import { uiText } from "../i18n/runtime";
 import { NaturalLanguageParser } from "../services/NaturalLanguageParser";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -50,6 +51,7 @@ export type TaskPropertyChoice = PropertyValue | ((task: TaskPickerValues) => Pr
 export interface TaskUndoFeedback {
 	undo: Array<() => Promise<unknown>>;
 	failed: boolean;
+	failedTitles?: string[];
 }
 
 export function updateTaskProjectsWithUndo(
@@ -78,12 +80,6 @@ export function taskPropertyLabel(property: TaskPickerProperty): string {
 	}
 }
 
-function reportFailure(): void {
-	showToast({
-		message: uiText(msg({ message: "Could not update tasks", context: "interaction failure" })),
-	});
-}
-
 export function tasksForPropertyAction(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo
@@ -104,6 +100,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 ): Promise<TaskInfo[]> {
 	const undo: Array<() => Promise<unknown>> = [];
 	const updatedTasks: TaskInfo[] = [];
+	const failedTitles: string[] = [];
 	let failed = false;
 	for (const task of tasks) {
 		try {
@@ -172,11 +169,11 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 									"googleCalendarMovedOriginalDates",
 								].some(
 									(field) =>
-										plugin.fieldMapper.toUserField(
+										(field === "tags" ? "tags" : plugin.fieldMapper.toUserField(
 											field as Parameters<
 												typeof plugin.fieldMapper.toUserField
 											>[0]
-										) === change.property
+										)) === change.property
 								)
 						),
 						beforeBody: next.body,
@@ -337,19 +334,30 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			});
 		} catch {
 			failed = true;
+			failedTitles.push(task.title);
 		}
 	}
 	if (feedback) {
 		feedback.undo.push(...undo);
 		feedback.failed ||= failed;
-	} else showTaskUndo(undo, failed);
+		feedback.failedTitles = [...(feedback.failedTitles ?? []), ...failedTitles];
+	} else {
+		const values = updatedTasks.map(task => {
+			const configs = property === "status" ? plugin.statusManager.getAllStatuses() : property === "priority" ? plugin.priorityManager.getAllPriorities() : [];
+			const config = configs.find(config => config.value === task[property]);
+			return config ? configLabel(config) : String(task[property] ?? "—");
+		});
+		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? failedTitles.join(", ") : `${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}${tasks.length > 1 ? ` · ${updatedTasks.length}` : ""}`);
+	}
 	return updatedTasks;
 }
 
 export function showTaskUndo(
 	undo: Array<() => Promise<unknown>>,
 	failed = false,
-	count = undo.length
+	count = undo.length,
+	scope?: object,
+	message?: string
 ): void {
 	if (!count && !failed) return;
 	const updated = uiText(
@@ -362,23 +370,18 @@ export function showTaskUndo(
 	const failure = uiText(
 		msg({ message: "Could not update tasks", context: "interaction failure" })
 	);
+	const pending = [...undo];
 	showToast({
-		message: failed ? (count ? `${failure} · ${updated}` : failure) : updated,
+		message: failed ? `${failure} · ${message ?? updated}${message && count ? ` · ${updated}` : ""}` : (message ?? updated),
+		undoScope: scope,
 		action: undo.length
 			? {
 					label: uiText(msg({ message: "Undo", context: "interaction undo" })),
-					run: () => {
-						void (async () => {
-							let undoFailed = false;
-							for (const restore of [...undo].reverse()) {
-								try {
-									await restore();
-								} catch {
-									undoFailed = true;
-								}
-							}
-							if (undoFailed) reportFailure();
-						})();
+					run: async () => {
+						while (pending.length) {
+							await pending[pending.length - 1]();
+							pending.pop();
+						}
 					},
 				}
 			: undefined,
@@ -391,39 +394,22 @@ export async function archiveTasksWithUndo(
 	archived = true
 ): Promise<void> {
 	const undo: Array<() => Promise<unknown>> = [];
+	const failedTitles: string[] = [];
 	let failed = false;
 	for (const task of tasks) {
 		try {
 			const before = await plugin.cacheManager.getTaskInfo(task.path);
 			if (!before || before.archived === archived) continue;
-			const after = await plugin.taskService.toggleArchive(before);
-			undo.push(async () => {
-				const current = await plugin.cacheManager.getTaskInfo(after.path);
-				if (!current) throw new Error(`Missing task: ${after.path}`);
-				if (
-					current.archived !== after.archived ||
-					JSON.stringify(current.tags) !== JSON.stringify(after.tags)
-				)
-					throw new Error("Task changed since archive");
-				const restored =
-					current.archived !== before.archived
-						? await plugin.taskService.toggleArchive(current)
-						: current;
-				if (restored.path !== before.path) {
-					const file = plugin.app.vault.getAbstractFileByPath(restored.path);
-					if (!(file instanceof TFile)) throw new Error(`Missing file: ${restored.path}`);
-					await plugin.app.fileManager.renameFile(file, before.path);
-				}
-				await plugin.taskService.updateTask(
-					{ ...restored, path: before.path },
-					{ tags: before.tags }
-				);
-			});
+			const receipt = await captureTaskUndo(plugin, before, () => plugin.taskService.toggleArchive(before));
+			if (receipt.undo) undo.push(receipt.undo);
 		} catch {
 			failed = true;
+			failedTitles.push(task.title);
 		}
 	}
-	showTaskUndo(undo, failed);
+	showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? failedTitles.join(", ") : uiText(archived
+		? msg({ message: "{count, plural, one {# task archived} other {# tasks archived}}", context: "interaction feedback archive" })
+		: msg({ message: "{count, plural, one {# task unarchived} other {# tasks unarchived}}", context: "interaction feedback unarchive" }), { count: undo.length }));
 }
 
 export async function openTaskPropertyPicker(
@@ -434,10 +420,20 @@ export async function openTaskPropertyPicker(
 ): Promise<void> {
 	if (!tasks.length) return;
 	let changes = Promise.resolve();
+	const multiple = ["tags", "contexts", "projects"].includes(property);
+	const feedback: TaskUndoFeedback = { undo: [], failed: false };
+	const previous = await Promise.all(tasks.map(async task => (await plugin.cacheManager.getTaskInfo(task.path))?.[property]));
 	const apply = (value: TaskPropertyChoice) => {
-		changes = changes.then(async () => { await changeTaskProperty(plugin, tasks, property, value); });
+		changes = changes.then(async () => { await changeTaskProperty(plugin, tasks, property, value, multiple ? feedback : undefined); });
 	};
-	await openTaskPropertyChoices(plugin, property, tasks, anchor, apply);
+	await openTaskPropertyChoices(plugin, property, tasks, anchor, apply, () => {
+		if (!multiple) return;
+		void changes.then(async () => {
+			const current = await Promise.all(tasks.map(async task => (await plugin.cacheManager.getTaskInfo(task.path))?.[property]));
+			const count = current.filter((value, index) => JSON.stringify(value) !== JSON.stringify(previous[index])).length;
+			if (count || feedback.failed) showTaskUndo(feedback.undo, feedback.failed, count, plugin.app.vault, feedback.failed ? feedback.failedTitles?.join(", ") : `${taskPropertyLabel(property)} → ${[...new Set(current.flatMap(value => Array.isArray(value) ? value : []))].join(", ") || "—"}`);
+		});
+	});
 }
 
 export async function openTaskPropertyChoices(
@@ -445,7 +441,8 @@ export async function openTaskPropertyChoices(
 	property: TaskPickerProperty,
 	tasks: readonly TaskPickerValues[],
 	anchor: PopoverOptions["anchor"],
-	apply: (value: TaskPropertyChoice) => void
+	apply: (value: TaskPropertyChoice) => void,
+	onClose?: () => void
 ): Promise<PopoverHandle | undefined> {
 	if (!tasks.length) return;
 	const clear = uiText(msg({ message: "Clear", context: "interaction clear" }));
@@ -600,6 +597,7 @@ export async function openTaskPropertyChoices(
 		placeholder: label,
 		emptyText: clear,
 		multiple: true,
+		onClose,
 		items: [...values].sort((left, right) =>
 			Number(tasks.every((task) => task[property]?.includes(right))) -
 			Number(tasks.every((task) => task[property]?.includes(left))) || left.localeCompare(right)

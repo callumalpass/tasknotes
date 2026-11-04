@@ -16,6 +16,8 @@ import {
 } from "./calendarMutationPlanning";
 import { processVaultFrontMatter } from "../services/VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { captureTaskUndo } from "../ui/taskMutationUndo";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarMutations" });
 export interface CalendarMutationContext {
@@ -262,18 +264,24 @@ async function applyTaskCalendarGesture(
 		return;
 	}
 	try {
-		const updated = await context.plugin.taskService.applyCalendarEdit(
-			taskInfo,
+		const start = info.event.start.toISOString();
+		const current = await context.plugin.cacheManager.getTaskInfo(taskInfo.path);
+		if (!current) throw new Error(`Missing task: ${taskInfo.path}`);
+		const result = await captureTaskUndo(context.plugin, current, () => context.plugin.taskService.applyCalendarEdit(
+			current,
 			modelEntry,
 			{
 				kind,
-				start: info.event.start.toISOString(),
+				start,
 				end: info.event.end?.toISOString(),
 				allDay: info.event.allDay,
 			},
 			context.timezone
-		);
-		if (updated) await context.refreshTask(updated);
+		));
+		if (result.task) {
+			await context.refreshTask(result.task);
+			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, `${result.task.title} · ${result.task.scheduled ?? result.task.due ?? ""}`);
+		}
 		else info.revert();
 	} catch (error) {
 		tasknotesLogger.error("Cannot apply calendar edit", {
@@ -281,6 +289,7 @@ async function applyTaskCalendarGesture(
 			operation: "calendar-edit",
 			error,
 		});
+		showTaskUndo([], true, 0, context.plugin.app.vault, taskInfo.title);
 		info.revert();
 	}
 }

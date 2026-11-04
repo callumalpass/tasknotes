@@ -9,7 +9,9 @@ import {
 	buildTaskListCardRenderSignature,
 } from "./taskListRenderSignatures";
 import { displayError } from "../i18n/runtime";
-import type { MessageSuffix } from "../i18n/concepts";
+import { showToast } from "../ui/kit/toast";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
+import { createFileUndo } from "../ui/taskMutationUndo";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -86,7 +88,6 @@ import {
 import { completeOccurrenceForStatusMove, getShownOccurrence } from "./recurringStatusMove";
 import {
 	buildTaskMovementUndo,
-	applyTaskMovementUndo,
 	type TaskMovementUndoChange,
 } from "./taskMovementUndo";
 import {
@@ -1944,94 +1945,16 @@ export class TaskListView extends BasesViewBase {
 		file: TFile,
 		changes: readonly TaskMovementUndoChange[],
 		originalTask: TaskInfo | null,
-		updatedTask: TaskInfo | null,
+		_updatedTask: TaskInfo | null,
 		propertyChanges: readonly Pick<TaskListGroupDropPlan, "groupByTaskProp">[],
 		successMessage?: string
 	): void {
-		const t = (key: MessageSuffix<"views.taskList.movement.">) =>
-			this.plugin.i18n.translate(messageForKey(`views.taskList.movement.${key}`));
-		// Recurring status changes can write other occurrence notes. Do not offer a
-		// misleading single-note undo until those writes have a transaction ledger.
-		if (
-			changes.length === 0 ||
-			((originalTask?.recurrence || originalTask?.recurrence_parent) &&
-				propertyChanges.some((change) => change.groupByTaskProp === "status"))
-		) {
-			new Notice(successMessage ?? t("moved"));
+		const message = successMessage ?? this.plugin.i18n.translate(messageForKey("views.taskList.movement.moved"));
+		if (!changes.length || ((originalTask?.recurrence || originalTask?.recurrence_parent) && propertyChanges.some(change => change.groupByTaskProp === "status"))) {
+			showToast({ message });
 			return;
 		}
-		const fragment = (this.containerEl.ownerDocument.defaultView ?? window).createFragment();
-		fragment.append(`${successMessage ?? t("moved")} `);
-		const button = createElementInDocument(this.containerEl.ownerDocument, "button");
-		button.textContent = t("undo");
-		fragment.append(button);
-		const notice = new Notice(fragment, 8000);
-		button.addEventListener("click", () => {
-			button.disabled = true;
-			void this.dropQueue.enqueue(`move:${file.path}`, async () => {
-				try {
-					if (this.plugin.app.vault.getAbstractFileByPath(file.path) !== file)
-						throw new Error("Task file no longer exists");
-					const currentTask = updatedTask
-						? ((await this.plugin.cacheManager.getTaskInfo(file.path)) ?? updatedTask)
-						: null;
-					let restored = false;
-					await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
-						restored = applyTaskMovementUndo(frontmatter, changes);
-						if (restored)
-							frontmatter[this.plugin.fieldMapper.toUserField("dateModified")] =
-								getCurrentTimestamp();
-					});
-					if (!restored) {
-						new Notice(t("undoConflict"));
-						return;
-					}
-					if (originalTask && currentTask) {
-						const revertedTask = {
-							...currentTask,
-							dateModified: getCurrentTimestamp(),
-						};
-						if (
-							changes.some(
-								(change) =>
-									change.property ===
-									this.plugin.fieldMapper.toUserField("completedDate")
-							)
-						)
-							revertedTask.completedDate = originalTask.completedDate;
-						for (const change of propertyChanges) {
-							if (change.groupByTaskProp) {
-								const property = change.groupByTaskProp as keyof TaskInfo;
-								Object.assign(revertedTask, { [property]: originalTask[property] });
-							}
-						}
-						for (const change of propertyChanges) {
-							if (change.groupByTaskProp) {
-								const property = change.groupByTaskProp as keyof TaskInfo;
-								await this.plugin.taskService.applyPropertyChangeSideEffects(
-									file,
-									currentTask,
-									revertedTask,
-									property,
-									currentTask[property],
-									revertedTask[property]
-								);
-							}
-						}
-					}
-				} catch (error) {
-					tasknotesLogger.error("Task movement undo failed", {
-						category: "persistence",
-						operation: "task-movement-undo",
-						error,
-					});
-					new Notice(t("undoFailed"));
-				} finally {
-					notice.hide();
-					this.debouncedRefresh();
-				}
-			});
-		});
+		showTaskUndo([createFileUndo(this.plugin, [{ file, content: { changes: [...changes], beforeBody: "", afterBody: "" } }])], false, 1, this.plugin.app.vault, message);
 	}
 
 	private configureParentDropTarget(card: HTMLElement): void {

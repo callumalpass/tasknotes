@@ -199,7 +199,6 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[수식 오류]"
 
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -290,10 +289,20 @@ msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr "{count, plural, other {리마인더 #개 설정됨}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback archive"
+msgid "{count, plural, one {# task archived} other {# tasks archived}}"
+msgstr "{count, plural, other {작업 #개 보관됨}}"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, other {작업 #개 선택됨}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback unarchive"
+msgid "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+msgstr "{count, plural, other {작업 #개 보관 해제됨}}"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction feedback"
@@ -1391,7 +1400,6 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "절대 시간 리마인더는 at:YYYY-MM-DDTHH:MM 또는 전체 ISO 날짜·시간을 사용해야 합니다"
 
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1938,11 +1946,6 @@ msgstr "작업 보관"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "이 작업 보관"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.archived"
-msgid "archived"
-msgstr "보관됨"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
@@ -2756,10 +2759,10 @@ msgctxt "services/TaskService: TaskService.unskipMaterializedOccurrence display"
 msgid "Cannot resolve occurrence parent"
 msgstr "회차의 상위 작업을 확인할 수 없습니다"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.conflict"
-msgid "Cannot undo: this occurrence or its schedule has changed."
-msgstr "실행 취소할 수 없습니다. 이 반복 회차나 일정이 변경되었습니다."
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo conflict"
+msgid "Cannot undo: the note has changed."
+msgstr "노트가 변경되어 실행 취소할 수 없습니다."
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoConflict"
@@ -3745,11 +3748,6 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "해결할 수 없음: {entries}"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.failed"
-msgid "Could not undo the recurring task change."
-msgstr "반복 작업 변경을 취소하지 못했습니다."
-
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
@@ -4707,11 +4705,6 @@ msgstr "종속성"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Dependencies"
 msgstr "종속성"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
-msgid "Dependencies updated"
-msgstr "종속성이 업데이트되었습니다"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
@@ -5814,11 +5807,6 @@ msgctxt "contextMenus.task.organization.notices.addToProjectFailed"
 msgid "Failed to add task to project"
 msgstr "프로젝트에 작업 추가 실패"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveFailure"
-msgid "Failed to archive task"
-msgstr "작업 보관 실패"
-
 #: src/main.ts
 msgctxt "notices.commands.batchConversionFailed"
 msgid "Failed to batch convert tasks. Please try again."
@@ -6171,11 +6159,6 @@ msgid "Failed to migrate Pomodoro data. Please try again or check the console fo
 msgstr "뽀모도로 데이터 마이그레이션 실패. 다시 시도하거나 콘솔에서 자세한 내용을 확인하세요."
 
 #: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockMoveFailed"
-msgid "Failed to move timeblock: {message}"
-msgstr "타임블록 이동 실패: {message}"
-
-#: src/bases/calendar-core.ts
 #: src/main.ts
 msgctxt "notices.commands.dailyNoteOpenFailed"
 msgid "Failed to navigate to daily note: {message}"
@@ -6342,11 +6325,6 @@ msgctxt "services.instantTaskConvert.notices.replaceLineFailed"
 msgid "Failed to replace task line."
 msgstr "작업 줄 교체 실패."
 
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockResizeFailed"
-msgid "Failed to resize timeblock: {message}"
-msgstr "타임블록 크기 조정 실패: {message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "Failed to resolve moved task file: {newPath}"
@@ -6362,11 +6340,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "캘린더 비밀번호를 저장하지 못했습니다"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeEntryEditor.saveFailed"
-msgid "Failed to save time entries"
-msgstr "시간 기록 저장 실패"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.failed"
 msgid "Failed to show properties menu"
@@ -6381,11 +6354,6 @@ msgstr "TaskNotes API 서버를 시작하지 못했습니다. 자세한 내용�
 msgctxt "modals.timeTracking.startFailed"
 msgid "Failed to start time tracking"
 msgstr "시간 추적 시작 실패"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.trackingStopFailed"
-msgid "Failed to stop time tracking"
-msgstr "시간 추적을 중지하지 못했습니다"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogleFailed"
@@ -6482,11 +6450,6 @@ msgstr "태그 업데이트 실패"
 msgctxt "notices.commands.taskUpdateFailed"
 msgid "Failed to update task"
 msgstr "작업을 업데이트하지 못했습니다"
-
-#: src/main.ts
-msgctxt "notices.commands.archiveFailed"
-msgid "Failed to update task archive status"
-msgstr "작업의 보관 상태를 업데이트하지 못했습니다"
 
 #: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeFailure"
@@ -9211,6 +9174,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "매월 {week} {day}에"
 
+#: src/modals/TaskCreationModal.ts
+msgctxt "interaction created open"
+msgid "Open"
+msgstr "열기"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -11666,11 +11634,6 @@ msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "시작: "
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeTracking.started"
-msgid "Started tracking time for: {taskTitle}"
-msgstr "{taskTitle}에 대한 시간 추적이 시작되었습니다"
-
 #: src/settings/tabs/taskProperties/projectsPropertyCard.ts
 msgctxt "settings.appearance.projectAutosuggest.quickReference.staticText"
 msgid "Static text: literal:My Custom Label"
@@ -12178,11 +12141,6 @@ msgctxt "modals.taskEdit.notices.updateSuccess"
 msgid "Task \"{title}\" updated successfully"
 msgstr "작업 \"{title}\"이(가) 성공적으로 업데이트되었습니다"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveSuccess"
-msgid "Task {action} successfully"
-msgstr "작업 처리 완료: {action}"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12608,11 +12566,6 @@ msgctxt "settings.integrations.autoExport.notices.exportSuccess"
 msgid "Tasks exported successfully"
 msgstr "작업이 성공적으로 내보내졌습니다"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponed"
-msgid "Tasks postponed: {count}. Failed: {failed}."
-msgstr "연기된 작업: {count}개. 실패: {failed}개."
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
 msgid "Template for custom ICS event filenames"
@@ -12983,7 +12936,6 @@ msgctxt "services/TaskService: TaskService.startTimeTrackingLocked display"
 msgid "Time tracking is already active for this task"
 msgstr "이 작업의 시간 추적이 이미 진행 중입니다"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStarted"
 msgid "Time tracking started"
@@ -12994,7 +12946,6 @@ msgctxt "settings.features.timeTracking.stopNotificationName"
 msgid "Time tracking stop notification"
 msgstr "시간 추적 중지 알림"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
@@ -13609,11 +13560,6 @@ msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList 
 msgid "Unarchive task"
 msgstr "작업 보관 해제"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.unarchived"
-msgid "unarchived"
-msgstr "보관 해제됨"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
@@ -13833,11 +13779,6 @@ msgstr "업데이트 간격 (5~1440분)"
 msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "리마인더 업데이트"
-
-#: src/bases/CalendarView.ts
-msgctxt "notices.audit.update"
-msgid "Update tasks"
-msgstr "작업 업데이트"
 
 #: src/main.ts
 msgctxt "notices.commands.basesUpdated"

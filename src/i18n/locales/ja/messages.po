@@ -199,7 +199,6 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[数式エラー]"
 
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -290,10 +289,20 @@ msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr "{count, plural, other {リマインダー # 件を設定済み}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback archive"
+msgid "{count, plural, one {# task archived} other {# tasks archived}}"
+msgstr "{count, plural, other {# 件のタスクをアーカイブしました}}"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, other {タスク # 件を選択中}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback unarchive"
+msgid "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+msgstr "{count, plural, other {# 件のタスクをアーカイブから戻しました}}"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction feedback"
@@ -1391,7 +1400,6 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "日時指定のリマインダーには at:YYYY-MM-DDTHH:MM または完全な ISO 日時を使用してください"
 
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1938,11 +1946,6 @@ msgstr "タスクをアーカイブ"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "このタスクをアーカイブ"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.archived"
-msgid "archived"
-msgstr "アーカイブ"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
@@ -2756,10 +2759,10 @@ msgctxt "services/TaskService: TaskService.unskipMaterializedOccurrence display"
 msgid "Cannot resolve occurrence parent"
 msgstr "繰り返し回の親タスクを特定できません"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.conflict"
-msgid "Cannot undo: this occurrence or its schedule has changed."
-msgstr "元に戻せません。この回または予定が変更されています。"
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo conflict"
+msgid "Cannot undo: the note has changed."
+msgstr "ノートが変更されたため、元に戻せません。"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoConflict"
@@ -3745,11 +3748,6 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "解決できませんでした：{entries}"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.failed"
-msgid "Could not undo the recurring task change."
-msgstr "繰り返しタスクの変更を元に戻せませんでした。"
-
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
@@ -4707,11 +4705,6 @@ msgstr "依存関係"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Dependencies"
 msgstr "依存関係"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
-msgid "Dependencies updated"
-msgstr "依存関係が更新されました"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
@@ -5814,11 +5807,6 @@ msgctxt "contextMenus.task.organization.notices.addToProjectFailed"
 msgid "Failed to add task to project"
 msgstr "タスクをプロジェクトに追加できませんでした"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveFailure"
-msgid "Failed to archive task"
-msgstr "タスクのアーカイブに失敗しました"
-
 #: src/main.ts
 msgctxt "notices.commands.batchConversionFailed"
 msgid "Failed to batch convert tasks. Please try again."
@@ -6171,11 +6159,6 @@ msgid "Failed to migrate Pomodoro data. Please try again or check the console fo
 msgstr "ポモドーロデータの移行に失敗しました。再試行するか、詳細についてはコンソールを確認してください。"
 
 #: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockMoveFailed"
-msgid "Failed to move timeblock: {message}"
-msgstr "タイムブロックの移動に失敗しました：{message}"
-
-#: src/bases/calendar-core.ts
 #: src/main.ts
 msgctxt "notices.commands.dailyNoteOpenFailed"
 msgid "Failed to navigate to daily note: {message}"
@@ -6342,11 +6325,6 @@ msgctxt "services.instantTaskConvert.notices.replaceLineFailed"
 msgid "Failed to replace task line."
 msgstr "タスク行の置換に失敗しました。"
 
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockResizeFailed"
-msgid "Failed to resize timeblock: {message}"
-msgstr "タイムブロックのサイズ変更に失敗しました：{message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "Failed to resolve moved task file: {newPath}"
@@ -6362,11 +6340,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "カレンダーのパスワードを保存できませんでした"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeEntryEditor.saveFailed"
-msgid "Failed to save time entries"
-msgstr "時間エントリの保存に失敗しました"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.failed"
 msgid "Failed to show properties menu"
@@ -6381,11 +6354,6 @@ msgstr "TaskNotes API サーバーを起動できませんでした。詳細は�
 msgctxt "modals.timeTracking.startFailed"
 msgid "Failed to start time tracking"
 msgstr "時間追跡の開始に失敗しました"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.trackingStopFailed"
-msgid "Failed to stop time tracking"
-msgstr "時間追跡を停止できませんでした"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogleFailed"
@@ -6482,11 +6450,6 @@ msgstr "タグの更新に失敗しました"
 msgctxt "notices.commands.taskUpdateFailed"
 msgid "Failed to update task"
 msgstr "タスクを更新できませんでした"
-
-#: src/main.ts
-msgctxt "notices.commands.archiveFailed"
-msgid "Failed to update task archive status"
-msgstr "タスクのアーカイブ状態を更新できませんでした"
 
 #: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeFailure"
@@ -9211,6 +9174,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "毎月{week}{day}曜日"
 
+#: src/modals/TaskCreationModal.ts
+msgctxt "interaction created open"
+msgid "Open"
+msgstr "開く"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -11666,11 +11634,6 @@ msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "開始："
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeTracking.started"
-msgid "Started tracking time for: {taskTitle}"
-msgstr "時間追跡を開始しました：{taskTitle}"
-
 #: src/settings/tabs/taskProperties/projectsPropertyCard.ts
 msgctxt "settings.appearance.projectAutosuggest.quickReference.staticText"
 msgid "Static text: literal:My Custom Label"
@@ -12178,11 +12141,6 @@ msgctxt "modals.taskEdit.notices.updateSuccess"
 msgid "Task \"{title}\" updated successfully"
 msgstr "タスク\"{title}\"が正常に更新されました"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveSuccess"
-msgid "Task {action} successfully"
-msgstr "タスクが正常に{action}されました"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12608,11 +12566,6 @@ msgctxt "settings.integrations.autoExport.notices.exportSuccess"
 msgid "Tasks exported successfully"
 msgstr "タスクが正常にエクスポートされました"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponed"
-msgid "Tasks postponed: {count}. Failed: {failed}."
-msgstr "延期したタスク：{count}件。失敗：{failed}件。"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
 msgid "Template for custom ICS event filenames"
@@ -12983,7 +12936,6 @@ msgctxt "services/TaskService: TaskService.startTimeTrackingLocked display"
 msgid "Time tracking is already active for this task"
 msgstr "このタスクでは既に時間追跡が進行中です"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStarted"
 msgid "Time tracking started"
@@ -12994,7 +12946,6 @@ msgctxt "settings.features.timeTracking.stopNotificationName"
 msgid "Time tracking stop notification"
 msgstr "時間追跡停止通知"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
@@ -13609,11 +13560,6 @@ msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList 
 msgid "Unarchive task"
 msgstr "タスクをアーカイブから戻す"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.unarchived"
-msgid "unarchived"
-msgstr "アーカイブ解除"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
@@ -13833,11 +13779,6 @@ msgstr "更新間隔（5から1440分の間）"
 msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "リマインダーを更新"
-
-#: src/bases/CalendarView.ts
-msgctxt "notices.audit.update"
-msgid "Update tasks"
-msgstr "タスクを更新"
 
 #: src/main.ts
 msgctxt "notices.commands.basesUpdated"
