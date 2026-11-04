@@ -86,6 +86,12 @@
     color: var(--tn-text-normal);
 }
 
+.tasknotes-plugin .mini-calendar-bases-view {
+    width: 100%;
+    max-width: 360px;
+    align-self: flex-start;
+}
+
 .tasknotes-plugin .calendar-view__nav-button,
 .tasknotes-plugin .mini-calendar-view__nav-button {
     width: 32px;
@@ -675,11 +681,10 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__month-display {
-    font-weight: 600;
-    font-size: var(--tn-type-xs);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--tn-text-muted);
+    font-weight: var(--tn-font-weight-medium);
+    font-size: var(--tn-type-sm);
+    text-transform: none;
+    color: var(--tn-text-normal);
     min-width: 0;
     flex: 1 1 auto;
     overflow: hidden;
@@ -771,8 +776,8 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today {
-    background: transparent;
-    color: var(--tn-interactive-accent);
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
     font-weight: var(--tn-font-weight-semibold);
     box-shadow: none;
 }
@@ -785,12 +790,13 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__day--selected {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
-    border: 1px solid var(--tn-interactive-accent);
+    background: var(--tn-selected);
+    border: 1px solid var(--tn-hairline);
 }
 
 .tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected {
-    background: var(--tn-selected);
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
     box-shadow: none;
 }
 
@@ -1101,22 +1107,33 @@
     /* Default background, no change */
 }
 
-.tasknotes-plugin .mini-calendar-view__day--intensity-low {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 25%, var(--tn-bg-primary));
+.tasknotes-plugin .mini-calendar-view__day--intensity-low::before,
+.tasknotes-plugin .mini-calendar-view__day--intensity-medium::before,
+.tasknotes-plugin .mini-calendar-view__day--intensity-high::before,
+.tasknotes-plugin .mini-calendar-view__day--intensity-very-high::before {
+    content: '';
+    position: absolute;
+    bottom: var(--tn-space-half);
+    width: var(--tn-space-1);
+    height: var(--tn-space-half);
+    border-radius: var(--tn-radius-full);
+    background: currentColor;
+    opacity: 0.35;
 }
 
-.tasknotes-plugin .mini-calendar-view__day--intensity-medium {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 40%, var(--tn-bg-primary));
+.tasknotes-plugin .mini-calendar-view__day--intensity-medium::before {
+    width: var(--tn-space-2);
+    opacity: 0.5;
 }
 
-.tasknotes-plugin .mini-calendar-view__day--intensity-high {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 55%, var(--tn-bg-primary));
+.tasknotes-plugin .mini-calendar-view__day--intensity-high::before {
+    width: var(--tn-space-3);
+    opacity: 0.65;
 }
 
-.tasknotes-plugin .mini-calendar-view__day--intensity-very-high {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 70%, var(--tn-bg-primary));
-    color: var(--text-on-accent);
-    font-weight: 600;
+.tasknotes-plugin .mini-calendar-view__day--intensity-very-high::before {
+    width: var(--tn-space-4);
+    opacity: 0.8;
 }
 
 /* Preserve hover effect on heat map days */
@@ -1124,5 +1141,10 @@
 .tasknotes-plugin .mini-calendar-view__day--intensity-medium:hover,
 .tasknotes-plugin .mini-calendar-view__day--intensity-high:hover,
 .tasknotes-plugin .mini-calendar-view__day--intensity-very-high:hover {
-    background: color-mix(in srgb, var(--tn-interactive-accent) 35%, var(--tn-interactive-hover));
+    background: var(--tn-hover);
+}
+
+.tasknotes-plugin .mini-calendar-view__day--today:hover {
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
 }
