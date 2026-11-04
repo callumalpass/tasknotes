@@ -16,7 +16,7 @@ export const TASK_KEYBOARD_MAP = {
 	status: "S",
 	priority: "P",
 	due: "D",
-	scheduled: "H",
+	scheduled: "Shift+H",
 	tags: "T",
 	create: "C",
 	actions: "Mod+K",

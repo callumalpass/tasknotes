@@ -123,7 +123,7 @@ Inside a task view, with no text input focused:
 | `s` | Status picker |
 | `p` | Priority picker |
 | `d` | Due date picker |
-| `h` | Scheduled date picker |
+| `Shift+H` | Scheduled date picker |
 | `t` | Tags picker |
 | `c` | Create task |
 | `/` | Search |
@@ -131,6 +131,8 @@ Inside a task view, with no text input focused:
 | `?` | Shortcut help |
 
 Single-letter keys never fire when an input, textarea or contenteditable has focus. Plugin keys are scoped to the focused view, so global Obsidian hotkeys keep working.
+
+Scheduled date is Shift+H in every view. Unmodified h is unbound in the list; on the board h/l and Left/Right move focus between columns.
 
 List and board status/priority glyphs open anchored property pickers. Alt-click on a status glyph retains one-click cycling (Alt-Shift-click reverses it), including recurring-task occurrence behaviour and configured cycle exclusions. The default is a picker because an explicit choice is predictable across arbitrary custom workflows; ordinary card click settings still govern opening/editing. Escape clears selection first, then the keyboard focus marker. Keyboard focus is tracked by task path rather than a recycled virtual row.
 

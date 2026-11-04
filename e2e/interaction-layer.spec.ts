@@ -63,6 +63,31 @@ async function taskValues(property: string, archived = false) {
   }, { folder, property, archived });
 }
 
+test('scheduled date uses Shift+H in both task views without stealing list h', async () => {
+  for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
+    const root = await openView(type, `Scheduled key ${type}`);
+    await page.keyboard.press('j');
+    if (type === 'tasknotesTaskList') {
+      await page.keyboard.press('h');
+      await expect(page.locator('.tn-picker')).toHaveCount(0);
+    }
+    await page.keyboard.press('Shift+H');
+    await expect(page.locator('.tn-picker')).toBeVisible();
+    await expect(page.locator('.tn-picker__input')).toHaveAttribute('placeholder', 'Scheduled date');
+    await page.keyboard.press('Escape');
+    await root.focus();
+    await page.keyboard.press('Control+k');
+    await page.locator('.tn-picker__input').fill('Scheduled date');
+    await expect(page.locator('[data-picker-id="picker-scheduled"] .tn-key')).toHaveText(['Shift', 'H']);
+    await page.keyboard.press('Escape');
+    await root.focus();
+    await page.keyboard.press('?');
+    const scheduled = page.locator('.tn-shortcut-row').filter({ hasText: 'Scheduled date' });
+    await expect(scheduled.locator('.tn-key-hint')).toContainText('Shift');
+    await page.keyboard.press('Escape');
+  }
+});
+
 test('round one: shortcut help stays inside viewport and slash search retains focus', async () => {
   const root = await openView('tasknotesTaskList', 'Round one search', false);
   await page.keyboard.press('?');
@@ -321,7 +346,9 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await root.focus();
     await page.keyboard.press('?');
-    await expect(page.locator('.tn-popover .tn-key')).toHaveCount(20);
+    await expect(page.locator('.tn-shortcut-row')).toHaveCount(type === 'tasknotesKanban' ? 16 : 15);
+    await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Scheduled date' }).locator('.tn-key-hint')).toContainText('Shift');
+    if (type === 'tasknotesKanban') await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Move between columns' })).toBeVisible();
     await page.keyboard.press('Escape');
   });
 }
@@ -341,7 +368,7 @@ test('scheduled picker undo restores recurring history and refuses stale receipt
   const before = await values();
   await page.keyboard.press('j');
   await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', path);
-  await page.keyboard.press('h');
+  await page.keyboard.press('Shift+H');
   await page.locator('.tn-picker input').fill('2027-05-18');
   await page.keyboard.press('Enter');
   await page.getByRole('button', { name: 'Reschedule and clear', exact: true }).click();

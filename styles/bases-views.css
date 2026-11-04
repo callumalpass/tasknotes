@@ -124,6 +124,24 @@
     min-width: 0;
 }
 
+.tasknotes-view-active {
+    container: tn-bases-chrome / inline-size;
+}
+
+@container tn-bases-chrome (max-width: 480px) {
+    .tn-bases-new-task-btn .tn-key-hint,
+    .tn-bases-new-task-btn .text-button-label {
+        display: none;
+    }
+
+    .tn-bases-new-task-btn > button.text-icon-button {
+        justify-content: center;
+        min-width: var(--tn-control-md);
+        min-height: var(--tn-control-md);
+        margin: 0;
+    }
+}
+
 .tasknotes-view-active .bases-toolbar > * {
     flex-shrink: 0;
     max-width: 100%;

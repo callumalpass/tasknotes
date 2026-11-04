@@ -139,7 +139,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			["E", uiText(msg({ message: "Edit task", context: "interaction shortcut" }))],
 			["Space", uiText(msg({ message: "Preview", context: "interaction shortcut" }))],
 			...Object.entries(PROPERTY_KEYS).map(([key, property]) => [
-				key === "h" && options.horizontal ? "Shift+H" : key,
+				key === "h" ? "Shift+H" : key,
 				taskPropertyLabel(property),
 			]),
 			["C", uiText(msg({ message: "Create task", context: "interaction shortcut" }))],
@@ -159,8 +159,16 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	helpButton.type = "button";
 	helpButton.setAttribute("aria-label", uiText(msg({ message: "Keyboard shortcuts", context: "interaction help" })));
 	setIcon(helpButton, "circle-help");
-	const toolbar = root.closest(".bases-view")?.parentElement?.querySelector(".bases-toolbar");
-	(toolbar ?? root).appendChild(helpButton);
+	const chrome = root.closest(".bases-view")?.parentElement;
+	const placeHelp = () => {
+		const toolbar = chrome?.querySelector(".bases-toolbar");
+		const newTask = toolbar?.querySelector(".tn-bases-new-task-btn");
+		if (newTask && helpButton.nextElementSibling !== newTask) newTask.before(helpButton);
+		else if (!newTask && helpButton.parentElement !== (toolbar ?? root)) (toolbar ?? root).appendChild(helpButton);
+	};
+	placeHelp();
+	const chromeObserver = new MutationObserver(placeHelp);
+	if (chrome) chromeObserver.observe(chrome, { childList: true, subtree: true });
 	helpButton.addEventListener("click", help);
 	const handle = async (event: KeyboardEvent) => {
 		const target = event.target as HTMLElement;
@@ -179,7 +187,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (mod && key !== "k" && key !== "a") return;
 		if (
 			event.shiftKey &&
-			!(key === "h" && options.horizontal) &&
+			key !== "h" &&
 			!["arrowup", "arrowdown", "arrowleft", "arrowright", "j", "k", "?"].includes(key)
 		)
 			return;
@@ -209,6 +217,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			].includes(key)
 		)
 			return;
+		if (!mod && key === "h" && !event.shiftKey && !options.horizontal) return;
 		event.preventDefault();
 		event.stopPropagation();
 		root.focus({ preventScroll: true });
@@ -328,7 +337,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 							icon: "list",
 							category: "other",
 							keywords: [property],
-							keyHint: Object.entries(PROPERTY_KEYS).find(
+							keyHint: property === "scheduled" ? "Shift+H" : Object.entries(PROPERTY_KEYS).find(
 								([, candidate]) => candidate === property
 							)?.[0],
 							isApplicable: () => true,
@@ -362,7 +371,8 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 							.filter(
 								(action) =>
 									tasks.length === 1 &&
-									!["status", "priority", "dates"].includes(action.category) &&
+									(!["status", "priority", "dates"].includes(action.category) ||
+										["complete-recurring-instance", "open-or-create-occurrence-note"].includes(action.id)) &&
 									!action.id.includes("archive")
 							)
 							.map((action) => ({
@@ -413,6 +423,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		root.removeEventListener("focusin", focusScope);
 		root.removeEventListener("focusout", releaseScope);
 		observer.disconnect();
+		chromeObserver.disconnect();
 		root.removeEventListener("keydown", listener);
 		root.removeEventListener("pointerdown", pointer);
 	};

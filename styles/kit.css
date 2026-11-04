@@ -509,7 +509,12 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     color: var(--tn-text-normal);
 }
 
-.tn-shortcut-help { color: var(--tn-text-faint); flex: none; }
+.tn-shortcut-help {
+    color: var(--tn-text-faint);
+    flex: none;
+    min-width: var(--tn-control-md);
+    min-height: var(--tn-control-md);
+}
 .tn-task-arrived { background: var(--tn-selected); transition: background var(--tn-motion-slow) var(--tn-ease); }
 @media (prefers-reduced-motion: reduce) { .tn-task-arrived { transition: none; } }
 
