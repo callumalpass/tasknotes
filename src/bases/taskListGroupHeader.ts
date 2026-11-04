@@ -113,7 +113,7 @@ export function createTaskListGroupHeader(options: TaskListGroupHeaderOptions): 
 
 	// Add count
 	headerElement.createSpan({
-		text: ` (${uiNumber(headerItem.taskCount)})`,
+		text: `(${uiNumber(headerItem.taskCount)})`,
 		cls: "agenda-view__item-count",
 	});
 	const addButton = headerElement.createEl("button", {

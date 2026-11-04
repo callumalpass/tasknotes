@@ -44,6 +44,21 @@ export type TaskListHeaderItem = TaskListPrimaryHeaderItem | TaskListSubHeaderIt
 export type TaskListRenderItem = TaskListHeaderItem | TaskListTaskItem;
 export type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
 
+export type TaskListGroupComparator = (property: string, left: string, right: string) => number;
+
+export function orderTaskListGroups(
+	groups: readonly TaskListGroup[],
+	property: string,
+	compare: TaskListGroupComparator
+): TaskListGroup[] {
+	return [...groups].sort((left, right) =>
+		compare(
+			property,
+			stringifyTaskListGroupValue(left.key),
+			stringifyTaskListGroupValue(right.key)
+		)
+	);
+}
 
 type BasesDisplayValue = {
 	constructor?: { name?: string };
@@ -116,7 +131,8 @@ export function stringifyTaskListGroupValue(value: unknown): string {
 export function groupTasksByTaskListSubProperty(
 	tasks: readonly TaskInfo[],
 	propertyId: string,
-	pathToProps: ReadonlyMap<string, Record<string, unknown>>
+	pathToProps: ReadonlyMap<string, Record<string, unknown>>,
+	compare?: TaskListGroupComparator
 ): Map<string, TaskInfo[]> {
 	const subGroups = new Map<string, TaskInfo[]>();
 
@@ -129,7 +145,9 @@ export function groupTasksByTaskListSubProperty(
 		subGroups.set(subKey, subTasks);
 	}
 
-	return subGroups;
+	return compare
+		? new Map([...subGroups].sort(([left], [right]) => compare(propertyId, left, right)))
+		: subGroups;
 }
 
 export function buildTaskListGroupedScopePaths(
@@ -174,6 +192,7 @@ export function buildTaskListGroupedRenderItems(options: {
 	collapsedGroups: ReadonlySet<string>;
 	collapsedSubGroups: ReadonlySet<string>;
 	convertGroupKeyToString: (key: unknown) => string;
+	compareGroupKeys?: TaskListGroupComparator;
 }): TaskListRenderItem[] {
 	const items: TaskListRenderItem[] = [];
 
@@ -200,7 +219,8 @@ export function buildTaskListGroupedRenderItems(options: {
 			const subGroups = groupTasksByTaskListSubProperty(
 				groupTasks,
 				options.subGroupPropertyId,
-				options.pathToProps
+				options.pathToProps,
+				options.compareGroupKeys
 			);
 
 			for (const [subKey, subTasks] of subGroups) {
