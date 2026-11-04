@@ -5,6 +5,7 @@ import type { BasesEntry, BasesViewConfig } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { isEmptyCardDisplayValue, renderBasesValue } from "./taskCardPresentation";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { fitTaskCardMetadata } from "./taskCardMetadata";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/PropertyEventCard" });
 
@@ -33,7 +34,9 @@ export function createPropertyEventCard(
 
 	const file = entry.file;
 	if (!file) {
-		card.textContent = plugin.i18n.translate(msg({ message: "Unknown file", context: "ui.propertyEventCard.unknownFile" }));
+		card.textContent = plugin.i18n.translate(
+			msg({ message: "Unknown file", context: "ui.propertyEventCard.unknownFile" })
+		);
 		return card;
 	}
 
@@ -130,24 +133,28 @@ export function createPropertyEventCard(
 	const content = mainRow.createDiv({ cls: "task-card__content" });
 
 	// Title
-	content.createDiv({
-		cls: "task-card__title",
+	content.createDiv({ cls: "task-card__title" }).createSpan({
+		cls: "task-card__title-text",
 		text: file.basename || file.name,
 	});
 
 	// Metadata line: show visible properties from Bases view
 	if (opts.showProperties && viewConfig) {
 		const metadata = content.createDiv({ cls: "task-card__metadata" });
+		const values = metadata.createSpan({ cls: "task-card__metadata-values" });
 		let renderedProperties = 0;
 
 		try {
-			const doc = metadata.ownerDocument;
 			// Get visible properties from Bases view configuration
 			const visibleProperties = viewConfig.getOrder?.() || [];
 
 			// Get date property IDs to skip
-			const startDatePropertyId = viewConfig.getAsPropertyId?.("startDateProperty");
-			const endDatePropertyId = viewConfig.getAsPropertyId?.("endDateProperty");
+			const startDatePropertyId =
+				viewConfig.getAsPropertyId?.("startDateProperty") ??
+				viewConfig.get("startDateProperty");
+			const endDatePropertyId =
+				viewConfig.getAsPropertyId?.("endDateProperty") ??
+				viewConfig.get("endDateProperty");
 
 			// Show all non-date visible properties
 			for (const propertyId of visibleProperties) {
@@ -160,17 +167,21 @@ export function createPropertyEventCard(
 				const value = entry.getValue(propertyId);
 
 				if (!isEmptyCardDisplayValue(value)) {
-					if (renderedProperties > 0) {
-						metadata.appendChild(doc.createTextNode(" • "));
-					}
-
 					// Get user-friendly property name
 					const displayName = viewConfig.getDisplayName(propertyId) || propertyId;
 
-					const propertyEl = metadata.createSpan({
-						cls: "property-event-card__metadata-property",
+					const propertyEl = values.createSpan({
+						cls: "property-event-card__metadata-property task-card__metadata-property",
 					});
-					propertyEl.createSpan({ text: uiText(msg({ message: "{displayName}: ", context: "ui/PropertyEventCard: createPropertyEventCard text" }), { displayName: displayName }) });
+					propertyEl.createSpan({
+						text: uiText(
+							msg({
+								message: "{displayName}: ",
+								context: "ui/PropertyEventCard: createPropertyEventCard text",
+							}),
+							{ displayName: displayName }
+						),
+					});
 					const valueEl = propertyEl.createSpan({
 						cls: "property-event-card__metadata-value",
 					});
@@ -189,8 +200,9 @@ export function createPropertyEventCard(
 
 		if (renderedProperties === 0) {
 			// Fallback: show file path if no properties
-			metadata.textContent = file.path;
+			values.createSpan({ text: file.path });
 		}
+		fitTaskCardMetadata(values, metadata);
 	}
 
 	// Click handler to open file
