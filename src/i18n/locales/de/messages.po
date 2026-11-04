@@ -3015,7 +3015,7 @@ msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
 msgstr "Untergruppen einklappen"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Collapse subtasks"
 msgstr "Unteraufgaben einklappen"
@@ -5622,7 +5622,7 @@ msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Expand subgroups"
 msgstr "Untergruppen ausklappen"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Expand subtasks"
 msgstr "Unteraufgaben ausklappen"
@@ -6074,7 +6074,7 @@ msgctxt "notices.commands.taskLoadFailed"
 msgid "Failed to load current task"
 msgstr "Aktuelle Aufgabe konnte nicht geladen werden"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/i18n/messages.ts
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "ui.taskCard.blockingLoadError"
@@ -6343,7 +6343,7 @@ msgctxt "contextMenus.task.notices.toggleSkipFailure"
 msgid "Failed to toggle recurring task skip: {message}"
 msgstr "Überspringen der wiederkehrenden Aufgabe konnte nicht umgeschaltet werden: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.subtasksFailed"
 msgid "Failed to toggle subtasks"
@@ -6385,13 +6385,13 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "Ereignis konnte nicht aktualisiert werden: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.priorityFailed"
 msgid "Failed to update priority"
 msgstr "Priorität konnte nicht aktualisiert werden"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.recurrenceFailed"
 msgid "Failed to update recurrence"
@@ -6402,7 +6402,7 @@ msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
 msgstr "Wiederkehrende Aufgabe konnte nicht aktualisiert werden"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
@@ -6435,7 +6435,7 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "Aufgabenabschluss konnte nicht aktualisiert werden: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
@@ -6452,7 +6452,7 @@ msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
 msgid "Failed to update task recurrence: {message}"
 msgstr "Aufgabenwiederholung konnte nicht aktualisiert werden: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
@@ -6464,7 +6464,7 @@ msgctxt "notices.commands.statusFailed"
 msgid "Failed to update task status"
 msgstr "Aufgabenstatus konnte nicht aktualisiert werden"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
@@ -8229,6 +8229,7 @@ msgid "Never refreshed"
 msgstr "Noch nie aktualisiert"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/taskListGroupHeader.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.new"
 msgid "New"
@@ -10987,7 +10988,7 @@ msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesM
 msgid "Series-wide"
 msgstr "Gesamte Serie"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
@@ -13194,7 +13195,7 @@ msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "Spalte {column} ein-/ausklappen"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "Gruppe ein-/ausklappen"

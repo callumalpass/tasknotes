@@ -236,6 +236,25 @@ describe("TaskCard Component", () => {
 	});
 
 	describe("createTaskCard", () => {
+		it.each(["default", "compact", "inline"] as const)(
+			"keeps title and metadata separate in the %s layout",
+			(layout) => {
+				const task = TaskFactory.createTask({ title: "A long task title", recurrence: "FREQ=DAILY" });
+				const card = createTaskCard(task, mockPlugin, ["status", "due"], { layout });
+				const title = card.querySelector(".task-card__title-text");
+				expect(title?.textContent).toBe(task.title);
+				expect(title?.getAttribute("title")).toBe(task.title);
+				const metadata = card.querySelector(".task-card__metadata");
+				expect(metadata?.closest(".task-card__title")).toBeNull();
+				if (layout === "inline") {
+					expect(card.querySelector(".task-card__badges")).toBeNull();
+				} else {
+					expect(card.querySelector(".task-card__badges")?.parentElement)
+						.toBe(card.querySelector(".task-card__title"));
+				}
+			}
+		);
+
 		it("should create basic task card", () => {
 			const task = TaskFactory.createTask({
 				title: "Test Task",

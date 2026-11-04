@@ -1,11 +1,20 @@
+import {
+	collectTaskListStickyHeaderIndices,
+	updateTaskListStickyHeader,
+} from "./taskListStickyHeaders";
+import { TaskListCardActions } from "./taskListCardActions";
+import { createTaskListGroupHeader } from "./taskListGroupHeader";
+import {
+	buildTaskListTaskSignature,
+	buildTaskListCardRenderSignature,
+} from "./taskListRenderSignatures";
 import { displayError } from "../i18n/runtime";
 import type { MessageSuffix } from "../i18n/concepts";
-import { uiNumber } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, TFile, setIcon, setTooltip, type MenuItem } from "obsidian";
+import { Menu, Notice, TFile, setIcon, type MenuItem } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -13,32 +22,13 @@ import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewCo
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
-import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
-import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
-import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { renderEmptyState } from "../ui/kit/emptyState";
-import {
-	priorityGlyphState,
-	renderPriorityGlyph,
-	renderStatusGlyph,
-	statusGlyphState,
-} from "../ui/kit/glyphs";
 import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
 import { groupKeyLabel, NONE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
-import { DateContextMenu } from "../components/DateContextMenu";
-import { PriorityContextMenu } from "../components/PriorityContextMenu";
-import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import { ReminderModal } from "../modals/ReminderModal";
-import {
-	getDatePart,
-	getTimePart,
-	getCurrentTimestamp,
-	parseDateToUTC,
-	createUTCDateFromLocalCalendarDate,
-} from "../utils/dateUtils";
+import { getCurrentTimestamp, createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
 import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
@@ -198,6 +188,7 @@ export class TaskListView extends BasesViewBase {
 	private lastTaskSignatures = new Map<string, string>();
 	private lastCardRenderSignature = "";
 	private taskInfoCache = new Map<string, TaskInfo>();
+	private readonly cardActions: TaskListCardActions;
 	private clickTimeouts = new Map<string, number>();
 	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
 	private containerListenersRegistered = false;
@@ -276,6 +267,14 @@ export class TaskListView extends BasesViewBase {
 	constructor(controller: unknown, containerEl: HTMLElement, plugin: TaskNotesPlugin) {
 		super(controller, containerEl, plugin);
 		this.basesController = controller as TaskListController;
+		this.cardActions = new TaskListCardActions({
+			plugin,
+			containerEl,
+			clickTimeouts: this.clickTimeouts,
+			getTargetDate: () => this.currentTargetDate,
+			getApp: () => this.app || this.plugin.app,
+			handleSelectionClick: (event, path) => this.handleSelectionClick(event, path),
+		});
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
 		(this.dataAdapter as unknown as TaskListDataAdapterWithView).basesView = this;
@@ -3142,14 +3141,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private collectVirtualStickyHeaderIndices(items: readonly TaskListRenderItem[]): number[] {
-		const indices: number[] = [];
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-			if (item.type === "primary-header" || item.type === "sub-header") {
-				indices.push(i);
-			}
-		}
-		return indices;
+		return collectTaskListStickyHeaderIndices(items);
 	}
 
 	private ensureVirtualStickyHeaderPin(): void {
@@ -3173,49 +3165,14 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private updateVirtualStickyHeader(): void {
-		const pin = this.virtualStickyHeaderPin;
-		const scroller = this.virtualScroller;
-		if (!pin || !scroller) return;
-
-		const scrollTop = scroller.getScrollTop();
-		let primary: TaskListHeaderItem | undefined;
-		let sub: TaskListHeaderItem | undefined;
-		const parentHeight = pin.firstElementChild?.getBoundingClientRect().height ?? 0;
-		for (const index of this.virtualStickyHeaderIndices) {
-			const item = this.lastVirtualItems[index];
-			if (!("type" in item)) continue;
-			const offset = scroller.getItemOffset(index);
-			if (item.type === "primary-header") {
-				if (offset >= scrollTop) break;
-				primary = item;
-				sub = undefined;
-			} else if (item.type === "sub-header" && primary && offset < scrollTop + parentHeight) {
-				sub = item;
-			}
-		}
-		const headers = [primary, sub].filter((item): item is TaskListHeaderItem => !!item);
-		const signature = JSON.stringify(
-			headers.map((item) => [
-				item.groupKey,
-				item.type === "sub-header" ? item.subGroupKey : null,
-				item.type === "sub-header" ? item.subGroupTitle : item.groupTitle,
-				item.taskCount,
-				item.isCollapsed,
-			])
-		);
-		if (signature === this.virtualStickyHeaderKey) return;
-		pin.empty();
-		pin.classList.toggle("is-empty", headers.length === 0);
-		for (const item of headers) {
-			const header = this.createGroupHeader(item);
-			header.classList.add("task-list-virtual-sticky-header__group");
-			// The in-list header remains the keyboard/AT control. The visual copy
-			// supports pointer collapse without taking focus away from the list.
-			header.querySelectorAll("button, a").forEach((el) => el.setAttribute("tabindex", "-1"));
-			header.addEventListener("mousedown", (event) => event.preventDefault());
-			pin.appendChild(header);
-		}
-		this.virtualStickyHeaderKey = signature;
+		this.virtualStickyHeaderKey = updateTaskListStickyHeader({
+			pin: this.virtualStickyHeaderPin,
+			scroller: this.virtualScroller,
+			headerIndices: this.virtualStickyHeaderIndices,
+			items: this.lastVirtualItems,
+			previousKey: this.virtualStickyHeaderKey,
+			createHeader: (item) => this.createGroupHeader(item),
+		});
 	}
 
 	private async renderGroupedNormal(
@@ -3276,149 +3233,62 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private createGroupHeader(headerItem: TaskListHeaderItem): HTMLElement {
-		// Use correct document for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-
-		const groupHeader = createElementInDocument(doc, "div");
-		groupHeader.className = "task-section task-group";
-
-		// Determine header level and set appropriate data attributes
 		const isSubHeader = headerItem.type === "sub-header";
-		const level = isSubHeader ? "sub" : "primary";
-		groupHeader.dataset.level = level;
+		const groupPropertyId = isSubHeader
+			? this.subGroupPropertyId
+			: (this.getGroupByPropertyId() ?? this.subGroupPropertyId);
+		const header = createTaskListGroupHeader({
+			document: this.containerEl.ownerDocument,
+			headerItem,
+			plugin: this.plugin,
+			field: groupPropertyId
+				? this.plugin.fieldMapper.lookupMappingKey(
+						this.propertyMapper.basesToUserProperty(groupPropertyId)
+					)
+				: null,
+			renderTitle: (container, displayTitle) => {
+				const linkTitle =
+					!isSubHeader && groupPropertyId === this.getGroupByPropertyId()
+						? this.dataAdapter?.getGroupLinkTitle(displayTitle)
+						: null;
+				this.renderGroupTitle(
+					container,
+					linkTitle ?? this.groupDisplayLabel(displayTitle, groupPropertyId)
+				);
+			},
+			onCreate: () => {
+				void this.createFileForView(undefined, (frontmatter) => {
+					const groups = [
+						[
+							this.getGroupByPropertyId() ?? this.subGroupPropertyId,
+							headerItem.groupKey,
+						],
+						...(isSubHeader ? [[this.subGroupPropertyId, headerItem.subGroupKey]] : []),
+					];
+					for (const [propertyId, key] of groups) {
+						applyKanbanCreationDefault({
+							frontmatter,
+							propertyId,
+							groupKey: key,
+							propertyMapper: this.propertyMapper,
+							fieldMapper: this.plugin.fieldMapper,
+							userFields: this.plugin.settings.userFields,
+							isListTypeProperty: (property) => this.isListTypeProperty(property),
+							coerceGroupKeyForFrontmatter: (property, value) =>
+								this.coerceGroupKeyForFrontmatter(property, value),
+						});
+					}
+				});
+			},
+		});
 		this.elementDestinations.set(
-			groupHeader,
+			header,
 			this.createMovementDestination(
 				headerItem.groupKey,
 				isSubHeader ? headerItem.subGroupKey : undefined
 			)
 		);
-		const groupKey = isSubHeader
-			? `${headerItem.groupKey}:${headerItem.subGroupKey}`
-			: headerItem.groupKey;
-
-		if (isSubHeader) {
-			groupHeader.dataset.groupKey = groupKey;
-			groupHeader.dataset.parentKey = headerItem.parentKey;
-		} else {
-			groupHeader.dataset.groupKey = groupKey;
-		}
-
-		// Apply collapsed state
-		if (headerItem.isCollapsed) {
-			groupHeader.classList.add("is-collapsed");
-		}
-
-		const headerElement = createElementInDocument(doc, "h3");
-		headerElement.className = "task-group-header task-list-view__group-header";
-		groupHeader.appendChild(headerElement);
-
-		// Add toggle button
-		const toggleBtn = createElementInDocument(doc, "button");
-		toggleBtn.className = "task-group-toggle";
-		toggleBtn.type = "button";
-		toggleBtn.setAttribute(
-			"aria-label",
-			uiText(
-				msg({
-					message: "Toggle group",
-					context: "bases/TaskListView: TaskListView.createGroupHeader display",
-				})
-			)
-		);
-		toggleBtn.setAttribute("aria-expanded", String(!headerItem.isCollapsed));
-		toggleBtn.dataset.groupKey = groupKey;
-		headerElement.appendChild(toggleBtn);
-
-		// Add chevron icon
-		setIcon(toggleBtn, "chevron-right");
-		const svg = toggleBtn.querySelector("svg");
-		if (svg) {
-			svg.classList.add("chevron");
-			svg.setAttribute("width", "16");
-			svg.setAttribute("height", "16");
-		}
-
-		// Add group title
-		const titleContainer = headerElement.createSpan({ cls: "task-group-title" });
-		const displayTitle = isSubHeader ? headerItem.subGroupTitle : headerItem.groupTitle;
-		const groupPropertyId = isSubHeader
-			? this.subGroupPropertyId
-			: (this.getGroupByPropertyId() ?? this.subGroupPropertyId);
-		const glyph = createElementInDocument(doc, "span");
-		glyph.className = "task-group-glyph";
-		glyph.setAttribute("aria-hidden", "true");
-		headerElement.insertBefore(glyph, titleContainer);
-		const field = groupPropertyId
-			? this.plugin.fieldMapper.lookupMappingKey(
-					this.propertyMapper.basesToUserProperty(groupPropertyId)
-				)
-			: null;
-		const config =
-			field === "status"
-				? this.plugin.statusManager?.getStatusConfig(displayTitle)
-				: field === "priority"
-					? this.plugin.priorityManager?.getPriorityConfig(displayTitle)
-					: null;
-		if (config?.color) glyph.style.color = config.color;
-		if (config?.icon) setIcon(glyph, config.icon);
-		else if (field === "status" && this.plugin.statusManager) {
-			renderStatusGlyph(
-				glyph,
-				statusGlyphState(displayTitle, this.plugin.statusManager.getAllStatuses())
-			);
-		} else if (field === "priority" && this.plugin.priorityManager) {
-			renderPriorityGlyph(
-				glyph,
-				priorityGlyphState(displayTitle, this.plugin.priorityManager.getAllPriorities())
-			);
-		} else setIcon(glyph, "folder");
-		const linkTitle =
-			!isSubHeader && groupPropertyId === this.getGroupByPropertyId()
-				? this.dataAdapter?.getGroupLinkTitle(displayTitle)
-				: null;
-		this.renderGroupTitle(
-			titleContainer,
-			linkTitle ?? this.groupDisplayLabel(displayTitle, groupPropertyId)
-		);
-
-		// Add count
-		headerElement.createSpan({
-			text: ` (${uiNumber(headerItem.taskCount)})`,
-			cls: "agenda-view__item-count",
-		});
-		const addButton = headerElement.createEl("button", {
-			cls: "tn-btn tn-btn--ghost tn-btn--icon task-group-add",
-		});
-		addButton.type = "button";
-		const newTaskLabel = uiText(msg({ message: "New", context: "common.new" }));
-		addButton.setAttribute("aria-label", newTaskLabel);
-		setTooltip(addButton, newTaskLabel);
-		setIcon(addButton, "plus");
-		addButton.addEventListener("click", (event) => {
-			event.stopPropagation();
-			void this.createFileForView(undefined, (frontmatter) => {
-				const groups = [
-					[this.getGroupByPropertyId() ?? this.subGroupPropertyId, headerItem.groupKey],
-					...(isSubHeader ? [[this.subGroupPropertyId, headerItem.subGroupKey]] : []),
-				];
-				for (const [propertyId, key] of groups) {
-					applyKanbanCreationDefault({
-						frontmatter,
-						propertyId,
-						groupKey: key,
-						propertyMapper: this.propertyMapper,
-						fieldMapper: this.plugin.fieldMapper,
-						userFields: this.plugin.settings.userFields,
-						isListTypeProperty: (property) => this.isListTypeProperty(property),
-						coerceGroupKeyForFrontmatter: (property, value) =>
-							this.coerceGroupKeyForFrontmatter(property, value),
-					});
-				}
-			});
-		});
-
-		return groupHeader;
+		return header;
 	}
 
 	/** Whether a task's grouping values differ from those its rendered destination reflects. */
@@ -3978,403 +3848,15 @@ export class TaskListView extends BasesViewBase {
 		target: HTMLElement,
 		event: MouseEvent
 	): Promise<void> {
-		switch (action) {
-			case "toggle-status":
-				await this.handleToggleStatus(task, event);
-				return;
-			case "priority-menu":
-				this.showPriorityMenu(task, event);
-				return;
-			case "recurrence-menu":
-				this.showRecurrenceMenu(task, event);
-				return;
-			case "reminder-menu":
-				this.showReminderModal(task);
-				return;
-			case "task-context-menu":
-				await showTaskContextMenu(
-					event,
-					task.path,
-					this.plugin,
-					this.getTaskActionDate(task)
-				);
-				return;
-			case "edit-date":
-				await this.openDateContextMenu(
-					task,
-					target.dataset.tnDateType as "due" | "scheduled" | undefined,
-					event
-				);
-				return;
-			case "toggle-subtasks":
-				await this.toggleSubtasks(task, target);
-				return;
-			case "toggle-blocking-tasks":
-				await this.toggleBlockingTasks(task, target);
-				return;
-			default:
-				await this.handleCardClick(task, event);
-		}
+		await this.cardActions.handleActionClick(action, task, target, event);
 	}
 
 	private async handleToggleStatus(task: TaskInfo, event: MouseEvent): Promise<void> {
-		try {
-			if (task.recurrence) {
-				const actionDate = this.getTaskActionDate(task);
-				await this.plugin.toggleRecurringTaskComplete(task, actionDate);
-			} else {
-				await this.plugin.toggleTaskStatus(task);
-			}
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to toggle status", {
-				category: "persistence",
-				operation: "toggle-status",
-				details: { taskPath: task.path },
-				error: message,
-			});
-			new Notice(
-				this.plugin.i18n.translate(
-					msg({
-						message: "Failed to update task status: {message}",
-						context: "notices.interface.statusFailed",
-					}),
-					{ message: displayError(message) }
-				)
-			);
-		}
+		await this.cardActions.handleToggleStatus(task, event);
 	}
 
-	/**
-	 * Determine the date to use when completing a recurring task from Bases.
-	 * Prefers the task's scheduled (or due) date to avoid marking the wrong instance.
-	 */
 	private getTaskActionDate(task: TaskInfo): Date {
-		const dateStr =
-			getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
-		if (dateStr) {
-			return parseDateToUTC(dateStr);
-		}
-
-		return this.currentTargetDate;
-	}
-
-	private showPriorityMenu(task: TaskInfo, event: MouseEvent): void {
-		const menu = new PriorityContextMenu({
-			currentValue: task.priority,
-			onSelect: (newPriority) => {
-				void (async () => {
-					try {
-						await this.plugin.updateTaskProperty(task, "priority", newPriority);
-					} catch (error) {
-						tasknotesLogger.error(
-							"[TaskNotes][TaskListView] Failed to update priority",
-							{ category: "validation", operation: "update-priority", error: error }
-						);
-						new Notice(
-							this.plugin.i18n.translate(
-								msg({
-									message: "Failed to update priority",
-									context: "notices.interface.priorityFailed",
-								})
-							)
-						);
-					}
-				})();
-			},
-			plugin: this.plugin,
-		});
-		menu.show(event);
-	}
-
-	private showRecurrenceMenu(task: TaskInfo, event: MouseEvent): void {
-		const menu = new RecurrenceContextMenu({
-			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
-			currentAnchor: task.recurrence_anchor || "scheduled",
-			scheduledDate: task.scheduled,
-			onSelect: (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
-				void (async () => {
-					try {
-						await this.plugin.updateTaskProperty(
-							task,
-							"recurrence",
-							newRecurrence || undefined
-						);
-						if (anchor !== undefined) {
-							await this.plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
-						}
-					} catch (error) {
-						tasknotesLogger.error(
-							"[TaskNotes][TaskListView] Failed to update recurrence",
-							{ category: "validation", operation: "update-recurrence", error: error }
-						);
-						new Notice(
-							this.plugin.i18n.translate(
-								msg({
-									message: "Failed to update recurrence",
-									context: "notices.interface.recurrenceFailed",
-								})
-							)
-						);
-					}
-				})();
-			},
-			app: this.plugin.app,
-			plugin: this.plugin,
-		});
-		menu.show(event);
-	}
-
-	private showReminderModal(task: TaskInfo): void {
-		const modal = new ReminderModal(this.plugin.app, this.plugin, task, (reminders) => {
-			void (async () => {
-				try {
-					await this.plugin.updateTaskProperty(
-						task,
-						"reminders",
-						reminders.length > 0 ? reminders : undefined
-					);
-				} catch (error) {
-					tasknotesLogger.error("[TaskNotes][TaskListView] Failed to update reminders", {
-						category: "validation",
-						operation: "update-reminders",
-						error: error,
-					});
-					new Notice(
-						this.plugin.i18n.translate(
-							msg({
-								message: "Failed to update reminders",
-								context: "contextMenus.task.notices.updateRemindersFailure",
-							})
-						)
-					);
-				}
-			})();
-		});
-		modal.open();
-	}
-
-	private async openDateContextMenu(
-		task: TaskInfo,
-		dateType: "due" | "scheduled" | undefined,
-		event: MouseEvent
-	): Promise<void> {
-		if (!dateType) return;
-		const currentValue = dateType === "due" ? task.due : task.scheduled;
-		const menu = new DateContextMenu({
-			currentValue: getDatePart(currentValue || ""),
-			currentTime: getTimePart(currentValue || ""),
-			onSelect: (dateValue, timeValue) => {
-				void (async () => {
-					try {
-						let finalValue: string | undefined;
-						if (!dateValue) {
-							finalValue = undefined;
-						} else if (timeValue) {
-							finalValue = `${dateValue}T${timeValue}`;
-						} else {
-							finalValue = dateValue;
-						}
-						await this.plugin.updateTaskProperty(task, dateType, finalValue);
-					} catch (error) {
-						const message = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("[TaskNotes][TaskListView] Failed to update date", {
-							category: "validation",
-							operation: "update-date",
-							details: { taskPath: task.path, dateType },
-							error: message,
-						});
-						new Notice(
-							this.plugin.i18n.translate(
-								dateType === "due"
-									? msg({
-											message: "Failed to update task due date: {message}",
-											context:
-												"contextMenus.task.notices.updateDueDateFailure",
-										})
-									: msg({
-											message:
-												"Failed to update task scheduled date: {message}",
-											context:
-												"contextMenus.task.notices.updateScheduledFailure",
-										}),
-								{ message }
-							)
-						);
-					}
-				})();
-			},
-			dateRole: dateType,
-			plugin: this.plugin,
-			app: this.app || this.plugin.app,
-		});
-		menu.show(event);
-	}
-
-	private async handleCardClick(task: TaskInfo, event: MouseEvent): Promise<void> {
-		// Check if this is a selection click (shift/ctrl/cmd or in selection mode)
-		if (this.handleSelectionClick(event, task.path)) {
-			return;
-		}
-
-		if (this.plugin.settings.doubleClickAction === "none") {
-			await this.executeSingleClickAction(task, event);
-			return;
-		}
-
-		const existingTimeout = this.clickTimeouts.get(task.path);
-		if (existingTimeout) {
-			window.clearTimeout(existingTimeout);
-			this.clickTimeouts.delete(task.path);
-			await this.executeDoubleClickAction(task, event);
-		} else {
-			// Use correct window for pop-out window support
-			const win = this.containerEl.ownerDocument.defaultView || window;
-			const timeout = win.setTimeout(() => {
-				void (async () => {
-					this.clickTimeouts.delete(task.path);
-					await this.executeSingleClickAction(task, event);
-				})();
-			}, 250);
-			this.clickTimeouts.set(task.path, timeout);
-		}
-	}
-
-	private async executeSingleClickAction(task: TaskInfo, event: MouseEvent): Promise<void> {
-		if (event.ctrlKey || event.metaKey) {
-			this.openTaskNote(task, true);
-			return;
-		}
-
-		switch (this.plugin.settings.singleClickAction) {
-			case "edit":
-				await this.editTask(task);
-				break;
-			case "openNote":
-				this.openTaskNote(task, false);
-				break;
-			default:
-				break;
-		}
-	}
-
-	private async executeDoubleClickAction(task: TaskInfo, event: MouseEvent): Promise<void> {
-		switch (this.plugin.settings.doubleClickAction) {
-			case "edit":
-				await this.editTask(task);
-				break;
-			case "openNote":
-				this.openTaskNote(task, false);
-				break;
-			default:
-				break;
-		}
-	}
-
-	private async editTask(task: TaskInfo): Promise<void> {
-		await this.plugin.openTaskEditModal(task);
-	}
-
-	private openTaskNote(task: TaskInfo, newTab: boolean): void {
-		const app = this.app || this.plugin.app;
-		const file = app.vault.getAbstractFileByPath(task.path);
-		if (file instanceof TFile) {
-			if (newTab) {
-				void app.workspace.openLinkText(task.path, "", true);
-			} else {
-				void app.workspace.getLeaf(false).openFile(file);
-			}
-		}
-	}
-
-	private async toggleSubtasks(task: TaskInfo, target: HTMLElement): Promise<void> {
-		try {
-			if (!this.plugin.expandedProjectsService) {
-				tasknotesLogger.error(
-					"[TaskNotes][TaskListView] ExpandedProjectsService not initialized",
-					{ category: "stale-data", operation: "expandedprojectsservice-not-initialized" }
-				);
-				new Notice(
-					this.plugin.i18n.translate(
-						msg({
-							message: "Service not available. Please try reloading the plugin.",
-							context: "notices.interface.serviceUnavailable",
-						})
-					)
-				);
-				return;
-			}
-
-			const newExpanded = this.plugin.expandedProjectsService.toggle(
-				task.path,
-				this.plugin.settings?.expandSubtasksByDefault === true
-			);
-			target.classList.toggle("task-card__chevron--expanded", newExpanded);
-			target.setAttribute(
-				"aria-label",
-				newExpanded
-					? uiText(
-							msg({
-								message: "Collapse subtasks",
-								context: "bases/TaskListView: TaskListView.toggleSubtasks display",
-							})
-						)
-					: uiText(
-							msg({
-								message: "Expand subtasks",
-								context: "bases/TaskListView: TaskListView.toggleSubtasks display",
-							})
-						)
-			);
-
-			// Find the card element and toggle subtasks display
-			const card = target.closest<HTMLElement>(".task-card");
-			if (card) {
-				const { toggleSubtasks } = await import("../ui/TaskCard");
-				await toggleSubtasks(card, task, this.plugin, newExpanded);
-			}
-		} catch (error) {
-			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to toggle subtasks", {
-				category: "persistence",
-				operation: "toggle-subtasks",
-				error: error,
-			});
-			new Notice(
-				this.plugin.i18n.translate(
-					msg({
-						message: "Failed to toggle subtasks",
-						context: "notices.interface.subtasksFailed",
-					})
-				)
-			);
-		}
-	}
-
-	private async toggleBlockingTasks(task: TaskInfo, target: HTMLElement): Promise<void> {
-		try {
-			const expanded = target.classList.toggle("task-card__blocking-toggle--expanded");
-
-			// Find the card element and toggle blocking tasks display
-			const card = target.closest<HTMLElement>(".task-card");
-			if (card) {
-				const { toggleBlockingTasks } = await import("../ui/TaskCard");
-				await toggleBlockingTasks(card, task, this.plugin, expanded);
-			}
-		} catch (error) {
-			tasknotesLogger.error("[TaskNotes][TaskListView] Failed to toggle blocking tasks", {
-				category: "persistence",
-				operation: "toggle-blocking-tasks",
-				error: error,
-			});
-			new Notice(
-				this.plugin.i18n.translate(
-					msg({
-						message: "Failed to load dependencies",
-						context: "ui.taskCard.blockingLoadError",
-					})
-				)
-			);
-		}
+		return this.cardActions.getTaskActionDate(task);
 	}
 
 	private arePathArraysEqual(taskNotes: TaskInfo[], previousPaths: string[]): boolean {
@@ -4413,19 +3895,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private buildTaskSignature(task: TaskInfo, visibleProperties: string[] = []): string {
-		// Snapshot task data, not just a hand-maintained subset: badges and controls
-		// also depend on fields that may not be selected as visible properties.
-		// Raw Bases entries are live objects (and can be circular); resolve only
-		// displayed values through the same accessor used by task cards instead,
-		// then normalize any Bases Values those accessors return.
-		return JSON.stringify(
-			normalizeTaskSignatureValue({
-				task: { ...task, basesData: undefined },
-				visibleValues: visibleProperties.map((property) =>
-					getTaskCardPropertyValue(task, property, this.plugin)
-				),
-			})
-		);
+		return buildTaskListTaskSignature(task, this.plugin, visibleProperties);
 	}
 
 	private buildCardRenderSignature(
@@ -4433,23 +3903,11 @@ export class TaskListView extends BasesViewBase {
 		cardOptions: TaskCardOptions,
 		includeRelationshipOrder = false
 	): string {
-		const propertyLabels = cardOptions.propertyLabels
-			? Object.entries(cardOptions.propertyLabels).sort(([left], [right]) =>
-					left.localeCompare(right)
-				)
-			: [];
-		return JSON.stringify({
-			visibleProperties: visibleProperties ?? null,
-			propertyLabels,
-			expandedRelationshipFilterMode: cardOptions.expandedRelationshipFilterMode ?? null,
-			// Only non-virtual cards are reused across updates. Snapshot the live map
-			// to refresh hidden children's order without resetting virtual scroll.
-			expandedRelationshipTaskOrder:
-				includeRelationshipOrder && cardOptions.expandedRelationshipTaskOrder
-					? [...cardOptions.expandedRelationshipTaskOrder]
-					: null,
-			targetDate: cardOptions.targetDate?.toISOString().slice(0, 10) ?? null,
-		});
+		return buildTaskListCardRenderSignature(
+			visibleProperties,
+			cardOptions,
+			includeRelationshipOrder
+		);
 	}
 }
 
