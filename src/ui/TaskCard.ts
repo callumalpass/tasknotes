@@ -227,7 +227,7 @@ export function createTaskCard(
 		promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
 	});
 
-	createTaskCardTitle({
+	const { titleEl } = createTaskCardTitle({
 		contentContainer,
 		layout,
 		task,
@@ -235,6 +235,7 @@ export function createTaskCard(
 		displayText: opts.displayText,
 		isCompleted,
 	});
+	if (badgesContainer) titleEl.appendChild(badgesContainer);
 
 	// Second line: Metadata (dynamic based on visible properties)
 	const metadataLine = contentContainer.createEl(layout === "inline" ? "span" : "div", {
@@ -256,9 +257,11 @@ export function createTaskCard(
 			task,
 			plugin,
 			navigationSubpath: opts.navigationSubpath,
-			onSelectionClick: event => {
+			onSelectionClick: (event) => {
 				const path = card.dataset.taskPath;
-				return path ? getStoredTaskCardOptions(card).onSelectionClick?.(event, path) ?? false : false;
+				return path
+					? (getStoredTaskCardOptions(card).onSelectionClick?.(event, path) ?? false)
+					: false;
 			},
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;

@@ -3017,7 +3017,7 @@ msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
 msgstr "Свернуть подгруппы"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Collapse subtasks"
 msgstr "Свернуть подзадачи"
@@ -5624,7 +5624,7 @@ msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Expand subgroups"
 msgstr "Развернуть подгруппы"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Expand subtasks"
 msgstr "Развернуть подзадачи"
@@ -6076,7 +6076,7 @@ msgctxt "notices.commands.taskLoadFailed"
 msgid "Failed to load current task"
 msgstr "Не удалось загрузить текущую задачу"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/i18n/messages.ts
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "ui.taskCard.blockingLoadError"
@@ -6345,7 +6345,7 @@ msgctxt "contextMenus.task.notices.toggleSkipFailure"
 msgid "Failed to toggle recurring task skip: {message}"
 msgstr "Не удалось переключить пропуск повторяющейся задачи: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.subtasksFailed"
 msgid "Failed to toggle subtasks"
@@ -6387,13 +6387,13 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "Не удалось обновить событие: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.priorityFailed"
 msgid "Failed to update priority"
 msgstr "Не удалось обновить приоритет"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.recurrenceFailed"
 msgid "Failed to update recurrence"
@@ -6404,7 +6404,7 @@ msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
 msgstr "Не удалось обновить повторяющуюся задачу"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
@@ -6437,7 +6437,7 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "Не удалось обновить выполнение задачи: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
@@ -6454,7 +6454,7 @@ msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
 msgid "Failed to update task recurrence: {message}"
 msgstr "Не удалось обновить повторение задачи: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
@@ -6466,7 +6466,7 @@ msgctxt "notices.commands.statusFailed"
 msgid "Failed to update task status"
 msgstr "Не удалось обновить статус задачи"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
@@ -8229,6 +8229,8 @@ msgid "Never refreshed"
 msgstr "Ещё не обновлялось"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/taskListGroupHeader.ts
+#: src/bases/TaskListView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "Новый"
@@ -10986,7 +10988,7 @@ msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesM
 msgid "Series-wide"
 msgstr "Вся серия"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
@@ -13193,7 +13195,7 @@ msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "Свернуть или развернуть столбец {column}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "Свернуть или развернуть группу"

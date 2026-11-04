@@ -84,7 +84,7 @@
     justify-content: flex-start;
     padding: var(--tn-space-half) var(--tn-space-2) var(--tn-space-half) var(--tn-space-1);
     margin-bottom: var(--tn-space-1);
-    border-bottom: 1px solid var(--tn-border-color);
+    border-bottom: none;
     position: relative;
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
@@ -96,7 +96,7 @@
 
 /* Count element within group headers */
 .tn-bases-tasknotes-list .task-group-header .agenda-view__item-count {
-    margin-left: auto;
+    margin-left: var(--tn-space-1);
     margin-right: 0;
 }
 
@@ -127,6 +127,7 @@
 	top: 0;
 	z-index: var(--tn-z-sticky);
 	background: var(--tn-bg-primary);
+	color: var(--tn-text-normal);
 }
 
 .tn-tasknotesTaskList .task-list-subgroup > .task-group {
@@ -154,6 +155,7 @@
 .tn-tasknotesTaskList .task-list-virtual-sticky-header__group {
 	pointer-events: auto;
 	background: var(--tn-bg-primary);
+	color: var(--tn-text-normal);
 	position: relative;
 	top: auto;
 	z-index: auto;

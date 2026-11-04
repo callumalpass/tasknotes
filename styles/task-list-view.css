@@ -19,7 +19,7 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--tn-space-1) 0;
-    border-bottom: 1px solid var(--tn-border-color);
+    border-bottom: none;
     margin-bottom: var(--tn-space-1);
 }
 
@@ -117,20 +117,82 @@
     justify-content: flex-start;
     padding: var(--tn-space-2) 0 var(--tn-space-1);
     margin-bottom: var(--tn-space-1);
-    border-bottom: 1px solid var(--tn-border-color);
+    border-bottom: none;
     position: relative;
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
-    letter-spacing: 0.01em;
+    letter-spacing: normal;
     line-height: 1.4;
     cursor: var(--cursor-link, pointer);
 }
 
 /* Count element within task list group headers */
 .tasknotes-plugin .task-list-view__group-header .agenda-view__item-count {
-    margin-left: auto;
+    margin-left: var(--tn-space-1);
     margin-right: 0;
+}
+
+.tn-tasknotesTaskList .task-list-group + .task-list-group,
+.tn-tasknotesTaskList .task-list-subgroup + .task-list-subgroup,
+.tn-tasknotesTaskList .virtual-scroller__content > .task-group:not([data-virtual-index="0"]) {
+    border-top: 1px solid var(--tn-hairline);
+    margin-top: var(--tn-space-2);
+    padding-top: var(--tn-space-1);
+}
+
+.tn-tasknotesTaskList .task-group-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tn-tasknotesTaskList .task-group-glyph {
+    display: inline-flex;
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--tn-text-muted);
+}
+
+.tn-tasknotesTaskList .task-group-add {
+    margin-inline-start: auto;
+    opacity: 0;
+}
+
+.tn-tasknotesTaskList .task-group-header:hover .task-group-add,
+.tn-tasknotesTaskList .task-group-header:focus-within .task-group-add {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .tn-tasknotesTaskList .task-group-add {
+        opacity: 1;
+    }
+}
+
+.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date {
+    flex: 0 0 22ch;
+    width: 22ch;
+    font-variant-numeric: tabular-nums;
+}
+
+.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date > span:not(.task-card__date-icon) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__date-icon {
+    flex: 0 0 auto;
+}
+
+@container tn-task-card (max-width: 480px) {
+    .tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date {
+        flex: 0 1 auto;
+        width: auto;
+    }
 }
 
 

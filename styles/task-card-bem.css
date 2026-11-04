@@ -8,12 +8,12 @@
     /* Tags stay quiet in rows. Tag-specific theme and snippet selectors still win. */
     --tag-color: var(--tn-text-muted);
     --tag-color-hover: var(--tn-text-normal);
-    --tag-background: transparent;
+    --tag-background: var(--tn-bg-secondary);
     --tag-background-hover: var(--tn-hover);
     --tag-border-color: var(--tn-hairline);
     --tag-border-color-hover: var(--tn-border-color-hover);
     --tag-padding-x: 6px;
-    --tag-radius: var(--tn-radius-full);
+    --tag-radius: var(--tn-radius-sm);
     --tag-padding-y: 0;
     --tag-size: var(--tn-type-xs);
 
@@ -208,8 +208,10 @@
 }
 
 .tasknotes-plugin .task-card__metadata-property--tags {
+    flex: 0 1 auto;
     flex-wrap: nowrap;
     align-items: center;
+    overflow: hidden;
 }
 
 @container tn-task-card (max-width: 480px) {
@@ -221,11 +223,20 @@
 }
 
 .tasknotes-plugin .task-card__metadata-property--tags :where(.tag) {
+    display: block;
     flex: 0 1 auto;
     min-width: 0;
     max-width: 100%;
     overflow-wrap: anywhere;
     word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@container tn-task-card (max-width: 480px) {
+    .tasknotes-plugin .task-card__metadata-property--tags :where(.tag) {
+        white-space: normal;
+    }
 }
 
 .tasknotes-plugin .task-card__metadata-property :where(.tag:hover) {
@@ -1245,7 +1256,7 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 }
 
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__title {
-    font-size: var(--tn-type-sm);
+    font-size: var(--tn-type-base);
     line-height: 1.35;
 }
 

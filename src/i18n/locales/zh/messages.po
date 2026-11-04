@@ -3014,7 +3014,7 @@ msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
 msgstr "收起子分组"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Collapse subtasks"
 msgstr "收起子任务"
@@ -5621,7 +5621,7 @@ msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Expand subgroups"
 msgstr "展开子分组"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Expand subtasks"
 msgstr "展开子任务"
@@ -6073,7 +6073,7 @@ msgctxt "notices.commands.taskLoadFailed"
 msgid "Failed to load current task"
 msgstr "无法加载当前任务"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/i18n/messages.ts
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "ui.taskCard.blockingLoadError"
@@ -6342,7 +6342,7 @@ msgctxt "contextMenus.task.notices.toggleSkipFailure"
 msgid "Failed to toggle recurring task skip: {message}"
 msgstr "切换重复实例的跳过状态失败：{message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.subtasksFailed"
 msgid "Failed to toggle subtasks"
@@ -6384,13 +6384,13 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "更新事件失败：{message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.priorityFailed"
 msgid "Failed to update priority"
 msgstr "无法更新优先级"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.recurrenceFailed"
 msgid "Failed to update recurrence"
@@ -6401,7 +6401,7 @@ msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
 msgstr "无法更新重复任务"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
@@ -6434,7 +6434,7 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "无法更新任务完成状态：{message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
@@ -6451,7 +6451,7 @@ msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
 msgid "Failed to update task recurrence: {message}"
 msgstr "更新任务重复失败：{message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
@@ -6463,7 +6463,7 @@ msgctxt "notices.commands.statusFailed"
 msgid "Failed to update task status"
 msgstr "无法更新任务状态"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
@@ -8228,6 +8228,8 @@ msgid "Never refreshed"
 msgstr "从未刷新"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/taskListGroupHeader.ts
+#: src/bases/TaskListView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "新建"
@@ -10985,7 +10987,7 @@ msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesM
 msgid "Series-wide"
 msgstr "整个系列"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
@@ -13192,7 +13194,7 @@ msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "折叠或展开“{column}”列"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "切换分组展开状态"
