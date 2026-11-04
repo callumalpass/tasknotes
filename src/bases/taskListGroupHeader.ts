@@ -1,4 +1,5 @@
 import { uiText } from "../i18n/runtime";
+import { configLabel } from "../i18n/configLabels";
 import { uiNumber } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
@@ -108,7 +109,7 @@ export function createTaskListGroupHeader(options: TaskListGroupHeaderOptions): 
 			priorityGlyphState(displayTitle, options.plugin.priorityManager.getAllPriorities())
 		);
 	} else setIcon(glyph, "folder");
-	options.renderTitle(titleContainer, displayTitle);
+	options.renderTitle(titleContainer, config ? configLabel(config) : displayTitle);
 
 	// Add count
 	headerElement.createSpan({

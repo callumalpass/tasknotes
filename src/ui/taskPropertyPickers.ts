@@ -31,6 +31,7 @@ import {
 	renderStatusGlyph,
 	priorityGlyphState,
 	statusGlyphState,
+	unconfiguredValueLabel,
 } from "./kit/glyphs";
 
 export type TaskPickerProperty =
@@ -421,7 +422,11 @@ export async function openTaskPropertyChoices(
 			if (value && !items.some((item) => item.id === value))
 				items.push({
 					id: value,
-					label: value,
+					label: unconfiguredValueLabel(value),
+					renderLeading: (host) =>
+						property === "priority"
+							? renderPriorityGlyph(host, { kind: "unknown" })
+							: renderStatusGlyph(host, { kind: "unknown", progress: 0 }),
 					selected: tasks.every((candidate) => candidate[property] === value),
 				});
 		}

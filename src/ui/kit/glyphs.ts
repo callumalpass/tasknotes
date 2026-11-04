@@ -1,4 +1,6 @@
 import { setIcon } from "obsidian";
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../../i18n/runtime";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const RING_RADIUS = 6.25;
@@ -28,7 +30,7 @@ function glyphRoot(host: HTMLElement): SVGElement {
 	return root;
 }
 
-export type StatusGlyphKind = "unset" | "open" | "progress" | "complete" | "skipped";
+export type StatusGlyphKind = "unset" | "unknown" | "open" | "progress" | "complete" | "skipped";
 
 export interface StatusGlyphState {
 	kind: StatusGlyphKind;
@@ -37,6 +39,7 @@ export interface StatusGlyphState {
 }
 
 interface WorkflowStatus {
+	id?: string;
 	value: string;
 	isCompleted: boolean;
 	isSkipped?: boolean;
@@ -49,12 +52,15 @@ export function statusGlyphState(
 	statuses: readonly WorkflowStatus[]
 ): StatusGlyphState {
 	const status = statuses.find((candidate) => candidate.value === statusValue);
-	if (!status) return { kind: "unset", progress: 0 };
+	if (!status) return { kind: statusValue ? "unknown" : "unset", progress: 0 };
 	if (status.isSkipped) return { kind: "skipped", progress: 1 };
 	if (status.isCompleted) return { kind: "complete", progress: 1 };
+	if (status.id === "none") return { kind: "unset", progress: 0 };
 
 	const open = statuses
-		.filter((candidate) => !candidate.isCompleted && !candidate.isSkipped)
+		.filter(
+			(candidate) => !candidate.isCompleted && !candidate.isSkipped && candidate.id !== "none"
+		)
 		.sort((a, b) => a.order - b.order);
 	const index = open.findIndex((candidate) => candidate.value === statusValue);
 	if (index <= 0) return { kind: "open", progress: 0 };
@@ -66,12 +72,19 @@ export function renderStatusGlyph(host: HTMLElement, state: StatusGlyphState): v
 	const doc = host.ownerDocument;
 	const center = { cx: 8, cy: 8 };
 	host.dataset.tnGlyph = state.kind;
+	if (state.kind === "unknown") {
+		setIcon(host, "circle-help");
+		return;
+	}
 
 	if (state.kind === "complete" || state.kind === "skipped") {
 		root.appendChild(svgNode(doc, "circle", { ...center, r: 7, fill: "currentColor" }));
 		root.appendChild(
 			svgNode(doc, "path", {
-				d: state.kind === "complete" ? "M4.9 8.2l2.1 2.1 4.1-4.5" : "M5.5 5.5l5 5M10.5 5.5l-5 5",
+				d:
+					state.kind === "complete"
+						? "M4.9 8.2l2.1 2.1 4.1-4.5"
+						: "M5.5 5.5l5 5M10.5 5.5l-5 5",
 				stroke: "var(--background-primary)",
 				"stroke-width": 1.6,
 				"stroke-linecap": "round",
@@ -105,7 +118,11 @@ export function renderStatusGlyph(host: HTMLElement, state: StatusGlyphState): v
 	}
 }
 
-export type PriorityGlyphState = { kind: "unset" } | { kind: "bars"; level: 1 | 2 | 3 } | { kind: "top" };
+export type PriorityGlyphState =
+	| { kind: "unset" }
+	| { kind: "unknown" }
+	| { kind: "bars"; level: 1 | 2 | 3 }
+	| { kind: "top" };
 
 interface RankedPriority {
 	value: string;
@@ -120,6 +137,8 @@ export function priorityGlyphState(
 	priorityValue: string | undefined,
 	priorities: readonly RankedPriority[]
 ): PriorityGlyphState {
+	if (priorityValue && !priorities.some((priority) => priority.value === priorityValue))
+		return { kind: "unknown" };
 	const ranked = priorities
 		.filter((priority) => priority.weight > 0)
 		.sort((a, b) => a.weight - b.weight);
@@ -138,10 +157,21 @@ export function renderPriorityGlyph(host: HTMLElement, state: PriorityGlyphState
 	const root = glyphRoot(host);
 	const doc = host.ownerDocument;
 	host.dataset.tnGlyph = state.kind;
+	if (state.kind === "unknown") {
+		setIcon(host, "badge-help");
+		return;
+	}
 
 	if (state.kind === "top") {
 		root.appendChild(
-			svgNode(doc, "rect", { x: 1.5, y: 1.5, width: 13, height: 13, rx: 3, fill: "currentColor" })
+			svgNode(doc, "rect", {
+				x: 1.5,
+				y: 1.5,
+				width: 13,
+				height: 13,
+				rx: 3,
+				fill: "currentColor",
+			})
 		);
 		root.appendChild(
 			svgNode(doc, "path", {
@@ -157,7 +187,14 @@ export function renderPriorityGlyph(host: HTMLElement, state: PriorityGlyphState
 	if (state.kind === "unset") {
 		for (const x of [2.5, 6.75, 11]) {
 			root.appendChild(
-				svgNode(doc, "rect", { x, y: 7.25, width: 2.5, height: 1.5, rx: 0.75, fill: "currentColor" })
+				svgNode(doc, "rect", {
+					x,
+					y: 7.25,
+					width: 2.5,
+					height: 1.5,
+					rx: 0.75,
+					fill: "currentColor",
+				})
 			);
 		}
 		return;
@@ -184,4 +221,11 @@ export function renderPriorityGlyph(host: HTMLElement, state: PriorityGlyphState
 export function renderIcon(host: HTMLElement, icon: string): void {
 	host.replaceChildren();
 	setIcon(host, icon);
+}
+
+export function unconfiguredValueLabel(value: string): string {
+	return uiText(
+		msg({ message: "{value} (not configured)", context: "ui.kit.unconfiguredValue" }),
+		{ value }
+	);
 }

@@ -1,4 +1,4 @@
-import { renderTaskMenuKeyHint } from "../ui/kit/menu";
+import { renderPriorityMenuGlyph, renderTaskMenuKeyHint } from "../ui/kit/menu";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
@@ -269,23 +269,10 @@ export class BatchContextMenu {
 		for (const priority of priorityOptions) {
 			submenu.addItem((item) => {
 				item.setTitle(configLabel(priority));
-				item.setIcon("star");
+				renderPriorityMenuGlyph(item, priority, priorityOptions);
 				item.onClick(async () => {
 					await this.batchUpdateProperty("priority", priority.value);
 				});
-
-				// Apply color to icon
-				if (priority.color) {
-					window.setTimeout(() => {
-						const itemEl = getMenuItemElement(item);
-						if (itemEl) {
-							const iconEl = itemEl.querySelector(".menu-item-icon");
-							if (iconEl) {
-								(iconEl as HTMLElement).style.color = priority.color;
-							}
-						}
-					}, 10);
-				}
 			});
 		}
 

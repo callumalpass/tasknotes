@@ -12,6 +12,7 @@ import {
 	renderPriorityGlyph,
 	renderStatusGlyph,
 	statusGlyphState,
+	unconfiguredValueLabel,
 } from "./kit/glyphs";
 
 type StatusConfig = ReturnType<TaskNotesPlugin["statusManager"]["getStatusConfig"]>;
@@ -101,9 +102,11 @@ export function configureStatusIndicator(
 	statusValue = statusConfig?.value ?? ""
 ): void {
 	statusDot.addClass("task-card__status-dot--icon");
+	const label = statusConfig ? configLabel(statusConfig) : unconfiguredValueLabel(statusValue);
+	statusDot.setAttribute("aria-label", label);
 	statusDot.setAttribute(
 		"title",
-		`${statusConfig ? configLabel(statusConfig) : statusValue} · ${keyLabel("S")} · ${uiText(msg({ message: "Alt-click to cycle", context: "interaction status hint" }))}`
+		`${label} · ${keyLabel("S")} · ${uiText(msg({ message: "Alt-click to cycle", context: "interaction status hint" }))}`
 	);
 	statusDot.empty();
 	if (statusConfig?.icon) {
@@ -210,7 +213,7 @@ export function configurePriorityIndicator(
 ): void {
 	const label = priorityConfig
 		? configLabel(priorityConfig)
-		: priorityValue ||
+		: (priorityValue ? unconfiguredValueLabel(priorityValue) : "") ||
 			plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
 	priorityDot.setAttribute(
 		"aria-label",

@@ -1,4 +1,4 @@
-import { renderTaskMenuKeyHint } from "../ui/kit/menu";
+import { renderPriorityMenuGlyph, renderTaskMenuKeyHint } from "../ui/kit/menu";
 import { TaskCompletionMenu } from "./task-context-menu/completion";
 import { TaskRelationshipMenu } from "./task-context-menu/relationships";
 import { TaskPropertyMenu } from "./task-context-menu/properties";
@@ -106,7 +106,13 @@ export class TaskContextMenu {
 			item.setTitle(
 				this.t(msg({ message: "Priority", context: "contextMenus.task.priority" }))
 			);
-			item.setIcon("star");
+			renderPriorityMenuGlyph(
+				item,
+				plugin.settings.customPriorities.find((priority) => priority.value === task.priority) ?? {
+					value: task.priority,
+				},
+				plugin.settings.customPriorities
+			);
 
 			const submenu = getSubmenu(item);
 			this.properties.addPriorityOptions(submenu, task, plugin);

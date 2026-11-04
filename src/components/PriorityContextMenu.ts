@@ -1,5 +1,5 @@
 import { configLabel } from "../i18n/configLabels";
-import { renderUnconfiguredMenuValue } from "../ui/kit/menu";
+import { renderPriorityMenuGlyph, renderUnconfiguredMenuValue } from "../ui/kit/menu";
 import TaskNotesPlugin from "../main";
 import { PriorityConfig } from "../types";
 import { ContextMenu } from "./ContextMenu";
@@ -15,7 +15,6 @@ export class PriorityContextMenu {
 	private menu: ContextMenu;
 	private options: PriorityContextMenuOptions;
 	private sortedPriorities: PriorityConfig[] = [];
-	private targetDoc: Document = activeDocument;
 
 	constructor(options: PriorityContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -30,8 +29,7 @@ export class PriorityContextMenu {
 
 		this.sortedPriorities.forEach((priority) => {
 			this.menu.addItem((item) => {
-				// Use consistent icon for all items
-				item.setIcon(priority.icon || "signal");
+				renderPriorityMenuGlyph(item, priority, this.sortedPriorities);
 
 				item.setTitle(configLabel(priority)).setChecked(
 					priority.value === this.options.currentValue
@@ -45,50 +43,10 @@ export class PriorityContextMenu {
 	}
 
 	public show(event: UIEvent): void {
-		// Store the document reference from the event target to support pop-out windows
-		// Use cross-window compatible instanceOf check
-		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
-			this.targetDoc = (event.target as HTMLElement).ownerDocument;
-		}
 		showCoordinatedMenu(this.menu, event);
-
-		// Apply color styling after menu is shown
-		window.setTimeout(() => {
-			this.applyColorStyling();
-		}, 10);
 	}
 
 	public showAtElement(element: HTMLElement): void {
-		// Store the document reference from the element to support pop-out windows
-		this.targetDoc = element.ownerDocument;
 		showCoordinatedMenuAtElement(this.menu, element);
-
-		// Apply color styling after menu is shown
-		window.setTimeout(() => {
-			this.applyColorStyling();
-		}, 10);
-	}
-
-	private applyColorStyling(): void {
-		const menuEl = this.targetDoc.querySelector(".menu");
-
-		if (!menuEl) return;
-
-		const menuItems = menuEl.querySelectorAll(".menu-item");
-		const offset =
-			this.options.currentValue &&
-			!this.sortedPriorities.some((priority) => priority.value === this.options.currentValue)
-				? 1
-				: 0;
-
-		this.sortedPriorities.forEach((priority, index) => {
-			const menuItem = menuItems[index + offset] as HTMLElement;
-			if (menuItem && priority.color) {
-				const iconEl = menuItem.querySelector(".menu-item-icon");
-				if (iconEl) {
-					(iconEl as HTMLElement).style.color = priority.color;
-				}
-			}
-		});
 	}
 }
