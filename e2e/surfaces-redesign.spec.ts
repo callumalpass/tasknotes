@@ -183,7 +183,17 @@ test('typographic reports, release notes and all settings tabs in both themes an
         if (type === 'tasknotes-stats-view') {
           await expect(page.locator('.stats-view__overview-card').first()).toBeVisible();
           expect(await page.locator('.stats-view__overview-grid').evaluate(element => getComputedStyle(element).display)).toBe('flex');
-          await expect(page.locator('.tn-select.stats-view__filter-select')).toBeVisible();
+          const disclosure = page.locator('.stats-view__filter-disclosure');
+          const filter = page.locator('.tn-select.stats-view__filter-select');
+          await expect(filter).toBeHidden();
+          await disclosure.locator('summary').click();
+          await expect(filter).toBeVisible();
+          await filter.selectOption('7days');
+          await disclosure.locator('summary').click();
+          await expect(filter).toBeHidden();
+          await disclosure.locator('summary').click();
+          await expect(filter).toHaveValue('7days');
+          await filter.selectOption('all');
           expect(await page.locator('.stats-view__header .setting-item').evaluate(element => getComputedStyle(element).paddingLeft)).toBe('0px');
         }
         if (type === 'tasknotes-release-notes') {
@@ -206,13 +216,26 @@ test('typographic reports, release notes and all settings tabs in both themes an
         }, { theme, mobile });
         const tabs = settingsPage.locator('.settings-view__tab-button');
         await expect(tabs).toHaveCount(6);
-        expect(await settingsPage.locator('.settings-view__tab-nav').evaluate(element => getComputedStyle(element).flexWrap)).toBe('nowrap');
-        for (let index = 0; index < 6; index++) {
-          await tabs.nth(index).click();
+        const navigation = settingsPage.locator('.settings-view__tab-nav');
+        const select = settingsPage.locator('.settings-view__tab-select');
+        expect(await navigation.evaluate(element => getComputedStyle(element).flexWrap)).toBe('wrap');
+        const chooseTab = async (index: number) => {
+          const id = (await tabs.nth(index).getAttribute('id'))!.replace('tab-button-', '');
+          if (await select.isVisible()) {
+            await expect(navigation).toBeHidden();
+            await select.selectOption(id);
+          } else {
+            await tabs.nth(index).click();
+            expect(await navigation.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+          }
           await expect(tabs.nth(index)).toHaveAttribute('aria-selected', 'true');
+          await expect(select).toHaveValue(id);
+        };
+        for (let index = 0; index < 6; index++) {
+          await chooseTab(index);
           await screenshot(`settings-${index}-${theme}-${mobile ? 'mobile' : 'desktop'}`, settingsPage);
         }
-        await settingsPage.locator('#tab-button-task-properties').click();
+        await chooseTab(await tabs.evaluateAll(elements => elements.findIndex(element => element.id === 'tab-button-task-properties')));
         await expect(settingsPage.locator('.tasknotes-settings__value-glyph .tn-glyph').first()).toBeAttached();
         await expect(settingsPage.locator('.tasknotes-settings__value-glyph .lucide-rocket')).toBeAttached();
         await expect(settingsPage.locator('.tasknotes-settings__value-glyph .lucide-flame')).toBeAttached();
