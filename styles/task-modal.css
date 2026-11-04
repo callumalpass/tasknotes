@@ -72,7 +72,7 @@
     box-sizing: border-box;
     padding: var(--size-4-2);
     border: none;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     background: transparent;
     color: var(--text-normal);
     font-family: var(--font-text);
@@ -350,7 +350,7 @@
 .tn-task-modal__section-label {
     font-weight: 600;
     color: var(--text-muted);
-    font-size: 0.9em;
+    font-size: var(--tn-type-sm);
     margin-bottom: var(--size-4-2);
     text-transform: none;
     letter-spacing: normal;
@@ -934,7 +934,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
         border-left: 1px solid var(--background-modifier-border);
         margin: calc(-1 * var(--size-4-4)) 0;
         margin-right: calc(-1 * var(--size-4-4));
-        border-radius: 0;
+        border-radius: var(--tn-radius-none);
         max-height: 70vh;
         overflow: hidden;
     }
@@ -977,7 +977,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
         display: flex;
         flex-direction: column;
         border: none;
-        border-radius: 0;
+        border-radius: var(--tn-radius-none);
         margin: 0;
         overflow: hidden;
     }
@@ -986,7 +986,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
         flex: 1;
         height: 100%;
         max-height: none;
-        border-radius: 0;
+        border-radius: var(--tn-radius-none);
         min-height: 320px;
     }
 
@@ -1171,9 +1171,9 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: var(--tn-type-2xs);
     color: var(--text-faint);
-    border-radius: 2px;
+    border-radius: var(--tn-radius-xs);
 }
 
 .tasknotes-plugin .recurring-calendar__day--faded {
@@ -1439,11 +1439,11 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     border: none;
     box-shadow: none;
     color: var(--text-muted);
-    font-size: 16px;
+    font-size: var(--tn-type-base);
     font-weight: bold;
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
 }
 
 .tasknotes-plugin .task-project-remove:hover {

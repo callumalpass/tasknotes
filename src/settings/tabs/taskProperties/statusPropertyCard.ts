@@ -1,3 +1,4 @@
+import { renderStatusGlyph, statusGlyphState } from "../../../ui/kit/glyphs";
 import { uiData } from "../../../i18n/dataText";
 import { uiText } from "../../../i18n/runtime";
 import { configLabel } from "../../../i18n/configLabels";
@@ -240,6 +241,7 @@ function renderStatusList(
 	}
 
 	const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
+	const glyphUpdates: Array<() => void> = [];
 
 	sortedStatuses.forEach((status) => {
 		let previousStatusValue = status.value;
@@ -262,6 +264,7 @@ function renderStatusList(
 
 		const completedToggle = createCardToggle(status.isCompleted || false, (value) => {
 			status.isCompleted = value;
+			glyphUpdates.forEach((update) => update());
 			const metaContainer = statusCard?.querySelector(".tasknotes-settings__card-meta");
 			if (metaContainer) {
 				metaContainer.empty();
@@ -315,6 +318,16 @@ function renderStatusList(
 			1,
 			status.autoArchiveDelay || 5
 		);
+
+		const glyph = activeWindow.createSpan({ cls: "tasknotes-settings__value-glyph" });
+		const updateGlyph = () => {
+			glyph.empty();
+			glyph.style.color = status.color;
+			if (status.icon) setIcon(glyph, status.icon);
+			else renderStatusGlyph(glyph, statusGlyphState(status.value, plugin.settings.customStatuses));
+		};
+		glyphUpdates.push(updateGlyph);
+		updateGlyph();
 
 		const metaElements = status.isCompleted
 			? [
@@ -385,8 +398,8 @@ function renderStatusList(
 			draggable: true,
 			collapsible: true,
 			defaultCollapsed: true,
-			colorIndicator: { color: status.color, cssVar: "--status-color" },
 			header: {
+				glyph,
 				primaryText: status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
 				secondaryText: configLabel(status) || uiText(msg({ message: "No label", context: "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secondaryText" })),
 				meta: metaElements,
@@ -461,6 +474,7 @@ function renderStatusList(
 
 		valueInput.addEventListener("input", () => {
 			status.value = valueInput.value;
+			updateGlyph();
 			setCardPrimaryText(
 				statusCard,
 				status.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" }))
@@ -497,17 +511,13 @@ function renderStatusList(
 
 		colorInput.addEventListener("change", () => {
 			status.color = readThemeColorInput(colorInput, status.color || "#6366f1");
-			const colorIndicator = statusCard.querySelector(
-				".tasknotes-settings__card-color-indicator"
-			) as HTMLElement;
-			if (colorIndicator) {
-				colorIndicator.style.backgroundColor = status.color;
-			}
+			updateGlyph();
 			save();
 		});
 
 		iconInput.addEventListener("change", () => {
 			status.icon = iconInput.value.trim() || undefined;
+			updateGlyph();
 			save();
 		});
 

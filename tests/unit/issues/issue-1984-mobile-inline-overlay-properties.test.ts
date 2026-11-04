@@ -9,7 +9,7 @@ function readRepoFile(relativePath: string): string {
 
 describe("Issue #1984: mobile inline task overlay properties", () => {
 	it("keeps configured inline metadata visible on Obsidian mobile", () => {
-		const css = readRepoFile("styles/task-card-bem.css");
+		const css = readRepoFile("styles/task-inline-widget.css");
 
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline \.task-card__metadata\s*\{[^}]*display:\s*inline-flex;[^}]*max-width:\s*calc\(100% - 0\.25em\);[^}]*overflow-x:\s*auto;/s

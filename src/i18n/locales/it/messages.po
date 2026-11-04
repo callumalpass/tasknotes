@@ -350,7 +350,7 @@ msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTimin
 msgid "{date} at {time}"
 msgstr "{date} alle {time}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "statistics daily time tooltip"
 msgid "{date}: {duration}"
 msgstr "{date}: {duration}"
@@ -580,7 +580,7 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, one {Collegata a {length, number} evento del calendario} other {Collegata a {length, number} eventi del calendario}}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
 msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
 msgstr "{length, plural, one {{length, number} attività visualizzata} other {{length, number} attività visualizzate}}"
@@ -765,7 +765,7 @@ msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles}; altri promemoria: {count}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "views/StatsView: StatsView.renderProgressCircle display"
 msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
 msgstr "{total, plural, one {{completed, number}/{total, number} attività} other {{completed, number}/{total, number} attività}}"
@@ -1423,12 +1423,12 @@ msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
 msgstr "Azioni"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.activeOnly"
 msgid "Active only"
 msgstr "Solo attive"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.activeProjects"
 msgid "Active projects"
 msgstr "Progetti attivi"
@@ -1448,7 +1448,7 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "Attivo:"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.activity"
 msgid "Activity over time (last 30 days)"
 msgstr "Attività nel tempo (ultimi 30 giorni)"
@@ -1777,7 +1777,7 @@ msgctxt "settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnli
 msgid "All events deleted and unlinked"
 msgstr "Tutti gli eventi sono stati eliminati e scollegati"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.allTasks"
 msgid "All project tasks"
 msgstr "Tutte le attività del progetto"
@@ -1787,7 +1787,7 @@ msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "Tutti i collegamenti delle attività rimossi"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.allTasks"
 msgid "All tasks"
 msgstr "Tutte le attività"
@@ -2233,12 +2233,12 @@ msgctxt "views.pomodoroStats.stats.average"
 msgid "Avg length"
 msgstr "Durata media"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.average"
 msgid "Avg per task"
 msgstr "Media per attività"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.avgTimePerTask"
 msgid "Avg time per task"
 msgstr "Tempo medio per attività"
@@ -3167,7 +3167,7 @@ msgctxt "views.pomodoroStats.recents.status.completed"
 msgid "Completed"
 msgstr "Completata"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "Completate"
@@ -3212,7 +3212,7 @@ msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "Completa alla data pianificata"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.completedOnly"
 msgid "Completed only"
 msgstr "Solo completate"
@@ -3232,7 +3232,7 @@ msgctxt "settings.taskProperties.taskStatuses.fields.completed"
 msgid "Completed:"
 msgstr "Completato:"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
 msgid "Completed: "
 msgstr "Completamento: "
@@ -3272,7 +3272,7 @@ msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "Completamento o occorrenza saltata"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.completionRate"
 msgid "Completion rate"
 msgstr "Tasso di completamento"
@@ -8776,7 +8776,7 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "Nessuna attività disponibile per il monitoraggio del tempo"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.noTasks"
 msgid "No tasks found"
 msgstr "Nessuna attività trovata"
@@ -8806,7 +8806,7 @@ msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "Ancora nessuna registrazione di tempo"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.stats.project.noTracking"
 msgid "No time tracking data"
 msgstr "Nessun dato sul monitoraggio del tempo"
@@ -10033,7 +10033,7 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "Progetti"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "Progetti"
@@ -12573,7 +12573,7 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.description"
 msgid "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.)."
 msgstr "TaskNotes usa i file Base di Obsidian (.base) per le sue viste. Se mancano, vengono generati automaticamente all’avvio con le impostazioni attuali (identificazione delle attività, mappatura dei campi, stati e così via)."
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
 msgstr "Attività"
@@ -12944,7 +12944,7 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "Ora a cui scorrere quando si aprono le viste con sequenza temporale (formato HH:MM)"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.timeTrackedEstimated"
 msgid "Time tracked / estimated"
 msgstr "Tempo registrato / stimato"
@@ -13403,17 +13403,17 @@ msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
 msgid "Total pomos"
 msgstr "Pomodori totali"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.totalTasks"
 msgid "Total tasks"
 msgstr "Totale attività"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.totalTasks"
 msgid "Total tasks"
 msgstr "Totale attività"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.totalTime"
 msgid "Total time"
 msgstr "Tempo totale"

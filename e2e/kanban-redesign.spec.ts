@@ -193,6 +193,36 @@ async function expectNativeDrop(lane: string) {
 test('native mouse drag persists a drop into an empty lane', () => expectNativeDrop('low'));
 test('native mouse drag persists a drop into an empty cell', () => expectNativeDrop('normal'));
 
+test('repeated DOM drag lifecycles persist swimlane moves and clear board state', async () => {
+  const page = instance.page;
+  const title = 'Review the release checklist and outstanding dependencies';
+  for (const [column, lane] of [['waiting', 'low'], ['open', 'high'], ['review', 'normal'], ['waiting', 'low']]) {
+    const source = await page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${title}.md"]`).elementHandle();
+    expect(source).not.toBeNull();
+    const transfer = await page.evaluateHandle(() => new DataTransfer());
+    await source!.dispatchEvent('dragstart', { dataTransfer: transfer });
+    await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
+    const target = cell(column, lane);
+    await expect(target.locator('.kanban-view__empty-cell')).toBeVisible();
+    const bounds = (await target.boundingBox())!;
+    const event = { dataTransfer: transfer, clientX: bounds.x + bounds.width / 2, clientY: bounds.y + 18 };
+    await target.dispatchEvent('dragover', event);
+    await target.dispatchEvent('drop', event);
+    await source!.dispatchEvent('dragend', { dataTransfer: transfer });
+    await expect.poll(async () => {
+      const task = await readTask(title);
+      return { status: task.status, priority: task.priority };
+    }).toEqual({ status: column, priority: lane });
+    await expect(target.locator('.kanban-view__card-wrapper')).toHaveCount(1);
+    await expect(page.locator('.kanban-view__board')).not.toHaveClass(/kanban-view__board--task-dragging/);
+    await expect(page.locator('body')).not.toHaveClass(/tn-drag-active/);
+    await expect(page.locator('.kanban-view__floating-drag-preview')).toHaveCount(0);
+    await expect(target.locator('.kanban-view__card-wrapper')).toBeVisible();
+    await transfer.dispose();
+    await source!.dispose();
+  }
+});
+
 test('flat columns retain virtualization, collapse and header creation', async () => {
   const page = instance.page;
   await page.evaluate(async ({ folder, content }) => {

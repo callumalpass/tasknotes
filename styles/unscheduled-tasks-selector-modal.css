@@ -39,11 +39,8 @@
     letter-spacing: normal;
 }
 
-
-
-
 .unscheduled-tasks-selector__due {
-    font-size: 0.8rem;
+    font-size: var(--tn-type-sm);
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -61,27 +58,27 @@
 }
 
 .unscheduled-tasks-selector__time-estimate {
-    font-size: 0.75rem;
+    font-size: var(--tn-type-xs);
     color: var(--text-muted);
     background: var(--background-modifier-border);
     padding: 0.125rem 0.375rem;
-    border-radius: 8px;
+    border-radius: var(--tn-radius-lg);
 }
 
 .unscheduled-tasks-selector__contexts {
-    font-size: 0.75rem;
+    font-size: var(--tn-type-xs);
     color: var(--text-accent);
     background: var(--background-modifier-border);
     padding: 0.125rem 0.375rem;
-    border-radius: 8px;
+    border-radius: var(--tn-radius-lg);
 }
 
 .unscheduled-tasks-selector__projects {
-    font-size: 0.75rem;
+    font-size: var(--tn-type-xs);
     color: var(--text-accent);
     background: var(--background-modifier-border);
     padding: 0.125rem 0.375rem;
-    border-radius: 8px;
+    border-radius: var(--tn-radius-lg);
 }
 
 /* Project Links - for [[Note Name]] format projects */
@@ -89,7 +86,7 @@
     color: var(--link-color);
     text-decoration: none;
     transition: background-color 0.2s ease, color 0.2s ease;
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     padding: 1px 2px;
     margin: -1px -2px;
     cursor: var(--cursor-link, pointer);

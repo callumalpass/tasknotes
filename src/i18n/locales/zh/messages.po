@@ -350,7 +350,7 @@ msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTimin
 msgid "{date} at {time}"
 msgstr "{date} {time}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "statistics daily time tooltip"
 msgid "{date}: {duration}"
 msgstr "{date}：{duration}"
@@ -580,7 +580,7 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, other {已关联 {length, number} 个日历事件}}"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
 msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
 msgstr "{length, plural, other {显示 {length, number} 个任务}}"
@@ -765,7 +765,7 @@ msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles} 及另外 {count} 项"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "views/StatsView: StatsView.renderProgressCircle display"
 msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
 msgstr "{total, plural, other {{completed, number}/{total, number} 个任务}}"
@@ -1422,12 +1422,12 @@ msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
 msgstr "操作"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.activeOnly"
 msgid "Active only"
 msgstr "仅未完成"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.activeProjects"
 msgid "Active projects"
 msgstr "活跃项目"
@@ -1447,7 +1447,7 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "活动："
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.activity"
 msgid "Activity over time (last 30 days)"
 msgstr "活动趋势（最近 30 天）"
@@ -1776,7 +1776,7 @@ msgctxt "settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnli
 msgid "All events deleted and unlinked"
 msgstr "所有事件均已删除，并已解除关联"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.allTasks"
 msgid "All project tasks"
 msgstr "所有项目任务"
@@ -1786,7 +1786,7 @@ msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "所有任务关联已删除"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.allTasks"
 msgid "All tasks"
 msgstr "所有任务"
@@ -2232,12 +2232,12 @@ msgctxt "views.pomodoroStats.stats.average"
 msgid "Avg length"
 msgstr "平均时长"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.average"
 msgid "Avg per task"
 msgstr "每项任务平均时长"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.avgTimePerTask"
 msgid "Avg time per task"
 msgstr "每项任务平均时长"
@@ -3166,7 +3166,7 @@ msgctxt "views.pomodoroStats.recents.status.completed"
 msgid "Completed"
 msgstr "已完成"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "已完成"
@@ -3211,7 +3211,7 @@ msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "将计划日期记为完成日期"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.filters.completedOnly"
 msgid "Completed only"
 msgstr "仅已完成的"
@@ -3231,7 +3231,7 @@ msgctxt "settings.taskProperties.taskStatuses.fields.completed"
 msgid "Completed:"
 msgstr "已完成："
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
 msgid "Completed: "
 msgstr "已完成："
@@ -3271,7 +3271,7 @@ msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "完成或跳过时"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.completionRate"
 msgid "Completion rate"
 msgstr "完成率"
@@ -8775,7 +8775,7 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "没有可用的任务进行时间跟踪"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.noTasks"
 msgid "No tasks found"
 msgstr "未找到任务"
@@ -8805,7 +8805,7 @@ msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "暂无时间记录"
 
-#: src/views/StatsView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.stats.project.noTracking"
 msgid "No time tracking data"
 msgstr "没有时间跟踪数据"
@@ -10032,7 +10032,7 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "项目"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "项目"
@@ -12572,7 +12572,7 @@ msgctxt "settings.integrations.basesIntegration.viewCommands.description"
 msgid "TaskNotes uses Obsidian Bases files (.base) to power its views. These files are generated automatically on startup if they don''t exist, configured with your current settings (task identification, field mappings, statuses, etc.)."
 msgstr "TaskNotes 使用 Obsidian Bases 文件（.base）来呈现视图。这些文件在启动时自动生成（如果不存在），并使用你当前的设置进行配置（任务识别、字段映射、状态等）。"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
 msgstr "任务"
@@ -12943,7 +12943,7 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "打开时间线视图时滚动到的时间（HH:MM格式）"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.timeTrackedEstimated"
 msgid "Time tracked / estimated"
 msgstr "已跟踪／预估时长"
@@ -13402,17 +13402,17 @@ msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
 msgid "Total pomos"
 msgstr "总番茄钟数"
 
-#: src/views/StatsView.ts
+#: src/views/stats/summary.ts
 msgctxt "views.stats.cards.totalTasks"
 msgid "Total tasks"
 msgstr "总任务数"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.totalTasks"
 msgid "Total tasks"
 msgstr "任务总数"
 
-#: src/views/StatsView.ts
+#: src/views/stats/drilldown.ts
 msgctxt "views.stats.project.totalTime"
 msgid "Total time"
 msgstr "总时间"

@@ -14,7 +14,7 @@
 .tasknotes-plugin .field-manager__tab {
 	padding: 0.5rem 1rem;
 	cursor: pointer;
-	border-radius: 4px;
+	border-radius: var(--tn-radius-sm);
 	transition: background-color 0.2s;
 }
 
@@ -45,9 +45,9 @@
 
 .tasknotes-plugin .field-card__type {
 	padding: 0.125rem 0.5rem;
-	font-size: 0.75rem;
+	font-size: var(--tn-type-xs);
 	background: var(--background-modifier-border);
-	border-radius: 3px;
+	border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-plugin .field-card__type--core {

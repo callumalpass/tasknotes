@@ -71,8 +71,8 @@
 }
 
 .tasknotes-plugin .agenda-view__nav-button {
-    border-radius: 50%;
-    font-size: 1.25rem;
+    border-radius: var(--tn-radius-full);
+    font-size: var(--tn-type-lg);
     font-weight: var(--tn-font-weight-medium);
 }
 
@@ -237,7 +237,7 @@
     height: 16px;
     border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
     border-top: 2px solid var(--tn-text-muted);
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     animation: spin 1s linear infinite;
     flex-shrink: 0;
 }
@@ -287,7 +287,7 @@
     border: none;
     background: transparent;
     color: var(--tn-text-normal);
-    font-size: 14px;
+    font-size: var(--tn-type-md);
     line-height: 1;
 }
 
@@ -334,7 +334,7 @@
     background: transparent;
     color: var(--tn-interactive-accent);
     padding: 0;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
     text-transform: none;
@@ -359,7 +359,7 @@
     background: none;
     color: var(--text-muted);
     border: none;
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     padding: 0;
     font-size: var(--tn-type-2xs);
     font-weight: var(--tn-font-weight-medium);
@@ -488,7 +488,7 @@
     .tasknotes-plugin .agenda-view__nav-button {
         width: 36px;
         height: 36px;
-        font-size: 1.1rem;
+        font-size: var(--tn-type-lg);
     }
     
     .tasknotes-plugin .agenda-view__settings {
@@ -536,7 +536,7 @@
     .tasknotes-plugin .agenda-view__nav-button {
         width: 32px;
         height: 32px;
-        font-size: 1rem;
+        font-size: var(--tn-type-base);
     }
     
     .tasknotes-plugin .agenda-view__settings-left,

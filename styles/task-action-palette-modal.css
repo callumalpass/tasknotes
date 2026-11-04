@@ -4,7 +4,7 @@
     --palette-item-height: 60px;
     --palette-icon-size: 18px;
     --palette-gap: 12px;
-    --palette-border-radius: 8px;
+    --palette-border-radius: var(--tn-radius-lg);
 }
 
 /* Override default modal width for the action palette */
@@ -103,7 +103,7 @@
 .task-action-palette__category {
     font-size: var(--font-ui-smaller);
     padding: 3px 8px;
-    border-radius: calc(var(--palette-border-radius) / 2);
+    border-radius: var(--tn-radius-sm);
     background-color: var(--background-modifier-border);
     color: var(--text-muted);
     text-transform: none;
@@ -166,7 +166,7 @@
     }
     
     .task-action-palette__category {
-        font-size: 10px;
+        font-size: var(--tn-type-2xs);
         padding: 2px 6px;
     }
 }

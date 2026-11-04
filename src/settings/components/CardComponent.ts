@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../../ui/kit/emptyState";
 import { uiText } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /**
@@ -208,6 +209,7 @@ export interface CardConfig {
 	/** Header section with title, subtitle, badges, and actions */
 	header: {
 		primaryText: string;
+		glyph?: HTMLElement;
 		secondaryText?: string;
 		meta?: HTMLElement[];
 		actions?: CardHeaderButton[];
@@ -371,6 +373,8 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 			);
 		}
 	}
+
+	if (config.header.glyph) headerLeft.appendChild(config.header.glyph);
 
 	// Header info
 	const headerInfo = headerLeft.createDiv("tasknotes-settings__card-info");
@@ -1019,31 +1023,5 @@ export function showCardEmptyState(
 	onAction?: () => void
 ): void {
 	container.empty();
-	const emptyState = container.createDiv("tasknotes-settings__empty-state");
-	emptyState.createSpan("tasknotes-settings__empty-icon");
-	emptyState.createSpan({
-		text: message,
-		cls: "tasknotes-settings__empty-text",
-	});
-
-	if (actionText && onAction) {
-		const actionButton = emptyState.createEl("button", {
-			text: actionText,
-			cls: "tn-btn tn-btn--primary",
-		});
-		actionButton.classList.remove(
-			"tn-static-font-size-12px-b0cc7e05",
-			"tn-static-margin-top-0-5rem-3dc98b5e",
-			"tn-static-margin-top-0-d462248a",
-			"tn-static-margin-top-12px-91e0f558",
-			"tn-static-margin-top-16px-1b0f4999",
-			"tn-static-margin-top-20px-a26bda7d",
-			"tn-static-margin-top-30px-2fbbbcd4",
-			"tn-static-margin-top-4px-96ad6099",
-			"tn-static-margin-top-8px-8a77e5a3",
-			"tn-static-margin-top-8px-f4f01e68"
-		);
-		actionButton.classList.add("tn-static-margin-top-1rem-2239d6d5");
-		actionButton.onclick = onAction;
-	}
+	renderEmptyState(container, { message, actionLabel: actionText, onAction });
 }

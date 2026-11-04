@@ -1,7 +1,9 @@
+import { renderEmptyState } from "../ui/kit/emptyState";
 import { formatUIDate, uiNumber, uiPercent, uiDuration } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { ItemView, Menu, Notice, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
+import { ItemView, Menu, WorkspaceLeaf, Setting, setIcon, setTooltip } from "obsidian";
+import { showNotice } from "../ui/kit/notice";
 import { startOfWeek, endOfWeek } from "date-fns";
 import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
@@ -235,10 +237,7 @@ export class PomodoroStatsView extends ItemView {
 		container.empty();
 
 		if (recentSessions.length === 0) {
-			container.createDiv({
-				cls: "pomodoro-no-sessions pomodoro-stats-view__no-sessions",
-				text: this.t(msg({ message: "No sessions recorded yet", context: "views.pomodoroStats.recents.empty" })),
-			});
+			renderEmptyState(container, { message: this.t(msg({ message: "No sessions recorded yet", context: "views.pomodoroStats.recents.empty" })) });
 			return;
 		}
 
@@ -336,7 +335,7 @@ export class PomodoroStatsView extends ItemView {
 		}
 
 		const deleted = await this.plugin.pomodoroService.deleteSessionFromHistory(session);
-		new Notice(
+		showNotice(
 			this.t(
 				deleted
 					? msg({ message: "Pomodoro session deleted", context: "views.pomodoroStats.recents.deleteSuccess" })

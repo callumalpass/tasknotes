@@ -10,7 +10,7 @@ function readRepoFile(relativePath: string): string {
 describe("Issue #190: mobile task widget touch targets", () => {
 	it("keeps Obsidian mobile task-card controls compact on narrow screens", () => {
 		const variablesCss = readRepoFile("styles/tokens.css");
-		const css = readRepoFile("styles/task-card-bem.css");
+		const css = readRepoFile("styles/task-card-bem.css") + readRepoFile("styles/task-inline-widget.css");
 
 		expect(variablesCss).toMatch(
 			/body\.is-mobile \.tasknotes-plugin\s*\{[^}]*--tn-mobile-task-card-indicator-size:\s*24px;[^}]*--tn-mobile-task-card-menu-size:\s*32px;[^}]*--tn-mobile-inline-indicator-size:\s*20px;[^}]*--tn-mobile-inline-menu-size:\s*24px;/s
@@ -42,7 +42,7 @@ describe("Issue #190: mobile task widget touch targets", () => {
 	});
 
 	it("uses smaller inline widgets on Obsidian mobile without changing touch-capable desktop rules", () => {
-		const css = readRepoFile("styles/task-card-bem.css");
+		const css = readRepoFile("styles/task-card-bem.css") + readRepoFile("styles/task-inline-widget.css");
 
 		expect(css).toMatch(
 			/body\.is-mobile \.tasknotes-plugin \.task-card--layout-inline \.task-card__content\s*\{[^}]*white-space:\s*normal;/s

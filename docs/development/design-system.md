@@ -18,7 +18,9 @@ If a screen looks like a stock settings form, a Material dashboard, or a pile of
 
 ## Tokens
 
-`styles/tokens.css` is the only place raw design values live. All other CSS uses tokens. `stylelint` enforces this for font sizes and radii. Everything is scoped under `.tasknotes-plugin`; the overlay root also carries that class.
+`styles/tokens.css` is the only place raw design values live. All other plugin CSS uses tokens. The error-level `tasknotes/design-tokens` stylelint rule rejects literal font sizes, radii and hex colours, including custom properties and `var()` fallbacks. The documentation site's independent stylesheet is outside this plugin contract. Run `node --test tests/scripts/stylelint-design-tokens.test.mjs` to check the ratchet. Everything is scoped under `.tasknotes-plugin`; the overlay root also carries that class.
+
+Inline card rules live in `styles/task-inline-widget.css`, after the shared card rules. The public `.tasknotes-inline-widget`, `.task-inline-preview--reading-mode`, task state/layout/date classes and user-facing theming variables remain available to snippets. The retired `.task-inline-preview__*` implementation had no remaining renderer; it is not the public reading-mode hook. Statistics retain their existing class hooks while using report rows rather than dashboard tiles. Native notices use `showNotice` from `src/ui/kit/notice.ts`; reversible action toasts remain a separate kit component.
 
 ### Type
 

@@ -18,7 +18,7 @@ function readRule(css: string, selector: string): string {
 
 describe("Issue #1157: mobile inline task cards in markdown bullets", () => {
 	it("keeps the mobile inline card wrapper in text flow inside list items", () => {
-		const css = readRepoFile("styles/task-card-bem.css");
+		const css = readRepoFile("styles/task-inline-widget.css");
 		const mobileInlineRule = readRule(
 			css,
 			"body.is-mobile .tasknotes-plugin .task-card--layout-inline"

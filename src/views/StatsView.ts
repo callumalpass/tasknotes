@@ -1,4 +1,5 @@
-import { uiDuration, uiNumber, uiPercent, formatUIDate } from "../i18n/formatters";
+import { renderEmptyState } from "../ui/kit/emptyState";
+import { uiDuration, formatUIDate } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { ItemView, WorkspaceLeaf, Setting, EventRef, parseLinktext } from "obsidian";
@@ -15,165 +16,23 @@ import {
 import type { Day } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { STATS_VIEW_TYPE, TaskInfo, EVENT_TASK_UPDATED } from "../types";
-import { calculateTotalTimeSpent, filterEmptyProjects } from "../utils/helpers";
+import { calculateTotalTimeSpent } from "../utils/helpers";
 import { getTodayLocal } from "../utils/dateUtils";
-import { createTaskCard } from "../ui/TaskCard";
-import { convertInternalToUserProperties } from "../utils/propertyMapping";
+import { renderDrilldownContent } from "./stats/drilldown";
 import { getProjectDisplayName, parseLinkToPath } from "../utils/linkUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+import { createDefaultStatsFilters, normalizeStatsFilters, filterStatsVisibleTasks, getVisibleStatsProjectNames, STATS_FILTERS_STORAGE_KEY } from "./stats/model";
+import type { StatsFilters, ProjectStats, OverallStats, TimeRangeStats, ProjectDrilldownData, TimeByDay, TrendDataPoint } from "./stats/model";
+import { renderCompletion, renderSparkline } from "./stats/charts";
+import { renderOverviewStats, renderTimeRangeStats } from "./stats/summary";
+export { normalizeStatsFilters, filterStatsVisibleTasks, getVisibleStatsProjectNames } from "./stats/model";
+export type { StatsFilters, VisibleStatsProjectNamesOptions } from "./stats/model";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Views/StatsView" });
 
 function isDay(value: number): value is Day {
 	return Number.isInteger(value) && value >= 0 && value <= 6;
-}
-
-interface ProjectStats {
-	projectName: string;
-	totalTimeSpent: number;
-	totalTimeEstimate: number;
-	taskCount: number;
-	completedTaskCount: number;
-	avgTimePerTask: number;
-	lastActivity?: string;
-}
-
-interface OverallStats {
-	totalTimeSpent: number;
-
-	totalTimeEstimate: number;
-	totalTasks: number;
-	completedTasks: number;
-	activeProjects: number;
-	completionRate: number;
-	avgTimePerTask: number;
-	totalTasksThisWeek?: number;
-	completedTasksThisWeek?: number;
-	timeSpentThisWeek?: number;
-}
-
-interface TimeRangeStats {
-	overall: OverallStats;
-	projects: ProjectStats[];
-}
-
-export interface StatsFilters {
-	dateRange: "all" | "7days" | "30days" | "90days" | "custom";
-	customStartDate?: string;
-	customEndDate?: string;
-	selectedProjects: string[];
-	minTimeSpent: number; // in minutes
-}
-
-export interface VisibleStatsProjectNamesOptions {
-	noProjectLabel: string;
-	consolidateProjectName: (projectValue: string) => string | null | undefined;
-	isArchivedProjectReference?: (projectValue: string) => boolean;
-}
-
-const STATS_FILTERS_STORAGE_KEY = "tasknotes-stats-view-filters";
-const STATS_DATE_RANGES = new Set<StatsFilters["dateRange"]>([
-	"all",
-	"7days",
-	"30days",
-	"90days",
-	"custom",
-]);
-
-function createDefaultStatsFilters(): StatsFilters {
-	return {
-		dateRange: "all",
-		selectedProjects: [],
-		minTimeSpent: 0,
-	};
-}
-
-function isStatsDateRange(value: unknown): value is StatsFilters["dateRange"] {
-	return typeof value === "string" && STATS_DATE_RANGES.has(value as StatsFilters["dateRange"]);
-}
-
-function isDateInputValue(value: unknown): value is string {
-	return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
-}
-
-export function normalizeStatsFilters(value: unknown): StatsFilters {
-	if (!value || typeof value !== "object") {
-		return createDefaultStatsFilters();
-	}
-
-	const record = value as Record<string, unknown>;
-	const filters = createDefaultStatsFilters();
-
-	if (isStatsDateRange(record.dateRange)) {
-		filters.dateRange = record.dateRange;
-	}
-
-	if (isDateInputValue(record.customStartDate)) {
-		filters.customStartDate = record.customStartDate;
-	}
-
-	if (isDateInputValue(record.customEndDate)) {
-		filters.customEndDate = record.customEndDate;
-	}
-
-	if (Array.isArray(record.selectedProjects)) {
-		filters.selectedProjects = record.selectedProjects.filter(
-			(project): project is string => typeof project === "string"
-		);
-	}
-
-	const minTimeSpent =
-		typeof record.minTimeSpent === "number" ? record.minTimeSpent : Number(record.minTimeSpent);
-	if (Number.isFinite(minTimeSpent) && minTimeSpent > 0) {
-		filters.minTimeSpent = Math.floor(minTimeSpent);
-	}
-
-	return filters;
-}
-
-export function filterStatsVisibleTasks(tasks: TaskInfo[]): TaskInfo[] {
-	return tasks.filter((task) => !task.archived);
-}
-
-export function getVisibleStatsProjectNames(
-	projects: string[] | undefined,
-	options: VisibleStatsProjectNamesOptions
-): string[] {
-	if (!Array.isArray(projects)) {
-		return [options.noProjectLabel];
-	}
-
-	const filteredProjects = filterEmptyProjects(projects);
-	if (filteredProjects.length === 0) {
-		return [options.noProjectLabel];
-	}
-
-	return filteredProjects
-		.filter((project) => !options.isArchivedProjectReference?.(project))
-		.map((project) => options.consolidateProjectName(project))
-		.filter((project): project is string => typeof project === "string" && project.length > 0);
-}
-
-interface ProjectDrilldownData {
-	projectName: string;
-	tasks: TaskInfo[];
-	totalTimeSpent: number;
-	totalTimeEstimate: number;
-	completionRate: number;
-	timeByDay: TimeByDay[];
-	recentActivity: TaskInfo[];
-}
-
-interface TimeByDay {
-	date: string; // YYYY-MM-DD
-	timeSpent: number; // minutes
-	taskCount: number;
-	completedTasks: number;
-}
-
-interface TrendDataPoint {
-	date: string;
-	value: number;
 }
 
 export class StatsView extends ItemView {
@@ -485,7 +344,7 @@ export class StatsView extends ItemView {
 		const allTasks = await this.getAllTasks();
 		const overallStats = this.calculateOverallStats(allTasks);
 
-		this.renderOverviewStats(this.overviewStatsEl, overallStats);
+		renderOverviewStats(this.plugin, this.overviewStatsEl, overallStats);
 	}
 
 	private async updateTodayStats() {
@@ -497,7 +356,7 @@ export class StatsView extends ItemView {
 			endOfDay(todayLocal)
 		);
 
-		this.renderTimeRangeStats(this.todayStatsEl, stats);
+		renderTimeRangeStats(this.plugin, this.todayStatsEl, stats);
 	}
 
 	private async updateWeekStats() {
@@ -511,7 +370,7 @@ export class StatsView extends ItemView {
 		const weekEnd = endOfWeek(todayLocal, weekStartOptions);
 
 		const stats = await this.calculateStatsForRange(weekStart, weekEnd);
-		this.renderTimeRangeStats(this.weekStatsEl, stats);
+		renderTimeRangeStats(this.plugin, this.weekStatsEl, stats);
 	}
 
 	private async updateMonthStats() {
@@ -522,7 +381,7 @@ export class StatsView extends ItemView {
 		const monthEnd = endOfMonth(todayLocal);
 
 		const stats = await this.calculateStatsForRange(monthStart, monthEnd);
-		this.renderTimeRangeStats(this.monthStatsEl, stats);
+		renderTimeRangeStats(this.plugin, this.monthStatsEl, stats);
 	}
 
 	private async updateProjectStats() {
@@ -1051,136 +910,11 @@ export class StatsView extends ItemView {
 		}
 	}
 
-	private renderOverviewStats(container: HTMLElement, stats: OverallStats) {
-		container.empty();
-
-		// Format time duration in hours and minutes
-		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
-
-		// Total Time
-		const totalTimeCard = container.createDiv({
-			cls: "stats-overview-card stats-view__overview-card",
-		});
-		const totalTimeValue = totalTimeCard.createDiv({
-			cls: "overview-value stats-view__overview-value",
-		});
-		totalTimeValue.textContent = `${formatTime(stats.totalTimeSpent)} / ${formatTime(stats.totalTimeEstimate)}`;
-		totalTimeCard.createDiv({
-			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate(msg({ message: "Time tracked / estimated", context: "views.stats.cards.timeTrackedEstimated" })),
-		});
-
-		// Total Tasks
-		const totalTasksCard = container.createDiv({
-			cls: "stats-overview-card stats-view__overview-card",
-		});
-		const totalTasksValue = totalTasksCard.createDiv({
-			cls: "overview-value stats-view__overview-value",
-		});
-		totalTasksValue.textContent = uiNumber(stats.totalTasks);
-		totalTasksCard.createDiv({
-			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate(msg({ message: "Total tasks", context: "views.stats.cards.totalTasks" })),
-		});
-
-		// Completion Rate
-		const completionCard = container.createDiv({
-			cls: "stats-overview-card stats-view__overview-card",
-		});
-		const completionValue = completionCard.createDiv({
-			cls: "overview-value stats-view__overview-value",
-		});
-		completionValue.textContent = uiPercent(Math.round(stats.completionRate));
-		completionCard.createDiv({
-			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate(msg({ message: "Completion rate", context: "views.stats.cards.completionRate" })),
-		});
-
-		// Active Projects
-		const projectsCard = container.createDiv({
-			cls: "stats-overview-card stats-view__overview-card",
-		});
-		const projectsValue = projectsCard.createDiv({
-			cls: "overview-value stats-view__overview-value",
-		});
-		projectsValue.textContent = uiNumber(stats.activeProjects);
-		projectsCard.createDiv({
-			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate(msg({ message: "Active projects", context: "views.stats.cards.activeProjects" })),
-		});
-
-		// Average Time per Task
-		const avgTimeCard = container.createDiv({
-			cls: "stats-overview-card stats-view__overview-card",
-		});
-		const avgTimeValue = avgTimeCard.createDiv({
-			cls: "overview-value stats-view__overview-value",
-		});
-		avgTimeValue.textContent = formatTime(stats.avgTimePerTask);
-		avgTimeCard.createDiv({
-			cls: "overview-label stats-view__overview-label",
-			text: this.plugin.i18n.translate(msg({ message: "Avg time per task", context: "views.stats.cards.avgTimePerTask" })),
-		});
-	}
-
-	private renderTimeRangeStats(container: HTMLElement, stats: TimeRangeStats) {
-		container.empty();
-
-		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
-
-		// Time Tracked
-		const timeCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
-		timeCard.createDiv({
-			cls: "stat-value stats-view__stat-value",
-			text: `${formatTime(stats.overall.totalTimeSpent)} / ${formatTime(stats.overall.totalTimeEstimate)}`,
-		});
-		timeCard.createDiv({
-			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate(msg({ message: "Time tracked / estimated", context: "views.stats.cards.timeTrackedEstimated" })),
-		});
-
-		// Tasks
-		const tasksCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
-		tasksCard.createDiv({
-			cls: "stat-value stats-view__stat-value",
-			text: uiNumber(stats.overall.totalTasks),
-		});
-		tasksCard.createDiv({
-			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate(msg({ message: "Tasks", context: "views.stats.labels.tasks" })),
-		});
-
-		// Completed
-		const completedCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
-		completedCard.createDiv({
-			cls: "stat-value stats-view__stat-value",
-			text: uiNumber(stats.overall.completedTasks),
-		});
-		completedCard.createDiv({
-			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate(msg({ message: "Completed", context: "views.stats.labels.completed" })),
-		});
-
-		// Projects
-		const projectsCard = container.createDiv({ cls: "stats-stat-card stats-view__stat-card" });
-		projectsCard.createDiv({
-			cls: "stat-value stats-view__stat-value",
-			text: uiNumber(stats.overall.activeProjects),
-		});
-		projectsCard.createDiv({
-			cls: "stat-label stats-view__stat-label",
-			text: this.plugin.i18n.translate(msg({ message: "Projects", context: "views.stats.labels.projects" })),
-		});
-	}
-
 	private async renderProjectStats(container: HTMLElement, projects: ProjectStats[]) {
 		container.empty();
 
 		if (projects.length === 0) {
-			container.createDiv({
-				cls: "stats-no-data stats-view__no-data",
-				text: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })),
-			});
+			renderEmptyState(container, { message: this.plugin.i18n.translate(msg({ message: "No project data available", context: "views.stats.noProjectData" })) });
 			return;
 		}
 
@@ -1239,7 +973,7 @@ export class StatsView extends ItemView {
 			const progressContainer = contentGrid.createDiv({
 				cls: "stats-view__progress-container",
 			});
-			this.renderProgressCircle(
+			renderCompletion(
 				progressContainer,
 				completionRate,
 				project.completedTaskCount,
@@ -1313,7 +1047,7 @@ export class StatsView extends ItemView {
 			try {
 				const trendData = await this.calculateProjectTrend(project.projectName);
 				if (trendData.length > 0 && trendData.some((d) => d.value > 0)) {
-					this.renderSparkline(sparklineEl, trendData);
+					renderSparkline(sparklineEl, trendData);
 				} else {
 					trendContainer.remove();
 				}
@@ -1324,55 +1058,6 @@ export class StatsView extends ItemView {
 		}
 	}
 
-	private renderProgressCircle(
-		container: HTMLElement,
-		percentage: number,
-		completed: number,
-		total: number
-	) {
-		const size = 60;
-		const strokeWidth = 5;
-		const radius = (size - strokeWidth) / 2;
-		const circumference = 2 * Math.PI * radius;
-		const offset = circumference - (percentage / 100) * circumference;
-
-		const svg = activeWindow.createSvg("svg");
-		svg.setAttribute("width", size.toString());
-		svg.setAttribute("height", size.toString());
-		svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
-		svg.classList.add("stats-view__progress-circle-svg");
-
-		const backgroundCircle = activeWindow.createSvg("circle");
-		backgroundCircle.setAttribute("cx", (size / 2).toString());
-		backgroundCircle.setAttribute("cy", (size / 2).toString());
-		backgroundCircle.setAttribute("r", radius.toString());
-		backgroundCircle.classList.add("stats-view__progress-circle-bg");
-
-		const foregroundCircle = activeWindow.createSvg("circle");
-		foregroundCircle.setAttribute("cx", (size / 2).toString());
-		foregroundCircle.setAttribute("cy", (size / 2).toString());
-		foregroundCircle.setAttribute("r", radius.toString());
-		foregroundCircle.setAttribute("stroke-dasharray", `${circumference} ${circumference}`);
-		foregroundCircle.setAttribute("stroke-dashoffset", offset.toString());
-		foregroundCircle.classList.add("stats-view__progress-circle-fg");
-
-		const text = activeWindow.createSvg("text");
-		text.setAttribute("x", "50%");
-		text.setAttribute("y", "50%");
-		text.setAttribute("dy", "0.3em");
-		text.setAttribute("text-anchor", "middle");
-		text.classList.add("stats-view__progress-circle-text");
-		text.textContent = uiPercent(Math.round(percentage));
-
-		svg.appendChild(backgroundCircle);
-		svg.appendChild(foregroundCircle);
-		svg.appendChild(text);
-
-		container.appendChild(svg);
-
-		const label = container.createDiv({ cls: "stats-view__progress-label" });
-		label.textContent = uiText(msg({ message: "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}", context: "views/StatsView: StatsView.renderProgressCircle display" }), { completed: completed, total: total });
-	}
 
 	/**
 	 * Calculate trend data for a project over the last 30 days
@@ -1435,51 +1120,6 @@ export class StatsView extends ItemView {
 	/**
 	 * Render SVG sparkline
 	 */
-	private renderSparkline(container: HTMLElement, data: TrendDataPoint[]) {
-		container.empty();
-
-		if (data.length === 0) {
-			return;
-		}
-
-		const width = 100;
-		const height = 20;
-		const maxValue = Math.max(...data.map((d) => d.value));
-
-		if (maxValue === 0) {
-			return;
-		}
-
-		const svg = activeWindow.createSvg("svg");
-		svg.setAttribute("width", width.toString());
-		svg.setAttribute("height", height.toString());
-		svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-		svg.classList.add("stats-view__sparkline-svg");
-
-		// Create path
-		const path = activeWindow.createSvg("path");
-
-		let pathD = "";
-		data.forEach((point, index) => {
-			const x = (index / (data.length - 1)) * width;
-			const y = height - (point.value / maxValue) * height;
-
-			if (index === 0) {
-				pathD += `M ${x} ${y}`;
-			} else {
-				pathD += ` L ${x} ${y}`;
-			}
-		});
-
-		path.setAttribute("d", pathD);
-		path.setAttribute("fill", "none");
-		path.setAttribute("stroke", "currentColor");
-		path.setAttribute("stroke-width", "1.5");
-		path.setAttribute("opacity", "0.7");
-
-		svg.appendChild(path);
-		container.appendChild(svg);
-	}
 
 	/**
 	 * Open project drill-down modal
@@ -1531,7 +1171,7 @@ export class StatsView extends ItemView {
 		try {
 			const drilldownData = await this.getProjectDrilldownData(projectName);
 			this.currentDrilldownData = drilldownData;
-			this.renderDrilldownContent(content, drilldownData);
+			renderDrilldownContent(this, this.plugin, content, drilldownData);
 		} catch (error) {
 			tasknotesLogger.error("Error loading drill-down data:", {
 				category: "persistence",
@@ -1569,7 +1209,7 @@ export class StatsView extends ItemView {
 				this.currentDrilldownData.projectName
 			);
 			this.currentDrilldownData = updatedData;
-			this.renderDrilldownContent(modalContent as HTMLElement, updatedData);
+			renderDrilldownContent(this, this.plugin, modalContent as HTMLElement, updatedData);
 		} catch (error) {
 			tasknotesLogger.error("Error refreshing drill-down modal:", {
 				category: "stale-data",
@@ -1702,196 +1342,8 @@ export class StatsView extends ItemView {
 	/**
 	 * Render drill-down modal content
 	 */
-	private renderDrilldownContent(container: HTMLElement, data: ProjectDrilldownData) {
-		container.empty();
-
-		const formatTime = (minutes: number): string => uiDuration(Math.round(minutes));
-
-		// Overview stats with enhanced metrics
-		const overviewEl = container.createDiv({ cls: "stats-view__drilldown-overview" });
-
-		const statsGrid = overviewEl.createDiv({ cls: "stats-view__drilldown-stats" });
-
-		const totalTimeCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
-		totalTimeCard.createDiv({
-			cls: "stats-view__drilldown-value",
-			text: `${formatTime(data.totalTimeSpent)} / ${formatTime(data.totalTimeEstimate)}`,
-		});
-		totalTimeCard.createDiv({
-			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate(msg({ message: "Total time", context: "views.stats.project.totalTime" })),
-		});
-
-		const tasksCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
-		tasksCard.createDiv({
-			cls: "stats-view__drilldown-value",
-			text: uiNumber(data.tasks.length),
-		});
-		tasksCard.createDiv({
-			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate(msg({ message: "Total tasks", context: "views.stats.project.totalTasks" })),
-		});
-
-		const completionCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
-		completionCard.createDiv({
-			cls: "stats-view__drilldown-value",
-			text: uiPercent(Math.round(data.completionRate)),
-		});
-		completionCard.createDiv({
-			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate(msg({ message: "Completed: ", context: "views.advancedCalendar.timeEntry.completedPrefix" })),
-		});
-
-		// Add average time per task
-		const avgTimeCard = statsGrid.createDiv({ cls: "stats-view__drilldown-card" });
-		const avgTimeSpent = data.tasks.length > 0 ? data.totalTimeSpent / data.tasks.length : 0;
-		const avgTimeEstimate =
-			data.tasks.length > 0 ? data.totalTimeEstimate / data.tasks.length : 0;
-		avgTimeCard.createDiv({
-			cls: "stats-view__drilldown-value",
-			text: `${formatTime(avgTimeSpent)} / ${formatTime(avgTimeEstimate)}`,
-		});
-		avgTimeCard.createDiv({
-			cls: "stats-view__drilldown-label",
-			text: this.plugin.i18n.translate(msg({ message: "Avg per task", context: "views.stats.project.average" })),
-		});
-
-		// Activity chart
-		const chartSection = container.createDiv({ cls: "stats-view__drilldown-section" });
-		chartSection.createDiv({
-			cls: "stats-view__drilldown-heading",
-			text: this.plugin.i18n.translate(msg({ message: "Activity over time (last 30 days)", context: "views.stats.project.activity" })),
-		});
-		const chartEl = chartSection.createDiv({ cls: "stats-view__activity-chart" });
-		this.renderActivityChart(chartEl, data.timeByDay);
-
-		// All project tasks section (improved from just recent activity)
-		const tasksSection = container.createDiv({ cls: "stats-view__drilldown-section" });
-		const tasksHeaderContainer = tasksSection.createDiv({ cls: "stats-view__section-header" });
-		tasksHeaderContainer.createDiv({
-			cls: "stats-view__drilldown-heading",
-			text: this.plugin.i18n.translate(msg({ message: "All project tasks", context: "views.stats.project.allTasks" })),
-		});
-
-		// Add filter controls for tasks
-		const taskFilters = tasksHeaderContainer.createDiv({ cls: "stats-view__task-filters" });
-		const statusFilter = taskFilters.createEl("select", { cls: "stats-view__filter-select" });
-		statusFilter.createEl("option", {
-			value: "all",
-			text: this.plugin.i18n.translate(msg({ message: "All tasks", context: "views.stats.filters.allTasks" })),
-		});
-		statusFilter.createEl("option", {
-			value: "active",
-			text: this.plugin.i18n.translate(msg({ message: "Active only", context: "views.stats.filters.activeOnly" })),
-		});
-		statusFilter.createEl("option", {
-			value: "completed",
-			text: this.plugin.i18n.translate(msg({ message: "Completed only", context: "views.stats.filters.completedOnly" })),
-		});
-
-		const taskList = tasksSection.createDiv({ cls: "stats-view__task-list" });
-
-		// Function to render filtered tasks
-		const renderTasks = (filterStatus = "all") => {
-			taskList.empty();
-
-			let filteredTasks = data.tasks;
-			if (filterStatus === "active") {
-				filteredTasks = data.tasks.filter(
-					(task) => !this.plugin.statusManager.isCompletedStatus(task.status)
-				);
-			} else if (filterStatus === "completed") {
-				filteredTasks = data.tasks.filter((task) =>
-					this.plugin.statusManager.isCompletedStatus(task.status)
-				);
-			}
-
-			// Sort tasks: incomplete first, then by last activity
-			filteredTasks.sort((a, b) => {
-				const aCompleted = this.plugin.statusManager.isCompletedStatus(a.status);
-				const bCompleted = this.plugin.statusManager.isCompletedStatus(b.status);
-
-				if (aCompleted !== bCompleted) {
-					return aCompleted ? 1 : -1; // Incomplete tasks first
-				}
-
-				// Sort by last activity (time entries or modification date)
-				const getLastActivity = (task: TaskInfo): number => {
-					if (task.timeEntries?.length) {
-						return Math.max(
-							...task.timeEntries.map((e) => new Date(e.startTime).getTime())
-						);
-					}
-					return task.dateModified ? new Date(task.dateModified).getTime() : 0;
-				};
-
-				return getLastActivity(b) - getLastActivity(a);
-			});
-
-			if (filteredTasks.length === 0) {
-				taskList.createDiv({
-					cls: "stats-view__no-data",
-					text: this.plugin.i18n.translate(msg({ message: "No tasks found", context: "views.stats.noTasks" })),
-				});
-				return;
-			}
-
-			// Show task count
-			const countEl = taskList.createDiv({ cls: "stats-view__task-count" });
-			countEl.textContent = uiText(msg({ message: "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}", context: "views/StatsView: StatsView.renderDrilldownContent.renderTasks display" }), { length: filteredTasks.length });
-
-			for (const task of filteredTasks) {
-				// Create TaskCard with checkbox disabled as requested
-				const visibleProperties = this.plugin.settings.defaultVisibleProperties
-					? convertInternalToUserProperties(
-							this.plugin.settings.defaultVisibleProperties,
-							this.plugin
-						)
-					: undefined;
-				const taskCard = createTaskCard(task, this.plugin, visibleProperties);
-
-				taskList.appendChild(taskCard);
-			}
-		};
-
-		// Initial render
-		renderTasks("all");
-
-		// Add filter event listener
-		this.registerDomEvent(statusFilter, "change", () => {
-			renderTasks(statusFilter.value);
-		});
-	}
 
 	/**
 	 * Render activity chart using simple bars
 	 */
-	private renderActivityChart(container: HTMLElement, timeByDay: TimeByDay[]) {
-		container.empty();
-
-		if (timeByDay.length === 0) return;
-
-		const maxTime = Math.max(...timeByDay.map((d) => d.timeSpent));
-		if (maxTime === 0) {
-			container.createDiv({
-				cls: "stats-view__no-data",
-				text: this.plugin.i18n.translate(msg({ message: "No time tracking data", context: "views.stats.project.noTracking" })),
-			});
-			return;
-		}
-
-		const chartContainer = container.createDiv({ cls: "stats-view__bar-chart" });
-
-		for (const day of timeByDay) {
-			const barContainer = chartContainer.createDiv({ cls: "stats-view__bar-container" });
-
-			const bar = barContainer.createDiv({ cls: "stats-view__bar" });
-			const height = (day.timeSpent / maxTime) * 40; // Max 40px height
-			bar.style.height = `${height}px`;
-
-			// Tooltip
-			const tooltip = uiText(msg({ message: "{date}: {duration}", context: "statistics daily time tooltip" }), { date: formatUIDate(new Date(day.date), "MMM d"), duration: uiDuration(Math.round(day.timeSpent)) });
-			bar.setAttribute("title", tooltip);
-		}
-	}
 }

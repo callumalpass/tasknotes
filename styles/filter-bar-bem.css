@@ -32,7 +32,7 @@
   right: 2px;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--tn-radius-full);
   background-color: var(--tn-color-recurring, var(--interactive-accent));
 }
 
@@ -173,11 +173,11 @@
 .tasknotes-plugin .filter-date-help-button {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border-radius: var(--tn-radius-full);
     border: 1px solid var(--text-muted);
     background: transparent;
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: var(--tn-type-xs);
     cursor: var(--cursor-link, pointer);
     display: flex;
     align-items: center;
@@ -223,7 +223,7 @@
     background: var(--background-modifier-hover);
     border-radius: var(--radius-s);
     font-family: var(--font-monospace);
-    font-size: 11px;
+    font-size: var(--tn-type-2xs);
 }
 
 .tasknotes-plugin .filter-bar__filter-toggle {
@@ -423,7 +423,7 @@
     margin-right: var(--tn-space-half);
     color: var(--text-faint);
     cursor: grab;
-    font-size: 14px;
+    font-size: var(--tn-type-md);
     user-select: none;
     opacity: 0;
     transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
@@ -437,7 +437,7 @@
     width: 12px;
     height: 2px;
     background: currentColor;
-    border-radius: 1px;
+    border-radius: var(--tn-radius-xs);
     box-shadow:
         0 -4px 0 currentColor,
         0 4px 0 currentColor;
@@ -601,7 +601,7 @@
     content: "▼";
     margin-right: var(--tn-space-half);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 10px;
+    font-size: var(--tn-type-2xs);
     color: var(--text-muted);
 }
 
@@ -790,7 +790,7 @@
     padding: var(--tn-space-half) 0; /* Let parent padding handle horizontal space */
     background: transparent; /* No background */
     border: 1px; /* No border */
-    border-radius: 0;
+    border-radius: var(--tn-radius-none);
     flex-wrap: wrap;
     transition: background-color 0.2s ease;
 }
@@ -969,7 +969,7 @@
     border-radius: var(--radius-s);
     color: var(--text-accent);
     cursor: var(--cursor-link, pointer);
-    font-size: 16px;
+    font-size: var(--tn-type-base);
     font-weight: 700;
     transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
     display: flex;
@@ -1037,7 +1037,7 @@
         min-width: var(--input-height);
         justify-content: center;
         width: var(--input-height);
-        font-size: 0; /* Hide text */
+        font-size: var(--tn-type-hidden); /* Hide text */
     }
     
     .tasknotes-plugin .filter-bar__templates-button .filter-bar__chevron-container {
@@ -1096,7 +1096,7 @@
         min-width: var(--input-height);
         justify-content: center;
         width: var(--input-height);
-        font-size: 0; /* Hide text */
+        font-size: var(--tn-type-hidden); /* Hide text */
     }
     
     .tasknotes-plugin .filter-bar__templates-button .filter-bar__chevron-container {

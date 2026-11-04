@@ -1,3 +1,4 @@
+import { renderPriorityGlyph, priorityGlyphState } from "../../../ui/kit/glyphs";
 import { uiText } from "../../../i18n/runtime";
 import { configLabel } from "../../../i18n/configLabels";
 import { uiData } from "../../../i18n/dataText";
@@ -271,6 +272,15 @@ function renderPriorityList(
 			priority.icon || ""
 		);
 
+		const glyph = activeWindow.createSpan({ cls: "tasknotes-settings__value-glyph" });
+		const updateGlyph = () => {
+			glyph.empty();
+			glyph.style.color = priority.color;
+			if (priority.icon) setIcon(glyph, priority.icon);
+			else renderPriorityGlyph(glyph, priorityGlyphState(priority.value, plugin.settings.customPriorities));
+		};
+		updateGlyph();
+
 		const card = createCard(container, {
 			id: priority.id,
 			draggable: true,
@@ -278,6 +288,7 @@ function renderPriorityList(
 			defaultCollapsed: true,
 			colorIndicator: { color: priority.color },
 			header: {
+				glyph,
 				primaryText: configLabel(priority) || priority.value || uiText(msg({ message: "Untitled", context: "untitled custom status or priority heading" })),
 				actions: [
 					createDeleteHeaderButton(() => {
@@ -359,6 +370,7 @@ function renderPriorityList(
 
 		valueInput.addEventListener("input", () => {
 			priority.value = valueInput.value;
+			updateGlyph();
 			save();
 			if (onPrioritiesChanged) onPrioritiesChanged();
 		});
@@ -375,17 +387,13 @@ function renderPriorityList(
 
 		colorInput.addEventListener("change", () => {
 			priority.color = readThemeColorInput(colorInput, priority.color || "#6366f1");
-			const colorIndicator = card.querySelector(
-				".tasknotes-settings__card-color-indicator"
-			) as HTMLElement;
-			if (colorIndicator) {
-				colorIndicator.style.backgroundColor = priority.color;
-			}
+			updateGlyph();
 			save();
 		});
 
 		iconInput.addEventListener("change", () => {
 			priority.icon = iconInput.value.trim() || undefined;
+			updateGlyph();
 			save();
 		});
 
