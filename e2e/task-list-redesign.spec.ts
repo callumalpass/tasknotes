@@ -131,6 +131,14 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '0');
     await longCard.locator('.task-card__context-menu').focus();
     await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '1');
+    const hiddenDates = longCard.locator('.task-card__date-slot[hidden]');
+    await expect(hiddenDates).toHaveCount(1);
+    const summary = longCard.locator('.task-card__metadata-overflow');
+    await expect(summary).toBeVisible();
+    await expect(summary).toHaveAttribute('tabindex', '0');
+    for (const label of await hiddenDates.locator('[aria-label]').evaluateAll(elements => elements.map(element => element.getAttribute('aria-label')!))) {
+      expect(await summary.getAttribute('aria-label')).toContain(label);
+    }
     expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: `test-results/list-redesign-${theme}-narrow.png` });
     await items.evaluate(element => (element as HTMLElement).style.width = '170px');
@@ -251,8 +259,18 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
         document.body.classList.add(theme);
         document.body.classList.toggle('is-mobile', width === 430);
       }, { theme, width });
-      await expect(timerCard.locator('.task-card__date-slot--due')).toBeVisible();
-      await expect(timerCard.locator('.task-card__date-slot--scheduled')).toBeVisible();
+      for (const field of ['due', 'scheduled']) {
+        const date = timerCard.locator(`.task-card__date-slot--${field}`);
+        if (width === 1180 || !await date.evaluate(element => element.hidden)) {
+          await expect(date).toBeVisible();
+        } else {
+          const summary = timerCard.locator('.task-card__metadata-overflow');
+          await expect(summary).toBeVisible();
+          await expect(summary).toHaveAttribute('tabindex', '0');
+          expect(await summary.getAttribute('aria-label')).toContain(await date.locator('[aria-label]').getAttribute('aria-label'));
+        }
+      }
+      await expect(timerCard.locator('.task-card__date-slot:not([hidden])')).not.toHaveCount(0);
       expect(await timerCard.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       await page.screenshot({ path: `test-results/list-redesign-timer-${theme}-${width}.png` });
     }

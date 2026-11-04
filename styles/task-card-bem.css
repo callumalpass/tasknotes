@@ -149,6 +149,7 @@
 
 .tasknotes-plugin .task-card__metadata-overflow {
     flex: none;
+    order: 4;
     color: var(--tn-text-muted);
     font-variant-numeric: tabular-nums;
     padding-inline: var(--tn-space-1);

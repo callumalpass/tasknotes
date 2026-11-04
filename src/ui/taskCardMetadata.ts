@@ -42,7 +42,8 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			atoms.push(...chips);
 		} else atoms.push(property);
 	}
-	const summary = values.createSpan({
+	const dateSlots = Array.from(metadataLine.querySelectorAll<HTMLElement>(".task-card__date-slot")).filter((slot) => slot.childElementCount > 0);
+	const summary = metadataLine.createSpan({
 		cls: "task-card__metadata-overflow",
 		attr: { tabindex: "0" },
 	});
@@ -51,22 +52,27 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			cleanupTaskCardMetadata(metadataLine);
 			return;
 		}
-		if (values.clientWidth === 0) return;
+		if (metadataLine.clientWidth === 0) return;
 		for (const atom of atoms) atom.hidden = false;
 		for (const group of groups) group.property.hidden = false;
+		for (const slot of dateSlots) slot.hidden = false;
 		summary.hidden = true;
-		const availableWidth = values.getBoundingClientRect().width;
 		const fits = () =>
-			[...atoms, summary].every((element) => {
+			[...atoms, ...dateSlots, summary].every((element) => {
 				if (element.hidden) return true;
 				const right = element.getBoundingClientRect().right;
-				return right <= values.getBoundingClientRect().left + availableWidth + 0.5;
+				const boundary = atoms.includes(element) ? values.getBoundingClientRect().right : metadataLine.getBoundingClientRect().right;
+				return right <= boundary + 0.5;
 			});
 		if (fits()) return;
 		summary.hidden = false;
-		summary.textContent = `+${atoms.length}`;
+		summary.textContent = `+${atoms.length + dateSlots.length}`;
 		for (const atom of atoms) atom.hidden = true;
 		for (const group of groups) group.property.hidden = true;
+		for (const slot of [...dateSlots].reverse()) {
+			if (fits()) break;
+			slot.hidden = true;
+		}
 		for (const atom of atoms) {
 			atom.hidden = false;
 			for (const group of groups)
@@ -75,9 +81,9 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		}
 		for (const group of groups)
 			group.property.hidden = group.chips.every((chip) => chip.hidden);
-		const hidden = atoms
+		const hidden = [...atoms, ...dateSlots]
 			.filter((atom) => atom.hidden)
-			.map((atom) => atom.getAttribute("aria-label") || atom.textContent || "");
+			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
 		summary.textContent = `+${hidden.length}`;
 		const label = hidden.join(" · ");
 		summary.setAttribute("aria-label", label);
