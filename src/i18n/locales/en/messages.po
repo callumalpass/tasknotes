@@ -9212,6 +9212,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "On the {week} {day} of each month"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Open"
+msgstr "Open"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -12253,6 +12258,11 @@ msgstr "Task created, but a follow-up step failed: {message}"
 msgctxt "kanban creation feedback"
 msgid "Task created, but hidden by the current view"
 msgstr "Task created, but hidden by the current view"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Task created, but hidden by this view"
+msgstr "Task created, but hidden by this view"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"

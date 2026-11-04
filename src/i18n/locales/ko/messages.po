@@ -9211,6 +9211,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "매월 {week} {day}에"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Open"
+msgstr "열기"
+
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.deviceCode.steps.open"
@@ -12252,6 +12257,11 @@ msgstr "작업을 만들었지만 후속 단계가 실패했습니다: {message}
 msgctxt "kanban creation feedback"
 msgid "Task created, but hidden by the current view"
 msgstr "작업을 만들었지만 현재 보기에서는 숨겨져 있습니다"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Task created, but hidden by this view"
+msgstr "작업이 생성되었지만 이 보기에서는 숨겨져 있습니다"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"

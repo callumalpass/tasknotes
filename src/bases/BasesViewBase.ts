@@ -1,6 +1,8 @@
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { installTaskViewKeyboard } from "../ui/taskViewKeyboard";
+import { inferBasesCreationFolder } from "./basesFilterDefaults";
+import { showToast } from "../ui/kit/toast";
 import { msg } from "@lingui/core/macro";
 import { Component, App, Notice } from "obsidian";
 import type { BasesPropertyId, BasesQueryResult, BasesViewConfig, EventRef } from "obsidian";
@@ -526,10 +528,19 @@ export abstract class BasesViewBase extends Component {
 		// Open TaskNotes creation modal
 		// Use this.app if available (set by Bases), otherwise fall back to plugin.app
 		const modal = new TaskCreationModal(app, this.plugin, {
+			targetFolder: inferBasesCreationFolder(this.config),
 			prePopulatedValues: taskCreationData,
 			onTaskCreated: (task: TaskInfo) => {
 				// Refresh the view after task creation so it appears immediately
 				this.onViewTaskCreated(task);
+				const timer = window.setTimeout(() => {
+					if (!this.rootElement?.isConnected || this.data?.data.some((entry) => entry.file.path === task.path)) return;
+					showToast({
+						message: uiText(msg({ message: "Task created, but hidden by this view", context: "bases creation feedback" })),
+						action: { label: uiText(msg({ message: "Open", context: "bases creation feedback" })), run: () => { void app.workspace.openLinkText(task.path, "", false); } },
+					});
+				}, 1500);
+				this.register(() => window.clearTimeout(timer));
 			},
 		});
 

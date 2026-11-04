@@ -68,6 +68,7 @@ export function getTaskCreationFailureNoticeMessage(error: unknown): string {
 }
 
 export interface TaskCreationOptions {
+	targetFolder?: string;
 	prePopulatedValues?: TaskCreationPrepopulatedValues;
 	onTaskCreated?: (task: TaskInfo) => void;
 	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
@@ -435,6 +436,7 @@ export class TaskCreationModal extends TaskModal {
 			// Disable defaults since they were already applied to form fields in initializeFormData()
 			result = await this.plugin.taskService.createTask(this.buildTaskData(), {
 				applyDefaults: false,
+				targetFolder: this.options.targetFolder,
 			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to create task:", {
