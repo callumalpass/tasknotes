@@ -62,6 +62,7 @@ for (const scalar of [false, true]) {
         const plugin = (window as any).app.plugins.plugins.tasknotes;
         await plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(path));
       }, path);
+      await page.locator('.modal .tn-task-modal__details-toggle').click();
       const input = page.locator('.modal input[placeholder="tag1, tag2"]');
       await expect(input).toHaveValue(/task\/context\/onscreen/);
       await input.fill(scalar ? 'task' : 'task, health');

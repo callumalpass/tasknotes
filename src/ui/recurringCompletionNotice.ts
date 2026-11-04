@@ -5,7 +5,9 @@ import type { TaskInfo } from "../types";
 import { getDatePart, parseDateToLocal } from "../utils/dateUtils";
 import { getNextUncompletedOccurrence } from "../core/recurrence";
 import { showToast } from "./kit/toast";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
+const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionNotice" });
 
 export function showRecurringCompletionNotice(
 	plugin: TaskNotesPlugin,
@@ -57,7 +59,17 @@ export function showRecurringCompletionNotice(
 		action: {
 			label: translate(msg({ message: "Undo", context: "notices.recurringCompletion.undo" })),
 			run: async () => {
-				if (!(await undo())) throw new Error("Occurrence changed since completion");
+				let restored: boolean;
+				try {
+					restored = await undo();
+				} catch (error) {
+					tasknotesLogger.error("Recurring completion undo failed", {
+						category: "persistence", operation: "recurring-completion-undo", error,
+					});
+					showToast({ message: translate(msg({ message: "Could not undo the recurring task change.", context: "notices.recurringCompletion.failed" })) });
+					throw error;
+				}
+				if (!restored) throw new Error("Occurrence changed since completion");
 				showToast({ message: translate(msg({ message: "Recurring task change undone.", context: "notices.recurringCompletion.undone" })) });
 			},
 		},

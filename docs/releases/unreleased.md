@@ -61,3 +61,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2494, #2498) Fixed time entries in the calendar's week and day views squeezing every event on their day, even where nothing overlapped. Time entries now sit in the narrow strip on the right only where they overlap a scheduled task, timeblock or calendar event. Elsewhere, events and time entries use the full column width, as they did before 4.15.
 - (#2494) The previous and next buttons in the calendar toolbar now show larger, clearer arrows.
   - Thanks to @RumiaKitinari for reporting both, and @mgreen3 for the related report
+- (#2412) Restore distinct failure feedback when recurring-task Undo cannot write a note, rather than reporting a changed-note conflict.
+  - Thanks to @PaulSnyder for the recurring-completion feedback request.
+- (#2396) Complete the pending recurring occurrence from the list and board keyboard action palette, rather than recording today's date.
+  - Thanks to @martin-forge for reporting moved-occurrence identity problems.

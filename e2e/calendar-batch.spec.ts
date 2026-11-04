@@ -153,11 +153,15 @@ test("group dragging keeps relative days, local times and deadlines, and offers 
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	await dragByColumn(page, event(page, "Alpha"));
-	await expect.poll(() => taskDates(page, "Alpha")).toEqual({ scheduled: `${days[1]}T09:00`, due: `${days[2]}T17:00` });
-	expect(await taskDates(page, "Bravo")).toEqual({ scheduled: `${days[2]}T11:30`, due: `${days[2]}T16:00` });
+	await expect.poll(() => Promise.all([taskDates(page, "Alpha"), taskDates(page, "Bravo")])).toEqual([
+		{ scheduled: `${days[1]}T09:00`, due: `${days[2]}T17:00` },
+		{ scheduled: `${days[2]}T11:30`, due: `${days[2]}T16:00` },
+	]);
 	await page.getByRole("button", { name: "Undo", exact: true }).click();
-	await expect.poll(async () => (await taskDates(page, "Bravo")).scheduled).toBe(`${days[1]}T11:30`);
-	expect((await taskDates(page, "Alpha")).scheduled).toBe(`${days[0]}T09:00`);
+	await expect.poll(() => Promise.all([taskDates(page, "Alpha"), taskDates(page, "Bravo")])).toEqual([
+		{ scheduled: `${days[0]}T09:00`, due: `${days[2]}T17:00` },
+		{ scheduled: `${days[1]}T11:30`, due: `${days[2]}T16:00` },
+	]);
 });
 
 test("peer previews precede writes and Escape restores all placements", async () => {

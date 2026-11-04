@@ -53,7 +53,7 @@ for (const mode of ["creation", "edit"] as const) {
 					}, mode);
 				}
 				try {
-					const save = modal.getByRole("button", { name: "Save", exact: true });
+					const save = modal.getByRole("button", { name: mode === "creation" ? "Create task" : "Save", exact: true });
 					if (action === "button") await save.click();
 					else if (action === "keyboard") await title.press("Control+Enter");
 					else {
@@ -67,7 +67,7 @@ for (const mode of ["creation", "edit"] as const) {
 						failure === "validation"
 							? modal.locator(".tn-task-modal__field-error").filter({ hasText: /title/i })
 							: page
-									.locator(".notice")
+									.locator(".tn-toast, .notice")
 									.filter({ hasText: /Issue 2421 simulated write failure/ })
 									.last()
 					).toBeVisible();
@@ -86,7 +86,7 @@ for (const mode of ["creation", "edit"] as const) {
 					});
 				}
 				await title.fill(`Issue 2421 corrected ${mode} ${action} ${failure}`);
-				await modal.getByRole("button", { name: "Save", exact: true }).click();
+				await modal.getByRole("button", { name: mode === "creation" ? "Create task" : "Save", exact: true }).click();
 				await expect(modal).toHaveCount(0);
 			});
 		}

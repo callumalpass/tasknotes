@@ -38,7 +38,7 @@ async function state(path: string) {
 }
 
 function notice(title: string) {
-  return instance.page.locator('.notice').filter({ hasText: title });
+  return instance.page.locator('.tn-toast').filter({ hasText: title });
 }
 
 test('annual checkoff shows years and Undo restores that occurrence, due offset and checklist', async () => {
@@ -64,9 +64,34 @@ test('stale Undo cannot undo a later completion; latest Undo removes only its ow
   const notices = notice(title);
   await expect(notices).toHaveCount(2);
   await notices.first().getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(instance.page.locator('.notice').filter({ hasText: 'Cannot undo:' })).toBeVisible();
+  await expect(instance.page.locator('.tn-toast').filter({ hasText: 'Cannot undo:' })).toBeVisible();
   expect((await state(path)).task.scheduled).toBe('2037-10-21');
   await notice(title).last().getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(async () => (await state(path)).task.scheduled).toBe('2036-10-21');
+  expect((await state(path)).task.complete_instances).toEqual(['2035-10-21']);
+});
+
+test('completion receipts reject stale restoration while the latest restores only its occurrence', async () => {
+  const path = await createTask('Issue 2412 guarded receipts');
+  const result = await instance.page.evaluate(async path => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    const receipts: Array<() => Promise<boolean>> = [];
+    for (let index = 0; index < 2; index++) {
+      const task = await plugin.cacheManager.getTaskInfo(path);
+      await plugin.toggleRecurringTaskComplete(task, undefined, {
+        onUndo: (undo: () => Promise<boolean>) => receipts.push(undo),
+      });
+    }
+    const count = receipts.length;
+    const stale = await receipts[0]();
+    const afterStale = await plugin.cacheManager.getTaskInfo(path);
+    const latest = await receipts[1]();
+    return { count, stale, scheduledAfterStale: afterStale.scheduled, latest };
+  }, path);
+  expect(result.count).toBe(2);
+  expect(result.stale).toBe(false);
+  expect(result.scheduledAfterStale).toBe('2037-10-21');
+  expect(result.latest).toBe(true);
   await expect.poll(async () => (await state(path)).task.scheduled).toBe('2036-10-21');
   expect((await state(path)).task.complete_instances).toEqual(['2035-10-21']);
 });
@@ -142,7 +167,7 @@ test('edits arriving during completion are never captured as reversible writes',
     } finally { release(); service.webhookNotifier = original; }
   }, path);
   await notice(title).getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(instance.page.locator('.notice').filter({ hasText: 'Cannot undo:' }).last()).toBeVisible();
+  await expect(instance.page.locator('.tn-toast').filter({ hasText: 'Cannot undo:' }).last()).toBeVisible();
   expect((await state(path)).task.scheduled).toBe('2036-10-21');
   expect((await state(path)).content).toContain('New work during completion');
 });
@@ -194,7 +219,7 @@ test('materialized completion receipts exclude later parent completions during w
     } finally { release(); service.webhookNotifier = original; }
   }, path);
   await notice(title).getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(instance.page.locator('.notice').filter({ hasText: 'Cannot undo:' }).last()).toBeVisible();
+  await expect(instance.page.locator('.tn-toast').filter({ hasText: 'Cannot undo:' }).last()).toBeVisible();
   expect((await state(path)).task.complete_instances).toEqual(['2035-10-21', '2036-10-21']);
   expect((await state(path)).task.scheduled).toBe('2037-10-21');
 });
@@ -219,7 +244,7 @@ test('a failed occurrence write rolls back the parent Undo rather than leaving p
     return occurrence.path as string;
   }, path);
   await notice(title).getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(instance.page.locator('.notice').filter({ hasText: 'Could not undo the recurring task change.' })).toBeVisible();
+  await expect(instance.page.locator('.tn-toast').filter({ hasText: 'Could not undo the recurring task change.' })).toBeVisible();
   expect((await state(path)).task.scheduled).toBe('2036-10-21');
   expect((await state(path)).task.complete_instances).toEqual(['2035-10-21']);
   expect((await state(occurrencePath)).task.status).toBe('done');

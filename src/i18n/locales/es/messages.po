@@ -3729,6 +3729,11 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "No se pudo resolver: {entries}"
 
+#: src/ui/recurringCompletionNotice.ts
+msgctxt "notices.recurringCompletion.failed"
+msgid "Could not undo the recurring task change."
+msgstr "No se pudo deshacer el cambio de la tarea recurrente."
+
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."

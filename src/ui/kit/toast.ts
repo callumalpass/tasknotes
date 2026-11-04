@@ -41,6 +41,7 @@ export async function undoLatest(scope: object): Promise<void> {
 						?.dispatchEvent(new Event("tn-dismiss"));
 			}
 		} catch {
+			if (toastRevision !== revision) return;
 			showToast({
 				message: `${action.message} · ${uiText(
 					msg({

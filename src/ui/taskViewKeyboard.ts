@@ -384,7 +384,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			if (!task) return;
 			const anchor = cardFor(focusedPath) ?? root;
 			if (mod && key === "k") {
-				new TaskActionPaletteModal(plugin.app, task, plugin, options.targetDate?.(focusedPath) ?? new Date(), (existing) => {
+				const targetDate = options.targetDate?.(focusedPath) ?? (task.recurrence
+					? await plugin.taskService.resolveRecurringTaskActionDate(task)
+					: new Date());
+				new TaskActionPaletteModal(plugin.app, task, plugin, targetDate, (existing) => {
 					const properties: TaskAction[] = [
 						"status",
 						"priority",

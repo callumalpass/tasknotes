@@ -22,6 +22,7 @@ async function open(name: string) {
     await plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(path));
   }, `${folder}/${name}.md`);
   await expect(page.locator('.modal textarea.title-input')).toBeVisible();
+  await page.locator('.modal .tn-task-modal__details-toggle').click();
 }
 
 test.beforeAll(async () => {
