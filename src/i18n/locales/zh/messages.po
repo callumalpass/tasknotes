@@ -3893,6 +3893,7 @@ msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "创建子任务"
 
+#: src/bases/calendarKeyboard.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Create task"
@@ -4373,6 +4374,7 @@ msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "日期"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Day"
@@ -8118,6 +8120,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "星期一"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Month"
@@ -8206,6 +8209,7 @@ msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "下移"
 
+#: src/bases/calendarKeyboard.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Move focus"
@@ -8354,6 +8358,7 @@ msgctxt "bases/BasesViewBase: BasesViewBase.injectNewTaskButton.onClick display"
 msgid "New Task"
 msgstr "新任务"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
@@ -9963,6 +9968,7 @@ msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
 msgid "Preview selected time range"
 msgstr "预览所选时间范围"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
@@ -13301,6 +13307,7 @@ msgctxt "views.agenda.today"
 msgid "Today"
 msgstr "今天"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.today"
@@ -14173,6 +14180,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "星期三"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "Week"

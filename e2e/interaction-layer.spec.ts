@@ -156,7 +156,7 @@ test('round one: current values, palette order, viewport bounds and theme parity
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
 });
 
-test('round one: moved rows retain focus, reveal destination and emit one Undo result', async () => {
+test('grouped triage keeps queue focus, highlights arrival and emits one Undo result', async () => {
   const root = await openView('tasknotesTaskList', 'Grouped movement', true, 'status');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.keyboard.press('j');
@@ -164,8 +164,8 @@ test('round one: moved rows retain focus, reveal destination and emit one Undo r
   await page.keyboard.press('s');
   await page.locator('.tn-picker__row[data-picker-id="done"]').click();
   const destination = root.locator(`.task-card[data-task-path="${path}"]`);
-  await expect(destination).toHaveClass(/tn-task-focused/);
-  await expect(destination).toBeInViewport();
+  await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', `${folder}/Task 001.md`);
+  await expect(root.locator('.tn-task-focused')).toBeInViewport();
   await expect(destination).toHaveClass(/tn-task-arrived/);
   await expect.poll(() => destination.evaluate(element => element.isConnected && getComputedStyle(element).transitionDuration.split(',').every(value => value.trim() === '0s'))).toBe(true);
   await expect(page.locator('.tn-toast')).toHaveCount(1);

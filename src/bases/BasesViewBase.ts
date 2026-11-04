@@ -689,12 +689,12 @@ export abstract class BasesViewBase extends Component {
 	 * Subclasses can override for custom behavior.
 	 * Includes performance monitoring for search operations.
 	 */
-	protected handleSearch(term: string): void {
+	protected async handleSearch(term: string): Promise<void> {
 		const startTime = performance.now();
 		this.currentSearchTerm = term;
 
 		// Re-render with filtered tasks
-		void this.render();
+		await this.render();
 
 		const filterTime = performance.now() - startTime;
 
@@ -879,7 +879,7 @@ export abstract class BasesViewBase extends Component {
 	protected renderSearchNoResults(container: HTMLElement): void {
 		renderBasesSearchNoResults(container, this.currentSearchTerm, () => {
 			this.searchBox?.setValue("");
-			this.handleSearch("");
+			void this.handleSearch("");
 		});
 	}
 
@@ -893,14 +893,15 @@ export abstract class BasesViewBase extends Component {
 	protected setupSelectionHandling(): void {
 		if (!this.rootElement) return;
 		const hasTaskKeyboard =
-			this.type === "tasknotesTaskList" || this.type === "tasknotesKanban";
-		if (hasTaskKeyboard)
+			this.type === "tasknotesTaskList" || this.type === "tasknotesKanban" || this.type === "tasknotesCalendar";
+		if (hasTaskKeyboard && this.type !== "tasknotesCalendar")
 			this.register(
 				installTaskViewKeyboard({
 					plugin: this.plugin,
 					root: this.rootElement,
 					paths: () => this.getVisibleTaskPaths(),
 					reveal: (path) => this.revealKeyboardTask(path),
+					groupForPath: (path) => this.getKeyboardTaskGroup(path),
 					horizontal: this.type === "tasknotesKanban"
 						? (path, direction) => this.getHorizontalTaskPath(path, direction)
 						: undefined,
@@ -1058,6 +1059,10 @@ export abstract class BasesViewBase extends Component {
 	}
 
 	protected revealKeyboardTask(_path: string): void {}
+
+	protected getKeyboardTaskGroup(_path: string): { key: string; paths: string[] } | undefined {
+		return undefined;
+	}
 
 	protected getHorizontalTaskPath(_path: string | null, _direction: number): string | null {
 		return null;

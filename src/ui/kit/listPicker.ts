@@ -124,7 +124,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 				attr: { title: item.label },
 			});
 			if (item.detail) row.createSpan({ cls: "tn-picker__detail", text: item.detail });
-			if (item.keyHint && item.keyHint !== "Enter") renderKeyHint(row, item.keyHint);
+			if (item.keyHint) renderKeyHint(row, item.keyHint);
 			row.addEventListener("pointermove", () => {
 				if (activeIndex === index) return;
 				activeIndex = index;

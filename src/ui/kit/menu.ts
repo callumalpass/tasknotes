@@ -1,5 +1,5 @@
 import type { Menu, MenuItem } from "obsidian";
-import { keyLabel, shouldShowKeyHints, TASK_KEYBOARD_MAP } from "./keyHint";
+import { renderKeyHint, shouldShowKeyHints, TASK_KEYBOARD_MAP } from "./keyHint";
 import { priorityGlyphState, renderPriorityGlyph, unconfiguredValueLabel } from "./glyphs";
 import type { PriorityConfig } from "../../types";
 
@@ -33,7 +33,9 @@ export function renderTaskMenuKeyHint(
 	const shortcut =
 		element.querySelector<HTMLElement>(".menu-item-shortcut") ??
 		element.createDiv({ cls: "menu-item-shortcut" });
-	shortcut.textContent = TASK_KEYBOARD_MAP[action].split("+").map(keyLabel).join("");
+	shortcut.empty();
+	shortcut.addClass("tasknotes-plugin");
+	renderKeyHint(shortcut, TASK_KEYBOARD_MAP[action]);
 }
 
 export function renderUnconfiguredMenuValue(

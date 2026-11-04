@@ -134,6 +134,10 @@ Single-letter keys never fire when an input, textarea or contenteditable has foc
 
 Scheduled date is Shift+H in every view. Unmodified h is unbound in the list; on the board h/l and Left/Right move focus between columns.
 
+Calendar events use the same task shortcuts, including `p` for priority, `d` for due and `t` for tags while an event is focused. Escape leaves event focus; then `t` goes to today, `d` switches to day and `p` goes to the previous period. `w`/`m` switch to week/month, `[`/`]` or `n` navigate periods, and arrows or `h`/`j`/`k`/`l` move between events. `c` creates on the focused event's date, or the visible calendar anchor date. The help button and `?` show the applicable keys. Mini-calendar day navigation remains independent and unchanged.
+
+Search accepts Down or Enter to focus the first result. Escape clears a nonempty query; Escape again returns to the prior row. Dismissing a view picker or shortcut help returns focus to the view root, not an inert toolbar button or recycled row control. Obsidian commands remain available inside pickers.
+
 List and board status/priority glyphs open anchored property pickers. Alt-click on a status glyph retains one-click cycling (Alt-Shift-click reverses it), including recurring-task occurrence behaviour and configured cycle exclusions. The default is a picker because an explicit choice is predictable across arbitrary custom workflows; ordinary card click settings still govern opening/editing. Escape clears selection first, then the keyboard focus marker. Keyboard focus is tracked by task path rather than a recycled virtual row.
 
 `openTaskPropertyPicker(plugin, property, tasks, anchor)` in `src/ui/taskPropertyPickers.ts` is the task-writing entry point for views. Dates retain the existing presets, relative adjustments, natural-language parser, date/time editor and clearing. Reversible property and archive actions from this layer offer a toast that restores each task's own previous values; delete retains its existing confirmation.

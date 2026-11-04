@@ -775,6 +775,17 @@ export class TaskListView extends BasesViewBase {
 		if (index >= 0) this.virtualScroller?.scrollToIndex(index, "instant");
 	}
 
+	protected getKeyboardTaskGroup(path: string): { key: string; paths: string[] } | undefined {
+		if (!this.getGroupByPropertyId() && !this.subGroupPropertyId) return undefined;
+		const group = this.taskGroupKeys.get(path);
+		if (group === undefined) return undefined;
+		const subgroup = this.movementSubGroupKeys.get(path);
+		return {
+			key: JSON.stringify([group, subgroup]),
+			paths: this.getVisibleTaskPaths().filter((candidate) => this.taskGroupKeys.get(candidate) === group && this.movementSubGroupKeys.get(candidate) === subgroup),
+		};
+	}
+
 	private getVirtualItemGroupKey(item: TaskListVirtualItem): string | null {
 		if ("type" in item) {
 			return item.type === "task" ? item.groupKey : null;

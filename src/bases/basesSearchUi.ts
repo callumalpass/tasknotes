@@ -15,7 +15,7 @@ export type CreateBasesSearchControlsOptions = {
 	container: HTMLElement;
 	visibleProperties: readonly string[];
 	currentSearchTerm: string;
-	onSearch: (term: string) => void;
+	onSearch: (term: string) => void | Promise<void>;
 	debounceMs?: number;
 };
 

@@ -586,7 +586,7 @@ export class TaskActionPaletteModal {
 		return this.actions
 			.filter((action) => action.isApplicable(this.task, this.plugin, this.targetDate))
 			.sort((a, b) => {
-				const primary = ["edit-task", "open-task-file", "picker-status"];
+				const primary = ["edit-task", "open-task-file", "picker-status", "picker-priority", "picker-due", "picker-scheduled", "picker-tags", "picker-contexts", "picker-projects"];
 				const rank = (action: TaskAction) => {
 					const index = primary.indexOf(action.id);
 					return index < 0 ? primary.length : index;

@@ -40,3 +40,16 @@ it("omits keycaps on mobile rather than leaving misleading desktop commands", ()
 	expect(hint.hidden).toBe(true);
 	expect(hint.querySelectorAll("kbd")).toHaveLength(0);
 });
+
+it("restores a view root rather than a disconnected or inert row button", () => {
+	Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: jest.fn() });
+	const base = document.body.createDiv({ cls: "bases-view" });
+	const root = base.createDiv({ cls: "tasknotes-plugin" });
+	root.tabIndex = -1;
+	const anchor = root.createEl("button");
+	anchor.focus();
+	const picker = openListPicker({ anchor, placeholder: "Status", emptyText: "No matches", items: [], onChoose: jest.fn() });
+	anchor.remove();
+	picker.close();
+	expect(document.activeElement).toBe(root);
+});
