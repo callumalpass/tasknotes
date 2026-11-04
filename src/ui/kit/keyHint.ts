@@ -22,6 +22,8 @@ function namedKey(key: string): string | undefined {
 			return uiText(msg({ message: "Shift", context: "keyboard key name" }));
 		case "Escape":
 			return uiText(msg({ message: "Esc", context: "keyboard key name" }));
+		case "Space":
+			return uiText(msg({ message: "Space", context: "keyboard key name" }));
 		default:
 			return undefined;
 	}

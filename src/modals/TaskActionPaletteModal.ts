@@ -24,10 +24,12 @@ import {
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { ProjectSelectModal } from "./ProjectSelectModal";
 import { addTaskToProject } from "../services/taskRelationshipActions";
+import { renderKeyHint } from "../ui/kit/keyHint";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskActionPaletteModal" });
 
 export interface TaskAction {
+	keyHint?: string;
 	id: string;
 	title: string;
 	description: string;
@@ -68,12 +70,13 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 	private targetDate: Date;
 	private actions: TaskAction[];
 
-	constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date) {
+	constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date, transformActions?: (actions: TaskAction[]) => TaskAction[]) {
 		super(app);
 		this.task = task;
 		this.plugin = plugin;
 		this.targetDate = targetDate;
 		this.actions = this.buildActionsList();
+		if (transformActions) this.actions = transformActions(this.actions);
 
 		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Type to search for an action...", context: "modals.actionPalette.placeholder" })));
 		this.setInstructions([
@@ -674,6 +677,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 
 		// Category badge
 		const badgeEl = container.createDiv({ cls: "task-action-palette__badge" });
+		if (action.keyHint) renderKeyHint(badgeEl, action.keyHint);
 		badgeEl.createSpan({
 			cls: `task-action-palette__category task-action-palette__category--${action.category}`,
 			text: this.getCategoryLabel(action.category),

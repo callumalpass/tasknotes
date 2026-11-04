@@ -1,5 +1,6 @@
 import { setIcon } from "obsidian";
 import { createElementInDocument } from "../utils/documentDom";
+import { renderKeyHint } from "../ui/kit/keyHint";
 
 export type BasesNewTaskButtonInjectionResult =
 	| "injected"
@@ -10,6 +11,7 @@ export type BasesNewTaskButtonInjectionResult =
 export type InjectBasesNewTaskButtonOptions = {
 	containerEl: HTMLElement;
 	label: string;
+	keyHint?: string;
 	onClick: (event: MouseEvent) => void;
 };
 
@@ -64,6 +66,7 @@ export function injectBasesNewTaskButton(
 	labelSpan.className = "text-button-label";
 	labelSpan.textContent = options.label;
 	innerBtn.appendChild(labelSpan);
+	if (options.keyHint) renderKeyHint(innerBtn, options.keyHint);
 
 	newTaskBtn.appendChild(innerBtn);
 	newTaskBtn.addEventListener("click", options.onClick);

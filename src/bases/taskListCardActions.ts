@@ -1,5 +1,7 @@
 import { uiText } from "../i18n/runtime";
 import { displayError } from "../i18n/runtime";
+import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
+import { createStatusCycleHandler } from "../ui/taskCardActions";
 import { msg } from "@lingui/core/macro";
 import { Notice, TFile, type App } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -32,6 +34,39 @@ export class TaskListCardActions {
 		target: HTMLElement,
 		event: MouseEvent
 	): Promise<void> {
+		const property =
+			action === "toggle-status"
+				? "status"
+				: action === "priority-menu"
+					? "priority"
+					: action === "edit-date"
+						? target.dataset.tnDateType
+						: undefined;
+		const taskView = target.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban");
+		if (taskView && property === "status" && event.altKey) {
+			createStatusCycleHandler({
+				task,
+				plugin: this.context.plugin,
+				targetDate: this.getTaskActionDate(task),
+				updateStatusVisuals: () => {},
+			})(event);
+			return;
+		}
+		if (
+			taskView &&
+			(property === "status" ||
+				property === "priority" ||
+				property === "due" ||
+				property === "scheduled")
+		) {
+			await openTaskPropertyPicker(
+				this.context.plugin,
+				property,
+				await tasksForPropertyAction(this.context.plugin, task),
+				target
+			);
+			return;
+		}
 		switch (action) {
 			case "toggle-status":
 				await this.handleToggleStatus(task, event);

@@ -1218,6 +1218,7 @@ export default class TaskNotesPlugin extends Plugin {
 		options: {
 			silent?: boolean;
 			completionDate?: string;
+			onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void;
 			confirmClearInstances?: (cleared: {
 				complete: string[];
 				skipped: string[];

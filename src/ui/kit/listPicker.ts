@@ -12,7 +12,8 @@ export interface PickerItem {
 	keywords?: string;
 }
 
-export interface ListPickerOptions extends Pick<PopoverOptions, "anchor" | "className" | "onClose"> {
+export interface ListPickerOptions
+	extends Pick<PopoverOptions, "anchor" | "className" | "onClose"> {
 	items: readonly PickerItem[];
 	placeholder: string;
 	emptyText: string;
@@ -20,6 +21,7 @@ export interface ListPickerOptions extends Pick<PopoverOptions, "anchor" | "clas
 	multiple?: boolean;
 	/** Offered as the last row when nothing matches exactly, for free-text values. */
 	createLabel?: (query: string) => string;
+	canCreate?: (query: string) => boolean;
 	onChoose: (item: PickerItem) => void;
 	onCreate?: (query: string) => void;
 }
@@ -31,7 +33,10 @@ export function matchesPickerQuery(item: PickerItem, query: string): boolean {
 }
 
 export function openListPicker(options: ListPickerOptions): PopoverHandle {
-	const popover = openPopover({ ...options, className: `tn-picker ${options.className ?? ""}`.trim() });
+	const popover = openPopover({
+		...options,
+		className: `tn-picker ${options.className ?? ""}`.trim(),
+	});
 	const { el } = popover;
 	const input = el.createEl("input", {
 		cls: "tn-picker__input",
@@ -68,7 +73,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 
 	const create = () => {
 		const query = input.value.trim();
-		if (!query) return;
+		if (!query || options.canCreate?.(query) === false) return;
 		if (options.multiple) {
 			items.push({ id: query, label: query, selected: true });
 			input.value = "";
@@ -94,9 +99,13 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			row.classList.toggle("is-selected", !!item.selected);
 			const leading = row.createSpan({ cls: "tn-picker__leading" });
 			item.renderLeading?.(leading);
-			row.createSpan({ cls: "tn-picker__label", text: item.label });
+			row.createSpan({
+				cls: "tn-picker__label",
+				text: item.label,
+				attr: { title: item.label },
+			});
 			if (item.detail) row.createSpan({ cls: "tn-picker__detail", text: item.detail });
-			if (item.keyHint) renderKeyHint(row, item.keyHint);
+			renderKeyHint(row, item.keyHint ?? "Enter");
 			row.addEventListener("pointermove", () => {
 				if (activeIndex === index) return;
 				activeIndex = index;
@@ -109,8 +118,10 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		const exact = items.some((item) => item.label.toLowerCase() === trimmed.toLowerCase());
 		if (options.createLabel && options.onCreate && trimmed && !exact) {
 			createRow = list.createDiv({ cls: "tn-picker__row", attr: { role: "option" } });
+			createRow.setAttribute("aria-disabled", String(options.canCreate?.(trimmed) === false));
 			createRow.createSpan({ cls: "tn-picker__leading" });
 			createRow.createSpan({ cls: "tn-picker__label", text: options.createLabel(trimmed) });
+			renderKeyHint(createRow, "Enter");
 			createRow.addEventListener("click", create);
 		}
 

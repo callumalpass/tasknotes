@@ -1422,6 +1422,11 @@ msgctxt "settings.general.taskInteraction.singleClick.description"
 msgid "Action performed when single-clicking a task card"
 msgstr "작업 카드를 한 번 클릭했을 때 수행할 동작"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Actions"
+msgstr "작업"
+
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
@@ -1842,6 +1847,11 @@ msgctxt "keyboard key name"
 msgid "Alt"
 msgstr "Alt"
 
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "interaction status hint"
+msgid "Alt-click to cycle"
+msgstr "Alt 키를 누른 채 클릭하여 전환"
+
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"
@@ -1905,6 +1915,11 @@ msgstr "자연어 날짜 적용"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.archive"
+msgid "Archive"
+msgstr "보관"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction archive"
 msgid "Archive"
 msgstr "보관"
 
@@ -2880,6 +2895,11 @@ msgctxt "modals.propertySelector.description"
 msgid "Choose which properties to display in task cards. Selected properties appear in the order below."
 msgstr "작업 카드에 표시할 속성을 선택하세요. 선택한 속성은 아래 순서대로 표시됩니다."
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction clear"
+msgid "Clear"
+msgstr "지우기"
+
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
@@ -2937,6 +2957,11 @@ msgstr "예정일 지우기"
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Clear search"
 msgstr "검색 지우기"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Clear selection"
+msgstr "선택 해제"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.clearSelection"
@@ -3479,6 +3504,11 @@ msgctxt "contextMenus.task.organization.contexts"
 msgid "Contexts"
 msgstr "컨텍스트"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Contexts"
+msgstr "컨텍스트"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsLabel"
 msgid "Contexts"
@@ -3733,6 +3763,12 @@ msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "이동을 실행 취소하지 못했습니다."
 
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction failure"
+msgid "Could not update tasks"
+msgstr "작업을 업데이트하지 못했습니다"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.pomodoros.description"
 msgid "Count of completed Pomodoro sessions. When data storage is set to ''daily notes'', this is written to daily notes instead of task files."
@@ -3858,6 +3894,11 @@ msgstr "작업을 만들거나 열고 시간 추적 시작"
 msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "하위 작업 만들기"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Create task"
+msgstr "작업 만들기"
 
 #: src/bases/calendarCreationMenu.ts
 #: src/modals/ICSEventInfoModal.ts
@@ -4966,6 +5007,11 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "마감일"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Due date"
+msgstr "마감일"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.due"
 msgid "Due date"
@@ -5096,6 +5142,11 @@ msgstr "이벤트 편집"
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "리마인더 편집"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Edit task"
+msgstr "작업 편집"
 
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
@@ -5315,6 +5366,11 @@ msgstr "속성 이름을 입력하세요. 예시 텍스트는 저장된 설정�
 msgctxt "modals.task.timeEstimateInvalid"
 msgid "Enter a time such as 45 or 1h 30m"
 msgstr "45 또는 1h 30m처럼 시간을 입력하세요"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction date"
+msgid "Enter a valid date"
+msgstr "올바른 날짜를 입력하세요"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -5725,6 +5781,11 @@ msgstr "저장된 뷰 {count}개를 내보냈습니다. 파일: {filePath}"
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "Model Context Protocol을 통해 /mcp 엔드포인트에서 TaskNotes 도구를 노출합니다. HTTP API가 활성화되어 있어야 합니다."
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Extend selection"
+msgstr "선택 범위 확장"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
@@ -7452,6 +7513,11 @@ msgctxt "settings.modalFields.manager.fieldKey"
 msgid "Key: {key}"
 msgstr "키: {key}"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction help"
+msgid "Keyboard shortcuts"
+msgstr "키보드 단축키"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.list"
 msgid "L"
@@ -8118,6 +8184,11 @@ msgstr "보관된 작업을 폴더로 이동"
 msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "아래로 이동"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move focus"
+msgstr "포커스 이동"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -9249,6 +9320,11 @@ msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "{occurrence_date} 회차의 반복 상위 작업 열기"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Open task"
+msgstr "작업 열기"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openStatisticsView"
 msgid "Open task & project statistics"
@@ -9580,6 +9656,7 @@ msgstr "{field} 날짜 선택"
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "날짜 및 시간 선택..."
@@ -9808,6 +9885,11 @@ msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "작업 연기 중: {count}개…"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Preview"
+msgstr "미리 보기"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
 msgid "Preview"
@@ -9843,6 +9925,11 @@ msgstr "우선순위"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info"
+msgid "Priority"
+msgstr "우선순위"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Priority"
 msgstr "우선순위"
 
@@ -9919,6 +10006,11 @@ msgstr "프로젝트"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
+msgid "Projects"
+msgstr "프로젝트"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Projects"
 msgstr "프로젝트"
 
@@ -10717,6 +10809,11 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "예정일"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Scheduled date"
+msgstr "예정일"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
 msgid "Scheduled date"
@@ -10761,6 +10858,11 @@ msgstr "예정: {date}"
 msgctxt "modals.task.tooltips.scheduledValue"
 msgid "Scheduled: {value}"
 msgstr "예정: {value}"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Search"
+msgstr "검색"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/TimeblockCreationModal.ts
@@ -11433,6 +11535,11 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "사운드 볼륨"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Space"
+msgstr "스페이스"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11563,6 +11670,11 @@ msgstr "상태"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info"
+msgid "Status"
+msgstr "상태"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Status"
 msgstr "상태"
 
@@ -11977,6 +12089,11 @@ msgstr "태그"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.tags"
+msgid "Tags"
+msgstr "태그"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Tags"
 msgstr "태그"
 
@@ -12477,6 +12594,11 @@ msgstr "작업이 성공적으로 내보내졌습니다"
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "연기된 작업: {count}개. 실패: {failed}개."
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "Tasks updated"
+msgstr "작업이 업데이트되었습니다"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -13199,6 +13321,11 @@ msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "그룹 펼치기/접기"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Toggle selection"
+msgstr "선택 전환"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.exchangeCodeForTokens display"
 msgid "Token exchange failed with status {status}: {value2}"
@@ -13472,6 +13599,7 @@ msgid "Unarchive"
 msgstr "보관 해제"
 
 #: src/modals/TaskActionPaletteModal.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList title"
 msgid "Unarchive task"
 msgstr "작업 보관 해제"
@@ -13485,6 +13613,11 @@ msgstr "보관 해제됨"
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "예상 시간 미만"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction undo"
+msgid "Undo"
+msgstr "실행 취소"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undo"

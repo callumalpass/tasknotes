@@ -1422,6 +1422,11 @@ msgctxt "settings.general.taskInteraction.singleClick.description"
 msgid "Action performed when single-clicking a task card"
 msgstr "タスクカードをシングルクリックした際に実行するアクション"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Actions"
+msgstr "操作"
+
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
@@ -1842,6 +1847,11 @@ msgctxt "keyboard key name"
 msgid "Alt"
 msgstr "Alt"
 
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "interaction status hint"
+msgid "Alt-click to cycle"
+msgstr "Alt を押しながらクリックして切り替え"
+
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"
@@ -1905,6 +1915,11 @@ msgstr "自然言語の日付を適用"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.archive"
+msgid "Archive"
+msgstr "アーカイブ"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction archive"
 msgid "Archive"
 msgstr "アーカイブ"
 
@@ -2880,6 +2895,11 @@ msgctxt "modals.propertySelector.description"
 msgid "Choose which properties to display in task cards. Selected properties appear in the order below."
 msgstr "タスクカードに表示するプロパティを選択します。選択した項目は以下の順序で表示されます。"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction clear"
+msgid "Clear"
+msgstr "クリア"
+
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
@@ -2937,6 +2957,11 @@ msgstr "予定日をクリア"
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Clear search"
 msgstr "検索をクリア"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Clear selection"
+msgstr "選択を解除"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.clearSelection"
@@ -3479,6 +3504,11 @@ msgctxt "contextMenus.task.organization.contexts"
 msgid "Contexts"
 msgstr "コンテキスト"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Contexts"
+msgstr "コンテキスト"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsLabel"
 msgid "Contexts"
@@ -3733,6 +3763,12 @@ msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "この移動を元に戻せませんでした。"
 
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction failure"
+msgid "Could not update tasks"
+msgstr "タスクを更新できませんでした"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.pomodoros.description"
 msgid "Count of completed Pomodoro sessions. When data storage is set to ''daily notes'', this is written to daily notes instead of task files."
@@ -3858,6 +3894,11 @@ msgstr "タスクを作成または開いて時間追跡を開始"
 msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "サブタスクを作成"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Create task"
+msgstr "タスクを作成"
 
 #: src/bases/calendarCreationMenu.ts
 #: src/modals/ICSEventInfoModal.ts
@@ -4966,6 +5007,11 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "期限日"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Due date"
+msgstr "期限"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.due"
 msgid "Due date"
@@ -5096,6 +5142,11 @@ msgstr "イベントを編集"
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "リマインダーを編集"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Edit task"
+msgstr "タスクを編集"
 
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
@@ -5315,6 +5366,11 @@ msgstr "プロパティ名を入力してください。例のテキストは保
 msgctxt "modals.task.timeEstimateInvalid"
 msgid "Enter a time such as 45 or 1h 30m"
 msgstr "45 や 1h 30m のように時間を入力してください"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction date"
+msgid "Enter a valid date"
+msgstr "有効な日付を入力してください"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -5725,6 +5781,11 @@ msgstr "{count}個の保存ビューを{filePath}にエクスポートしまし�
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "Model Context Protocol を介して /mcp エンドポイントで TaskNotes ツールを公開します。HTTP API を有効にする必要があります。"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Extend selection"
+msgstr "選択範囲を拡張"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
@@ -7452,6 +7513,11 @@ msgctxt "settings.modalFields.manager.fieldKey"
 msgid "Key: {key}"
 msgstr "キー: {key}"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction help"
+msgid "Keyboard shortcuts"
+msgstr "キーボードショートカット"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.list"
 msgid "L"
@@ -8118,6 +8184,11 @@ msgstr "アーカイブしたタスクをフォルダーに移動"
 msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "下へ移動"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move focus"
+msgstr "フォーカスを移動"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -9249,6 +9320,11 @@ msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "{occurrence_date}の繰り返し回の親タスクを開く"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Open task"
+msgstr "タスクを開く"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openStatisticsView"
 msgid "Open task & project statistics"
@@ -9580,6 +9656,7 @@ msgstr "{field}の日付を選択"
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "日時を選択…"
@@ -9808,6 +9885,11 @@ msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "タスクを延期中：{count}件…"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Preview"
+msgstr "プレビュー"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
 msgid "Preview"
@@ -9843,6 +9925,11 @@ msgstr "優先度"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info"
+msgid "Priority"
+msgstr "優先度"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Priority"
 msgstr "優先度"
 
@@ -9919,6 +10006,11 @@ msgstr "プロジェクト"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
+msgid "Projects"
+msgstr "プロジェクト"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Projects"
 msgstr "プロジェクト"
 
@@ -10717,6 +10809,11 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "予定日"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Scheduled date"
+msgstr "予定日"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
 msgid "Scheduled date"
@@ -10761,6 +10858,11 @@ msgstr "予定：{date}"
 msgctxt "modals.task.tooltips.scheduledValue"
 msgid "Scheduled: {value}"
 msgstr "予定：{value}"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Search"
+msgstr "検索"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/TimeblockCreationModal.ts
@@ -11433,6 +11535,11 @@ msgctxt "settings.features.pomodoroSound.volumeName"
 msgid "Sound volume"
 msgstr "サウンド音量"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Space"
+msgstr "スペース"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -11563,6 +11670,11 @@ msgstr "ステータス"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info"
+msgid "Status"
+msgstr "ステータス"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Status"
 msgstr "ステータス"
 
@@ -11977,6 +12089,11 @@ msgstr "タグ"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.tags"
+msgid "Tags"
+msgstr "タグ"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Tags"
 msgstr "タグ"
 
@@ -12477,6 +12594,11 @@ msgstr "タスクが正常にエクスポートされました"
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "延期したタスク：{count}件。失敗：{failed}件。"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "Tasks updated"
+msgstr "タスクを更新しました"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -13199,6 +13321,11 @@ msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "グループの表示を切り替え"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Toggle selection"
+msgstr "選択を切り替え"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.exchangeCodeForTokens display"
 msgid "Token exchange failed with status {status}: {value2}"
@@ -13472,6 +13599,7 @@ msgid "Unarchive"
 msgstr "アーカイブ解除"
 
 #: src/modals/TaskActionPaletteModal.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList title"
 msgid "Unarchive task"
 msgstr "タスクをアーカイブから戻す"
@@ -13485,6 +13613,11 @@ msgstr "アーカイブ解除"
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "見積もり内"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction undo"
+msgid "Undo"
+msgstr "元に戻す"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undo"

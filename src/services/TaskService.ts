@@ -860,7 +860,8 @@ export class TaskService {
 		property: keyof TaskInfo,
 		oldValue: unknown,
 		newValue: unknown,
-		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void,
+		restoringReceipt = false
 	): Promise<void> {
 		await runTaskPropertyChangeSideEffects(
 			{
@@ -882,6 +883,7 @@ export class TaskService {
 			}
 		);
 
+		if (restoringReceipt) return;
 		await this.seedInitialOccurrence(updatedTask, originalTask);
 
 		// Direct file edits and bulk property writes must reconcile occurrence
