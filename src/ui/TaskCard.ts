@@ -3,7 +3,7 @@ import TaskNotesPlugin from "../main";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
 import { BatchContextMenu } from "../components/BatchContextMenu";
 import { type TaskCardPresentationOptions } from "./taskCardPresentation";
-import { renderTaskCardMetadataLine } from "./taskCardMetadata";
+import { cleanupTaskCardMetadata, renderTaskCardMetadataLine } from "./taskCardMetadata";
 import {
 	cleanupTaskCardExpansions,
 	toggleBlockedByTasksExpansion,
@@ -285,7 +285,13 @@ export function createTaskCard(
 	card.addEventListener("click", clickHandler);
 	card.addEventListener("auxclick", auxclickHandler);
 	card.addEventListener("dblclick", dblclickHandler);
-	card.addEventListener("contextmenu", contextmenuHandler);
+	card.addEventListener("contextmenu", (event: MouseEvent) => {
+		if (card.ownerDocument.body.classList.contains("is-mobile")) {
+			card.setAttribute("tabindex", "-1");
+			card.focus({ preventScroll: true });
+		}
+		contextmenuHandler(event);
+	});
 
 	if (opts.enableHoverPreview) {
 		card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
@@ -410,6 +416,8 @@ export function updateTaskCard(
  * Clean up event listeners and resources for a task card
  */
 export function cleanupTaskCard(card: HTMLElement): void {
+	const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
+	if (metadata) cleanupTaskCardMetadata(metadata);
 	cleanupTaskCardExpansions(card);
 }
 

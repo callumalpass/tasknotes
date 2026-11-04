@@ -290,7 +290,7 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
         expect(await cards.first().locator('.tn-glyph').first().evaluate(element => element.getBoundingClientRect().width)).toBe(16);
         await expect(cards.first().locator('.task-card__priority-dot .lucide-flame')).toBeAttached();
         await expect(cards.nth(2).locator('.task-card__status-dot .lucide-rocket')).toBeAttached();
-        await expect(cards.nth(1).locator('[data-tn-glyph="unset"]').first()).toBeAttached();
+        await expect(cards.nth(1).locator('[data-tn-glyph="unknown"]').first()).toBeAttached();
         await expect(cards.first().locator('.task-card__metadata-date--overdue')).toBeAttached();
         await expect(cards.first().locator('.task-card__metadata-pill--blocked')).toBeVisible();
         if (mobile) await expectTouchTargets('.task-card--layout-inline .task-card__status-dot, .task-card--layout-inline .task-card__priority-dot, .task-card--layout-inline .task-card__metadata-date, .task-card--layout-inline .task-card__context-menu');

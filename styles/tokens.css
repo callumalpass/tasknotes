@@ -5,6 +5,7 @@
     /* Type */
     /* Scales with Obsidian's font size setting. Absolute units so pop-out roots can't shrink it. */
     --tn-type-hidden: 0;
+    --tn-task-date-width: 21ch;
     --tn-type-timer: clamp(var(--tn-type-xl), calc(var(--tn-type-base) * 4 * var(--pomodoro-scale, 1)), calc(var(--tn-type-base) * 4));
     --tn-type-base: var(--font-text-size, 16px);
     --tn-type-2xs: calc(var(--tn-type-base) * 0.6875);

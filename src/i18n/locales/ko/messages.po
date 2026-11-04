@@ -775,6 +775,11 @@ msgctxt "views.pomodoro.meta.breakReady"
 msgid "{type} ready"
 msgstr "{type} 준비 완료"
 
+#: src/ui/kit/glyphs.ts
+msgctxt "ui.kit.unconfiguredValue"
+msgid "{value} (not configured)"
+msgstr "{value} (설정되지 않음)"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
@@ -13314,7 +13319,7 @@ msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "오늘"
 
-#: src/ui/taskCardProperties.ts
+#: src/ui/kit/dateLabel.ts
 msgctxt "ui.taskCard.relativeDay"
 msgid "Today"
 msgstr "오늘"
@@ -13423,7 +13428,7 @@ msgctxt "settings.defaults.options.tomorrow"
 msgid "Tomorrow"
 msgstr "내일"
 
-#: src/ui/taskCardProperties.ts
+#: src/ui/kit/dateLabel.ts
 msgctxt "ui.taskCard.relativeDay"
 msgid "Tomorrow"
 msgstr "내일"
@@ -14526,7 +14531,7 @@ msgctxt "generated Bases grouping label"
 msgid "Yesterday"
 msgstr "어제"
 
-#: src/ui/taskCardProperties.ts
+#: src/ui/kit/dateLabel.ts
 msgctxt "ui.taskCard.relativeDay"
 msgid "Yesterday"
 msgstr "어제"

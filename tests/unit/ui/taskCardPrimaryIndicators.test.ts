@@ -175,7 +175,7 @@ describe("taskCardPrimaryIndicators", () => {
 		expect(updated?.previousElementSibling?.classList.contains("task-card__status-dot")).toBe(
 			true
 		);
-		expect(updated?.dataset.tnGlyph).toBe("unset");
+		expect(updated?.dataset.tnGlyph).toBe("unknown");
 		expect(card.querySelector(".task-card__priority-dot")).toBe(updated);
 	});
 
@@ -189,7 +189,7 @@ describe("taskCardPrimaryIndicators", () => {
 		expect(card.style.getPropertyValue("--current-priority-color")).toBe("#888888");
 	});
 
-	it("shows unset priority glyph and removes stale priority colors when no priority config exists", () => {
+	it("shows unknown priority glyph and removes stale priority colors when no priority config exists", () => {
 		const plugin = createPlugin();
 		const { card, mainRow } = createCard();
 		mainRow.createSpan({ cls: "task-card__priority-dot" });
@@ -209,7 +209,7 @@ describe("taskCardPrimaryIndicators", () => {
 				onClick: jest.fn(),
 			})
 		).not.toBeNull();
-		expect(card.querySelector<HTMLElement>(".task-card__priority-dot")?.dataset.tnGlyph).toBe("unset");
+		expect(card.querySelector<HTMLElement>(".task-card__priority-dot")?.dataset.tnGlyph).toBe("unknown");
 	});
 
 	it("removes stale status colors when status configs are missing", () => {

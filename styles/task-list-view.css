@@ -129,6 +129,9 @@
 
 /* Count element within task list group headers */
 .tasknotes-plugin .task-list-view__group-header .agenda-view__item-count {
+    align-self: center;
+    flex: none;
+    white-space: nowrap;
     margin-left: var(--tn-space-1);
     margin-right: 0;
 }
@@ -173,15 +176,13 @@
 }
 
 .tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date {
-    flex: 0 0 22ch;
-    width: 22ch;
+    flex: none;
+    width: auto;
     font-variant-numeric: tabular-nums;
 }
 
 .tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date > span:not(.task-card__date-icon) {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: none;
 }
 
 .tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__date-icon {

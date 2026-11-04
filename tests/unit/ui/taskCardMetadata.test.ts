@@ -4,6 +4,7 @@ import type { TaskInfo } from "../../../src/types";
 import {
 	renderTaskCardMetadata,
 	renderTaskCardMetadataLine,
+	cleanupTaskCardMetadata,
 } from "../../../src/ui/taskCardMetadata";
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
@@ -94,6 +95,32 @@ describe("taskCardMetadata", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();
+	});
+
+	it("disconnects overflow observers on rerender, removal and explicit cleanup", () => {
+		const original = window.ResizeObserver;
+		const callbacks: Array<() => void> = [];
+		const disconnect = jest.fn();
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { callbacks.push(callback); }
+			observe() {}
+			unobserve() {}
+			disconnect = disconnect;
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { card, metadataLine } = createMetadataHost();
+			const config = { card, metadataLine, task: createTask(), plugin: createPlugin(), visibleProperties: ["tags"], onBlockedByToggle: jest.fn() };
+			renderTaskCardMetadata(config);
+			renderTaskCardMetadata(config);
+			expect(disconnect).toHaveBeenCalledTimes(1);
+			card.remove();
+			callbacks[1]();
+			expect(disconnect).toHaveBeenCalledTimes(2);
+			cleanupTaskCardMetadata(metadataLine);
+			expect(disconnect).toHaveBeenCalledTimes(2);
+		} finally {
+			window.ResizeObserver = original;
+		}
 	});
 
 	describe("date metadata state classes", () => {

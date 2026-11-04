@@ -1,4 +1,5 @@
 import { configLabel } from "../../i18n/configLabels";
+import { renderPriorityMenuGlyph } from "../../ui/kit/menu";
 import { displayError } from "../../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
@@ -88,8 +89,7 @@ export class TaskPropertyMenu {
 			const label = toMenuTitle(configLabel(priority), value);
 
 			submenu.addItem((item) => {
-				// Use consistent icon for all items
-				item.setIcon(priority.icon || "signal");
+				renderPriorityMenuGlyph(item, priority, priorityOptions);
 
 				item.setTitle(label).setChecked(value === task.priority);
 
@@ -118,19 +118,6 @@ export class TaskPropertyMenu {
 						);
 					}
 				});
-
-				// Apply color directly to this item
-				if (priority.color) {
-					window.setTimeout(() => {
-						const itemEl = getMenuItemElement(item);
-						if (itemEl) {
-							const iconEl = itemEl.querySelector(".menu-item-icon");
-							if (iconEl) {
-								(iconEl as HTMLElement).style.color = priority.color;
-							}
-						}
-					}, 10);
-				}
 			});
 		});
 	}
