@@ -1,14 +1,11 @@
 import type { MessageDescriptor } from "@lingui/core";
-import { msg } from "@lingui/core/macro";
 import type { App } from "obsidian";
-import { PriorityContextMenu } from "../components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { StatusContextMenu } from "../components/StatusContextMenu";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskInfo } from "../types";
-import { combineDateAndTime, getDatePart, getTimePart } from "../utils/dateUtils";
-import { DateTimePickerModal } from "./DateTimePickerModal";
+import { openTaskPropertyChoices } from "../ui/taskPropertyPickers";
+import type { PopoverHandle } from "../ui/kit/popover";
 
 export type TaskModalDateMenuType = "due" | "scheduled";
 type RecurrenceAnchor = "scheduled" | "completion";
@@ -37,56 +34,20 @@ export interface TaskModalActionMenuContext {
 	onChange: () => void;
 }
 
-export function showTaskModalDateContextMenu(
+export function showTaskModalPropertyPicker(
 	context: TaskModalActionMenuContext,
-	type: TaskModalDateMenuType
-): void {
-	const currentValue = getDateValue(context.getState(), type);
-	const modal = new DateTimePickerModal(context.app, {
-		currentDate: currentValue ? getDatePart(currentValue) : undefined,
-		currentTime: currentValue ? getTimePart(currentValue) : undefined,
-		title: getDateMenuTitle(context, type),
-		dateRole: type,
-		plugin: context.plugin,
-		onSelect: (value: string | null, time: string | null) => {
-			context.setDate(type, getSelectedDateValue(value, time));
-			context.onChange();
-		},
+	property: "status" | "priority" | TaskModalDateMenuType,
+	anchor: HTMLElement
+): Promise<PopoverHandle | undefined> {
+	const draft = () => createTaskModalReminderDraft(context.getState());
+	return openTaskPropertyChoices(context.plugin, property, [draft()], anchor, (choice) => {
+		const value = typeof choice === "function" ? choice(draft()) : choice;
+		if (typeof value !== "string" && value !== undefined) return;
+		if (property === "status") context.setStatus(value ?? "");
+		else if (property === "priority") context.setPriority(value ?? "");
+		else context.setDate(property, value ?? "");
+		context.onChange();
 	});
-
-	modal.open();
-}
-
-export function showTaskModalStatusContextMenu(
-	context: TaskModalActionMenuContext,
-	event: UIEvent
-): void {
-	const menu = new StatusContextMenu({
-		currentValue: context.getState().status,
-		onSelect: (value) => {
-			context.setStatus(value);
-			context.onChange();
-		},
-		plugin: context.plugin,
-	});
-
-	menu.show(event);
-}
-
-export function showTaskModalPriorityContextMenu(
-	context: TaskModalActionMenuContext,
-	event: UIEvent
-): void {
-	const menu = new PriorityContextMenu({
-		currentValue: context.getState().priority,
-		onSelect: (value) => {
-			context.setPriority(value);
-			context.onChange();
-		},
-		plugin: context.plugin,
-	});
-
-	menu.show(event);
 }
 
 export function showTaskModalRecurrenceContextMenu(
@@ -127,11 +88,6 @@ export function showTaskModalReminderContextMenu(
 	menu.show(event);
 }
 
-export function getSelectedDateValue(value: string | null, time: string | null): string {
-	if (!value) return "";
-	return time ? combineDateAndTime(value, time) : value;
-}
-
 export function createTaskModalReminderDraft(
 	state: TaskModalActionMenuState,
 	taskBase?: TaskInfo
@@ -147,20 +103,4 @@ export function createTaskModalReminderDraft(
 		archived: taskBase?.archived || false,
 		reminders: state.reminders,
 	};
-}
-
-function getDateValue(
-	state: TaskModalActionMenuState,
-	type: TaskModalDateMenuType
-): string {
-	return type === "due" ? state.dueDate : state.scheduledDate;
-}
-
-function getDateMenuTitle(
-	context: TaskModalActionMenuContext,
-	type: TaskModalDateMenuType
-): string {
-	return type === "due"
-		? context.translate(msg({ message: "Set due date", context: "modals.task.dateMenu.dueTitle" }))
-		: context.translate(msg({ message: "Set scheduled date", context: "modals.task.dateMenu.scheduledTitle" }));
 }

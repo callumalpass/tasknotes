@@ -76,6 +76,17 @@ describe("taskModalFocusGuards", () => {
 		expect(scrollContainer.scrollTop).toBe(44);
 	});
 
+	it("does not steal focus from a picker opened before initial title focus", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+		const focus = jest.spyOn(input, "focus");
+		guards.focusTitleInput(input);
+		elements.containerEl.createDiv({ cls: "tn-popover" });
+		jest.runOnlyPendingTimers();
+		expect(focus).not.toHaveBeenCalled();
+	});
+
 	it("scrolls mobile keyboard fields into view and cleans up on destroy", () => {
 		const elements = createElements();
 		const guards = new TaskModalFocusGuards(elements);

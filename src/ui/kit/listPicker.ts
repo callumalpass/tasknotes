@@ -13,7 +13,7 @@ export interface PickerItem {
 }
 
 export interface ListPickerOptions
-	extends Pick<PopoverOptions, "anchor" | "className" | "onClose"> {
+	extends Pick<PopoverOptions, "anchor" | "app" | "className" | "onClose"> {
 	items: readonly PickerItem[];
 	placeholder: string;
 	emptyText: string;

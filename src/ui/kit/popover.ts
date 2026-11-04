@@ -1,3 +1,5 @@
+import { Scope, type App } from "obsidian";
+
 export interface PopoverPoint {
 	x: number;
 	y: number;
@@ -5,6 +7,7 @@ export interface PopoverPoint {
 
 export interface PopoverOptions {
 	anchor: HTMLElement | PopoverPoint;
+	app?: App;
 	className?: string;
 	onClose?: () => void;
 }
@@ -50,9 +53,13 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	const { anchor } = options;
 	const doc = isElementAnchor(anchor) ? anchor.ownerDocument : activeDocument;
 	const win = doc.defaultView ?? activeWindow;
-	const returnFocus = doc.activeElement as HTMLElement | null;
+	const returnFocus = isElementAnchor(anchor) && anchor.tabIndex >= 0
+		? anchor
+		: doc.activeElement as HTMLElement | null;
+	const modal = isElementAnchor(anchor) ? anchor.closest(".modal-container") : null;
 
-	const el = doc.body.createDiv({
+	const host = modal ?? doc.body;
+	const el = host.createDiv({
 		cls: ["tasknotes-plugin", "tn-popover", options.className ?? ""].filter(Boolean),
 	});
 
@@ -69,12 +76,22 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 
 	let closed = false;
 	const onPointerDown = (event: PointerEvent) => {
-		if (!el.contains(event.target as Node)) handle.close();
+		if (el.contains(event.target as Node)) return;
+		if (modal) {
+			event.preventDefault();
+			event.stopImmediatePropagation();
+		} else handle.close();
+	};
+	const onClick = (event: MouseEvent) => {
+		if (!modal || el.contains(event.target as Node)) return;
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		handle.close();
 	};
 	const onKeyDown = (event: KeyboardEvent) => {
 		if (event.key !== "Escape") return;
 		event.preventDefault();
-		event.stopPropagation();
+		event.stopImmediatePropagation();
 		handle.close();
 	};
 
@@ -84,8 +101,10 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 		close: () => {
 			if (closed) return;
 			closed = true;
+			if (scope) options.app?.keymap.popScope(scope);
 			doc.removeEventListener("pointerdown", onPointerDown, true);
-			doc.removeEventListener("keydown", onKeyDown, true);
+			doc.removeEventListener("click", onClick, true);
+			win.removeEventListener("keydown", onKeyDown, true);
 			win.removeEventListener("blur", handle.close);
 			el.remove();
 			if (current === handle) current = null;
@@ -94,8 +113,15 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 		},
 	};
 
+	const scope = options.app ? new Scope() : null;
+	scope?.register(null, "Escape", (event) => {
+		onKeyDown(event);
+		return false;
+	});
+	if (scope) options.app?.keymap.pushScope(scope);
 	doc.addEventListener("pointerdown", onPointerDown, true);
-	doc.addEventListener("keydown", onKeyDown, true);
+	doc.addEventListener("click", onClick, true);
+	win.addEventListener("keydown", onKeyDown, true);
 	win.addEventListener("blur", handle.close);
 	current = handle;
 	return handle;

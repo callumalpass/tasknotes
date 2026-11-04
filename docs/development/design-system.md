@@ -130,7 +130,9 @@ Single-letter keys never fire when an input, textarea or contenteditable has foc
 
 List and board status/priority glyphs open anchored property pickers. Alt-click on a status glyph retains one-click cycling (Alt-Shift-click reverses it), including recurring-task occurrence behaviour and configured cycle exclusions. The default is a picker because an explicit choice is predictable across arbitrary custom workflows; ordinary card click settings still govern opening/editing. Escape clears selection first, then the keyboard focus marker. Keyboard focus is tracked by task path rather than a recycled virtual row.
 
-`openTaskPropertyPicker(plugin, property, tasks, anchor)` in `src/ui/taskPropertyPickers.ts` is the shared entry point for views and future modal integration. Dates retain the existing presets, relative adjustments, natural-language parser, date/time editor and clearing. Reversible property and archive actions from this layer offer a toast that restores each task's own previous values; delete retains its existing confirmation.
+`openTaskPropertyPicker(plugin, property, tasks, anchor)` in `src/ui/taskPropertyPickers.ts` is the task-writing entry point for views. Dates retain the existing presets, relative adjustments, natural-language parser, date/time editor and clearing. Reversible property and archive actions from this layer offer a toast that restores each task's own previous values; delete retains its existing confirmation.
+
+`openTaskPropertyChoices` builds those same pickers without persisting a task. The task modal routes choices through its draft form setters; only Save persists them. Pickers inside modals stay within the modal's focus boundary and temporarily own the Obsidian keyboard scope, so Escape and outside clicks dismiss only the picker and return focus to its chip. Tags and contexts retain their text fields; projects, recurrence and reminders retain their specialized editors.
 
 ## Theming contract
 

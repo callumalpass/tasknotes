@@ -32,6 +32,7 @@ export class TaskModalFocusGuards {
 	focusTitleInput(input: TaskModalTitleInputElement): void {
 		const win = this.getWindow();
 		win.setTimeout(() => {
+			if (this.elements.containerEl.querySelector(".tn-popover")) return;
 			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
 			input.focus({ preventScroll: true });
 			input.select();

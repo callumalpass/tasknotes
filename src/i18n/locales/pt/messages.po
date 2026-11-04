@@ -11113,11 +11113,6 @@ msgctxt "modals.task.actions.due"
 msgid "Set due date"
 msgstr "Definir data de vencimento"
 
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.dueTitle"
-msgid "Set due date"
-msgstr "Definir Data de Vencimento"
-
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.dueFor"
 msgid "Set due for {date}"
@@ -11152,11 +11147,6 @@ msgstr "Definir lembretes"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Definir data agendada"
-
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.scheduledTitle"
-msgid "Set scheduled date"
-msgstr "Definir Data Agendada"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

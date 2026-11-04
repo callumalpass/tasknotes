@@ -468,6 +468,12 @@
     font-weight: var(--tn-font-weight-medium);
 }
 
+body.is-mobile .tn-picker__row,
+body.is-mobile .tn-picker__input.tn-picker__input,
+body.is-mobile .tasknotes-plugin .tn-chip--property {
+    min-height: var(--tn-touch-target);
+}
+
 .tn-picker__empty {
     padding: var(--tn-space-3);
     color: var(--tn-text-faint);

@@ -282,6 +282,7 @@ export class TaskCreationModal extends TaskModal {
 		}
 
 		window.setTimeout(() => {
+			if (this.containerEl.querySelector(".tn-popover")) return;
 			const cm = this.nlMarkdownEditor?.editor?.cm;
 			if (cm) {
 				cm.focus();

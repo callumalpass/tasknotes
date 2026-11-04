@@ -11112,11 +11112,6 @@ msgctxt "modals.task.actions.due"
 msgid "Set due date"
 msgstr "Imposta data di scadenza"
 
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.dueTitle"
-msgid "Set due date"
-msgstr "Imposta data di scadenza"
-
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.dueFor"
 msgid "Set due for {date}"
@@ -11149,11 +11144,6 @@ msgstr "Imposta promemoria"
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.actions.scheduled"
-msgid "Set scheduled date"
-msgstr "Imposta data pianificata"
-
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.scheduledTitle"
 msgid "Set scheduled date"
 msgstr "Imposta data pianificata"
 
