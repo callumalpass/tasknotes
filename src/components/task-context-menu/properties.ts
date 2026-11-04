@@ -1,5 +1,5 @@
 import { configLabel } from "../../i18n/configLabels";
-import { renderPriorityMenuGlyph } from "../../ui/kit/menu";
+import { changeTaskProperty } from "../../ui/taskPropertyPickers";
 import { displayError } from "../../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
@@ -10,7 +10,7 @@ import { DateContextMenu } from "../DateContextMenu";
 import { DateTimePickerModal } from "../../modals/DateTimePickerModal";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import type { UserMappedField } from "../../types/settings";
-import { renderUnconfiguredMenuValue } from "../../ui/kit/menu";
+import { renderUnconfiguredMenuValue, renderPriorityMenuGlyph } from "../../ui/kit/menu";
 import type { TaskContextMenuOptions } from "./types";
 import { getSubmenu, getMenuItemElement, toMenuTitle, type TaskStatusOption } from "./helpers";
 
@@ -38,7 +38,7 @@ export class TaskPropertyMenu {
 
 				item.onClick(async () => {
 					try {
-						await plugin.updateTaskProperty(task, "status", option.value);
+						await changeTaskProperty(plugin, [task], "status", option.value);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
@@ -95,7 +95,7 @@ export class TaskPropertyMenu {
 
 				item.onClick(async () => {
 					try {
-						await plugin.updateTaskProperty(task, "priority", value);
+						await changeTaskProperty(plugin, [task], "priority", value);
 						this.options.onUpdate?.();
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);

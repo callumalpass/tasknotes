@@ -10,6 +10,11 @@ import type { TaskInfo } from "../../../src/types";
 
 // Exercise real calendar arithmetic, not the global date-fns mock.
 jest.mock("date-fns", () => jest.requireActual("../../../node_modules/date-fns"));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	changeTaskProperty: async (plugin: TaskNotesPlugin, tasks: TaskInfo[], property: keyof TaskInfo, value: unknown) => {
+		for (const task of tasks) await plugin.updateTaskProperty(task, property, value);
+	},
+}));
 
 type MockMenuItem = Record<string, jest.Mock>;
 type MockMenu = { items: (MockMenuItem | { type: string })[] };

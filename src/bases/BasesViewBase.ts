@@ -105,6 +105,7 @@ export abstract class BasesViewBase extends Component {
 	protected enableSearch = false;
 	protected searchBox: SearchBox | null = null;
 	protected searchContainerEl: HTMLElement | null = null;
+	private nativeSearchButton: HTMLElement | null = null;
 	protected searchFilter: TaskSearchFilter | null = null;
 	protected currentSearchTerm = "";
 
@@ -169,6 +170,7 @@ export abstract class BasesViewBase extends Component {
 	 */
 	onload(): void {
 		this.setupContainer();
+		this.registerEvent(this.plugin.emitter.on("settings-changed", () => this.debouncedRefresh()));
 		this.setupTaskUpdateListener();
 		this.setupSelectionHandling();
 		this.updateRelevantPathsCache();
@@ -589,6 +591,26 @@ export abstract class BasesViewBase extends Component {
 	 * Requires enableSearch to be true and will only create the UI once.
 	 */
 	protected setupSearch(container: HTMLElement): void {
+		const host = container.closest(".bases-view")?.parentElement;
+		const nativeSearch = host?.querySelector<HTMLElement>(".bases-toolbar-search [role=button]");
+		if (nativeSearch && this.nativeSearchButton !== nativeSearch) {
+			if (nativeSearch.classList.contains("is-active")) nativeSearch.click();
+			this.nativeSearchButton = nativeSearch;
+			const launchSearch = (event: MouseEvent) => {
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				this.enableSearch = true;
+				this.setupSearch(container);
+				this.searchContainerEl?.querySelector("input")?.focus();
+			};
+			nativeSearch.addEventListener("click", launchSearch, true);
+			this.register(() => {
+				nativeSearch.removeEventListener("click", launchSearch, true);
+				host?.classList.remove("tn-search-active");
+			});
+		}
+		if (this.searchContainerEl?.contains(container.ownerDocument.activeElement) || this.currentSearchTerm) this.enableSearch = true;
+		host?.classList.toggle("tn-search-active", this.enableSearch);
 		// Tear down search UI if it exists but search has been disabled
 		if (this.searchBox && !this.enableSearch) {
 			this.teardownSearch();
@@ -597,6 +619,7 @@ export abstract class BasesViewBase extends Component {
 
 		// Idempotency: if search UI is already created, restore value and return
 		if (this.searchBox) {
+			if (this.searchContainerEl && !this.searchContainerEl.isConnected) container.prepend(this.searchContainerEl);
 			// Restore search term if it was cleared during re-render
 			if (this.currentSearchTerm && this.searchBox.getValue() !== this.currentSearchTerm) {
 				this.searchBox.setValue(this.currentSearchTerm);

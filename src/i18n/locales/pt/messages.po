@@ -295,6 +295,11 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, one {# tarefa selecionada} many {# tarefas selecionadas} other {# tarefas selecionadas}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}"
+msgstr "{count, plural, one {# tarefa atualizada} other {# tarefas atualizadas}}"
+
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
@@ -3762,6 +3767,7 @@ msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "Não foi possível desfazer o movimento."
 
+#: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction failure"
@@ -4065,6 +4071,11 @@ msgstr "Arquivo da tarefa atual não encontrado"
 msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "A tarefa atual não está concluída"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "Current value is not configured"
+msgstr "O valor atual não está configurado"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
@@ -5047,20 +5058,10 @@ msgctxt "ui.filterBar.group.dueDate"
 msgid "Due date"
 msgstr "Data de Vencimento"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueCleared"
-msgid "Due date cleared"
-msgstr "Data de vencimento removida"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "Data ou hora de vencimento (YYYY-MM-DD ou YYYY-MM-DDTHH:MM)"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueSet"
-msgid "Due date set"
-msgstr "Data de vencimento definida"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
@@ -6494,7 +6495,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.updateFailure"
 msgid "Failed to update subscription"
 msgstr "Falha ao atualizar inscrição"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.notices.updateTagsFailed"
 msgid "Failed to update tags"
@@ -8702,6 +8702,21 @@ msgctxt "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secon
 msgid "No label"
 msgstr "Sem rótulo"
 
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "interaction picker"
+msgid "No matching actions"
+msgstr "Nenhuma ação correspondente"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching priorities"
+msgstr "Nenhuma prioridade correspondente"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching statuses"
+msgstr "Nenhum estado correspondente"
+
 #: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.noEligibleTasks"
@@ -8727,6 +8742,11 @@ msgstr "Nenhuma tarefa agendada em atraso para adiar"
 msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "Nenhuma autorização pendente corresponde a este retorno de chamada."
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No priorities configured"
+msgstr "Nenhuma prioridade configurada"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noProject"
@@ -8777,6 +8797,11 @@ msgstr "Esta tarefa não tem uma data agendada"
 msgctxt "views.pomodoroStats.recents.empty"
 msgid "No sessions recorded yet"
 msgstr "Nenhuma sessão registrada ainda"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No statuses configured"
+msgstr "Nenhum estado configurado"
 
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
@@ -9998,11 +10023,6 @@ msgctxt "ui.filterBar.group.priority"
 msgid "Priority"
 msgstr "Prioridade"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.priorityChanged"
-msgid "Priority changed to {label}"
-msgstr "Prioridade alterada para {label}"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.priorityDot"
 msgid "Priority dot"
@@ -10148,11 +10168,6 @@ msgstr "Ações rápidas para a tarefa atual"
 msgctxt "commands.quickActionsTaskUnderCursor"
 msgid "Quick actions for task under cursor"
 msgstr "Ações rápidas para a tarefa sob o cursor"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.title"
-msgid "Quick actions: {title}"
-msgstr "Ações rápidas: {title}"
 
 #: src/settings/tabs/taskProperties/projectsPropertyCard.ts
 msgctxt "settings.appearance.projectAutosuggest.quickReference.header"
@@ -10884,20 +10899,10 @@ msgctxt "ui.filterBar.group.scheduledDate"
 msgid "Scheduled date"
 msgstr "Data Agendada"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledCleared"
-msgid "Scheduled date cleared"
-msgstr "Data agendada removida"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "Data ou hora agendada (YYYY-MM-DD ou YYYY-MM-DDTHH:MM)"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledSet"
-msgid "Scheduled date set"
-msgstr "Data agendada definida"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -10963,6 +10968,7 @@ msgid "See what''s new in the latest version of TaskNotes"
 msgstr "Veja o que há de novo na versão mais recente do TaskNotes"
 
 #: src/modals/DateTimePickerModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "contextMenus.date.modal.select"
 msgid "Select"
 msgstr "Selecionar"
@@ -11740,11 +11746,6 @@ msgctxt "settings.taskProperties.sections.corePropertiesDesc"
 msgid "Status and priority are the core properties that define a task''s state and importance."
 msgstr "Status e prioridade são as propriedades principais que definem o estado e importância de uma tarefa."
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.statusChanged"
-msgid "Status changed to {label}"
-msgstr "Status alterado para {label}"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
 msgid "Status dot"
@@ -12215,7 +12216,6 @@ msgid "Task & project statistics"
 msgstr "Estatísticas de Tarefas e Projetos"
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.archived"
 msgid "Task archived"
 msgstr "Tarefa arquivada"
@@ -12534,7 +12534,6 @@ msgid "Task title..."
 msgstr "Título da tarefa..."
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.unarchived"
 msgid "Task unarchived"
 msgstr "Tarefa desarquivada"
@@ -12640,11 +12639,6 @@ msgstr "Tarefas exportadas com sucesso"
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "Tarefas adiadas: {count}. Falhas: {failed}."
-
-#: src/ui/taskPropertyPickers.ts
-msgctxt "interaction feedback"
-msgid "Tasks updated"
-msgstr "Tarefas atualizadas"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -13248,16 +13242,11 @@ msgctxt "modals.taskSelectorWithCreate.instructions.create"
 msgid "to create new task"
 msgstr "para criar nova tarefa"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "para dispensar"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.execute"
-msgid "To execute"
-msgstr "para executar"
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"
@@ -13266,7 +13255,6 @@ msgstr "para navegar"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.navigate"
 msgid "to navigate"
@@ -13874,7 +13862,6 @@ msgid "Update reminder"
 msgstr "Atualizar lembrete"
 
 #: src/bases/CalendarView.ts
-#: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"
 msgstr "Atualizar tarefas"

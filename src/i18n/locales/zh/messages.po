@@ -295,6 +295,11 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, other {已选择 # 个任务}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}"
+msgstr "{count, plural, other {已更新 # 个任务}}"
+
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
@@ -3760,6 +3765,7 @@ msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "无法撤销此次移动。"
 
+#: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction failure"
@@ -4063,6 +4069,11 @@ msgstr "找不到当前任务文件"
 msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "当前任务尚未完成"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "Current value is not configured"
+msgstr "当前值未配置"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
@@ -5045,20 +5056,10 @@ msgctxt "ui.filterBar.group.dueDate"
 msgid "Due date"
 msgstr "截止日期"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueCleared"
-msgid "Due date cleared"
-msgstr "截止日期已清除"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "截止日期或日期时间（YYYY-MM-DD 或 YYYY-MM-DDTHH:MM）"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueSet"
-msgid "Due date set"
-msgstr "截止日期已设置"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
@@ -6492,7 +6493,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.updateFailure"
 msgid "Failed to update subscription"
 msgstr "更新订阅失败"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.notices.updateTagsFailed"
 msgid "Failed to update tags"
@@ -8700,6 +8700,21 @@ msgctxt "settings/tabs/taskProperties/statusPropertyCard: renderStatusList secon
 msgid "No label"
 msgstr "无标签"
 
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "interaction picker"
+msgid "No matching actions"
+msgstr "没有匹配的操作"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching priorities"
+msgstr "没有匹配的优先级"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching statuses"
+msgstr "没有匹配的状态"
+
 #: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.noEligibleTasks"
@@ -8725,6 +8740,11 @@ msgstr "没有需要推迟的逾期计划任务"
 msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "没有待处理的授权与此回调匹配。"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No priorities configured"
+msgstr "未配置优先级"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noProject"
@@ -8775,6 +8795,11 @@ msgstr "此任务没有计划日期"
 msgctxt "views.pomodoroStats.recents.empty"
 msgid "No sessions recorded yet"
 msgstr "尚未记录会话"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No statuses configured"
+msgstr "未配置状态"
 
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
@@ -9996,11 +10021,6 @@ msgctxt "ui.filterBar.group.priority"
 msgid "Priority"
 msgstr "优先级"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.priorityChanged"
-msgid "Priority changed to {label}"
-msgstr "优先级已改为 {label}"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.priorityDot"
 msgid "Priority dot"
@@ -10146,11 +10166,6 @@ msgstr "当前任务的快速操作"
 msgctxt "commands.quickActionsTaskUnderCursor"
 msgid "Quick actions for task under cursor"
 msgstr "光标下任务的快速操作"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.title"
-msgid "Quick actions: {title}"
-msgstr "快捷操作：{title}"
 
 #: src/settings/tabs/taskProperties/projectsPropertyCard.ts
 msgctxt "settings.appearance.projectAutosuggest.quickReference.header"
@@ -10882,20 +10897,10 @@ msgctxt "ui.filterBar.group.scheduledDate"
 msgid "Scheduled date"
 msgstr "计划日期"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledCleared"
-msgid "Scheduled date cleared"
-msgstr "计划日期已清除"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "计划日期或日期时间（YYYY-MM-DD 或 YYYY-MM-DDTHH:MM）"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledSet"
-msgid "Scheduled date set"
-msgstr "计划日期已设置"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -10961,6 +10966,7 @@ msgid "See what''s new in the latest version of TaskNotes"
 msgstr "查看TaskNotes最新版本的新功能"
 
 #: src/modals/DateTimePickerModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "contextMenus.date.modal.select"
 msgid "Select"
 msgstr "选择"
@@ -11738,11 +11744,6 @@ msgctxt "settings.taskProperties.sections.corePropertiesDesc"
 msgid "Status and priority are the core properties that define a task''s state and importance."
 msgstr "状态和优先级是定义任务状态和重要性的核心属性。"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.statusChanged"
-msgid "Status changed to {label}"
-msgstr "状态已改为 {label}"
-
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
 msgid "Status dot"
@@ -12213,7 +12214,6 @@ msgid "Task & project statistics"
 msgstr "任务和项目统计"
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.archived"
 msgid "Task archived"
 msgstr "任务已归档"
@@ -12532,7 +12532,6 @@ msgid "Task title..."
 msgstr "任务标题..."
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.unarchived"
 msgid "Task unarchived"
 msgstr "任务已取消归档"
@@ -12638,11 +12637,6 @@ msgstr "任务导出成功"
 msgctxt "notices.interface.postponed"
 msgid "Tasks postponed: {count}. Failed: {failed}."
 msgstr "已推迟任务：{count} 个。失败：{failed} 个。"
-
-#: src/ui/taskPropertyPickers.ts
-msgctxt "interaction feedback"
-msgid "Tasks updated"
-msgstr "任务已更新"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -13246,16 +13240,11 @@ msgctxt "modals.taskSelectorWithCreate.instructions.create"
 msgid "to create new task"
 msgstr "创建新任务"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "关闭"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.execute"
-msgid "To execute"
-msgstr "执行"
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"
@@ -13264,7 +13253,6 @@ msgstr "导航"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.navigate"
 msgid "to navigate"
@@ -13872,7 +13860,6 @@ msgid "Update reminder"
 msgstr "更新提醒"
 
 #: src/bases/CalendarView.ts
-#: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"
 msgstr "更新任务"

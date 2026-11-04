@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { stringify } from 'yaml';
-import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let page: Page;
@@ -10,6 +10,8 @@ test.beforeAll(async () => {
   instance = await launchObsidian();
   page = instance.page;
   await setObsidianViewport(page, { width: 1180, height: 800 });
+  const dismissStartupNotice = page.locator('.notice').getByText("Don't show again", { exact: true });
+  if (await dismissStartupNotice.isVisible()) await dismissStartupNotice.click();
   await page.evaluate(async folder => {
     const app = (window as any).app;
     const plugin = app.plugins.plugins.tasknotes;
@@ -40,10 +42,10 @@ test.afterAll(async () => {
   } finally { if (instance) await closeObsidian(instance); }
 });
 
-async function openView(type: string, name: string) {
+async function openView(type: string, name: string, enableSearch = true, groupProperty?: string) {
   const content = stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] },
-    views: [{ type, name, order: ['status', 'priority', 'due'], sort: [{ property: 'file.name', direction: 'ASC' }], enableSearch: true,
-      ...(type === 'tasknotesKanban' ? { groupBy: { property: 'status', direction: 'ASC' } } : {}) }] });
+    views: [{ type, name, order: ['status', 'priority', 'due'], sort: [{ property: 'file.name', direction: 'ASC' }], enableSearch,
+      ...(type === 'tasknotesKanban' || groupProperty ? { groupBy: { property: groupProperty ?? 'status', direction: 'ASC' } } : {}) }] });
   await page.evaluate(async ({ path, content }) => {
     const app = (window as any).app;
     await app.workspace.getLeaf(false).openFile(await app.vault.create(path, content));
@@ -60,6 +62,187 @@ async function taskValues(property: string, archived = false) {
     return Promise.all([0, 1].map(async index => (await plugin.cacheManager.getTaskInfo(`${folder}/${archived ? 'Archive/' : ''}Task 00${index}.md`))?.[property]));
   }, { folder, property, archived });
 }
+
+test('round one: shortcut help stays inside viewport and slash search retains focus', async () => {
+  const root = await openView('tasknotesTaskList', 'Round one search', false);
+  await page.keyboard.press('?');
+  await expect(page.locator('.tn-shortcut-row .tn-key-hint').first()).toBeVisible();
+  const bounds = await page.locator('.tn-popover').boundingBox();
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(792);
+  await page.keyboard.press('Escape');
+  await root.focus();
+  await page.keyboard.press('/');
+  const search = root.locator('.tn-search-box input');
+  await expect(page.locator('.workspace-leaf.mod-active .bases-toolbar-search')).toBeHidden();
+  await search.fill('zzzznonexistent');
+  await expect(search).toBeFocused();
+  await expect(root.locator('.task-card')).toHaveCount(0);
+  await expect(search).toBeFocused();
+  await search.fill('');
+});
+
+test('round one: current values, palette order, viewport bounds and theme parity', async () => {
+  const root = await openView('tasknotesTaskList', 'Interaction review');
+  await page.evaluate(() => (window as any).app.workspace.leftSplit.collapse());
+  await page.keyboard.press('j');
+  for (const width of [1180, 400]) {
+    await setObsidianViewport(page, { width, height: 800 });
+    for (const theme of ['theme-light', 'theme-dark']) {
+      await page.evaluate(theme => {
+        document.body.classList.remove('theme-light', 'theme-dark');
+        document.body.classList.add(theme);
+      }, theme);
+      for (const [key, surface] of [['s', 'status'], ['p', 'priority'], ['d', 'date'], ['Control+k', 'palette'], ['?', 'help']]) {
+        await root.focus();
+        await page.keyboard.press(key);
+        const overlay = page.locator('.tn-popover');
+        await expect(overlay).toBeVisible();
+        await overlay.evaluate(async element => {
+          await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished));
+        });
+        const bounds = await overlay.boundingBox();
+        expect(bounds!.y).toBeGreaterThanOrEqual(8);
+        expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(792);
+        expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width - 8);
+        if (['status', 'priority', 'date'].includes(surface)) {
+          await expect(overlay.locator('.tn-picker__row.is-active.is-selected')).toHaveCount(1);
+          await expect(overlay.locator('.tn-picker__row.is-active .tn-picker__check svg')).toHaveCount(1);
+        }
+        if (surface === 'palette') {
+          await expect(overlay.locator('.tn-picker__row').first()).toHaveAttribute('data-picker-id', 'edit-task');
+          await expect(overlay.locator('.tn-picker__row').nth(1)).toHaveAttribute('data-picker-id', 'open-task-file');
+          await expect(overlay.locator('.tn-picker__row').nth(2)).toHaveAttribute('data-picker-id', 'picker-status');
+        }
+        await page.screenshot({ path: `/tmp/tasknotes-slice-a-r1/${surface}-${theme}-${width}.png`, clip: { x: 0, y: 0, width, height: 800 } });
+        await page.keyboard.press('Escape');
+      }
+    }
+  }
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  await root.focus();
+  await page.keyboard.press('s');
+  await page.keyboard.press('Enter');
+  await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);
+  await page.evaluate(() => document.body.classList.add('is-mobile'));
+  await root.focus();
+  await page.keyboard.press('p');
+  await expect(page.locator('.tn-picker .tn-key-hint:visible')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => document.body.classList.remove('is-mobile'));
+});
+
+test('round one: moved rows retain focus, reveal destination and emit one Undo result', async () => {
+  const root = await openView('tasknotesTaskList', 'Grouped movement', true, 'status');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.keyboard.press('j');
+  const path = `${folder}/Task 000.md`;
+  await page.keyboard.press('s');
+  await page.locator('.tn-picker__row[data-picker-id="done"]').click();
+  const destination = root.locator(`.task-card[data-task-path="${path}"]`);
+  await expect(destination).toHaveClass(/tn-task-focused/);
+  await expect(destination).toBeInViewport();
+  await expect(destination).toHaveClass(/tn-task-arrived/);
+  await expect.poll(() => destination.evaluate(element => element.isConnected && getComputedStyle(element).transitionDuration.split(',').every(value => value.trim() === '0s'))).toBe(true);
+  await expect(page.locator('.tn-toast')).toHaveCount(1);
+  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated');
+  await expect(page.locator('.notice:visible')).toHaveCount(0);
+  await page.locator('.tn-toast__action').click();
+  await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+});
+
+test('round one: settings edits refresh glyphs in already-open views', async () => {
+  const configs = await page.evaluate(() => {
+    const settings = (window as any).app.plugins.plugins.tasknotes.settings;
+    return { status: settings.customStatuses.find((item: any) => item.value === 'open'), priority: settings.customPriorities.find((item: any) => item.value === 'high') };
+  });
+  for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
+    const root = await openView(type, `Settings ${type}`);
+    const settings = await openTaskNotesSettings(page, 'Task properties');
+    for (const [config, icon, placeholder] of [[configs.status, 'sun', 'check, circle, clock'], [configs.priority, 'moon', 'alert-circle']] as const) {
+      const card = settings.locator(`.tasknotes-settings__card[data-card-id="${config.id}"]`);
+      const input = card.getByPlaceholder(placeholder, { exact: true });
+      if (!(await input.isVisible())) {
+        const ancestors = card.locator('xpath=ancestor::*[contains(@class,"tasknotes-settings__card--collapsed")]');
+        for (const ancestor of await ancestors.all()) await ancestor.locator(':scope > .tasknotes-settings__card-header').click();
+        await card.locator(':scope > .tasknotes-settings__card-header').click();
+      }
+      await input.fill(icon);
+      await input.dispatchEvent('change');
+    }
+    await closeObsidianSettings(page, settings);
+    await expect(root.locator('.task-card').first().locator('.task-card__status-dot .lucide-sun')).toBeVisible();
+    await expect(root.locator('.task-card').first().locator('.lucide-moon')).toBeVisible();
+  }
+});
+
+test('round one: one search entry filters titles and property values', async () => {
+  const root = await openView('tasknotesTaskList', 'Native search', false);
+  await expect(root.locator('.tn-search-box')).toHaveCount(0);
+  const native = page.locator('.workspace-leaf.mod-active .bases-toolbar-search');
+  await native.locator('[role="button"]').click();
+  const input = root.locator('.tn-search-box input');
+  await expect(native).toBeHidden();
+  await input.fill('002');
+  await expect(root.locator('.task-card')).toHaveCount(1);
+  await input.fill('high');
+  await expect(root.locator('.task-card').first()).toBeVisible();
+  await expect(root.locator('.task-card').first()).toHaveAttribute('data-task-path', `${folder}/Task 000.md`);
+  await input.fill('zzzznonexistent');
+  await expect(root.locator('.task-card')).toHaveCount(0);
+  await input.fill('');
+});
+
+test('round one: unconfigured, unmatched and empty priority states remain distinct', async () => {
+  const root = await openView('tasknotesTaskList', 'Priority states');
+  const priorities = await page.evaluate(() => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    const previous = plugin.settings.customPriorities;
+    plugin.settings.customPriorities = [];
+    plugin.priorityManager.updatePriorities([]);
+    return previous;
+  });
+  await page.keyboard.press('j');
+  await page.keyboard.press('p');
+  const picker = page.locator('.tn-picker');
+  await expect(picker.locator('.is-selected.is-active')).toContainText('high');
+  await expect(picker.locator('.is-selected .tn-picker__detail')).toHaveText('Current value is not configured');
+  await expect(picker.locator('.tn-picker__empty')).toHaveText('No priorities configured');
+  await picker.locator('input').fill('zzzznonexistent');
+  await expect(picker.locator('.tn-picker__empty')).toHaveText('No matching priorities');
+  await page.keyboard.press('Escape');
+  await page.evaluate(async folder => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    await plugin.updateTaskProperty(await plugin.cacheManager.getTaskInfo(`${folder}/Task 000.md`), 'priority', undefined, { suppressNotice: true });
+  }, folder);
+  await root.focus();
+  await page.keyboard.press('p');
+  await expect(picker.locator('.tn-picker__empty')).toHaveText('No priorities configured');
+  await page.keyboard.press('Escape');
+  await page.evaluate(async ({ priorities, folder }) => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.settings.customPriorities = priorities;
+    plugin.priorityManager.updatePriorities(priorities);
+    await plugin.updateTaskProperty(await plugin.cacheManager.getTaskInfo(`${folder}/Task 000.md`), 'priority', 'high', { suppressNotice: true });
+  }, { priorities, folder });
+});
+
+test('round one: create-modal pickers stay within a short narrow viewport', async () => {
+  await setObsidianViewport(page, { width: 400, height: 500 });
+  await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
+  const modal = page.locator('.modal.mod-tasknotes');
+  await modal.locator('[data-type="status"]').click();
+  const picker = page.locator('.tn-picker');
+  const bounds = await picker.boundingBox();
+  expect(bounds!.y).toBeGreaterThanOrEqual(8);
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(492);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(392);
+  await page.keyboard.press('Escape');
+  await expect(modal).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(modal).toHaveCount(0);
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+});
 
 for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
   test(`${type}: real keys, batch dates and undo, picker typing and palette`, async () => {
@@ -138,7 +321,7 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await root.focus();
     await page.keyboard.press('?');
-    await expect(page.locator('.tn-popover .tn-key-hint')).toHaveCount(18);
+    await expect(page.locator('.tn-popover .tn-key')).toHaveCount(20);
     await page.keyboard.press('Escape');
   });
 }

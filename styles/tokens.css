@@ -38,6 +38,10 @@
     --tn-radius-lg: 8px;
     --tn-radius-xl: 12px;
     --tn-radius-full: 999px;
+    --tn-menu-radius: var(--menu-radius, var(--tn-radius-lg));
+    --tn-menu-shadow: var(--shadow-s);
+    --tn-menu-padding: var(--size-2-3, var(--tn-space-1));
+    --tn-picker-width: 320px;
 
     --tn-segmented-gap: var(--tn-space-half);
     --tn-segmented-padding: var(--tn-space-half);

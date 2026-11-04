@@ -1,5 +1,6 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
+import { changeTaskProperty } from "../../ui/taskPropertyPickers";
 import { Menu, Notice, TFile, type TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TaskDependency, TaskInfo } from "../../types";
@@ -578,8 +579,9 @@ export class TaskRelationshipMenu {
 		contexts: string[] | undefined
 	): Promise<void> {
 		try {
-			const updatedTask = await plugin.updateTaskProperty(task, "contexts", contexts);
-			Object.assign(task, updatedTask);
+			await changeTaskProperty(plugin, [task], "contexts", contexts);
+			const updatedTask = await plugin.cacheManager.getTaskInfo(task.path);
+			if (updatedTask) Object.assign(task, updatedTask);
 			this.options.onUpdate?.();
 		} catch (error) {
 			tasknotesLogger.error("Failed to update task contexts:", {
@@ -692,8 +694,9 @@ export class TaskRelationshipMenu {
 		tags: string[] | undefined
 	): Promise<void> {
 		try {
-			const updatedTask = await plugin.updateTaskProperty(task, "tags", tags);
-			Object.assign(task, updatedTask);
+			await changeTaskProperty(plugin, [task], "tags", tags);
+			const updatedTask = await plugin.cacheManager.getTaskInfo(task.path);
+			if (updatedTask) Object.assign(task, updatedTask);
 			this.options.onUpdate?.();
 		} catch (error) {
 			tasknotesLogger.error("Failed to update task tags:", {

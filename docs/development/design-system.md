@@ -73,11 +73,11 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 | Status glyph | `glyphs.ts` | Ring that fills by workflow progress; check when complete; cross when skipped. Custom icons win |
 | Priority glyph | `glyphs.ts` | Signal bars by rank; solid alert for top rank; dashes for none. Custom icons win |
 | Date label | `dateLabel.ts` | Relative label, lateness colour |
-| Key hint | `keyHint.ts` | Renders `⌘K`, `S`, platform aware |
+| Key hint | `keyHint.ts` | Renders `⌘K`, `S`, platform aware; omitted on touch/mobile |
 | Button, chip, segmented control | `controls.ts`, `kit.css` | `tn-btn`, `tn-chip`, `tn-segmented` |
-| Popover | `popover.ts` | Anchored overlay on the anchor window body, focus return, Esc, outside click, flip |
-| List picker | `listPicker.ts` | Typeahead list on popover: arrows, Enter, hints, multi-select |
-| Toast | `toast.ts` | Bottom-centre, one line, action button |
+| Popover | `popover.ts` | Anchored overlay on the anchor window body or modal container, focus return, Esc, outside click, viewport clamp and flip |
+| List picker | `listPicker.ts` | Typeahead list on popover: arrows, Enter, shared footer, checked current value, applied-first multi-select |
+| Toast | `toast.ts` | Bottom-right, one result with a changed-task count and Undo; does not cover the central title column |
 | Empty state | `emptyState.ts` | One sentence, one action, key hint |
 
 ## Task row anatomy
@@ -139,6 +139,8 @@ List and board status/priority glyphs open anchored property pickers. Alt-click 
 `openTaskPropertyChoices` builds those same pickers without persisting a task. The task modal routes choices through its draft form setters; only Save persists them. Pickers inside modals stay within the modal's focus boundary and temporarily own the Obsidian keyboard scope, so Escape and outside clicks dismiss only the picker and return focus to its chip. Tags and contexts retain their text fields; projects, recurrence and reminders retain their specialized editors.
 
 ## Theming contract
+
+Shared menu surfaces use `--tn-menu-radius`, `--tn-menu-shadow` and `--tn-menu-padding`, inheriting native Obsidian menu values. `--tn-picker-width` controls the shared picker width, constrained to the viewport. `.tn-picker__check`, `.tn-picker__footer`, `.tn-shortcut-help` and `.tn-task-arrived` provide hooks for applied values, keyboard guidance and restrained destination feedback; reduced motion disables the destination transition.
 
 - Must look correct with the default Obsidian theme in light and dark, and with at least Minimal and one high-contrast theme.
 - Never set a text colour on a surface you did not also set.

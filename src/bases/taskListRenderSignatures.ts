@@ -17,6 +17,8 @@ export function buildTaskListTaskSignature(
 	return JSON.stringify(
 		normalizeTaskSignatureValue({
 			task: { ...task, basesData: undefined },
+			statuses: plugin.settings.customStatuses,
+			priorities: plugin.settings.customPriorities,
 			visibleValues: visibleProperties.map((property) =>
 				getTaskCardPropertyValue(task, property, plugin)
 			),
