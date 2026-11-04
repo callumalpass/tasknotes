@@ -605,7 +605,7 @@ export abstract class BasesViewBase extends Component {
 	 */
 	protected setupSearch(container: HTMLElement): void {
 		const host = container.closest(".bases-view")?.parentElement;
-		const nativeSearch = host?.querySelector<HTMLElement>(".bases-toolbar-search [role=button]");
+		const nativeSearch = host?.querySelector<HTMLElement>(".bases-toolbar-search :is([role=button], .text-icon-button)");
 		if (nativeSearch && this.nativeSearchButton !== nativeSearch) {
 			if (nativeSearch.classList.contains("is-active")) nativeSearch.click();
 			this.nativeSearchButton = nativeSearch;

@@ -80,6 +80,16 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		Array.from(root.querySelectorAll<HTMLElement>(".task-card[data-task-path]")).find(
 			(card) => card.dataset.taskPath === path
 		);
+	const highlightArrival = (card: HTMLElement) => {
+		card.classList.add("tn-task-arrived");
+		if (highlightTimer !== undefined) return;
+		highlightTimer = root.ownerDocument.defaultView?.setTimeout(() => {
+			card.classList.remove("tn-task-arrived");
+			if (arrivalPath) cardFor(arrivalPath)?.classList.remove("tn-task-arrived");
+			arrivalPath = undefined;
+			highlightTimer = undefined;
+		}, 1200);
+	};
 	const paint = () => {
 		options.refreshSelection();
 		if (triage) {
@@ -93,12 +103,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		}
 		if (arrivalPath && arrivalPath !== focusedPath) {
 			const arrived = cardFor(arrivalPath);
-			if (arrived && arrived !== paintedCard) {
-				arrived.classList.add("tn-task-arrived");
-				root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
-				highlightTimer = root.ownerDocument.defaultView?.setTimeout(() => arrived.classList.remove("tn-task-arrived"), 1200);
-				arrivalPath = undefined;
-			}
+			if (arrived) highlightArrival(arrived);
 		}
 		root.querySelectorAll(".tn-task-focused").forEach((card) =>
 			card.classList.remove("tn-task-focused")
@@ -115,13 +120,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			card?.classList.add("tn-task-focused");
 			if (card && paintedCard && card !== paintedCard && paintedCard.dataset.taskPath === focusedPath) {
 				if (arrivalPath === focusedPath) {
-					arrivalPath = undefined;
 					options.reveal(focusedPath);
 					card.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
 				}
-				card.classList.add("tn-task-arrived");
-				root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
-				highlightTimer = root.ownerDocument.defaultView?.setTimeout(() => card.classList.remove("tn-task-arrived"), 1200);
+				highlightArrival(card);
 			}
 		}
 		if (card) paintedCard = card;
@@ -136,6 +138,9 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			triage = { path: event.updatedTask.path, key: group.key, candidates: [...group.paths.slice(index + 1), ...group.paths.slice(0, index).reverse()] };
 		}
 		if (!options.selectionPath) focusedPath = event.updatedTask.path;
+		root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
+		highlightTimer = undefined;
+		root.querySelectorAll(".tn-task-arrived").forEach((card) => card.classList.remove("tn-task-arrived"));
 		arrivalPath = focusedPath;
 	});
 	const pointer = (event: PointerEvent) => {

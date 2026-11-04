@@ -42,8 +42,8 @@ test.afterAll(async () => {
   } finally { if (instance) await closeObsidian(instance); }
 });
 
-async function openView(type: string, name: string, enableSearch = true, groupProperty?: string) {
-  const content = stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] },
+async function openView(type: string, name: string, enableSearch = true, groupProperty?: string, extraFilter?: string) {
+  const content = stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")', ...(extraFilter ? [extraFilter] : [])] },
     views: [{ type, name, order: ['status', 'priority', 'due'], sort: [{ property: 'file.name', direction: 'ASC' }], enableSearch,
       ...(type === 'tasknotesKanban' || groupProperty ? { groupBy: { property: groupProperty ?? 'status', direction: 'ASC' } } : {}) }] });
   await page.evaluate(async ({ path, content }) => {
@@ -157,7 +157,8 @@ test('round one: current values, palette order, viewport bounds and theme parity
 });
 
 test('grouped triage keeps queue focus, highlights arrival and emits one Undo result', async () => {
-  const root = await openView('tasknotesTaskList', 'Grouped movement', true, 'status');
+  const root = await openView('tasknotesTaskList', 'Grouped movement', true, 'status', 'file.name.contains("Task 00")');
+  await expect(root.locator('.task-card')).toHaveCount(10);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.keyboard.press('j');
   const path = `${folder}/Task 000.md`;
@@ -169,7 +170,7 @@ test('grouped triage keeps queue focus, highlights arrival and emits one Undo re
   await expect(destination).toHaveClass(/tn-task-arrived/);
   await expect.poll(() => destination.evaluate(element => element.isConnected && getComputedStyle(element).transitionDuration.split(',').every(value => value.trim() === '0s'))).toBe(true);
   await expect(page.locator('.tn-toast')).toHaveCount(1);
-  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated');
+  await expect(page.locator('.tn-toast__message')).toHaveText('Status → Done');
   await expect(page.locator('.notice:visible')).toHaveCount(0);
   await page.locator('.tn-toast__action').click();
   await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);
@@ -205,7 +206,7 @@ test('round one: one search entry filters titles and property values', async () 
   const root = await openView('tasknotesTaskList', 'Native search', false);
   await expect(root.locator('.tn-search-box')).toHaveCount(0);
   const native = page.locator('.workspace-leaf.mod-active .bases-toolbar-search');
-  await native.locator('[role="button"]').click();
+  await native.getByText('Search', { exact: true }).click();
   const input = root.locator('.tn-search-box input');
   await expect(native).toBeHidden();
   await input.fill('002');
