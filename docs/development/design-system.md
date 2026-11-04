@@ -142,6 +142,34 @@ List and board status/priority glyphs open anchored property pickers. Alt-click 
 
 ## Theming contract
 
+### Secondary composers and reports
+
+Timeblock creation and inspection use the shared modal composer helpers: a
+title-first scrollable body, date/time/color property chips, and a pinned action
+footer. Clock controls follow the calendar's explicit 12/24-hour preference and
+persist canonical `HH:mm` values. Inspection retains read-only times; attachments,
+description, title and color keep their existing editing paths. Theme swatches
+have localized accessible names, with custom CSS colors still supported.
+
+Task and pomodoro reports use the available pane width, shared section headings,
+flat ruled rows and a three-column horizon grid that becomes one column in narrow
+containers. Task report filters live in a disclosure; collapsing it never resets
+the filters. Settings inherit the host gutter and wrap their own tabs within the
+settings content container rather than changing Obsidian's sidebar. Very narrow
+settings containers use the same tab choices in a native select, preserving the
+active tab and mobile integration filtering without a tall navigation wall.
+
+Inline task widgets remain atomic inline-flex units in prose and bullets, with
+end-clipped dates, an attached menu and room for following punctuation. They do
+not establish a size-query container; configured metadata retains the shared
+overflow-summary and context-menu paths. Mobile controls retain touch targets.
+
+Empty calendar lists use the shared empty-state renderer with a creation action.
+The calendar library owns responsive full-name view selection and the empty-list
+content hook. Until the prepared library revision is published and repinned,
+those two additions require the locally linked `@tasknotes/calendar` build; no
+vendored calendar output is changed here.
+
 Shared menu surfaces use `--tn-menu-radius`, `--tn-menu-shadow` and `--tn-menu-padding`, inheriting native Obsidian menu values. `--tn-picker-width` controls the shared picker width, constrained to the viewport. `.tn-picker__check`, `.tn-picker__footer`, `.tn-shortcut-help` and `.tn-task-arrived` provide hooks for applied values, keyboard guidance and restrained destination feedback; reduced motion disables the destination transition.
 
 - Must look correct with the default Obsidian theme in light and dark, and with at least Minimal and one high-contrast theme.

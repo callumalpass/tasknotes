@@ -345,11 +345,6 @@ msgctxt "calendar view hint"
 msgid "{count}-day view"
 msgstr "Vista de {count} dias"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.customDays"
-msgid "{count}D"
-msgstr "{count}D"
-
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTiming display"
 msgid "{date} at {time}"
@@ -4196,11 +4191,6 @@ msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "Alternar status da tarefa atual"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.day"
-msgid "D"
-msgstr "D"
-
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
 msgid "Daily"
@@ -7490,11 +7480,6 @@ msgctxt "interaction help"
 msgid "Keyboard shortcuts"
 msgstr "Atalhos de teclado"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.list"
-msgid "L"
-msgstr "L"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.label"
 msgid "Label:"
@@ -7826,11 +7811,6 @@ msgstr "Pausas longas"
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
 msgstr "Baixa"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.month"
-msgid "M"
-msgstr "M"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurring.maintainOffsetName"
@@ -14036,11 +14016,6 @@ msgctxt "settings.features.notifications.soundVolumeDesc"
 msgid "Volume for task reminder sounds (0-100)"
 msgstr "Volume dos sons de lembrete de tarefa (0-100)"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.week"
-msgid "W"
-msgstr "S"
-
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
@@ -14404,11 +14379,6 @@ msgstr "Qual data da tarefa deve acionar a criação do evento no calendário."
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Duração do trabalho"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.year"
-msgid "Y"
-msgstr "A"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"

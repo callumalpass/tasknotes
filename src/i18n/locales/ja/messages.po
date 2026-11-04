@@ -345,11 +345,6 @@ msgctxt "calendar view hint"
 msgid "{count}-day view"
 msgstr "{count}日表示"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.customDays"
-msgid "{count}D"
-msgstr "{count}日"
-
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "settings/tabs/taskProperties/remindersPropertyCard: formatReminderTiming display"
 msgid "{date} at {time}"
@@ -4194,11 +4189,6 @@ msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "現在のタスクのステータスを切り替え"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.day"
-msgid "D"
-msgstr "日"
-
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
 msgid "Daily"
@@ -7488,11 +7478,6 @@ msgctxt "interaction help"
 msgid "Keyboard shortcuts"
 msgstr "キーボードショートカット"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.list"
-msgid "L"
-msgstr "一覧"
-
 #: src/settings/tabs/taskProperties/priorityPropertyCard.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.label"
 msgid "Label:"
@@ -7824,11 +7809,6 @@ msgstr "長い休憩"
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
 msgstr "低"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.month"
-msgid "M"
-msgstr "月"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.recurring.maintainOffsetName"
@@ -14034,11 +14014,6 @@ msgctxt "settings.features.notifications.soundVolumeDesc"
 msgid "Volume for task reminder sounds (0-100)"
 msgstr "タスクリマインダー音の音量 (0-100)"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.week"
-msgid "W"
-msgstr "週"
-
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
@@ -14402,11 +14377,6 @@ msgstr "どのタスク日付でカレンダーイベントを作成するか。
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "作業時間"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.year"
-msgid "Y"
-msgstr "年"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"
