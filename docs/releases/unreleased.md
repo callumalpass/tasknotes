@@ -61,3 +61,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2494, #2498) Fixed time entries in the calendar's week and day views squeezing every event on their day, even where nothing overlapped. Time entries now sit in the narrow strip on the right only where they overlap a scheduled task, timeblock or calendar event. Elsewhere, events and time entries use the full column width, as they did before 4.15.
 - (#2494) The previous and next buttons in the calendar toolbar now show larger, clearer arrows.
   - Thanks to @RumiaKitinari for reporting both, and @mgreen3 for the related report
+- (#2507) Fixed the swimlane label column covering the left edge of the first Kanban column in windows 769–1200px wide.
+  - Thanks to @alentangzy-jpg for reporting this

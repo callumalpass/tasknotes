@@ -583,22 +583,12 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Responsive adjustments for swimlanes */
 @media (max-width: 1200px) {
-    .kanban-view__swimlane-row > :first-child {
-        width: 150px;
-        min-width: 150px;
-    }
-
     .kanban-view__swimlane-label {
         padding: var(--tn-spacing-sm);
     }
 }
 
 @media (max-width: 768px) {
-    .kanban-view__swimlane-row > :first-child {
-        width: 120px;
-        min-width: 120px;
-    }
-
     .kanban-view__swimlane-title {
         font-size: var(--tn-font-size-sm);
     }
