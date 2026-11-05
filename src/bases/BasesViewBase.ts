@@ -63,6 +63,7 @@ import {
 	cleanupBasesTaskUpdateListeners,
 	registerBasesTaskUpdateListeners,
 } from "./basesTaskUpdateListeners";
+import { registerBasesDateRollover } from "./basesDateRollover";
 import { filterTopLevelSubtasks } from "./topLevelSubtasks";
 import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
@@ -169,6 +170,7 @@ export abstract class BasesViewBase extends Component {
 	onload(): void {
 		this.setupContainer();
 		this.setupTaskUpdateListener();
+		this.setupDateRolloverListener();
 		this.setupSelectionHandling();
 		this.updateRelevantPathsCache();
 		void this.render();
@@ -435,6 +437,24 @@ export abstract class BasesViewBase extends Component {
 				this.taskUpdateListener = null;
 			}
 		});
+	}
+
+	private setupDateRolloverListener(): void {
+		this.register(
+			registerBasesDateRollover({
+				emitter: this.plugin.emitter,
+				getElement: () => this.rootElement,
+				onDateRollover: (previousDay) => this.handleDateRollover(previousDay),
+			})
+		);
+	}
+
+	/**
+	 * Redraw date-dependent cards on a new day, through the same path as a Bases
+	 * update so that views keep their guards against rendering mid-drag.
+	 */
+	protected handleDateRollover(_previousDay: string): void {
+		this.onDataUpdated();
 	}
 
 	private handleTaskDeletedEvent(eventData: unknown): void {
