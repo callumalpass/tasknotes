@@ -40,6 +40,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	private tabSelect?: HTMLSelectElement;
 	private readonly cardExpansionState = new CardExpansionState();
 	private settingsContainer?: HTMLElement;
+	private settingsHost: HTMLElement | undefined = undefined;
 	private focusedProperty: "status" | "priority" | null = null;
 	private debouncedSave: DebouncedFunction<() => Promise<void>> = debounce(
 		() => this.plugin.saveSettings(),
@@ -116,6 +117,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	}
 
 	private renderSettings(containerEl: HTMLElement): void {
+		this.settingsHost?.removeClass("tasknotes-settings-host");
+		this.settingsHost = containerEl.closest<HTMLElement>(".vertical-tab-content") ?? undefined;
+		this.settingsHost?.addClass("tasknotes-settings-host");
 		this.settingsContainer = containerEl;
 		this.tabContents = {};
 		containerEl.empty();
@@ -328,6 +332,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	 * Flushes any pending debounced saves to ensure settings are persisted.
 	 */
 	hide(): void {
+		this.settingsHost?.removeClass("tasknotes-settings-host");
+		this.settingsHost = undefined;
 		this.debouncedSave.flush();
 	}
 }

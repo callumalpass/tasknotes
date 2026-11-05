@@ -28,7 +28,7 @@ import {
 } from "../services/VaultMutationService";
 import { openListPicker, type PickerItem } from "./kit/listPicker";
 import type { PopoverHandle, PopoverOptions } from "./kit/popover";
-import { showToast } from "./kit/toast";
+import { showToast, type ToastAction } from "./kit/toast";
 import {
 	renderPriorityGlyph,
 	renderStatusGlyph,
@@ -54,6 +54,7 @@ export interface TaskUndoFeedback {
 	undo: Array<() => Promise<unknown>>;
 	failed: boolean;
 	failedTitles?: string[];
+	failedPaths?: string[];
 }
 
 export function updateTaskProjectsWithUndo(
@@ -82,6 +83,10 @@ export function taskPropertyLabel(property: TaskPickerProperty): string {
 	}
 }
 
+export function taskMovementMessage(count: number, destination: string): string {
+	return uiText(msg({ message: "Moved {count, plural, one {# task} other {# tasks}} to {destination}", context: "interaction move feedback" }), { count, destination });
+}
+
 export function tasksForPropertyAction(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo
@@ -103,6 +108,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 	const undo: Array<() => Promise<unknown>> = [];
 	const updatedTasks: TaskInfo[] = [];
 	const failedTitles: string[] = [];
+	const failedPaths: string[] = [];
 	let failed = false;
 	for (const task of tasks) {
 		try {
@@ -337,20 +343,27 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 		} catch {
 			failed = true;
 			failedTitles.push(task.title);
+			failedPaths.push(task.path);
 		}
 	}
 	if (feedback) {
 		feedback.undo.push(...undo);
 		feedback.failed ||= failed;
 		feedback.failedTitles = [...(feedback.failedTitles ?? []), ...failedTitles];
+		feedback.failedPaths = [...(feedback.failedPaths ?? []), ...failedPaths];
 	} else {
 		const values = updatedTasks.map(task => {
 			const configs = property === "status" ? plugin.statusManager.getAllStatuses() : property === "priority" ? plugin.priorityManager.getAllPriorities() : [];
 			const config = configs.find(config => config.value === task[property]);
 			return config ? configLabel(config) : String(task[property] ?? "—");
 		});
-		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : `${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}${tasks.length > 1 ? ` · ${updatedTasks.length}` : ""}`,
-			uiText(msg({ message: "Undid {property} change for {count, plural, one {# task} other {# tasks}}", context: "interaction property undo confirmation" }), { property: taskPropertyLabel(property as TaskPickerProperty), count: undo.length }));
+		const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}", context: "interaction feedback" }), { count: updatedTasks.length });
+		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : `${outcome} · ${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}`,
+			uiText(msg({ message: "Undid {property} change for {count, plural, one {# task} other {# tasks}}", context: "interaction property undo confirmation" }), { property: taskPropertyLabel(property as TaskPickerProperty), count: undo.length }), undefined,
+			failedPaths.length ? {
+				label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
+				run: async () => { await plugin.app.workspace.openLinkText(failedPaths[0], "", false); },
+			} : undefined);
 	}
 	return updatedTasks;
 }
@@ -362,7 +375,8 @@ export function showTaskUndo(
 	scope?: object,
 	message?: string,
 	undoMessage?: string,
-	undoTitles?: readonly string[]
+	undoTitles?: readonly string[],
+	recovery?: ToastAction
 ): void {
 	if (!count && !failed) return;
 	const updated = uiText(
@@ -381,6 +395,7 @@ export function showTaskUndo(
 		message: failed ? `${failure} · ${message ?? updated}${message && count ? ` · ${updated}` : ""}` : (message ?? updated),
 		undoScope: scope,
 		undoMessage,
+		secondaryAction: failed ? recovery : undefined,
 		action: undo.length
 			? {
 					label: uiText(msg({ message: "Undo", context: "interaction undo" })),
@@ -445,7 +460,13 @@ export async function openTaskPropertyPicker(
 		void changes.then(async () => {
 			const current = await Promise.all(tasks.map(async task => (await plugin.cacheManager.getTaskInfo(task.path))?.[property]));
 			const count = current.filter((value, index) => JSON.stringify(value) !== JSON.stringify(previous[index])).length;
-			if (count || feedback.failed) showTaskUndo(feedback.undo, feedback.failed, count, plugin.app.vault, feedback.failed ? feedback.failedTitles?.join(", ") : `${taskPropertyLabel(property)} → ${[...new Set(current.flatMap(value => Array.isArray(value) ? value : []))].join(", ") || "—"}`);
+			const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}", context: "interaction feedback" }), { count });
+			const failedPath = feedback.failedPaths?.[0];
+			if (count || feedback.failed) showTaskUndo(feedback.undo, feedback.failed, count, plugin.app.vault, feedback.failed ? feedback.failedTitles?.join(", ") : `${outcome} · ${taskPropertyLabel(property)} → ${[...new Set(current.flatMap(value => Array.isArray(value) ? value : []))].join(", ") || "—"}`, undefined, undefined,
+				failedPath ? {
+					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
+					run: async () => { await plugin.app.workspace.openLinkText(failedPath, "", false); },
+				} : undefined);
 		});
 	});
 }
@@ -461,6 +482,7 @@ export async function openTaskPropertyChoices(
 	if (!tasks.length) return;
 	const clear = uiText(msg({ message: "Clear", context: "interaction clear" }));
 	const label = taskPropertyLabel(property);
+	const title = tasks.length > 1 ? `${label} · ${uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: tasks.length })}` : undefined;
 	let items: PickerItem[] = [];
 	if (property === "status" || property === "priority") {
 		const configs =
@@ -507,6 +529,7 @@ export async function openTaskPropertyChoices(
 		return openListPicker({
 			anchor,
 			app: plugin.app,
+			title,
 			items,
 			placeholder: label,
 			emptyText: property === "priority"
@@ -564,6 +587,7 @@ export async function openTaskPropertyChoices(
 		return openListPicker({
 			anchor,
 			app: plugin.app,
+			title,
 			items,
 			revealSelected: false,
 			placeholder: label,
@@ -574,6 +598,7 @@ export async function openTaskPropertyChoices(
 					uiText(msg({ message: "Enter a valid date", context: "interaction date" }));
 			},
 			canCreate: (query) => !!parse(query),
+			validationMessage: (query) => query.trim() && !parse(query) ? uiText(msg({ message: "Enter a valid date", context: "interaction date" })) : null,
 			onCreate: (query) => {
 				const date = parse(query);
 				if (date) apply(date);
@@ -621,6 +646,7 @@ export async function openTaskPropertyChoices(
 	return openListPicker({
 		anchor,
 		app: plugin.app,
+		title,
 		placeholder: label,
 		emptyText: clear,
 		multiple: true,

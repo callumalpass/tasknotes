@@ -1,6 +1,6 @@
 import { applyModalShell, renderModalSubmitHint } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
-import { App, Modal, Notice, setIcon } from "obsidian";
+import { App, Modal, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import { createI18nService, type MessageDescriptor, type InterpolationValues } from "../i18n";
 import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalLanguageParser";
@@ -90,6 +90,7 @@ export class DateTimePickerModal extends Modal {
 	private readonly translate: (key: MessageDescriptor, values?: InterpolationValues) => string;
 	private selectedDate: string | null;
 	private naturalLanguageInput: HTMLInputElement | null = null;
+	private naturalLanguageError: HTMLElement | null = null;
 	private dateInput: HTMLInputElement | null = null;
 	private timeInput: HTMLInputElement | null = null;
 	private selectButtonEl: HTMLButtonElement | null = null;
@@ -219,6 +220,19 @@ export class DateTimePickerModal extends Modal {
 			if (event.key !== "Enter") return;
 			event.preventDefault();
 			this.applyNaturalLanguageInput();
+		});
+		this.naturalLanguageError = container.createDiv({
+			cls: "date-time-picker-modal__error",
+			attr: { id: `${this.modalEl.getAttribute("aria-labelledby")}-error`, role: "alert", hidden: "" },
+		});
+		this.naturalLanguageInput.setAttribute("aria-describedby", this.naturalLanguageError.id);
+		this.naturalLanguageInput.addEventListener("input", () => {
+			if (!this.naturalLanguageInput?.hasAttribute("aria-invalid")) return;
+			const parser = this.getNaturalLanguageParser();
+			if (parser && parseNaturalLanguageDateTime(this.naturalLanguageInput.value, parser, this.options.dateRole)) {
+				this.naturalLanguageInput.removeAttribute("aria-invalid");
+				if (this.naturalLanguageError) this.naturalLanguageError.hidden = true;
+			}
 		});
 
 		const applyButton = row.createEl("button", {
@@ -417,14 +431,17 @@ export class DateTimePickerModal extends Modal {
 			: null;
 
 		if (!selection) {
-			new Notice(
-				this.translate(
+			this.naturalLanguageInput?.setAttribute("aria-invalid", "true");
+			if (this.naturalLanguageError) {
+				this.naturalLanguageError.hidden = false;
+				this.naturalLanguageError.textContent = this.translate(
 					msg({
 						message: "Could not find a date in that text.",
 						context: "modals.dateTimePicker.notFound",
 					})
-				)
-			);
+				);
+			}
+			this.naturalLanguageInput?.focus();
 			return;
 		}
 

@@ -410,3 +410,8 @@
 .date-picker-modal input[type="time"]::-ms-reveal {
     display: none;
 }
+.tasknotes-plugin .date-time-picker-modal__error:not([hidden]) {
+    color: var(--tn-danger-text);
+    font-size: var(--tn-type-sm);
+    margin-block: var(--tn-space-1);
+}

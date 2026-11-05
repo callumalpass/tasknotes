@@ -297,6 +297,7 @@ msgstr "{count, plural, one {# attività archiviata} other {# attività archivia
 
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, one {# attività selezionata} other {# attività selezionate}}"
@@ -4180,11 +4181,6 @@ msgctxt "settings.taskProperties.projectsCard.customizeDisplay"
 msgid "Customize display"
 msgstr "Personalizza visualizzazione"
 
-#: src/settings/tabs/appearanceTab.ts
-msgctxt "settings.appearance.calendarView.description"
-msgid "Customize the appearance and behavior of the calendar view."
-msgstr "Personalizza l’aspetto e il comportamento della vista del calendario."
-
 #: src/ui/kit/modal.ts
 msgctxt "color name"
 msgid "Cyan"
@@ -7457,6 +7453,7 @@ msgctxt "settings.modalFields.manager.fieldKey"
 msgid "Key: {key}"
 msgstr "Chiave: {key}"
 
+#: src/components/TaskContextMenu.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction help"
 msgid "Keyboard shortcuts"
@@ -8130,6 +8127,7 @@ msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
 msgstr "Sposta attività archiviate nella cartella"
 
+#: src/bases/KanbanView.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Move between columns"
@@ -8169,6 +8167,11 @@ msgstr "Sposta in un gruppo"
 msgctxt "views.taskList.movement.moveUp"
 msgid "Move up"
 msgstr "Sposta in alto"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction move feedback"
+msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
+msgstr "{count, plural, one {# attività spostata} other {# attività spostate}} in {destination}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "cli/helpers/timeTracking: resolveTaskForStopTimeTracking display"
@@ -9320,6 +9323,9 @@ msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "Apri l’attività ricorrente principale per l’occorrenza del {occurrence_date}"
 
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+#: src/ui/taskPropertyPickers.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Open task"
@@ -12676,6 +12682,11 @@ msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
 msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
 msgstr "Il valore che identifica una nota come attività (es. ''task''). Lascia vuoto per considerare attività ogni nota che ha questa proprietà, qualunque sia il suo valore."
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.calendarView.description"
+msgid "These defaults apply to calendar views without overrides. To change an existing view, open its Base and use the view settings."
+msgstr "Questi valori predefiniti si applicano alle viste calendario senza impostazioni proprie. Per modificare una vista esistente, apri la relativa Base e usa le impostazioni della vista."
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
 msgid "third"
@@ -13572,6 +13583,7 @@ msgid "Undid: {action}"
 msgstr "Annullato: {action}"
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "interaction undo"
 msgid "Undo"
 msgstr "Annulla"

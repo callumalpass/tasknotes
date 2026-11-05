@@ -1073,3 +1073,8 @@ body.is-mobile .tasknotes-plugin :is(.tn-segmented__item, .tn-toast__action) {
         transition: none;
     }
 }
+.tasknotes-plugin .tn-picker__error:not([hidden]) {
+    padding: var(--tn-space-1) var(--tn-space-3);
+    color: var(--tn-danger-text);
+    font-size: var(--tn-type-sm);
+}

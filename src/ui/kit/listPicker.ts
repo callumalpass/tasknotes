@@ -19,6 +19,7 @@ export interface PickerItem {
 export interface ListPickerOptions
 	extends Pick<PopoverOptions, "anchor" | "app" | "className" | "onClose"> {
 	items: readonly PickerItem[];
+	title?: string;
 	placeholder: string;
 	emptyText: string;
 	unfilteredEmptyText?: string;
@@ -29,6 +30,7 @@ export interface ListPickerOptions
 	/** Offered as the last row when nothing matches exactly, for free-text values. */
 	createLabel?: (query: string) => string;
 	canCreate?: (query: string) => boolean;
+	validationMessage?: (query: string) => string | null;
 	onChoose: (item: PickerItem) => void;
 	onCreate?: (query: string) => void;
 }
@@ -49,6 +51,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	const { el } = popover;
 	el.dataset.inputMode = "keyboard";
 	const listId = `tn-picker-list-${++pickerSequence}`;
+	if (options.title) el.createDiv({ cls: "tn-popover__title", text: options.title });
 	const input = el.createEl("input", {
 		cls: "tn-picker__input",
 		attr: {
@@ -56,6 +59,8 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			role: "combobox", "aria-autocomplete": "list", "aria-expanded": "true", "aria-controls": listId,
 		},
 	});
+	const validation = options.validationMessage ? el.createDiv({ cls: "tn-picker__error", attr: { id: `${listId}-error`, role: "alert", hidden: "" } }) : undefined;
+	if (validation) input.setAttribute("aria-describedby", validation.id);
 	const list = el.createDiv({ cls: "tn-picker__list", attr: { role: "listbox", id: listId, "aria-label": options.placeholder } });
 	if (options.multiple) list.setAttribute("aria-multiselectable", "true");
 	const footer = el.createDiv({ cls: "tn-picker__footer" });
@@ -128,6 +133,13 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	function render(): void {
 		list.empty();
 		const query = input.value;
+		const error = options.validationMessage?.(query);
+		if (validation) {
+			validation.textContent = error ?? "";
+			validation.hidden = !error;
+			if (error) input.setAttribute("aria-invalid", "true");
+			else input.removeAttribute("aria-invalid");
+		}
 		visible = items.filter((item) => matchesPickerQuery(item, query));
 		if (options.multiple) visible.sort((left, right) => Number(!!right.selected) - Number(!!left.selected));
 		createRow = null;

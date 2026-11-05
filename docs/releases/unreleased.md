@@ -39,6 +39,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Mobile task titles use their full row, followed by separate 40px actions and compact metadata. Narrow standalone task references wrap without changing references inside sentences, and settings adapt to their actual pane width.
+- Narrow boards include a column navigator with task counts. Batch property pickers show the affected count, task menus link to shortcut help including Undo, and movement toasts name the configured destination and number of tasks.
+- Date parsing errors stay beside the input until corrected and are announced to assistive technology. Failed task changes offer an Open task action while retaining Undo for successful changes. Compact editor chips disclose their full labels.
+- Calendar appearance settings explain that view-specific overrides are changed in the Base's view settings; existing Bases are left unchanged.
 - Task editors, pickers and secondary controls use quieter property surfaces and consistent keyboard, pressed, disabled and touch states. Picker pointer movement no longer scrolls the list or competes with keyboard navigation.
 - Settings workflow values can be reordered with Alt+Up/Down from their drag handles. Drag cancellation clears insertion indicators without changing row height; Undo actions remain visibly pending until they finish, and failed property changes receive distinct error feedback.
 - Task lists use calmer two-line rows, plain-text metadata, aligned dates and right-aligned section counts. Hover stays still, selection and keyboard focus remain distinct, and mobile row controls have separate touch targets.

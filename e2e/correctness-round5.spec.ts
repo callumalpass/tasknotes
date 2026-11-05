@@ -44,6 +44,7 @@ test.afterAll(async () => {
       Object.assign(plugin.settings, (window as any).correctnessSettings);
       plugin.statusManager.updateStatuses(plugin.settings.customStatuses);
       plugin.priorityManager.updatePriorities(plugin.settings.customPriorities);
+      await plugin.saveSettings();
       for (const leaf of app.workspace.getLeavesOfType('bases')) if (leaf.view.file?.path.startsWith(folder)) leaf.detach();
       const directory = app.vault.getAbstractFileByPath(folder);
       if (directory) await app.vault.delete(directory, true);
@@ -66,13 +67,13 @@ async function recoverySettings() {
     }
     return false;
   }).toBe(true);
+  await target!.bringToFront();
   return target!;
 }
 
 test('configured status edits preserve unrelated unknown priorities', async () => {
   const card = page.locator(`.task-card[data-task-path="${taskPath}"]`);
-  await card.locator('.task-card__status-dot').focus();
-  await page.keyboard.press('s');
+  await card.locator('.task-card__status-dot').press('s');
   await page.getByRole('option', { name: longStatus, exact: true }).click();
   await expect.poll(() => page.evaluate(async taskPath => {
     const plugin = (window as any).app.plugins.plugins.tasknotes;
@@ -89,8 +90,7 @@ test('failed property changes identify the task and explain recovery', async () 
     plugin.updateTaskProperty = async () => { throw new Error('Note is read-only'); };
   });
   try {
-    await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__status-dot`).focus();
-    await page.keyboard.press('s');
+    await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__status-dot`).press('s');
     await page.getByRole('option', { name: 'Stage 0', exact: true }).click();
     const toast = page.locator('.tn-toast').last();
     await expect(toast).toContainText('Check that the notes are writable, then try again.');
@@ -194,7 +194,8 @@ test('collision drilldown contains only that group and first entry reveals today
   await page.locator('.tnc-toolbar-view-select').selectOption('week');
   await expect(page.locator('.tnc-dh.is-today')).toBeInViewport();
   const stack = page.locator('.tnc-more--collision').filter({ hasText: '8' }).first();
-  await expect(stack.locator('.tnc-collision-count')).toHaveText('8 appointments');
+  await expect(stack.locator('.tnc-collision-count')).toHaveText('8');
+  await expect(stack).toHaveAttribute('aria-label', /^8 appointments,/);
   await expect(stack.locator('.tnc-collision-title')).not.toBeEmpty();
   await stack.click();
   await expect(page.locator('.tnc-popover .tnc-item')).toHaveCount(8);

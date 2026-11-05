@@ -80,6 +80,15 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			cleanupTaskCardMetadata(metadataLine);
 			return;
 		}
+		const mobileRows = metadataLine.ownerDocument.body.classList.contains("is-mobile") && metadataLine.closest(".tn-tasknotesTaskList, .tn-calendar-list-entry");
+		if (mobileRows) {
+			for (const atom of atoms) atom.hidden = false;
+			for (const group of groups) group.property.hidden = false;
+			for (const slot of dateSlots) slot.hidden = false;
+			values.hidden = !atoms.length;
+			summary.hidden = true;
+			return;
+		}
 		if (metadataLine.clientWidth === 0) return;
 		for (const atom of atoms) atom.hidden = false;
 		for (const group of groups) group.property.hidden = false;

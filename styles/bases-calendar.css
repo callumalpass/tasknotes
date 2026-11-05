@@ -875,60 +875,6 @@ body.is-mobile .tasknotes-plugin .tn-calendar-list-stamp {
     padding-inline: var(--tn-space-1);
 }
 
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__main-row {
-    grid-template-columns: var(--tn-touch-target) minmax(0, 1fr) var(--tn-touch-target);
-    align-items: start;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__content {
-    grid-column: 2 / -1;
-    grid-row: 1;
-    display: flex;
-    gap: var(--tn-space-1);
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__title {
-    padding-inline-end: var(--tn-space-1);
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__metadata {
-    min-height: var(--tn-touch-target);
-    width: auto;
-    margin-inline-end: calc(var(--tn-touch-target) * 2);
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__date-slot {
-    flex: none;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__metadata-date {
-    flex: none;
-    max-width: none;
-    white-space: nowrap;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card .task-card__metadata-date > span:last-child {
-    flex: none;
-    overflow: visible;
-    white-space: nowrap;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__priority-dot {
-    position: absolute;
-    inset-inline-end: var(--tn-touch-target);
-    bottom: 0;
-    grid-column: auto;
-    grid-row: auto;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__context-menu {
-    position: absolute;
-    inset-inline-end: 0;
-    bottom: 0;
-    grid-column: auto;
-    grid-row: auto;
-}
-
 @media (hover: hover) {
     .tasknotes-plugin :is(.tnc-strip-title, .tnc-strip-nav, .tnc-strip-today):hover {
         background: var(--tn-hover);
