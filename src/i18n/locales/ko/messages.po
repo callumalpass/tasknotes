@@ -1596,6 +1596,7 @@ msgctxt "contextMenus.task.addTag"
 msgid "Add tag…"
 msgstr "태그 추가…"
 
+#: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
@@ -11218,6 +11219,11 @@ msgctxt "cli/commands/timeStatusCommand: defaults description"
 msgid "Show active time-tracking sessions, or detailed status for a specific task"
 msgstr "진행 중인 시간 추적 세션을 표시하거나 특정 작업의 상세 상태를 확인합니다"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show agenda date strip"
+msgstr "일정 날짜 막대 표시"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
@@ -11372,6 +11378,11 @@ msgstr "예정된 작업 표시"
 msgctxt "views.basesCalendar.settings.events.showScheduledTasks"
 msgid "Show scheduled tasks"
 msgstr "예정된 작업 표시"
+
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show selected day panel"
+msgstr "선택한 날짜 패널 표시"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showSkippedRecurringInstances"

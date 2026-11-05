@@ -23,6 +23,15 @@
     --tnc-theme-warn: var(--color-pink);
     --tnc-theme-ok: var(--color-green);
     --tnc-theme-amber: var(--color-orange);
+    --tnc-theme-hover: var(--tn-hover);
+    --tnc-theme-active: var(--tn-active);
+    --tnc-theme-selected: var(--tn-selected);
+    --tnc-theme-selected-hover: var(--tn-selected-hover);
+    --tnc-theme-focus: var(--tn-focus-ring);
+    --tnc-theme-motion: var(--tn-motion-fast);
+    --tnc-theme-drag-opacity: var(--tn-drag-source-opacity);
+    --tnc-theme-drag-lift: var(--tn-drag-lift);
+    --tnc-theme-drag-z: var(--tn-z-dropdown);
     --tnc-radius: var(--tn-radius-sm);
     --tnc-shadow: var(--tn-shadow-raised);
     --tnc-font-size: var(--tn-type-sm);
@@ -148,11 +157,13 @@
     font-weight: var(--tn-font-weight-medium);
 }
 
-.tasknotes-plugin .tnc-btn:hover {
-    background: var(--tn-hover);
-    color: var(--tn-text-normal);
-}
+@media (hover: hover) {
+	.tasknotes-plugin .tnc-btn:hover {
+	    background: var(--tn-hover);
+	    color: var(--tn-text-normal);
+	}
 
+}
 .tasknotes-plugin .tnc-btn:focus-visible {
     outline: 2px solid var(--tn-focus-ring);
     outline-offset: 1px;
@@ -170,11 +181,12 @@
 }
 
 .tasknotes-plugin .tnc-list-day {
-    padding: var(--tn-space-2);
+    padding: var(--tn-space-3) var(--tn-space-3) var(--tn-space-2);
     background: var(--tn-bg-primary);
-    color: var(--tn-text-muted);
-    font-size: var(--tn-type-xs);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-type-md);
     font-weight: var(--tn-font-weight-medium);
+    border-bottom: 1px solid var(--tn-hairline);
 }
 
 /* background-color only: the shorthand would wipe the hour lines the library draws as a background image. */
@@ -371,7 +383,8 @@
 
 .tasknotes-plugin .tnc-more--collision {
     display: flex;
-    align-items: start;
+    flex-direction: column;
+    align-items: stretch;
     gap: var(--tn-space-1);
     height: auto;
     min-height: var(--tn-touch-target);
@@ -384,11 +397,11 @@
 }
 
 .tasknotes-plugin .tnc-collision-title {
-    flex: 1;
+    flex: none;
     min-width: 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 
@@ -436,10 +449,12 @@
     background: transparent;
 }
 
-.tasknotes-plugin .tnc-popover-body .tnc-item:hover {
-    background: var(--tn-hover);
-}
+@media (hover: hover) {
+	.tasknotes-plugin .tnc-popover-body .tnc-item:hover {
+	    background: var(--tn-hover);
+	}
 
+}
 .tasknotes-plugin .tnc-popover :is(button, .tnc-item):focus-visible {
     outline: 2px solid var(--tn-focus-ring);
     outline-offset: -2px;
@@ -505,10 +520,12 @@
     opacity: 0.9;
 }
 
-.advanced-calendar-view .tnc-item[data-ics-event="true"]:hover {
-    opacity: 1;
-}
+@media (hover: hover) {
+	.advanced-calendar-view .tnc-item[data-ics-event="true"]:hover {
+	    opacity: 1;
+	}
 
+}
 .advanced-calendar-view .tnc-item[data-ics-event="true"].has-related-note {
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 32%, transparent);
 }
@@ -580,9 +597,9 @@
 
 /* Selection stays visible independently of priority colors and hover. */
 .advanced-calendar-view .tnc-item.tn-calendar-item-selected {
-    outline: 2px solid var(--interactive-accent);
+    outline: 2px solid var(--tn-focus-ring);
     outline-offset: -2px;
-    background-color: color-mix(in srgb, var(--interactive-accent) 18%, var(--background-primary));
+    background-color: var(--tn-selected);
 }
 
 /* Peers move at their proposed dates without becoming new interaction targets. */
@@ -594,11 +611,25 @@
 }
 
 .advanced-calendar-view .tnc-item.tn-calendar-item-selected:focus-visible {
-    outline-offset: 2px;
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: -2px;
 }
 
 .advanced-calendar-view.tn-selection-mode .tnc-item[data-batch-selectable="true"] {
     cursor: pointer;
+}
+
+.tasknotes-plugin .tnc-item.is-dragging[data-drag-count]::after {
+    content: attr(data-drag-count);
+    position: absolute;
+    inset-block-start: var(--tn-space-1);
+    inset-inline-end: var(--tn-space-1);
+    padding: var(--tn-space-half) var(--tn-space-2);
+    border-radius: var(--tn-radius-full);
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-semibold);
 }
 
 /* List view rows are task cards. */
@@ -614,33 +645,308 @@
 
 .tasknotes-plugin .tn-calendar-list-entry {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     min-width: 0;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-entry {
-    flex-direction: column;
-    align-items: stretch;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-list-stamp {
-    flex: none;
-    flex-direction: row;
-    align-items: center;
-    padding-bottom: 0;
+    padding: var(--tn-space-1) var(--tn-space-2);
 }
 
 .tasknotes-plugin .tn-calendar-list-stamp {
     display: flex;
     flex-direction: column;
-    flex: 0 0 88px;
+    flex: 0 0 13ch;
     gap: var(--tn-space-half);
     padding: var(--tn-space-2);
     color: var(--tn-text-muted);
     font-size: var(--tn-type-2xs);
     font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+}
+
+.tasknotes-plugin .tn-calendar-list-time {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tn-space-half);
+}
+
+.tasknotes-plugin .tn-calendar-list-time > span {
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .tnc-strip {
+    --tnc-strip-cell: var(--tn-touch-target);
+    padding: var(--tn-space-3) var(--tn-space-4) var(--tn-space-1);
+    border-bottom: 1px solid var(--tn-hairline);
+}
+
+.tasknotes-plugin .tnc-strip-head {
+    gap: var(--tn-space-2);
+    margin-bottom: var(--tn-space-2);
+}
+
+.tasknotes-plugin :is(.tnc-strip-day, .tnc-strip-title, .tnc-strip-nav, .tnc-strip-today) {
+    background: none;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tnc-strip-title {
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-semibold);
+}
+
+.tasknotes-plugin :is(.tnc-strip-dows, .tnc-dg-dow, .tnc-dh-dow) {
+    font-family: var(--font-monospace);
+    font-size: var(--tn-type-2xs);
+    letter-spacing: var(--tn-letter-spacing-label);
+    text-transform: uppercase;
+}
+
+.tasknotes-plugin .tnc-strip-day .tnc-strip-num {
+    border-radius: var(--tn-radius-full);
+    font-size: var(--tn-type-md);
+}
+
+.tasknotes-plugin .tnc-strip-day.is-focus .tnc-strip-num {
+    border-radius: var(--tn-radius-full);
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .tnc-strip-day.is-today:not(.is-focus) .tnc-strip-num {
+    box-shadow: inset 0 -1px 0 var(--tn-interactive-accent);
+}
+
+.tasknotes-plugin .tnc-list-day.is-today {
+    color: var(--tn-interactive-accent);
+}
+
+.tasknotes-plugin .tnc-list-add,
+.tasknotes-plugin .tn-calendar-day-panel-add {
+    min-height: var(--tn-row-height);
+    padding: var(--tn-space-2) var(--tn-space-3);
+    border: 0;
+    border-radius: var(--tn-radius-sm);
+    background: none;
+    color: var(--tn-text-muted);
+    text-align: start;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card {
+    flex: 1;
+    padding-block: var(--tn-space-2);
+    container-type: normal;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__main-row {
+    align-items: flex-start;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tn-space-1);
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__title {
+    flex: none;
+    min-width: 0;
+    font-size: var(--tn-type-md);
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__title-text {
+    white-space: normal;
+    overflow-wrap: normal;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__metadata {
+    flex: none;
+    max-width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__metadata-values {
+    flex: 0 1 auto;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry :is(.task-card__metadata-property, .task-card__metadata-value) {
+    max-width: none;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__date-slot {
+    flex: 0 0 auto;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry .task-card__metadata-chips :is(.tag, .context-tag, .task-card__project-link) {
+    background: none;
+    border-color: transparent;
+    padding-inline: 0;
+}
+
+.tasknotes-plugin .tn-calendar-list-entry :is(.tag, .task-card__metadata-pill) {
+    background: none;
+    border-color: transparent;
+    padding-inline: 0;
+}
+
+.tasknotes-plugin .tnc-item--list[data-event-type="timeEntry"] {
+    background: var(--tn-bg-secondary);
+}
+
+@media (hover: hover) {
+	.tasknotes-plugin .tnc-item--list .task-card:hover {
+	    background: none;
+	}
+
+}
+.tasknotes-plugin .tnc-col-actual :is(.tnc-item-title, .tn-calendar-event-title) {
+    display: block;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+}
+
+.tasknotes-plugin .tnc-item--timed:not(.is-dragging):not(.is-mirror) {
+    box-shadow: inset 0 -1px 0 var(--tn-bg-primary);
+}
+
+.tasknotes-plugin #bases-calendar.tn-calendar-composition {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    gap: var(--tn-space-4);
+    min-height: 0;
+}
+
+.tasknotes-plugin #bases-calendar.tn-calendar-composition > .tnc {
+    min-width: 0;
+}
+
+.tasknotes-plugin .tn-calendar-day-panel {
+    min-width: 0;
+    overflow: auto;
+    border-left: 1px solid var(--tn-hairline);
+    padding-left: var(--tn-space-3);
+}
+
+.tasknotes-plugin .tn-calendar-day-panel > .tnc {
+    height: auto;
+}
+
+.tasknotes-plugin .tn-calendar-day-panel .tn-calendar-list-stamp {
+    flex-basis: 8ch;
+}
+
+.tasknotes-plugin .tnc-dg-day.tn-calendar-day-selected .tnc-dg-num {
+    border-radius: var(--tn-radius-full);
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
+    padding-inline: var(--tn-space-1);
+}
+
+@container (max-width: 850px) {
+    .tasknotes-plugin #bases-calendar.tn-calendar-composition {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+    }
+
+    .tasknotes-plugin .tn-calendar-composition > .tnc {
+        flex: none;
+        min-height: 30rem;
+    }
+
+    .tasknotes-plugin .tn-calendar-day-panel {
+        flex: none;
+        overflow: visible;
+        border-left: 0;
+        border-top: 1px solid var(--tn-hairline);
+        padding-left: 0;
+    }
+}
+
+body.is-mobile .tasknotes-plugin :is(.tnc-strip-nav, .tnc-strip-title, .tnc-strip-today, .tnc-list-add, .tn-calendar-day-panel-add) {
+    min-height: var(--tn-touch-target);
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-stamp {
+    flex-basis: 7ch;
+    padding-inline: var(--tn-space-1);
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__main-row {
+    grid-template-columns: var(--tn-touch-target) minmax(0, 1fr) var(--tn-touch-target);
+    align-items: start;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__content {
+    grid-column: 2 / -1;
+    grid-row: 1;
+    display: flex;
+    gap: var(--tn-space-1);
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__title {
+    padding-inline-end: var(--tn-space-1);
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__metadata {
+    min-height: var(--tn-touch-target);
+    width: auto;
+    margin-inline-end: calc(var(--tn-touch-target) * 2);
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__date-slot {
+    flex: none;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__metadata-date {
+    flex: none;
+    max-width: none;
+    white-space: nowrap;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card .task-card__metadata-date > span:last-child {
+    flex: none;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__priority-dot {
+    position: absolute;
+    inset-inline-end: var(--tn-touch-target);
+    bottom: 0;
+    grid-column: auto;
+    grid-row: auto;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry .task-card__context-menu {
+    position: absolute;
+    inset-inline-end: 0;
+    bottom: 0;
+    grid-column: auto;
+    grid-row: auto;
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin :is(.tnc-strip-title, .tnc-strip-nav, .tnc-strip-today):hover {
+        background: var(--tn-hover);
+    }
+
+    .tasknotes-plugin .tnc-item.tn-calendar-item-selected:hover {
+        background: var(--tn-selected-hover);
+    }
+
+    .tasknotes-plugin .tn-calendar-day-panel-add:hover {
+        background: var(--tn-hover);
+        color: var(--tn-text-normal);
+    }
+}
+
+.tasknotes-plugin .tn-calendar-day-panel-add:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: -2px;
 }
 
 .tasknotes-plugin .tn-calendar-list-deadline {
@@ -654,4 +960,16 @@ body.is-mobile .tasknotes-plugin .tn-calendar-list-stamp {
     width: var(--tn-glyph-size);
     height: var(--tn-glyph-size);
     flex: none;
+}
+
+.tasknotes-plugin .tnc .tnc-item:not(.is-dragging):not(.is-write-pending):active {
+    background: var(--tn-active);
+}
+
+.tasknotes-plugin .tnc .tnc-item.tn-calendar-item-selected:not(.is-dragging):not(.is-write-pending):active {
+    background: var(--tn-selected-hover);
+}
+
+.tasknotes-plugin .tnc .tnc-item.is-draggable:not(.is-dragging):not(.is-write-pending):active {
+    cursor: grabbing;
 }

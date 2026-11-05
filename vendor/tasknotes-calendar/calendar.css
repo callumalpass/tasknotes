@@ -1,7 +1,8 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.7 dist/calendar.css (MIT, see
- * LICENSE beside this file; upstream sha256 3faf490542f9fb8c0b16c7c3a72ecd1c
- * 441b5bc7bb500423841ae43d2281384f). build-css.mjs bundles this file in place
+ * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
+ * see LICENSE beside this file; library release 0.1.8 is required for integration).
+ * Upstream sha256 684254a7639603fcafe3a6a8bf69916a0880ae103a92ee317262ed1df4cfb06e.
+ * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
  * short hex colours expanded; !important replaced by specificity, source order
@@ -31,6 +32,12 @@
 	--tnc-ok: var(--tnc-theme-ok, #16a34a);
 	--tnc-amber: var(--tnc-theme-amber, #d97706);
 	--tnc-off: color-mix(in srgb, var(--tnc-text) 3.5%, transparent);
+	--tnc-hover: var(--tnc-theme-hover, var(--tnc-surface-2));
+	--tnc-active: var(--tnc-theme-active, var(--tnc-surface-3));
+	--tnc-selected: var(--tnc-theme-selected, var(--tnc-accent-soft));
+	--tnc-focus: var(--tnc-theme-focus, var(--tnc-accent));
+	--tnc-motion: var(--tnc-theme-motion, 100ms);
+	--tnc-drag-opacity: var(--tnc-theme-drag-opacity, 0.4);
 	--tnc-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 	--tnc-radius: 6px;
 	/* Time-grid share for tracked ("actual") items where they overlap planned ones. */
@@ -118,8 +125,11 @@
 	font-size: var(--tnc-font-size);
 	line-height: 1.2;
 }
-.tnc-btn:hover {
-	background: var(--tnc-surface-3);
+@media (hover: hover) {
+	.tnc-btn:hover {
+		background: var(--tnc-surface-3);
+	}
+
 }
 .tnc-btn[aria-pressed="true"] {
 	background: var(--tnc-accent-soft);
@@ -172,10 +182,12 @@
 	cursor: pointer;
 	text-align: inherit;
 }
-.tnc-navlink:hover {
-	text-decoration: underline;
-}
+@media (hover: hover) {
+	.tnc-navlink:hover {
+		text-decoration: underline;
+	}
 
+}
 /* ---------------------------------------------------------------- items */
 .tnc-item {
 	--c: var(--tnc-c, var(--tnc-item-c));
@@ -281,11 +293,37 @@
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 6;
 	white-space: normal;
-	overflow-wrap: anywhere;
+	overflow-wrap: normal;
 }
 .tnc-item--timed.is-short {
 	padding-top: 0;
 	padding-bottom: 0;
+}
+.tnc-more.tnc-more--collision {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: center;
+	gap: 3px;
+	padding: 7px 9px;
+	border: 1px solid var(--tnc-line-strong);
+	border-radius: var(--tnc-radius);
+	background: var(--tnc-surface-2);
+	text-align: start;
+	white-space: normal;
+}
+.tnc-collision-count {
+	color: var(--tnc-text);
+	font-weight: 650;
+}
+.tnc-item--indicator .tnc-item-title {
+	white-space: nowrap;
+	overflow-wrap: normal;
+	text-overflow: ellipsis;
+	display: block;
+}
+.tnc-item--indicator .tnc-item-main {
+	min-width: 0;
 }
 .tnc-item--timed.is-short .tnc-item-main {
 	flex-direction: row;
@@ -368,9 +406,15 @@
 	align-items: center;
 	white-space: nowrap;
 }
-.tnc-item--dot:hover,
 .tnc-item--dot.is-hover {
 	background: var(--tnc-surface-3);
+}
+
+@media (hover: hover) {
+	.tnc-item--dot:hover {
+		background: var(--tnc-surface-3);
+	}
+
 }
 .tnc-item--dot .tnc-item-main {
 	gap: 4px;
@@ -462,9 +506,12 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.tnc-more:hover {
-	background: var(--tnc-surface-3);
-	color: var(--tnc-text);
+@media (hover: hover) {
+	.tnc-more:hover {
+		background: var(--tnc-surface-3);
+		color: var(--tnc-text);
+	}
+
 }
 .tnc-more--stack {
 	height: auto;
@@ -511,6 +558,10 @@
 .tnc-collision-title {
 	flex: 1;
 	min-width: 0;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--tnc-muted);
+	font-weight: 400;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 3;
@@ -917,8 +968,11 @@
 	border-radius: 0;
 	font-size: var(--tnc-font-size);
 }
-.tnc-item--list:hover {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-item--list:hover {
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-item--list .tnc-item-main {
 	gap: 10px;
@@ -1016,8 +1070,11 @@
 .tnc-strip-today[hidden] {
 	display: none;
 }
-.tnc-strip-today:hover {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-strip-today:hover {
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-strip-slot {
 	display: flex;
@@ -1037,9 +1094,12 @@
 	line-height: 1;
 	cursor: pointer;
 }
-.tnc-strip-title:hover,
-.tnc-strip-nav:hover {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-strip-title:hover,
+	.tnc-strip-nav:hover {
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-strip-dows,
 .tnc-strip-grid {
@@ -1112,11 +1172,17 @@
 .tnc-strip-day.is-in-range .tnc-strip-num {
 	background: var(--tnc-accent-soft);
 }
-.tnc-strip-day:hover .tnc-strip-num {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-strip-day:hover .tnc-strip-num {
+		background: var(--tnc-surface-2);
+	}
+
 }
-.tnc-strip-day.is-focus:hover .tnc-strip-num {
-	background: var(--tnc-accent);
+@media (hover: hover) {
+	.tnc-strip-day.is-focus:hover .tnc-strip-num {
+		background: var(--tnc-accent);
+	}
+
 }
 .tnc-strip-day.is-drop-target .tnc-strip-num {
 	box-shadow: 0 0 0 2px var(--tnc-accent);
@@ -1194,9 +1260,12 @@
 	font-weight: 700;
 	text-align: center;
 }
-.tnc-list-add:hover {
-	color: var(--tnc-accent);
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-list-add:hover {
+		color: var(--tnc-accent);
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-list-add:focus-visible {
 	outline: 2px solid var(--tnc-accent);
@@ -1259,8 +1328,11 @@
 	justify-content: center;
 	gap: 1px;
 }
-.tnc-ym-day:hover {
-	outline: 1px solid var(--tnc-line-strong);
+@media (hover: hover) {
+	.tnc-ym-day:hover {
+		outline: 1px solid var(--tnc-line-strong);
+	}
+
 }
 .tnc-ym-day.is-weekend .tnc-ym-num {
 	color: var(--tnc-muted);
@@ -1574,12 +1646,18 @@
 .tnc-item--timeline.is-link-invalid > .tnc-item-main {
 	box-shadow: 0 0 0 2px var(--tnc-warn);
 }
-.tnc-item--timeline:hover .tnc-port,
 .tnc-item--timeline.is-hover .tnc-port,
 .tnc-item--timeline.is-selected .tnc-port,
 .tnc-item--timeline:focus-visible .tnc-port,
 .tnc-tl.is-linking .tnc-item--timeline .tnc-port {
 	opacity: 1;
+}
+
+@media (hover: hover) {
+	.tnc-item--timeline:hover .tnc-port {
+		opacity: 1;
+	}
+
 }
 @media (pointer: coarse) {
 	.tnc-port {
@@ -1701,8 +1779,11 @@
 	font-size: 16px;
 	line-height: 1;
 }
-.tnc-popover-close:hover {
-	background: var(--tnc-surface-3);
+@media (hover: hover) {
+	.tnc-popover-close:hover {
+		background: var(--tnc-surface-3);
+	}
+
 }
 .tnc-popover-body {
 	min-height: 0;
@@ -1715,16 +1796,14 @@
 .tnc-popover-body .tnc-item {
 	position: relative;
 	flex: none;
+	height: auto;
+	min-height: 40px;
 }
 .tnc-popover-title {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-.tnc-popover-body .tnc-item {
-	height: auto;
-	min-height: 40px;
 }
 .tnc-popover-body .tnc-item-main {
 	min-height: 40px;
@@ -1738,7 +1817,118 @@
 	outline-offset: -2px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+	.tnc-item.is-write-changed {
+		animation: tnc-write-settle calc(var(--tnc-motion) * 2) ease-out;
+	}
+}
+@keyframes tnc-write-settle {
+	from { opacity: var(--tnc-drag-opacity); }
+	to { opacity: 1; }
+}
 /* Host: .tnc-cap i is listed because its own transition rule is (0,1,1). The raise animations above are (0,2,0) and stay on. */
+.tnc .tnc-col-actual .tnc-item-title {
+	white-space: nowrap;
+	overflow-wrap: normal;
+	display: block;
+	text-overflow: ellipsis;
+}
+.tnc .tnc-col-actual .tnc-item-main {
+	min-width: 0;
+}
+.tnc .tnc-col-actual .tnc-item--timed {
+	border-top: 1px solid var(--tnc-surface);
+	border-bottom: 1px solid var(--tnc-surface);
+}
+.tnc .tnc-item--timed {
+	box-shadow: inset 0 -1px 0 var(--tnc-surface);
+}
+.tnc .tnc-item.is-draggable {
+	cursor: grab;
+}
+.tnc .tnc-item.is-dragging {
+	opacity: 0.96;
+	box-shadow: var(--tnc-theme-drag-lift, var(--tnc-shadow));
+	outline: 1px solid var(--tnc-focus);
+	outline-offset: -1px;
+}
+.tnc .tnc-item.tnc-drag-origin {
+	opacity: var(--tnc-drag-opacity);
+	pointer-events: none;
+	filter: none;
+	box-shadow: none;
+}
+.tnc .tnc-item--list.is-dragging:not(.tnc-drag-preview) {
+	opacity: var(--tnc-drag-opacity);
+	box-shadow: none;
+}
+.tnc .tnc-item.tnc-drag-preview {
+	position: absolute;
+	z-index: var(--tnc-theme-drag-z, 1000);
+	pointer-events: none;
+	background: var(--tnc-surface);
+}
+.tnc .tnc-item.is-write-pending {
+	opacity: 0.65;
+	cursor: progress;
+}
+.tnc .tnc-item.is-write-failed {
+	outline: 2px dashed var(--tnc-warn);
+	outline-offset: -2px;
+}
+.tnc.tnc-drop-denied .tnc-item.is-dragging {
+	outline: 2px dashed var(--tnc-warn);
+	outline-offset: -2px;
+}
+.tnc .tnc-item.is-selected {
+	background-color: var(--tnc-selected);
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+.tnc :is(.tnc-item, .tnc-more, .tnc-strip-day, .tnc-btn, .tnc-list-add):focus-visible {
+	outline: 2px solid var(--tnc-focus);
+	outline-offset: -2px;
+}
+.tnc :is(.tnc-more, .tnc-btn, .tnc-list-add):disabled {
+	opacity: var(--tnc-drag-opacity);
+	cursor: not-allowed;
+}
+.tnc :is(.tnc-more, .tnc-btn, .tnc-list-add):active {
+	background: var(--tnc-active);
+}
+.tnc .tnc-strip-day:active .tnc-strip-num {
+	background: var(--tnc-active);
+}
+.tnc .tnc-strip-day.is-focus:active .tnc-strip-num {
+	background: var(--tnc-accent);
+}
+.tnc .tnc-popover {
+	background: var(--tnc-surface);
+}
+@media (hover: hover) {
+	.tnc .tnc-item:not(.is-selected):not(.is-dragging):hover {
+		filter: none;
+		background-color: var(--tnc-hover);
+		transition: background-color var(--tnc-motion);
+	}
+	.tnc .tnc-item.is-selected:hover {
+		background-color: var(--tnc-theme-selected-hover, var(--tnc-selected));
+	}
+	.tnc .tnc-more:hover {
+		background: var(--tnc-hover);
+	}
+}
+@media (hover: none) {
+	.tnc .tnc-item:hover {
+		filter: none;
+	}
+	.tnc .tnc-item--list:not(.is-selected):hover {
+		background: none;
+	}
+	.tnc .tnc-strip-day:not(.is-focus):hover .tnc-strip-num {
+		background: none;
+	}
+}
 @media (prefers-reduced-motion: reduce) {
 	.tnc *,
 	.tnc .tnc-cap i {

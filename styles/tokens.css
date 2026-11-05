@@ -19,6 +19,7 @@
     --tn-font-weight-medium: 500;
     --tn-font-weight-semibold: 600;
     --tn-font-weight-bold: 600;
+    --tn-letter-spacing-label: 0.08em;
 
     /* Space */
     --tn-space-half: 2px;
@@ -87,6 +88,8 @@
     --tn-drop-indicator: var(--interactive-accent);
     --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
     --tn-drop-invalid: var(--text-error);
+    --tn-drag-lift: var(--tn-shadow-raised);
+    --tn-drop-target: var(--tn-selected);
 
     --tn-interactive-normal: var(--interactive-normal);
     --tn-interactive-hover: var(--tn-hover);

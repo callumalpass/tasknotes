@@ -129,6 +129,9 @@ export class CalendarView extends BasesViewBase {
 	calendar: TaskCalendar | null = null; // Made public for factory access
 	private keyboard?: ReturnType<typeof installCalendarKeyboard>;
 	private calendarEl: HTMLElement | null = null;
+	private dayPanel: TaskCalendar | null = null;
+	private dayPanelEl: HTMLElement | null = null;
+	private selectedMonthDay: string | null = null;
 	/** Range the current items were built for. */
 	private visibleView: ViewInfo | null = null;
 	private automaticViewChange = false;
@@ -195,6 +198,8 @@ export class CalendarView extends BasesViewBase {
 		heightMode: CalendarHeightMode;
 		customDayCount: number;
 		listDayCount: number;
+		showAgendaStrip: boolean;
+		showMonthDayPanel: boolean;
 		slotMinTime: string;
 		slotMaxTime: string;
 		slotDuration: string;
@@ -263,6 +268,8 @@ export class CalendarView extends BasesViewBase {
 			heightMode: "fill",
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
+			showAgendaStrip: true,
+			showMonthDayPanel: false,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -778,6 +785,8 @@ export class CalendarView extends BasesViewBase {
 				"listDayCount",
 				this.viewOptions.listDayCount
 			);
+			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
+			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
@@ -954,6 +963,8 @@ export class CalendarView extends BasesViewBase {
 						this.automaticViewChange = false;
 					}
 					this.syncSelectionModeAfterCalendarRender();
+					this.destroyDayPanel();
+					this.syncDayPanel();
 				}
 			} else {
 				// Normal render - just re-read event toggles
@@ -1067,6 +1078,9 @@ export class CalendarView extends BasesViewBase {
 			const selected = Boolean(el.dataset.taskPath && selection?.isSelected(el.dataset.taskPath)) && el.dataset.batchSelectable === "true";
 			el.classList.toggle("tn-calendar-item-selected", selected);
 			el.setAttribute("aria-pressed", String(selected));
+			const count = selected ? selection?.getSelectedPaths().length ?? 0 : 0;
+			if (count > 1) el.dataset.dragCount = String(count);
+			else delete el.dataset.dragCount;
 		}
 	}
 
@@ -1074,6 +1088,7 @@ export class CalendarView extends BasesViewBase {
 		this.batchPreview?.clear(false);
 		this.calendarItems = items;
 		this.calendar?.setItems(items);
+		this.dayPanel?.setItems(items);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		this.updateSelectionVisuals();
 	}
@@ -1082,6 +1097,7 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendarEl) return;
 
 		const initialDate = this.determineInitialDate(taskNotes);
+		this.destroyDayPanel();
 		this.calendarEl.replaceChildren();
 		this.automaticViewChange = true;
 		try {
@@ -1093,6 +1109,7 @@ export class CalendarView extends BasesViewBase {
 			this.automaticViewChange = false;
 		}
 		this.applyLayoutClasses();
+		this.syncDayPanel();
 		await this.refetchEvents();
 	}
 
@@ -1109,6 +1126,10 @@ export class CalendarView extends BasesViewBase {
 		);
 		return {
 			...layout,
+			listAgenda: options.showAgendaStrip,
+			listAddText: t(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" }), "Add task"),
+			onListAdd: ({ dateStr }) => this.addTaskOnDay(dateStr),
+			dayClassNames: ({ dateStr }) => dateStr === this.selectedMonthDay ? ["tn-calendar-day-selected"] : [],
 			view: !this.explicitlyChosenView && this.isNarrowCalendar() && layout.view === "week" ? "list" : layout.view,
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
@@ -1225,10 +1246,17 @@ export class CalendarView extends BasesViewBase {
 					this.calendar?.changeView("month", arg.dateStr);
 					return;
 				}
+				if (arg.view.type === "month" && this.viewOptions.showMonthDayPanel) {
+					this.selectMonthDay(arg.dateStr);
+					return;
+				}
 				this.openDailyNoteFromDateLink(arg.date);
 			},
 			onItemClick: (arg) => {
 				void this.handleEventClick(arg);
+			},
+			onDateClick: arg => {
+				if (arg.view.type === "month" && this.viewOptions.showMonthDayPanel) this.selectMonthDay(arg.dateStr);
 			},
 			onItemContextMenu: (arg) => this.handleEventContextMenu(arg),
 			canDrop: proposal => this.batchPreview?.allow(proposal) ?? true,
@@ -1259,6 +1287,69 @@ export class CalendarView extends BasesViewBase {
 			this.debouncedSaveViewType(viewType);
 		}
 		this.applyLayoutClasses();
+		this.syncDayPanel();
+	}
+
+	private addTaskOnDay(dateStr: string): void {
+		void this.createFileForView(undefined, frontmatter => {
+			frontmatter[this.plugin.fieldMapper.toUserField("scheduled")] = dateStr;
+		});
+	}
+
+	private selectMonthDay(dateStr: string): void {
+		this.selectedMonthDay = dateStr;
+		this.calendar?.unselect();
+		if (this.calendar && !dateStr.startsWith(format(this.calendar.getDate(), "yyyy-MM"))) {
+			this.calendar.gotoDate(dateStr);
+		}
+		this.syncDayPanel();
+	}
+
+	private syncDayPanel(): void {
+		const enabled = this.viewOptions.showMonthDayPanel && this.visibleView?.type === "month";
+		this.calendarEl?.classList.toggle("tn-calendar-composition", enabled);
+		if (!enabled) {
+			this.destroyDayPanel();
+			return;
+		}
+		if (!this.calendarEl || !this.calendar) return;
+		const month = format(this.calendar.getDate(), "yyyy-MM");
+		if (!this.selectedMonthDay?.startsWith(month)) {
+			const today = format(new Date(), "yyyy-MM-dd");
+			this.selectedMonthDay = today.startsWith(month) ? today : `${month}-01`;
+		}
+		for (const cell of this.calendarEl.querySelectorAll<HTMLElement>(".tnc-dg-day[data-date]")) {
+			cell.classList.toggle("tn-calendar-day-selected", cell.dataset.date === this.selectedMonthDay);
+		}
+		if (this.dayPanel) {
+			this.dayPanel.gotoDate(this.selectedMonthDay);
+			this.dayPanel.setItems(this.calendarItems);
+			return;
+		}
+		this.dayPanelEl = this.calendarEl.createDiv({ cls: "tn-calendar-day-panel" });
+		this.dayPanel = new Calendar<CalendarEventProps>(this.dayPanelEl, {
+			...this.buildCalendarOptions(),
+			view: "list", date: this.selectedMonthDay, listDayCount: 1,
+			listAgenda: false, toolbar: false, height: "auto",
+			onRangeChange: undefined, onViewChange: undefined,
+			onNavLink: arg => this.openDailyNoteFromDateLink(arg.date),
+			listEmptyContent: undefined,
+		});
+		this.dayPanel.setItems(this.calendarItems);
+		const add = this.dayPanelEl.createEl("button", {
+			cls: "tn-calendar-day-panel-add",
+			text: this.plugin.i18n.translate(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" })),
+		});
+		add.addEventListener("click", () => {
+			if (this.selectedMonthDay) this.addTaskOnDay(this.selectedMonthDay);
+		});
+	}
+
+	private destroyDayPanel(): void {
+		this.dayPanel?.destroy();
+		this.dayPanel = null;
+		this.dayPanelEl?.remove();
+		this.dayPanelEl = null;
 	}
 
 	private updateBasesSortIndexes(taskNotes: TaskInfo[]): void {
@@ -1919,6 +2010,11 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleDateSelect(info: SelectArg): void {
+		if (info.view?.type === "month" && this.viewOptions.showMonthDayPanel && info.allDay &&
+			info.end.getTime() - info.start.getTime() <= 25 * 60 * 60 * 1000) {
+			this.selectMonthDay(info.startStr);
+			return;
+		}
 		showCalendarCreationMenu({
 			plugin: this.plugin,
 			slotDuration: this.viewOptions.slotDuration,
@@ -1962,7 +2058,7 @@ export class CalendarView extends BasesViewBase {
 			config: this.config,
 			visibleProperties: this.getVisibleProperties(),
 			basesEntryByPath: this.basesEntryByPath,
-			buildTaskCardOptions: (options) => this.buildTaskCardOptions(options),
+			buildTaskCardOptions: (options) => this.buildTaskCardOptions({ ...options, layout: "default" }),
 			logDebug: (message, ...data) =>
 				tasknotesLogger.debug(message, {
 					category: "provider",
@@ -1998,7 +2094,12 @@ export class CalendarView extends BasesViewBase {
 			} else if (arg.item.data?.eventType === "timeEntry") {
 				setIcon(stamp.createSpan({ cls: "tn-calendar-list-tracked" }), "timer");
 			}
-			if (arg.timeText) stamp.createSpan({ text: arg.timeText });
+			if (arg.timeText) {
+				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });
+				const [start, end] = arg.timeText.split(" – ");
+				time.createSpan({ text: start });
+				if (end) time.createSpan({ text: `– ${end}` });
+			}
 			if (!stamp.hasChildNodes()) stamp.remove();
 			entry.append(card);
 			return entry;
@@ -2133,6 +2234,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	onunload(): void {
+		this.destroyDayPanel();
 		// Note: We intentionally do NOT call config.set() here (issue #1397)
 		// The Bases API has a bug where config objects can point to wrong files,
 		// causing view corruption when config.set() writes to unrelated .base files.

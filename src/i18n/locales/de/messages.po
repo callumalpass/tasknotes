@@ -1597,6 +1597,7 @@ msgctxt "contextMenus.task.addTag"
 msgid "Add tag…"
 msgstr "Tag hinzufügen…"
 
+#: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
@@ -11219,6 +11220,11 @@ msgctxt "cli/commands/timeStatusCommand: defaults description"
 msgid "Show active time-tracking sessions, or detailed status for a specific task"
 msgstr "Aktive Zeiterfassungssitzungen oder den detaillierten Status einer bestimmten Aufgabe anzeigen"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show agenda date strip"
+msgstr "Datumsleiste in der Agenda anzeigen"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
@@ -11373,6 +11379,11 @@ msgstr "Geplante Aufgaben anzeigen"
 msgctxt "views.basesCalendar.settings.events.showScheduledTasks"
 msgid "Show scheduled tasks"
 msgstr "Geplante Aufgaben anzeigen"
+
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show selected day panel"
+msgstr "Bereich für den ausgewählten Tag anzeigen"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showSkippedRecurringInstances"

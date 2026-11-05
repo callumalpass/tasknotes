@@ -2,6 +2,7 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import type { CalendarEventChange } from "./calendarEngine";
 import { format } from "date-fns";
+import { formatUIDate } from "../i18n/formatters";
 import { TFile } from "obsidian";
 import {
 	handleTimeblockDrop,
@@ -289,7 +290,7 @@ async function applyTaskCalendarGesture(
 			await context.refreshTask(result.task);
 			const feedback = kind === "resize" && info.event.end
 				? calendarResizeFeedback(result.task.title, info.event.start, info.event.end)
-				: `${result.task.title} · ${result.task.scheduled ?? result.task.due ?? ""}`;
+				: `${result.task.title} · ${formatUIDate(info.event.start, info.event.allDay ? "PP" : "PPp")}`;
 			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, feedback);
 		}
 		else info.revert();
