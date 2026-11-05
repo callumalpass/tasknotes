@@ -48,7 +48,7 @@ test('week stays overviewable and overflow remains readable and reachable after 
   await expect(page.locator('.tnc-item, .tnc-more').first()).toBeVisible();
   await page.screenshot({ path: '/tmp/slice-p-week.png' });
   expect(await grid.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(2);
-  const more = page.locator('.tnc-more').filter({ hasText: '+' }).first();
+  const more = page.locator('.tnc-more--collision').first();
   await more.click();
   const popover = page.locator('.tnc-popover');
   await expect(popover).toBeVisible();

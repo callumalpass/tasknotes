@@ -1187,6 +1187,7 @@ export class CalendarView extends BasesViewBase {
 				],
 			},
 			text: {
+				appointments: count => this.plugin.i18n.translate(msg({ message: "{count} appointments", context: "calendar collision count" }), { count }),
 				today: t(msg({ message: "Today", context: "views.basesCalendar.today" }), "Today"),
 				prev: t(msg({ message: "Previous", context: "views.basesCalendar.hints.prev" }), "Previous"),
 				next: t(msg({ message: "Next", context: "views.basesCalendar.hints.next" }), "Next"),

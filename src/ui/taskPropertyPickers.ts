@@ -3,6 +3,7 @@ import { TFile, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { configLabel } from "../i18n/configLabels";
+import { openTaskPropertySettings } from "../settings/TaskNotesSettingTab";
 import { captureTaskUndo } from "./taskMutationUndo";
 import { uiText } from "../i18n/runtime";
 import { taskDateLabel } from "./kit/dateLabel";
@@ -348,7 +349,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			const config = configs.find(config => config.value === task[property]);
 			return config ? configLabel(config) : String(task[property] ?? "—");
 		});
-		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? failedTitles.join(", ") : `${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}${tasks.length > 1 ? ` · ${updatedTasks.length}` : ""}`);
+		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : `${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}${tasks.length > 1 ? ` · ${updatedTasks.length}` : ""}`);
 	}
 	return updatedTasks;
 }
@@ -369,7 +370,7 @@ export function showTaskUndo(
 		{ count }
 	);
 	const failure = uiText(
-		msg({ message: "Could not update tasks", context: "interaction failure" })
+		msg({ message: "Could not save task changes. Check that the notes are writable, then try again.", context: "interaction save failure recovery" })
 	);
 	const pending = [...undo];
 	showToast({
@@ -505,8 +506,7 @@ export async function openTaskPropertyChoices(
 			showUnfilteredEmptyText: !configs.length,
 			onChoose: (item) => {
 				if (item.id === settingsId) {
-					plugin.app.setting.open();
-					plugin.app.setting.openTabById(plugin.manifest.id);
+					openTaskPropertySettings(plugin, property);
 				} else apply(item.id);
 			},
 		});

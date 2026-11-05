@@ -107,4 +107,32 @@ describe('Settings card expansion across rebuilds', () => {
     freshTab.display();
     expect(card('status', freshTab.containerEl).classList.contains(collapsedClass)).toBe(true);
   });
+
+  it('routes a pending property recovery through the modern settings renderer', async () => {
+    const settingEl = document.createElement('div');
+    document.body.appendChild(settingEl);
+    const input = document.createElement('input');
+    (tab as any).getTabConfigurations.mockReturnValue([
+      { id: 'task-properties', nameKey: msg({ message: 'Task properties', context: 'settings.tabs.taskProperties' }), renderFn: (container: HTMLElement) => {
+        const section = createCard(container, {
+          id: 'property-priority', collapsible: true, defaultCollapsed: true,
+          header: { primaryText: 'Priority' },
+          content: { sections: [{ rows: [{ label: 'Property', input }] }] },
+        });
+        section.scrollIntoView = jest.fn();
+      } },
+    ]);
+    tab.focusProperty('priority');
+    (tab.getSettingDefinitions()[0] as any).render({ settingEl });
+    const section = card('property-priority', settingEl);
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    expect(section.classList.contains(collapsedClass)).toBe(false);
+    expect(document.activeElement).toBe(input);
+    toggle(section);
+    tab.focusProperty('priority');
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    expect(section.classList.contains(collapsedClass)).toBe(false);
+    expect(document.activeElement).toBe(input);
+    settingEl.remove();
+  });
 });

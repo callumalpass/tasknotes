@@ -324,8 +324,9 @@ export class MiniCalendarView extends BasesViewBase {
 				if (!dateKey) continue;
 
 				// Get title from configured property
-				let title = file.basename || file.name;
-				if (this.titleProperty) {
+				const task = this.plugin.cacheManager.getCachedTaskInfoSync(file.path);
+				let title = task ? task.title?.trim() || file.path : file.basename || file.name;
+				if (!task && this.titleProperty) {
 					try {
 						// Try using getValue directly on the Bases item (preferred method)
 						const titleValue = item.getValue?.(this.titleProperty as BasesPropertyId);

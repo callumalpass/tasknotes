@@ -39,6 +39,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Time-bearing dates stay complete in narrow task rows, with lower-priority metadata yielding space first. Unknown status and priority recovery opens the relevant expanded Task properties section, including from board columns.
+- Mini-calendar task choosers use task titles rather than filenames. Calendar collision stacks show appointment counts and expand just their group; narrow weeks reveal the selected day on entry.
+- Failed task-property changes identify the property and affected tasks, with a reminder to check note write access before retrying.
 - Mobile list and agenda rows keep status beside the title and group metadata and actions on a second row. References inside prose stay inline; standalone references retain their metadata.
 - Date pickers open unset dates at the top, precise time inputs use shared focus styling, custom picker labels have room to wrap, and shortcut help retains its keys on phones.
 - Statistics group overview metrics evenly and keep period comparisons together. Expanded task modals avoid reserving a side pane for empty details.

@@ -67,7 +67,8 @@ it("reports partial failure and Undo restores only the successfully moved task",
 	expect(tasks.get(initial[0].path)?.scheduled).toBe("2026-11-03T09:00");
 	expect(tasks.get(initial[1].path)?.scheduled).toBe(initial[1].scheduled);
 	const toast = undoAction();
-	expect(toast.message).toContain("Could not update tasks");
+	expect(toast.message).toContain("Could not save task changes");
+	expect(toast.message).toContain("notes are writable");
 	await toast.action!.run();
 	expect(tasks.get(initial[0].path)?.scheduled).toBe(initial[0].scheduled);
 	expect(apply).toHaveBeenCalledTimes(2);
