@@ -3,6 +3,7 @@ import { uiDuration } from "../i18n/formatters";
 import { configLabel } from "../i18n/configLabels";
 import { collectFileUndo, createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
 import { showTaskUndo } from "../ui/taskPropertyPickers";
+import { calendarResizeFeedback } from "./calendarResizeFeedback";
 import { msg } from "@lingui/core/macro";
 /**
  * Calendar presentation, external sources, timeblocks and creation interactions.
@@ -822,7 +823,7 @@ export async function handleTimeblockResize(
 			collectFileUndo(plugin, receipts)
 		);
 
-		showTaskUndo([createFileUndo(plugin, receipts)], false, 1, plugin.app.vault, plugin.i18n.translate(msg({ message: "Timeblock duration updated", context: "notices.audit.timeblockResized" })));
+		showTaskUndo([createFileUndo(plugin, receipts)], false, 1, plugin.app.vault, calendarResizeFeedback(timeblock.title, start, end));
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error resizing timeblock:", {
 			category: "provider",

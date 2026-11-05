@@ -291,22 +291,6 @@
     text-overflow: ellipsis;
 }
 
-/* Use consistent button system for task clear button */
-.tasknotes-plugin .pomodoro-view__task-clear-button {
-    background: transparent;
-    color: var(--tn-text-normal);
-    border: none;
-    box-shadow: none;
-    flex: 1;
-    white-space: nowrap;
-}
-
-.tasknotes-plugin .pomodoro-view__task-clear-button:hover {
-    background: var(--tn-interactive-hover);
-    border: none;
-    box-shadow: none;
-}
-
 .tasknotes-plugin .pomodoro-view__task-clear-button--hidden {
     display: none;
 }

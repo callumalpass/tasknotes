@@ -78,13 +78,13 @@ describe("ReleaseNotesView", () => {
 		jest.mocked(MarkdownRenderer.render).mockClear();
 	});
 
-	it("renders one shared announcement before the version list", async () => {
+	it("renders one shared announcement after the version list", async () => {
 		const view = createView();
 		await view.onOpen();
 
 		expect(view.contentEl.querySelectorAll(".release-notes-announcement")).toHaveLength(1);
 		const announcement = view.contentEl.querySelector(".release-notes-announcement");
-		expect(announcement?.nextElementSibling?.className).toBe("release-notes-versions");
+		expect(announcement?.previousElementSibling?.className).toBe("release-notes-versions");
 		const calls = jest.mocked(MarkdownRenderer.render).mock.calls;
 		expect(calls).toHaveLength(1);
 		expect(calls[0][1]).toBe(releaseNotesAnnouncement);

@@ -12,8 +12,8 @@
     color: var(--text-muted);
     border: 1px solid var(--tn-hairline);
     border-radius: var(--tn-radius-md);
-    padding: var(--tn-space-3);
-    font-size: var(--tn-type-sm);
+    padding: var(--tn-space-2);
+    font-size: var(--tn-type-xs);
 }
 
 .tasknotes-release-notes-view .release-notes-version-header:focus-visible {
@@ -22,11 +22,16 @@
 }
 
 .tasknotes-release-notes-view .release-notes-announcement {
-    margin-bottom: var(--size-4-5);
-    padding: 0 0 var(--tn-space-4);
+    margin-block: var(--tn-space-3);
+    padding: var(--tn-space-2) 0;
     border-bottom: 1px solid var(--tn-hairline);
-    color: var(--tn-text-normal);
+    color: var(--tn-text-muted);
     background: var(--tn-bg-primary);
+}
+
+.tasknotes-release-notes-container > p {
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-release-notes-view .release-notes-announcement > :first-child {

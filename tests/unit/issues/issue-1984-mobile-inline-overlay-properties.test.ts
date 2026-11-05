@@ -12,7 +12,7 @@ describe("Issue #1984: mobile inline task overlay properties", () => {
 		const css = readRepoFile("styles/task-inline-widget.css");
 
 		expect(css).toMatch(
-			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__metadata\s*\{[^}]*display:\s*inline-flex;[^}]*max-width:\s*12em;[^}]*min-width:\s*0;/s
+			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__metadata\s*\{[^}]*display:\s*inline-flex;[^}]*max-width:\s*55%;[^}]*min-width:\s*0;/s
 		);
 		expect(css).toContain(".task-card__metadata-values");
 		expect(css).toContain("overflow-x: auto;");

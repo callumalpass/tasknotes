@@ -283,7 +283,7 @@
     padding: 0;
     position: static;
     width: auto;
-    max-width: 12em;
+    max-width: 55%;
     scrollbar-width: none;
     vertical-align: baseline;
     white-space: nowrap;
@@ -346,8 +346,8 @@
 }
 
 .tasknotes-plugin .task-card--layout-inline .task-card__context-menu {
-    width: 0.9em;
-    height: 0.9em;
+    width: var(--tn-control-sm);
+    height: var(--tn-control-sm);
     padding: 0;
     vertical-align: baseline;
     display: inline-flex;

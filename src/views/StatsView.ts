@@ -175,7 +175,7 @@ export class StatsView extends ItemView {
 			.setName(this.plugin.i18n.translate(msg({ message: "Overview", context: "views.stats.sections.overview" })))
 			.setHeading();
 		this.overviewStatsEl = overviewSection.createDiv({
-			cls: "stats-overview-grid stats-view__overview-grid",
+			cls: "stats-overview-grid stats-view__overview-grid tn-metrics",
 		});
 
 		const horizons = container.createDiv({ cls: "tn-report-horizons" });
@@ -185,21 +185,21 @@ export class StatsView extends ItemView {
 		new Setting(todaySection)
 			.setName(this.plugin.i18n.translate(msg({ message: "Today", context: "views.stats.sections.today" })))
 			.setHeading();
-		this.todayStatsEl = todaySection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
+		this.todayStatsEl = todaySection.createDiv({ cls: "stats-grid stats-view__stats-grid tn-metrics" });
 
 		// This week's stats
 		const weekSection = horizons.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(weekSection)
 			.setName(this.plugin.i18n.translate(msg({ message: "This week", context: "views.stats.sections.thisWeek" })))
 			.setHeading();
-		this.weekStatsEl = weekSection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
+		this.weekStatsEl = weekSection.createDiv({ cls: "stats-grid stats-view__stats-grid tn-metrics" });
 
 		// This month's stats
 		const monthSection = horizons.createDiv({ cls: "stats-section stats-view__section" });
 		new Setting(monthSection)
 			.setName(this.plugin.i18n.translate(msg({ message: "This month", context: "views.stats.sections.thisMonth" })))
 			.setHeading();
-		this.monthStatsEl = monthSection.createDiv({ cls: "stats-grid stats-view__stats-grid" });
+		this.monthStatsEl = monthSection.createDiv({ cls: "stats-grid stats-view__stats-grid tn-metrics" });
 
 		// Project breakdown
 		const projectsSection = container.createDiv({ cls: "stats-section stats-view__section" });

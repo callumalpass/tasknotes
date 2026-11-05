@@ -219,7 +219,7 @@ export function createTaskCard(
 		handlers: secondaryBadgeHandlers,
 	});
 
-	createTaskCardContextMenuButton({
+	const contextMenuButton = createTaskCardContextMenuButton({
 		mainRow,
 		taskPath: task.path,
 		plugin,
@@ -250,6 +250,9 @@ export function createTaskCard(
 		propertyOptions: opts,
 		handlers: secondaryBadgeHandlers,
 	});
+	if (layout === "inline") {
+		mainRow.insertBefore(metadataLine, contextMenuButton);
+	}
 
 	// Add click handlers with single/double click distinction
 	const { clickHandler, auxclickHandler, dblclickHandler, contextmenuHandler } =

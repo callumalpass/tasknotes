@@ -4039,11 +4039,6 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "L’attività corrente non è completata"
 
-#: src/ui/taskPropertyPickers.ts
-msgctxt "interaction picker"
-msgid "Current value is not configured"
-msgstr "Il valore attuale non è configurato"
-
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
 msgid "Current version: {version}"
@@ -5026,6 +5021,11 @@ msgstr "Scadenza: {date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "Scadenza: {value}"
+
+#: src/bases/calendarResizeFeedback.ts
+msgctxt "calendar resize feedback"
+msgid "Duration → {duration}"
+msgstr "Durata → {duration}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
@@ -12977,11 +12977,6 @@ msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
 msgstr "Blocco temporale duplicato correttamente"
 
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.timeblockResized"
-msgid "Timeblock duration updated"
-msgstr "Durata del blocco temporale aggiornata"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
 msgid "Timeblock event title template"
@@ -14088,6 +14083,7 @@ msgstr "Vista settimanale"
 
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "Giorni feriali"

@@ -393,12 +393,16 @@ export class PomodoroView extends ItemView {
 		});
 
 		this.taskSelectButton = taskButtonsContainer.createEl("button", {
-			cls: "tn-btn pomodoro-view__task-select-button",
+			cls: "tn-btn tn-btn--sm pomodoro-view__task-select-button",
 			text: this.t(msg({ message: "Choose task...", context: "views.pomodoro.buttons.chooseTask" })),
 		});
+		const taskSelectIcon = this.taskSelectButton.createSpan();
+		setIcon(taskSelectIcon, "list-todo");
+		this.taskSelectButton.prepend(taskSelectIcon);
+		setIcon(this.taskSelectButton.createSpan(), "chevron-down");
 
 		this.taskClearButton = taskButtonsContainer.createEl("button", {
-			cls: "pomodoro-view__task-clear-button pomodoro-view__task-clear-button--hidden",
+			cls: "tn-btn tn-btn--sm tn-btn--ghost pomodoro-view__task-clear-button pomodoro-view__task-clear-button--hidden",
 			text: this.t(msg({ message: "Clear task", context: "views.pomodoro.buttons.clearTask" })),
 		});
 
@@ -730,6 +734,9 @@ export class PomodoroView extends ItemView {
 				this.taskSelectButton.removeAttribute("title");
 				this.taskSelectButton.addClass("pomodoro-view__task-select-button--no-task");
 			}
+			const icon = this.taskSelectButton.createSpan();
+			setIcon(icon, "list-todo");
+			this.taskSelectButton.prepend(icon);
 			setIcon(this.taskSelectButton.createSpan(), "chevron-down");
 		}
 

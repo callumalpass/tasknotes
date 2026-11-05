@@ -88,7 +88,7 @@ export class ReleaseNotesView extends ItemView {
 		versionData: ReleaseNoteVersion
 	): Promise<void> {
 		// Transform issue references into clickable links and render the markdown
-		// The beta invitation now appears once above the version list. Preserve
+		// The beta invitation now appears once after the version list. Preserve
 		// historical source files (also used by GitHub), but omit their old callout.
 		const notes = versionData.content.replace(
 			/^> \[!info\] TaskNotes v5 beta\r?\n(?:>[^\n]*(?:\n|$))*/gm,
@@ -96,7 +96,7 @@ export class ReleaseNotesView extends ItemView {
 		);
 		const transformedNotes = this.transformIssueLinks(notes.replace(/^# .+(?:\r?\n|$)/, ""));
 		const releaseContent = versionData.isCurrent
-			? `${this.plugin.i18n.translate(msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.", context: "views.releaseNotes.baseFilesNotice" }))}\n\n${transformedNotes}`
+			? `${transformedNotes}\n\n${this.plugin.i18n.translate(msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.", context: "views.releaseNotes.baseFilesNotice" }))}`
 			: transformedNotes;
 		await MarkdownRenderer.render(this.plugin.app, releaseContent, content, "", this);
 	}
@@ -227,6 +227,7 @@ export class ReleaseNotesView extends ItemView {
 			const isExpanded = versionData.isCurrent || i === 0;
 			await this.createVersionSection(versionsContainer, versionData, isExpanded);
 		}
+		container.append(announcement, starMessage);
 
 		// Footer with link to all releases
 		const footer = container.createDiv({ cls: "release-notes-footer" });

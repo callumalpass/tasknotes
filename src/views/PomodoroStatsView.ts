@@ -95,7 +95,7 @@ export class PomodoroStatsView extends ItemView {
 			.setName(this.t(msg({ message: "Overview", context: "views.pomodoroStats.sections.overview" })))
 			.setHeading();
 		this.overviewStatsEl = overviewSection.createDiv({
-			cls: "pomodoro-overview-grid pomodoro-stats-view__overview-grid",
+			cls: "pomodoro-overview-grid pomodoro-stats-view__overview-grid tn-metrics",
 		});
 
 		// Today's stats
@@ -107,7 +107,7 @@ export class PomodoroStatsView extends ItemView {
 			.setName(this.t(msg({ message: "Today", context: "views.pomodoroStats.sections.today" })))
 			.setHeading();
 		this.todayStatsEl = todaySection.createDiv({
-			cls: "pomodoro-stats-grid pomodoro-stats-view__stats-grid",
+			cls: "pomodoro-stats-grid pomodoro-stats-view__stats-grid tn-metrics",
 		});
 
 		// This week's stats
@@ -116,7 +116,7 @@ export class PomodoroStatsView extends ItemView {
 		});
 		new Setting(weekSection).setName(this.t(msg({ message: "This week", context: "views.pomodoroStats.sections.week" }))).setHeading();
 		this.weekStatsEl = weekSection.createDiv({
-			cls: "pomodoro-stats-grid pomodoro-stats-view__stats-grid",
+			cls: "pomodoro-stats-grid pomodoro-stats-view__stats-grid tn-metrics",
 		});
 
 		// Overall stats
@@ -127,7 +127,7 @@ export class PomodoroStatsView extends ItemView {
 			.setName(this.t(msg({ message: "All time", context: "views.pomodoroStats.sections.allTime" })))
 			.setHeading();
 		this.overallStatsEl = overallSection.createDiv({
-			cls: "pomodoro-stats-grid pomodoro-stats-view__stats-grid",
+			cls: "pomodoro-stats-grid pomodoro-stats-view__stats-grid tn-metrics",
 		});
 
 		// Recent sessions

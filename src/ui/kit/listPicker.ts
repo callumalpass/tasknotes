@@ -13,6 +13,7 @@ export interface PickerItem {
 	keyHint?: string;
 	selected?: boolean;
 	keywords?: string;
+	group?: string;
 }
 
 export interface ListPickerOptions
@@ -109,6 +110,9 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		if (unfilteredNotice) list.createDiv({ cls: "tn-picker__empty", text: options.unfilteredEmptyText });
 
 		for (const [index, item] of visible.entries()) {
+			if (item.group && item.group !== visible[index - 1]?.group) {
+				list.createDiv({ cls: "tn-picker__group", text: item.group, attr: { role: "presentation" } });
+			}
 			const row = list.createDiv({
 				cls: "tn-picker__row",
 				attr: { role: "option", "data-picker-id": item.id },

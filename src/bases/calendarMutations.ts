@@ -18,6 +18,7 @@ import { processVaultFrontMatter } from "../services/VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { captureTaskUndo } from "../ui/taskMutationUndo";
 import { showTaskUndo } from "../ui/taskPropertyPickers";
+import { calendarResizeFeedback } from "./calendarResizeFeedback";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarMutations" });
 export interface CalendarMutationContext {
@@ -280,7 +281,10 @@ async function applyTaskCalendarGesture(
 		));
 		if (result.task) {
 			await context.refreshTask(result.task);
-			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, `${result.task.title} · ${result.task.scheduled ?? result.task.due ?? ""}`);
+			const feedback = kind === "resize" && info.event.end
+				? calendarResizeFeedback(result.task.title, info.event.start, info.event.end)
+				: `${result.task.title} · ${result.task.scheduled ?? result.task.due ?? ""}`;
+			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, feedback);
 		}
 		else info.revert();
 	} catch (error) {

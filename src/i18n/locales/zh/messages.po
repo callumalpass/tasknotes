@@ -4038,11 +4038,6 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "当前任务尚未完成"
 
-#: src/ui/taskPropertyPickers.ts
-msgctxt "interaction picker"
-msgid "Current value is not configured"
-msgstr "当前值未配置"
-
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
 msgid "Current version: {version}"
@@ -5025,6 +5020,11 @@ msgstr "截止日期：{date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "截止：{value}"
+
+#: src/bases/calendarResizeFeedback.ts
+msgctxt "calendar resize feedback"
+msgid "Duration → {duration}"
+msgstr "时长 → {duration}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
@@ -12976,11 +12976,6 @@ msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
 msgstr "已复制时间块"
 
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.timeblockResized"
-msgid "Timeblock duration updated"
-msgstr "已更新时间块时长"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
 msgid "Timeblock event title template"
@@ -14087,6 +14082,7 @@ msgstr "周视图"
 
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "工作日"

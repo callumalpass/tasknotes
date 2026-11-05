@@ -4038,11 +4038,6 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "현재 작업이 완료되지 않았습니다"
 
-#: src/ui/taskPropertyPickers.ts
-msgctxt "interaction picker"
-msgid "Current value is not configured"
-msgstr "현재 값이 구성되지 않았습니다"
-
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.description"
 msgid "Current version: {version}"
@@ -5025,6 +5020,11 @@ msgstr "마감: {date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "마감: {value}"
+
+#: src/bases/calendarResizeFeedback.ts
+msgctxt "calendar resize feedback"
+msgid "Duration → {duration}"
+msgstr "소요 시간 → {duration}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
@@ -12976,11 +12976,6 @@ msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
 msgstr "타임블록이 복제되었습니다"
 
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.timeblockResized"
-msgid "Timeblock duration updated"
-msgstr "타임블록 길이가 업데이트되었습니다"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
 msgid "Timeblock event title template"
@@ -14087,6 +14082,7 @@ msgstr "주간 보기"
 
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "평일"

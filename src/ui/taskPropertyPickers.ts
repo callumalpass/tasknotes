@@ -484,7 +484,6 @@ export async function openTaskPropertyChoices(
 							? renderPriorityGlyph(host, { kind: "unknown" })
 							: renderStatusGlyph(host, { kind: "unknown", progress: 0 }),
 					selected: tasks.every((candidate) => candidate[property] === value),
-					detail: uiText(msg({ message: "Current value is not configured", context: "interaction picker" })),
 				});
 		}
 		if (property === "priority" && (configs.length || tasks.some((task) => !!task.priority)) && !configs.some((config) => "weight" in config && config.weight === 0)) items.push({ id: "", label: clear, selected: tasks.every((task) => !task.priority) });
@@ -522,6 +521,9 @@ export async function openTaskPropertyChoices(
 			id: String(index),
 			label: option.label,
 			renderLeading: option.icon ? (host) => setIcon(host, option.icon as string) : undefined,
+			group: option.category === "weekday"
+				? uiText(msg({ message: "Weekdays", context: "contextMenus.date.weekdaysLabel" }))
+				: undefined,
 		}));
 		if (currentValue) items.unshift({
 			id: "current",
@@ -529,15 +531,15 @@ export async function openTaskPropertyChoices(
 			selected: true,
 			renderLeading: (host) => setIcon(host, "calendar"),
 		});
-		items.push(
+		items.unshift(
 			{
 				id: "custom",
 				label: uiText(
 					msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })
 				),
-			},
-			{ id: "clear", label: clear, selected: !currentValue }
+			}
 		);
+		items.push({ id: "clear", label: clear, selected: !currentValue });
 		return openListPicker({
 			anchor,
 			app: plugin.app,

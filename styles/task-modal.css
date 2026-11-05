@@ -1385,7 +1385,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 }
 
 .tasknotes-plugin .task-project-item--unresolved {
-    border-style: dashed;
+    border-color: transparent;
 }
 
 .tasknotes-plugin .task-project-item--unresolved .task-project-name {

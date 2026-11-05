@@ -735,7 +735,7 @@ export abstract class TaskModal extends Modal {
 				);
 	}
 
-	private toggleDetailedForm(): void {
+	protected toggleDetailedForm(): void {
 		if (!this.isExpanded) {
 			this.expandModal();
 			return;

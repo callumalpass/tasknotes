@@ -1021,7 +1021,11 @@ export class MiniCalendarView extends BasesViewBase {
 					if (selectedNote) {
 						this.openCalendarEntry(selectedNote);
 					}
-				}
+				},
+				new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
+					dateStyle: "full",
+					timeZone: "UTC",
+				}).format(date)
 			);
 			modal.open();
 		}
@@ -1654,7 +1658,8 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		app: App,
 		plugin: TaskNotesPlugin,
 		notes: NoteEntry[],
-		onChooseNote: (note: NoteEntry | null) => void
+		onChooseNote: (note: NoteEntry | null) => void,
+		dateLabel?: string
 	) {
 		super(app);
 		applyModalShell(this);
@@ -1662,6 +1667,10 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		this.plugin = plugin;
 		this.notes = notes;
 		this.onChooseNote = onChooseNote;
+		if (dateLabel) {
+			this.setTitle(dateLabel);
+			this.modalEl.prepend(this.titleEl);
+		}
 
 		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Select an item to open", context: "ui.audit.selectNote" })));
 		this.setInstructions([

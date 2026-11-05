@@ -4,6 +4,7 @@ import { msg } from "@lingui/core/macro";
 import { App, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal, type TaskSubmitOptions } from "./TaskModal";
+import { resizeTaskModalTitleTextarea } from "./taskModalTitleInput";
 import { TaskInfo } from "../types";
 import { sanitizeTags } from "../utils/helpers";
 import {
@@ -136,24 +137,45 @@ export class TaskCreationModal extends TaskModal {
 		return this.plugin.settings.enableNaturalLanguageInput && !this.nlEditorFailed;
 	}
 
-	protected showsTitleInDetails(): boolean {
-		return this.usesNaturalLanguage();
-	}
-
 	protected getTitleErrorAnchor(): HTMLElement | null {
-		return this.nlContainer ?? super.getTitleErrorAnchor();
+		return this.nlContainer && !this.nlContainer.hidden
+			? this.nlContainer
+			: super.getTitleErrorAnchor();
 	}
 
 	/** Without natural language the title input is the primary field, with everything visible. */
 	protected createPrimaryInput(container: HTMLElement): void {
 		if (this.usesNaturalLanguage()) {
 			this.createNaturalLanguageInput(container);
+			if (this.usesNaturalLanguage() && this.shouldShowField("title", this.plugin.settings.modalFieldsConfig)) {
+				this.createTitleInput(container);
+				this.titleInput?.addClass("title-input-detailed");
+				this.updateTitleEditorVisibility();
+			}
 		}
 		if (!this.usesNaturalLanguage()) {
 			super.createPrimaryInput(container);
 			this.isExpanded = true;
 			this.containerEl.addClass("expanded");
 		}
+	}
+
+	protected expandModal(): void {
+		super.expandModal();
+		this.updateTitleEditorVisibility();
+	}
+
+	protected toggleDetailedForm(): void {
+		super.toggleDetailedForm();
+		this.updateTitleEditorVisibility();
+	}
+
+	private updateTitleEditorVisibility(): void {
+		if (!this.nlContainer || !this.titleInput) return;
+		this.nlContainer.hidden = this.isExpanded;
+		const titleContainer = this.titleInput.parentElement;
+		if (titleContainer) titleContainer.hidden = !this.isExpanded;
+		if (this.isExpanded) resizeTaskModalTitleTextarea(this.titleInput);
 	}
 
 	private createNaturalLanguageInput(container: HTMLElement): void {
@@ -290,7 +312,7 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	protected focusTitleInput(): void {
-		if (!this.usesNaturalLanguage()) {
+		if (!this.usesNaturalLanguage() || (this.isExpanded && this.titleInput)) {
 			super.focusTitleInput();
 			return;
 		}
