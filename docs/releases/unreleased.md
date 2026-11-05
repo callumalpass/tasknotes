@@ -84,6 +84,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Collapsed settings cards remove their contents from keyboard navigation. Disclosure buttons announce expansion and restore focus when a section closes.
 - Calendar agenda and selected-day entries align consistently across event types. Narrow month overflow counts fit their day cells while retaining descriptive accessible names, and event tooltips stay out of held moves and resizes.
 - Task-list search reports the visible and total task counts, including empty results.
+- Keyboard focus stays on the same task control when a Task List or Kanban row redraws after an update, instead of dropping to the document and losing the next shortcut.
+- Calendar group drags rejected for incompatible date markers show one explanation without attempting the move. Thanks to @mnicolas94 and @Thanatos9404 for the calendar selection discussion (#2435).
+- Parent-assignment feedback names the destination task while retaining the shared Undo action, and keyboard movement menus use the configured subgroup labels. Thanks to @iantierney for suggesting Task List movement (#2381).
+- Restored the calendar's status-coloured leading edge and subtle, live Kanban status-colour tints, including swimlane headers and cells. Thanks to @nesyeklaf for contributing Kanban status colours (#2260).
 - Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
 - Kanban titles use two readable lines without competing indicator rails; metadata overflow never displays a zero count after columns settle.
 - Keyboard group toggles retain focus after redraws, task selectors show one active row, and the create-task title has one named textbox.

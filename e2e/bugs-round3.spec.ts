@@ -267,7 +267,7 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
       await page.keyboard.press('Tab');
     }
     await expect(statusControl).toBeFocused();
-    await expect(first).toHaveClass(/tn-task-focused/);
+    await expect(first).not.toHaveClass(/tn-task-focused/);
     await page.screenshot({ path: `test-results/r3-focus-${type}.png`, animations: 'disabled' });
     await page.keyboard.press('s');
     await page.locator('.tn-picker__row[data-picker-id="in-progress"]').click();
@@ -285,7 +285,8 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
       await page.keyboard.press('Escape');
       await expect(page.locator('.tn-picker')).toHaveCount(0);
       await first.locator('.task-card__status-dot').focus();
-      await expect(first).toHaveClass(/tn-task-focused/);
+      await expect(first.locator('.task-card__status-dot')).toBeFocused();
+      await expect(first).not.toHaveClass(/tn-task-focused/);
       await page.keyboard.press(key);
       await expect(page.locator('.tn-picker')).toBeVisible();
       await page.keyboard.press('Escape');
@@ -296,7 +297,7 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await first.locator('.task-card__status-dot').focus();
     await page.keyboard.press('e');
-    await expect(page.locator('.minimalist-task-modal').getByRole('textbox', { name: 'What needs to be done?', exact: true })).toHaveValue('Bugs task 0');
+    await expect(page.locator('.minimalist-task-modal').getByRole('textbox', { name: 'Title', exact: true })).toHaveValue('Bugs task 0');
     await page.keyboard.press('Escape');
   });
 }

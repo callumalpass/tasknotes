@@ -117,7 +117,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     });
     const longCard = items.locator(`.task-card[data-task-path="${folder}/Task 3.md"]`);
     await longCard.scrollIntoViewIfNeeded();
-    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('font-size', '20px');
+    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('font-size', '16.25px');
     const longTagElement = longCard.locator('.tag').filter({ hasText: longTag });
     await expect(longTagElement).toHaveCSS('white-space', 'nowrap');
     await expect(longTagElement).toBeHidden();

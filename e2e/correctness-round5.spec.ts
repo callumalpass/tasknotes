@@ -191,6 +191,7 @@ test('collision drilldown contains only that group and first entry reveals today
     await app.vault.create(`${folder}/Calendar.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\n    - file.hasTag("task")\nviews:\n  - type: tasknotesCalendar\n    name: Calendar\n    calendarView: timeGridWeek\n    showDue: true\n    showTimeblocks: false\n    showTimeEntries: false\n`);
     await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
   }, folder);
+  await expect(page.locator('.tnc-item').filter({ hasText: 'Collision appointment 1' }).first()).toBeVisible();
   await page.locator('.tnc-toolbar-view-select').selectOption('week');
   await expect(page.locator('.tnc-dh.is-today')).toBeInViewport();
   const stack = page.locator('.tnc-more--collision').filter({ hasText: '8' }).first();

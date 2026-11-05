@@ -234,6 +234,7 @@
     container-type: inline-size;
     border-width: 0;
     border-radius: var(--tn-radius-sm);
+    border-left-width: var(--tn-space-half);
     border-left-color: var(--tn-calendar-status-color, var(--tnc-border, var(--c)));
     border-left-style: solid;
     background: color-mix(in srgb, var(--tn-calendar-status-color, var(--c)) var(--tn-calendar-event-tint), var(--tn-bg-primary));

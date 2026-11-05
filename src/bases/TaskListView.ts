@@ -1213,7 +1213,7 @@ export class TaskListView extends BasesViewBase {
 			this.cancelTaskMovement();
 			if (plan.state === "assign") {
 				for (const sourcePath of paths) await this.performParentAssignment(sourcePath, plan.parentPath, undos);
-				showTaskUndo(undos, false, undos.length, this.plugin.app.vault);
+				showTaskUndo(undos, false, undos.length, this.plugin.app.vault, this.parentAssignedMessage(plan.parentPath));
 			}
 			return;
 		}
@@ -1386,18 +1386,22 @@ export class TaskListView extends BasesViewBase {
 		return [destination.groupKey, destination.subGroupKey]
 			.filter((value) => value !== undefined)
 			.map((value, index) =>
-				value === null || value === NONE_GROUP_KEY
-					? this.plugin.i18n.translate(
-							msg({ message: "No value", context: "views.taskList.movement.noValue" })
-						)
-					: this.groupDisplayLabel(
-							value ?? "",
-							index === 0
-								? (this.getGroupByPropertyId() ?? this.subGroupPropertyId)
-								: this.subGroupPropertyId
-						)
+				this.movementValueLabel(
+					value ?? null,
+					index === 0
+						? (this.getGroupByPropertyId() ?? this.subGroupPropertyId)
+						: this.subGroupPropertyId
+				)
 			)
 			.join(" / ");
+	}
+
+	private movementValueLabel(value: string | null, propertyId: string | null): string {
+		return value === null || value === NONE_GROUP_KEY
+			? this.plugin.i18n.translate(
+					msg({ message: "No value", context: "views.taskList.movement.noValue" })
+				)
+			: this.groupDisplayLabel(value, propertyId);
 	}
 
 	private showEmptyMovementDestinations(): void {
@@ -1537,9 +1541,7 @@ export class TaskListView extends BasesViewBase {
 					parentMenu.addItem((child) =>
 						child
 							.setTitle(
-								this.movementDestinationLabel({
-									groupKey: target.subGroupKey ?? null,
-								})
+								this.movementValueLabel(target.subGroupKey ?? null, this.subGroupPropertyId)
 							)
 							.onClick(move(target))
 					);
@@ -2159,29 +2161,31 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
+	private parentAssignedMessage(parentPath: string): string {
+		const parent =
+			this.taskInfoCache.get(parentPath)?.title ??
+			this.plugin.app.vault.getAbstractFileByPath(parentPath)?.name.replace(/\.md$/, "") ??
+			parentPath;
+		return this.plugin.i18n.translate(
+			msg({
+				message: "Added as a subtask of {parent}.",
+				context: "views.taskList.movement.parentAssigned",
+			}),
+			{ parent }
+		);
+	}
+
 	private async performParentAssignment(sourcePath: string, parentPath: string, undos?: Array<() => Promise<void>>): Promise<void> {
 		try {
 			await this.dropQueue.enqueue(`move:${sourcePath}`, async () => {
 				const result = await assignTaskParent(this.plugin, sourcePath, parentPath);
-				const parent =
-					this.taskInfoCache.get(parentPath)?.title ??
-					this.plugin.app.vault
-						.getAbstractFileByPath(parentPath)
-						?.name.replace(/\.md$/, "") ??
-					parentPath;
 				this.showTaskMovementUndo(
 					result.file,
 					result.undoChanges,
 					result.originalTask,
 					result.updatedTask,
 					[{ groupByTaskProp: "projects" }],
-					this.plugin.i18n.translate(
-						msg({
-							message: "Added as a subtask of {parent}.",
-							context: "views.taskList.movement.parentAssigned",
-						}),
-						{ parent }
-					),
+					this.parentAssignedMessage(parentPath),
 					undos
 				);
 			});

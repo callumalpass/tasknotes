@@ -228,7 +228,7 @@ test('batch Undo confirms the property and count without resurfacing older actio
     await status.focus();
     await page.keyboard.press('p');
     await page.locator(`.tn-picker__row[data-picker-id="${priority}"]`).click();
-    await expect(page.locator('.tn-toast__message')).toHaveText(`Priority → Priority ${priority.split('-')[1]} · 3`);
+    await expect(page.locator('.tn-toast__message')).toHaveText(`3 tasks updated · Priority → Priority ${priority.split('-')[1]}`);
   }
   await page.locator('.tn-toast__action').click();
   await expect(page.locator('.tn-toast__message')).toHaveText('Undid Priority change for 3 tasks');

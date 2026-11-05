@@ -115,6 +115,7 @@ test('keyboard/touch collapse, locale stability, drag/drop and restart persisten
   const alpha = page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/Alpha.md"]`);
   await drag(alpha, column('waiting').locator('.kanban-view__column-header'));
   await expect.poll(async () => (await readYaml(`${folder}/Alpha.md`)).status).toBe('waiting');
+  await expect(column('waiting').locator(`.kanban-view__card-wrapper[data-task-path="${folder}/Alpha.md"]`)).toHaveCount(1);
   await expect(toggle('waiting')).toHaveAttribute('aria-expanded', 'false');
   await drag(column('waiting').locator('[data-column-key]'), column('open').locator('[data-column-key]'));
   await expect.poll(async () => (await readYaml(basePath)).views[0].columnOrder).toContain('waiting');

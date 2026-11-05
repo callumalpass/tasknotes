@@ -251,7 +251,9 @@ test("incompatible markers are rejected without partially moving the selection",
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await event(page, "DueOnly", "due").click({ modifiers: ["Control"] });
 	await dragByColumn(page, event(page, "Alpha"));
-	await expect(page.locator(".notice").filter({ hasText: "Group moves require" })).toBeVisible();
+	const rejection = page.locator(".notice").filter({ hasText: "Group moves require" });
+	await expect(rejection).toHaveCount(1);
+	await expect(rejection).toBeVisible();
 	expect((await taskDates(page, "Alpha")).scheduled).toBe(`${days[0]}T09:00`);
 	expect((await taskDates(page, "DueOnly")).due).toBe(days[1]);
 });
