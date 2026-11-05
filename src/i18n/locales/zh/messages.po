@@ -330,6 +330,11 @@ msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Track
 msgstr "{count, plural, other {正在跟踪 # 个任务（总计 {totalElapsed}）}}"
 
 #: src/bases/CalendarView.ts
+msgctxt "calendar collision count"
+msgid "{count} appointments"
+msgstr "{count} 个日程"
+
+#: src/bases/CalendarView.ts
 msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count}天"
@@ -3722,6 +3727,11 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "无法解析：{entries}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction save failure recovery"
+msgid "Could not save task changes. Check that the notes are writable, then try again."
+msgstr "无法保存任务更改。请检查笔记是否可写，然后重试。"
+
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.failed"
 msgid "Could not undo the recurring task change."
@@ -3733,7 +3743,6 @@ msgid "Could not undo this move."
 msgstr "无法撤销此次移动。"
 
 #: src/components/BatchContextMenu.ts
-#: src/ui/taskPropertyPickers.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction failure"
 msgid "Could not update tasks"
@@ -12393,6 +12402,7 @@ msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
 msgid "Task saved, but its first occurrence could not be created. Use Create occurrence to retry."
 msgstr "任务已保存，但无法创建首个重复实例。请使用“创建实例”重试。"
 
+#: src/bases/KanbanView.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "picker recovery action"
 msgid "Task settings"

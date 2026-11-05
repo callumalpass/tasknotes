@@ -86,13 +86,15 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		for (const slot of dateSlots) slot.hidden = false;
 		summary.hidden = true;
 		hiddenLabels = [];
-		const fits = () =>
-			[...atoms, ...dateSlots, summary].every((element) => {
+		const fits = () => {
+			values.hidden = !atoms.some((atom) => !atom.hidden);
+			return [...atoms, ...dateSlots, summary].every((element) => {
 				if (element.hidden) return true;
 				const right = element.getBoundingClientRect().right;
 				const boundary = atoms.includes(element) ? values.getBoundingClientRect().right : metadataLine.getBoundingClientRect().right;
 				return right <= boundary + 0.5;
 			});
+		};
 		if (fits()) return;
 		summary.hidden = false;
 		summary.textContent = `+${atoms.length + dateSlots.length}`;
@@ -110,6 +112,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		}
 		for (const group of groups)
 			group.property.hidden = group.chips.every((chip) => chip.hidden);
+		values.hidden = !atoms.some((atom) => !atom.hidden);
 		const hidden = [...atoms, ...dateSlots]
 			.filter((atom) => atom.hidden)
 			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");

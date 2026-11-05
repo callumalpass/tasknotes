@@ -1,4 +1,6 @@
 import { changeTaskProperty, showTaskUndo, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
+import { openTaskPropertySettings } from "../settings/TaskNotesSettingTab";
+import { unconfiguredValueLabel } from "../ui/kit/glyphs";
 import { buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
 import { createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
 import { renderKanbanHeaderGlyph, resolveKanbanStatusColor } from "./kanbanStatusPresentation";
@@ -1472,6 +1474,28 @@ export class KanbanView extends BasesViewBase {
 		setTooltip(element, uiText(msg({ message: "Status is not defined in TaskNotes settings", context: "bases/KanbanView: KanbanView.markUnknownStatusColumnHeader display" })));
 	}
 
+	private renderUnknownGroupRecovery(element: HTMLElement, groupKey: string, propertyId: string | null): void {
+		if (!propertyId || !groupKey.trim() || groupKey === NONE_GROUP_KEY) return;
+		const property = this.isStatusGroupingProperty(propertyId)
+			? "status"
+			: this.isPropertyField(propertyId, "priority") ? "priority" : null;
+		if (!property) return;
+		const configured = property === "status"
+			? this.findStatusConfigForGroupKey(groupKey)
+			: this.plugin.priorityManager.getPriorityConfig(groupKey);
+		if (configured) return;
+		const explanation = unconfiguredValueLabel(groupKey);
+		const recovery = element.createEl("button", {
+			cls: "tn-btn tn-btn--ghost tn-btn--icon",
+			attr: { type: "button", "aria-label": uiText(msg({ message: "Task settings", context: "picker recovery action" })), "aria-description": explanation, title: explanation },
+		});
+		setIcon(recovery, "circle-help");
+		recovery.addEventListener("click", event => {
+			event.stopPropagation();
+			openTaskPropertySettings(this.plugin, property);
+		});
+	}
+
 	private async renderFlat(
 		groups: Map<string, TaskInfo[]>,
 		allGroups: Map<string, TaskInfo[]>
@@ -1683,6 +1707,7 @@ export class KanbanView extends BasesViewBase {
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
 			this.renderGroupTitleWrapper(titleContainer, columnKey, false, true);
 			setTooltip(titleContainer, this.getGroupDisplayTitle(columnKey, groupByPropertyId));
+			this.renderUnknownGroupRecovery(headerCell, columnKey, groupByPropertyId);
 			headerCell.dataset.empty = String((columnTaskCounts.get(columnKey) ?? 0) === 0);
 			this.renderColumnCount(headerCell, columnKey, columnTaskCounts.get(columnKey) ?? 0);
 			this.createColumnCollapseButton(headerCell, headerCell, columnKey, groupByPropertyId);
@@ -1855,6 +1880,7 @@ export class KanbanView extends BasesViewBase {
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
 		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
 		setTooltip(titleContainer, this.getGroupDisplayTitle(groupKey, groupByPropertyId));
+		this.renderUnknownGroupRecovery(header, groupKey, groupByPropertyId);
 
 		this.renderColumnCount(header, groupKey, tasks.length);
 		this.createColumnCollapseButton(header, column, groupKey, groupByPropertyId);

@@ -16,6 +16,16 @@ import { renderFeaturesTab } from "./tabs/featuresTab";
 import { renderIntegrationsTab } from "./tabs/integrationsTab";
 import type { MessageDescriptor } from "../i18n";
 import { CardExpansionState } from "./components/CardExpansionState";
+import { CARD_COLLAPSE_CHANGED, setCardCollapsed } from "./components/CardComponent";
+
+const settingTabs = new WeakMap<TaskNotesPlugin, TaskNotesSettingTab>();
+
+export function openTaskPropertySettings(plugin: TaskNotesPlugin, property: "status" | "priority"): void {
+	settingTabs.get(plugin)?.focusProperty(property);
+	plugin.app.setting.open();
+	plugin.app.setting.openTabById(plugin.manifest.id);
+	settingTabs.get(plugin)?.focusProperty(property);
+}
 
 interface TabConfig {
 	id: string;
@@ -29,6 +39,8 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	private tabContents: Record<string, HTMLElement> = {};
 	private tabSelect?: HTMLSelectElement;
 	private readonly cardExpansionState = new CardExpansionState();
+	private settingsContainer?: HTMLElement;
+	private focusedProperty: "status" | "priority" | null = null;
 	private debouncedSave: DebouncedFunction<() => Promise<void>> = debounce(
 		() => this.plugin.saveSettings(),
 		500
@@ -37,6 +49,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		settingTabs.set(plugin, this);
 
 		// Set icon for settings sidebar (Obsidian 1.11.0+)
 		if (requireApiVersion("1.11.0")) {
@@ -75,7 +88,35 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		this.renderSettings(this.containerEl);
 	}
 
+	focusProperty(property: "status" | "priority"): void {
+		this.activeTab = "task-properties";
+		this.focusedProperty = property;
+		if (!this.settingsContainer?.isConnected || this.settingsContainer.ownerDocument.defaultView?.closed) return;
+		this.switchTab("task-properties", false);
+		this.revealProperty();
+	}
+
+	private revealProperty(): void {
+		const container = this.settingsContainer;
+		const property = this.focusedProperty;
+		if (!property || !container?.isConnected || container.ownerDocument.defaultView?.closed) return;
+		const card = container.querySelector<HTMLElement>(`[data-card-id="property-${property}"]`);
+		if (!card) return;
+		setCardCollapsed(card, false);
+		card.dispatchEvent(new CustomEvent(CARD_COLLAPSE_CHANGED, { bubbles: true }));
+		const target = card.querySelector<HTMLElement>("input, select, button") ?? card;
+		if (target === card) card.tabIndex = -1;
+		const view = card.ownerDocument.defaultView;
+		view?.requestAnimationFrame(() => view.requestAnimationFrame(() => {
+			if (!card.isConnected || card.ownerDocument.defaultView?.closed || this.settingsContainer !== container || this.focusedProperty !== property) return;
+			card.scrollIntoView({ block: "start" });
+			target.focus({ preventScroll: true });
+			this.focusedProperty = null;
+		}));
+	}
+
 	private renderSettings(containerEl: HTMLElement): void {
+		this.settingsContainer = containerEl;
 		this.tabContents = {};
 		containerEl.empty();
 		containerEl.addClass("tasknotes-settings");
@@ -185,6 +226,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 			this.tabContents[tab.id] = tabContent;
 		});
+		this.revealProperty();
 	}
 
 	private renderTabContent(tab: TabConfig, container: HTMLElement): void {
@@ -203,7 +245,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		}
 
 		// Update tab button states
-		this.containerEl.querySelectorAll(".settings-tab-button").forEach((button) => {
+		this.settingsContainer?.querySelectorAll(".settings-tab-button").forEach((button) => {
 			const isActive = button.id === `tab-button-${tabId}`;
 			button.classList.toggle("active", isActive);
 			button.classList.toggle("settings-view__tab-button--active", isActive);
@@ -213,7 +255,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		});
 
 		// Update tab content states
-		this.containerEl.querySelectorAll(".settings-tab-content").forEach((content) => {
+		this.settingsContainer?.querySelectorAll(".settings-tab-content").forEach((content) => {
 			const isActive = content.id === `settings-tab-${tabId}`;
 			content.classList.toggle("active", isActive);
 			content.classList.toggle("settings-view__tab-content--active", isActive);
@@ -231,7 +273,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 
 		// Focus the newly active tab button
 		window.setTimeout(() => {
-			const activeTabButton = this.containerEl.querySelector(
+			const activeTabButton = this.settingsContainer?.querySelector(
 				`#tab-button-${tabId}`
 			) as HTMLElement;
 			if (activeTabButton && focusTab) {
