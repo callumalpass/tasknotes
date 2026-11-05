@@ -714,12 +714,18 @@ export abstract class BasesViewBase extends Component {
 	 * Returns filtered tasks or original if no search term.
 	 */
 	protected applySearchFilter(tasks: TaskInfo[]): TaskInfo[] {
+		const updateCount = (visible: number) => {
+			const countLabel = this.containerEl.closest(".bases-view")?.parentElement?.querySelector<HTMLElement>(".bases-toolbar-result-count .text-button-label");
+			if (countLabel && this.enableSearch) countLabel.textContent = uiText(msg({ message: "{visible} of {total} tasks", context: "filtered task count" }), { visible, total: tasks.length });
+		};
 		if (!this.searchFilter || !this.currentSearchTerm) {
+			updateCount(tasks.length);
 			return tasks;
 		}
 
 		const startTime = performance.now();
 		const filtered = this.searchFilter.filterTasks(tasks, this.currentSearchTerm);
+		updateCount(filtered.length);
 		const filterTime = performance.now() - startTime;
 
 		// Log filter performance for monitoring

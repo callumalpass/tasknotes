@@ -266,12 +266,20 @@ export interface CardButton {
 }
 
 export const CARD_COLLAPSE_CHANGED = "tasknotes:card-collapse-changed";
+let disclosureSequence = 0;
 
 /** Update presentation without treating restoration as a user interaction. */
 export function setCardCollapsed(card: HTMLElement, collapsed: boolean): void {
 	card.classList.toggle("tasknotes-settings__card--collapsed", collapsed);
 	const header = card.querySelector<HTMLElement>(":scope > .tasknotes-settings__card-header");
 	if (header) header.title = collapsed ? uiText(msg({ message: "Expand card", context: "settings/components/CardComponent: setCardCollapsed display" })) : uiText(msg({ message: "Collapse card", context: "settings/components/CardComponent: setCardCollapsed display" }));
+	const disclosure = header?.querySelector<HTMLButtonElement>(".tasknotes-settings__card-disclosure");
+	disclosure?.setAttribute("aria-expanded", String(!collapsed));
+	for (const section of card.querySelectorAll<HTMLElement>(":scope > .tasknotes-settings__card-content, :scope > .tasknotes-settings__card-actions")) {
+		if (collapsed && section.contains(card.ownerDocument.activeElement)) disclosure?.focus();
+		section.inert = collapsed;
+		section.hidden = collapsed;
+	}
 }
 
 const CARD_INFO_CLASS = "tasknotes-settings__card-info";
@@ -344,7 +352,9 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 	}
 
 	// Left side of header with color indicator and info
-	const headerLeft = header.createDiv();
+	const headerLeft = config.collapsible
+		? header.createEl("button", { cls: "tasknotes-settings__card-disclosure", attr: { type: "button" } })
+		: header.createDiv();
 	headerLeft.classList.remove(
 		"tn-static-display-block-2a1b75c9",
 		"tn-static-display-flex-4d51fc62",
@@ -471,9 +481,13 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 		header.title = config.defaultCollapsed ? uiText(msg({ message: "Expand card", context: "settings/components/CardComponent: createCard display" })) : uiText(msg({ message: "Collapse card", context: "settings/components/CardComponent: createCard display" }));
 		header.onclick = (e) => {
 			// Don't trigger if clicking on action buttons
-			if ((e.target as Element).closest(".tasknotes-settings__card-header-actions")) {
+			if ((e.target as Element).closest("button, input, select, a, [role=button]")) {
 				return;
 			}
+			toggleCollapse();
+		};
+		headerLeft.onclick = (event) => {
+			event.stopPropagation();
 			toggleCollapse();
 		};
 	}
@@ -552,6 +566,12 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 		});
 	}
 
+	if (config.collapsible) {
+		const sections = Array.from(card.querySelectorAll<HTMLElement>(":scope > .tasknotes-settings__card-content, :scope > .tasknotes-settings__card-actions"));
+		for (const section of sections) section.id = `tn-settings-disclosure-${++disclosureSequence}`;
+		headerLeft.setAttribute("aria-controls", sections.map(section => section.id).join(" "));
+		setCardCollapsed(card, Boolean(config.defaultCollapsed));
+	}
 	return card;
 }
 

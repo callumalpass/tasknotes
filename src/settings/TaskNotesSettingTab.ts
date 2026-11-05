@@ -105,7 +105,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		if (!card) return;
 		setCardCollapsed(card, false);
 		card.dispatchEvent(new CustomEvent(CARD_COLLAPSE_CHANGED, { bubbles: true }));
-		const target = card.querySelector<HTMLElement>("input, select, button") ?? card;
+		const target = card.querySelector<HTMLElement>(".tasknotes-settings__card-content :is(input, select, button)") ?? card;
 		if (target === card) card.tabIndex = -1;
 		const view = card.ownerDocument.defaultView;
 		view?.requestAnimationFrame(() => view.requestAnimationFrame(() => {

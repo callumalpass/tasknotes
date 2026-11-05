@@ -735,7 +735,8 @@
 .tasknotes-plugin .tn-calendar-list-stamp {
     display: flex;
     flex-direction: column;
-    flex: 0 0 13ch;
+    flex: 0 0 16ch;
+    box-sizing: border-box;
     gap: var(--tn-space-half);
     padding: var(--tn-space-2);
     color: var(--tn-text-muted);
@@ -928,7 +929,7 @@
 }
 
 .tasknotes-plugin .tn-calendar-day-panel .tn-calendar-list-stamp {
-    flex-basis: 8ch;
+    flex-basis: 16ch;
 }
 
 .tasknotes-plugin .tnc-dg-day.tn-calendar-day-selected .tnc-dg-num {
@@ -974,8 +975,23 @@ body.is-mobile .tasknotes-plugin :is(.tnc-strip-nav, .tnc-strip-title, .tnc-stri
 }
 
 body.is-mobile .tasknotes-plugin .tn-calendar-list-stamp {
-    flex-basis: 7ch;
-    padding-inline: var(--tn-space-1);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--tn-space-2);
+    padding: 0 var(--tn-space-2);
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-entry {
+    display: block;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-list-stamp:empty {
+    display: none;
+}
+
+body.tn-calendar-gesture .tooltip {
+    display: none;
 }
 
 @media (hover: hover) {

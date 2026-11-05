@@ -814,6 +814,11 @@ msgstr "{value2, plural, one {{taskTitles}\n"
 "... e mais {value2, number}} other {{taskTitles}\n"
 "... e mais {value2, number}}}"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "filtered task count"
+msgid "{visible} of {total} tasks"
+msgstr "{visible} de {total} tarefas"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.basicDefaults.defaultContexts.placeholder"
 msgid "@home, @work"

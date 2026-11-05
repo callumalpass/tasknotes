@@ -812,6 +812,11 @@ msgid "{value2, plural, one {{taskTitles}\n"
 msgstr "{value2, plural, other {{taskTitles}\n"
 "...ほか {value2, number}件}}"
 
+#: src/bases/BasesViewBase.ts
+msgctxt "filtered task count"
+msgid "{visible} of {total} tasks"
+msgstr "{total} 件中 {visible} 件のタスク"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.basicDefaults.defaultContexts.placeholder"
 msgid "@home, @work"

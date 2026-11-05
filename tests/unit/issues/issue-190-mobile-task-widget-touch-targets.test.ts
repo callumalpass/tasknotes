@@ -27,11 +27,13 @@ describe("Issue #190: mobile task widget touch targets", () => {
 		expect(css).toContain(".task-card--selected .task-card__context-menu");
 		const secondary = css.slice(css.indexOf("body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) :is("));
 		const secondaryRules = secondary.slice(0, secondary.indexOf("}"));
-		for (const control of ["recurring-indicator", "reminder-indicator", "details-indicator", "attachment-indicator", "project-indicator", "blocking-toggle", "blocked-toggle"]) {
+		for (const control of ["recurring-indicator", "reminder-indicator", "attachment-indicator", "project-indicator", "blocking-toggle", "blocked-toggle"]) {
 			expect(secondaryRules).toContain(".task-card__" + control);
 		}
 		expect(secondaryRules).toContain("min-width: var(--tn-mobile-task-card-indicator-size)");
 		expect(secondaryRules).toContain("min-height: var(--tn-mobile-task-card-indicator-size)");
+		expect(secondaryRules).not.toContain(".task-card__details-indicator");
+		expect(css).toMatch(/body\.is-mobile \.tasknotes-plugin \.task-card \.task-card__details-indicator\s*\{[^}]*min-width:\s*var\(--tn-icon-sm\);[^}]*min-height:\s*var\(--tn-icon-sm\);/s);
 	});
 
 	it("keeps inline controls touchable without applying mobile sizing to desktop", () => {

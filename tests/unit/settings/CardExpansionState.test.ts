@@ -3,9 +3,37 @@ import { msg } from "@lingui/core/macro";
 import { App } from 'obsidian';
 import type TaskNotesPlugin from '../../../src/main';
 import { TaskNotesSettingTab } from '../../../src/settings/TaskNotesSettingTab';
-import { createCard } from '../../../src/settings/components/CardComponent';
+import { createCard, setCardCollapsed } from '../../../src/settings/components/CardComponent';
 
 const collapsedClass = 'tasknotes-settings__card--collapsed';
+
+describe('settings disclosure accessibility', () => {
+  it('uses a native button and keeps every collapsed section hidden and inert', () => {
+    const container = document.body.appendChild(document.createElement('div'));
+    const input = document.createElement('input');
+    const card = createCard(container, {
+      collapsible: true,
+      defaultCollapsed: true,
+      header: { primaryText: 'Task property' },
+      content: { sections: [{ rows: [{ label: 'Name', input }] }] },
+      actions: { buttons: [{ text: 'Save', onClick: jest.fn() }] },
+    });
+    const disclosure = card.querySelector<HTMLButtonElement>('.tasknotes-settings__card-disclosure')!;
+    const sections = Array.from(card.querySelectorAll<HTMLElement>('.tasknotes-settings__card-content, .tasknotes-settings__card-actions'));
+    expect(disclosure.tagName).toBe('BUTTON');
+    expect(disclosure.type).toBe('button');
+    expect(disclosure.getAttribute('aria-expanded')).toBe('false');
+    expect(disclosure.getAttribute('aria-controls')?.split(' ')).toEqual(sections.map(section => section.id));
+    expect(sections.every(section => section.hidden && section.inert)).toBe(true);
+    disclosure.click();
+    expect(disclosure.getAttribute('aria-expanded')).toBe('true');
+    expect(sections.every(section => !section.hidden && !section.inert)).toBe(true);
+    input.focus();
+    setCardCollapsed(card, true);
+    expect(document.activeElement).toBe(disclosure);
+    container.remove();
+  });
+});
 
 describe('Settings card expansion across rebuilds', () => {
   let tab: TaskNotesSettingTab;

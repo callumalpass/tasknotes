@@ -758,6 +758,7 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
 
 /* Collapsed state - hide content and actions */
 .tasknotes-settings__card--collapsed .tasknotes-settings__card-content {
+    display: none;
     max-height: 0;
     padding-top: 0;
     padding-bottom: 0;
@@ -766,6 +767,7 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
 }
 
 .tasknotes-settings__card--collapsed .tasknotes-settings__card-actions {
+    display: none;
     max-height: 0;
     padding-top: 0;
     padding-bottom: 0;
@@ -794,6 +796,24 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
 .tasknotes-settings__card-header--clickable {
     cursor: var(--cursor-link, pointer);
     user-select: none;
+}
+
+.tasknotes-plugin .tasknotes-settings__card-header > .tasknotes-settings__card-disclosure {
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--tn-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.tasknotes-plugin .tasknotes-settings__card-header > .tasknotes-settings__card-disclosure:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-1);
 }
 
 @media (hover: hover) {

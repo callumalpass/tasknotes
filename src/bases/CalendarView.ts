@@ -73,6 +73,7 @@ import {
 	type CalendarEventInput,
 	type CalendarEventProps,
 } from "./calendarEngine";
+import { installCalendarTooltipGuard } from "./calendarTooltipGuard";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
 import { showCalendarCreationMenu } from "./calendarCreationMenu";
 import { decorateCalendarEvent } from "./calendarEventPresentation";
@@ -347,6 +348,7 @@ export class CalendarView extends BasesViewBase {
 			}
 		}));
 		if (this.rootElement) {
+			this.register(installCalendarTooltipGuard(this.rootElement));
 			const observer = new ResizeObserver(() => this.onResize());
 			observer.observe(this.rootElement);
 			this.register(() => observer.disconnect());
@@ -2111,7 +2113,6 @@ export class CalendarView extends BasesViewBase {
 				time.createSpan({ text: start });
 				if (end) time.createSpan({ text: `– ${end}` });
 			}
-			if (!stamp.hasChildNodes()) stamp.remove();
 			entry.append(card);
 			return entry;
 		}

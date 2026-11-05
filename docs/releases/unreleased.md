@@ -79,6 +79,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Compact mobile task rows share full-width titles, separate touch controls and metadata across lists, boards and calendars. Passive details glyphs no longer add an empty row, and agenda dates remain readable in full.
+- Board details and relationship indicators share the metadata baseline instead of creating an orphan line. Sentence task references stay in the prose flow with an attached, keyboard-accessible menu.
+- Collapsed settings cards remove their contents from keyboard navigation. Disclosure buttons announce expansion and restore focus when a section closes.
+- Calendar agenda and selected-day entries align consistently across event types. Narrow month overflow counts fit their day cells while retaining descriptive accessible names, and event tooltips stay out of held moves and resizes.
+- Task-list search reports the visible and total task counts, including empty results.
 - Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
 - Kanban titles use two readable lines without competing indicator rails; metadata overflow never displays a zero count after columns settle.
 - Keyboard group toggles retain focus after redraws, task selectors show one active row, and the create-task title has one named textbox.
