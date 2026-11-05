@@ -149,19 +149,16 @@ test('narrow calendar keeps navigation and selector together and retains seconda
   await page.keyboard.press('Escape');
   await selector.selectOption('week');
   await expect(calendar.locator('.tnc-tg')).toBeVisible();
-  const timedTask = calendar.locator('.tnc-item--timed').filter({ hasText: title }).first();
-  await expect.poll(async () => {
-    await timedTask.evaluate(element => element.scrollIntoView({ block: 'nearest', inline: 'center' }));
-    return timedTask.evaluate(element => {
-      const bounds = element.getBoundingClientRect();
-      return bounds.left >= element.closest('.tnc-tg-scroll')!.getBoundingClientRect().left && bounds.right <= innerWidth;
-    });
-  }).toBe(true);
+  await calendar.locator('.tnc-btn-today').click();
+  await calendar.locator('.tnc-more--collision').first().click();
+  const timedTask = calendar.locator('.tnc-popover .tnc-item').filter({ hasText: title }).first();
+  await expect(timedTask).toBeInViewport();
   await expect(timedTask.locator('.tnc-item-time')).toBeVisible();
-  await capture(page, '400-week', timedTask);
+  await page.screenshot({ path: 'test-results/narrow-reading-r3/400-week.png' });
+  await page.keyboard.press('Escape');
 });
 
-test('collision widths scroll explicitly, timed lines fit and deadlines retain two lines', async () => {
+test('collisions expand without widening the week, timed lines fit and deadlines use one line', async () => {
   const page = instance.page;
   await setObsidianViewport(page, { width: 1180, height: 800 });
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
@@ -169,7 +166,11 @@ test('collision widths scroll explicitly, timed lines fit and deadlines retain t
   const grid = page.locator('.workspace-leaf.mod-active .tnc-tg');
   await expect(grid).toBeVisible();
   await expect.poll(() => grid.evaluate(element => Number(getComputedStyle(element).getPropertyValue('--tnc-collision-columns')))).toBeGreaterThanOrEqual(3);
-  expect(await grid.locator('.tnc-tg-scroll').evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+  expect(await grid.locator('.tnc-tg-scroll').evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(2);
+  await grid.locator('.tnc-more--collision').first().click();
+  await expect(page.locator('.tnc-popover .tnc-item')).toHaveCount(5);
+  await page.keyboard.press('Escape');
+  await page.locator('.tnc-btn-view-day').click();
   const events = grid.locator('.tnc-item--timed');
   expect(await events.count()).toBeGreaterThanOrEqual(4);
   for (const event of await events.all()) {
@@ -194,7 +195,7 @@ test('collision widths scroll explicitly, timed lines fit and deadlines retain t
   const deadline = grid.locator('.tnc-item--bar[data-event-type="due"]').first();
   await expect(deadline).toBeVisible();
   expect((await deadline.boundingBox())!.height).toBeGreaterThanOrEqual(40);
-  expect(await deadline.locator('.tn-calendar-event-title').evaluate(element => getComputedStyle(element).webkitLineClamp)).toBe('2');
+  expect(await deadline.locator('.tn-calendar-event-title').evaluate(element => getComputedStyle(element).whiteSpace)).toBe('nowrap');
   await events.filter({ hasText: title }).first().scrollIntoViewIfNeeded();
   await capture(page, '1180-collisions', events.filter({ hasText: title }).first());
 });

@@ -56,6 +56,8 @@ The focused marker's Alt+arrow keyboard move also moves the selected group. Resi
 The Calendar View supports the following view modes:
 
 - **Month**: Month grid showing all-day and timed events
+
+Busy timed columns collapse overlapping appointments into a labelled stack when there is not enough room to read them side by side. Open the stack to access its appointments without widening the whole week. At narrow widths, day buttons above the grid reveal offscreen dates; **Today** also brings the current day into view. Overflow lists stay within the visible calendar pane and scroll vertically. All-day bars use single-line ellipsis in the grid, while overflow rows wrap their titles.
 - **Week**: Week view with hourly time slots for detailed scheduling
 - **Day**: Single day view with hourly breakdown
 - **Year**: Annual overview showing event distribution across months

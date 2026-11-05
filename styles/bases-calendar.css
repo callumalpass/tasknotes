@@ -327,15 +327,120 @@
 }
 
 .tasknotes-plugin .tnc-tg {
-    --tnc-col-min: max(180px, calc(var(--tnc-collision-columns, 1) * 180px));
+    --tnc-col-min: 128px;
+    --tnc-event-min-width: 128px;
     --tnc-bar-h: var(--tn-touch-target);
 }
 
 .tasknotes-plugin .tnc-item--bar .tn-calendar-event-title {
+    display: block;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .tnc-tg-day-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    flex: none;
+    gap: var(--tn-space-half);
+    padding: var(--tn-space-1);
+    border-bottom: 1px solid var(--tn-hairline);
+}
+
+.tasknotes-plugin .tnc-tg-day-navigation .tnc-btn {
+    flex: 1;
+    min-height: var(--tn-touch-target);
+    padding: 0 var(--tn-space-1);
+}
+
+.tasknotes-plugin .tnc-tg-day-navigation[hidden] {
+    display: none;
+}
+
+.tasknotes-plugin .tnc-tg-day-navigation .is-offscreen {
+    text-decoration: underline;
+    text-underline-offset: var(--tn-space-1);
+}
+
+.tasknotes-plugin .tnc-more--collision {
+    display: flex;
+    align-items: start;
+    gap: var(--tn-space-1);
+    height: auto;
+    min-height: var(--tn-touch-target);
+    padding: var(--tn-space-1);
+    white-space: normal;
+    text-align: start;
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    background: var(--tn-bg-secondary);
+}
+
+.tasknotes-plugin .tnc-collision-title {
+    flex: 1;
+    min-width: 0;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .tnc-popover {
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-lg);
+    box-shadow: var(--tn-shadow-overlay);
+    font-size: var(--tn-type-sm);
+}
+
+.tasknotes-plugin .tnc-popover-head {
+    flex: none;
+    min-height: var(--tn-touch-target);
+    padding: var(--tn-space-1) var(--tn-space-2);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+.tasknotes-plugin .tnc-popover-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .tnc-popover-close {
+    flex: none;
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+    border-radius: var(--tn-radius-md);
+}
+
+.tasknotes-plugin .tnc-popover-body {
+    min-height: 0;
+    padding: var(--tn-space-1);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.tasknotes-plugin .tnc-popover-body .tnc-item {
+    height: auto;
+    min-height: var(--tn-touch-target);
+    padding: var(--tn-space-2);
+    border: 0;
+    border-radius: var(--tn-radius-md);
+    background: transparent;
+}
+
+.tasknotes-plugin .tnc-popover-body .tnc-item:hover {
+    background: var(--tn-hover);
+}
+
+.tasknotes-plugin .tnc-popover :is(button, .tnc-item):focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: -2px;
+}
+
+.tasknotes-plugin .tnc-popover .tn-calendar-event-title {
+    display: block;
     white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 @container (max-width: 110px) {
