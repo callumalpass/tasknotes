@@ -81,6 +81,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - List drag destinations use configured labels and a single group target with nearby feedback. Failed board moves identify affected tasks without a misleading successful-write count.
 - Task forms keep their width when showing more fields. Long property explanations expand inline, statistics distinguish time tracking from completion, and sentence references give status glyphs room beside titles.
 - Search placeholders have stronger theme-derived contrast, and default metadata field labels use consistent casing while preserving custom labels.
+- Calendar drags released outside a valid date target are cancelled instead of saving the last hovered time. Timeblock Undo updates the displayed times without reopening the view.
+- Year calendars keep their date targets inside each month in narrow panes. Agenda date selection no longer scrolls the surrounding workspace, and empty selected days retain their heading.
+- Calendar collision stacks show their full occupied interval, short tracked entries keep readable titles, and narrow month calendars keep the selected-day panel visible. Tracked entries show their actual duration rather than the task estimate.
 - Kanban uses quieter column headers and readable, wrapping card metadata. Dragged tasks remain dimmed in place, multi-task previews show their count without clipping, and insertion markers stay beside the actual drop position. Formula-based boards explain why a move is unavailable before dropping; edge scrolling works vertically as well as horizontally.
 - Narrow task and agenda rows keep dates and their overflow controls within the pane, including larger text sizes.
 - Statistics period sections stack in narrow panes instead of squeezing into three columns.

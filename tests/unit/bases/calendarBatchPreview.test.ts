@@ -16,13 +16,29 @@ function harness() {
 	const preview = { ...original, start: "2026-11-03T09:00", isPreview: true };
 	const upsert = jest.fn(), remove = jest.fn(), invalid = jest.fn();
 	const build = jest.fn(() => [preview]);
+	const isValidTarget = jest.fn(() => true);
 	const controller = new CalendarBatchPreview({ root, getItems: () => items, getRevision: () => items,
-		build, upsert, remove, onInvalidDrop: invalid });
+		build, upsert, remove, isValidTarget, onInvalidDrop: invalid });
 	const proposal: CalendarBatchProposal = { item: items[0], start: new Date("2026-11-03T09:00Z"), end: new Date("2026-11-03T10:00Z"), allDay: false };
-	return { root, el, grip, original, preview, upsert, remove, invalid, build, controller, proposal,
+	return { root, el, grip, original, preview, upsert, remove, invalid, build, isValidTarget, controller, proposal,
 		setItems(next: CalendarEventItem[]) { items = next; } };
 }
 afterEach(() => { document.body.replaceChildren(); });
+
+it("restores peers immediately outside valid targets and repaints when reentering", () => {
+	const harnessState = harness();
+	try {
+		pointer(harnessState.el, "pointerdown");
+		harnessState.controller.allow(harnessState.proposal);
+		harnessState.isValidTarget.mockReturnValue(false);
+		pointer(document, "pointermove");
+		expect(harnessState.upsert).toHaveBeenLastCalledWith([harnessState.original]);
+		harnessState.isValidTarget.mockReturnValue(true);
+		harnessState.controller.allow(harnessState.proposal);
+		expect(harnessState.build).toHaveBeenCalledTimes(2);
+		expect(harnessState.upsert).toHaveBeenLastCalledWith([harnessState.preview]);
+	} finally { harnessState.controller.dispose(); }
+});
 
 it("paints peer proposals once per position and restores canonical values before a drop", () => {
 	const h = harness();

@@ -339,6 +339,13 @@ export class CalendarView extends BasesViewBase {
 				if (this.rootElement?.isConnected) void this.refetchEvents();
 			}));
 		}
+		this.registerEvent(this.plugin.app.metadataCache.on("changed", (file, _data, cache) => {
+			if (!this.rootElement?.isConnected || !this.viewOptions.showTimeblocks) return;
+			if (Array.isArray(cache.frontmatter?.timeblocks) || this.nonTaskEvents.some(event =>
+				event.extendedProps?.eventType === "timeblock" && event.extendedProps.filePath === file.path)) {
+				void this.refetchEvents();
+			}
+		}));
 		if (this.rootElement) {
 			const observer = new ResizeObserver(() => this.onResize());
 			observer.observe(this.rootElement);
@@ -350,6 +357,7 @@ export class CalendarView extends BasesViewBase {
 				root: this.rootElement,
 				getItems: () => this.calendarItems,
 				getRevision: () => this.calendarItems,
+				isValidTarget: (clientX, clientY) => Boolean(this.calendar?.hitTest(clientX, clientY)),
 				build: proposal => buildCalendarBatchPreview(this.getBatchCalendarItems(),
 					this.plugin.taskSelectionService?.getSelectedPaths() ?? [], proposal,
 					this.calendarTimezone, this.plugin.fieldMapper.getMapping(), new Date().toISOString()),
@@ -1405,7 +1413,7 @@ export class CalendarView extends BasesViewBase {
 
 		if (this.rootElement) {
 			this.rootElement.classList.toggle("advanced-calendar-view--auto-height", isAutoHeight);
-			this.rootElement.classList.toggle("tn-static-min-height-800px-997b4c8c", !isAutoHeight);
+			this.rootElement.classList.remove("tn-static-min-height-800px-997b4c8c");
 		}
 
 		this.calendarEl?.classList.toggle(
@@ -2029,7 +2037,7 @@ export class CalendarView extends BasesViewBase {
 	private handleEventDidMount(arg: ItemArg<CalendarEventProps>): void {
 		this.keyboard?.mount(arg);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
-		decorateCalendarEvent({ plugin: this.plugin, rootElement: this.rootElement }, arg);
+		decorateCalendarEvent({ plugin: this.plugin, rootElement: this.rootElement, timeFormat: this.viewOptions.timeFormat === "12" ? "12" : "24" }, arg);
 	}
 
 	/** Right-click, the context-menu key or Shift+F10 on an event. */
@@ -2091,8 +2099,11 @@ export class CalendarView extends BasesViewBase {
 				setIcon(marker.createSpan(), "flag-triangle-right");
 				marker.createSpan({ text: deadline });
 				stamp.setAttribute("aria-label", `${deadline}: ${arg.timeText}`);
-			} else if (arg.item.data?.eventType === "timeEntry") {
-				setIcon(stamp.createSpan({ cls: "tn-calendar-list-tracked" }), "timer");
+			} else if (arg.item.data?.eventType === "timeEntry" && arg.item.end) {
+				const tracked = stamp.createSpan({ cls: "tn-calendar-list-tracked" });
+				setIcon(tracked.createSpan(), "timer");
+				const duration = (new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000;
+				tracked.createSpan({ text: uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: this.plugin.formatTime(duration) }) });
 			}
 			if (arg.timeText) {
 				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });

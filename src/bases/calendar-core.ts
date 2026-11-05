@@ -585,13 +585,13 @@ export async function generateTimeblockEvents(
 						dailyNote.path
 					);
 					for (const timeblock of timeblocks) {
-						events.push(
-							createTimeblockEvent(
-								timeblock,
-								dateString,
-								plugin.settings.calendarViewSettings.defaultTimeblockColor
-							)
+						const event = createTimeblockEvent(
+							timeblock,
+							dateString,
+							plugin.settings.calendarViewSettings.defaultTimeblockColor
 						);
+						event.extendedProps.filePath = dailyNote.path;
+						events.push(event);
 					}
 				}
 			}

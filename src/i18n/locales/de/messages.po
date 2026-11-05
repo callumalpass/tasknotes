@@ -796,6 +796,8 @@ msgctxt "ui/taskCardProperties: timeEstimate display"
 msgid "{value1} estimated"
 msgstr "{value1} geschätzt"
 
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
