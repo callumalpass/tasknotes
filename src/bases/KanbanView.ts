@@ -1,4 +1,4 @@
-import { changeTaskProperty, showTaskUndo, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
+import { changeTaskProperty, showTaskUndo, taskMovementMessage, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
 import { openTaskPropertySettings } from "../settings/TaskNotesSettingTab";
 import { unconfiguredValueLabel } from "../ui/kit/glyphs";
 import { buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
@@ -240,6 +240,10 @@ export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
 	private boardEl: HTMLElement | null = null;
+	private columnNav: HTMLElement | null = null;
+	private columnSelect: HTMLSelectElement | null = null;
+	private previousColumn: HTMLButtonElement | null = null;
+	private nextColumn: HTMLButtonElement | null = null;
 	private basesController: KanbanController; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private draggedTaskPath: string | null = null;
@@ -692,6 +696,7 @@ export class KanbanView extends BasesViewBase {
 				await this.renderFlat(groups, allGroups);
 			}
 			this.updateBoardLayout();
+			this.updateColumnNavigator();
 			this.restoreCollapseButtonFocus(focusedCollapseColumn);
 		} catch (error: unknown) {
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error rendering:", {
@@ -1225,6 +1230,7 @@ export class KanbanView extends BasesViewBase {
 
 		countEl.textContent = formatted.text;
 		countEl.classList.toggle("kanban-view__column-count--exceeded", formatted.isExceeded);
+		this.updateColumnNavigator();
 	}
 
 	private getVisibleColumnTaskCount(groupKey: string): number {
@@ -4172,6 +4178,7 @@ export class KanbanView extends BasesViewBase {
 				if (rewritten.has(path)) continue;
 				failedTitles.push(this.currentTaskElements.get(path)?.querySelector(".task-card__title-text")?.textContent || path);
 			}
+			if (!feedback.failedPaths?.length) feedback.failedPaths = [taskPath];
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error updating task:", {
 				category: "persistence",
 				operation: "updating-task",
@@ -4189,7 +4196,11 @@ export class KanbanView extends BasesViewBase {
 				element.addEventListener("animationend", () => element.classList.remove("kanban-view__card--settled"), { once: true });
 			}
 			const destination = [this.getGroupDisplayTitle(newGroupValue, this.getGroupByPropertyId()), newSwimLaneValue === null ? "" : this.getGroupDisplayTitle(newSwimLaneValue, this.swimLanePropertyId)].filter(Boolean).join(" · ");
-			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? `→ ${destination} · ${Math.max(rewritten.size, feedback.undo.length)}`);
+			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? taskMovementMessage(Math.max(rewritten.size, feedback.undo.length), destination), undefined, undefined,
+				feedback.failedPaths?.length ? {
+					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
+					run: async () => { await this.app.workspace.openLinkText(feedback.failedPaths![0], "", false); },
+				} : undefined);
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
 				this.postDropRefreshRequested = true;
@@ -4230,10 +4241,58 @@ export class KanbanView extends BasesViewBase {
 		board.className = "kanban-view__board";
 		this.rootElement?.appendChild(board);
 		this.boardEl = board;
+		const nav = this.rootElement?.createEl("nav", {
+			cls: "kanban-view__column-nav",
+			attr: { "aria-label": uiText(msg({ message: "Move between columns", context: "interaction shortcut" })) },
+		});
+		if (nav) {
+			board.before(nav);
+			this.columnNav = nav;
+			this.previousColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
+			setIcon(this.previousColumn, "chevron-left");
+			this.columnSelect = nav.createEl("select", { cls: "tn-select", attr: { "aria-label": nav.getAttribute("aria-label") ?? "" } });
+			this.nextColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
+			setIcon(this.nextColumn, "chevron-right");
+			this.previousColumn.addEventListener("click", () => this.revealNavigatorColumn(Number(this.columnSelect?.value) - 1));
+			this.nextColumn.addEventListener("click", () => this.revealNavigatorColumn(Number(this.columnSelect?.value) + 1));
+			this.columnSelect.addEventListener("change", () => this.revealNavigatorColumn(Number(this.columnSelect?.value)));
+			this.registerDomEvent(board, "scroll", () => this.updateColumnNavigator());
+		}
 		this.registerBoardListeners();
 		const observer = new ResizeObserver(() => this.updateBoardLayout());
 		observer.observe(board);
 		this.register(() => observer.disconnect());
+	}
+
+	private navigatorColumns(): HTMLElement[] {
+		return Array.from(this.boardEl?.querySelectorAll<HTMLElement>(".kanban-view__column, .kanban-view__column-header-cell") ?? []);
+	}
+
+	private revealNavigatorColumn(index: number): void {
+		const column = this.navigatorColumns()[index];
+		if (!column) return;
+		column.scrollIntoView({ block: "nearest", inline: "start", behavior: this.containerEl.ownerDocument.defaultView?.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+	}
+
+	private updateColumnNavigator(): void {
+		const select = this.columnSelect;
+		if (!select || !this.boardEl || !this.previousColumn || !this.nextColumn) return;
+		const columns = this.navigatorColumns();
+		const labels = columns.map(column => `${column.querySelector(".kanban-view__column-title")?.textContent ?? column.dataset.group ?? column.dataset.columnKey ?? ""} · ${column.querySelector(".kanban-view__column-count")?.textContent ?? "0"}`);
+		if (Array.from(select.options).map(option => option.text).join("\n") !== labels.join("\n")) {
+			select.empty();
+			labels.forEach((label, index) => select.createEl("option", { text: label, value: String(index) }));
+		}
+		const left = this.boardEl.getBoundingClientRect().left;
+		let closest = 0;
+		for (let index = 1; index < columns.length; index++) if (Math.abs(columns[index].getBoundingClientRect().left - left) < Math.abs(columns[closest].getBoundingClientRect().left - left)) closest = index;
+		select.value = String(closest);
+		select.title = labels[closest] ?? "";
+		this.previousColumn.disabled = closest === 0;
+		this.nextColumn.disabled = closest >= columns.length - 1;
+		this.previousColumn.setAttribute("aria-label", labels[Math.max(0, closest - 1)] ?? select.getAttribute("aria-label") ?? "");
+		this.nextColumn.setAttribute("aria-label", labels[Math.min(columns.length - 1, closest + 1)] ?? select.getAttribute("aria-label") ?? "");
+		if (this.columnNav) this.columnNav.hidden = columns.length < 2;
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
@@ -4906,6 +4965,11 @@ export class KanbanView extends BasesViewBase {
 		this.currentTaskElements.clear();
 		this.taskInfoCache.clear();
 		this.sortScopeTaskPaths.clear();
+		this.columnNav?.remove();
+		this.columnNav = null;
+		this.columnSelect = null;
+		this.previousColumn = null;
+		this.nextColumn = null;
 		this.boardEl = null;
 	}
 }

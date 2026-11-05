@@ -15,6 +15,7 @@ export interface ToastOptions {
 	message: string;
 	intent?: "error";
 	action?: ToastAction;
+	secondaryAction?: ToastAction;
 	durationMs?: number;
 	undoScope?: object;
 	undoMessage?: string;
@@ -142,14 +143,15 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	el.addEventListener("focusin", pause);
 	el.addEventListener("focusout", () => queueMicrotask(resume));
 
-	if (action) {
-		const { label, run } = action;
+	for (const toastAction of [action, options.secondaryAction]) {
+		if (!toastAction) continue;
+		const { label, run } = toastAction;
 		const button = el.createEl("button", { cls: "tn-toast__action", text: label });
 		button.addEventListener("click", () => {
-			if (button.disabled) return;
+			if (actionPending) return;
 			pause();
 			actionPending = true;
-			button.disabled = true;
+			el.querySelectorAll<HTMLButtonElement>("button").forEach(actionButton => { actionButton.disabled = true; });
 			button.setAttribute("aria-busy", "true");
 			if (returnFocus?.isConnected) returnFocus.focus();
 			void Promise.resolve().then(run).then(
@@ -160,7 +162,7 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 				},
 				() => {
 					actionPending = false;
-					button.disabled = false;
+					el.querySelectorAll<HTMLButtonElement>("button").forEach(actionButton => { actionButton.disabled = false; });
 					button.removeAttribute("aria-busy");
 					el.addClass("is-error");
 					el.setAttribute("role", "alert");

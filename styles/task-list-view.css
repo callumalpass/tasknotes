@@ -759,66 +759,6 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
     from { background-color: var(--tn-drop-surface); }
 }
 
-body.is-mobile .tn-tasknotesTaskList .task-card__main-row {
-    grid-template-columns: repeat(3, var(--tn-touch-target)) minmax(0, 1fr) var(--tn-touch-target);
-    grid-template-rows: auto var(--tn-touch-target) auto;
-}
-
-body.is-mobile .tn-tasknotesTaskList .task-card__content,
-body.is-mobile .tn-tasknotesTaskList .task-card__title {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-    grid-template-rows: subgrid;
-    pointer-events: none;
-}
-
-body.is-mobile .tn-tasknotesTaskList .task-card__content { grid-row: 1 / span 3; }
-body.is-mobile .tn-tasknotesTaskList .task-card__title { grid-row: 1 / span 2; }
-
-body.is-mobile .tn-tasknotesTaskList :is(.task-card__title-text, .task-card__badges, .task-card__metadata) { pointer-events: auto; }
-
-body.is-mobile .tn-tasknotesTaskList .task-card__title-text {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    font-size: var(--tn-type-base);
-    line-height: 1.4;
-}
-
-body.is-mobile .tn-tasknotesTaskList .task-card__status-dot { grid-row: 2; }
-body.is-mobile .tn-tasknotesTaskList .task-card__priority-dot { grid-column: 2; grid-row: 2; }
-
-body.is-mobile .tn-tasknotesTaskList .task-card.task-card--drag-handle-only .task-card__drag-handle {
-    position: static;
-    grid-column: 3;
-    grid-row: 2;
-}
-
-body.is-mobile .tn-tasknotesTaskList .task-card__badges {
-    grid-column: 4;
-    grid-row: 2;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-}
-
-body.is-mobile .tn-tasknotesTaskList .task-card__context-menu { grid-column: 5; grid-row: 2; }
-body.is-mobile .tn-tasknotesTaskList .task-card__metadata { grid-column: 1 / -1; grid-row: 3; }
-
 body.is-mobile .tn-tasknotesTaskList .task-card.task-card--reorderable > .task-card__main-row::before {
     inset-inline-start: calc(-1 * var(--tn-space-2));
-}
-
-@container tn-task-card (max-width: 260px) {
-    body.is-mobile .tn-tasknotesTaskList .task-card__main-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-rows: auto repeat(3, var(--tn-touch-target)) auto;
-    }
-
-    body.is-mobile .tn-tasknotesTaskList .task-card__content { grid-row: 1 / span 5; }
-    body.is-mobile .tn-tasknotesTaskList .task-card__title { grid-row: 1 / span 4; }
-    body.is-mobile .tn-tasknotesTaskList .task-card__status-dot { grid-column: 1; }
-    body.is-mobile .tn-tasknotesTaskList .task-card.task-card--drag-handle-only .task-card__drag-handle { grid-column: 1; grid-row: 3; }
-    body.is-mobile .tn-tasknotesTaskList .task-card__context-menu { grid-column: 2; grid-row: 3; }
-    body.is-mobile .tn-tasknotesTaskList .task-card__badges { grid-column: 1 / -1; grid-row: 4; }
-    body.is-mobile .tn-tasknotesTaskList .task-card__metadata { grid-row: 5; }
 }

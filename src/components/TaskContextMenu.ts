@@ -1021,6 +1021,12 @@ export class TaskContextMenu {
 			});
 		});
 
+		const shortcutHelp = this.targetDoc.querySelector<HTMLElement>(".workspace-leaf.mod-active .tn-shortcut-help");
+		if (shortcutHelp) this.menu.addItem((item) => {
+			item.setTitle(this.t(msg({ message: "Keyboard shortcuts", context: "interaction help" })));
+			item.setIcon("keyboard");
+			item.onClick(() => shortcutHelp.click());
+		});
 		this.addMobileDismissOption();
 
 		window.setTimeout(() => {

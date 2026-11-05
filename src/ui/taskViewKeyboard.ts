@@ -200,6 +200,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			["C", uiText(msg({ message: "Create task", context: "interaction shortcut" }))],
 			["/", uiText(msg({ message: "Search", context: "interaction shortcut" }))],
 			["Mod+K", uiText(msg({ message: "Actions", context: "interaction shortcut" }))],
+			["Mod+Z", uiText(msg({ message: "Undo", context: "interaction undo" }))],
 			...(options.shortcuts ?? []).filter((shortcut) => shortcut.key !== "c" && (!shortcut.when || shortcut.when(focusedPath))).map((shortcut) => [shortcut.key, shortcut.label]),
 		]) {
 			const row = list.createDiv({ cls: "tn-shortcut-row" });

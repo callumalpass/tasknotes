@@ -316,7 +316,8 @@
     background: var(--tn-active);
 }
 
-body.is-mobile .tasknotes-plugin .mini-calendar-view__day {
+body.is-mobile .tasknotes-plugin .mini-calendar-view__grid .mini-calendar-view__day {
+	min-width: var(--tn-touch-target);
     min-height: var(--tn-touch-target);
 }
 

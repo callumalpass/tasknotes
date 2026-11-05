@@ -10,7 +10,9 @@ import {
 } from "./taskListRenderSignatures";
 import { displayError } from "../i18n/runtime";
 import { showToast } from "../ui/kit/toast";
-import { showTaskUndo } from "../ui/taskPropertyPickers";
+import { showTaskUndo, taskMovementMessage } from "../ui/taskPropertyPickers";
+import { configLabel } from "../i18n/configLabels";
+import { isPropertyForField } from "../utils/propertyMapping";
 import { collectFileUndo, createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
 import { readCompletionContent } from "../services/task-service/recurringCompletionUndo";
 import { uiText } from "../i18n/runtime";
@@ -1223,10 +1225,17 @@ export class TaskListView extends BasesViewBase {
 		this.cancelTaskMovement();
 		if (source && destination && plan && plan.kind !== "blocked" && plan.kind !== "none") {
 			const ordered = insertion && !insertion.above ? [...paths].reverse() : paths;
+			const failedPaths: string[] = [];
 			for (const sourcePath of ordered) {
-				await this.performTaskMovement(sourcePath, sources.get(sourcePath) ?? source, destination, isHeader, insertion, undos);
+				await this.performTaskMovement(sourcePath, sources.get(sourcePath) ?? source, destination, isHeader, insertion, undos, failedPaths);
 			}
-			showTaskUndo(undos, false, undos.length, this.plugin.app.vault);
+			const outcome = taskMovementMessage(undos.length, this.movementDestinationLabel(destination));
+			const failedTitles = failedPaths.map(path => this.taskInfoCache.get(path)?.title ?? path).join(", ");
+			showTaskUndo(undos, failedPaths.length > 0, undos.length, this.plugin.app.vault, failedTitles ? `${outcome} · ${failedTitles}` : outcome, undefined, undefined,
+				failedPaths.length ? {
+					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
+					run: async () => { await this.plugin.app.workspace.openLinkText(failedPaths[0], "", false); },
+				} : undefined);
 		}
 	}
 
@@ -1346,9 +1355,13 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private groupDisplayLabel(key: string, propertyId: string | null): string {
-		const field = propertyId ? this.plugin.fieldMapper.lookupMappingKey(propertyId.replace(/^(note\.|task\.)/, "")) : null;
-		if (field === "status") return configLabel(this.plugin.statusManager.getStatusConfig(key)) || key;
-		if (field === "priority") return configLabel(this.plugin.priorityManager.getPriorityConfig(key)) || key;
+		const field = propertyId?.replace(/^(note\.|task\.)/, "");
+		const configurations = field && isPropertyForField(field, "status", this.plugin)
+			? this.plugin.statusManager.getAllStatuses()
+			: field && isPropertyForField(field, "priority", this.plugin)
+				? this.plugin.priorityManager.getAllPriorities() : [];
+		const configured = configurations.find(configuration => configuration.value === key);
+		if (configured) return configLabel(configured);
 		const sources =
 			propertyId === this.getGroupByPropertyId()
 				? this.dataAdapter
@@ -1364,7 +1377,7 @@ export class TaskListView extends BasesViewBase {
 				propertyId && this.plugin.app
 					? getObsidianPropertyType(
 							this.plugin.app,
-							propertyId.replace(/^(note\\.|task\\.)/, "")
+							field ?? propertyId
 						)
 					: undefined,
 		});
@@ -1887,7 +1900,8 @@ export class TaskListView extends BasesViewBase {
 		destination: TaskListDestination,
 		isHeader: boolean,
 		insertion: { taskPath: string; above: boolean } | null,
-		undos?: Array<() => Promise<void>>
+		undos?: Array<() => Promise<void>>,
+		failedPaths?: string[]
 	): Promise<void> {
 		const plan = this.planMovement(source, destination, isHeader);
 		if (plan.kind === "none" || plan.kind === "blocked") return;
@@ -2008,7 +2022,7 @@ export class TaskListView extends BasesViewBase {
 						originalTask ?? null,
 						updatedTask ?? null,
 						plan.changes,
-						undefined,
+						taskMovementMessage(1, this.movementDestinationLabel(destination)),
 						undos
 					);
 				});
@@ -2020,14 +2034,23 @@ export class TaskListView extends BasesViewBase {
 				operation: "task-movement",
 				error,
 			});
-			new Notice(
-				this.plugin.i18n.translate(
+			if (failedPaths) {
+				failedPaths.push(path);
+				return;
+			}
+			showToast({
+				intent: "error",
+				message: this.plugin.i18n.translate(
 					msg({
 						message: "Could not move the task. Check the task and try again.",
 						context: "views.taskList.movement.failed",
 					})
-				)
-			);
+				),
+				action: {
+					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
+					run: async () => { await this.plugin.app.workspace.openLinkText(path, "", false); },
+				},
+			});
 		} finally {
 			card?.classList.remove("task-card--pending");
 			card?.removeAttribute("aria-busy");

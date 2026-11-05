@@ -297,6 +297,7 @@ msgstr "{count, plural, one {Архивирована # задача} few {Ар�
 
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, one {Выбрана # задача} few {Выбрано # задачи} many {Выбрано # задач} other {Выбрано # задачи}}"
@@ -4184,11 +4185,6 @@ msgctxt "settings.taskProperties.projectsCard.customizeDisplay"
 msgid "Customize display"
 msgstr "Настроить отображение"
 
-#: src/settings/tabs/appearanceTab.ts
-msgctxt "settings.appearance.calendarView.description"
-msgid "Customize the appearance and behavior of the calendar view."
-msgstr "Настройте внешний вид и поведение представления календаря."
-
 #: src/ui/kit/modal.ts
 msgctxt "color name"
 msgid "Cyan"
@@ -7459,6 +7455,7 @@ msgctxt "settings.modalFields.manager.fieldKey"
 msgid "Key: {key}"
 msgstr "Ключ: {key}"
 
+#: src/components/TaskContextMenu.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction help"
 msgid "Keyboard shortcuts"
@@ -8132,6 +8129,7 @@ msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
 msgstr "Перемещать архивированные задачи в папку"
 
+#: src/bases/KanbanView.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Move between columns"
@@ -8171,6 +8169,11 @@ msgstr "Переместить в группу"
 msgctxt "views.taskList.movement.moveUp"
 msgid "Move up"
 msgstr "Переместить вверх"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction move feedback"
+msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
+msgstr "{count, plural, one {# задача перемещена} few {# задачи перемещены} many {# задач перемещены} other {# задачи перемещены}} в {destination}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "cli/helpers/timeTracking: resolveTaskForStopTimeTracking display"
@@ -9322,6 +9325,9 @@ msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "Открыть родительскую задачу повторения на {occurrence_date}"
 
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+#: src/ui/taskPropertyPickers.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Open task"
@@ -12678,6 +12684,11 @@ msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
 msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
 msgstr "Значение, которое идентифицирует заметку как задачу (например, \"задача\"). Оставьте пустым, чтобы считать задачей любую заметку с этим свойством, независимо от его значения."
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.calendarView.description"
+msgid "These defaults apply to calendar views without overrides. To change an existing view, open its Base and use the view settings."
+msgstr "Эти значения по умолчанию применяются к представлениям календаря без собственных настроек. Чтобы изменить существующее представление, откройте его Base и используйте настройки представления."
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
 msgid "third"
@@ -13576,6 +13587,7 @@ msgid "Undid: {action}"
 msgstr "Отменено: {action}"
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "interaction undo"
 msgid "Undo"
 msgstr "Отменить"

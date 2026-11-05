@@ -5,19 +5,31 @@
 /* Obsidian 1.13+ gives plugin setting-tab roots the `setting-item` class. Its
    flex layout would place TaskNotes' toolbar and tab content side by side, so
    restore the vertical document flow used by this settings view. */
-.modal.mod-settings .tasknotes-settings {
+.modal.mod-settings .vertical-tab-content .setting-item.tasknotes-settings {
     box-sizing: border-box;
     display: block;
     container-type: inline-size;
     min-width: 0;
     padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--tn-radius-none);
 }
 
-body:not(.is-mobile) .modal.mod-settings .tasknotes-settings {
+.modal.mod-settings .vertical-tab-content.tasknotes-settings-host {
+    min-width: 0;
+    padding-inline: var(--tn-space-3);
+}
+
+.modal.mod-settings .vertical-tab-content.tasknotes-settings-host > .setting-group {
+    margin-inline: 0;
+}
+
+body:not(.is-mobile) .tasknotes-settings {
     padding-inline: 0;
 }
 
-body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab-content > .setting-group {
+.tasknotes-settings .settings-view__tab-content > .setting-group {
     margin-inline: 0;
 }
 
@@ -73,7 +85,8 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     line-height: 1.4;
     min-width: 0;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: normal;
 }
 
 @media (hover: hover) {
@@ -169,6 +182,34 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 }
 
 @container (max-width: 700px) {
+    .tasknotes-plugin .setting-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--tn-space-2);
+    }
+
+    .tasknotes-plugin .setting-item-info {
+        margin: 0;
+        min-width: 0;
+    }
+
+    .tasknotes-plugin :is(.setting-item-name, .setting-item-description) {
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+
+    .tasknotes-plugin .setting-item-control {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .tasknotes-plugin .setting-item-control :is(input, select, textarea) {
+        max-width: 100%;
+        min-width: 0;
+    }
+
     .tasknotes-plugin .settings-view__toolbar {
         align-items: flex-start;
         flex-direction: column;
@@ -186,7 +227,8 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 
     .tasknotes-plugin .settings-view__tab-button {
         white-space: normal;
-        overflow-wrap: anywhere;
+        overflow-wrap: normal;
+        word-break: normal;
     }
 }
 

@@ -100,12 +100,29 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
       expect(geometry.titleWidth).toBeGreaterThan((geometry.width - 80) * .85);
       expect(geometry.statusHeight).toBeGreaterThanOrEqual(40);
       expect(geometry.menuHeight).toBeGreaterThanOrEqual(40);
+      if (surface !== 'inline') {
+        const rows = await card.evaluate(element => {
+          const bounds = element.getBoundingClientRect();
+          const title = element.querySelector('.task-card__title-text')!.getBoundingClientRect();
+          const actions = ['.task-card__status-dot', '.task-card__priority-dot', '.task-card__metadata-date--due', '.task-card__context-menu']
+            .map(selector => element.querySelector(selector)!.getBoundingClientRect());
+          const metadata = element.querySelector('.task-card__metadata-values')!.getBoundingClientRect();
+          return { titleInside: title.top >= bounds.top && title.bottom <= bounds.bottom,
+            actionsBelowTitle: actions.every(action => action.top >= title.bottom - 1),
+            actionRowSpread: Math.max(...actions.map(action => action.top)) - Math.min(...actions.map(action => action.top)),
+            metadataBelowActions: metadata.top >= Math.max(...actions.map(action => action.bottom)) - 1 };
+        });
+        expect(rows.titleInside, surface).toBe(true);
+        expect(rows.actionsBelowTitle, surface).toBe(true);
+        expect(rows.actionRowSpread, surface).toBeLessThanOrEqual(1);
+        expect(rows.metadataBelowActions, surface).toBe(true);
+      }
       const drag = card.locator('.task-card__drag-handle');
       if (await drag.count()) {
         const dragBox = await drag.boundingBox();
         const statusBox = await card.locator('.task-card__status-dot').boundingBox();
-        expect(dragBox!.y).toBeGreaterThanOrEqual(statusBox!.y + statusBox!.height);
-        expect(Math.abs(dragBox!.x - statusBox!.x)).toBeLessThanOrEqual(1);
+        expect(dragBox!.x).toBeGreaterThanOrEqual(statusBox!.x + statusBox!.width);
+        expect(Math.abs(dragBox!.y - statusBox!.y)).toBeLessThanOrEqual(1);
       }
       await expect(card.locator('.task-card__metadata-date--due')).toBeVisible();
       if (surface === 'agenda') {
@@ -177,27 +194,26 @@ test('collisions expand without widening the week, timed lines fit and deadlines
   await expect(appointments.filter({ hasText: 'Confirm the supplier onboarding deadline' })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.locator('.tnc-btn-view-day').click();
+  await expect(page.locator('.tnc-btn-view-day')).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => grid.locator('.tnc-tg-head [data-date]').count()).toBe(1);
   const events = grid.locator('.tnc-item--timed');
-  expect(await events.count()).toBeGreaterThanOrEqual(4);
-  for (const event of await events.all()) {
-    const box = await event.boundingBox();
-    expect(box!.width).toBeGreaterThan(160);
-    const title = event.locator('.tnc-item-title');
-    const time = event.locator('.tnc-item-time');
-    const sizing = await event.evaluate(element => ({
-      height: element.clientHeight - parseFloat(getComputedStyle(element).paddingTop) - parseFloat(getComputedStyle(element).paddingBottom),
-      clamp: getComputedStyle(element.querySelector('.tn-calendar-event-title')!).webkitLineClamp,
-    }));
-    expect(sizing.clamp).toBe(sizing.height >= 68 ? '3' : sizing.height >= 48 ? '2' : '1');
-    if (sizing.height <= 35) await expect(time).toBeHidden();
-    else await expect(time).toBeVisible();
-    if (await time.isVisible()) {
-      const titleBox = await title.boundingBox();
-      const timeBox = await time.boundingBox();
-      expect(timeBox!.y).toBeGreaterThanOrEqual(titleBox!.y + titleBox!.height - 1);
-      expect(timeBox!.y + timeBox!.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
-    }
-  }
+  await expect(events).toHaveCount(4);
+  await expect.poll(() => events.evaluateAll(elements => elements.length === 4 && elements.every(element => {
+    const title = element.querySelector<HTMLElement>('.tnc-item-title');
+    const time = element.querySelector<HTMLElement>('.tnc-item-time');
+    const styledTitle = element.querySelector<HTMLElement>('.tn-calendar-event-title');
+    if (!title || !time || !styledTitle) return false;
+    const bounds = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    const height = element.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const timeBox = time.getBoundingClientRect();
+    const titleBox = title.getBoundingClientRect();
+    const visibleTime = getComputedStyle(time).display !== 'none' && timeBox.height > 0;
+    return bounds.width > 160 && bounds.height > 0 && titleBox.height > 0 &&
+      getComputedStyle(styledTitle).webkitLineClamp === (height >= 68 ? '3' : height >= 48 ? '2' : '1') &&
+      visibleTime === (height > 35) &&
+      (!visibleTime || (timeBox.y >= titleBox.bottom - 1 && timeBox.bottom <= bounds.bottom + 1));
+  }))).toBe(true);
   const deadline = grid.locator('.tnc-item--bar[data-event-type="due"]').first();
   await expect(deadline).toBeVisible();
   expect((await deadline.boundingBox())!.height).toBeGreaterThanOrEqual(40);

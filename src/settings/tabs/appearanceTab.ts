@@ -175,7 +175,7 @@ export function renderAppearanceTab(
 		container,
 		{
 			heading: translate(msg({ message: "Calendar view", context: "settings.appearance.calendarView.header" })),
-			description: translate(msg({ message: "Customize the appearance and behavior of the calendar view.", context: "settings.appearance.calendarView.description" })),
+			description: translate(msg({ message: "These defaults apply to calendar views without overrides. To change an existing view, open its Base and use the view settings.", context: "settings.appearance.calendarView.description" })),
 		},
 		(group) => {
 			group.addSetting(

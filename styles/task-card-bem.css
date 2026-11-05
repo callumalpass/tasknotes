@@ -1496,7 +1496,7 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
     min-height: var(--tn-mobile-task-card-menu-size);
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card {
+body.is-mobile .tasknotes-plugin .task-card {
     --tn-mobile-task-card-indicator-size: var(--tn-touch-target);
     --tn-mobile-task-card-menu-size: var(--tn-touch-target);
 }
@@ -1507,9 +1507,14 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card.ta
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__main-row {
     display: grid;
-    grid-template-columns: var(--tn-touch-target) minmax(0, 1fr) var(--tn-touch-target);
+    grid-template-columns: repeat(2, var(--tn-touch-target)) repeat(2, minmax(0, 1fr)) var(--tn-touch-target);
+    grid-template-rows: auto var(--tn-touch-target) auto auto;
     gap: 0;
     align-items: center;
+}
+
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card--drag-handle-only .task-card__main-row {
+    grid-template-columns: repeat(2, var(--tn-touch-target)) repeat(2, minmax(0, 1fr)) repeat(2, var(--tn-touch-target));
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card.task-card--drag-handle-only .task-card__main-row {
@@ -1518,38 +1523,63 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card.ta
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__content {
     display: grid;
-    grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-column: 1 / -1;
+    grid-row: 1 / span 4;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    gap: 0;
+    pointer-events: none;
+}
+
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__title {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / span 4;
+    grid-template-columns: subgrid;
     grid-template-rows: subgrid;
     gap: 0;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__title {
-    grid-column: 1;
-    grid-row: 1;
-    flex-wrap: wrap;
-}
-
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__title-text {
-    flex: 0 0 100%;
+    grid-column: 1 / -1;
+    grid-row: 1;
     white-space: normal;
     overflow-wrap: anywhere;
+    font-size: var(--tn-type-sm);
+    line-height: 1.4;
     padding-block: var(--tn-space-1);
+    pointer-events: auto;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__metadata {
-    grid-column: 1;
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 2 / span 2;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    gap: 0;
+}
+
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__metadata-values:not([hidden]) {
+    grid-column: 1 / -1;
     grid-row: 2;
     display: flex;
-    width: 100%;
-    max-width: none;
+    flex-wrap: wrap;
+    gap: var(--tn-space-half) var(--tn-space-2);
+    padding-bottom: var(--tn-space-half);
+    overflow: visible;
+    pointer-events: auto;
+}
+
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__metadata-chips {
+    flex-wrap: wrap;
+    max-width: 100%;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card.task-card--drag-handle-only .task-card__drag-handle {
-    position: absolute;
-    top: auto;
-    bottom: var(--tn-space-half);
-    left: var(--tn-space-2);
+    position: static;
+    grid-column: 6;
+    grid-row: 2;
     width: var(--tn-touch-target);
     height: var(--tn-touch-target);
     transform: none;
@@ -1562,21 +1592,24 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card--d
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__status-dot {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__priority-dot {
-    grid-column: 3;
-    grid-row: 1;
+    grid-column: 2;
+    grid-row: 2;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__badges {
     flex-wrap: wrap;
     min-width: 0;
+    grid-column: 1 / -1;
+    grid-row: 4;
+    pointer-events: auto;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__context-menu {
-    grid-column: 3;
+    grid-column: 5;
     grid-row: 2;
     position: static;
     margin-left: auto;
@@ -1593,23 +1626,51 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__m
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__date-slot {
-    flex: 0 1 auto;
+    grid-column: 3;
+    grid-row: 1;
     min-width: var(--tn-touch-target);
+    width: 100%;
     max-width: 100%;
+    pointer-events: auto;
+}
+
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__date-slot--due {
+    grid-column: 4;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__metadata-date {
     min-width: var(--tn-touch-target);
     min-height: var(--tn-touch-target);
+    max-width: 100%;
+    padding-inline: 0;
     align-items: center;
+    line-height: 1.2;
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card .task-card__metadata-date > span:last-child {
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+body.is-mobile .tasknotes-plugin .task-card:not(.tasknotes-inline-widget--sentence .task-card) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow, .task-card__blocking-toggle, .task-card__blocked-toggle):not([hidden]) {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+    height: auto;
+    margin: 0;
+    transform: none;
+}
+
+body.is-mobile .tasknotes-plugin .task-card:not(.tasknotes-inline-widget--sentence .task-card) :is(.task-card__status-dot, .task-card__priority-dot) {
+    background: transparent;
+    padding: 0;
 }
 
 /* High density displays */

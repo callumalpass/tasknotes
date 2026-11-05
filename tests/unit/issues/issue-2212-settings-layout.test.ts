@@ -37,11 +37,12 @@ describe("Issue #2212: settings layout in Obsidian settings modal", () => {
 
 		const rootBlock = extractCssBlock(
 			css,
-			".modal.mod-settings .tasknotes-settings"
+			".modal.mod-settings .vertical-tab-content .setting-item.tasknotes-settings"
 		);
 
 		expect(rootBlock).toContain("box-sizing: border-box;");
 		expect(rootBlock).toContain("display: block;");
+		expect(rootBlock).toContain("padding: 0;");
 		expect(css).not.toContain(".tasknotes-settings.vertical-tab-content");
 	});
 
@@ -50,7 +51,7 @@ describe("Issue #2212: settings layout in Obsidian settings modal", () => {
 
 		const desktopRootBlock = extractCssBlock(
 			css,
-			"body:not(.is-mobile) .modal.mod-settings .tasknotes-settings"
+			"body:not(.is-mobile) .tasknotes-settings"
 		);
 
 		expect(desktopRootBlock).toContain("padding-inline: 0;");
@@ -61,7 +62,7 @@ describe("Issue #2212: settings layout in Obsidian settings modal", () => {
 
 		const groupBlock = extractCssBlock(
 			css,
-			"body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab-content > .setting-group"
+			".tasknotes-settings .settings-view__tab-content > .setting-group"
 		);
 
 		expect(groupBlock).toContain("margin-inline: 0;");

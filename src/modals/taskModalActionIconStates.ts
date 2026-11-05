@@ -67,7 +67,10 @@ export function updateTaskModalActionIconStates(
 
 function setChipLabel(icon: HTMLElement, label: string): void {
 	const labelEl = icon.querySelector<HTMLElement>(".action-icon__label");
-	if (labelEl) labelEl.textContent = label;
+	if (labelEl) {
+		labelEl.textContent = label;
+		labelEl.title = label;
+	}
 }
 
 function updateDateIcon(

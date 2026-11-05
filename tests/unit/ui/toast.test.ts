@@ -7,6 +7,28 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
+it("offers recovery without recording it as Undo or losing successful receipts", async () => {
+	const scope = {};
+	const undo = jest.fn();
+	const recover = jest.fn();
+	showToast({
+		message: "One saved, one failed",
+		intent: "error",
+		undoScope: scope,
+		action: { label: "Undo", run: undo },
+		secondaryAction: { label: "Open task", run: recover },
+	});
+	const buttons = document.querySelectorAll<HTMLButtonElement>(".tn-toast__action");
+	expect(Array.from(buttons, button => button.textContent)).toEqual(["Undo", "Open task"]);
+	buttons[1].click();
+	await jest.advanceTimersByTimeAsync(0);
+	expect(recover).toHaveBeenCalledTimes(1);
+	expect(undo).not.toHaveBeenCalled();
+	await undoLatest(scope);
+	expect(undo).toHaveBeenCalledTimes(1);
+	expect(recover).toHaveBeenCalledTimes(1);
+});
+
 it("keeps an action pending and rejects duplicate clicks until it settles", async () => {
 	let settle!: () => void;
 	const held = new Promise<void>(resolve => { settle = resolve; });
