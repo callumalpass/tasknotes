@@ -1,5 +1,5 @@
 import { uiData } from "../i18n/dataText";
-import type { RenderContext } from "obsidian";
+import { DateValue, type RenderContext } from "obsidian";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -79,7 +79,7 @@ export function renderBasesValue(
 	}
 
 	try {
-		if (value.constructor.name === "DateValue") {
+		if (value instanceof DateValue) {
 			container.textContent = getBasesDisplayString(value);
 			return true;
 		}

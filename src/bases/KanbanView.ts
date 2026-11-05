@@ -3635,6 +3635,7 @@ export class KanbanView extends BasesViewBase {
 		// on whatever the series has advanced to by the time the queue reaches it.
 		const droppedOccurrences = this.getDroppedOccurrences(taskPath, options);
 		const feedback: TaskUndoFeedback = { undo: [], failed: false };
+		let recurringMessage: string | undefined;
 		const rewritten = new Set<string>();
 		try {
 			await this.dropQueue.enqueue(taskPath, async () => {
@@ -3779,9 +3780,12 @@ export class KanbanView extends BasesViewBase {
 						status: getKanbanDropStatusValue(dropPlan),
 						shownOccurrence: droppedOccurrences.get(path),
 						getOccurrenceDate: getKanbanTaskActionDate,
-						onUndo: (undo) => feedback.undo.push(async () => {
-							if (!(await undo())) throw new Error("Occurrence changed since drop");
-						}),
+						onUndo: (undo, message) => {
+							if (pathsToUpdate.length === 1) recurringMessage = message;
+							feedback.undo.push(async () => {
+								if (!(await undo())) throw new Error("Occurrence changed since drop");
+							});
+						},
 					});
 					if (isSettled) continue;
 					const taskUndo: TaskUndoFeedback = { undo: [], failed: false };
@@ -4042,7 +4046,7 @@ export class KanbanView extends BasesViewBase {
 				error: error,
 			});
 		} finally {
-			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault);
+			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, recurringMessage);
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
 				this.postDropRefreshRequested = true;

@@ -549,7 +549,7 @@ body.is-mobile .tn-bases-kanban-column {
 }
 
 .kanban-view__column-header-cell--status-colored {
-    background: var(--background-secondary);
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
 }
 
 .kanban-view__column-header-cell:active {
@@ -591,7 +591,7 @@ body.is-mobile .tn-bases-kanban-column {
 }
 
 .kanban-view__swimlane-column--status-colored {
-    background: var(--background-secondary);
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
 }
 
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {

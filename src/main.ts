@@ -18,7 +18,7 @@ import {
 type Nullable<T> = T | null;
 
 import { completeRecurringTaskWithUndo } from "./services/task-service/recurringCompletionUndo";
-import { showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
+import { recurringCompletionMessage, showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
 import { showTaskUndo, updateTaskProjectsWithUndo } from "./ui/taskPropertyPickers";
 import { captureTaskUndo } from "./ui/taskMutationUndo";
 import { showToast } from "./ui/kit/toast";
@@ -1308,7 +1308,7 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(
 		task: TaskInfo,
 		date?: Date,
-		options?: RecurringCompletionOptions & { onUndo?: (undo: () => Promise<boolean>) => void }
+		options?: RecurringCompletionOptions & { onUndo?: (undo: () => Promise<boolean>, message?: string) => void }
 	): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
@@ -1319,7 +1319,7 @@ export default class TaskNotesPlugin extends Plugin {
 				options
 			);
 			if (changed) {
-				if (options?.onUndo) options.onUndo(undo);
+				if (options?.onUndo) options.onUndo(undo, recurringCompletionMessage(this, updatedTask, occurrenceDate, completed));
 				else showRecurringCompletionNotice(
 					this,
 					updatedTask,

@@ -1,12 +1,13 @@
 import { renderBasesValue } from "../../../src/ui/taskCardPresentation";
+import { DateValue } from "obsidian";
 
 describe("card property dates", () => {
 	it("renders native dates as read-only labels while preserving rich rendering for other values", () => {
-		class DateValue {
-			toString() { return "2026-11-05"; }
-			renderTo = jest.fn((host: HTMLElement) => host.createEl("input", { type: "date" }));
-		}
-		const date = new DateValue();
+		const date = Object.assign(Object.create(DateValue.prototype), {
+			constructor: { name: "MinifiedNativeDate" },
+			toString: () => "2026-11-05",
+			renderTo: jest.fn((host: HTMLElement) => host.createEl("input", { type: "datetime-local" })),
+		});
 		const host = document.createElement("div");
 		expect(renderBasesValue(host, date, {} as never)).toBe(true);
 		expect(host.textContent).toBe("2026-11-05");
