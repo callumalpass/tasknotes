@@ -64,6 +64,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
 - Task keyboard actions now follow the card containing keyboard focus, including after closing a property picker and tabbing to another task.
 - Busy calendar days use expandable collision stacks instead of widening every day in the week. Today reveals its day, and narrow weeks offer persistent day navigation. Calendar overflow stays inside the visible pane when resized, with reachable Close controls, touch-sized rows and readable all-day titles.
 - Editing a moved or resized timeblock now reads its current daily-note values, so saving its title does not restore old times.

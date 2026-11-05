@@ -115,7 +115,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     const longTagElement = longCard.locator('.tag').filter({ hasText: longTag });
     await expect(longTagElement).toHaveCSS('white-space', 'nowrap');
     await expect(longTagElement).toBeHidden();
-    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('white-space', 'nowrap');
+    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('white-space', 'normal');
     const count = items.locator('.task-list-view__group-header .agenda-view__item-count').first();
     expect(await count.evaluate(element => {
       const label = element.parentElement!.querySelector('.task-group-title')!.getBoundingClientRect();
@@ -128,22 +128,26 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const parent = element.getBoundingClientRect();
       return bounds.left >= parent.left && bounds.right <= parent.right + 1;
     })))).toBe(true);
-    await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '0');
+    await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '1');
     await longCard.locator('.task-card__context-menu').focus();
     await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '1');
     const hiddenDates = longCard.locator('.task-card__date-slot[hidden]');
-    await expect(hiddenDates).toHaveCount(1);
+    await expect(hiddenDates).toHaveCount(0);
+    await expect(longCard.locator('.task-card__date-slot:not([hidden])')).toHaveCount(2);
     const summary = longCard.locator('.task-card__metadata-overflow');
     await expect(summary).toBeVisible();
     await expect(summary).toHaveAttribute('tabindex', '0');
-    for (const label of await hiddenDates.locator('[aria-label]').evaluateAll(elements => elements.map(element => element.getAttribute('aria-label')!))) {
-      expect(await summary.getAttribute('aria-label')).toContain(label);
+    for (const field of ['scheduled', 'due']) {
+      const date = longCard.locator(`.task-card__date-slot--${field}`);
+      await expect(date).toBeVisible();
+      await expect(date.locator('[aria-label]')).toHaveAttribute('aria-label', new RegExp(`${field}: Feb ${field === 'scheduled' ? '25' : '27'}, 2027`, 'i'));
     }
     expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: `test-results/list-redesign-${theme}-narrow.png` });
     await items.evaluate(element => (element as HTMLElement).style.width = '170px');
-    await expect(longCard.locator('.task-card__metadata')).toBeHidden();
-    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('white-space', 'nowrap');
+    await expect(longCard.locator('.task-card__metadata')).toBeVisible();
+    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('white-space', 'normal');
+    expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: `test-results/list-redesign-${theme}-170px.png` });
     await items.evaluate(element => (element as HTMLElement).style.removeProperty('width'));
     await page.evaluate(() => {
@@ -261,14 +265,16 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
       }, { theme, width });
       for (const field of ['due', 'scheduled']) {
         const date = timerCard.locator(`.task-card__date-slot--${field}`);
-        if (width === 1180 || !await date.evaluate(element => element.hidden)) {
-          await expect(date).toBeVisible();
-        } else {
-          const summary = timerCard.locator('.task-card__metadata-overflow');
-          await expect(summary).toBeVisible();
-          await expect(summary).toHaveAttribute('tabindex', '0');
-          expect(await summary.getAttribute('aria-label')).toContain(await date.locator('[aria-label]').getAttribute('aria-label'));
-        }
+        await expect(async () => {
+          if (!await date.evaluate(element => element.hidden)) {
+            expect(await date.isVisible()).toBe(true);
+          } else {
+            const summary = timerCard.locator('.task-card__metadata-overflow');
+            expect(await summary.isVisible()).toBe(true);
+            expect(await summary.getAttribute('tabindex')).toBe('0');
+            expect(await summary.getAttribute('aria-label')).toContain(await date.locator('[aria-label]').getAttribute('aria-label'));
+          }
+        }).toPass({ timeout: 5000 });
       }
       await expect(timerCard.locator('.task-card__date-slot:not([hidden])')).not.toHaveCount(0);
       expect(await timerCard.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);

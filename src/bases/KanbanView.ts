@@ -4117,6 +4117,11 @@ export class KanbanView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
 			void (async () => {
+				if (this.draggedTaskPath) {
+					this.pendingRender = true;
+					this.updateDebounceTimer = null;
+					return;
+				}
 				// Respect render suppression — a drop is still in-flight.
 				// The post-drop render (schedulePostDropRender) will fire the
 				// guaranteed render once the writes have settled.
