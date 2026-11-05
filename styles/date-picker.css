@@ -71,6 +71,24 @@
     height: 36px;
 }
 
+.tasknotes-plugin .date-time-picker-modal__time-input {
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .date-time-picker-modal__time-input:focus {
+    border-color: var(--tn-focus-ring);
+    box-shadow: none;
+}
+
+.tasknotes-plugin .date-time-picker-modal__time-input:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+}
+
 .tasknotes-plugin .date-time-picker-modal__date-input {
     color-scheme: light dark;
 }

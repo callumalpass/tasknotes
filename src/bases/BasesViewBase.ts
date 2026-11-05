@@ -67,6 +67,7 @@ import {
 	registerBasesTaskUpdateListeners,
 } from "./basesTaskUpdateListeners";
 import { filterTopLevelSubtasks } from "./topLevelSubtasks";
+import { renderEmptyState } from "../ui/kit/emptyState";
 import type { BasesTaskUpdateSource } from "./basesUpdateEvents";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -880,6 +881,21 @@ export abstract class BasesViewBase extends Component {
 		renderBasesSearchNoResults(container, this.currentSearchTerm, () => {
 			this.searchBox?.setValue("");
 			void this.handleSearch("");
+		});
+	}
+
+	protected renderTaskEmptyState(container: HTMLElement): HTMLElement {
+		const hasTasks = this.plugin.cacheManager.getAllTaskPaths().size > 0;
+		const filterButton = this.containerEl.closest(".bases-view")?.parentElement?.querySelector<HTMLElement>(".bases-toolbar-filter-menu .text-icon-button");
+		return renderEmptyState(container, {
+			message: hasTasks
+				? uiText(msg({ message: "No tasks match this view. Review its filters.", context: "empty task view recovery" }))
+				: uiText(msg({ message: "No tasks yet.", context: "empty task collection" })),
+			actionLabel: uiText(msg({ message: "New", context: "common.new" })),
+			actionKey: "C",
+			onAction: () => { void this.createFileForView(""); },
+			secondaryActionLabel: hasTasks && filterButton ? uiText(msg({ message: "Filters", context: "views.stats.sections.filters" })) : undefined,
+			onSecondaryAction: filterButton ? () => filterButton.click() : undefined,
 		});
 	}
 

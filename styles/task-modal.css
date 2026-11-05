@@ -1028,6 +1028,29 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     }
 }
 
+@media (min-width: 900px) {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--details-empty .modal-split-left {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--details-empty .modal-split-right {
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        border-left: none;
+        border-top: 1px solid var(--tn-hairline);
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--details-empty .modal-split-right .tn-task-modal__markdown-editor--details {
+        min-height: calc(var(--tn-space-8) * 2);
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--details-empty .modal-split-right :is(.cm-editor, .task-details-editor) {
+        min-height: calc(var(--tn-space-8) * 2);
+    }
+}
+
 /* =====================================================================
    ACCESSIBILITY ENHANCEMENTS
    ===================================================================== */

@@ -1744,7 +1744,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.refreshSuccess"
 msgid "All calendar subscriptions refreshed successfully"
 msgstr "所有日历订阅刷新成功"
 
-#: src/bases/CalendarView.ts
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
 msgid "All day"
@@ -3981,6 +3980,11 @@ msgstr "创建："
 msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "创建于：{date}"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "task creation feedback"
+msgid "Created: {title}"
+msgstr "已创建：{title}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
@@ -6617,6 +6621,7 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "填满容器"
 
+#: src/bases/BasesViewBase.ts
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
@@ -8237,10 +8242,7 @@ msgid "Never refreshed"
 msgstr "从未刷新"
 
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
-#: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
-#: src/bases/TaskListView.ts
 #: src/views/stats/drilldown.ts
 #: src/views/StatsView.ts
 msgctxt "common.new"
@@ -8756,22 +8758,25 @@ msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "没有任务有时间记录可供编辑"
 
-#: src/bases/CalendarView.ts
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "empty task view"
-msgid "No tasks in this view."
-msgstr "此视图中没有任务。"
-
 #: src/bases/basesSearchUi.ts
 msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
 msgid "No tasks match \"{searchTerm}\""
 msgstr "没有匹配“{searchTerm}”的任务"
 
 #: src/bases/BasesViewBase.ts
+msgctxt "empty task view recovery"
+msgid "No tasks match this view. Review its filters."
+msgstr "没有符合此视图的任务。请检查筛选条件。"
+
+#: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
 msgid "No tasks to copy"
 msgstr "没有可复制的任务"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection"
+msgid "No tasks yet."
+msgstr "尚无任务。"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.noEntries"
@@ -12093,7 +12098,6 @@ msgctxt "modals.taskCreation.notices.successFilenameSanitized"
 msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
 msgstr "任务\"{title}\"已创建为文件\"{filename}\"。文件名不能包含某些字符，因此完整标题保留在标题属性中。"
 
-#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -12385,6 +12389,11 @@ msgstr "任务提醒"
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
 msgid "Task saved, but its first occurrence could not be created. Use Create occurrence to retry."
 msgstr "任务已保存，但无法创建首个重复实例。请使用“创建实例”重试。"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "picker recovery action"
+msgid "Task settings"
+msgstr "任务设置"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskStorage.header"

@@ -201,7 +201,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		]) {
 			const row = list.createDiv({ cls: "tn-shortcut-row" });
 			row.createSpan({ text: label });
-			renderKeyHint(row, key);
+			renderKeyHint(row, key, true);
 		}
 		list.tabIndex = 0;
 		list.focus();

@@ -17,7 +17,7 @@ test.beforeAll(async () => {
     await app.vault.createFolder(folder);
     const today = (window as any).moment().format('YYYY-MM-DD');
     await app.vault.create(taskPath, `---\ntitle: ${title}\ntags: [task, supplier-onboarding, accessibility, operations, launch-review]\nstatus: ${plugin.settings.defaultTaskStatus}\npriority: ${plugin.settings.defaultTaskPriority}\nscheduled: ${today}T10:00\ndue: ${today}\ntimeEstimate: 60\n---\n`);
-    await app.vault.create(`${folder}/Inline.md`, `# Review\n\nBefore [[${folder}/Review]] and after.\n`);
+    await app.vault.create(`${folder}/Inline.md`, `# Review\n\n[[${folder}/Review]]\n`);
     for (let index = 0; index < 3; index++) {
       const duration = [15, 30, 90][index];
       await app.vault.create(`${folder}/Collision-${index}.md`, `---\ntitle: Review overlapping supplier appointment ${index + 1}\ntags: [task]\nstatus: ${plugin.settings.defaultTaskStatus}\nscheduled: ${today}T10:00\ntimeEstimate: ${duration}\n---\n`);
@@ -86,6 +86,7 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
       const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${taskPath}"]:visible`).first();
       await expect(card).toBeVisible();
       await card.scrollIntoViewIfNeeded();
+      await capture(page, `${theme}-${width}-${surface}`);
       await expect(card.locator('.task-card__title-text')).toHaveText(title);
       const geometry = await card.evaluate(element => {
         const title = element.querySelector<HTMLElement>('.task-card__title-text')!;
@@ -96,15 +97,15 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
           statusHeight: status.getBoundingClientRect().height, menuHeight: menu.getBoundingClientRect().height };
       });
       expect(geometry.wraps).toBe(true);
-      expect(geometry.titleWidth).toBeGreaterThan(geometry.width * .85);
+      expect(geometry.titleWidth).toBeGreaterThan((geometry.width - 80) * .85);
       expect(geometry.statusHeight).toBeGreaterThanOrEqual(40);
       expect(geometry.menuHeight).toBeGreaterThanOrEqual(40);
       const drag = card.locator('.task-card__drag-handle');
       if (await drag.count()) {
         const dragBox = await drag.boundingBox();
         const statusBox = await card.locator('.task-card__status-dot').boundingBox();
-        expect(Math.abs(dragBox!.y - statusBox!.y)).toBeLessThanOrEqual(4);
-        expect(dragBox!.x + dragBox!.width).toBeLessThanOrEqual(statusBox!.x + 1);
+        expect(dragBox!.y).toBeGreaterThanOrEqual(statusBox!.y + statusBox!.height);
+        expect(Math.abs(dragBox!.x - statusBox!.x)).toBeLessThanOrEqual(1);
       }
       await expect(card.locator('.task-card__metadata-date--due')).toBeVisible();
       if (surface === 'agenda') {

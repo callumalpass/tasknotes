@@ -386,7 +386,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				{ applyDefaults: false }
 			);
 
-			expect(document.querySelector('.tn-toast__message')?.textContent).toBe('Task "Test Task" created successfully');
+			expect(document.querySelector('.tn-toast__message')?.textContent).toBe('Created: Test Task');
 			expect(document.querySelector('.tn-toast__action')?.textContent).toBe('Open');
 		});
 

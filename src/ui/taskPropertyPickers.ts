@@ -487,6 +487,10 @@ export async function openTaskPropertyChoices(
 				});
 		}
 		if (property === "priority" && (configs.length || tasks.some((task) => !!task.priority)) && !configs.some((config) => "weight" in config && config.weight === 0)) items.push({ id: "", label: clear, selected: tasks.every((task) => !task.priority) });
+		const needsSettings = !configs.length || tasks.some((task) => task[property] && !configs.some((config) => config.value === task[property]));
+		let settingsId = "\u0000settings";
+		while (items.some((item) => item.id === settingsId)) settingsId += "\u0000";
+		if (needsSettings) items.push({ id: settingsId, label: uiText(msg({ message: "Task settings", context: "picker recovery action" })), renderLeading: (host) => setIcon(host, "settings") });
 		return openListPicker({
 			anchor,
 			app: plugin.app,
@@ -499,7 +503,12 @@ export async function openTaskPropertyChoices(
 				? uiText(msg({ message: "No priorities configured", context: "interaction picker" }))
 				: uiText(msg({ message: "No statuses configured", context: "interaction picker" })),
 			showUnfilteredEmptyText: !configs.length,
-			onChoose: (item) => apply(item.id),
+			onChoose: (item) => {
+				if (item.id === settingsId) {
+					plugin.app.setting.open();
+					plugin.app.setting.openTabById(plugin.manifest.id);
+				} else apply(item.id);
+			},
 		});
 	}
 	if (property === "due" || property === "scheduled") {
@@ -544,6 +553,7 @@ export async function openTaskPropertyChoices(
 			anchor,
 			app: plugin.app,
 			items,
+			revealSelected: false,
 			placeholder: label,
 			emptyText: label,
 			createLabel: (query) => {

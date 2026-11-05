@@ -129,6 +129,25 @@
 }
 
 @container tn-bases-chrome (max-width: 480px) {
+    .tasknotes-view-active .bases-toolbar {
+        flex-wrap: nowrap;
+        gap: 0;
+        overflow-x: auto;
+    }
+
+    .tasknotes-view-active .bases-toolbar > .tn-bases-new-task-btn {
+        position: sticky;
+        right: 0;
+        background: var(--background-primary);
+        color: var(--text-normal);
+        z-index: 1;
+    }
+
+    .tasknotes-view-active .bases-toolbar .bases-toolbar-item {
+        min-width: 0;
+        padding-inline: var(--tn-space-half);
+    }
+
     .tn-bases-new-task-btn .tn-key-hint,
     .tn-bases-new-task-btn .text-button-label {
         display: none;
@@ -136,8 +155,8 @@
 
     .tn-bases-new-task-btn > button.text-icon-button {
         justify-content: center;
-        min-width: var(--tn-control-md);
-        min-height: var(--tn-control-md);
+        min-width: var(--tn-touch-target);
+        min-height: var(--tn-touch-target);
         margin: 0;
     }
 }

@@ -25,7 +25,6 @@ import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
-import { renderEmptyState } from "../ui/kit/emptyState";
 import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
 import { groupKeyLabel, NONE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -3322,19 +3321,7 @@ export class TaskListView extends BasesViewBase {
 
 	private renderEmptyState(): void {
 		if (!this.itemsContainer) return;
-		renderEmptyState(this.itemsContainer, {
-			message: uiText(
-				msg({
-					message: "No tasks in this view.",
-					context: "empty task view",
-				})
-			),
-			actionLabel: uiText(msg({ message: "New", context: "common.new" })),
-			actionKey: "C",
-			onAction: () => {
-				void this.createFileForView();
-			},
-		});
+		this.renderTaskEmptyState(this.itemsContainer);
 	}
 
 	renderError(error: Error): void {

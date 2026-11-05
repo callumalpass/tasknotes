@@ -1746,7 +1746,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.refreshSuccess"
 msgid "All calendar subscriptions refreshed successfully"
 msgstr "Todas as inscrições de calendário atualizadas com sucesso"
 
-#: src/bases/CalendarView.ts
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
 msgid "All day"
@@ -3983,6 +3982,11 @@ msgstr "Criada:"
 msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "Criada em: {date}"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "task creation feedback"
+msgid "Created: {title}"
+msgstr "Criada: {title}"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
@@ -6619,6 +6623,7 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Preencher contêiner"
 
+#: src/bases/BasesViewBase.ts
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
@@ -8239,10 +8244,7 @@ msgid "Never refreshed"
 msgstr "Nunca atualizado"
 
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
-#: src/bases/KanbanView.ts
 #: src/bases/taskListGroupHeader.ts
-#: src/bases/TaskListView.ts
 #: src/views/stats/drilldown.ts
 #: src/views/StatsView.ts
 msgctxt "common.new"
@@ -8758,22 +8760,25 @@ msgctxt "modals.timeEntryEditor.noTasksWithEntries"
 msgid "No tasks have time entries to edit"
 msgstr "Nenhuma tarefa possui registros de tempo para editar"
 
-#: src/bases/CalendarView.ts
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "empty task view"
-msgid "No tasks in this view."
-msgstr "Nenhuma tarefa nesta visualização."
-
 #: src/bases/basesSearchUi.ts
 msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
 msgid "No tasks match \"{searchTerm}\""
 msgstr "Nenhuma tarefa corresponde a \"{searchTerm}\""
 
 #: src/bases/BasesViewBase.ts
+msgctxt "empty task view recovery"
+msgid "No tasks match this view. Review its filters."
+msgstr "Nenhuma tarefa corresponde a esta vista. Verifique os filtros."
+
+#: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
 msgid "No tasks to copy"
 msgstr "Nenhuma tarefa para copiar"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection"
+msgid "No tasks yet."
+msgstr "Ainda não há tarefas."
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.noEntries"
@@ -12095,7 +12100,6 @@ msgctxt "modals.taskCreation.notices.successFilenameSanitized"
 msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
 msgstr "Tarefa \"{title}\" criada como arquivo \"{filename}\". Nomes de arquivo não podem conter alguns caracteres, então o título completo é mantido na propriedade de título."
 
-#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -12387,6 +12391,11 @@ msgstr "Lembretes da tarefa"
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
 msgid "Task saved, but its first occurrence could not be created. Use Create occurrence to retry."
 msgstr "Tarefa salva, mas não foi possível criar a primeira ocorrência. Use Criar ocorrência para tentar novamente."
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "picker recovery action"
+msgid "Task settings"
+msgstr "Configurações de tarefas"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.taskStorage.header"
