@@ -854,6 +854,18 @@ describe("TaskCard Component", () => {
 			card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
 		});
 
+		it("preserves host interaction state without keeping stale locally-updated task classes", () => {
+			card.classList.add("task-card--selected", "tn-task-focused", "task-card--reorderable", "task-card--dragging", "task-card--pending", "task-card--status-done", "task-card--completed");
+			updateTaskCard(card, { ...task, priority: "high" }, mockPlugin);
+			for (const state of ["task-card--selected", "tn-task-focused", "task-card--reorderable", "task-card--dragging", "task-card--pending"]) {
+				expect(card.classList.contains(state)).toBe(true);
+			}
+			expect(card.classList.contains("task-card--status-done")).toBe(false);
+			expect(card.classList.contains("task-card--completed")).toBe(false);
+			expect(card.classList.contains("task-card--priority-normal")).toBe(false);
+			expect(card.classList.contains("task-card--priority-high")).toBe(true);
+		});
+
 		it("should update task card with new data", () => {
 			const updatedTask = TaskFactory.createTask({
 				...task,

@@ -82,14 +82,14 @@
     align-items: center;
     gap: var(--tn-space-half);
     justify-content: flex-start;
-    padding: var(--tn-space-half) var(--tn-space-2) var(--tn-space-half) var(--tn-space-1);
+    padding: var(--tn-space-2);
     margin-bottom: var(--tn-space-1);
     border-bottom: none;
     position: relative;
-    font-size: var(--tn-type-sm);
+    font-size: var(--tn-type-md);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
-    letter-spacing: 0.01em;
+    letter-spacing: normal;
     line-height: 1.4;
     cursor: var(--cursor-link, pointer);
 }
@@ -98,7 +98,7 @@
 .tn-bases-tasknotes-list .task-group-header .agenda-view__item-count {
     flex: none;
     white-space: nowrap;
-    margin-left: var(--tn-space-1);
+    margin-left: auto;
     margin-right: 0;
 }
 

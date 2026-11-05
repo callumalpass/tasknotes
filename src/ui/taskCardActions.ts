@@ -16,6 +16,25 @@ import {
 } from "./taskPropertyPickers";
 import { completeRecurringTaskWithUndo } from "../services/task-service/recurringCompletionUndo";
 
+const statusWriteStates = new WeakMap<TaskNotesPlugin, Map<string, "pending" | "failed">>();
+
+export function syncTaskCardWriteState(card: HTMLElement, plugin: TaskNotesPlugin, path: string): void {
+	const state = statusWriteStates.get(plugin)?.get(path);
+	if (!state && !card.dataset.tnStatusWriteState) return;
+	if (state) card.dataset.tnStatusWriteState = state;
+	else delete card.dataset.tnStatusWriteState;
+	card.classList.toggle("task-card--pending", state === "pending");
+	card.classList.toggle("task-card--write-failed", state === "failed");
+	const status = card.querySelector<HTMLElement>(":scope > .task-card__main-row .task-card__status-dot");
+	if (state === "pending") {
+		status?.setAttribute("aria-busy", "true");
+		status?.setAttribute("aria-disabled", "true");
+	} else {
+		status?.removeAttribute("aria-busy");
+		status?.removeAttribute("aria-disabled");
+	}
+}
+
 export type TaskCardStatusVisualUpdater = (
 	updatedTask: TaskInfo,
 	effectiveStatus: string,
@@ -74,7 +93,22 @@ export function createStatusCycleHandler(
 	const { task, plugin, targetDate, updateStatusVisuals } = options;
 	return (e: MouseEvent) => {
 		e.stopPropagation();
-		const anchor = e.currentTarget as HTMLElement;
+		const anchor = (e.target as Element | null)?.closest<HTMLElement>(".task-card__status-dot") ?? e.currentTarget as HTMLElement;
+		const card = anchor?.closest<HTMLElement>(".task-card");
+		const states = statusWriteStates.get(plugin) ?? new Map<string, "pending" | "failed">();
+		statusWriteStates.set(plugin, states);
+		if (states.get(task.path) === "pending") return;
+		const setState = (state?: "pending" | "failed") => {
+			if (state) states.set(task.path, state);
+			else states.delete(task.path);
+			const cards = new Set([card, ...Array.from(card?.ownerDocument.querySelectorAll<HTMLElement>(".task-card[data-task-path]") ?? []).filter(element => element.dataset.taskPath === task.path)]);
+			for (const current of cards) if (current) syncTaskCardWriteState(current, plugin, task.path);
+		};
+		setState("pending");
+		card?.classList.remove("task-card--write-failed");
+		card?.classList.add("task-card--pending");
+		anchor?.setAttribute("aria-busy", "true");
+		anchor?.setAttribute("aria-disabled", "true");
 		void (async () => {
 			const logger = getTaskCardActionLogger(plugin);
 			try {
@@ -102,7 +136,8 @@ export function createStatusCycleHandler(
 								: [fresh],
 							"status",
 							cycle
-						))[0] ?? null;
+						)).find(updatedTask => updatedTask.path === fresh.path) ?? null;
+						if (!updated) setState("failed");
 					} else {
 						const date = await plugin.taskService.resolveRecurringTaskActionDate(
 							fresh,
@@ -133,6 +168,7 @@ export function createStatusCycleHandler(
 					return;
 				}
 			} catch (error) {
+				setState("failed");
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				logger.error("Error cycling task status", {
 					category: "persistence",
@@ -151,6 +187,11 @@ export function createStatusCycleHandler(
 						}
 					)
 				);
+			} finally {
+				setState(states.get(task.path) === "failed" ? "failed" : undefined);
+				card?.classList.remove("task-card--pending");
+				anchor?.removeAttribute("aria-busy");
+				anchor?.removeAttribute("aria-disabled");
 			}
 		})();
 	};

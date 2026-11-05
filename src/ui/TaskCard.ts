@@ -12,7 +12,7 @@ import {
 	refreshParentTaskSubtasksExpansion,
 	type TaskCardRelationshipExpansionContext,
 } from "./taskCardRelationshipExpansion";
-import { createPriorityClickHandler, createStatusCycleHandler } from "./taskCardActions";
+import { createPriorityClickHandler, createStatusCycleHandler, syncTaskCardWriteState } from "./taskCardActions";
 import {
 	applyTaskCardPriorityColor,
 	createPriorityIndicator,
@@ -74,6 +74,7 @@ export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 type TaskCardElement = HTMLElement & {
 	_taskPath?: string;
 	_taskCardOptions?: Partial<TaskCardOptions>;
+	_taskCardStateClasses?: string[];
 };
 
 function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
@@ -145,6 +146,7 @@ export function createTaskCard(
 	taskCardElement._taskCardOptions = opts;
 
 	card.className = renderState.cardClasses.join(" ");
+	taskCardElement._taskCardStateClasses = renderState.cardClasses;
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
 	card.dataset.status = effectiveStatus;
@@ -300,6 +302,7 @@ export function createTaskCard(
 		card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
 	}
 
+	syncTaskCardWriteState(card, plugin, task.path);
 	return card;
 }
 
@@ -317,7 +320,12 @@ export function updateTaskCard(
 	const renderState = buildTaskCardRenderState(task, plugin, opts);
 	const { targetDate, effectiveStatus, isCompleted, hasDetails } = renderState;
 
-	element.className = renderState.cardClasses.join(" ");
+	const previousState = new Set((element as TaskCardElement)._taskCardStateClasses ?? []);
+	const interactionClasses = Array.from(element.classList).filter((className) =>
+		!previousState.has(className) && !/^task-card--(?:layout-|priority-|status-|project-|completed(?:$|-)|skipped$|archived$|actively-tracked$|recurring$|materialized-occurrence$|has-details$|chevron-left$|has-projects$)/.test(className)
+	);
+	element.className = [...new Set([...renderState.cardClasses, ...interactionClasses])].join(" ");
+	(element as TaskCardElement)._taskCardStateClasses = renderState.cardClasses;
 	element.dataset.status = effectiveStatus;
 	if (task.priority) {
 		element.dataset.priority = task.priority;
@@ -412,6 +420,7 @@ export function updateTaskCard(
 		});
 	}
 
+	syncTaskCardWriteState(element, plugin, task.path);
 	// Animation is now handled separately - don't add it here during reconciler updates
 }
 

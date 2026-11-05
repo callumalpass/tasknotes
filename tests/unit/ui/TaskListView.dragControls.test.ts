@@ -86,6 +86,7 @@ describe("TaskListView drag controls", () => {
 		const handle = card.querySelector("[data-tn-drag-handle='true']") as HTMLElement;
 		expect(handle).toBeTruthy();
 		expect(handle.classList.contains("task-card__drag-handle")).toBe(true);
+		expect(handle.parentElement).toBe(mainRow);
 		expect(handle.getAttribute("draggable")).toBe("true");
 		expect(handle.getAttribute("aria-label")).toBe("Move task");
 		expect(card.getAttribute("draggable")).toBe("false");
@@ -126,6 +127,40 @@ describe("TaskListView drag controls", () => {
 		} finally {
 			window.requestAnimationFrame = originalRequestAnimationFrame;
 		}
+	});
+
+	it("drags the visible selection together and clears every source on cancellation", async () => {
+		const view = createView();
+		const state = view as any;
+		const items = document.createElement("div");
+		const paths = ["tasks/first.md", "tasks/second.md", "tasks/third.md"];
+		for (const path of paths) {
+			const card = items.createDiv({ cls: "task-card" });
+			card.dataset.taskPath = path;
+			card.createDiv({ cls: "task-card__main-row" });
+		}
+		state.itemsContainer = items;
+		state.rootElement = items;
+		state.currentVisibleTaskPaths = paths;
+		state.plugin.taskSelectionService = { isSelected: (path: string) => paths.slice(0, 2).includes(path) };
+		state.showEmptyMovementDestinations = jest.fn();
+		state.captureDropBaseline = jest.fn();
+		state.debouncedRefresh = jest.fn();
+		state.beginTaskMovement(items.firstElementChild, TaskFactory.createTask({ path: paths[0] }), "open");
+		expect(state.draggedTaskPaths).toEqual(paths.slice(0, 2));
+		expect(items.querySelectorAll(".task-list-view__drag-source")).toHaveLength(2);
+		expect(items.querySelector(".task-list-view__drag-detail")?.textContent).toBe("2 tasks selected");
+		expect(state.getVisibleDropCards().map((card: HTMLElement) => card.dataset.taskPath)).toEqual([paths[2]]);
+		await state.handleTaskUpdate(TaskFactory.createTask({ path: paths[0], title: "Changed during drag" }));
+		expect(state.pendingRender).toBe(true);
+		expect(items.querySelectorAll(".task-list-view__drag-source")).toHaveLength(2);
+		state.cancelTaskMovement();
+		expect(state.debouncedRefresh).toHaveBeenCalled();
+		expect(items.querySelectorAll(".task-list-view__drag-source, .task-list-view__touch-ghost")).toHaveLength(0);
+		expect(document.body.classList.contains("tn-drag-active")).toBe(false);
+		state.beginTaskMovement(items.children[2], TaskFactory.createTask({ path: paths[2] }), "open");
+		expect(state.draggedTaskPaths).toEqual([paths[2]]);
+		state.cancelTaskMovement();
 	});
 
 	it("opens the preview slot after the hovered card when dropping below the last item in a group", () => {

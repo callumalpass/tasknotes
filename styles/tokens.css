@@ -79,9 +79,14 @@
     --tn-selected: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
     --tn-selected-hover: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
     --tn-focus-ring: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
-    --tn-drag-source-opacity: 0.45;
+    --tn-drag-source-opacity: 0.38;
     --tn-disabled-opacity: 0.5;
+    --tn-drag-surface: var(--background-primary);
+    --tn-drag-border: var(--background-modifier-border-hover);
+    --tn-drag-shadow: 0 6px 20px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.08);
     --tn-drop-indicator: var(--interactive-accent);
+    --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+    --tn-drop-invalid: var(--text-error);
 
     --tn-interactive-normal: var(--interactive-normal);
     --tn-interactive-hover: var(--tn-hover);
@@ -123,6 +128,8 @@
     --tn-motion-base: 140ms;
     --tn-motion-slow: 220ms;
     --tn-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --tn-motion-hover-in: 0ms;
+    --tn-motion-settle: 320ms;
 
     --tn-transition-instant: var(--tn-motion-fast) var(--tn-ease);
     --tn-transition-fast: var(--tn-motion-fast) var(--tn-ease);
@@ -137,6 +144,10 @@
     --tn-row-height-compact: 28px;
     --tn-glyph: 16px;
     --tn-glyph-sm: 14px;
+    --tn-task-row-height: 58px;
+    --tn-task-row-height-compact: 46px;
+    --tn-status-glyph: 18px;
+    --tn-drag-preview-width: 320px;
 
     --tn-button-height-sm: var(--tn-control-sm);
     --tn-button-height-md: var(--tn-control-md);
@@ -199,5 +210,6 @@ body.is-mobile .tasknotes-plugin {
         --tn-motion-fast: 0ms;
         --tn-motion-base: 0ms;
         --tn-motion-slow: 0ms;
+        --tn-motion-settle: 0ms;
     }
 }

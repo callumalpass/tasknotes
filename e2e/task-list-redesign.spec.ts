@@ -61,16 +61,17 @@ for (const theme of ['theme-light', 'theme-dark']) {
     const positions = await dates.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().x));
     expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(1);
     expect(await dates.evaluateAll(elements => elements.every(element => {
-      const text = element.querySelector('span:not(.task-card__date-icon)')!;
+      const text = element.querySelector('.task-card__date-value')!;
       return text.getBoundingClientRect().right <= element.getBoundingClientRect().right;
     }))).toBe(true);
     await expect(items.locator('.task-card__title .task-card__badges').first()).toHaveCount(1);
     const tag = items.locator('.task-card__metadata-property--tags .tag').first();
-    expect(await tag.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+    expect(await tag.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
     await expect(items.locator('.tag').filter({ hasText: '#task' })).toHaveCount(0);
     await expect(items.locator('.tag').filter({ hasText: longTag })).toBeHidden();
-    await expect(items.locator('.task-card__metadata-overflow').first()).toBeVisible();
-    expect(await items.locator('.task-card__metadata-overflow').first().getAttribute('aria-label')).toContain('accessibility');
+    const longTagCard = items.locator(`.task-card[data-task-path="${folder}/Task 3.md"]`);
+    await expect(longTagCard.locator('.task-card__metadata-overflow')).toBeVisible();
+    expect(await longTagCard.locator('.task-card__metadata-overflow').getAttribute('aria-label')).toContain(longTag);
     await expect(items.locator('.task-group-title').first()).toHaveText('Open');
     for (const [path, toggle, expansion] of [
       ['Task 1', '.task-card__chevron', '.task-card__subtasks'],
@@ -80,6 +81,11 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const card = items.locator(`.task-card[data-task-path="${folder}/${path}.md"]`).first();
       await card.locator(toggle).first().click();
       await expect(card.locator(expansion).first()).toBeVisible();
+      if (process.env.TASKNOTES_R7_EVIDENCE) {
+        await card.locator(`${expansion} .task-card`).first().hover();
+        await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+        await page.screenshot({ path: `${process.env.TASKNOTES_R7_EVIDENCE}/${theme}-1180-${path.replace(' ', '-')}-expanded-hover.png` });
+      }
       await card.locator(toggle).first().click();
       await expect(card.locator(expansion)).toHaveCount(0);
     }
@@ -111,7 +117,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     });
     const longCard = items.locator(`.task-card[data-task-path="${folder}/Task 3.md"]`);
     await longCard.scrollIntoViewIfNeeded();
-    await expect(longCard.locator('.task-card__title')).toHaveCSS('font-size', '20px');
+    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('font-size', '20px');
     const longTagElement = longCard.locator('.tag').filter({ hasText: longTag });
     await expect(longTagElement).toHaveCSS('white-space', 'nowrap');
     await expect(longTagElement).toBeHidden();
@@ -277,7 +283,7 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
         }).toPass({ timeout: 5000 });
       }
       await expect(timerCard.locator('.task-card__date-slot:not([hidden])')).not.toHaveCount(0);
-      expect(await timerCard.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      await expect.poll(() => timerCard.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       await page.screenshot({ path: `test-results/list-redesign-timer-${theme}-${width}.png` });
     }
   }

@@ -853,11 +853,14 @@ function renderDateValue(
 	dateValue: string,
 	icon: string,
 	fullText: string,
-	plugin: TaskNotesPlugin
+	plugin: TaskNotesPlugin,
+	label: string
 ): void {
 	element.empty();
 	setIcon(element.createSpan({ cls: "task-card__date-icon" }), icon);
+	element.createSpan({ cls: "task-card__date-label", text: label });
 	element.createSpan({
+		cls: "task-card__date-value",
 		text: taskDateLabel(dateValue, plugin.settings.calendarViewSettings.timeFormat),
 	});
 	element.setAttribute("aria-label", fullText);
@@ -905,10 +908,12 @@ function renderDueDateProperty(
 		dueDateText = tTaskCard(plugin, "dueLabel", { label: dueLabel, display });
 	}
 
-	renderDateValue(element, due, "flag-triangle-right", dueDateText, plugin);
+	renderDateValue(element, due, "flag-triangle-right", dueDateText, plugin, dueLabel);
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--due");
 	if (isDueOverdue) {
 		element.classList.add("task-card__metadata-date--overdue");
+		const label = element.querySelector(".task-card__date-label");
+		if (label) label.textContent = uiText(msg({ message: "Overdue", context: "services.filter.groupLabels.due.overdue" }));
 	}
 	if (isDueToday) {
 		element.classList.add("task-card__metadata-date--today");
@@ -966,7 +971,7 @@ function renderScheduledDateProperty(
 		scheduledDateText = tTaskCard(plugin, "scheduledLabel", { label: scheduledLabel, display });
 	}
 
-	renderDateValue(element, scheduled, "calendar", scheduledDateText, plugin);
+	renderDateValue(element, scheduled, "calendar", scheduledDateText, plugin, scheduledLabel);
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--scheduled");
 	if (isScheduledPast) {
 		element.classList.add("task-card__metadata-date--past");

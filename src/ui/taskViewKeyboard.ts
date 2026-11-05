@@ -47,6 +47,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	let rangeAnchor: string | null = null;
 	let rangeBase: string[] = [];
 	let keyboardFocus = false;
+	let pointerFocus = false;
 	let paintedCard: HTMLElement | undefined;
 	let highlightTimer: number | undefined;
 	let arrivalPath: string | undefined;
@@ -118,7 +119,8 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			});
 		}
 		if (keyboardFocus) {
-			card?.classList.add("tn-task-focused");
+			const active = root.ownerDocument.activeElement;
+			if (!active || active === card || !card?.contains(active)) card?.classList.add("tn-task-focused");
 			if (card && paintedCard && card !== paintedCard && paintedCard.dataset.taskPath === focusedPath) {
 				if (arrivalPath === focusedPath) {
 					options.reveal(focusedPath);
@@ -136,7 +138,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		const path = options.pathFromElement?.(card) ?? card.dataset.taskPath ?? null;
 		if (path !== focusedPath) rangeAnchor = null;
 		focusedPath = path;
-		keyboardFocus = true;
+		keyboardFocus = !pointerFocus;
 		paint();
 	};
 	observer.observe(root, { childList: true, subtree: true });
@@ -154,12 +156,13 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		arrivalPath = focusedPath;
 	});
 	const pointer = (event: PointerEvent) => {
+		pointerFocus = true;
 		const target = event.target as HTMLElement;
 		const card = target.closest<HTMLElement>(selector);
 		if (!card) return;
 		focusedPath = options.pathFromElement?.(card) ?? card.dataset.taskPath ?? null;
 		rangeAnchor = null;
-		keyboardFocus = true;
+		keyboardFocus = false;
 		paint();
 		if (!target.closest("button, a, input, textarea, select, [contenteditable], [role=button]"))
 			root.focus({ preventScroll: true });
@@ -484,8 +487,11 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		}
 	};
 	const listener = (event: KeyboardEvent) => {
+		pointerFocus = false;
 		void handle(event);
 	};
+	const keyboard = () => { pointerFocus = false; };
+	root.ownerDocument.addEventListener("keydown", keyboard, true);
 	const searchExit = (event: Event) => {
 		if ((event as CustomEvent<boolean>).detail) {
 			focusedPath = options.paths()[0] ?? null;
@@ -517,5 +523,6 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		root.removeEventListener("keydown", listener);
 		root.removeEventListener("tn-search-exit", searchExit);
 		root.removeEventListener("pointerdown", pointer);
+		root.ownerDocument.removeEventListener("keydown", keyboard, true);
 	};
 }

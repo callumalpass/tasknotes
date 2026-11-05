@@ -42,6 +42,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Task editors, pickers and secondary controls use quieter property surfaces and consistent keyboard, pressed, disabled and touch states. Picker pointer movement no longer scrolls the list or competes with keyboard navigation.
 - Settings workflow values can be reordered with Alt+Up/Down from their drag handles. Drag cancellation clears insertion indicators without changing row height; Undo actions remain visibly pending until they finish, and failed property changes receive distinct error feedback.
 
+- Task lists use calmer two-line rows, plain-text metadata, aligned dates and right-aligned section counts. Hover stays still, selection and keyboard focus remain distinct, and mobile row controls have separate touch targets.
+- List dragging shows a title and selection count, dims source rows and keeps drop positions stable during background refresh. Dragging a selected row moves the visible selection; Escape cancels without changes, and manual reorder supports Undo. Status controls show pending and failed writes without accepting duplicate clicks.
 - Time-bearing dates stay complete in narrow task rows, with lower-priority metadata yielding space first. Unknown status and priority recovery opens the relevant expanded Task properties section, including from board columns.
 - Mini-calendar task choosers use task titles rather than filenames. Calendar collision stacks show appointment counts and expand just their group; narrow weeks reveal the selected day on entry.
 - Failed task-property changes identify the property and affected tasks, with a reminder to check note write access before retrying.
