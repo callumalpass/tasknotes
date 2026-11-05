@@ -16,7 +16,6 @@ import { isPropertyForField } from "../utils/propertyMapping";
 import { collectFileUndo, createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
 import { readCompletionContent } from "../services/task-service/recurringCompletionUndo";
 import { uiText } from "../i18n/runtime";
-import { configLabel } from "../i18n/configLabels";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
