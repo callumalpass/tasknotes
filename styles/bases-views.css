@@ -657,20 +657,12 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Responsive adjustments for swimlanes */
 @media (max-width: 1200px) {
-    .kanban-view__swimlane-row > :first-child {
-        min-width: 0;
-    }
-
     .kanban-view__swimlane-label {
         padding: var(--tn-space-1);
     }
 }
 
 @media (max-width: 768px) {
-    .kanban-view__swimlane-row > :first-child {
-        min-width: 0;
-    }
-
     .kanban-view__swimlane-title {
         font-size: var(--tn-type-xs);
     }

@@ -132,6 +132,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @nesyeklaf for the collapsible-column contribution.
 - Prevented delayed title focus from stealing typing after another task-modal field is focused.
   - Thanks to @3zra47 for reporting tag-edit persistence problems.
+- (#2503) Fixed calendar list and Agenda cards for recurring occurrences other than the next one showing the task's current dates, with date controls that changed the task. Every row could look overdue, and selecting the date on the card for a later occurrence moved the task's next occurrence instead. These cards now show their own occurrence's scheduled date as read-only text, without the task's due date, and are only marked as past when that occurrence is past and neither completed nor skipped. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#calendar-drag-and-drop).
+  - Thanks to @martin-forge for reporting this, and @14790897 for the report on timed series
+- (#2504) Task List, Kanban, Mini Calendar and Calendar views left open across midnight now update for the new day. Cards show the new relative dates and overdue state, and a calendar still on the previous day moves to today; one you paged elsewhere stays where it is. Hidden views catch up when next shown. This does not re-run Bases filters that use `today()`, which Obsidian evaluates.
+  - Thanks to @martin-forge for reporting this.
 - Fixed pressing the save shortcut twice in quick succession creating the task twice.
 - Fixed a failed follow-up step, such as updating a dependency, leaving the create modal open so that saving again created a second task. The modal now closes and a notice explains what failed.
 - Fixed text in the natural language input being dropped when the task also had a prefilled title.
@@ -151,3 +155,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @PaulSnyder for the recurring-completion feedback request.
 - (#2396) Complete the pending recurring occurrence from the list and board keyboard action palette, rather than recording today's date.
   - Thanks to @martin-forge for reporting moved-occurrence identity problems.
+- (#2507) Fixed the swimlane label column covering the left edge of the first Kanban column in windows 769–1200px wide.
+  - Thanks to @alentangzy-jpg for reporting this

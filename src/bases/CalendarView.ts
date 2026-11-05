@@ -475,6 +475,25 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	/**
+	 * The calendar moves its own today marks. Its date stays put, and so do items
+	 * placed relative to now, so a view following today has to be moved here.
+	 */
+	protected handleDateRollover(previousDay: string): void {
+		const calendar = this.calendar;
+		if (!calendar) return;
+
+		const rangeBefore = this.visibleView;
+		const hasConfiguredDate = this.viewOptions.initialDate || this.viewOptions.initialDateProperty;
+		if (!hasConfiguredDate && calendar.getDate().toDateString() === previousDay) {
+			const scroll = calendar.getScroll();
+			calendar.gotoDate(new Date());
+			calendar.setScroll(scroll);
+		}
+		// A move into a new range has already refetched through onRangeChange.
+		if (this.visibleView === rangeBefore) void this.refetchEvents();
+	}
+
+	/**
 	 * Signal that we're expecting an immediate update from a user-initiated action.
 	 * Call this before performing calendar actions that will trigger file changes.
 	 */

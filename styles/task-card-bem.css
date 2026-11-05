@@ -1120,6 +1120,11 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__metadata-date:hover {
     color: var(--tn-warning-text);
 }
 
+/* Display-only dates: no hover state, and clicks reach the card */
+.tasknotes-plugin .task-card__metadata-date--readonly {
+    pointer-events: none;
+}
+
 .tasknotes-plugin .task-card__metadata-date--overdue {
     color: var(--tn-danger-text);
 }
