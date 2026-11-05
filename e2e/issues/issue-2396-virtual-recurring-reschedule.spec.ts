@@ -266,15 +266,11 @@ views:
   const card = page.locator(`.task-card[data-task-path="${path}"]`);
   await expect(card).toBeVisible();
   expect((await state()).recurrence_original_date).toBe('2027-10-11');
-  await card.locator('.task-card__status-dot').press('Control+k');
-  await page.getByRole('textbox', { name: 'Type to search for an action...' }).fill('Complete this occurrence');
-  await page.getByRole('textbox', { name: 'Type to search for an action...' }).press('Enter');
+  await card.locator('.task-card__status-dot').press('Enter');
   await expect.poll(async () => (await state()).complete_instances).toEqual(['2027-10-11']);
   expect((await state()).scheduled).toBe('2027-10-18');
   expect((await state()).recurrence_original_date).toBeUndefined();
-  await card.locator('.task-card__status-dot').press('Control+k');
-  await page.getByRole('textbox', { name: 'Type to search for an action...' }).fill('Complete this occurrence');
-  await page.getByRole('textbox', { name: 'Type to search for an action...' }).press('Enter');
+  await card.locator('.task-card__status-dot').press('Enter');
   await expect.poll(async () => (await state()).complete_instances).toEqual(['2027-10-11', '2027-10-18']);
   expect((await state()).scheduled).toBe('2027-10-25');
 });
