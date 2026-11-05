@@ -46,6 +46,8 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardProperties" });
 
 export interface TaskCardPropertyOptions {
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
+	/** See TaskCardOptions.occurrenceScheduled. */
+	occurrenceScheduled?: string;
 }
 
 function tTaskCard(
@@ -262,12 +264,22 @@ type PropertyRenderer = (
 
 const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	due: (element, value, task, plugin, options) => {
-		if (typeof value === "string") {
+		// A series' due date is a standalone deadline, not one each occurrence repeats.
+		if (typeof value === "string" && options?.occurrenceScheduled === undefined) {
 			renderDueDateProperty(element, value, task, plugin, options?.propertyLabels);
 		}
 	},
 	scheduled: (element, value, task, plugin, options) => {
-		if (typeof value === "string") {
+		if (options?.occurrenceScheduled !== undefined) {
+			renderScheduledDateProperty(
+				element,
+				options.occurrenceScheduled,
+				task,
+				plugin,
+				options.propertyLabels,
+				false
+			);
+		} else if (typeof value === "string") {
 			renderScheduledDateProperty(element, value, task, plugin, options?.propertyLabels);
 		}
 	},
@@ -883,7 +895,8 @@ function renderScheduledDateProperty(
 	scheduled: string,
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
-	propertyLabels?: Record<string, string>
+	propertyLabels?: Record<string, string>,
+	editable = true
 ): void {
 	const isScheduledToday = isTodayTimeAware(scheduled);
 	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
@@ -932,6 +945,10 @@ function renderScheduledDateProperty(
 	}
 	if (!isScheduledToday && !isOverdueTimeAware(scheduled, false, false)) {
 		element.classList.add("task-card__metadata-date--future");
+	}
+	if (!editable) {
+		element.classList.add("task-card__metadata-date--readonly");
+		return;
 	}
 	element.dataset.tnAction = "edit-date";
 	element.dataset.tnDateType = "scheduled";
