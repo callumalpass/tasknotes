@@ -1,7 +1,7 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.6 dist/calendar.css (MIT, see
- * LICENSE beside this file; upstream sha256 725742e962757e54a56f7e67b823f017
- * 993bb705f17e181233173d1f3e9ddfe1). build-css.mjs bundles this file in place
+ * Pinned host copy of @tasknotes/calendar 0.1.7 dist/calendar.css (MIT, see
+ * LICENSE beside this file; upstream sha256 3faf490542f9fb8c0b16c7c3a72ecd1c
+ * 441b5bc7bb500423841ae43d2281384f). build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
  * short hex colours expanded; !important replaced by specificity, source order
@@ -486,6 +486,35 @@
 	min-height: 0;
 	overflow: auto;
 	overscroll-behavior: contain;
+}
+.tnc-tg-day-navigation {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	flex: none;
+}
+.tnc-tg-day-navigation[hidden] {
+	display: none;
+}
+.tnc-tg-day-navigation .is-offscreen {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.tnc-more--collision {
+	display: flex;
+	align-items: start;
+	gap: 4px;
+	min-height: 40px;
+	white-space: normal;
+	text-align: start;
+}
+.tnc-collision-title {
+	flex: 1;
+	min-width: 0;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	overflow: hidden;
 }
 .tnc--height-auto .tnc-tg-scroll {
 	overflow: visible;
@@ -1652,6 +1681,7 @@
 	outline: none;
 }
 .tnc-popover-head {
+	flex: none;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -1661,6 +1691,7 @@
 	font-weight: 650;
 }
 .tnc-popover-close {
+	flex: none;
 	min-width: 28px;
 	min-height: 28px;
 	border: 0;
@@ -1674,6 +1705,7 @@
 	background: var(--tnc-surface-3);
 }
 .tnc-popover-body {
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
@@ -1683,6 +1715,27 @@
 .tnc-popover-body .tnc-item {
 	position: relative;
 	flex: none;
+}
+.tnc-popover-title {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.tnc-popover-body .tnc-item {
+	height: auto;
+	min-height: 40px;
+}
+.tnc-popover-body .tnc-item-main {
+	min-height: 40px;
+}
+.tnc-popover-body .tnc-item-title {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.tnc-popover-close:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
 }
 
 /* Host: .tnc-cap i is listed because its own transition rule is (0,1,1). The raise animations above are (0,2,0) and stay on. */
