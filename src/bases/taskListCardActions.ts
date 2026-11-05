@@ -43,7 +43,7 @@ export class TaskListCardActions {
 						? target.dataset.tnDateType
 						: undefined;
 		const taskView = target.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban");
-		if (taskView && property === "status" && event.altKey) {
+		if (taskView && property === "status") {
 			createStatusCycleHandler({
 				task,
 				plugin: this.context.plugin,
@@ -54,10 +54,7 @@ export class TaskListCardActions {
 		}
 		if (
 			taskView &&
-			(property === "status" ||
-				property === "priority" ||
-				property === "due" ||
-				property === "scheduled")
+			(property === "priority" || property === "due" || property === "scheduled")
 		) {
 			await openTaskPropertyPicker(
 				this.context.plugin,

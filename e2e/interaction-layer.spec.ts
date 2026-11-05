@@ -322,14 +322,11 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await expect(root.locator('.task-card--selected')).toHaveCount(0);
     const first = root.locator(`.task-card[data-task-path="${folder}/Task 000.md"]`).first();
-    await first.locator('.task-card__status-dot').click();
-    await expect(picker).toBeVisible();
-    await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);
-    await page.keyboard.press('Escape');
     await first.locator('.task-card__priority-dot').click();
     await expect(picker).toBeVisible();
     await page.keyboard.press('Escape');
-    await first.locator('.task-card__status-dot').click({ modifiers: ['Alt'] });
+    await first.locator('.task-card__status-dot').click();
+    await expect(picker).toBeHidden();
     await expect.poll(() => taskValues('status')).toEqual(['in-progress', 'open']);
     await page.locator('.tn-toast__action').click();
     await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);

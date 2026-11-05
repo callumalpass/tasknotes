@@ -1,5 +1,4 @@
 import { configLabel } from "../i18n/configLabels";
-import { uiText } from "../i18n/runtime";
 import { keyLabel } from "./kit/keyHint";
 import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
@@ -105,10 +104,7 @@ export function configureStatusIndicator(
 	statusDot.addClass("task-card__status-dot--icon");
 	const label = statusConfig ? configLabel(statusConfig) : unconfiguredValueLabel(statusValue);
 	statusDot.setAttribute("aria-label", label);
-	statusDot.setAttribute(
-		"title",
-		`${label} · ${keyLabel("S")} · ${uiText(msg({ message: "Alt-click to cycle", context: "interaction status hint" }))}`
-	);
+	statusDot.setAttribute("title", `${label} · ${keyLabel("S")}`);
 	statusDot.empty();
 	if (statusConfig?.icon) {
 		delete statusDot.dataset.tnGlyph;

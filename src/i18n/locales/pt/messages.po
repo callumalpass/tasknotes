@@ -1818,11 +1818,6 @@ msgctxt "keyboard key name"
 msgid "Alt"
 msgstr "Alt"
 
-#: src/ui/taskCardPrimaryIndicators.ts
-msgctxt "interaction status hint"
-msgid "Alt-click to cycle"
-msgstr "Alt-clique para alternar"
-
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
 msgid "An error occurred"

@@ -75,12 +75,6 @@ export function createStatusCycleHandler(
 	return (e: MouseEvent) => {
 		e.stopPropagation();
 		const anchor = e.currentTarget as HTMLElement;
-		if (!e.altKey && anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
-			void tasksForPropertyAction(plugin, task).then((tasks) =>
-				openTaskPropertyPicker(plugin, "status", tasks, anchor)
-			);
-			return;
-		}
 		void (async () => {
 			const logger = getTaskCardActionLogger(plugin);
 			try {
