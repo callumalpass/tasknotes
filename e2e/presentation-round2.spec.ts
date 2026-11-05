@@ -80,10 +80,13 @@ test('board reserves both configured date slots before chips', async () => {
   for (const role of ['due', 'scheduled']) {
     const date = card.locator(`.task-card__metadata-date--${role}`);
     await expect(date).toBeVisible();
+    await expect(date.locator('.task-card__date-value')).toBeVisible();
     expect(await date.evaluate(element => {
-      const parent = element.closest('.task-card__metadata')!.getBoundingClientRect();
-      const rect = element.querySelector('span:not(.task-card__date-icon)')!.getBoundingClientRect();
-      return rect.left >= parent.left && rect.right <= parent.right + 1;
+      const rect = element.querySelector('.task-card__date-value')!.getBoundingClientRect();
+      return [element, element.closest('.task-card__date-slot')!, element.closest('.task-card__metadata')!].every(parent => {
+        const bounds = parent.getBoundingClientRect();
+        return rect.left >= bounds.left && rect.right <= bounds.right + 1;
+      });
     })).toBe(true);
   }
 });

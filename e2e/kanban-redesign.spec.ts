@@ -119,7 +119,7 @@ test('neutral board surfaces, stacked metadata, compact empty lanes and pane ove
       const header = board.querySelector<HTMLElement>('.kanban-view__column-header-cell')!;
       const lane = board.querySelector<HTMLElement>('.kanban-view__swimlane-column')!;
       const metadata = card.querySelector<HTMLElement>('.task-card__metadata')!;
-      const title = card.querySelector<HTMLElement>('.task-card__title')!;
+      const title = card.querySelector<HTMLElement>('.task-card__title-text')!;
       const empty = board.querySelector<HTMLElement>('.kanban-view__swimlane-row--empty')!;
       return {
         card: getComputedStyle(card).backgroundColor,
@@ -441,21 +441,20 @@ test('default and eight long custom statuses stay composed in both themes at des
           titleHeight: element.querySelector('.task-card__title-text')!.getBoundingClientRect().height,
           titleLineHeight: parseFloat(getComputedStyle(element.querySelector('.task-card__title-text')!).lineHeight),
           titleClamp: getComputedStyle(element.querySelector('.task-card__title-text')!).webkitLineClamp,
+          fullTitleAvailable: element.querySelector<HTMLElement>('.task-card__title-text')!.title === element.querySelector('.task-card__title-text')!.textContent,
           metadataAligned: Array.from(element.querySelectorAll('.task-card__metadata > *')).filter(child => child.getBoundingClientRect().height).every(child => {
             const bounds = child.getBoundingClientRect();
             const row = element.querySelector('.task-card__metadata')!.getBoundingClientRect();
             return Math.abs((bounds.top + bounds.bottom) / 2 - (row.top + row.bottom) / 2) <= 1;
           }),
         })));
-        expect(cards.every(card => !card.overflow && card.titleClamp === 'none' && card.metadataAligned)).toBe(true);
+        expect(cards.every(card => !card.overflow && card.titleClamp === '2' && card.titleHeight <= 2 * card.titleLineHeight + 1 && card.fullTitleAvailable && card.metadataAligned)).toBe(true);
         if (!custom) await expect(page.locator('.kanban-view__column[data-group="none"]')).toHaveClass(/--collapsed/);
         if (custom) await expect(board).toHaveClass(/--overflow/);
         await page.mouse.move(width - 30, 760);
-        await expect(async () => {
-          const image = await page.screenshot({ clip: { x: 0, y: 0, width, height: 800 }, path: `test-results/kanban-round1/${custom ? 'custom-eight' : 'default'}-${theme}-${width}.png` });
-          expect(image.readUInt32BE(16)).toBe(width);
-          expect(image.readUInt32BE(20)).toBe(800);
-        }).toPass({ timeout: 5000 });
+        const image = await page.screenshot({ clip: { x: 0, y: 0, width, height: 800 }, path: `test-results/kanban-round1/${custom ? 'custom-eight' : 'default'}-${theme}-${width}.png` });
+        expect(image.readUInt32BE(16)).toBe(width);
+        expect(image.readUInt32BE(20)).toBe(800);
       }
     }
   }

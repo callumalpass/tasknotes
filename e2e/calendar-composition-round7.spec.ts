@@ -366,9 +366,14 @@ test('calendar surfaces and real pointer states across themes and widths', async
       await expect(popover).toBeVisible();
       await states(popover.locator('.tnc-item').first(), `${prefix}-popover`);
       if (!baseline) {
-        await popover.locator('.tnc-item').first().hover();
-        await page.waitForTimeout(600);
-        await expect(page.locator('.tooltip')).toHaveCount(0);
+        await page.mouse.move(5, 5);
+        for (const entry of await popover.locator('.tnc-item').all()) {
+          await expect(entry).toHaveAttribute('aria-label', /\S/);
+          await entry.hover();
+          await page.waitForTimeout(1100);
+          await expect(page.locator('.tooltip')).toHaveCount(0);
+        }
+        await capture(`${prefix}-popover-tooltip-dwell`);
       }
       const bounds = (await popover.boundingBox())!;
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
@@ -376,6 +381,12 @@ test('calendar surfaces and real pointer states across themes and widths', async
       await mode('day');
       const event = page.locator('.workspace-leaf.mod-active .tnc-item[data-task-path$="Adjacent.md"]').first();
       await expect(event).toBeVisible();
+      if (!baseline && width === 1180) {
+        await event.hover();
+        await expect(page.locator('.tooltip')).toHaveText((await event.getAttribute('aria-label'))!);
+        await page.mouse.move(-10, -10);
+        await expect(page.locator('.tooltip')).toHaveCount(0);
+      }
       await states(event, `${prefix}-events`, true);
       if (!baseline) {
         await event.click({ modifiers: ['Control'] });

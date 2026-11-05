@@ -474,7 +474,7 @@ body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card--layout-inli
     display: none;
 }
 
-body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card--layout-inline .task-card__context-menu {
+body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card.task-card--layout-inline .task-card__context-menu {
     position: static;
     display: inline-flex;
     margin-inline: var(--tn-space-half);

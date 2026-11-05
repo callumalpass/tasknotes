@@ -108,7 +108,7 @@ test('unset dates open at the top without losing the Clear selection', async () 
   await expect(list.locator('[data-picker-id="clear"]')).toHaveAttribute('aria-selected', 'true');
 });
 
-for (const theme of ['light', 'dark']) test(`${theme}: mobile rows keep status beside titles in two rows`, async () => {
+for (const theme of ['light', 'dark']) test(`${theme}: mobile rows give titles full width above compact non-overlapping actions`, async () => {
   await addDates();
   await setObsidianViewport(page, { width: 430, height: 800 });
   await page.evaluate(theme => {
@@ -119,12 +119,22 @@ for (const theme of ['light', 'dark']) test(`${theme}: mobile rows keep status b
   await open('List.base');
   const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${path}"]`);
   await expect(card).toBeVisible();
-  const status = await card.locator('.task-card__status-dot').boundingBox();
-  const titleBox = await card.locator('.task-card__title-text').boundingBox();
-  expect(Math.abs(status!.y - titleBox!.y)).toBeLessThan(20);
-  expect((await card.boundingBox())!.height).toBeLessThan(110);
   await expect(card.locator('.task-card__metadata-date--due')).toBeVisible();
   await expect(card.locator('.task-card__metadata-date--scheduled')).toBeVisible();
+  const status = await card.locator('.task-card__status-dot').boundingBox();
+  const titleBox = await card.locator('.task-card__title-text').boundingBox();
+  const row = (await card.locator('.task-card__main-row').boundingBox())!;
+  expect(titleBox!.x).toBeCloseTo(row.x, 0);
+  expect(titleBox!.width).toBeCloseTo(row.width, 0);
+  expect(status!.y).toBeGreaterThanOrEqual(titleBox!.y + titleBox!.height - 1);
+  const controls = await card.locator('.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date').evaluateAll(elements => elements.map(element => {
+    const bounds = element.getBoundingClientRect();
+    return { left: bounds.left, top: bounds.top, right: bounds.right, bottom: bounds.bottom, width: bounds.width, height: bounds.height };
+  }));
+  expect(controls).toHaveLength(5);
+  expect(controls.every(control => control.width >= 40 && control.height >= 40)).toBe(true);
+  expect(controls.every((control, index) => controls.slice(index + 1).every(peer => control.right <= peer.left + 1 || peer.right <= control.left + 1 || control.bottom <= peer.top + 1 || peer.bottom <= control.top + 1))).toBe(true);
+  expect((await card.boundingBox())!.height).toBeLessThan(110);
   const toolbar = page.locator('.workspace-leaf.mod-active .bases-toolbar');
   const newButton = toolbar.locator('.tn-bases-new-task-btn');
   const toolbarBox = await toolbar.boundingBox();
@@ -328,7 +338,11 @@ test('long custom labels wrap with padding and board titles remain readable', as
   expect(await heading.evaluate(element => getComputedStyle(element).webkitLineClamp)).toBe('2');
   const boardTitle = column.locator('.task-card__title-text');
   await expect(boardTitle).toHaveText(longTitle);
-  expect(await boardTitle.evaluate(element => ({ clamp: getComputedStyle(element).webkitLineClamp, clipped: element.scrollHeight > element.clientHeight }))).toEqual({ clamp: 'none', clipped: false });
+  await expect(boardTitle).toHaveAttribute('title', longTitle);
+  expect(await boardTitle.evaluate(element => {
+    const style = getComputedStyle(element);
+    return style.webkitLineClamp === '2' && element.getBoundingClientRect().height <= 2 * parseFloat(style.lineHeight) + 1;
+  })).toBe(true);
   await column.locator('.kanban-view__column-header').hover();
   await expect(column.locator('.kanban-view__column-count')).toBeVisible();
   await capture('mobile-long-board');

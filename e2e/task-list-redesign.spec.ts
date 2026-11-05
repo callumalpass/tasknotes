@@ -229,7 +229,7 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
   }, folder);
   const embedded = page.locator('.internal-embed.bases-embed .task-card');
   await expect(embedded).toHaveCount(6);
-  await expect(embedded.filter({ hasText: 'Review the redesigned onboarding' }).locator('.task-card__metadata-overflow')).toBeVisible();
+  const embeddedOverflow = embedded.filter({ hasText: 'Review the redesigned onboarding' }).locator('.task-card__metadata-overflow');
   for (const theme of ['theme-light', 'theme-dark']) {
     for (const width of [1180, 430]) {
       await setObsidianViewport(page, { width, height: 800 });
@@ -238,7 +238,18 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
         document.body.classList.add(theme);
         document.body.classList.toggle('is-mobile', width === 430);
       }, { theme, width });
-      await expect(embedded.filter({ hasText: 'Review the redesigned onboarding' }).locator('.task-card__metadata-overflow')).toBeVisible();
+      await expect(embeddedOverflow).toBeVisible();
+      const hiddenValues = (await embeddedOverflow.getAttribute('aria-label'))!.split(' · ');
+      expect(hiddenValues).toContainEqual(expect.stringContaining(longTag));
+      await embeddedOverflow.focus();
+      await page.keyboard.press('Enter');
+      const overflowDialog = page.getByRole('dialog').filter({ has: page.locator('.tn-picker__list') });
+      await expect(overflowDialog).toBeVisible();
+      await expect(overflowDialog.locator('.tn-picker__row')).toHaveText(hiddenValues);
+      await page.keyboard.press('Escape');
+      await expect(overflowDialog).toHaveCount(0);
+      await expect(embeddedOverflow).toHaveAttribute('aria-expanded', 'false');
+      await expect.poll(() => embeddedOverflow.evaluate(element => element.ownerDocument.activeElement === element.closest('.bases-view .tasknotes-plugin[tabindex]'))).toBe(true);
       await page.screenshot({ path: `test-results/list-redesign-embedded-${theme}-${width}.png` });
     }
   }

@@ -91,7 +91,8 @@ for (const width of [1180, 400]) for (const theme of ['light', 'dark']) test(`se
   const sentence = page.locator('.workspace-leaf.mod-active .tasknotes-inline-widget--sentence:visible').first();
   const menu = sentence.locator('.task-card__context-menu');
   await expect(sentence).toBeVisible();
-  expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe('absolute');
+  await expect(menu).toHaveCSS('position', 'static');
+  await expect(menu).toHaveCSS('opacity', '1');
   const before = await sentence.boundingBox();
   await sentence.hover();
   await expect(menu).toHaveCSS('opacity', '1');
@@ -107,6 +108,11 @@ for (const width of [1180, 400]) for (const theme of ['light', 'dark']) test(`se
   });
   expect(punctuation).not.toBeNull();
   expect(Math.abs(punctuation!.next - punctuation!.widget)).toBeLessThan(8);
+  await menu.focus();
+  await expect(menu).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.menu')).toBeVisible();
+  await page.keyboard.press('Escape');
   await capture(`sentence-${width}-${theme}`);
 });
 

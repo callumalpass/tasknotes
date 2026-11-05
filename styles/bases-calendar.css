@@ -505,6 +505,7 @@
 }
 
 .tasknotes-plugin .tnc-popover-body .tnc-item {
+    --no-tooltip: true;
     height: auto;
     min-height: var(--tn-touch-target);
     padding: var(--tn-space-2);
