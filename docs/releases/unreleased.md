@@ -46,6 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2504) Task List, Kanban, Mini Calendar and Calendar views left open across midnight now update for the new day. Cards show the new relative dates and overdue state, and a calendar still on the previous day moves to today; one you paged elsewhere stays where it is. Hidden views catch up when next shown. This does not re-run Bases filters that use `today()`, which Obsidian evaluates.
+  - Thanks to @martin-forge for reporting this.
 - Fixed pressing the save shortcut twice in quick succession creating the task twice.
 - Fixed a failed follow-up step, such as updating a dependency, leaving the create modal open so that saving again created a second task. The modal now closes and a notice explains what failed.
 - Fixed text in the natural language input being dropped when the task also had a prefilled title.
