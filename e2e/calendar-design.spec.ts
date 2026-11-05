@@ -322,7 +322,7 @@ test('empty agendas remain legible at desktop and narrow widths', async () => {
     for (const width of [1180, 400]) {
       await setObsidianViewport(page, { width, height: 800 });
       await page.evaluate(width => document.body.classList.toggle('is-mobile', width === 400), width);
-      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toContainText('No tasks in this view.');
+      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toContainText('No tasks match this view.');
       await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty').getByRole('button', { name: /New/ })).toBeVisible();
       const root = page.locator('.workspace-leaf.mod-active .advanced-calendar-view');
       await root.focus();

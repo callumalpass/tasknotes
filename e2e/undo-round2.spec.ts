@@ -194,7 +194,7 @@ test('timeblock creation, cross-day move and resize each restore daily notes on 
     view.handleDateSelect({ start: new Date('2026-11-06T10:00'), end: new Date('2026-11-06T11:00'), allDay: false, jsEvent: null });
   });
   await page.locator('.menu-item').filter({ hasText: 'Create timeblock' }).click();
-  await page.locator('.timeblock-creation-modal input[type="text"]').first().fill('Undo focus block');
+  await page.locator('.timeblock-creation-modal textarea:not(.tn-modal__description)').first().fill('Undo focus block');
   await page.getByRole('button', { name: 'Create timeblock', exact: true }).click();
   await expect.poll(() => disk('2026-11-06').properties.timeblocks?.length).toBe(1);
   const created = disk('2026-11-06');
@@ -265,7 +265,7 @@ test('first Kanban reorder and cross-column position restore every rewritten not
   }, { folder, group, target });
   await drop('open', 'Task 0');
   await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`).properties[sortField]).filter(Boolean).length).toBe(5);
-  await expect(page.locator('.tn-toast__message')).toContainText('5 tasks updated');
+  await expect(page.locator('.tn-toast__message')).toContainText('Open · 5');
   const rank = disk('Task 0').properties[sortField];
   await page.evaluate(async ({ path, sortField, rank }) => {
     const app = (window as any).app;
