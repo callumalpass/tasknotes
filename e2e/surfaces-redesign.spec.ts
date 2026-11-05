@@ -182,7 +182,7 @@ test('typographic reports, release notes and all settings tabs in both themes an
         await expect(page.locator(`${root} .stats-view__progress-circle`)).toHaveCount(0);
         if (type === 'tasknotes-stats-view') {
           await expect(page.locator('.stats-view__overview-card').first()).toBeVisible();
-          expect(await page.locator('.stats-view__overview-grid').evaluate(element => getComputedStyle(element).display)).toBe('flex');
+          expect(await page.locator('.stats-view__overview-grid').evaluate(element => getComputedStyle(element).display)).toBe('grid');
           const disclosure = page.locator('.stats-view__filter-disclosure');
           const filter = page.locator('.tn-select.stats-view__filter-select');
           await expect(filter).toBeHidden();

@@ -368,7 +368,7 @@ test('postponing overdue tasks restores both note files through the shared Undo'
     plugin.cacheManager.getAllTasks = async () => tasks;
     (window as any).undoPostpone = plugin.rolloverOverdueScheduledTasks().finally(() => { plugin.cacheManager.getAllTasks = original; });
   }, folder);
-  await page.getByRole('button', { name: 'Postpone', exact: true }).click();
+  await page.locator('.modal').getByRole('button', { name: 'Postpone', exact: true }).click();
   await page.evaluate(() => (window as any).undoPostpone);
   await expect.poll(() => disk('Task 0').properties.scheduled).not.toBe('2020-01-02');
   await page.locator('.tn-toast__action').click();

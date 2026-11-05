@@ -59,6 +59,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
 - Task keyboard actions now follow the card containing keyboard focus, including after closing a property picker and tabbing to another task.
 - Editing a moved or resized timeblock now reads its current daily-note values, so saving its title does not restore old times.
 - Inline task status changes now support Undo, including reverse cycling with Shift-click. Current-task status and priority commands, legacy status toggles, and fallback priority and date edits also use the shared Undo path.

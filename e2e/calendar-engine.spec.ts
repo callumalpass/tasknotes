@@ -176,7 +176,11 @@ test('dragging and resizing a task writes back to its frontmatter', async () => 
 	await page.mouse.up();
 	await expect.poll(async () => (await frontmatter(page)).scheduled).toBe(`${tomorrow}T11:00`);
 
-	box = (await item.boundingBox())!;
+	await expect.poll(async () => {
+		const resizedBox = await item.boundingBox();
+		if (resizedBox) box = resizedBox;
+		return resizedBox;
+	}).not.toBeNull();
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height - 3);
 	await page.mouse.down();
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height * 2 - 3, { steps: 8 });

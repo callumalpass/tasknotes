@@ -23,6 +23,9 @@ async function openCreate(prePopulated?: Record<string, unknown>): Promise<void>
 		(window as any).app.plugins.plugins.tasknotes.openTaskCreationModal(values);
 	}, prePopulated);
 	await expect(modal()).toBeVisible();
+	if (await modal().locator('.tn-task-modal__details-toggle').getAttribute('aria-expanded') === 'true') {
+		await modal().locator('.tn-task-modal__details-toggle').click();
+	}
 }
 
 async function openEdit(title: string, fields: Record<string, unknown> = {}): Promise<void> {
@@ -93,6 +96,7 @@ test.describe("natural language", () => {
 		const tomorrowChips = modal().locator(".action-icon__label").filter({ hasText: "Tomorrow" });
 		await expect(tomorrowChips).toHaveCount(1);
 
+		await modal().locator('.tn-task-modal__details-toggle').click();
 		await nlEditor().click();
 		await page.keyboard.press("Control+A");
 		await page.keyboard.type("Beta");
@@ -111,6 +115,7 @@ test.describe("natural language", () => {
 		await page.keyboard.type("Typed");
 		await modal().locator('[aria-label="Show detailed options"]').click();
 		await modal().locator(".title-input-detailed").fill(title);
+		await modal().locator('.tn-task-modal__details-toggle').click();
 		await nlEditor().click();
 		await page.keyboard.type(" more");
 		await expect(modal().locator(".title-input-detailed")).toHaveValue(title);
@@ -163,6 +168,7 @@ test.describe("fields", () => {
 		const title = `Estimate ${Date.now()}`;
 		await openCreate();
 		await modal().locator("textarea.title-input").fill(title);
+		await modal().locator('.tn-task-modal__details-toggle').click();
 		const estimate = modal().locator(".setting-item").filter({ hasText: "Time estimate" }).locator("input");
 		await expect(estimate).toHaveValue("");
 

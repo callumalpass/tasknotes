@@ -90,18 +90,26 @@ test('inline references remain atomic in reading and live preview', async () => 
       await openFile('Prose.md', mode);
       const cards = page.locator('.workspace-leaf.mod-active .task-card--layout-inline:visible');
       await expect(cards).toHaveCount(2);
-      const geometries = await cards.evaluateAll(elements => elements.map(element => {
+      await expect(async () => {
+        const geometries = await cards.evaluateAll(elements => elements.map(element => {
           const card = element.getBoundingClientRect();
           const selectors = ['.task-card__status-dot', '.task-card__title', '.task-card__metadata', '.task-card__context-menu'];
-          return { width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, tops: selectors.map(selector => element.querySelector(selector)!.getBoundingClientRect().top), display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
-      }));
-      expect(geometries).toHaveLength(2);
-      for (const geometry of geometries) {
-        expect(geometry.dateAlignment).toBe('flex-start');
-        expect(geometry.display).toBe('inline-flex');
-        expect(geometry.width).toBeLessThanOrEqual(geometry.parentWidth + 1);
-        expect(Math.max(...geometry.tops) - Math.min(...geometry.tops)).toBeLessThan(24);
-      }
+          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, tops: selectors.map(selector => element.querySelector(selector)!.getBoundingClientRect().top), display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
+        }));
+        expect(geometries).toHaveLength(2);
+        for (const geometry of geometries) {
+          expect(geometry.connected).toBe(true);
+          expect(geometry.dateAlignment).toBe('flex-start');
+          expect(geometry.display).toBe('inline-flex');
+          expect(geometry.width).toBeLessThanOrEqual(geometry.parentWidth + 1);
+          const actionTops = mobile ? [geometry.tops[0], geometry.tops[3]] : geometry.tops;
+          expect(Math.max(...actionTops) - Math.min(...actionTops)).toBeLessThan(24);
+          if (mobile) {
+            expect(geometry.tops[1]).toBeLessThan(geometry.tops[2]);
+            expect(geometry.tops[2]).toBeLessThan(geometry.tops[0]);
+          }
+        }
+      }).toPass({ timeout: 5000 });
       await capture(`inline-${theme}-${width}-${mobile}-${mode}`);
     }
   }
@@ -235,7 +243,7 @@ test('populated mini calendar keeps the date name and describes its notes', asyn
 
 test('empty agenda offers task creation and narrow views use full names', async () => {
   const page = instance.page;
-  const publishedFallback = JSON.parse(readFileSync('node_modules/@tasknotes/calendar/package.json', 'utf8')).version === '0.1.6';
+  const publishedFallback = !readFileSync('node_modules/@tasknotes/calendar/dist/types/dom/options.d.ts', 'utf8').includes('listEmptyContent');
   await openFile('Empty.base');
   for (const theme of ['theme-light', 'theme-dark']) for (const [width, mobile] of [[1180, false], [400, false], [400, true]] as const) {
     await appearance(page, theme, width, mobile);

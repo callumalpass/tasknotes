@@ -53,9 +53,9 @@ async function openView(
 async function beginMouseDrag(target: Locator): Promise<void> {
 	await target.hover();
 	await card("Source").hover();
-	const source = await card("Source").boundingBox();
+	let source = await card("Source").boundingBox();
+	await expect.poll(async () => (source = await card("Source").boundingBox())).not.toBeNull();
 	const destination = await target.boundingBox();
-	expect(source).not.toBeNull();
 	expect(destination).not.toBeNull();
 	await instance.page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2);
 	await instance.page.mouse.down();
@@ -417,6 +417,7 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 			":scope > .task-card__main-row > .task-list-view__parent-target"
 		);
 		await expect(target).toBeVisible();
+		await target.scrollIntoViewIfNeeded();
 		const bounds = await target.boundingBox();
 		expect(bounds!.height).toBeGreaterThanOrEqual(44);
 		for (let step = 1; step <= 8; step++)

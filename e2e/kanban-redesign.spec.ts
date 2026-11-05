@@ -153,7 +153,7 @@ test('neutral board surfaces, stacked metadata, compact empty lanes and pane ove
   await page.locator('.kanban-view__board').evaluate(board => { board.scrollLeft = 0; });
 });
 
-async function expectNativeDrop(lane: string) {
+async function expectNativeDrop(lane: string, refreshDuringDrag = false) {
   const page = instance.page;
   await inputSession.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 10 });
   const title = 'Review the release checklist and outstanding dependencies';
@@ -176,6 +176,15 @@ async function expectNativeDrop(lane: string) {
   await page.mouse.down();
   await page.mouse.move(bounds!.x + bounds!.width / 2 + 15, bounds!.y + 20, { steps: 5 });
   await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
+  if (refreshDuringDrag) {
+    const draggedElement = await source.elementHandle();
+    await page.evaluate(async () => {
+      (window as any).app.workspace.trigger('css-change');
+      await new Promise(resolve => setTimeout(resolve, 250));
+    });
+    expect(await draggedElement!.evaluate(element => element.isConnected)).toBe(true);
+    await draggedElement!.dispose();
+  }
   const destination = await target.boundingBox();
   expect(destination).not.toBeNull();
   await page.mouse.move(destination!.x + destination!.width / 2, destination!.y + 18, { steps: 25 });
@@ -198,6 +207,7 @@ async function expectNativeDrop(lane: string) {
 
 test('native mouse drag persists a drop into an empty lane', () => expectNativeDrop('low'));
 test('native mouse drag persists a drop into an empty cell', () => expectNativeDrop('normal'));
+test('queued appearance refresh preserves the native drag source and persisted drop', () => expectNativeDrop('low', true));
 
 test('diagonal native drops offer one Undo restoring both axes without replacing unrelated edits', async () => {
   const page = instance.page;

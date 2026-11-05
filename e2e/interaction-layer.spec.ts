@@ -232,7 +232,7 @@ test('round one: unconfigured, unmatched and empty priority states remain distin
   await page.keyboard.press('p');
   const picker = page.locator('.tn-picker');
   await expect(picker.locator('.is-selected.is-active')).toContainText('high');
-  await expect(picker.locator('.is-selected .tn-picker__detail')).toHaveText('Current value is not configured');
+  await expect(picker.getByRole('option', { name: 'high (not configured)', exact: true })).toHaveAttribute('aria-selected', 'true');
   await expect(picker.locator('.tn-picker__empty')).toHaveText('No priorities configured');
   await picker.locator('input').fill('zzzznonexistent');
   await expect(picker.locator('.tn-picker__empty')).toHaveText('No matching priorities');

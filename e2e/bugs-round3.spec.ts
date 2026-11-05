@@ -246,7 +246,7 @@ test('semantic date text meets contrast in both themes and inherits theme overri
     await root.evaluate(element => element.style.setProperty('--tn-warning', 'rgb(8, 80, 140)'));
     expect(await today.evaluate(element => getComputedStyle(element).color)).not.toBe(originalColor);
     await root.evaluate(element => element.style.setProperty('--tn-warning-text', 'rgb(20, 90, 150)'));
-    expect(await today.evaluate(element => getComputedStyle(element).color)).toBe('rgb(20, 90, 150)');
+    await expect(today).toHaveCSS('color', 'rgb(20, 90, 150)');
     await root.evaluate(element => { element.style.removeProperty('--tn-warning'); element.style.removeProperty('--tn-warning-text'); });
     await expect(page.locator('.notice:not(.tn-toast)')).toHaveCount(0, { timeout: 12000 });
     await page.screenshot({ path: `test-results/r3-contrast-${theme}.png` });
