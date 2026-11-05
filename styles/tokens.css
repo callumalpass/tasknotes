@@ -62,6 +62,7 @@
     --tn-bg-secondary-alt: var(--background-secondary-alt, var(--background-secondary));
     --tn-text-normal: var(--text-normal);
     --tn-text-muted: var(--text-muted);
+    --tn-text-metadata: color-mix(in srgb, var(--text-normal) 80%, var(--background-primary));
     --tn-text-faint: var(--text-faint);
     --tn-text-accent: var(--text-accent, var(--interactive-accent));
 

@@ -1,6 +1,15 @@
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 
 describe("Issue #1526: native task date picker", () => {
+	it.each(["due", "scheduled"] as const)("names the %s property even when a generic title was supplied", dateRole => {
+		const modal = new DateTimePickerModal({} as any, { dateRole, title: "Set date & time", onSelect: jest.fn() });
+		modal.open();
+		const heading = modal.contentEl.querySelector("h3")!;
+		expect(heading.textContent).toBe(dateRole === "due" ? "Due date" : "Scheduled date");
+		expect(modal.modalEl.getAttribute("role")).toBe("dialog");
+		expect(modal.modalEl.getAttribute("aria-labelledby")).toBe(heading.id);
+		modal.close();
+	});
 	it("uses a native date input initialized with the current date", () => {
 		const onSelect = jest.fn();
 		const modal = new DateTimePickerModal({} as any, {

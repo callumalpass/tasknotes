@@ -113,12 +113,18 @@ export class DateTimePickerModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass("tasknotes-plugin", "date-time-picker-modal");
 
-		if (this.options.title) {
-			contentEl.createEl("h3", {
-				text: this.options.title,
-				cls: "date-time-picker-modal__title",
-			});
-		}
+		const heading = contentEl.createEl("h3", {
+			text: this.options.dateRole
+				? this.translate(this.options.dateRole === "scheduled"
+					? msg({ message: "Scheduled date", context: "interaction property" })
+					: msg({ message: "Due date", context: "interaction property" }))
+				: this.options.title ?? this.translate(msg({ message: "Set date & time", context: "contextMenus.date.modal.title" })),
+			cls: "date-time-picker-modal__title",
+		});
+		heading.id = `tasknotes-date-time-heading-${Date.now()}`;
+		this.modalEl.setAttribute("role", "dialog");
+		this.modalEl.setAttribute("aria-modal", "true");
+		this.modalEl.setAttribute("aria-labelledby", heading.id);
 
 		this.renderQuickActions(contentEl);
 		this.renderNaturalLanguageInput(contentEl);

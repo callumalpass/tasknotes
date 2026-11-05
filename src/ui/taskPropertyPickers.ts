@@ -348,7 +348,8 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			const config = configs.find(config => config.value === task[property]);
 			return config ? configLabel(config) : String(task[property] ?? "—");
 		});
-		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? failedTitles.join(", ") : `${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}${tasks.length > 1 ? ` · ${updatedTasks.length}` : ""}`);
+		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? failedTitles.join(", ") : `${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}${tasks.length > 1 ? ` · ${updatedTasks.length}` : ""}`,
+			uiText(msg({ message: "Undid {property} change for {count, plural, one {# task} other {# tasks}}", context: "interaction property undo confirmation" }), { property: taskPropertyLabel(property as TaskPickerProperty), count: undo.length }));
 	}
 	return updatedTasks;
 }
@@ -358,7 +359,8 @@ export function showTaskUndo(
 	failed = false,
 	count = undo.length,
 	scope?: object,
-	message?: string
+	message?: string,
+	undoMessage?: string
 ): void {
 	if (!count && !failed) return;
 	const updated = uiText(
@@ -375,6 +377,7 @@ export function showTaskUndo(
 	showToast({
 		message: failed ? `${failure} · ${message ?? updated}${message && count ? ` · ${updated}` : ""}` : (message ?? updated),
 		undoScope: scope,
+		undoMessage,
 		action: undo.length
 			? {
 					label: uiText(msg({ message: "Undo", context: "interaction undo" })),

@@ -82,9 +82,6 @@
 .tasknotes-plugin .date-time-picker-modal__time-input:focus {
     border-color: var(--tn-focus-ring);
     box-shadow: none;
-}
-
-.tasknotes-plugin .date-time-picker-modal__time-input:focus-visible {
     outline: 2px solid var(--tn-focus-ring);
     outline-offset: var(--tn-space-half);
 }

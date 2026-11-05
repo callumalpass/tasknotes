@@ -886,6 +886,11 @@ export abstract class TaskModal extends Modal {
 		// Details editor goes in the right column
 		if (shouldShowDetails) {
 			const rightColumn = this.splitRightColumn || this.detailsContainer;
+			rightColumn.addEventListener("focusout", () => queueMicrotask(() => {
+				if (!rightColumn.contains(rightColumn.ownerDocument.activeElement)) {
+					this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !this.form.values.details.trim());
+				}
+			}));
 
 			this.detailsMarkdownEditor = createTaskModalDetailsEditor({
 				app: this.app,
@@ -901,7 +906,6 @@ export abstract class TaskModal extends Modal {
 				file: this.getModalEditorFile(),
 				tabMovesFocus: this.plugin.settings.taskModalTabMovesFocus,
 				onChange: (value) => {
-					this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !value.trim());
 					// Syncing the editor from the form is not an edit.
 					if (!this.isSyncingControls) this.form.edit("details", value);
 				},

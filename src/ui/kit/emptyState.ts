@@ -14,8 +14,8 @@ export function renderEmptyState(container: HTMLElement, options: EmptyStateOpti
 	el.createDiv({ cls: "tn-empty__message", text: options.message });
 
 	if (options.actionLabel && options.onAction) {
-		const button = el.createEl("button", { cls: "tn-btn", text: options.actionLabel, attr: { type: "button" } });
-		renderKeyHint(button, options.actionKey ?? "Enter");
+		const button = el.createEl("button", { cls: "tn-btn mod-cta", text: options.actionLabel, attr: { type: "button" } });
+		if (options.actionKey) renderKeyHint(button, options.actionKey);
 		button.addEventListener("click", options.onAction);
 	}
 	if (options.secondaryActionLabel && options.onSecondaryAction) {

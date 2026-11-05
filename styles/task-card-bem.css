@@ -95,7 +95,7 @@
     min-width: 0;
     max-width: 55%;
     font-size: var(--tn-type-xs);
-    color: var(--tn-text-muted);
+    color: var(--tn-text-metadata);
     line-height: 1.3;
     margin: 0;
     font-weight: var(--tn-font-weight-normal);
@@ -130,7 +130,7 @@
     white-space: nowrap;
     overflow-wrap: normal;
     word-break: normal;
-    color: var(--tn-text-muted);
+    color: var(--tn-text-metadata);
     background: var(--tn-bg-secondary);
     border: 1px solid var(--tn-hairline);
     border-radius: var(--tn-radius-sm);
@@ -140,7 +140,23 @@
 }
 
 .tasknotes-plugin .task-card__metadata-chips .task-card__project-link.internal-link {
-    color: var(--tn-text-muted);
+    color: var(--tn-text-metadata);
+}
+
+@container tn-task-card (min-width: 761px) {
+    .tasknotes-plugin .task-card__title {
+        flex: 1 1 auto;
+    }
+
+    .tasknotes-plugin .task-card__metadata {
+        flex: 1 0 0;
+        min-width: min-content;
+        max-width: 40%;
+    }
+
+    .tasknotes-plugin .task-card__metadata-values {
+        width: 0;
+    }
 }
 
 .tasknotes-plugin .task-card__metadata-values [hidden] {

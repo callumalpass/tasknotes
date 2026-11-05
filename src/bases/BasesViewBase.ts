@@ -887,15 +887,19 @@ export abstract class BasesViewBase extends Component {
 	protected renderTaskEmptyState(container: HTMLElement): HTMLElement {
 		const hasTasks = this.plugin.cacheManager.getAllTaskPaths().size > 0;
 		const filterButton = this.containerEl.closest(".bases-view")?.parentElement?.querySelector<HTMLElement>(".bases-toolbar-filter-menu .text-icon-button");
+		const reviewFilters = hasTasks && filterButton;
+		const create = () => { void this.createFileForView(""); };
+		const filtersLabel = uiText(msg({ message: "Filters", context: "views.stats.sections.filters" }));
+		const newLabel = uiText(msg({ message: "New", context: "common.new" }));
 		return renderEmptyState(container, {
 			message: hasTasks
 				? uiText(msg({ message: "No tasks match this view. Review its filters.", context: "empty task view recovery" }))
 				: uiText(msg({ message: "No tasks yet.", context: "empty task collection" })),
-			actionLabel: uiText(msg({ message: "New", context: "common.new" })),
-			actionKey: "C",
-			onAction: () => { void this.createFileForView(""); },
-			secondaryActionLabel: hasTasks && filterButton ? uiText(msg({ message: "Filters", context: "views.stats.sections.filters" })) : undefined,
-			onSecondaryAction: filterButton ? () => filterButton.click() : undefined,
+			actionLabel: reviewFilters ? filtersLabel : newLabel,
+			actionKey: reviewFilters ? undefined : "C",
+			onAction: reviewFilters ? () => filterButton.click() : create,
+			secondaryActionLabel: reviewFilters ? newLabel : undefined,
+			onSecondaryAction: reviewFilters ? create : undefined,
 		});
 	}
 

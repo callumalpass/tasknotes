@@ -4,6 +4,29 @@ import { renderKeyHint } from "../../../src/ui/kit/keyHint";
 
 const scrollDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
 
+it("reveals Home and End options, including the free-value row, without writing", () => {
+	const scroll = jest.fn();
+	Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: scroll });
+	const anchor = document.body.createEl("button");
+	const onChoose = jest.fn();
+	const onCreate = jest.fn();
+	const picker = openListPicker({ anchor, placeholder: "Tags", emptyText: "No matches",
+		items: Array.from({ length: 30 }, (_, index) => ({ id: String(index), label: `Option ${index}` })),
+		createLabel: query => `Create ${query}`, onChoose, onCreate });
+	const input = picker.el.querySelector("input")!;
+	input.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+	expect(picker.el.querySelector(".is-active")?.getAttribute("data-picker-id")).toBe("29");
+	expect(scroll).toHaveBeenLastCalledWith({ block: "nearest" });
+	input.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+	expect(picker.el.querySelector(".is-active")?.getAttribute("data-picker-id")).toBe("0");
+	input.value = "Option";
+	input.dispatchEvent(new Event("input"));
+	input.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+	expect(picker.el.querySelector(".is-active")?.textContent).toContain("Create Option");
+	expect(onChoose).not.toHaveBeenCalled();
+	expect(onCreate).not.toHaveBeenCalled();
+});
+
 afterEach(() => {
 	closeActivePopover();
 	document.body.classList.remove("is-mobile");

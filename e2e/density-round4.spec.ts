@@ -245,6 +245,8 @@ test('empty details use one column without hiding the editor', async () => {
   expect(right!.width).toBeGreaterThan(left!.width * .9);
   await capture('empty-details');
   await editor.locator('.cm-content').fill('Details that deserve their own pane');
+  await expect(wrapper).toHaveClass(/modal-split-content--details-empty/);
+  await modal.locator('.title-input').first().focus();
   await expect(wrapper).not.toHaveClass(/modal-split-content--details-empty/);
   await capture('populated-details');
 });

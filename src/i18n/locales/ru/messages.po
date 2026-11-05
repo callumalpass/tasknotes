@@ -4977,6 +4977,7 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "Срок выполнения"
 
+#: src/modals/DateTimePickerModal.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction property"
 msgid "Due date"
@@ -10793,6 +10794,7 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Запланированная дата"
 
+#: src/modals/DateTimePickerModal.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction property"
 msgid "Scheduled date"
@@ -11077,6 +11079,7 @@ msgstr "Служба не инициализирована - пожалуйст�
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
+#: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
 msgstr "Установить дату и время"
@@ -13533,6 +13536,16 @@ msgstr "Восстановить задачу из архива"
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "Ниже оценки времени"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property undo confirmation"
+msgid "Undid {property} change for {count, plural, one {# task} other {# tasks}}"
+msgstr "Изменение поля «{property}» отменено для {count, plural, one {# задачи} few {# задач} many {# задач} other {# задачи}}"
+
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo confirmation"
+msgid "Undid: {action}"
+msgstr "Отменено: {action}"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction undo"

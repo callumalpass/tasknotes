@@ -10,6 +10,7 @@ import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian";
+import { openPopover } from "../ui/kit/popover";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -4275,6 +4276,33 @@ export class KanbanView extends BasesViewBase {
 			workspace: app.workspace,
 		};
 		renderGroupTitle(container, title, linkServices);
+		container.tabIndex = 0;
+		if (!container.querySelector("a")) container.setAttribute("role", "button");
+		container.setAttribute("aria-label", container.textContent || title);
+		container.setAttribute("aria-haspopup", "dialog");
+		container.setAttribute("aria-expanded", "false");
+		const reveal = () => {
+			if (container.getAttribute("aria-expanded") === "true") return;
+			const popover = openPopover({ anchor: container, app,
+				onClose: () => container.setAttribute("aria-expanded", "false"),
+			});
+			popover.el.setAttribute("role", "dialog");
+			popover.el.setAttribute("aria-label", container.textContent || title);
+			popover.el.createDiv({ cls: "tn-popover__title", text: container.textContent || title });
+			container.setAttribute("aria-expanded", "true");
+			popover.reposition();
+		};
+		container.addEventListener("click", event => {
+			if ((event.target as HTMLElement).closest("a")) return;
+			event.stopPropagation();
+			reveal();
+		});
+		container.addEventListener("keydown", event => {
+			if (event.target !== container || (event.key !== "Enter" && event.key !== " ")) return;
+			event.preventDefault();
+			event.stopPropagation();
+			reveal();
+		});
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
