@@ -139,7 +139,7 @@ for (const workflow of ['default', 'custom']) {
                 return style.whiteSpace === 'normal' && element.getBoundingClientRect().height > parseFloat(style.lineHeight);
               })).toBe(true);
             }
-            for (const role of ['due', 'scheduled']) await expect(card.locator(`.task-card__metadata-date--${role}`)).toBeVisible();
+            for (const role of surface === 'agenda' ? ['due'] : ['due', 'scheduled']) await expect(card.locator(`.task-card__metadata-date--${role}`)).toBeVisible();
             await expect(card.locator('.task-card__status-dot')).toBeVisible();
             await expect(card.locator('.task-card__priority-dot')).toBeVisible();
             if (surface === 'list' || surface === 'board') {

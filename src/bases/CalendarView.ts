@@ -14,6 +14,7 @@ import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types"
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
 import { renderEmptyState } from "../ui/kit/emptyState";
+import { openListPicker } from "../ui/kit/listPicker";
 import {
 	Calendar,
 	basesLayoutOptions,
@@ -1121,6 +1122,34 @@ export class CalendarView extends BasesViewBase {
 				views: ["year", "month", "week", "days", "day", "list"],
 				extraPlacement: "start",
 				extraButtons: [
+					{
+						id: "overflow",
+						text: t(msg({ message: "Task options", context: "ui.taskCard.taskOptions" }), "Task options"),
+						icon: () => {
+							const icon = createElementInDocument(this.containerEl.ownerDocument, "span");
+							setIcon(icon, "ellipsis");
+							return icon;
+						},
+						onClick: event => {
+							const anchor = event.currentTarget as HTMLElement;
+							const select = t(msg({ message: "Select tasks", context: "views.basesCalendar.selectTasks" }), "Select tasks");
+							const selected = t(msg({ message: "Task options", context: "ui.taskCard.taskOptions" }), "Task options");
+							openListPicker({
+								anchor, app: this.plugin.app,
+								placeholder: selected, emptyText: selected,
+								items: [
+									{ id: "select", label: select },
+									...(this.plugin.taskSelectionService?.getSelectedPaths().length ? [{ id: "selected", label: selected }] : []),
+									{ id: "refresh", label: refreshLabel },
+								],
+								onChoose: item => {
+									if (item.id === "refresh") void this.refreshExternalCalendars();
+									else if (item.id === "selected") this.showBatchContextMenu(toMouseEvent(null, anchor));
+									else this.plugin.taskSelectionService?.toggleSelectionMode();
+								},
+							});
+						},
+					},
 					{
 						id: "selectTasks",
 						text: t(msg({ message: "Select tasks", context: "views.basesCalendar.selectTasks" }), "Select tasks"),

@@ -14,19 +14,23 @@ import {
 } from "./taskCardProperties";
 import { getBlockedByTaskPaths } from "./taskCardRelationships";
 import { prepareInteractiveControl } from "./taskCardIndicators";
+import { openPopover, type PopoverHandle } from "./kit/popover";
 import {
 	toggleTaskCardBlockedByExpansion,
 	type TaskCardSecondaryBadgeHandlers,
 } from "./taskCardSecondaryBadges";
 
 const metadataObservers = new WeakMap<HTMLElement, ResizeObserver>();
+const metadataPopovers = new WeakMap<HTMLElement, PopoverHandle>();
 
 export function cleanupTaskCardMetadata(metadataLine: HTMLElement): void {
+	metadataPopovers.get(metadataLine)?.close();
+	metadataPopovers.delete(metadataLine);
 	metadataObservers.get(metadataLine)?.disconnect();
 	metadataObservers.delete(metadataLine);
 }
 
-export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement): void {
+export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement, plugin?: TaskNotesPlugin): void {
 	const atoms: HTMLElement[] = [];
 	const groups: Array<{ property: HTMLElement; chips: HTMLElement[] }> = [];
 	for (const property of Array.from(values.children) as HTMLElement[]) {
@@ -45,7 +49,31 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 	const dateSlots = Array.from(metadataLine.querySelectorAll<HTMLElement>(".task-card__date-slot")).filter((slot) => slot.childElementCount > 0);
 	const summary = metadataLine.createSpan({
 		cls: "task-card__metadata-overflow",
-		attr: { tabindex: "0" },
+		attr: { "aria-haspopup": "dialog", "aria-expanded": "false" },
+	});
+	prepareInteractiveControl(summary);
+	let hiddenLabels: string[] = [];
+	summary.addEventListener("click", (event) => {
+		event.stopPropagation();
+		if (!hiddenLabels.length) return;
+		const popover = openPopover({
+			anchor: summary,
+			app: plugin?.app,
+			className: "tn-picker",
+			onClose: () => {
+				summary.setAttribute("aria-expanded", "false");
+				metadataPopovers.delete(metadataLine);
+			},
+		});
+		metadataPopovers.set(metadataLine, popover);
+		summary.setAttribute("aria-expanded", "true");
+		popover.el.setAttribute("role", "dialog");
+		popover.el.setAttribute("aria-label", summary.getAttribute("aria-label") || "");
+		const list = popover.el.createDiv({ cls: "tn-picker__list" });
+		for (const label of hiddenLabels) list.createDiv({ cls: "tn-picker__row", text: label });
+		popover.el.tabIndex = -1;
+		popover.reposition();
+		popover.el.focus();
 	});
 	const fit = () => {
 		if (!values.isConnected) {
@@ -57,6 +85,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		for (const group of groups) group.property.hidden = false;
 		for (const slot of dateSlots) slot.hidden = false;
 		summary.hidden = true;
+		hiddenLabels = [];
 		const fits = () =>
 			[...atoms, ...dateSlots, summary].every((element) => {
 				if (element.hidden) return true;
@@ -86,6 +115,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
 		summary.textContent = `+${hidden.length}`;
 		const label = hidden.join(" · ");
+		hiddenLabels = hidden;
 		summary.setAttribute("aria-label", label);
 		setTooltip(summary, label, { placement: "top" });
 	};
@@ -360,7 +390,7 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		);
 		if (date) slot.appendChild(date);
 	}
-	fitTaskCardMetadata(values, metadataLine);
+	fitTaskCardMetadata(values, metadataLine, plugin);
 	return metadataElements;
 }
 
