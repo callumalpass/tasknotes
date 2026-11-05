@@ -176,7 +176,7 @@ test('grouped triage keeps queue focus, highlights arrival and emits one Undo re
   await expect(destination).toHaveClass(/tn-task-arrived/);
   await expect.poll(() => destination.evaluate(element => element.isConnected && getComputedStyle(element).transitionDuration.split(',').every(value => value.trim() === '0s'))).toBe(true);
   await expect(page.locator('.tn-toast')).toHaveCount(1);
-  await expect(page.locator('.tn-toast__message')).toHaveText('Status → Done');
+  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated · Status → Done');
   await expect(page.locator('.notice:visible')).toHaveCount(0);
   await page.locator('.tn-toast__action').click();
   await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);
@@ -350,7 +350,8 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await root.focus();
     await page.keyboard.press('?');
-    await expect(page.locator('.tn-shortcut-row')).toHaveCount(type === 'tasknotesKanban' ? 16 : 15);
+    await expect(page.locator('.tn-shortcut-row')).toHaveCount(type === 'tasknotesKanban' ? 17 : 16);
+    await expect(page.locator('.tn-shortcut-row').filter({ hasText: /^Undo/ }).locator('.tn-key-hint')).toContainText('Z');
     await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Scheduled date' }).locator('.tn-key-hint')).toContainText('Shift');
     if (type === 'tasknotesKanban') await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Move between columns' })).toBeVisible();
     await page.keyboard.press('Escape');

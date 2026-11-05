@@ -275,7 +275,7 @@
 }
 
 .tasknotes-plugin .kanban-view__column--status-colored {
-    background: var(--background-secondary);
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
 }
 
 .tasknotes-plugin .kanban-view__column--dragover {
@@ -1244,7 +1244,7 @@ body.tn-drag-active .tasknotes-plugin .kanban-view__card--dragging > .task-card.
 
 .tasknotes-plugin .kanban-view__column-header-cell--status-colored,
 .tasknotes-plugin .kanban-view__swimlane-column--status-colored {
-    background: var(--background-secondary);
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
 }
 
 .tasknotes-plugin .kanban-view__swimlane-column--dragover {

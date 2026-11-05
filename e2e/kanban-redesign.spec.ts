@@ -215,7 +215,7 @@ test('diagonal native drops offer one Undo restoring both axes without replacing
   const before = await readTask(title);
   await expectNativeDrop('low');
   await expect(page.locator('.tn-toast')).toHaveCount(1);
-  await expect(page.locator('.tn-toast__message')).toHaveText('→ waiting · low · 1');
+  await expect(page.locator('.tn-toast__message')).toHaveText('Moved 1 task to waiting · low');
   await expect(page.locator('.notice:visible')).toHaveCount(0);
   await page.evaluate(async path => {
     const app = (window as any).app;
@@ -247,7 +247,7 @@ test('batch drops aggregate Undo while stale axis receipts refuse to replace new
   await target.dispatchEvent('drop', event);
   await source.dispatchEvent('dragend', { dataTransfer: transfer });
   await expect.poll(async () => (await Promise.all(titles.map(readTask))).map(task => [task.status, task.priority])).toEqual([['waiting', 'low'], ['waiting', 'low']]);
-  await expect(page.locator('.tn-toast__message')).toHaveText('→ waiting · low · 2');
+  await expect(page.locator('.tn-toast__message')).toHaveText('Moved 2 tasks to waiting · low');
   await expect(page.locator('.notice:visible')).toHaveCount(0);
   await page.locator('.tn-toast__action').click();
   await expect.poll(async () => (await Promise.all(titles.map(readTask))).map(task => [task.status, task.priority])).toEqual(before.map(task => [task.status, task.priority]));
@@ -259,7 +259,7 @@ test('batch drops aggregate Undo while stale axis receipts refuse to replace new
     await plugin.updateTaskProperty(await plugin.cacheManager.getTaskInfo(path), 'priority', 'normal', { suppressNotice: true });
   }, `${folder}/${titles[0]}.md`);
   await page.locator('.tn-toast__action').click();
-  await expect(page.locator('.tn-toast__message')).toHaveText(`→ waiting · low · 1 · Cannot undo: the note has changed. · ${folder}/${titles[0]}.md`);
+  await expect(page.locator('.tn-toast__message')).toHaveText(`Moved 1 task to waiting · low · Cannot undo: the note has changed. · ${folder}/${titles[0]}.md`);
   expect(await readTask(titles[0])).toMatchObject({ status: 'waiting', priority: 'normal' });
 });
 

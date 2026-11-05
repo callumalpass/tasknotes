@@ -38,7 +38,9 @@ for (const mode of ["creation", "edit"] as const) {
 				const title = modal.locator("textarea.title-input, textarea.title-input-detailed");
 				await expect(title).toBeVisible();
 				await modal.locator(".cm-content").fill("Preserve these details");
+				await title.click();
 				await title.fill(failure === "validation" ? "   " : "Unsaved title");
+				await expect(title).toHaveValue(failure === "validation" ? "   " : "Unsaved title");
 				if (failure === "write") {
 					await page.evaluate((mode) => {
 						const service = (window as any).app.plugins.plugins.tasknotes.taskService;

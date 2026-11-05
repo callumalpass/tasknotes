@@ -48,6 +48,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	let rangeBase: string[] = [];
 	let keyboardFocus = false;
 	let pointerFocus = false;
+	let focusedControl: HTMLElement | null = null;
 	let paintedCard: HTMLElement | undefined;
 	let highlightTimer: number | undefined;
 	let arrivalPath: string | undefined;
@@ -74,6 +75,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			target.closest("input, textarea, select, [contenteditable]")
 		)
 			return;
+		focusedControl = target as HTMLElement;
 		reconcileFocus(target as HTMLElement);
 		plugin.app.keymap.pushScope(scope);
 		scoped = true;
@@ -112,6 +114,19 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		);
 		if (!focusedPath) return;
 		const card = cardFor(focusedPath);
+		if (card && focusedControl && !focusedControl.isConnected && root.ownerDocument.activeElement === root.ownerDocument.body) {
+			const previousControl = focusedControl;
+			const controlClass = [...previousControl.classList].find(name => name.startsWith("task-card__") && !name.includes("--"));
+			const replacements = controlClass
+				? [...card.getElementsByClassName(controlClass)].filter(element =>
+					element.tagName === previousControl.tagName &&
+					element.getAttribute("data-tn-date-type") === previousControl.getAttribute("data-tn-date-type"))
+				: [];
+			focusedControl = null;
+			const target = replacements.length === 1 ? replacements[0] as HTMLElement : root;
+			target.focus({ preventScroll: true });
+			if (root.ownerDocument.activeElement !== target) root.focus({ preventScroll: true });
+		}
 		if (arrivalPath === focusedPath && !card && revealFrame === undefined) {
 			revealFrame = root.ownerDocument.defaultView?.requestAnimationFrame(() => {
 				revealFrame = undefined;
@@ -132,6 +147,14 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (card) paintedCard = card;
 	};
 	const observer = new MutationObserver(paint);
+	const blurScope = (event: FocusEvent) => {
+		const previousControl = focusedControl;
+		if (event.relatedTarget && !root.contains(event.relatedTarget as Node)) focusedControl = null;
+		else if (!event.relatedTarget) queueMicrotask(() => {
+			if (previousControl?.isConnected && focusedControl === previousControl && !root.contains(root.ownerDocument.activeElement)) focusedControl = null;
+		});
+		releaseScope();
+	};
 	const reconcileFocus = (target: HTMLElement) => {
 		const card = target.closest<HTMLElement>(selector);
 		if (!card || !root.contains(card)) return;
@@ -507,7 +530,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		return false;
 	});
 	root.addEventListener("focusin", focusScope);
-	root.addEventListener("focusout", releaseScope);
+	root.addEventListener("focusout", blurScope);
 	root.addEventListener("keydown", listener);
 	root.addEventListener("tn-search-exit", searchExit);
 	root.addEventListener("pointerdown", pointer);
@@ -518,7 +541,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		plugin.emitter.offref(taskUpdated);
 		releaseScope();
 		root.removeEventListener("focusin", focusScope);
-		root.removeEventListener("focusout", releaseScope);
+		root.removeEventListener("focusout", blurScope);
 		observer.disconnect();
 		chromeObserver.disconnect();
 		root.removeEventListener("keydown", listener);

@@ -23,6 +23,7 @@ export class CalendarBatchPreview {
 	private readonly cleanup: Array<() => void> = [];
 	private boundDocument: Document | null = null;
 	private unbindDocument: (() => void) | null = null;
+	private completionTimer: number | undefined;
 
 	constructor(private readonly options: CalendarBatchPreviewOptions) {
 		const { root } = options;
@@ -49,8 +50,15 @@ export class CalendarBatchPreview {
 		const end = (event: PointerEvent) => {
 			if (event.pointerId !== this.pointerId) return;
 			const invalid = this.denied && event.type === "pointerup";
-			this.clear();
-			if (invalid) this.options.onInvalidDrop();
+			if (event.type === "pointercancel") {
+				this.clear();
+				return;
+			}
+			this.completionTimer = win?.setTimeout(() => {
+				if (event.pointerId !== this.pointerId) return;
+				this.clear();
+				if (invalid) this.options.onInvalidDrop();
+			}, 0);
 		};
 		const key = (event: KeyboardEvent) => { if (event.key === "Escape") this.clear(); };
 		const blur = () => this.clear();
@@ -102,6 +110,8 @@ export class CalendarBatchPreview {
 
 	/** A full source refresh supersedes preview items, so need not repaint the old set. */
 	clear(restore = true): void {
+		this.boundDocument?.defaultView?.clearTimeout(this.completionTimer);
+		this.completionTimer = undefined;
 		if (restore) this.restore();
 		else this.previewIds.clear();
 		this.pointerId = null;
