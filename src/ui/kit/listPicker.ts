@@ -39,17 +39,24 @@ export function matchesPickerQuery(item: PickerItem, query: string): boolean {
 	return `${item.label} ${item.keywords ?? ""}`.toLowerCase().includes(needle);
 }
 
+let pickerSequence = 0;
+
 export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	const popover = openPopover({
 		...options,
 		className: `tn-picker ${options.className ?? ""}`.trim(),
 	});
 	const { el } = popover;
+	el.dataset.inputMode = "keyboard";
+	const listId = `tn-picker-list-${++pickerSequence}`;
 	const input = el.createEl("input", {
 		cls: "tn-picker__input",
-		attr: { type: "text", placeholder: options.placeholder, "aria-label": options.placeholder },
+		attr: {
+			type: "text", placeholder: options.placeholder, "aria-label": options.placeholder,
+			role: "combobox", "aria-autocomplete": "list", "aria-expanded": "true", "aria-controls": listId,
+		},
 	});
-	const list = el.createDiv({ cls: "tn-picker__list", attr: { role: "listbox" } });
+	const list = el.createDiv({ cls: "tn-picker__list", attr: { role: "listbox", id: listId, "aria-label": options.placeholder } });
 	if (options.multiple) list.setAttribute("aria-multiselectable", "true");
 	const footer = el.createDiv({ cls: "tn-picker__footer" });
 	const selectHint = footer.createSpan({ cls: "tn-picker__select-hint" });
@@ -62,15 +69,31 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	let visible: PickerItem[] = [];
 	let activeIndex = 0;
 	let createRow: HTMLElement | null = null;
+	let lastPointer: { x: number; y: number } | null = null;
 
 	const rows = () => Array.from(list.querySelectorAll<HTMLElement>(".tn-picker__row"));
 
-	const paintActive = () => {
+	const paintActive = (reveal = false) => {
+		input.removeAttribute("aria-activedescendant");
 		rows().forEach((row, index) => {
 			const active = index === activeIndex;
 			row.classList.toggle("is-active", active);
 			row.setAttribute("aria-selected", String(!!visible[index]?.selected));
-			if (active) row.scrollIntoView({ block: "nearest" });
+			if (active) {
+				input.setAttribute("aria-activedescendant", row.id);
+				if (reveal) row.scrollIntoView({ block: "nearest" });
+			}
+		});
+	};
+	const trackPointer = (row: HTMLElement, index: number) => {
+		row.addEventListener("pointermove", (event) => {
+			if (event.pointerType === "touch") return;
+			if (lastPointer?.x === event.clientX && lastPointer.y === event.clientY) return;
+			lastPointer = { x: event.clientX, y: event.clientY };
+			el.dataset.inputMode = "pointer";
+			if (activeIndex === index) return;
+			activeIndex = index;
+			paintActive();
 		});
 	};
 
@@ -117,7 +140,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			}
 			const row = list.createDiv({
 				cls: "tn-picker__row",
-				attr: { role: "option", "data-picker-id": item.id },
+				attr: { role: "option", id: `${listId}-${index}`, "data-picker-id": item.id },
 			});
 			row.classList.toggle("is-selected", !!item.selected);
 			const leading = row.createSpan({ cls: "tn-picker__leading" });
@@ -131,22 +154,19 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			});
 			if (item.detail) row.createSpan({ cls: "tn-picker__detail", text: item.detail });
 			if (item.keyHint) renderKeyHint(row, item.keyHint);
-			row.addEventListener("pointermove", () => {
-				if (activeIndex === index) return;
-				activeIndex = index;
-				paintActive();
-			});
+			trackPointer(row, index);
 			row.addEventListener("click", () => choose(item));
 		}
 
 		const trimmed = query.trim();
 		const exact = items.some((item) => item.label.toLowerCase() === trimmed.toLowerCase());
 		if (options.createLabel && options.onCreate && trimmed && !exact) {
-			createRow = list.createDiv({ cls: "tn-picker__row", attr: { role: "option" } });
+			createRow = list.createDiv({ cls: "tn-picker__row", attr: { role: "option", id: `${listId}-${visible.length}` } });
 			createRow.setAttribute("aria-disabled", String(options.canCreate?.(trimmed) === false));
 			createRow.createSpan({ cls: "tn-picker__leading" });
 			createRow.createSpan({ cls: "tn-picker__label", text: options.createLabel(trimmed) });
 			createRow.addEventListener("click", create);
+			trackPointer(createRow, visible.length);
 		}
 
 		const rowCount = visible.length + (createRow ? 1 : 0);
@@ -165,10 +185,11 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		const rowCount = rows().length;
 		if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
 			event.preventDefault();
+			el.dataset.inputMode = "keyboard";
 			if (rowCount === 0) return;
 			const step = event.key === "ArrowDown" ? 1 : -1;
 			activeIndex = event.key === "Home" ? 0 : event.key === "End" ? rowCount - 1 : (activeIndex + step + rowCount) % rowCount;
-			paintActive();
+			paintActive(true);
 		} else if (event.key === "Enter") {
 			event.preventDefault();
 			if (activeIndex < visible.length) choose(visible[activeIndex]);
@@ -180,7 +201,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	const firstSelected = visible.findIndex((item) => item.selected);
 	if (firstSelected > 0 && options.revealSelected !== false) {
 		activeIndex = firstSelected;
-		paintActive();
+		paintActive(true);
 	}
 	input.focus();
 	return popover;

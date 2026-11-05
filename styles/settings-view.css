@@ -65,12 +65,13 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     overflow-wrap: anywhere;
 }
 
-.tasknotes-plugin .settings-header-link:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
-    text-decoration: none;
+@media (hover: hover) {
+    .tasknotes-plugin .settings-header-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+        text-decoration: none;
+    }
 }
-
 .tasknotes-plugin .settings-header-link::after {
     content: "↗";
     font-size: var(--tn-type-sm);
@@ -138,11 +139,12 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     transition: background-color 0.12s ease, color 0.12s ease;
 }
 
-.tasknotes-plugin .settings-view__tab-button:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .settings-view__tab-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
 .tasknotes-plugin .settings-view__tab-button:focus-visible {
     outline: 2px solid var(--background-modifier-border-focus);
     outline-offset: 2px;
@@ -194,13 +196,13 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
 
 .tasknotes-plugin .settings-view__tab-content--active {
     display: block;
-    animation: tn-settings-fade-in 0.2s ease-in-out;
+    animation: tn-settings-fade-in var(--tn-motion-base) var(--tn-ease);
 }
 
 @keyframes tn-settings-fade-in {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(var(--tn-space-2));
     }
     to {
         opacity: 1;
@@ -444,20 +446,22 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     gap: 6px;
 }
 
-.tasknotes-settings__card-action-btn:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-settings__card-action-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-settings__card-action-btn--primary {
     background: none;
     color: var(--text-on-accent);
     border-color: var(--interactive-accent);
 }
 
-.tasknotes-settings__card-action-btn--primary:hover {
-    background: var(--interactive-accent-hover);
+@media (hover: hover) {
+    .tasknotes-settings__card-action-btn--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--interactive-accent-hover);
+    }
 }
-
 .tasknotes-settings__card-action-btn--delete {
     background: var(--color-red);
     color: var(--text-on-accent);
@@ -503,16 +507,18 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     border: 0;
 }
 
-.tasknotes-plugin .tasknotes-settings__card-header-btn:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .tasknotes-settings__card-header-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
-.tasknotes-plugin .tasknotes-settings__card-header-btn--delete:hover {
-    background: rgba(var(--color-red-rgb), 0.16);
-    color: var(--color-red);
+@media (hover: hover) {
+    .tasknotes-plugin .tasknotes-settings__card-header-btn--delete:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: rgba(var(--color-red-rgb), 0.16);
+        color: var(--color-red);
+    }
 }
-
 /* Status Badges */
 .tasknotes-settings__card-status-badge {
     padding: 4px 8px;
@@ -564,11 +570,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.tasknotes-settings__project-item:hover {
-    background: var(--background-modifier-hover);
-    border-color: var(--background-modifier-border-hover);
+@media (hover: hover) {
+    .tasknotes-settings__project-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        border-color: var(--background-modifier-border-hover);
+    }
 }
-
 .tasknotes-settings__project-item span {
     max-width: 200px;
     overflow: hidden;
@@ -592,11 +599,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     flex-shrink: 0;
 }
 
-.tasknotes-settings__project-item button:hover {
-    background: var(--background-modifier-error);
-    color: var(--text-on-accent);
+@media (hover: hover) {
+    .tasknotes-settings__project-item button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-error);
+        color: var(--text-on-accent);
+    }
 }
-
 .tasknotes-settings__project-item button svg {
     width: 12px;
     height: 12px;
@@ -616,37 +624,61 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     align-items: center;
     justify-content: center;
     border-radius: var(--tn-radius-sm);
-    transition: background-color 0.2s ease, opacity 0.2s ease;
+    transition: background-color var(--tn-transition-fast), opacity var(--tn-transition-fast);
     opacity: 0.6;
 }
 
-.tasknotes-settings__card-drag-handle:hover {
-    opacity: 1;
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-settings__card-drag-handle:hover:not(:disabled):not([aria-disabled="true"]) {
+        opacity: 1;
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-settings__card-drag-handle:active {
     cursor: grabbing;
 }
 
 /* Drag States */
 .tasknotes-settings__card--draggable {
-    cursor: grab;
+    cursor: default;
 }
 
-.tasknotes-settings__card--dragging {
-    opacity: 0.7;
-    transform: rotate(1deg);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: var(--interactive-accent);
+.tasknotes-settings__card--draggable.tasknotes-settings__card--dragging {
+    opacity: var(--tn-drag-source-opacity);
+    cursor: grabbing;
 }
 
 .tasknotes-settings__card--drag-over-top {
-    border-top: 2px solid var(--interactive-accent);
+    box-shadow: 0 calc(-1 * var(--tn-space-half)) 0 0 var(--tn-drop-indicator);
 }
 
 .tasknotes-settings__card--drag-over-bottom {
-    border-bottom: 2px solid var(--interactive-accent);
+    box-shadow: 0 var(--tn-space-half) 0 0 var(--tn-drop-indicator);
+}
+
+.tasknotes-settings__card--drag-preview {
+    position: absolute;
+    inset-inline-start: -100vw;
+    top: 0;
+    width: var(--tn-settings-drag-width);
+    margin: 0;
+    padding: var(--tn-space-1);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-lg);
+    background: var(--tn-bg-primary);
+    box-shadow: var(--tn-shadow-overlay);
+    pointer-events: none;
+}
+
+.tasknotes-settings__card-drag-handle svg {
+    width: var(--tn-glyph);
+    height: var(--tn-glyph);
+}
+
+body.is-mobile .tasknotes-settings__card-drag-handle {
+    width: var(--tn-touch-target);
+    height: var(--tn-touch-target);
+    left: 0;
 }
 
 /* ================================================
@@ -660,10 +692,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     transition: opacity 0.2s ease;
 }
 
-.tasknotes-settings__card--collapsible:hover {
-    border-color: var(--interactive-accent);
+@media (hover: hover) {
+    .tasknotes-settings__card--collapsible:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--interactive-accent);
+    }
 }
-
 .tasknotes-settings__card--collapsible .tasknotes-settings__card-content,
 .tasknotes-settings__card--collapsible .tasknotes-settings__card-actions {
     transition: opacity 0.16s ease;
@@ -693,11 +726,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.tasknotes-settings__card-collapse-btn:hover {
-    opacity: 1;
-    transform: scale(1.1);
+@media (hover: hover) {
+    .tasknotes-settings__card-collapse-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        opacity: 1;
+        transform: scale(1.1);
+    }
 }
-
 /* Visual indicator for collapsed cards */
 .tasknotes-settings__card--collapsed {
     opacity: 0.9;
@@ -709,10 +743,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     user-select: none;
 }
 
-.tasknotes-settings__card-header--clickable:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-settings__card-header--clickable:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 /* ================================================
    WEBHOOK MODAL STYLES
    ================================================ */
@@ -738,11 +773,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     color: var(--text-normal);
 }
 
-.tasknotes-webhook-secret-code:hover {
-    background: var(--background-modifier-hover);
-    border-color: var(--interactive-accent);
+@media (hover: hover) {
+    .tasknotes-webhook-secret-code:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        border-color: var(--interactive-accent);
+    }
 }
-
 /* ================================================
    HELPER TEXT & WARNING SECTIONS
    ================================================ */
@@ -846,10 +882,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     background: var(--background-modifier-form-field);
 }
 
-.tasknotes-settings__table-row:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-settings__table-row:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-settings__table-cell {
     padding: 12px 16px;
     border-bottom: 1px solid var(--background-modifier-border);
@@ -877,10 +914,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     width: 100%;
 } 
 
-.field-mapping-input:hover {
-    border-color: var(--interactive-hover);
+@media (hover: hover) {
+    .field-mapping-input:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--interactive-hover);
+    }
 }
-
 .field-mapping-input::placeholder {
     color: var(--text-faint);
     font-style: italic;
@@ -938,10 +976,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     line-height: 1.3;
 }
 
-.tasknotes-settings__property-label:hover {
-    color: var(--text-accent);
+@media (hover: hover) {
+    .tasknotes-settings__property-label:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--text-accent);
+    }
 }
-
 /* ================================================
    COLLAPSIBLE SECTIONS
    ================================================ */
@@ -955,10 +994,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     user-select: none;
 }
 
-.tasknotes-settings__collapsible-header:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-settings__collapsible-header:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-settings__collapsible-header-content {
     display: flex;
     align-items: center;
@@ -1001,10 +1041,11 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     user-select: none;
 }
 
-.tasknotes-settings__collapsible-section-header:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-settings__collapsible-section-header:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-settings__collapsible-section-header-left {
     display: flex;
     align-items: center;

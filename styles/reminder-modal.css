@@ -133,11 +133,12 @@
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.tasknotes-plugin .reminder-modal__reminder-card:hover {
-    border-color: var(--interactive-accent);
-    background: var(--background-primary);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__reminder-card:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--interactive-accent);
+        background: var(--background-primary);
+    }
 }
-
 .tasknotes-plugin .reminder-modal__reminder-icon {
     width: 16px;
     height: 16px;
@@ -184,15 +185,17 @@
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .reminder-modal__action-btn:hover {
-    color: var(--text-normal);
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__action-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--text-normal);
+        background: var(--background-modifier-hover);
+    }
 }
-
-.tasknotes-plugin .reminder-modal__remove-btn:hover {
-    color: var(--text-error);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__remove-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--text-error);
+    }
 }
-
 .tasknotes-plugin .reminder-modal__reminder-card--editing {
     border-color: var(--interactive-accent);
 }
@@ -243,7 +246,7 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast);
     font-size: var(--font-ui-small);
     color: var(--text-muted);
     flex: 1;
@@ -251,12 +254,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .reminder-modal__quick-btn:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
-    transform: translateY(-1px);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__quick-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
 .tasknotes-plugin .reminder-modal__quick-btn-icon {
     width: 14px;
     height: 14px;
@@ -315,11 +318,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     color: var(--text-on-accent);
 }
 
-.tasknotes-plugin .reminder-modal__type-tab:not(.reminder-modal__type-tab--active):hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__type-tab:not(.reminder-modal__type-tab--active):hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
 .tasknotes-plugin .relative-fields,
 .tasknotes-plugin .absolute-fields {
     padding: var(--size-4-2);
@@ -363,9 +367,13 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
 
 .tasknotes-plugin .reminder-modal__form .setting-item-control input:focus,
 .tasknotes-plugin .reminder-modal__form .setting-item-control select:focus {
-    border-color: var(--interactive-accent);
     background: var(--background-primary);
-    outline: none;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .reminder-modal__form .setting-item-control :is(input, select):focus-visible {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
 }
 
 .tasknotes-plugin .reminder-modal__form-actions {
@@ -392,11 +400,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     min-width: 80px;
 }
 
-.tasknotes-plugin .reminder-add-btn:hover {
-    background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-add-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .reminder-add-btn:disabled,
 .tasknotes-plugin .reminder-add-btn--loading {
     opacity: 0.6;
@@ -454,22 +463,24 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     color: var(--text-muted);
 }
 
-.tasknotes-plugin .reminder-modal__save-btn:not(:disabled):hover {
-    background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__save-btn:not(:disabled):hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .reminder-modal__cancel-btn {
     background: transparent;
     color: var(--text-muted);
     box-shadow: none;
 }
 
-.tasknotes-plugin .reminder-modal__cancel-btn:hover {
-    background: var(--tn-interactive-hover, var(--background-modifier-hover));
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-modal__cancel-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover, var(--background-modifier-hover));
+        box-shadow: none;
+    }
 }
-
 /* =====================================================================
    RESPONSIVE DESIGN - Match Task Modal Breakpoints
    ===================================================================== */
@@ -593,11 +604,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.reminder-item__remove-btn:hover {
-    background: var(--background-modifier-error);
-    color: var(--text-error);
+@media (hover: hover) {
+    .reminder-item__remove-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-error);
+        color: var(--text-error);
+    }
 }
-
 .reminder-form {
     padding: var(--size-4-4);
     background: var(--background-secondary);
@@ -664,11 +676,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.tasknotes-plugin .reminder-defaults-card:hover {
-    border-color: var(--interactive-accent);
-    background: var(--background-secondary);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-defaults-card:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--interactive-accent);
+        background: var(--background-secondary);
+    }
 }
-
 .tasknotes-plugin .reminder-defaults-icon {
     width: 16px;
     height: 16px;
@@ -715,11 +728,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .reminder-defaults-remove-btn:hover {
-    color: var(--text-error);
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-defaults-remove-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--text-error);
+        background: var(--background-modifier-hover);
+    }
 }
-
 /* Form Styling */
 .tasknotes-plugin .reminder-defaults-form {
     display: flex;
@@ -773,11 +787,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     color: var(--text-on-accent);
 }
 
-.tasknotes-plugin .reminder-defaults-type-tab:not(.reminder-defaults-type-tab--active):hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-defaults-type-tab:not(.reminder-defaults-type-tab--active):hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
 /* Form Fields */
 .tasknotes-plugin .reminder-defaults-relative-fields,
 .tasknotes-plugin .reminder-defaults-absolute-fields {
@@ -821,9 +836,13 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
 
 .tasknotes-plugin .reminder-defaults-form .setting-item-control input:focus,
 .tasknotes-plugin .reminder-defaults-form .setting-item-control select:focus {
-    border-color: var(--interactive-accent);
     background: var(--background-secondary);
-    outline: none;
+    box-shadow: none;
+}
+
+.tasknotes-plugin .reminder-defaults-form .setting-item-control :is(input, select):focus-visible {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
 }
 
 /* Add Button */
@@ -845,11 +864,12 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn svg {
     min-width: 120px;
 }
 
-.tasknotes-plugin .reminder-defaults-add-btn:hover {
-    background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .reminder-defaults-add-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-accent-hover, var(--interactive-accent-hover));
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .reminder-defaults-add-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;

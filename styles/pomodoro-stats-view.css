@@ -46,10 +46,11 @@
     font-weight: var(--tn-font-weight-medium);
 }
 
-.tasknotes-plugin .pomodoro-stats-view__refresh-button:hover {
-    background: var(--tn-interactive-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__refresh-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
 }
-
 .tasknotes-plugin .pomodoro-stats-view__bases-help {
     display: inline-flex;
     align-items: center;
@@ -64,12 +65,18 @@
     border-radius: var(--tn-radius-md);
 }
 
-.tasknotes-plugin .pomodoro-stats-view__bases-help:hover,
 .tasknotes-plugin .pomodoro-stats-view__bases-help:focus-visible {
     background: var(--tn-interactive-hover);
     color: var(--tn-text-normal);
 }
 
+
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__bases-help:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        color: var(--tn-text-normal);
+    }
+}
 .tasknotes-plugin .pomodoro-stats-view__bases-help svg {
     width: 16px;
     height: 16px;
@@ -234,10 +241,11 @@
     transition: background-color var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .pomodoro-stats-view__session-item:hover {
-    background: var(--tn-interactive-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__session-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
 }
-
 .tasknotes-plugin .pomodoro-stats-view__session-date {
     font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
@@ -299,13 +307,20 @@
     cursor: pointer;
 }
 
-.tasknotes-plugin .pomodoro-stats-view__session-delete-button:hover,
 .tasknotes-plugin .pomodoro-stats-view__session-delete-button:focus-visible {
     color: var(--tn-color-error);
     background: var(--tn-interactive-hover);
     border-color: var(--tn-border-color);
 }
 
+
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__session-delete-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--tn-color-error);
+        background: var(--tn-interactive-hover);
+        border-color: var(--tn-border-color);
+    }
+}
 @container (max-width: 768px) {
     .tasknotes-plugin.pomodoro-stats-view {
         padding: var(--tn-space-2);

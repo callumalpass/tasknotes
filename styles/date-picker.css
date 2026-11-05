@@ -79,13 +79,6 @@
     box-shadow: none;
 }
 
-.tasknotes-plugin .date-time-picker-modal__time-input:focus {
-    border-color: var(--tn-focus-ring);
-    box-shadow: none;
-    outline: 2px solid var(--tn-focus-ring);
-    outline-offset: var(--tn-space-half);
-}
-
 .tasknotes-plugin .date-time-picker-modal__date-input {
     color-scheme: light dark;
 }
@@ -95,11 +88,16 @@
     opacity: 0.72;
 }
 
-.tasknotes-plugin .date-time-picker-modal__date-input:hover::-webkit-calendar-picker-indicator,
 .tasknotes-plugin .date-time-picker-modal__date-input:focus::-webkit-calendar-picker-indicator {
     opacity: 1;
 }
 
+
+@media (hover: hover) {
+    .tasknotes-plugin .date-time-picker-modal__date-input:hover:not(:disabled):not([aria-disabled="true"])::-webkit-calendar-picker-indicator {
+        opacity: 1;
+    }
+}
 .tasknotes-plugin .date-time-picker-modal__native-date-button {
     width: 32px;
     height: 32px;
@@ -200,10 +198,11 @@
     box-shadow: 0 0 0 2px rgba(var(--interactive-accent), 0.2);
 }
 
-.date-picker-modal__input:hover {
-    border-color: var(--background-modifier-border-hover);
+@media (hover: hover) {
+    .date-picker-modal__input:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--background-modifier-border-hover);
+    }
 }
-
 /* Button section */
 .date-picker-modal__buttons {
     display: flex;
@@ -228,21 +227,23 @@
     color: var(--text-on-accent);
 }
 
-.date-picker-modal__button--primary:hover {
-    background: var(--interactive-accent-hover);
-    transform: translateY(-1px);
+@media (hover: hover) {
+    .date-picker-modal__button--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--interactive-accent-hover);
+        transform: translateY(-1px);
+    }
 }
-
 .date-picker-modal__button--secondary {
     background: var(--background-secondary);
     color: var(--text-normal);
     border: 1px solid var(--background-modifier-border);
 }
 
-.date-picker-modal__button--secondary:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .date-picker-modal__button--secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 /* Enhanced date and time input styling */
 .date-picker-modal input[type="date"],
 .date-picker-modal input[type="time"] {
@@ -305,11 +306,12 @@
     pointer-events: auto;
 }
 
-.date-picker-modal input[type="date"]:hover::-webkit-calendar-picker-indicator {
-    opacity: 1;
-    color: var(--text-normal);
+@media (hover: hover) {
+    .date-picker-modal input[type="date"]:hover:not(:disabled):not([aria-disabled="true"])::-webkit-calendar-picker-indicator {
+        opacity: 1;
+        color: var(--text-normal);
+    }
 }
-
 /* Time input specific styling - add consistent padding */
 .date-picker-modal input[type="time"] {
     /* Add padding to make room for icon on the right */
@@ -346,11 +348,12 @@
     pointer-events: auto;
 }
 
-.date-picker-modal input[type="time"]:hover::-webkit-calendar-picker-indicator {
-    opacity: 1;
-    color: var(--text-normal);
+@media (hover: hover) {
+    .date-picker-modal input[type="time"]:hover:not(:disabled):not([aria-disabled="true"])::-webkit-calendar-picker-indicator {
+        opacity: 1;
+        color: var(--text-normal);
+    }
 }
-
 /* Firefox specific styling */
 @-moz-document url-prefix() {
     .date-picker-modal input[type="date"],
@@ -364,16 +367,16 @@
 .date-picker-modal input[type="date"]:focus,
 .date-picker-modal input[type="time"]:focus {
     outline: none;
-    border-color: var(--interactive-accent);
-    box-shadow: 0 0 0 2px rgba(var(--interactive-accent), 0.2);
+    box-shadow: none;
 }
 
 /* Hover states */
-.date-picker-modal input[type="date"]:hover,
-.date-picker-modal input[type="time"]:hover {
-    border-color: var(--background-modifier-border-hover);
+@media (hover: hover) {
+    .date-picker-modal input[type="date"]:hover:not(:disabled):not([aria-disabled="true"]),
+    .date-picker-modal input[type="time"]:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--background-modifier-border-hover);
+    }
 }
-
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .date-picker-modal input[type="date"],
@@ -393,8 +396,8 @@
 /* Accessibility improvements */
 .date-picker-modal input[type="date"]:focus-visible,
 .date-picker-modal input[type="time"]:focus-visible {
-    outline: 2px solid var(--interactive-accent);
-    outline-offset: 2px;
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
 }
 
 /* Ensure consistent appearance across browsers */

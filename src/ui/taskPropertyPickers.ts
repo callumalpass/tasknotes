@@ -377,6 +377,7 @@ export function showTaskUndo(
 	);
 	const pending = [...undo];
 	showToast({
+		intent: failed ? "error" : undefined,
 		message: failed ? `${failure} · ${message ?? updated}${message && count ? ` · ${updated}` : ""}` : (message ?? updated),
 		undoScope: scope,
 		undoMessage,

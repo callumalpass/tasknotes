@@ -79,6 +79,9 @@
     --tn-selected: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
     --tn-selected-hover: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
     --tn-focus-ring: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
+    --tn-drag-source-opacity: 0.45;
+    --tn-disabled-opacity: 0.5;
+    --tn-drop-indicator: var(--interactive-accent);
 
     --tn-interactive-normal: var(--interactive-normal);
     --tn-interactive-hover: var(--tn-hover);

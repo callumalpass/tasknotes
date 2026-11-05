@@ -99,11 +99,12 @@
     line-height: 1.6;
 }
 
-.tasknotes-plugin .modal-form__input:hover,
-.tasknotes-plugin .modal-form__select:hover {
-    border-color: var(--tn-border-color-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .modal-form__input:hover:not(:disabled):not([aria-disabled="true"]),
+    .tasknotes-plugin .modal-form__select:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--tn-border-color-hover);
+    }
 }
-
 .tasknotes-plugin .modal-form__input:focus,
 .tasknotes-plugin .modal-form__select:focus {
     border-color: var(--interactive-accent);
@@ -183,11 +184,16 @@
     text-align: left;
 }
 
-.tasknotes-plugin .modal-form__suggestion:hover,
 .tasknotes-plugin .modal-form__suggestion--selected {
     background: var(--tn-interactive-hover);
 }
 
+
+@media (hover: hover) {
+    .tasknotes-plugin .modal-form__suggestion:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
+}
 /* =====================================================================
    DATE/TIME INPUT COMPONENTS
    ===================================================================== */
@@ -224,10 +230,11 @@
   color: var(--tn-text-muted);
   z-index: 1;
 }
-.tasknotes-plugin .tn-date-control .user-field-date-picker-btn:hover {
-  color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .tn-date-control .user-field-date-picker-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+      color: var(--text-normal);
+    }
 }
-
 
 /* Date and Time Input Modifiers */
 .tasknotes-plugin .modal-form__input--date {
@@ -496,11 +503,12 @@
     padding: var(--tn-space-2);
 }
 
-.tasknotes-plugin .modal-form__button--tertiary:hover {
-    background: var(--tn-interactive-hover);
-    color: var(--tn-interactive-accent-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .modal-form__button--tertiary:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        color: var(--tn-interactive-accent-hover);
+    }
 }
-
 /* Quick Date Buttons */
 .tasknotes-plugin .modal-form__quick-actions {
     display: flex;
@@ -519,21 +527,23 @@
     font-size: var(--tn-type-xs);
 }
 
-.tasknotes-plugin .modal-form__button--quick-date:hover {
-    background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .modal-form__button--quick-date:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        border-color: var(--tn-border-color-hover);
+    }
 }
-
 .tasknotes-plugin .modal-form__button--quick-date--clear {
     background: var(--tn-bg-primary);
     color: var(--tn-text-muted);
 }
 
-.tasknotes-plugin .modal-form__button--quick-date--clear:hover {
-    background: var(--tn-interactive-hover);
-    color: var(--tn-text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .modal-form__button--quick-date--clear:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        color: var(--tn-text-normal);
+    }
 }
-
 
 
 /* =====================================================================
@@ -563,10 +573,11 @@
     transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .task-selector-modal__suggestion:hover {
-    background: var(--tn-interactive-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .task-selector-modal__suggestion:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
 }
-
 .tasknotes-plugin .task-selector-modal__title {
     margin-bottom: var(--tn-space-half);
 }
@@ -762,10 +773,11 @@
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .content-type-buttons button:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .content-type-buttons button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .content-type-buttons button.mod-cta {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
@@ -924,10 +936,11 @@
     text-decoration: none;
 }
 
-.tasknotes-plugin .external-link:hover {
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin .external-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        text-decoration: underline;
+    }
 }
-
 .tasknotes-plugin .empty-state {
     text-align: center;
     color: var(--tn-text-muted);
@@ -952,10 +965,11 @@
     transition: background-color 0.2s ease;
 }
 
-.tasknotes-plugin .related-note-item:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .related-note-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .note-header {
     display: flex;
     align-items: center;
@@ -975,11 +989,12 @@
     flex: 1;
 }
 
-.tasknotes-plugin .note-header .internal-link:hover {
-    color: var(--interactive-accent);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin .note-header .internal-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--interactive-accent);
+        text-decoration: underline;
+    }
 }
-
 .tasknotes-plugin .note-metadata {
     display: flex;
     gap: var(--size-4-2);

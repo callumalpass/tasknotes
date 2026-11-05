@@ -13,6 +13,7 @@ export class UndoConflictError extends Error {
 
 export interface ToastOptions {
 	message: string;
+	intent?: "error";
 	action?: ToastAction;
 	durationMs?: number;
 	undoScope?: object;
@@ -43,6 +44,7 @@ export async function undoLatest(scope: object): Promise<void> {
 		} catch (error) {
 			if (toastRevision !== revision) return;
 			showToast({
+				intent: "error",
 				message: `${action.message} · ${uiText(
 					msg({
 						message: "Cannot undo: the note has changed.",
@@ -108,8 +110,8 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	}
 
 	const el = doc.body.createDiv({
-		cls: "tasknotes-plugin tn-toast",
-		attr: { role: "status", "aria-live": "polite" },
+		cls: `tasknotes-plugin tn-toast${options.intent === "error" ? " is-error" : ""}`,
+		attr: { role: options.intent === "error" ? "alert" : "status", "aria-live": options.intent === "error" ? "assertive" : "polite" },
 	});
 	el.createSpan({ cls: "tn-toast__message", text: options.message });
 
@@ -121,6 +123,7 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	let started = Date.now();
 	let timer = win.setTimeout(dismiss, remaining);
 	let paused = false;
+	let actionPending = false;
 	const pause = () => {
 		if (paused) return;
 		paused = true;
@@ -128,7 +131,7 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 		remaining = Math.max(0, remaining - (Date.now() - started));
 	};
 	const resume = () => {
-		if (el.matches(":hover") || el.contains(doc.activeElement)) return;
+		if (!paused || actionPending || el.matches(":hover") || el.contains(doc.activeElement)) return;
 		paused = false;
 		started = Date.now();
 		timer = win.setTimeout(dismiss, remaining);
@@ -143,11 +146,27 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 		const { label, run } = action;
 		const button = el.createEl("button", { cls: "tn-toast__action", text: label });
 		button.addEventListener("click", () => {
-			dismiss();
+			if (button.disabled) return;
+			pause();
+			actionPending = true;
+			button.disabled = true;
+			button.setAttribute("aria-busy", "true");
 			if (returnFocus?.isConnected) returnFocus.focus();
-			void Promise.resolve(run()).finally(() => {
-				if (returnFocus?.isConnected) returnFocus.focus();
-			});
+			void Promise.resolve().then(run).then(
+				() => {
+					actionPending = false;
+					dismiss();
+					if (returnFocus?.isConnected) returnFocus.focus();
+				},
+				() => {
+					actionPending = false;
+					button.disabled = false;
+					button.removeAttribute("aria-busy");
+					el.addClass("is-error");
+					el.setAttribute("role", "alert");
+					el.setAttribute("aria-live", "assertive");
+				}
+			);
 		});
 	}
 

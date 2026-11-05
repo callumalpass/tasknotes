@@ -84,6 +84,7 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	};
 
 	let closed = false;
+	let pointerInteraction = false;
 	const isOtherModal = (target: EventTarget | null) => {
 		const element = target as HTMLElement | null;
 		const targetModal = element?.closest?.(".modal-container");
@@ -91,6 +92,7 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	};
 	const onPointerDown = (event: PointerEvent) => {
 		if (isOtherModal(event.target)) return;
+		pointerInteraction = true;
 		if (el.contains(event.target as Node)) return;
 		if (modal) {
 			event.preventDefault();
@@ -111,6 +113,7 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	};
 	const onKeyDown = (event: KeyboardEvent) => {
 		if (isOtherModal(event.target)) return;
+		pointerInteraction = false;
 		dismissTooltips(doc);
 		if (event.key !== "Escape") return;
 		event.preventDefault();
@@ -133,7 +136,19 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 			doc.removeEventListener("scroll", reposition, true);
 			el.remove();
 			if (current === handle) current = null;
-			if (returnFocus?.isConnected) returnFocus.focus({ preventScroll: true });
+			if (returnFocus?.isConnected) {
+				if (pointerInteraction) {
+					const clearPointerFocus = () => {
+						returnFocus.removeClass("tn-focus-from-pointer");
+						returnFocus.removeEventListener("keydown", clearPointerFocus);
+						returnFocus.removeEventListener("blur", clearPointerFocus);
+					};
+					returnFocus.addClass("tn-focus-from-pointer");
+					returnFocus.addEventListener("keydown", clearPointerFocus);
+					returnFocus.addEventListener("blur", clearPointerFocus);
+				}
+				returnFocus.focus({ preventScroll: true });
+			}
 			options.onClose?.();
 		},
 	};

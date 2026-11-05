@@ -50,10 +50,10 @@ export function injectBasesNewTaskButton(
 
 	const doc = options.containerEl.ownerDocument;
 	const newTaskBtn = createElementInDocument(doc, "div");
-	newTaskBtn.className = `bases-toolbar-item ${NEW_TASK_BUTTON_CLASS}`;
+	newTaskBtn.className = `tasknotes-plugin bases-toolbar-item ${NEW_TASK_BUTTON_CLASS}`;
 
 	const innerBtn = createElementInDocument(doc, "button");
-	innerBtn.className = "text-icon-button";
+	innerBtn.className = "text-icon-button tn-btn tn-btn--ghost";
 	innerBtn.type = "button";
 	innerBtn.setAttribute("aria-label", options.label);
 

@@ -287,11 +287,11 @@
 }
 
 /* Hovered option */
-.tasknotes-plugin .cm-tooltip-autocomplete li:hover,
-.tasknotes-plugin .cm-tooltip-autocomplete li[aria-selected="true"] {
-    background-color: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .cm-tooltip-autocomplete li:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+    }
 }
-
 /* Selected option */
 .tasknotes-plugin .cm-tooltip-autocomplete li[aria-selected="true"] {
     background-color: var(--background-modifier-active-hover);
@@ -449,10 +449,11 @@
     position: relative;
 }
 
-.tasknotes-plugin .action-icon:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .action-icon:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .action-icon:not(.tn-chip--property) .icon {
     width: 16px;
     height: 16px;
@@ -460,10 +461,11 @@
     transition: color 0.2s ease;
 }
 
-.tasknotes-plugin .action-icon:hover .icon {
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .action-icon:hover:not(:disabled):not([aria-disabled="true"]) .icon {
+        color: var(--text-normal);
+    }
 }
-
 .tasknotes-plugin .tn-task-modal__details-toggle {
     margin-left: auto;
 }
@@ -1165,12 +1167,18 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-.tasknotes-plugin .recurring-calendar__nav:hover,
 .tasknotes-plugin .recurring-calendar__nav:focus-visible {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
+
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__nav:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
+}
 .tasknotes-plugin .recurring-calendar__nav svg {
     width: 16px;
     height: 16px;
@@ -1210,32 +1218,35 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-.tasknotes-plugin .recurring-calendar__day--clickable:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--clickable:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
 .tasknotes-plugin .recurring-calendar__day--recurring {
     color: var(--text-normal);
     border: 1px solid var(--text-muted);
 }
 
-.tasknotes-plugin .recurring-calendar__day--recurring:hover {
-    border-color: var(--interactive-accent);
-    color: var(--interactive-accent);
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--recurring:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--interactive-accent);
+        color: var(--interactive-accent);
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .recurring-calendar__day--completed {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border: 1px solid var(--interactive-accent);
 }
 
-.tasknotes-plugin .recurring-calendar__day--completed:hover {
-    background: var(--interactive-accent-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--completed:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--interactive-accent-hover);
+    }
 }
-
 .tasknotes-plugin .recurring-calendar__day--skipped {
     background: rgba(128, 128, 128, 0.3);
     color: var(--text-muted);
@@ -1243,11 +1254,12 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     text-decoration: line-through;
 }
 
-.tasknotes-plugin .recurring-calendar__day--skipped:hover {
-    background: rgba(128, 128, 128, 0.4);
-    border-color: var(--text-muted);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--skipped:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: rgba(128, 128, 128, 0.4);
+        border-color: var(--text-muted);
+    }
 }
-
 /* =====================================================================
    DARK MODE ADJUSTMENTS
    ===================================================================== */
@@ -1366,20 +1378,22 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.2s ease;
 }
 
-.tasknotes-plugin .task-project-item:hover {
-    background-color: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .task-project-item--task-card {
     align-items: flex-start;
     padding: 0;
     background: transparent;
 }
 
-.tasknotes-plugin .task-project-item--task-card:hover {
-    background: transparent;
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-item--task-card:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: transparent;
+    }
 }
-
 .tasknotes-plugin .task-project-card-host {
     flex: 1;
     min-width: 0;
@@ -1437,12 +1451,13 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .clickable-project .internal-link:hover {
-    background-color: var(--background-modifier-hover);
-    color: var(--link-color-hover);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin .clickable-project .internal-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+        color: var(--link-color-hover);
+        text-decoration: underline;
+    }
 }
-
 /* Style dependency items the same way when rendered as internal links */
 .tasknotes-plugin .clickable-dependency .task-dependency-link {
     color: var(--link-color);
@@ -1455,12 +1470,13 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .clickable-dependency .task-dependency-link:hover {
-    background-color: var(--background-modifier-hover);
-    color: var(--link-color-hover);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin .clickable-dependency .task-dependency-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+        color: var(--link-color-hover);
+        text-decoration: underline;
+    }
 }
-
 .tasknotes-plugin .task-project-item.tn-chip .task-project-path {
     display: none;
 }
@@ -1487,13 +1503,14 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     border-radius: var(--tn-radius-full);
 }
 
-.tasknotes-plugin .task-project-remove:hover {
-    background: var(--tn-color-error);
-    color: var(--tn-bg-primary);
-    border: none;
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-remove:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-color-error);
+        color: var(--tn-bg-primary);
+        border: none;
+        box-shadow: none;
+    }
 }
-
 /* =====================================================================
    PROJECT SELECT MODAL
    ===================================================================== */
@@ -1507,12 +1524,13 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .project-suggestion:hover {
-    background: var(--tn-interactive-hover);
-    border: none;
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .project-suggestion:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        border: none;
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .project-name {
     font-weight: var(--font-weight-medium);
     color: var(--text-normal);
@@ -1584,10 +1602,11 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .task-attachment-item:hover {
-    background-color: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .task-attachment-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .task-attachment-icon {
     display: inline-flex;
     flex-shrink: 0;
@@ -1626,11 +1645,12 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     cursor: var(--cursor-link, pointer);
 }
 
-.tasknotes-plugin button.task-attachment-open:hover {
-    color: var(--link-color-hover);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin button.task-attachment-open:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--link-color-hover);
+        text-decoration: underline;
+    }
 }
-
 .tasknotes-plugin .task-attachment-path,
 .tasknotes-plugin .task-attachment-hint {
     font-size: var(--font-ui-smaller);

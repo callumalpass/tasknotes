@@ -25,7 +25,7 @@
 
     cursor: var(--cursor-link, pointer);
     opacity: 0.6;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+    transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast), opacity var(--tn-transition-fast);
 
     font-family: inherit;
     font-size: inherit;
@@ -36,20 +36,20 @@
     vertical-align: baseline;
 }
 
-.tasknotes-plugin button.instant-convert-button:hover {
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-    opacity: 1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+@media (hover: hover) {
+    .tasknotes-plugin button.instant-convert-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-hover);
+        color: var(--tn-text-normal);
+        opacity: 1;
+    }
 }
-
 .tasknotes-plugin button.instant-convert-button:active {
-    transform: scale(0.95);
+    background: var(--tn-active);
 }
 
-.tasknotes-plugin button.instant-convert-button:focus {
-    outline: 2px solid var(--interactive-accent);
-    outline-offset: 1px;
+.tasknotes-plugin button.instant-convert-button:focus-visible {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
 }
 
 .tasknotes-plugin .instant-convert-button__icon {
@@ -68,15 +68,18 @@
 
 
 
-.tasknotes-plugin .task-card--layout-inline:hover {
-    background-color: transparent;
+@media (hover: hover) {
+    .tasknotes-plugin .task-card--layout-inline:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: transparent;
+    }
 }
-.tasknotes-plugin .task-card--layout-inline[draggable="true"]:hover {
-    cursor: default;
-    transform: none;
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .task-card--layout-inline[draggable="true"]:hover:not(:disabled):not([aria-disabled="true"]) {
+        cursor: default;
+        transform: none;
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .task-card--layout-inline[draggable="true"]:active {
     cursor: default;
     transform: none;
@@ -91,19 +94,21 @@
     min-width: 0;
 }
 
-.tasknotes-plugin .task-card--layout-inline .task-card__metadata:hover {
-    scrollbar-width: thin;
-    scrollbar-color: var(--background-modifier-border) transparent;
+@media (hover: hover) {
+    .tasknotes-plugin .task-card--layout-inline .task-card__metadata:hover:not(:disabled):not([aria-disabled="true"]) {
+        scrollbar-width: thin;
+        scrollbar-color: var(--background-modifier-border) transparent;
+    }
 }
-
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata::-webkit-scrollbar {
     height: 0;
 }
 
-.tasknotes-plugin .task-card--layout-inline .task-card__metadata:hover::-webkit-scrollbar {
-    height: 4px;
+@media (hover: hover) {
+    .tasknotes-plugin .task-card--layout-inline .task-card__metadata:hover:not(:disabled):not([aria-disabled="true"])::-webkit-scrollbar {
+        height: 4px;
+    }
 }
-
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata::-webkit-scrollbar-track {
     background: transparent;
 }
@@ -354,10 +359,14 @@
     opacity: 0;
 }
 
-.tasknotes-plugin .task-card--layout-inline:is(:hover, :focus-within) .task-card__context-menu {
+@media (hover: hover) {
+    .tasknotes-plugin .task-card--layout-inline:hover .task-card__context-menu {
+        opacity: 1;
+    }
+}
+.tasknotes-plugin .task-card--layout-inline:focus-within .task-card__context-menu {
     opacity: 1;
 }
-
 body.is-mobile .tasknotes-plugin .task-card--layout-inline :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu) {
     width: var(--tn-touch-target);
     height: var(--tn-touch-target);
@@ -515,7 +524,13 @@ body.is-mobile .tasknotes-inline-widget--sentence .task-card--layout-inline :is(
     opacity: 0;
 }
 
-.tasknotes-inline-widget--sentence .task-card--layout-inline:is(:hover, :focus-within) .task-card__context-menu {
+@media (hover: hover) {
+    .tasknotes-inline-widget--sentence .task-card--layout-inline:hover .task-card__context-menu {
+        pointer-events: auto;
+        opacity: 1;
+    }
+}
+.tasknotes-inline-widget--sentence .task-card--layout-inline:focus-within .task-card__context-menu {
     pointer-events: auto;
     opacity: 1;
 }

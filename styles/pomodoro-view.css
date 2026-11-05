@@ -100,10 +100,11 @@
     border-radius: var(--tn-radius-md);
 }
 
-.tasknotes-plugin .pomodoro-view__timer-display--editable:hover {
-    color: var(--tn-interactive-accent);
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-view__timer-display--editable:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--tn-interactive-accent);
+    }
 }
-
 .tasknotes-plugin .pomodoro-view__timer-display--hidden {
     display: none;
 }
@@ -314,10 +315,11 @@
     transition: none;
 }
 
-.tasknotes-plugin .pomodoro-view__task-card-container .task-card:hover {
-    /* No hover effects - keep task card static */
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-view__task-card-container .task-card:hover:not(:disabled):not([aria-disabled="true"]) {
+        /* No hover effects - keep task card static */
+    }
 }
-
 
 /* ================================================
    CONTROL SECTION - Main Controls Container
@@ -362,13 +364,14 @@
     box-shadow: none;
 }
 
-.tasknotes-plugin .pomodoro-view__pause-button:hover,
-.tasknotes-plugin .pomodoro-view__stop-button:hover,
-.tasknotes-plugin .pomodoro-view__skip-break-button:hover,
-.tasknotes-plugin .pomodoro-view__time-adjust-button:hover {
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-view__pause-button:hover:not(:disabled):not([aria-disabled="true"]),
+    .tasknotes-plugin .pomodoro-view__stop-button:hover:not(:disabled):not([aria-disabled="true"]),
+    .tasknotes-plugin .pomodoro-view__skip-break-button:hover:not(:disabled):not([aria-disabled="true"]),
+    .tasknotes-plugin .pomodoro-view__time-adjust-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .pomodoro-view__pause-button {
     min-width: 100px;
 }
@@ -408,12 +411,13 @@
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.tasknotes-plugin .pomodoro-view__time-adjust-button:hover {
-    background: var(--tn-interactive-hover);
-    border-color: var(--tn-interactive-accent);
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-view__time-adjust-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        border-color: var(--tn-interactive-accent);
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .pomodoro-view__time-adjust-button:focus {
     outline: 2px solid var(--tn-interactive-accent);
     outline-offset: 2px;
@@ -484,12 +488,13 @@
     transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .pomodoro-view__stat--clickable:hover {
-    background: var(--tn-interactive-hover);
-    border: none;
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-view__stat--clickable:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        border: none;
+        box-shadow: none;
+    }
 }
-
 .tasknotes-plugin .pomodoro-view__stat-value {
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-bold);

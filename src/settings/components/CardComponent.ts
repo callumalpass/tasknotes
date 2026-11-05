@@ -334,9 +334,13 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 	if (config.draggable) {
 		header.addClass("tasknotes-settings__card-header--with-drag-handle");
 		dragHandle = header.createDiv("tasknotes-settings__card-drag-handle");
-		dragHandle.textContent = "⋮⋮";
+		setIcon(dragHandle, "grip-vertical");
 		dragHandle.draggable = true;
+		dragHandle.tabIndex = 0;
+		dragHandle.setAttribute("role", "button");
+		dragHandle.setAttribute("aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown");
 		dragHandle.title = uiText(msg({ message: "Drag to reorder", context: "settings/components/CardComponent: createCard display" }));
+		dragHandle.setAttribute("aria-label", dragHandle.title);
 	}
 
 	// Left side of header with color indicator and info
@@ -770,31 +774,73 @@ export function setupCardDragAndDrop(
 
 	const cardId = card.getAttribute("data-card-id");
 	if (!cardId) return;
+	let preview: HTMLElement | null = null;
+	const clearTargets = () => {
+		container.querySelectorAll(".tasknotes-settings__card--drag-over-top, .tasknotes-settings__card--drag-over-bottom")
+			.forEach((target) => target.classList.remove("tasknotes-settings__card--drag-over-top", "tasknotes-settings__card--drag-over-bottom"));
+	};
+	const finishDrag = () => {
+		clearTargets();
+		card.removeClass("tasknotes-settings__card--dragging");
+		preview?.remove();
+		preview = null;
+		card.ownerDocument.removeEventListener("keydown", cancelDrag, true);
+	};
+	const cancelDrag = (event: KeyboardEvent) => {
+		if (event.key !== "Escape") return;
+		event.preventDefault();
+		event.stopPropagation();
+		finishDrag();
+		dragHandle.focus({ preventScroll: true });
+	};
+	dragHandle.addEventListener("click", (event) => event.stopPropagation());
+	dragHandle.addEventListener("keydown", (event) => {
+		if (!event.altKey || !["ArrowUp", "ArrowDown"].includes(event.key)) return;
+		event.preventDefault();
+		event.stopPropagation();
+		const cards = Array.from(container.querySelectorAll<HTMLElement>(".tasknotes-settings__card--draggable"));
+		const index = cards.indexOf(card);
+		const before = event.key === "ArrowUp";
+		const target = cards[index + (before ? -1 : 1)];
+		const targetId = target?.getAttribute("data-card-id");
+		if (!targetId) return;
+		onReorder(cardId, targetId, before);
+		const moved = Array.from(container.querySelectorAll<HTMLElement>("[data-card-id]"))
+			.find((candidate) => candidate.getAttribute("data-card-id") === cardId);
+		moved?.querySelector<HTMLElement>(".tasknotes-settings__card-drag-handle")?.focus({ preventScroll: true });
+		moved?.scrollIntoView({ block: "nearest" });
+	});
 
 	dragHandle.addEventListener("dragstart", (e) => {
 		if (e.dataTransfer) {
+			clearTargets();
 			e.dataTransfer.setData("text/plain", cardId);
+			e.dataTransfer.effectAllowed = "move";
+			preview = card.cloneNode(true) as HTMLElement;
+			preview.addClass("tasknotes-settings__card--drag-preview");
+			preview.querySelectorAll(".tasknotes-settings__card-content, .tasknotes-settings__card-actions").forEach((element) => element.remove());
+			preview.setCssProps({ "--tn-settings-drag-width": `${Math.min(card.getBoundingClientRect().width, 360)}px` });
+			container.appendChild(preview);
+			e.dataTransfer.setDragImage(preview, 16, 16);
+			card.ownerDocument.defaultView?.requestAnimationFrame(() => { preview?.remove(); preview = null; });
 			card.addClass("tasknotes-settings__card--dragging");
+			card.ownerDocument.addEventListener("keydown", cancelDrag, true);
 		}
 	});
 
-	dragHandle.addEventListener("dragend", () => {
-		card.removeClass("tasknotes-settings__card--dragging");
-	});
+	dragHandle.addEventListener("dragend", finishDrag);
 
 	card.addEventListener("dragover", (e) => {
-		e.preventDefault();
 		const draggingCard = container.querySelector(
 			".tasknotes-settings__card--dragging"
 		) as HTMLElement;
 		if (draggingCard && draggingCard !== card) {
+			e.preventDefault();
+			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 			const rect = card.getBoundingClientRect();
 			const midpoint = rect.top + rect.height / 2;
 
-			card.removeClass(
-				"tasknotes-settings__card--drag-over-top",
-				"tasknotes-settings__card--drag-over-bottom"
-			);
+			clearTargets();
 
 			if (e.clientY < midpoint) {
 				card.addClass("tasknotes-settings__card--drag-over-top");
@@ -804,7 +850,8 @@ export function setupCardDragAndDrop(
 		}
 	});
 
-	card.addEventListener("dragleave", () => {
+	card.addEventListener("dragleave", (event) => {
+		if (event.relatedTarget && card.contains(event.relatedTarget as Node)) return;
 		card.removeClass(
 			"tasknotes-settings__card--drag-over-top",
 			"tasknotes-settings__card--drag-over-bottom"
@@ -812,16 +859,11 @@ export function setupCardDragAndDrop(
 	});
 
 	card.addEventListener("drop", (e) => {
-		e.preventDefault();
-		card.removeClass(
-			"tasknotes-settings__card--drag-over-top",
-			"tasknotes-settings__card--drag-over-bottom"
-		);
-
+		const source = container.querySelector<HTMLElement>(".tasknotes-settings__card--dragging");
 		const draggedCardId = e.dataTransfer?.getData("text/plain");
-		if (!draggedCardId) {
-			return;
-		}
+		if (!source || !draggedCardId || source.getAttribute("data-card-id") !== draggedCardId) return;
+		e.preventDefault();
+		source.querySelector(".tasknotes-settings__card-drag-handle")?.dispatchEvent(new Event("dragend"));
 		const targetCardId = cardId;
 
 		if (draggedCardId !== targetCardId) {

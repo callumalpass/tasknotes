@@ -7,6 +7,43 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
+it("keeps an action pending and rejects duplicate clicks until it settles", async () => {
+	let settle!: () => void;
+	const held = new Promise<void>(resolve => { settle = resolve; });
+	const run = jest.fn(() => held);
+	showToast({ message: "Changed", action: { label: "Undo", run } });
+	const button = document.querySelector<HTMLButtonElement>(".tn-toast__action")!;
+	button.click();
+	button.click();
+	await Promise.resolve();
+	expect(run).toHaveBeenCalledTimes(1);
+	expect(button.disabled).toBe(true);
+	expect(button.getAttribute("aria-busy")).toBe("true");
+	button.closest(".tn-toast")!.dispatchEvent(new MouseEvent("mouseleave"));
+	button.closest(".tn-toast")!.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+	await Promise.resolve();
+	jest.advanceTimersByTime(10000);
+	expect(button.isConnected).toBe(true);
+	settle();
+	await held;
+	await jest.advanceTimersByTimeAsync(0);
+	expect(document.querySelector(".tn-toast")).toBeNull();
+});
+
+it("keeps a rejected action reachable for retry", async () => {
+	const run = jest.fn().mockRejectedValueOnce(new Error("Unavailable")).mockResolvedValueOnce(undefined);
+	showToast({ message: "Changed", action: { label: "Undo", run } });
+	const button = document.querySelector<HTMLButtonElement>(".tn-toast__action")!;
+	button.click();
+	await jest.advanceTimersByTimeAsync(0);
+	expect(button.disabled).toBe(false);
+	expect(button.closest(".tn-toast")?.classList.contains("is-error")).toBe(true);
+	expect(button.closest(".tn-toast")?.getAttribute("aria-live")).toBe("assertive");
+	button.click();
+	await jest.advanceTimersByTimeAsync(0);
+	expect(run).toHaveBeenCalledTimes(2);
+});
+
 it("identifies the note that could not be restored", async () => {
 	const scope = {};
 	showToast({ message: "2 tasks updated", undoScope: scope, action: { label: "Undo", run: () => { throw new UndoConflictError(["Tasks/Alpha.md"]); } } });

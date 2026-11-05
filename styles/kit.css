@@ -32,12 +32,13 @@
     transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .tn-btn:hover,
-.mod-tasknotes .tn-btn:hover {
-    background: var(--tn-hover);
-    border-color: var(--tn-border-color-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .tn-btn:hover:not(:disabled):not([aria-disabled="true"]),
+    .mod-tasknotes .tn-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-hover);
+        border-color: var(--tn-border-color-hover);
+    }
 }
-
 .tasknotes-plugin .tn-btn:focus-visible,
 .mod-tasknotes .tn-btn:focus-visible {
     outline: 2px solid var(--tn-focus-ring);
@@ -63,24 +64,26 @@
     color: var(--text-on-accent);
 }
 
-.tasknotes-plugin .tn-btn--primary:hover,
-.mod-tasknotes .tn-btn--primary:hover {
-    background: var(--interactive-accent-hover);
-    border-color: transparent;
+@media (hover: hover) {
+    .tasknotes-plugin .tn-btn--primary:hover:not(:disabled):not([aria-disabled="true"]),
+    .mod-tasknotes .tn-btn--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--interactive-accent-hover);
+        border-color: transparent;
+    }
 }
-
 .tasknotes-plugin .tn-btn--ghost,
 .mod-tasknotes .tn-btn--ghost {
     border-color: transparent;
     color: var(--tn-text-muted);
 }
 
-.tasknotes-plugin .tn-btn--ghost:hover,
-.mod-tasknotes .tn-btn--ghost:hover {
-    border-color: transparent;
-    color: var(--tn-text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .tn-btn--ghost:hover:not(:disabled):not([aria-disabled="true"]),
+    .mod-tasknotes .tn-btn--ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: transparent;
+        color: var(--tn-text-normal);
+    }
 }
-
 .tasknotes-plugin .tn-btn--sm,
 .mod-tasknotes .tn-btn--sm {
     height: var(--tn-control-sm);
@@ -143,12 +146,13 @@
     cursor: pointer;
 }
 
-.tasknotes-plugin .tn-segmented__item:hover,
-.tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view:hover {
-    background: transparent;
-    color: var(--tn-text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .tn-segmented__item:hover:not(:disabled):not([aria-disabled="true"]),
+    .tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: transparent;
+        color: var(--tn-text-normal);
+    }
 }
-
 .tasknotes-plugin .tn-segmented__item.is-selected,
 .tasknotes-plugin .tnc .tnc-toolbar-views .tnc-btn.tnc-btn-view[aria-pressed="true"] {
     background: var(--tn-segmented-selected-bg);
@@ -182,18 +186,19 @@
     max-width: min(22rem, 100%);
     height: var(--tn-control-md);
     padding: 0 var(--tn-space-2);
-    border: 1px solid var(--tn-hairline);
+    border: 1px solid transparent;
     border-radius: var(--tn-radius-md);
-    background: var(--tn-bg-primary);
+    background: var(--tn-bg-secondary);
     color: var(--tn-text-muted);
     transition: none;
 }
 
-.tasknotes-plugin .tn-chip--property:hover {
-    background: var(--tn-hover);
-    color: var(--tn-text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .tn-chip--property:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-hover);
+        color: var(--tn-text-normal);
+    }
 }
-
 .tasknotes-plugin .tn-chip--property:focus-visible {
     outline: 2px solid var(--tn-focus-ring);
     outline-offset: 2px;
@@ -447,7 +452,7 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
 @keyframes tn-popover-in {
     from {
         opacity: 0;
-        transform: translateY(-4px);
+        transform: translateY(calc(-1 * var(--tn-space-1)));
     }
 }
 
@@ -483,6 +488,8 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     min-height: 0;
     overflow-y: auto;
     padding: var(--tn-menu-padding);
+    overscroll-behavior: contain;
+    scroll-padding-block: var(--tn-menu-padding);
 }
 
 .tn-picker__group {
@@ -525,7 +532,7 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
 }
 
 .tn-picker__row.is-active {
-    background: var(--tn-selected);
+    background: var(--tn-hover);
     color: var(--tn-text-normal);
 }
 
@@ -602,7 +609,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 /* Toast */
 .tn-toast {
     position: absolute;
-    bottom: var(--tn-space-1);
+    bottom: var(--tn-space-3);
     right: var(--tn-space-3);
     max-width: calc(100vw - var(--tn-space-6));
     z-index: var(--layer-notice, 60);
@@ -622,14 +629,16 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 @keyframes tn-toast-in {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(var(--tn-space-2));
     }
 }
 
 .tn-toast__action {
-    height: auto;
-    padding: 0;
+    position: relative;
+    min-height: var(--tn-control-md);
+    padding: var(--tn-space-1) var(--tn-space-2);
     border: none;
+    border-radius: var(--tn-radius-md);
     background: transparent;
     box-shadow: none;
     color: var(--tn-text-accent);
@@ -638,11 +647,37 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     cursor: pointer;
 }
 
-.tn-toast__action:hover {
-    box-shadow: none;
-    text-decoration: underline;
+.tn-toast__action[aria-busy="true"] {
+    color: transparent;
 }
 
+.tn-toast__action[aria-busy="true"]::after {
+    content: "";
+    position: absolute;
+    width: var(--tn-glyph-sm);
+    height: var(--tn-glyph-sm);
+    inset: 0;
+    margin: auto;
+    border: var(--tn-space-half) solid var(--tn-text-muted);
+    border-inline-end-color: transparent;
+    border-radius: var(--tn-radius-full);
+    animation: tn-action-pending calc(var(--tn-motion-slow) * 4) linear infinite;
+}
+
+@keyframes tn-action-pending {
+    to { transform: rotate(1turn); }
+}
+
+.tn-toast.is-error {
+    border-color: var(--tn-danger-text);
+}
+
+@media (hover: hover) {
+    .tn-toast__action:hover:not(:disabled):not([aria-disabled="true"]) {
+        box-shadow: none;
+        text-decoration: underline;
+    }
+}
 /* Empty state */
 .tasknotes-plugin.tn-notice {
     font-family: var(--font-interface);
@@ -909,12 +944,18 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 	outline-offset: calc(-1 * var(--tn-space-half));
 }
 
-.tasknotes-plugin .task-card.task-card--selected,
-.tasknotes-plugin .task-card.task-card--selected:hover {
+.tasknotes-plugin .task-card.task-card--selected {
     background: var(--tn-selected);
     color: var(--tn-text-normal);
 }
 
+
+@media (hover: hover) {
+    .tasknotes-plugin .task-card.task-card--selected:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-selected);
+        color: var(--tn-text-normal);
+    }
+}
 .tasknotes-plugin .task-card:focus-visible,
 .tasknotes-plugin:focus-within .task-card.tn-task-focused {
     background: var(--tn-bg-primary);
@@ -928,4 +969,107 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 body.is-mobile .tasknotes-plugin .tn-btn {
     min-height: var(--tn-touch-target);
     min-width: var(--tn-touch-target);
+}
+
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
+.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .filter-bar__action-button) {
+    transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast), border-color var(--tn-transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select, summary):focus-visible,
+.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action, .filter-bar__action-button):focus-visible {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+    box-shadow: none;
+}
+
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select):focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+}
+
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"]):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary),
+.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action, .filter-bar__action-button):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary) {
+    background: var(--tn-active);
+    color: var(--tn-text-normal);
+    transition: none;
+}
+
+.tasknotes-plugin :is(button, input, select, textarea, [role="button"]):is(:disabled, [aria-disabled="true"]) {
+    opacity: var(--tn-disabled-opacity);
+    cursor: not-allowed;
+}
+
+.tasknotes-plugin :is(button, [role="button"])[aria-busy="true"] {
+    cursor: progress;
+}
+
+.tn-picker[data-input-mode="keyboard"] .tn-picker__row.is-active:not([aria-disabled="true"]) {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: calc(-1 * var(--tn-space-half));
+}
+
+.tn-picker[data-input-mode] .tn-picker__input:focus-visible {
+    outline: none;
+}
+
+.tasknotes-plugin :is(button, [role="button"]).tn-focus-from-pointer:focus-visible,
+.tasknotes-plugin.tn-focus-from-pointer:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+.tn-picker__row[aria-disabled="true"] {
+    color: var(--tn-text-muted);
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.tn-picker__row:active:not([aria-disabled="true"]) {
+    background: var(--tn-active);
+}
+
+.tn-picker__detail,
+.tn-picker__empty {
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .tn-segmented__item:disabled {
+    background: transparent;
+    box-shadow: none;
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action):hover:not(:disabled, [aria-disabled="true"]) {
+        transition-duration: 0s;
+    }
+
+    .tasknotes-plugin .tn-segmented__item.is-selected:hover:not(:disabled) {
+        background: var(--tn-segmented-selected-bg);
+        color: var(--tn-text-normal);
+    }
+
+    .tasknotes-plugin .tn-toast__action:hover:not(:disabled) {
+        background: var(--tn-hover);
+        text-decoration: none;
+    }
+}
+
+body.is-mobile .tasknotes-plugin :is(.tn-segmented__item, .tn-toast__action) {
+    min-height: var(--tn-touch-target);
+    min-width: var(--tn-touch-target);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin.tn-popover,
+    .tasknotes-plugin.tn-toast,
+    .tn-toast__action[aria-busy="true"]::after {
+        animation: none;
+    }
+
+    .tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
+    .tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item) {
+        transition: none;
+    }
 }
