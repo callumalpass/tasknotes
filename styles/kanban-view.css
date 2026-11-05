@@ -64,9 +64,11 @@
     white-space: nowrap;
 }
 
-.tasknotes-plugin .kanban-view__new-task-button:hover {
-    background: var(--tn-interactive-accent-hover);
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__new-task-button:hover {
+        background: var(--tn-interactive-accent-hover);
+        box-shadow: none;
+    }
 }
 
 .tasknotes-plugin .kanban-view__new-task-button:active {
@@ -146,8 +148,10 @@
     border-radius: var(--tn-radius-sm);
 }
 
-.tasknotes-plugin .kanban-view__board::-webkit-scrollbar-thumb:hover {
-    background: var(--tn-text-muted);
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__board::-webkit-scrollbar-thumb:hover {
+        background: var(--tn-text-muted);
+    }
 }
 
 /* Loading Indicator */
@@ -271,11 +275,12 @@
 }
 
 .tasknotes-plugin .kanban-view__column--status-colored {
-    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
+    background: var(--background-secondary);
 }
 
 .tasknotes-plugin .kanban-view__column--dragover {
-    border-color: var(--tn-interactive-accent);
+    border-color: var(--tn-drop-indicator);
+    background: var(--tn-drop-surface);
 }
 
 .tasknotes-plugin .kanban-view__column--unknown-status {
@@ -343,7 +348,7 @@
     align-items: center;
     gap: var(--tn-space-half);
     padding: var(--tn-space-1) var(--tn-space-2);
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--tn-hairline);
     background: var(--background-secondary);
     position: sticky;
     top: 0;
@@ -356,9 +361,9 @@
 
 .tasknotes-plugin .kanban-view__column-header .kanban-view__drag-handle,
 .tasknotes-plugin .kanban-view__column-header-cell .kanban-view__drag-handle {
-    position: absolute;
-    inset-inline-start: var(--tn-space-2);
-    z-index: 1;
+    position: static;
+    width: var(--tn-glyph-sm);
+    flex: none;
 }
 
 .tasknotes-plugin .kanban-view__column-header > .kanban-view__column-collapse-button,
@@ -377,23 +382,35 @@
     flex: 0 0 auto;
 }
 
-.tasknotes-plugin .kanban-view__column-header:hover > .kanban-view__column-icon,
-.tasknotes-plugin .kanban-view__column-header-cell:hover > .kanban-view__column-icon {
-    opacity: 0;
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__column-header:hover > .kanban-view__column-icon,
+    .tasknotes-plugin .kanban-view__column-header-cell:hover > .kanban-view__column-icon {
+        opacity: 1;
+    }
 }
 
-.tasknotes-plugin .kanban-view__column-header:hover > .kanban-view__column-count,
-.tasknotes-plugin .kanban-view__column-header-cell:hover > .kanban-view__column-count,
 .tasknotes-plugin .kanban-view__column-header:focus-within > .kanban-view__column-count,
 .tasknotes-plugin .kanban-view__column-header-cell:focus-within > .kanban-view__column-count {
     visibility: visible;
 }
 
-.tasknotes-plugin .kanban-view__column:not(.kanban-view__column--collapsed) .kanban-view__column-header:hover > .kanban-view__column-title,
-.tasknotes-plugin .kanban-view__column-header-cell:not(.kanban-view__column--collapsed):hover > .kanban-view__column-title,
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__column-header:hover > .kanban-view__column-count,
+    .tasknotes-plugin .kanban-view__column-header-cell:hover > .kanban-view__column-count {
+        visibility: visible;
+    }
+}
+
 .tasknotes-plugin .kanban-view__column:not(.kanban-view__column--collapsed) .kanban-view__column-header:focus-within > .kanban-view__column-title,
 .tasknotes-plugin .kanban-view__column-header-cell:not(.kanban-view__column--collapsed):focus-within > .kanban-view__column-title {
     clip-path: none;
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__column:not(.kanban-view__column--collapsed) .kanban-view__column-header:hover > .kanban-view__column-title,
+    .tasknotes-plugin .kanban-view__column-header-cell:not(.kanban-view__column--collapsed):hover > .kanban-view__column-title {
+        clip-path: none;
+    }
 }
 
 .tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-header > .kanban-view__column-collapse-button,
@@ -414,9 +431,10 @@
     cursor: grabbing;
 }
 
-.tasknotes-plugin .kanban-view__column-header--dragging {
-    opacity: 0.5;
-    box-shadow: var(--tn-shadow-medium);
+.tasknotes-plugin .kanban-view__column-header--dragging,
+.tasknotes-plugin .kanban-view__column-header-cell--dragging {
+    opacity: var(--tn-drag-source-opacity);
+    box-shadow: none;
 }
 
 /* Only active long-press touch drags opt out of hit-testing.
@@ -440,11 +458,13 @@
     flex-shrink: 0;
 }
 
-.tasknotes-plugin .kanban-view__column-header:hover .kanban-view__drag-handle,
-.tasknotes-plugin .kanban-view__column-header-cell:hover .kanban-view__drag-handle {
-    opacity: 1;
-    color: var(--tn-text-normal);
-    background: var(--tn-interactive-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__column-header:hover .kanban-view__drag-handle,
+    .tasknotes-plugin .kanban-view__column-header-cell:hover .kanban-view__drag-handle {
+        opacity: 1;
+        color: var(--tn-text-normal);
+        background: var(--tn-interactive-hover);
+    }
 }
 
 .tasknotes-plugin .kanban-view__drag-handle:active {
@@ -508,7 +528,8 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
     line-height: 1.2;
     font-weight: 400;
     margin: 0;
-    margin-left: var(--tn-space-half);
+    margin-inline-start: auto;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -538,10 +559,16 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
     cursor: var(--cursor-link, pointer);
 }
 
-.tasknotes-plugin .kanban-view__column-collapse-button:hover,
 .tasknotes-plugin .kanban-view__column-collapse-button:focus-visible {
     background: var(--tn-interactive-hover);
     color: var(--tn-text-normal);
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__column-collapse-button:hover {
+        background: var(--tn-interactive-hover);
+        color: var(--tn-text-normal);
+    }
 }
 
 .tasknotes-plugin .kanban-view__column-collapse-button svg {
@@ -586,12 +613,25 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
     color: var(--text-normal);
     border: 1px solid var(--tn-hairline);
     border-radius: var(--tn-radius-lg);
-    padding: var(--tn-space-2);
+    padding: var(--tn-space-3);
     box-shadow: none;
+    transform: none;
+    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .kanban-view__card-wrapper > .task-card:hover {
-    border-color: var(--background-modifier-border-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__card-wrapper > .task-card:hover {
+        border-color: var(--tn-border-color-hover);
+        background: color-mix(in srgb, var(--tn-hover), var(--background-primary) 60%);
+        box-shadow: none;
+        transform: none;
+        transition-duration: 0ms;
+    }
+
+    .tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected:hover,
+    .tasknotes-plugin .kanban-view__card-wrapper--selected > .task-card:hover {
+        background: var(--tn-selected-hover);
+    }
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected,
@@ -602,8 +642,43 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
 
 .tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected-primary,
 .tasknotes-plugin .kanban-view__card-wrapper--selected-primary > .task-card {
+    border-color: var(--tn-drop-indicator);
+    outline: none;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper--selected,
+.tasknotes-plugin .kanban-view__card-wrapper--selected-primary,
+.tasknotes-plugin:focus-within .kanban-view__card-wrapper.tn-task-focused {
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card:focus-visible,
+.tasknotes-plugin .kanban-view__card-wrapper > .task-card.tn-task-focused,
+.tasknotes-plugin .kanban-view__card-wrapper.tn-task-focused > .task-card {
     outline: 2px solid var(--tn-focus-ring);
-    outline-offset: -2px;
+    outline-offset: 1px;
+}
+
+.tasknotes-plugin.kanban-view--pointer .kanban-view__card-wrapper > .task-card.tn-task-focused,
+.tasknotes-plugin.kanban-view--pointer .kanban-view__card-wrapper.tn-task-focused > .task-card {
+    outline: none;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper:active:not(.kanban-view__card--dragging) > .task-card {
+    background: var(--tn-active);
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper > .task-card:hover,
+body.tn-drag-active .tasknotes-plugin .kanban-view__card-wrapper:not(.kanban-view__card--dragging) > .task-card:hover {
+    background: var(--tn-bg-primary);
+    transform: none;
+    box-shadow: none;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper--selected > .task-card:hover {
+    background: var(--tn-selected);
 }
 
 /* Trailing icons sit over the title's right padding, so metadata below keeps the full width. */
@@ -654,10 +729,19 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-te
     -webkit-mask-image: none;
     justify-content: flex-start;
     gap: var(--tn-space-1) var(--tn-space-2);
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     white-space: nowrap;
-    overflow: hidden;
-    max-height: calc(var(--tn-type-xs) * 1.5);
+    overflow: visible;
+    max-height: none;
+}
+
+.tasknotes-plugin .kanban-view__card-wrapper :is(.tag, .context-tag, .task-card__project-link) {
+    border: none;
+    border-radius: var(--tn-radius-none);
+    background: transparent;
+    box-shadow: none;
+    padding-inline: 0;
+    color: var(--tn-text-metadata);
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__metadata > * {
@@ -723,13 +807,20 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-te
     transition: opacity var(--tn-transition-fast), color var(--tn-transition-fast), background-color var(--tn-transition-fast);
 }
 
-.tasknotes-plugin .kanban-view__add-task-button:hover,
-.tasknotes-plugin .kanban-view__add-task-button:focus-visible,
-.tasknotes-plugin .kanban-view__column:hover > .kanban-view__add-task-footer .kanban-view__add-task-button,
-.tasknotes-plugin .kanban-view__swimlane-column:hover > .kanban-view__add-task-footer .kanban-view__add-task-button {
+.tasknotes-plugin .kanban-view__add-task-button:focus-visible {
     color: var(--tn-text-normal);
     background: var(--tn-interactive-hover);
     opacity: 1;
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__add-task-button:hover,
+    .tasknotes-plugin .kanban-view__column:hover > .kanban-view__add-task-footer .kanban-view__add-task-button,
+    .tasknotes-plugin .kanban-view__swimlane-column:hover > .kanban-view__add-task-footer .kanban-view__add-task-button {
+        color: var(--tn-text-normal);
+        background: var(--tn-interactive-hover);
+        opacity: 1;
+    }
 }
 
 .tasknotes-plugin .kanban-view__add-task-button svg {
@@ -771,14 +862,19 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-te
     opacity: 0;
 }
 
-.tasknotes-plugin .kanban-view__column-header:hover .kanban-view__add-task-button,
-.tasknotes-plugin .kanban-view__column-header-cell:hover .kanban-view__add-task-button,
 .tasknotes-plugin .kanban-view__column-header:focus-within .kanban-view__add-task-button,
 .tasknotes-plugin .kanban-view__column-header-cell:focus-within .kanban-view__add-task-button,
-.tasknotes-plugin .kanban-view__column-header:hover .kanban-view__column-collapse-button,
 .tasknotes-plugin .kanban-view__column-header:focus-within .kanban-view__column-collapse-button,
 .tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-collapse-button {
     opacity: 1;
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__column-header:hover .kanban-view__add-task-button,
+    .tasknotes-plugin .kanban-view__column-header-cell:hover .kanban-view__add-task-button,
+    .tasknotes-plugin .kanban-view__column-header:hover .kanban-view__column-collapse-button {
+        opacity: 1;
+    }
 }
 
 @media (hover: none) {
@@ -801,8 +897,10 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-te
 }
 
 /* Dragging state for card wrappers */
-.tasknotes-plugin .kanban-view__card-wrapper[draggable="true"]:hover {
-    cursor: grab;
+@media (hover: hover) {
+    .tasknotes-plugin .kanban-view__card-wrapper[draggable="true"]:hover {
+        cursor: grab;
+    }
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper[draggable="true"]:active {
@@ -951,19 +1049,23 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     user-select: none;
 }
 
-.tasknotes-plugin .kanban-view__touch-ghost {
+.tasknotes-plugin.kanban-view__touch-ghost {
     border-radius: var(--tn-radius-lg);
     background: var(--tn-bg-primary);
-    border: 2px solid var(--tn-interactive-accent);
+    border: 1px solid var(--tn-border-color-hover);
+    position: absolute;
+    pointer-events: none;
+    z-index: var(--tn-z-tooltip);
+    transform: translate(-50%, -50%);
+    box-shadow: var(--tn-drag-shadow);
 }
 
 .tasknotes-plugin.kanban-view__drag-image,
 .tasknotes-plugin.kanban-view__floating-drag-preview {
-    border: 1px solid var(--tn-interactive-accent);
+    border: 1px solid var(--tn-border-color-hover);
     border-radius: var(--tn-radius-lg);
     background: var(--tn-bg-primary);
-    box-shadow: 0 8px 18px color-mix(in srgb, var(--tn-shadow-color) 24%, transparent),
-        0 0 0 2px color-mix(in srgb, var(--tn-interactive-accent) 18%, transparent);
+    box-shadow: var(--tn-drag-shadow);
 }
 
 .tasknotes-plugin.kanban-view__drag-image {
@@ -972,6 +1074,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     top: -10000px;
     margin: 0;
     pointer-events: none;
+    opacity: 0;
 }
 
 .tasknotes-plugin.kanban-view__floating-drag-preview {
@@ -983,24 +1086,42 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     gap: var(--tn-space-1);
     box-sizing: border-box;
     width: var(--tn-kanban-drag-preview-width, auto);
-    height: var(--tn-kanban-drag-preview-height, auto);
+    height: auto;
     min-height: var(--tn-row-height);
     padding: 0;
     pointer-events: none;
     transform: var(--tn-kanban-drag-preview-transform, translate3d(-9999px, -9999px, 0));
     z-index: var(--layer-tooltip, 10000);
-    overflow: hidden;
-    contain: layout paint style;
+    overflow: visible;
     cursor: grabbing;
-    opacity: 0.96;
+    opacity: 1;
     will-change: transform;
 }
 
 .tasknotes-plugin.kanban-view__floating-drag-preview > .kanban-view__card-wrapper {
     width: 100%;
+    min-width: 0;
 }
 
-.tasknotes-plugin.kanban-view__floating-drag-preview-title {
+.tasknotes-plugin.kanban-view__floating-drag-preview[data-drag-count] > .kanban-view__card-wrapper .task-card__title {
+    padding-inline-end: var(--tn-space-5);
+}
+
+.tasknotes-plugin .kanban-view__floating-drag-preview--invalid,
+.tasknotes-plugin.kanban-view__floating-drag-preview--invalid {
+    border-color: var(--tn-danger-text);
+    flex-direction: column;
+    cursor: not-allowed;
+}
+
+.tasknotes-plugin .kanban-view__drag-feedback {
+    padding: var(--tn-space-2) var(--tn-space-3);
+    color: var(--tn-danger-text);
+    font-size: var(--tn-type-xs);
+    line-height: 1.4;
+}
+
+.tasknotes-plugin .kanban-view__floating-drag-preview-title {
     min-width: 0;
     overflow: hidden;
     color: var(--tn-text-normal);
@@ -1009,9 +1130,11 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     line-height: 1.3;
     text-overflow: ellipsis;
     white-space: nowrap;
+    padding: var(--tn-space-2) var(--tn-space-3);
 }
 
-.tasknotes-plugin.kanban-view__floating-drag-preview::after {
+.tasknotes-plugin.kanban-view__floating-drag-preview::after,
+.tasknotes-plugin.kanban-view__touch-ghost[data-drag-count]::after {
     content: attr(data-drag-count);
     display: none;
     flex: 0 0 auto;
@@ -1024,21 +1147,34 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     font-weight: var(--font-semibold);
     line-height: 1.4;
     opacity: 0;
+    position: absolute;
+    inset-block-start: var(--tn-space-2);
+    inset-inline-end: var(--tn-space-2);
 }
 
-.tasknotes-plugin.kanban-view__floating-drag-preview[data-drag-count]::after {
+.tasknotes-plugin.kanban-view__floating-drag-preview[data-drag-count]::after,
+.tasknotes-plugin.kanban-view__touch-ghost[data-drag-count]::after {
     display: block;
     opacity: 1;
 }
 
 .tasknotes-plugin .kanban-view__card--dragging {
-    background: var(--tn-selected);
-    outline: 1px dashed color-mix(in srgb, var(--tn-interactive-accent) 55%, transparent);
-    outline-offset: -2px;
+    background: transparent;
+    outline: none;
 }
 
 .tasknotes-plugin .kanban-view__card--dragging > .task-card {
-    visibility: hidden;
+    visibility: visible;
+    opacity: var(--tn-drag-source-opacity);
+    background: var(--tn-bg-primary);
+    border-color: var(--tn-hairline);
+    outline: none;
+    transform: none;
+}
+
+body.tn-drag-active .tasknotes-plugin .kanban-view__card--dragging > .task-card.tn-task-focused,
+.tasknotes-plugin .kanban-view__touch-drag-source > .task-card.tn-task-focused {
+    outline: none;
 }
 
 .tasknotes-plugin .kanban-view__card--returned {
@@ -1068,10 +1204,10 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     top: calc(-1 * var(--tn-space-1));
     height: var(--tn-space-half);
     box-sizing: border-box;
-    border: 1px solid var(--tn-interactive-accent);
+    border: none;
     border-radius: var(--tn-radius-lg);
-    background: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+    background: var(--tn-drop-indicator);
+    box-shadow: none;
     pointer-events: none;
 }
 
@@ -1080,27 +1216,77 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     content: "";
     position: absolute;
     inset-inline: var(--tn-space-1);
-    bottom: 0;
+    top: calc(var(--tn-kanban-drop-top, 0px) + var(--tn-space-half));
     height: var(--tn-space-half);
     box-sizing: border-box;
-    border: 1px solid var(--tn-interactive-accent);
+    border: none;
     border-radius: var(--tn-radius-lg);
-    background: color-mix(in srgb, var(--tn-interactive-accent) 12%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tn-interactive-accent) 20%, transparent);
+    background: var(--tn-drop-indicator);
+    box-shadow: none;
+    pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
     .tasknotes-plugin .kanban-view__card-wrapper--drag-shift {
         transition: none;
     }
+
+    .tasknotes-plugin .kanban-view__card--returned,
+    .tasknotes-plugin .kanban-view__card--settled > .task-card {
+        animation: none;
+    }
+}
+
+.tasknotes-plugin .kanban-view__column-header-cell--status-colored,
+.tasknotes-plugin .kanban-view__swimlane-column--status-colored {
+    background: var(--background-secondary);
+}
+
+.tasknotes-plugin .kanban-view__swimlane-column--dragover {
+    background: var(--tn-drop-surface);
+    box-shadow: inset 0 0 0 1px var(--tn-drop-indicator);
+}
+
+.tasknotes-plugin .kanban-view__board--invalid-drop,
+.tasknotes-plugin .kanban-view__board--invalid-drop * {
+    cursor: not-allowed;
+}
+
+.tasknotes-plugin .kanban-view__swimlane-label--dragover {
+    background: var(--tn-drop-surface);
+    box-shadow: inset 0 2px var(--tn-drop-indicator);
+}
+
+.tasknotes-plugin .kanban-view__swimlane-label--dragging {
+    opacity: var(--tn-drag-source-opacity);
+}
+
+.tasknotes-plugin .kanban-view__card--pending > .task-card {
+    border-style: dashed;
+    cursor: progress;
+}
+
+.tasknotes-plugin .kanban-view__card--settled > .task-card {
+    animation: kanban-settle var(--tn-motion-slow) var(--tn-ease);
+}
+
+@keyframes kanban-settle {
+    from { opacity: var(--tn-drag-source-opacity); }
+    to { opacity: 1; }
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__date),
+body.is-mobile .tasknotes-plugin :is(.kanban-view__column-collapse-button, .kanban-view__column-header .kanban-view__add-task-button, .kanban-view__column-header-cell .kanban-view__add-task-button) {
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
 }
 
 @media (pointer: coarse) {
     .tasknotes-plugin .kanban-view__column--dragover,
     .tasknotes-plugin .kanban-view__swimlane-column--dragover {
         border-color: var(--tn-interactive-accent);
-        border-width: 2px;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        border-width: 1px;
+        transition: border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast);
     }
 
     .tasknotes-plugin .kanban-view__column-header--dragover,

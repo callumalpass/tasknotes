@@ -61,7 +61,7 @@ test.beforeEach(async () => {
     ]) {
       await app.vault.create(`${folder}/${name}.md`, `---\ntitle: ${name}\ntags: [task, design-review]\n${status}: open\n${priority}: ${rank}\n${sort}: ${order}\n${due}: 2026-11-10\nprojects: ["[[Quarterly planning and delivery]]"]\ncontexts: [office, review]\n---\n`);
     }
-    await app.workspace.getLeaf(false).openFile(await app.vault.create(boardPath, content));
+    await app.workspace.getLeaf(false).openFile(await app.vault.create(boardPath, content.replace('__MANUAL_ORDER__', sort)));
     return original;
   }, {
     folder, boardPath,
@@ -71,7 +71,7 @@ test.beforeEach(async () => {
         type: 'tasknotesKanban', name: 'Board', groupBy: { property: 'status', direction: 'ASC' },
         swimLane: 'note.priority', hideEmptySwimLanes: false, columnWidth: 260,
         order: ['file.name', 'priority', 'due', 'projects', 'contexts', 'file.tags'],
-        sort: [{ column: 'sort_order', direction: 'ASC' }],
+        sort: [{ column: '__MANUAL_ORDER__', direction: 'ASC' }],
       }],
     }),
   });
