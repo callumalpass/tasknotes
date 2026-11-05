@@ -55,7 +55,8 @@ export function collectFileUndo(plugin: TaskNotesPlugin, receipts: FileUndoRecei
 
 export function createFileUndo(
 	plugin: TaskNotesPlugin,
-	receipts: FileUndoReceipt[]
+	receipts: FileUndoReceipt[],
+	reconcile?: () => Promise<void>
 ): () => Promise<void> {
 	let diskRestored = false;
 	return async () => {
@@ -182,6 +183,7 @@ export function createFileUndo(
 			await publish();
 		};
 		await lock(0);
+		await reconcile?.();
 	};
 }
 

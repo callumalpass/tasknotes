@@ -816,6 +816,14 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
     outline-offset: var(--tn-space-1);
 }
 
+.tasknotes-plugin .tasknotes-settings__card-chevron {
+    display: inline-flex;
+    flex: none;
+    margin-inline-start: auto;
+    padding-inline-start: var(--tn-space-2);
+    color: var(--tn-text-muted);
+}
+
 @media (hover: hover) {
     .tasknotes-settings__card-header--clickable:hover:not(:disabled):not([aria-disabled="true"]) {
         background: var(--background-modifier-hover);

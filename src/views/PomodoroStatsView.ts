@@ -287,10 +287,10 @@ export class PomodoroStatsView extends ItemView {
 					: "pomodoro-stats-view__session-status--interrupted"
 			);
 
+			const taskEl = sessionEl.createSpan({
+				cls: "session-task pomodoro-stats-view__session-task",
+			});
 			if (session.taskPath) {
-				const taskEl = sessionEl.createSpan({
-					cls: "session-task pomodoro-stats-view__session-task",
-				});
 				const taskName = session.taskPath.split("/").pop()?.replace(".md", "") || "";
 				taskEl.textContent = taskName;
 			}

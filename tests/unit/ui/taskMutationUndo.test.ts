@@ -45,8 +45,29 @@ it("publishes restored cache and side effects before a queued edit can write", a
 		} },
 	};
 	const changes = buildTaskMovementUndo({ scheduled: "2026-11-06T09:00" }, { scheduled: "2026-11-06T13:00" }, "dateModified");
-	await createFileUndo(plugin as never, [{ file, content: { changes, beforeBody: "", afterBody: "" } }])();
+	const reconcile = jest.fn(async () => {
+		await nextEdit;
+		expect(cached.scheduled).toBe("2026-11-06T10:00");
+	});
+	await createFileUndo(plugin as never, [{ file, content: { changes, beforeBody: "", afterBody: "" } }], reconcile)();
+	expect(reconcile).toHaveBeenCalledTimes(1);
 	await nextEdit;
 	expect(readCompletionContent(content).frontmatter.scheduled).toBe("2026-11-06T10:00");
 	expect(cached.scheduled).toBe("2026-11-06T10:00");
+});
+
+it("keeps Undo pending through reconciliation and allows reconciliation retry", async () => {
+	let release: () => void = () => undefined;
+	const pending = new Promise<void>(resolve => { release = resolve; });
+	const reconcile = jest.fn().mockImplementationOnce(() => pending).mockResolvedValue(undefined);
+	const undo = createFileUndo({ fieldMapper: { toUserField: (field: string) => field }, emitter: { trigger: jest.fn() } } as never, [], reconcile);
+	let completed = false;
+	const running = undo().then(() => { completed = true; });
+	await Promise.resolve();
+	expect(completed).toBe(false);
+	release();
+	await running;
+	expect(completed).toBe(true);
+	await undo();
+	expect(reconcile).toHaveBeenCalledTimes(2);
 });

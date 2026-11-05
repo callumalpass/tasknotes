@@ -1316,6 +1316,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private syncDayPanel(): void {
+		this.calendarEl?.classList.toggle("tn-calendar-agenda-strip", this.viewOptions.showAgendaStrip && this.visibleView?.type === "list");
 		const enabled = this.viewOptions.showMonthDayPanel && this.visibleView?.type === "month";
 		this.calendarEl?.classList.toggle("tn-calendar-composition", enabled);
 		if (!enabled) {

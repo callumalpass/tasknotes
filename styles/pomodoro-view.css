@@ -757,14 +757,38 @@
     font-size: var(--tn-type-xs);
 }
 
+.tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__main-row {
+    flex-wrap: wrap;
+}
+
+.tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__content {
+    flex: 1 0 100%;
+    order: -1;
+    padding-right: 0;
+}
+
+.tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__title {
+    display: block;
+    width: 100%;
+}
+
+body .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card .task-card__title-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .tasknotes-plugin.pomodoro-view--very-narrow .task-card__metadata,
 .tasknotes-plugin.pomodoro-view--narrow .task-card__metadata {
     font-size: var(--tn-type-2xs);
 }
 
-/* Hide less essential elements in very narrow views */
 .tasknotes-plugin.pomodoro-view--very-narrow .task-card__context-menu {
-    display: none;
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 body.is-mobile .tasknotes-plugin.pomodoro-view button,

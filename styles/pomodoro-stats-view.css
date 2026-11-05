@@ -294,6 +294,7 @@
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-delete-button {
+    grid-column: -2 / -1;
     display: inline-flex;
     align-items: center;
     justify-content: center;

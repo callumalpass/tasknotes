@@ -70,6 +70,7 @@ import {
 	getTaskListPropertyValue,
 	stringifyTaskListGroupValue,
 	orderTaskListGroups,
+	reconcileTaskListGroups,
 	type TaskListGroup,
 	type TaskListHeaderItem,
 	type TaskListRenderItem,
@@ -2077,7 +2078,9 @@ export class TaskListView extends BasesViewBase {
 			showToast({ message });
 			return;
 		}
-		const undo = createFileUndo(this.plugin, [{ file, content: { changes: [...changes], beforeBody: "", afterBody: "" } }]);
+		const undo = createFileUndo(this.plugin, [{ file, content: { changes: [...changes], beforeBody: "", afterBody: "" } }], async () => {
+			await this.render();
+		});
 		if (undos) undos.push(undo);
 		else showTaskUndo([undo], false, 1, this.plugin.app.vault, message);
 	}
@@ -3064,14 +3067,20 @@ export class TaskListView extends BasesViewBase {
 		return 0;
 	}
 
-	private getPresentationOrderedGroups(): TaskListGroup[] {
-		return orderTaskListGroups(this.dataAdapter.getGroupedData() as TaskListGroup[],
+	private getPresentationOrderedGroups(tasks: readonly TaskInfo[] = Array.from(this.taskInfoCache.values())): TaskListGroup[] {
+		let groups = this.dataAdapter.getGroupedData() as TaskListGroup[];
+		const property = this.getGroupByPropertyId();
+		const field = property ? this.plugin.fieldMapper.lookupMappingKey(this.propertyMapper.basesToUserProperty(property)) : undefined;
+		if (field === "status" || field === "priority") {
+			groups = reconcileTaskListGroups(groups, tasks, field, key => this.dataAdapter.convertGroupKeyToString(key));
+		}
+		return orderTaskListGroups(groups,
 			this.getGroupByPropertyId() ?? "", (property, left, right) => this.comparePresentationGroupKeys(property, left, right));
 	}
 
 	private async renderGrouped(taskNotes: TaskInfo[]): Promise<void> {
 		const visibleProperties = this.getVisibleProperties();
-		const groups = this.getPresentationOrderedGroups();
+		const groups = this.getPresentationOrderedGroups(taskNotes);
 
 		// Apply search filter
 		const filteredTasks = this.applySearchFilter(taskNotes);
@@ -3863,7 +3872,7 @@ export class TaskListView extends BasesViewBase {
 			this.applyGroupingSnapshot(this.createSubPropertyHierarchySnapshot(groupedTasks));
 			items = buildTaskListSubPropertyRenderItems(groupedTasks, this.collapsedGroups);
 		} else {
-			const groups = this.getPresentationOrderedGroups();
+			const groups = this.getPresentationOrderedGroups(taskNotes);
 			this.applyGroupingSnapshot(this.createGroupedHierarchySnapshot(groups, renderTasks));
 			items = buildTaskListGroupedRenderItems({
 				compareGroupKeys: (property, left, right) => this.comparePresentationGroupKeys(property, left, right),

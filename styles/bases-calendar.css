@@ -920,6 +920,7 @@
 }
 
 .tasknotes-plugin .tn-calendar-day-panel {
+    container: tn-calendar-day-panel / inline-size;
     min-width: 0;
     overflow: auto;
     border-left: 1px solid var(--tn-hairline);
@@ -930,8 +931,75 @@
     height: auto;
 }
 
-.tasknotes-plugin .tn-calendar-day-panel .tn-calendar-list-stamp {
-    flex-basis: 16ch;
+@container tn-calendar-day-panel (max-width: 480px) {
+    .tasknotes-plugin .tn-calendar-list-entry {
+        display: block;
+    }
+
+    .tasknotes-plugin .tn-calendar-list-stamp {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--tn-space-2);
+        padding: var(--tn-space-1) var(--tn-space-2) 0;
+    }
+
+    .tasknotes-plugin .tn-calendar-list-stamp:empty {
+        display: none;
+    }
+
+    .tasknotes-plugin .tn-calendar-list-entry .task-card {
+        width: 100%;
+    }
+}
+
+@container (max-width: 600px) {
+    .tasknotes-plugin .tn-calendar-agenda-strip > .tnc > .tnc-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        padding-block: 0;
+    }
+
+    .tasknotes-plugin .tn-calendar-agenda-strip > .tnc > .tnc-toolbar .tnc-toolbar-start {
+        display: flex;
+    }
+
+    .tasknotes-plugin .tn-calendar-agenda-strip > .tnc > .tnc-toolbar :is(.tnc-toolbar-nav, .tnc-title) {
+        display: none;
+    }
+
+    .tasknotes-plugin .tnc-strip {
+        padding: var(--tn-space-1) var(--tn-space-2);
+    }
+
+    .tasknotes-plugin .tnc-strip-title {
+        font-size: var(--tn-type-md);
+    }
+
+    .tasknotes-plugin .tn-calendar-agenda-strip .tnc-strip-head {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .tasknotes-plugin .tn-calendar-agenda-strip .tnc-strip-dows span {
+        padding-bottom: 0;
+    }
+
+    .tasknotes-plugin .tn-calendar-agenda-strip .tnc-strip-day {
+        min-height: var(--tn-touch-target);
+    }
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-day-panel .task-card__title-text {
+    grid-column: 2 / -1;
+    align-self: center;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-day-panel .task-card__status-dot {
+    grid-row: 1;
+}
+
+body.is-mobile .tasknotes-plugin .tn-calendar-day-panel .task-card__priority-dot {
+    grid-column: 1;
 }
 
 .tasknotes-plugin .tnc-dg-day.tn-calendar-day-selected .tnc-dg-num {

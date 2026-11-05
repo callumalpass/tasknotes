@@ -241,6 +241,7 @@ export class KanbanView extends BasesViewBase {
 
 	private boardEl: HTMLElement | null = null;
 	private columnNav: HTMLElement | null = null;
+	private activeNavigatorColumn: string | null = null;
 	private columnSelect: HTMLSelectElement | null = null;
 	private previousColumn: HTMLButtonElement | null = null;
 	private nextColumn: HTMLButtonElement | null = null;
@@ -595,6 +596,7 @@ export class KanbanView extends BasesViewBase {
 
 	async render(): Promise<void> {
 		if (!this.boardEl || !this.rootElement) return;
+		const navigatorColumn = this.activeNavigatorColumn;
 		if (!this.data?.data) return;
 		if (this.draggedTaskPath || this.structureDragActive || this.touchDragActive) {
 			this.pendingRender = true;
@@ -696,7 +698,8 @@ export class KanbanView extends BasesViewBase {
 				await this.renderFlat(groups, allGroups);
 			}
 			this.updateBoardLayout();
-			this.updateColumnNavigator();
+			this.activeNavigatorColumn = navigatorColumn;
+			this.updateColumnNavigator(true);
 			this.restoreCollapseButtonFocus(focusedCollapseColumn);
 		} catch (error: unknown) {
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error rendering:", {
@@ -2042,7 +2045,7 @@ export class KanbanView extends BasesViewBase {
 		const openCount = columns.length - collapsedCount;
 		const available = board.clientWidth - labelWidth - 16 - collapsedWidth - Math.max(0, columns.length - 1) * (swimlanes ? 0 : 8);
 		const width = board.clientWidth < 480
-			? Math.max(320, Math.min(this.columnWidth, board.clientWidth - labelWidth - 44))
+			? Math.max(0, Math.min(this.columnWidth, board.clientWidth - labelWidth - 16))
 			: Math.max(320, Math.min(this.columnWidth, available / Math.max(1, openCount)));
 		const tracks = columns.map(column => {
 			const collapsed = column.classList.contains("kanban-view__column--collapsed");
@@ -4025,7 +4028,9 @@ export class KanbanView extends BasesViewBase {
 						rewritten.add(target.path);
 						receipts.push({ file: target, content: { changes, beforeBody: "", afterBody: "" } });
 						if (receipts.length === 1) {
-							taskUndo.undo.push(createFileUndo(this.plugin, receipts));
+							taskUndo.undo.push(createFileUndo(this.plugin, receipts, async () => {
+								await this.render();
+							}));
 							finishTaskUndo();
 						}
 					};
@@ -4253,13 +4258,16 @@ export class KanbanView extends BasesViewBase {
 			this.columnSelect = nav.createEl("select", { cls: "tn-select", attr: { "aria-label": nav.getAttribute("aria-label") ?? "" } });
 			this.nextColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
 			setIcon(this.nextColumn, "chevron-right");
-			this.previousColumn.addEventListener("click", () => this.revealNavigatorColumn(Number(this.columnSelect?.value) - 1));
-			this.nextColumn.addEventListener("click", () => this.revealNavigatorColumn(Number(this.columnSelect?.value) + 1));
-			this.columnSelect.addEventListener("change", () => this.revealNavigatorColumn(Number(this.columnSelect?.value)));
+			this.previousColumn.addEventListener("click", () => this.revealNavigatorColumn((this.columnSelect?.selectedIndex ?? 0) - 1));
+			this.nextColumn.addEventListener("click", () => this.revealNavigatorColumn((this.columnSelect?.selectedIndex ?? 0) + 1));
+			this.columnSelect.addEventListener("change", () => this.revealNavigatorColumn(this.columnSelect?.selectedIndex ?? 0));
 			this.registerDomEvent(board, "scroll", () => this.updateColumnNavigator());
 		}
 		this.registerBoardListeners();
-		const observer = new ResizeObserver(() => this.updateBoardLayout());
+		const observer = new ResizeObserver(() => {
+			this.updateBoardLayout();
+			this.updateColumnNavigator(true);
+		});
 		observer.observe(board);
 		this.register(() => observer.disconnect());
 	}
@@ -4271,28 +4279,39 @@ export class KanbanView extends BasesViewBase {
 	private revealNavigatorColumn(index: number): void {
 		const column = this.navigatorColumns()[index];
 		if (!column) return;
+		this.activeNavigatorColumn = column.dataset.group ?? column.dataset.columnKey ?? null;
 		column.scrollIntoView({ block: "nearest", inline: "start", behavior: this.containerEl.ownerDocument.defaultView?.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
 	}
 
-	private updateColumnNavigator(): void {
+	private updateColumnNavigator(restoreAlignment = false): void {
 		const select = this.columnSelect;
 		if (!select || !this.boardEl || !this.previousColumn || !this.nextColumn) return;
 		const columns = this.navigatorColumns();
+		if (!columns.length) return;
+		const keys = columns.map(column => column.dataset.group ?? column.dataset.columnKey ?? "");
 		const labels = columns.map(column => `${column.querySelector(".kanban-view__column-title")?.textContent ?? column.dataset.group ?? column.dataset.columnKey ?? ""} · ${column.querySelector(".kanban-view__column-count")?.textContent ?? "0"}`);
-		if (Array.from(select.options).map(option => option.text).join("\n") !== labels.join("\n")) {
+		if (Array.from(select.options).map(option => `${option.value}:${option.text}`).join("\n") !== labels.map((label, index) => `${keys[index]}:${label}`).join("\n")) {
 			select.empty();
-			labels.forEach((label, index) => select.createEl("option", { text: label, value: String(index) }));
+			labels.forEach((label, index) => select.createEl("option", { text: label, value: keys[index] }));
 		}
-		const left = this.boardEl.getBoundingClientRect().left;
+		if (this.columnNav) this.columnNav.hidden = columns.length < 2;
+		const padding = parseFloat(this.containerEl.ownerDocument.defaultView?.getComputedStyle(this.boardEl).paddingLeft ?? "0") || 0;
+		const left = this.boardEl.getBoundingClientRect().left + padding;
+		if (restoreAlignment && this.columnNav?.offsetWidth) {
+			let target = keys.indexOf(this.activeNavigatorColumn ?? "");
+			if (target < 0) target = columns.findIndex(column => column.querySelector(".task-card") !== null);
+			const column = columns[Math.max(0, target)];
+			this.boardEl.scrollLeft += column.getBoundingClientRect().left - left;
+		}
 		let closest = 0;
 		for (let index = 1; index < columns.length; index++) if (Math.abs(columns[index].getBoundingClientRect().left - left) < Math.abs(columns[closest].getBoundingClientRect().left - left)) closest = index;
-		select.value = String(closest);
+		select.value = keys[closest];
+		if (this.columnNav?.offsetWidth) this.activeNavigatorColumn = keys[closest];
 		select.title = labels[closest] ?? "";
 		this.previousColumn.disabled = closest === 0;
 		this.nextColumn.disabled = closest >= columns.length - 1;
 		this.previousColumn.setAttribute("aria-label", labels[Math.max(0, closest - 1)] ?? select.getAttribute("aria-label") ?? "");
 		this.nextColumn.setAttribute("aria-label", labels[Math.min(columns.length - 1, closest + 1)] ?? select.getAttribute("aria-label") ?? "");
-		if (this.columnNav) this.columnNav.hidden = columns.length < 2;
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {

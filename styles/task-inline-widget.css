@@ -474,6 +474,13 @@ body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card--layout-inli
     display: none;
 }
 
+body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__inline-controls {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
 body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card.task-card--layout-inline .task-card__context-menu {
     position: static;
     display: inline-flex;

@@ -275,6 +275,8 @@ export function setCardCollapsed(card: HTMLElement, collapsed: boolean): void {
 	if (header) header.title = collapsed ? uiText(msg({ message: "Expand card", context: "settings/components/CardComponent: setCardCollapsed display" })) : uiText(msg({ message: "Collapse card", context: "settings/components/CardComponent: setCardCollapsed display" }));
 	const disclosure = header?.querySelector<HTMLButtonElement>(".tasknotes-settings__card-disclosure");
 	disclosure?.setAttribute("aria-expanded", String(!collapsed));
+	const chevron = disclosure?.querySelector<HTMLElement>(".tasknotes-settings__card-chevron");
+	if (chevron) setIcon(chevron, collapsed ? "chevron-right" : "chevron-down");
 	for (const section of card.querySelectorAll<HTMLElement>(":scope > .tasknotes-settings__card-content, :scope > .tasknotes-settings__card-actions")) {
 		if (collapsed && section.contains(card.ownerDocument.activeElement)) disclosure?.focus();
 		section.inert = collapsed;
@@ -465,6 +467,8 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 
 	// Add collapsible functionality if enabled
 	if (config.collapsible) {
+		const chevron = headerLeft.createSpan({ cls: "tasknotes-settings__card-chevron", attr: { "aria-hidden": "true" } });
+		setIcon(chevron, config.defaultCollapsed ? "chevron-right" : "chevron-down");
 		// Create toggle function
 		const toggleCollapse = () => {
 			const isCurrentlyCollapsed = card.hasClass("tasknotes-settings__card--collapsed");

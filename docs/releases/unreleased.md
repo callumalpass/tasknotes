@@ -83,6 +83,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Month selected-day rows use the panel width without reserving an empty time column. Narrow agendas share one set of date navigation controls with the date strip.
+- Mobile boards align the first populated column and retain the visible column after task updates. Contexts and tags wrap together instead of stacking individually.
+- Sentence task references keep punctuation next to the title, with the keyboard- and touch-accessible menu before the link.
+- Drag Undo reconciles grouped task rows before confirming completion. Pomodoro history keeps delete actions aligned for sessions without tasks, and narrow timers allow two-line task titles.
+- Collapsed settings sections show a persistent chevron that reflects their expanded state.
 - Compact mobile task rows share full-width titles, separate touch controls and metadata across lists, boards and calendars. Passive details glyphs no longer add an empty row, and agenda dates remain readable in full.
 - Board details and relationship indicators share the metadata baseline instead of creating an orphan line. Sentence task references stay in the prose flow with an attached, keyboard-accessible menu.
 - Collapsed settings cards remove their contents from keyboard navigation. Disclosure buttons announce expansion and restore focus when a section closes.

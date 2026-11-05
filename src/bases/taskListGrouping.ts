@@ -46,6 +46,29 @@ export type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
 
 export type TaskListGroupComparator = (property: string, left: string, right: string) => number;
 
+export function reconcileTaskListGroups(
+	groups: readonly TaskListGroup[],
+	tasks: readonly TaskInfo[],
+	field: "status" | "priority",
+	groupKey: (key: unknown) => string
+): TaskListGroup[] {
+	const entries = new Map(groups.flatMap(group => group.entries.map(entry => [entry.file?.path, entry] as const)));
+	const reconciled = new Map(groups.map(group => [groupKey(group.key), { ...group, entries: [] as TaskListGroupEntry[] }]));
+	for (const task of tasks) {
+		const entry = entries.get(task.path);
+		if (!entry) continue;
+		const value = task[field] ?? null;
+		const key = stringifyTaskListGroupValue(value);
+		let group = reconciled.get(key);
+		if (!group) {
+			group = { key: value, entries: [] };
+			reconciled.set(key, group);
+		}
+		group.entries.push(entry);
+	}
+	return Array.from(reconciled.values());
+}
+
 export function orderTaskListGroups(
 	groups: readonly TaskListGroup[],
 	property: string,

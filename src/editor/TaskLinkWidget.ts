@@ -89,6 +89,18 @@ export class TaskLinkWidget extends WidgetType {
 			displayText: this.displayText,
 			navigationSubpath: this.subpath,
 		});
+		const mainRow = card.querySelector(".task-card__main-row");
+		const content = card.querySelector(".task-card__content");
+		const status = card.querySelector(".task-card__status-dot");
+		const menu = card.querySelector(".task-card__context-menu");
+		if (this.inSentence && mainRow && content && menu) {
+			const controls = activeWindow.createSpan();
+			controls.className = "task-card__inline-controls";
+			if (status) controls.append(status);
+			controls.append(menu);
+			mainRow.insertBefore(controls, content);
+			mainRow.insertBefore(card.ownerDocument.createTextNode("\u2060"), content);
+		}
 
 		// Add card to wrapper
 		wrapper.appendChild(card);

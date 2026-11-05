@@ -440,7 +440,8 @@ export class ReadingModeTaskLinkProcessor {
 				const displayText = widgetEl.dataset.displayText || undefined;
 				const widget = new TaskLinkWidget(
 					taskInfo, this.plugin, originalText, displayText,
-					undefined, parseLinktext(originalLinkPath).subpath || undefined
+					undefined, parseLinktext(originalLinkPath).subpath || undefined,
+					widgetEl.classList.contains("tasknotes-inline-widget--sentence")
 				);
 				const refreshedElement = this.createReadingModeWidget(
 					widget,
@@ -598,10 +599,12 @@ export class ReadingModeTaskLinkProcessor {
 				);
 			}
 
+			const textContainer = linkEl.closest("p, li, h1, h2, h3, h4, h5, h6, td, th") ?? linkEl.parentElement;
+			const inSentence = (textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? "");
 			// Create a task widget instance
 			const widget = new TaskLinkWidget(
 				taskInfo, this.plugin, originalText, displayText,
-				undefined, parseLinktext(originalLinkPath).subpath || undefined
+				undefined, parseLinktext(originalLinkPath).subpath || undefined, inSentence
 			);
 
 			// Create the DOM element for reading mode
@@ -614,8 +617,6 @@ export class ReadingModeTaskLinkProcessor {
 			);
 
 			// Replace the original link with the widget
-			const textContainer = linkEl.closest("p, li, h1, h2, h3, h4, h5, h6, td, th") ?? linkEl.parentElement;
-			widgetElement.classList.toggle("tasknotes-inline-widget--sentence", (textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? ""));
 			linkEl.parentNode?.replaceChild(widgetElement, linkEl);
 		} catch (error) {
 			tasknotesLogger.error("Error replacing wikilink with task widget:", {

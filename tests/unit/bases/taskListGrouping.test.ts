@@ -3,6 +3,7 @@ import type { BasesDataItem } from "../../../src/bases/helpers";
 import {
 	buildTaskListGroupedRenderItems,
 	orderTaskListGroups,
+	reconcileTaskListGroups,
 	buildTaskListGroupedScopePaths,
 	buildTaskListPathProperties,
 	buildTaskListSubPropertyRenderItems,
@@ -23,6 +24,22 @@ function task(path: string, title = path): TaskInfo {
 }
 
 describe("taskListGrouping", () => {
+	it("reconciles stale Bases membership with restored task properties without mutating Bases", () => {
+		const entry = { file: { path: "one.md" } };
+		const groups = [{ key: "in-progress", entries: [entry] }, { key: "todo", entries: [] }];
+		const restored = reconcileTaskListGroups(groups, [task("one.md")], "status", String);
+		expect(restored).toEqual([{ key: "in-progress", entries: [] }, { key: "todo", entries: [entry] }]);
+		expect(groups[0].entries).toEqual([entry]);
+		expect(restored[1].entries[0]).toBe(entry);
+	});
+
+	it("adds newly restored priority groups and excludes tasks outside Bases results", () => {
+		const entry = { file: { path: "one.md" } };
+		const groups = [{ key: "high", entries: [entry] }];
+		const restored = reconcileTaskListGroups(groups, [task("one.md"), task("excluded.md")], "priority", String);
+		expect(restored).toEqual([{ key: "high", entries: [] }, { key: "normal", entries: [entry] }]);
+	});
+
 	it("orders configured groups without changing source entries or unrelated Bases ordering", () => {
 		const groups = ["completed", "active", "unconfigured", "triage"].map(key => ({ key, entries: [] }));
 		const order = ["triage", "active", "completed"];
