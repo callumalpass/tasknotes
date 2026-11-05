@@ -449,6 +449,7 @@ export class ReadingModeTaskLinkProcessor {
 					originalText,
 					displayText
 				);
+				refreshedElement.classList.toggle("tasknotes-inline-widget--sentence", widgetEl.classList.contains("tasknotes-inline-widget--sentence"));
 				widgetEl.replaceWith(refreshedElement);
 			}
 		}
@@ -613,6 +614,8 @@ export class ReadingModeTaskLinkProcessor {
 			);
 
 			// Replace the original link with the widget
+			const textContainer = linkEl.closest("p, li, h1, h2, h3, h4, h5, h6, td, th") ?? linkEl.parentElement;
+			widgetElement.classList.toggle("tasknotes-inline-widget--sentence", (textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? ""));
 			linkEl.parentNode?.replaceChild(widgetElement, linkEl);
 		} catch (error) {
 			tasknotesLogger.error("Error replacing wikilink with task widget:", {

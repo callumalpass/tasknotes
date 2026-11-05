@@ -54,9 +54,9 @@ export function shouldShowKeyHints(doc: Document): boolean {
 }
 
 /** Renders keycaps for a combo such as "Mod+K" or "Shift+J". */
-export function renderKeyHint(container: HTMLElement, combo: string): HTMLElement {
+export function renderKeyHint(container: HTMLElement, combo: string, alwaysShow = false): HTMLElement {
 	const hint = container.createSpan({ cls: "tn-key-hint", attr: { "aria-hidden": "true" } });
-	if (!shouldShowKeyHints(container.ownerDocument)) {
+	if (!alwaysShow && !shouldShowKeyHints(container.ownerDocument)) {
 		hint.hidden = true;
 		return hint;
 	}

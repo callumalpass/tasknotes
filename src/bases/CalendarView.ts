@@ -13,7 +13,6 @@ import { format } from "date-fns";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
-import { renderEmptyState } from "../ui/kit/emptyState";
 import { openListPicker } from "../ui/kit/listPicker";
 import {
 	Calendar,
@@ -1242,12 +1241,7 @@ export class CalendarView extends BasesViewBase {
 			...{
 				listEmptyContent: () => {
 					const container = createElementInDocument(this.containerEl.ownerDocument, "div");
-					renderEmptyState(container, {
-						message: t(msg({ message: "No tasks in this view.", context: "empty task view" }), "No tasks in this view."),
-						actionLabel: t(msg({ message: "New", context: "common.new" }), "New"),
-						actionKey: "C",
-						onAction: () => { void this.createFileForView(""); },
-					});
+					this.renderTaskEmptyState(container);
 					return container;
 				},
 			},
@@ -2002,7 +1996,8 @@ export class CalendarView extends BasesViewBase {
 			} else if (arg.item.data?.eventType === "timeEntry") {
 				setIcon(stamp.createSpan({ cls: "tn-calendar-list-tracked" }), "timer");
 			}
-			stamp.createSpan({ text: arg.timeText || this.plugin.i18n.translate(msg({ message: "All day", context: "ui.icsCard.allDay" })) });
+			if (arg.timeText) stamp.createSpan({ text: arg.timeText });
+			if (!stamp.hasChildNodes()) stamp.remove();
 			entry.append(card);
 			return entry;
 		}

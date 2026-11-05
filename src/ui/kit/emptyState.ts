@@ -5,6 +5,8 @@ export interface EmptyStateOptions {
 	actionLabel?: string;
 	actionKey?: string;
 	onAction?: () => void;
+	secondaryActionLabel?: string;
+	onSecondaryAction?: () => void;
 }
 
 export function renderEmptyState(container: HTMLElement, options: EmptyStateOptions): HTMLElement {
@@ -15,6 +17,10 @@ export function renderEmptyState(container: HTMLElement, options: EmptyStateOpti
 		const button = el.createEl("button", { cls: "tn-btn", text: options.actionLabel, attr: { type: "button" } });
 		renderKeyHint(button, options.actionKey ?? "Enter");
 		button.addEventListener("click", options.onAction);
+	}
+	if (options.secondaryActionLabel && options.onSecondaryAction) {
+		const button = el.createEl("button", { cls: "tn-btn", text: options.secondaryActionLabel, attr: { type: "button" } });
+		button.addEventListener("click", options.onSecondaryAction);
 	}
 	return el;
 }

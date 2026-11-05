@@ -861,6 +861,7 @@ export abstract class TaskModal extends Modal {
 			"modal-split-content--right-empty",
 			!shouldShowDetails
 		);
+		this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !this.form.values.details.trim());
 
 		// With natural language input the primary field holds the raw text, so the
 		// parsed title gets its own field here.
@@ -900,6 +901,7 @@ export abstract class TaskModal extends Modal {
 				file: this.getModalEditorFile(),
 				tabMovesFocus: this.plugin.settings.taskModalTabMovesFocus,
 				onChange: (value) => {
+					this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !value.trim());
 					// Syncing the editor from the form is not an edit.
 					if (!this.isSyncingControls) this.form.edit("details", value);
 				},
@@ -1356,6 +1358,7 @@ export abstract class TaskModal extends Modal {
 			}
 			if (this.detailsMarkdownEditor && this.detailsMarkdownEditor.value !== values.details) {
 				setTaskModalDetailsEditorValue(this.detailsMarkdownEditor, values.details);
+				this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !values.details.trim());
 			}
 			if (this.contextsInput && this.contextsInput.value !== values.contexts) {
 				this.contextsInput.value = values.contexts;

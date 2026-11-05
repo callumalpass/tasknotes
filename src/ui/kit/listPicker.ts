@@ -25,6 +25,7 @@ export interface ListPickerOptions
 	showUnfilteredEmptyText?: boolean;
 	/** Multi-select pickers stay open and toggle. */
 	multiple?: boolean;
+	revealSelected?: boolean;
 	/** Offered as the last row when nothing matches exactly, for free-text values. */
 	createLabel?: (query: string) => string;
 	canCreate?: (query: string) => boolean;
@@ -51,8 +52,9 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	const list = el.createDiv({ cls: "tn-picker__list", attr: { role: "listbox" } });
 	if (options.multiple) list.setAttribute("aria-multiselectable", "true");
 	const footer = el.createDiv({ cls: "tn-picker__footer" });
-	renderKeyHint(footer, "Enter");
-	footer.createSpan({ text: uiText(msg({ message: "Select", context: "contextMenus.date.modal.select" })) });
+	const selectHint = footer.createSpan({ cls: "tn-picker__select-hint" });
+	renderKeyHint(selectHint, "Enter");
+	selectHint.createSpan({ text: uiText(msg({ message: "Select", context: "contextMenus.date.modal.select" })) });
 	renderKeyHint(footer, "Escape");
 	footer.createSpan({ text: uiText(msg({ message: "to dismiss", context: "modals.unscheduledTasksSelector.instructions.dismiss" })) });
 
@@ -148,6 +150,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		}
 
 		const rowCount = visible.length + (createRow ? 1 : 0);
+		selectHint.hidden = rowCount === 0 || (visible.length === 0 && options.canCreate?.(trimmed) === false);
 		if (rowCount === 0 && !unfilteredNotice) list.createDiv({ cls: "tn-picker__empty", text: query ? options.emptyText : options.unfilteredEmptyText ?? options.emptyText });
 		activeIndex = Math.min(activeIndex, Math.max(0, rowCount - 1));
 		paintActive();
@@ -175,7 +178,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 
 	render();
 	const firstSelected = visible.findIndex((item) => item.selected);
-	if (firstSelected > 0) {
+	if (firstSelected > 0 && options.revealSelected !== false) {
 		activeIndex = firstSelected;
 		paintActive();
 	}

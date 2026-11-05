@@ -395,13 +395,17 @@ export function buildTaskLinkDecorations(
 							parsed.subpath
 						);
 					}
+					const lineStart = text.lastIndexOf("\n", link.start - 1) + 1;
+					const lineEnd = text.indexOf("\n", link.end);
+					const surrounding = text.slice(lineStart, link.start) + text.slice(link.end, lineEnd < 0 ? text.length : lineEnd);
 					const newWidget = new TaskLinkWidget(
 						taskInfo,
 						plugin,
 						link.match,
 						displayText,
 						undefined,
-						parsed.subpath
+						parsed.subpath,
+						surrounding.replace(/^\s*(?:[-*+]|\d+\.)\s+/, "").trim().length > 0
 					);
 
 					// Check if we need to update the cached widget

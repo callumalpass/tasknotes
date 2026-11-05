@@ -39,6 +39,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Mobile list and agenda rows keep status beside the title and group metadata and actions on a second row. References inside prose stay inline; standalone references retain their metadata.
+- Date pickers open unset dates at the top, precise time inputs use shared focus styling, custom picker labels have room to wrap, and shortcut help retains its keys on phones.
+- Statistics group overview metrics evenly and keep period comparisons together. Expanded task modals avoid reserving a side pane for empty details.
+- Kanban cards wrap full titles and status headings use two lines. Empty views distinguish missing tasks from filtered results, unknown values link to settings, and movement feedback names the destination.
+- Task creation uses concise toast feedback with the existing Open action; row focus, hover and selection remain distinct.
 - Mobile task lists, agendas and inline references give task titles a full line, with dates underneath and grouped touch controls. Scheduled agenda entries no longer repeat the schedule beside the time column.
 - Narrow calendars keep navigation and view selection together, with secondary actions in an overflow picker and a visible boundary and chevron on the compact view selector.
 - Calendar event titles use height-aware line limits and a separate time line; week-view deadlines have more room. Mobile boards retain a visible horizontal scroll track and neighbouring column space.

@@ -20,7 +20,8 @@ export class TaskLinkWidget extends WidgetType {
 		originalText: string,
 		displayText?: string,
 		targetDate: Date = createUTCDateFromLocalCalendarDate(new Date()),
-		private subpath?: string
+		private subpath?: string,
+		private inSentence = false
 	) {
 		super();
 		this.taskInfo = taskInfo;
@@ -49,6 +50,7 @@ export class TaskLinkWidget extends WidgetType {
 		// Create a wrapper span with the tasknotes-plugin class for CSS scoping
 		const wrapper = activeWindow.createSpan();
 		wrapper.className = "tasknotes-plugin tasknotes-inline-widget";
+		wrapper.classList.toggle("tasknotes-inline-widget--sentence", this.inSentence);
 		// Ensure wrapper displays inline to prevent line breaks
 		wrapper.classList.remove(
 			"tn-static-display-block-2a1b75c9",
@@ -118,6 +120,7 @@ export class TaskLinkWidget extends WidgetType {
 			return false;
 		}
 		return (
+			this.inSentence === other.inSentence &&
 			this.taskInfo.path === other.taskInfo.path &&
 			this.taskInfo.status === other.taskInfo.status &&
 			this.taskInfo.title === other.taskInfo.title &&

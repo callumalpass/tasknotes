@@ -1,4 +1,3 @@
-import { renderEmptyState } from "../ui/kit/emptyState";
 import { changeTaskProperty, showTaskUndo, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
 import { buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
 import { createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
@@ -4046,7 +4045,8 @@ export class KanbanView extends BasesViewBase {
 				error: error,
 			});
 		} finally {
-			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, recurringMessage);
+			const destination = [this.getGroupDisplayTitle(newGroupValue, this.getGroupByPropertyId()), newSwimLaneValue === null ? "" : this.getGroupDisplayTitle(newSwimLaneValue, this.swimLanePropertyId)].filter(Boolean).join(" · ");
+			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, recurringMessage ?? `→ ${destination} · ${Math.max(rewritten.size, feedback.undo.length)}`);
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
 				this.postDropRefreshRequested = true;
@@ -4179,12 +4179,7 @@ export class KanbanView extends BasesViewBase {
 
 	private renderEmptyState(): void {
 		if (!this.boardEl) return;
-		renderEmptyState(this.boardEl, {
-			message: uiText(msg({ message: "No tasks in this view.", context: "empty task view" })),
-			actionLabel: uiText(msg({ message: "New", context: "common.new" })),
-			actionKey: "C",
-			onAction: () => { void this.createFileForView(); },
-		});
+		this.renderTaskEmptyState(this.boardEl);
 	}
 
 	private renderNoGroupByError(): void {
@@ -4267,6 +4262,7 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {
+		container.title = title;
 		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
 			translate: this.plugin.i18n.translate.bind(this.plugin.i18n),

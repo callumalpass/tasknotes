@@ -619,8 +619,8 @@ export class TaskCreationModal extends TaskModal {
 			notify(
 				this.t(
 					msg({
-						message: 'Task "{title}" created successfully',
-						context: "modals.taskCreation.notices.success",
+						message: 'Created: {title}',
+						context: "task creation feedback",
 					}),
 					{ title: createdTask.title }
 				)
