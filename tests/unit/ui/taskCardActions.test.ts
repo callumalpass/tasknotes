@@ -11,6 +11,23 @@ import type { TaskInfo } from "../../../src/types";
 import { PriorityContextMenu } from "../../../src/components/PriorityContextMenu";
 import { RecurrenceContextMenu } from "../../../src/components/RecurrenceContextMenu";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+	showTaskUndo: jest.fn(),
+}));
+
+jest.mock("../../../src/services/task-service/recurringCompletionUndo", () => ({
+	...jest.requireActual("../../../src/services/task-service/recurringCompletionUndo"),
+	completeRecurringTaskWithUndo: jest.fn(async (plugin, task, date) => ({
+		updatedTask: await plugin.toggleRecurringTaskComplete(task, date),
+		changed: true,
+		undo: jest.fn(async () => true),
+	})),
+}));
 
 jest.mock("../../../src/components/PriorityContextMenu", () => ({
 	PriorityContextMenu: jest.fn().mockImplementation((options) => ({
@@ -61,6 +78,9 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 		cacheManager: {
 			getTaskInfo: jest.fn(async () => task),
 		},
+		taskService: {
+			resolveRecurringTaskActionDate: jest.fn(async (_task, date) => date),
+		},
 		updateTaskProperty: jest.fn(async (updatedTask, property, value) => ({
 			...updatedTask,
 			[property]: value,
@@ -74,8 +94,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 }
 
 async function flushAsyncHandlers(): Promise<void> {
-	await Promise.resolve();
-	await Promise.resolve();
+	await new Promise(resolve => setTimeout(resolve, 0));
 }
 
 describe("taskCardActions", () => {
@@ -98,6 +117,7 @@ describe("taskCardActions", () => {
 		await flushAsyncHandlers();
 
 		expect(stopPropagation).toHaveBeenCalled();
+		expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [task], "status", "done");
 		expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith("Tasks/Test.md");
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
 		expect(updateStatusVisuals).toHaveBeenCalledWith(

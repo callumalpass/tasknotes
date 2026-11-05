@@ -25,6 +25,7 @@ export interface CalendarMutationContext {
 	options: { startDateProperty: string | null; endDateProperty: string | null };
 	timezone: string;
 	refreshTask(task: TaskInfo): Promise<void>;
+	refreshEvent(event: CalendarEventChange["event"]): void;
 }
 
 export async function handleCalendarEventDrop(
@@ -48,13 +49,14 @@ export async function handleCalendarEventDrop(
 			return;
 		}
 		const originalDate = format(info.oldEvent.start, "yyyy-MM-dd");
-		await handleTimeblockDrop(
+		const updated = await handleTimeblockDrop(
 			info,
 			timeblock,
 			originalDate,
 			context.plugin,
 			info.isPointer && isTimeblockCopyModifierPressed(info.jsEvent ?? undefined)
 		);
+		if (updated) context.refreshEvent(info.event);
 		return;
 	}
 
@@ -132,7 +134,8 @@ export async function handleCalendarEventDrop(
 					return;
 				}
 
-				await provider.updateEvent(calendarId, eventId, providerUpdate.updates);
+				info.event.extendedProps.icsEvent = await provider.updateEvent(calendarId, eventId, providerUpdate.updates);
+				context.refreshEvent(info.event);
 			} catch (error) {
 				tasknotesLogger.error(
 					`[TaskNotes][CalendarView] Error updating ${provider.providerName} event:`,
@@ -172,7 +175,9 @@ export async function handleCalendarEventResize(
 			return;
 		}
 		const originalDate = format(info.event.start, "yyyy-MM-dd");
-		await handleTimeblockResize(info, timeblock, originalDate, context.plugin);
+		if (await handleTimeblockResize(info, timeblock, originalDate, context.plugin)) {
+			context.refreshEvent(info.event);
+		}
 		return;
 	}
 
@@ -238,7 +243,8 @@ export async function handleCalendarEventResize(
 					return;
 				}
 
-				await provider.updateEvent(calendarId, eventId, providerUpdate.updates);
+				info.event.extendedProps.icsEvent = await provider.updateEvent(calendarId, eventId, providerUpdate.updates);
+				context.refreshEvent(info.event);
 			} catch (error) {
 				tasknotesLogger.error(
 					`[TaskNotes][CalendarView] Error resizing ${provider.providerName} event:`,

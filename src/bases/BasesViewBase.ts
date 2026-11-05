@@ -1,4 +1,3 @@
-import { registerUndoKeyboard } from "../ui/kit/toast";
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { installTaskViewKeyboard } from "../ui/taskViewKeyboard";
@@ -344,7 +343,6 @@ export abstract class BasesViewBase extends Component {
 		root.tabIndex = -1; // Make focusable without adding to tab order
 		this.containerEl.appendChild(root);
 		this.rootElement = root;
-		this.register(registerUndoKeyboard(root, this.plugin.app.vault));
 
 		// Add custom "New Task" button and hide the default Bases "New" button
 		this.setupNewTaskButton();

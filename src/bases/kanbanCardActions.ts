@@ -1,5 +1,5 @@
 import { App } from "obsidian";
-import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
+import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
 import { createStatusCycleHandler } from "../ui/taskCardActions";
 import TaskNotesPlugin from "../main";
 import { Reminder, TaskInfo } from "../types";
@@ -157,7 +157,7 @@ function showPriorityMenu(
 		onSelect: (newPriority: string) => {
 			void (async () => {
 				try {
-					await plugin.updateTaskProperty(task, "priority", newPriority);
+					await changeTaskProperty(plugin, [task], "priority", newPriority);
 				} catch (error) {
 					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update priority", {
 						category: "validation",
@@ -256,7 +256,7 @@ async function openDateContextMenu(
 					} else {
 						finalValue = dateValue;
 					}
-					await plugin.updateTaskProperty(task, dateType, finalValue);
+					await changeTaskProperty(plugin, [task], dateType, finalValue);
 				} catch (error) {
 					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update date", {
 						category: "validation",

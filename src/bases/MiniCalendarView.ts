@@ -997,15 +997,18 @@ export class MiniCalendarView extends BasesViewBase {
 	private async handleDayClick(date: Date, event?: MouseEvent): Promise<void> {
 		// Update selected date
 		this.selectedDate = date;
+		if (date.getUTCMonth() !== this.displayedMonth || date.getUTCFullYear() !== this.displayedYear) {
+			this.displayedMonth = date.getUTCMonth();
+			this.displayedYear = date.getUTCFullYear();
+			this.monthCalculationCache.clear();
+		}
+		this.refresh();
 
 		// Check for ctrl/cmd click to open daily note
 		if (event && (event.ctrlKey || event.metaKey)) {
 			await this.openDailyNoteForDate(date);
 			return;
 		}
-
-		// Update selection visually (highlight the clicked date)
-		this.refresh();
 
 		// Check if date has notes
 		const dateKey = formatDateForStorage(date);

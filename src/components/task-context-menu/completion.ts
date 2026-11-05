@@ -19,6 +19,7 @@ import {
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import type { TaskContextMenuOptions } from "./types";
 import { getSubmenu, getMenuItemElement } from "./helpers";
+import { changeTaskProperty } from "../../ui/taskPropertyPickers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
 export class TaskCompletionMenu {
@@ -263,7 +264,7 @@ export class TaskCompletionMenu {
 			// Revert to the default open status; the status pipeline clears
 			// completedDate for a non-completed status (mirrors uncompleteTask).
 			const openStatus = plugin.settings.defaultTaskStatus ?? "open";
-			await plugin.updateTaskProperty(task, "status", openStatus);
+			await changeTaskProperty(plugin, [task], "status", openStatus);
 			this.options.onUpdate?.();
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);

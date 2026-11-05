@@ -1,6 +1,6 @@
 import { uiText } from "../i18n/runtime";
 import { displayError } from "../i18n/runtime";
-import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
+import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
 import { createStatusCycleHandler } from "../ui/taskCardActions";
 import { msg } from "@lingui/core/macro";
 import { Notice, TFile, type App } from "obsidian";
@@ -151,7 +151,7 @@ export class TaskListCardActions {
 			onSelect: (newPriority) => {
 				void (async () => {
 					try {
-						await this.context.plugin.updateTaskProperty(task, "priority", newPriority);
+						await changeTaskProperty(this.context.plugin, [task], "priority", newPriority);
 					} catch (error) {
 						tasknotesLogger.error(
 							"[TaskNotes][TaskListView] Failed to update priority",
@@ -273,7 +273,7 @@ export class TaskListCardActions {
 						} else {
 							finalValue = dateValue;
 						}
-						await this.context.plugin.updateTaskProperty(task, dateType, finalValue);
+						await changeTaskProperty(this.context.plugin, [task], dateType, finalValue);
 					} catch (error) {
 						const message = error instanceof Error ? error.message : String(error);
 						tasknotesLogger.error("[TaskNotes][TaskListView] Failed to update date", {

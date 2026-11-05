@@ -419,12 +419,12 @@
 }
 
 .tasknotes-plugin .task-card__due-date--overdue {
-    color: var(--tn-color-error);
+    color: var(--tn-danger-text);
     background: color-mix(in srgb, var(--tn-color-error) 15%, var(--tn-bg-primary));
 }
 
 .tasknotes-plugin .task-card__due-date--today {
-    color: var(--tn-color-warning);
+    color: var(--tn-warning-text);
     background: color-mix(in srgb, var(--tn-color-warning) 15%, var(--tn-bg-primary));
 }
 
@@ -1042,11 +1042,11 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
 }
 
 .tasknotes-plugin .task-card__metadata-date--today.task-card__metadata-date--due {
-    color: var(--tn-warning);
+    color: var(--tn-warning-text);
 }
 
 .tasknotes-plugin .task-card__metadata-date--overdue {
-    color: var(--tn-danger);
+    color: var(--tn-danger-text);
 }
 
 .tasknotes-plugin .task-card__metadata-date--today.task-card__metadata-date--due .task-card__date-icon,

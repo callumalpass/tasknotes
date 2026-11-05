@@ -88,6 +88,8 @@
     /* Semantic colour */
     --tn-danger: var(--color-red, var(--text-error));
     --tn-warning: var(--color-orange, var(--text-warning));
+    --tn-danger-text: color-mix(in srgb, var(--tn-danger) 75%, var(--tn-text-normal));
+    --tn-warning-text: color-mix(in srgb, var(--tn-warning) 60%, var(--tn-text-normal));
     --tn-success: var(--color-green, var(--text-success));
     --tn-info: var(--color-blue, var(--text-accent));
 
@@ -95,7 +97,7 @@
     --tn-color-warning: var(--tn-warning);
     --tn-color-error: var(--tn-danger);
     --tn-color-info: var(--tn-info);
-    --tn-color-overdue: var(--tn-danger);
+    --tn-color-overdue: var(--tn-danger-text);
 
     /* Depth */
     --tn-shadow-color: black;

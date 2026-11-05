@@ -1,5 +1,6 @@
 import { uiData } from "./i18n/dataText";
 import { dismissTooltips } from "./ui/kit/popover";
+import { registerUndoKeyboard } from "./ui/kit/toast";
 import { displayError } from "./i18n/runtime";
 import { configLabel } from "./i18n/configLabels";
 import { uiText } from "./i18n/runtime";
@@ -318,6 +319,12 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async onload() {
+		const undoDocuments = new Set<Document>([document]);
+		this.app.workspace.iterateAllLeaves(leaf => undoDocuments.add(leaf.view.containerEl.ownerDocument));
+		for (const doc of undoDocuments) this.register(registerUndoKeyboard(doc.body, this.app.vault));
+		this.registerEvent(this.app.workspace.on("window-open", (_workspaceWindow, win) => {
+			this.register(registerUndoKeyboard(win.document.body, this.app.vault));
+		}));
 		this.registerDomEvent(document, "keydown", () => dismissTooltips(document), true);
 		this.registerEvent(this.app.workspace.on("active-leaf-change", () => {
 			dismissTooltips(activeDocument);
@@ -1366,9 +1373,11 @@ export default class TaskNotesPlugin extends Plugin {
 
 	async toggleTaskStatus(task: TaskInfo): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.taskService.toggleStatus(task);
+			const receipt = await captureTaskUndo(this, task, () => this.taskService.toggleStatus(task));
+			if (!receipt.task) throw new Error(`Missing updated task: ${task.path}`);
+			const updatedTask = receipt.task;
 			const statusConfig = this.statusManager.getStatusConfig(updatedTask.status);
-			new Notice(
+			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.app.vault,
 				this.i18n.translate(msg({ message: "Task marked as ''{status}''", context: "notices.commands.statusChanged" }), {
 					status: uiData(configLabel(statusConfig) || updatedTask.status, "User-configured status label/value; never rewrite stored metadata"),
 				})
@@ -1888,7 +1897,8 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			const nextStatus = this.statusManager.getNextStatus(taskInfo.status);
-			await this.updateTaskProperty(taskInfo, "status", nextStatus);
+			const { changeTaskProperty } = await import("./ui/taskPropertyPickers");
+			await changeTaskProperty(this, [taskInfo], "status", nextStatus);
 		} catch (error) {
 			tasknotesLogger.error("Failed to cycle current task status:", {
 				category: "persistence",
@@ -1948,7 +1958,8 @@ export default class TaskNotesPlugin extends Plugin {
 
 			const currentPriority = taskInfo.priority || this.settings.defaultTaskPriority;
 			const nextPriority = this.priorityManager.getNextPriority(currentPriority);
-			await this.updateTaskProperty(taskInfo, "priority", nextPriority);
+			const { changeTaskProperty } = await import("./ui/taskPropertyPickers");
+			await changeTaskProperty(this, [taskInfo], "priority", nextPriority);
 		} catch (error) {
 			tasknotesLogger.error("Failed to cycle current task priority:", {
 				category: "persistence",
