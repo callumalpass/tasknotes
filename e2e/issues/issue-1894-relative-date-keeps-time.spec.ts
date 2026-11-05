@@ -83,10 +83,7 @@ for (const type of ["tasknotesTaskList", "tasknotesKanban"]) {
 				);
 				await expect(dateControl).toBeVisible();
 				await dateControl.click();
-				await page
-					.locator(".menu-item")
-					.filter({ hasText: /^\+1 day$/ })
-					.click();
+				await page.getByRole("option", { name: "+1 day", exact: true }).click();
 				// Read raw YAML: metadata parsing must not hide loss of the time suffix.
 				await expect
 					.poll(() =>

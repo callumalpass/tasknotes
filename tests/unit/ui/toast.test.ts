@@ -53,6 +53,19 @@ it("keeps a rejected receipt available instead of skipping to an older change", 
 	expect(older).toHaveBeenCalledTimes(1);
 });
 
+it("preserves specific failure feedback and the rejected Undo receipt", async () => {
+	const scope = {};
+	const restore = jest.fn().mockImplementationOnce(() => {
+		showToast({ message: "Could not undo the recurring task change." });
+		throw new Error("Write failed");
+	}).mockResolvedValueOnce(undefined);
+	showToast({ message: "Completion", undoScope: scope, action: { label: "Undo", run: restore } });
+	await undoLatest(scope);
+	expect(document.querySelector(".tn-toast__message")?.textContent).toBe("Could not undo the recurring task change.");
+	await undoLatest(scope);
+	expect(restore).toHaveBeenCalledTimes(2);
+});
+
 it("does not remove a newer entry when an in-flight Undo is evicted from the bounded history", async () => {
 	const scope = {};
 	let release!: () => void;

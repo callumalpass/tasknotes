@@ -46,6 +46,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Preserved the translated action label on Kanban column collapse buttons when showing their tooltips.
+  - Thanks to @nesyeklaf for the collapsible-column contribution.
+- Prevented delayed title focus from stealing typing after another task-modal field is focused.
+  - Thanks to @3zra47 for reporting tag-edit persistence problems.
 - Fixed pressing the save shortcut twice in quick succession creating the task twice.
 - Fixed a failed follow-up step, such as updating a dependency, leaving the create modal open so that saving again created a second task. The modal now closes and a notice explains what failed.
 - Fixed text in the natural language input being dropped when the task also had a prefilled title.
@@ -61,3 +65,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2494, #2498) Fixed time entries in the calendar's week and day views squeezing every event on their day, even where nothing overlapped. Time entries now sit in the narrow strip on the right only where they overlap a scheduled task, timeblock or calendar event. Elsewhere, events and time entries use the full column width, as they did before 4.15.
 - (#2494) The previous and next buttons in the calendar toolbar now show larger, clearer arrows.
   - Thanks to @RumiaKitinari for reporting both, and @mgreen3 for the related report
+- (#2412) Restore distinct failure feedback when recurring-task Undo cannot write a note, rather than reporting a changed-note conflict.
+  - Thanks to @PaulSnyder for the recurring-completion feedback request.
+- (#2396) Complete the pending recurring occurrence from the list and board keyboard action palette, rather than recording today's date.
+  - Thanks to @martin-forge for reporting moved-occurrence identity problems.

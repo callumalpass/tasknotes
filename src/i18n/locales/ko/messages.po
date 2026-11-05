@@ -3723,6 +3723,11 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "해결할 수 없음: {entries}"
 
+#: src/ui/recurringCompletionNotice.ts
+msgctxt "notices.recurringCompletion.failed"
+msgid "Could not undo the recurring task change."
+msgstr "반복 작업 변경을 취소하지 못했습니다."
+
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."

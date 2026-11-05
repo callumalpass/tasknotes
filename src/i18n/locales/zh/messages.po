@@ -3723,6 +3723,11 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "无法解析：{entries}"
 
+#: src/ui/recurringCompletionNotice.ts
+msgctxt "notices.recurringCompletion.failed"
+msgid "Could not undo the recurring task change."
+msgstr "无法撤销重复任务的更改。"
+
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."

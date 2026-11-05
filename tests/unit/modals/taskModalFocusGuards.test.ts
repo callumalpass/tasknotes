@@ -87,6 +87,19 @@ describe("taskModalFocusGuards", () => {
 		expect(focus).not.toHaveBeenCalled();
 	});
 
+	it("does not steal focus from another field before initial title focus", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const title = elements.contentEl.createEl("textarea");
+		const tags = elements.contentEl.createEl("input");
+		const focus = jest.spyOn(title, "focus");
+		guards.focusTitleInput(title, false);
+		tags.focus();
+		jest.runOnlyPendingTimers();
+		expect(focus).not.toHaveBeenCalled();
+		expect(document.activeElement).toBe(tags);
+	});
+
 	it("places the edit caret at the end without selecting the title", () => {
 		const elements = createElements();
 		const guards = new TaskModalFocusGuards(elements);

@@ -122,13 +122,7 @@ test('keyboard/touch collapse, locale stability, drag/drop and restart persisten
   // Collapse state is saved in the .base view config (#2484).
   await expect.poll(async () => (await readYaml(basePath)).views[0].collapsedColumns).toContain('waiting');
   await closeObsidian(instance);
-  const port = process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT;
-  process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT = String(Number(port ?? 9223) + 10);
-  try { instance = await launchObsidian(); }
-  finally {
-    if (port === undefined) delete process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT;
-    else process.env.TASKNOTES_E2E_REMOTE_DEBUGGING_PORT = port;
-  }
+  instance = await launchObsidian();
   page = instance.page;
   await page.evaluate(async path => {
     const app = (window as any).app;

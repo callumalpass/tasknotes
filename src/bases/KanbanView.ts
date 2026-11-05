@@ -1898,18 +1898,19 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		groupByPropertyId: string | null
 	): void {
+		const collapseLabel = this.plugin.i18n.translate(msg({ message: "Toggle {column} column", context: "views.kanban.toggleColumn" }), {
+			column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
+		});
 		const button = header.createEl("button", {
 			cls: "kanban-view__column-collapse-button",
 			attr: {
 				type: "button",
-				"aria-label": this.plugin.i18n.translate(msg({ message: "Toggle {column} column", context: "views.kanban.toggleColumn" }), {
-					column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
-				}),
+				"aria-label": collapseLabel,
 			},
 		});
 
 		const collapseProperty = groupByPropertyId ?? "";
-		setTooltip(button, this.getGroupDisplayTitle(groupKey, groupByPropertyId));
+		setTooltip(button, collapseLabel);
 		column.dataset.collapseProperty = collapseProperty;
 		column.dataset.collapseValue = groupKey;
 		this.applyColumnCollapsedState(column);

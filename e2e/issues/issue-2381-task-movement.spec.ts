@@ -217,7 +217,7 @@ test("parent drop adds a relationship without moving groups or manual rank", asy
 	const projects = (await frontmatter()).projects as string[];
 	expect(projects.slice(0, 2)).toEqual(["[[Existing project]]", "Marketing"]);
 	expect(projects[2]).toContain("Done");
-	await expect(instance.page.locator(".notice")).toContainText("Added as a subtask of Done");
+	await expect(instance.page.locator(".tn-toast")).toContainText("Added as a subtask of Done");
 	await expect(instance.page.locator(".task-list-view--moving")).toHaveCount(0);
 });
 
@@ -321,7 +321,7 @@ test("parent Undo refuses to replace later project edits", async () => {
 	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
 	await setFields("Source", { projects: ["Later project"] });
 	await instance.page.getByRole("button", { name: "Undo", exact: true }).click();
-	await expect(instance.page.locator(".notice")).toContainText("Cannot undo");
+	await expect(instance.page.locator(".tn-toast")).toContainText("Cannot undo");
 	expect((await frontmatter()).projects).toEqual(["Later project"]);
 });
 
@@ -510,7 +510,7 @@ test("collapsed subgroups remain usable destinations", async () => {
 	const header = instance.page.locator(
 		'.workspace-leaf.mod-active .task-group[data-level="sub"][data-group-key="open:low"]'
 	);
-	await header.locator("button").click();
+	await header.getByRole("button", { name: "Toggle group", exact: true }).click();
 	await expect(card("Low")).toHaveCount(0);
 	await card("Source").dragTo(header);
 	await expect.poll(async () => (await frontmatter()).priority).toBe("low");
@@ -819,7 +819,7 @@ test("Undo refuses to overwrite a later edit to a moved field", async () => {
 	}, folder);
 	await expect.poll(async () => (await frontmatter()).priority).toBe("normal");
 	await instance.page.getByRole("button", { name: "Undo", exact: true }).last().click();
-	await expect(instance.page.locator(".notice").filter({ hasText: "Cannot undo" })).toBeVisible();
+	await expect(instance.page.locator(".tn-toast").filter({ hasText: "Cannot undo" })).toBeVisible();
 	expect(await frontmatter()).toMatchObject({ status: "done", priority: "normal" });
 });
 
