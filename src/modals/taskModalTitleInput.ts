@@ -1,3 +1,5 @@
+import { fieldLabelForId } from "../i18n/fieldLabels";
+
 export type TaskModalTitleInputElement = HTMLInputElement | HTMLTextAreaElement;
 
 export interface TaskModalTitleTextareaOptions {
@@ -27,7 +29,7 @@ export function createTaskModalTitleTextarea({
 	input.placeholder = placeholder;
 	input.rows = 1;
 	input.spellcheck = true;
-	input.setAttribute("aria-label", placeholder);
+	input.setAttribute("aria-label", fieldLabelForId("title"));
 
 	input.addEventListener("keydown", (event) => {
 		if (event.key === "Enter" && !event.ctrlKey && !event.metaKey) {

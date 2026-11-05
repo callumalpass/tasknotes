@@ -143,15 +143,15 @@
 }
 
 .tasknotes-plugin .stats-view__project-name {
-    font-size: var(--tn-type-xs);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
 }
 
 .tasknotes-plugin .stats-view__project-content-grid {
     display: grid;
-    gap: var(--tn-space-2);
-    align-items: center;
+    gap: var(--tn-space-4);
+    align-items: start;
     grid-template-columns: minmax(80px, auto) minmax(0, 1fr);
 }
 
@@ -185,10 +185,9 @@
 .tasknotes-plugin .stats-view__project-stat {
     font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
-    background: var(--background-primary);
-    padding: var(--tn-space-half) var(--tn-space-1);
-    border-radius: var(--tn-radius-sm);
-    border: 1px solid var(--tn-border-color);
+    background: transparent;
+    padding: 0;
+    border: none;
     white-space: nowrap;
 }
 
@@ -235,10 +234,6 @@
     border-radius: var(--tn-radius-none);
     padding: var(--tn-space-4) 0;
     overflow: visible;
-}
-
-.theme-dark .tasknotes-plugin .stats-view__project-stat {
-    background: var(--background-modifier-border);
 }
 
 .tasknotes-plugin .stats-view__progress-bar {
@@ -320,6 +315,12 @@
     align-items: center;
     gap: var(--tn-space-1);
     margin: var(--tn-space-half) 0;
+}
+
+.tasknotes-plugin .stats-view__time-bar-heading {
+    color: var(--tn-text-metadata);
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-medium);
 }
 
 .tasknotes-plugin .stats-view__time-bar-visual {
@@ -708,6 +709,12 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--tn-space-2);
+}
+
+.tasknotes-plugin .stats-view__section > .setting-item-heading .setting-item-name {
+    color: var(--tn-text-normal);
+    font-size: var(--tn-type-md);
+    font-weight: var(--tn-font-weight-semibold);
 }
 
 .tasknotes-plugin .stats-view__task-filters {

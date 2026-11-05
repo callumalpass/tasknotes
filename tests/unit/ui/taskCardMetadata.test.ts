@@ -93,6 +93,36 @@ function getDateMetadata(metadataLine: HTMLElement, dateType: "due" | "scheduled
 }
 
 describe("taskCardMetadata", () => {
+	it("never paints a zero overflow count after final geometry fits all metadata", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
+			const values = metadataLine.createSpan();
+			const chip = values.createSpan({ text: "Studio" });
+			let measurements = 0;
+			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			chip.getBoundingClientRect = () => ({ right: measurements++ === 0 ? 300 : 100 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			expect(overflow.textContent).toBe("");
+			expect(overflow.hidden).toBe(true);
+			resize();
+			expect(overflow.hidden).toBe(true);
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();

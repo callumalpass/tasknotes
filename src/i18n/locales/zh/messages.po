@@ -12921,6 +12921,7 @@ msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "打开时间线视图时滚动到的时间（HH:MM格式）"
 
 #: src/views/stats/summary.ts
+#: src/views/StatsView.ts
 msgctxt "views.stats.cards.timeTrackedEstimated"
 msgid "Time tracked / estimated"
 msgstr "已跟踪／预估时长"
@@ -13093,6 +13094,7 @@ msgid "Title"
 msgstr "标题"
 
 #: src/i18n/fieldLabels.ts
+#: src/modals/TaskCreationModal.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "标题"

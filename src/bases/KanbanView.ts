@@ -3761,6 +3761,7 @@ export class KanbanView extends BasesViewBase {
 		const feedback: TaskUndoFeedback = { undo: [], failed: false };
 		let recurringMessage: string | undefined;
 		const rewritten = new Set<string>();
+		const failedTitles: string[] = [];
 		try {
 			await this.dropQueue.enqueue(taskPath, async () => {
 				// Suppress renders immediately — dragend clears draggedTaskPath
@@ -3994,7 +3995,10 @@ export class KanbanView extends BasesViewBase {
 						await changeTaskProperty(this.plugin, [currentTask], "status", getKanbanDropStatusValue(dropPlan) ?? "", taskUndo);
 						finishTaskUndo();
 						feedback.failed ||= taskUndo.failed;
-						if (taskUndo.failed) continue;
+						if (taskUndo.failed) {
+							failedTitles.push(currentTask.title);
+							continue;
+						}
 						if (dropPlan.groupByTaskProp === "status") dropPlan.needsGroupUpdate = false;
 						if (dropPlan.swimlaneTaskProp === "status") dropPlan.needsSwimlaneUpdate = false;
 					}
@@ -4164,6 +4168,10 @@ export class KanbanView extends BasesViewBase {
 			}); // end dropQueue.enqueue
 		} catch (error) {
 			feedback.failed = true;
+			for (const path of pendingPaths) {
+				if (rewritten.has(path)) continue;
+				failedTitles.push(this.currentTaskElements.get(path)?.querySelector(".task-card__title-text")?.textContent || path);
+			}
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error updating task:", {
 				category: "persistence",
 				operation: "updating-task",
@@ -4181,7 +4189,7 @@ export class KanbanView extends BasesViewBase {
 				element.addEventListener("animationend", () => element.classList.remove("kanban-view__card--settled"), { once: true });
 			}
 			const destination = [this.getGroupDisplayTitle(newGroupValue, this.getGroupByPropertyId()), newSwimLaneValue === null ? "" : this.getGroupDisplayTitle(newSwimLaneValue, this.swimLanePropertyId)].filter(Boolean).join(" · ");
-			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, recurringMessage ?? `→ ${destination} · ${Math.max(rewritten.size, feedback.undo.length)}`);
+			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? `→ ${destination} · ${Math.max(rewritten.size, feedback.undo.length)}`);
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
 				this.postDropRefreshRequested = true;

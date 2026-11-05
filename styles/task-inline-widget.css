@@ -499,7 +499,7 @@ body.is-mobile .tasknotes-inline-widget--sentence .task-card--layout-inline :is(
 .tasknotes-inline-widget--sentence .task-card--layout-inline .task-card__main-row {
     display: inline-flex;
     flex-wrap: nowrap;
-    gap: var(--tn-space-half);
+    gap: var(--tn-space-1);
     width: auto;
 }
 

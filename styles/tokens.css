@@ -55,6 +55,8 @@
     --tn-calendar-status-line: 2px;
     --tn-calendar-event-tint: 8%;
     --tn-glyph-size: 14px;
+    --tn-modal-composer-width: 720px;
+    --tn-modal-details-min-width: 280px;
 
     /* Surfaces and text come from the theme */
     --tn-bg-primary: var(--background-primary);
@@ -65,6 +67,7 @@
     --tn-text-muted: var(--text-muted);
     --tn-text-metadata: color-mix(in srgb, var(--text-normal) 80%, var(--background-primary));
     --tn-text-faint: var(--text-faint);
+    --tn-text-placeholder: var(--tn-text-metadata);
     --tn-text-accent: var(--text-accent, var(--interactive-accent));
 
     /* Lines */

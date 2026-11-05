@@ -91,8 +91,8 @@ export function renderStatusPropertyCard(
 	);
 
 	// Help text explaining how statuses work
-	const statusHelpContainer = statusValuesContent.createDiv("tasknotes-settings__help-section");
-	statusHelpContainer.createEl("h4", {
+	const statusHelpContainer = statusValuesContent.createEl("details", { cls: "tasknotes-settings__field-help" });
+	statusHelpContainer.createEl("summary", {
 		text: translate(msg({ message: "How statuses work:", context: "settings.taskProperties.taskStatuses.howTheyWork.title" })),
 	});
 	const statusHelpList = statusHelpContainer.createEl("ul");

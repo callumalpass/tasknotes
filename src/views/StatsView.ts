@@ -991,6 +991,10 @@ export class StatsView extends ItemView {
 
 			// Time visualization bar
 			if (project.totalTimeSpent > 0 || project.totalTimeEstimate > 0) {
+				statsContainer.createDiv({
+					cls: "stats-view__time-bar-heading",
+					text: uiText(msg({ message: "Time tracked / estimated", context: "views.stats.cards.timeTrackedEstimated" })),
+				});
 				const timeBar = statsContainer.createDiv({ cls: "stats-view__time-bar" });
 				const timeBarVisual = timeBar.createDiv({ cls: "stats-view__time-bar-visual" });
 				const timeBarFill = timeBarVisual.createDiv({ cls: "stats-view__time-bar-fill" });

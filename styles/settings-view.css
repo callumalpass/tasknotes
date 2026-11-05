@@ -26,6 +26,17 @@ body:not(.is-mobile) .modal.mod-settings .tasknotes-settings .settings-view__tab
     display: none;
 }
 
+.tasknotes-plugin .settings-view__tab-content .setting-item-heading {
+    margin-block: var(--tn-space-4) var(--tn-space-1);
+    padding-block: var(--tn-space-1);
+}
+
+.tasknotes-plugin .settings-view__help-note {
+    margin-block: 0 var(--tn-space-2);
+    color: var(--tn-text-metadata);
+    font-size: var(--tn-type-xs);
+}
+
 /* ================================================
    SETTINGS HEADER
    ================================================ */
@@ -808,6 +819,32 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
     font-size: var(--tn-type-sm);
     color: var(--text-muted);
     line-height: 1.4;
+}
+
+.tasknotes-settings__field-help {
+    color: var(--tn-text-metadata);
+    font-size: var(--tn-type-xs);
+    margin-block: var(--tn-space-1);
+}
+
+.tasknotes-settings__field-help summary {
+    cursor: pointer;
+    width: fit-content;
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-settings__field-help summary:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+}
+
+.tasknotes-settings__field-help ul {
+    margin-block: var(--tn-space-2);
+    padding-inline-start: var(--tn-space-4);
+}
+
+.tasknotes-settings__field-help p {
+    margin-block: var(--tn-space-2) 0;
 }
 
 .tasknotes-settings__help-note {

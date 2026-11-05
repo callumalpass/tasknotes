@@ -93,10 +93,8 @@ export function renderPriorityPropertyCard(
 	);
 
 	// Help text explaining how priorities work
-	const priorityHelpContainer = priorityValuesContent.createDiv(
-		"tasknotes-settings__help-section"
-	);
-	priorityHelpContainer.createEl("h4", {
+	const priorityHelpContainer = priorityValuesContent.createEl("details", { cls: "tasknotes-settings__field-help" });
+	priorityHelpContainer.createEl("summary", {
 		text: translate(msg({ message: "How priorities work:", context: "settings.taskProperties.taskPriorities.howTheyWork.title" })),
 	});
 	const priorityHelpList = priorityHelpContainer.createEl("ul");

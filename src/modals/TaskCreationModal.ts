@@ -185,17 +185,6 @@ export class TaskCreationModal extends TaskModal {
 		const editorContainer = nlContainer.createDiv(
 			"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--nlp"
 		);
-		editorContainer.setAttribute("role", "textbox");
-		editorContainer.setAttribute(
-			"aria-label",
-			this.t(
-				msg({
-					message: "Buy groceries tomorrow at 3pm @home #errands",
-					context: "modals.taskCreation.nlPlaceholder",
-				})
-			)
-		);
-		editorContainer.setAttribute("aria-multiline", "true");
 
 		try {
 			// Create NLP autocomplete extension for @, #, +, status triggers
@@ -272,6 +261,10 @@ export class TaskCreationModal extends TaskModal {
 					return true;
 				},
 			});
+			editorContainer.querySelector<HTMLElement>('[role="textbox"]')?.setAttribute(
+				"aria-label",
+				this.t(msg({ message: "Title", context: "utils/fieldConfigDefaults: defaults displayName" }))
+			);
 			this.nlContainer = nlContainer;
 		} catch (error) {
 			tasknotesLogger.error("Failed to create NLP markdown editor:", {

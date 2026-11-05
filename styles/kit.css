@@ -373,6 +373,12 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     color: var(--tn-text-normal);
 }
 
+.tasknotes-plugin :is(input, textarea)::placeholder,
+.tasknotes-plugin .cm-placeholder {
+    color: var(--tn-text-placeholder);
+    opacity: 1;
+}
+
 @media (max-width: 600px) {
     .tasknotes-plugin.tn-modal {
         max-width: calc(100vw - var(--tn-space-4));

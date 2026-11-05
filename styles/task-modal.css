@@ -150,7 +150,7 @@
 
 /* Placeholder styling */
 .tn-task-modal__markdown-editor--details .cm-placeholder {
-    color: var(--text-faint);
+    color: var(--tn-text-placeholder);
     font-style: italic;
 }
 
@@ -243,7 +243,7 @@
 
 
 .tn-task-modal__markdown-editor--nlp .cm-placeholder {
-    color: var(--text-faint);
+    color: var(--tn-text-placeholder);
     font-style: normal;
     font-weight: var(--tn-font-weight-normal);
 }
@@ -357,12 +357,18 @@
     letter-spacing: normal;
 }
 
+.tasknotes-plugin.minimalist-task-modal .modal,
+.tasknotes-plugin.minimalist-task-modal.modal {
+    width: var(--tn-modal-composer-width);
+    max-width: calc(100vw - var(--tn-space-8));
+}
+
 .tasknotes-plugin.minimalist-task-modal .modal-content {
     padding: 0;
     border-radius: var(--radius-l);
     box-shadow: var(--shadow-l);
     min-width: 480px;
-    max-width: 600px;
+    max-width: 100%;
     transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
@@ -411,7 +417,7 @@
 }
 
 .tasknotes-plugin .title-input::placeholder {
-    color: var(--text-muted);
+    color: var(--tn-text-placeholder);
     font-weight: 400;
 }
 
@@ -523,9 +529,9 @@
     padding: var(--size-4-2);
     font-family: inherit;
     font-size: var(--font-ui-medium);
-    font-weight: 500;
+    font-weight: var(--tn-font-weight-normal);
     line-height: 1.4;
-    border: 1px solid var(--background-modifier-border);
+    border: 1px solid transparent;
     border-radius: var(--radius-s);
     background: transparent;
     color: var(--text-normal);
@@ -548,7 +554,7 @@
 }
 
 .tasknotes-plugin .title-input-detailed::placeholder {
-    color: var(--text-muted);
+    color: var(--tn-text-placeholder);
 }
 
 
@@ -577,10 +583,16 @@
 
 .tasknotes-plugin .details-container .setting-item-name {
     font-size: var(--font-ui-small);
-    font-weight: 600;
+    font-weight: var(--tn-font-weight-medium);
     color: var(--text-muted);
     text-transform: none;
     letter-spacing: normal;
+}
+
+.tasknotes-plugin .details-container > .detail-label {
+    font-size: var(--font-ui-small);
+    font-weight: var(--tn-font-weight-medium);
+    margin-block: var(--tn-space-3) var(--tn-space-1);
 }
 
 .tasknotes-plugin .details-container .setting-item-control input:not([type="checkbox"]) {
@@ -872,14 +884,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
    ===================================================================== */
 
 @media (min-width: 900px) {
-    /* Widen modal for split layout when expanded */
     /* Target both .modal (modalEl) and .modal-content for max compatibility */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded.modal {
-        width: 850px;
-        max-width: 90vw;
-    }
-
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-content {
         min-width: 100%;
         max-width: 100%;
@@ -907,7 +912,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
         min-width: 0;
         display: grid;
-        grid-template-columns: 380px minmax(280px, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(var(--tn-modal-details-min-width), 1fr);
         gap: 0;
         padding-right: 0;
         overflow: visible;
@@ -927,7 +932,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
     /* Right column - details editor takes full height, edge to edge */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
-        min-width: 280px;
+        min-width: var(--tn-modal-details-min-width);
         min-height: 360px;
         display: flex;
         flex-direction: column;
@@ -1015,18 +1020,16 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 /* =====================================================================
    SPLIT LAYOUT - EXTRA WIDE SCREENS (1200px+)
-   Modal expands to 1100px on larger screens
    ===================================================================== */
 
 @media (min-width: 1200px) {
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal,
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded.modal {
-        width: 1100px;
+        width: var(--tn-modal-composer-width);
     }
 
-    /* Left column gets more space on wider screens */
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
-        grid-template-columns: 480px minmax(280px, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(var(--tn-modal-details-min-width), 1fr);
     }
 }
 

@@ -12922,6 +12922,7 @@ msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "Time to scroll to when opening timeline views (HH:MM format)"
 
 #: src/views/stats/summary.ts
+#: src/views/StatsView.ts
 msgctxt "views.stats.cards.timeTrackedEstimated"
 msgid "Time tracked / estimated"
 msgstr "Time tracked / estimated"
@@ -13094,6 +13095,7 @@ msgid "Title"
 msgstr "Title"
 
 #: src/i18n/fieldLabels.ts
+#: src/modals/TaskCreationModal.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "Title"

@@ -709,15 +709,20 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__main-row
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__title {
     flex: none;
+    flex-wrap: wrap;
+    row-gap: var(--tn-space-1);
     padding-right: calc(var(--tn-kanban-card-menu) + var(--tn-space-1));
 }
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-text,
 body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-text {
-    display: block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    flex-basis: 100%;
     white-space: normal;
     overflow-wrap: anywhere;
-    overflow: visible;
+    overflow: hidden;
     text-overflow: clip;
 }
 

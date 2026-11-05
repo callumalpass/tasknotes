@@ -52,6 +52,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		attr: { "aria-haspopup": "dialog", "aria-expanded": "false" },
 	});
 	prepareInteractiveControl(summary);
+	summary.hidden = true;
 	let hiddenLabels: string[] = [];
 	summary.addEventListener("click", (event) => {
 		event.stopPropagation();
@@ -116,7 +117,8 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		const hidden = [...atoms, ...dateSlots]
 			.filter((atom) => atom.hidden)
 			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
-		summary.textContent = `+${hidden.length}`;
+		summary.textContent = hidden.length ? `+${hidden.length}` : "";
+		summary.hidden = hidden.length === 0;
 		const label = hidden.join(" · ");
 		hiddenLabels = hidden;
 		summary.setAttribute("aria-label", label);

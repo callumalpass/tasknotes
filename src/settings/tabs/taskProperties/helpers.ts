@@ -1,4 +1,5 @@
 import { msg } from "@lingui/core/macro";
+import { fieldLabelForId } from "../../../i18n/fieldLabels";
 import { Notice } from "obsidian";
 import TaskNotesPlugin from "../../../main";
 import { FieldMapping } from "../../../types";
@@ -148,6 +149,12 @@ export function createNLPTriggerRows(
  * Creates a description element for property cards
  */
 export function createPropertyDescription(text: string): HTMLElement {
+	if (text.length > 120) {
+		const disclosure = activeWindow.createEl("details", { cls: "tasknotes-settings__field-help" });
+		disclosure.createEl("summary", { text: fieldLabelForId("details") });
+		disclosure.createEl("p", { cls: "setting-item-description", text });
+		return disclosure;
+	}
 	const descEl = activeWindow.createEl("p");
 	descEl.className = "setting-item-description";
 	descEl.classList.remove(

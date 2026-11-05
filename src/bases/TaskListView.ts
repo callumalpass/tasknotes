@@ -14,6 +14,7 @@ import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { collectFileUndo, createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
 import { readCompletionContent } from "../services/task-service/recurringCompletionUndo";
 import { uiText } from "../i18n/runtime";
+import { configLabel } from "../i18n/configLabels";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
@@ -1345,6 +1346,9 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private groupDisplayLabel(key: string, propertyId: string | null): string {
+		const field = propertyId ? this.plugin.fieldMapper.lookupMappingKey(propertyId.replace(/^(note\.|task\.)/, "")) : null;
+		if (field === "status") return configLabel(this.plugin.statusManager.getStatusConfig(key)) || key;
+		if (field === "priority") return configLabel(this.plugin.priorityManager.getPriorityConfig(key)) || key;
 		const sources =
 			propertyId === this.getGroupByPropertyId()
 				? this.dataAdapter
@@ -1654,7 +1658,7 @@ export class TaskListView extends BasesViewBase {
 								context: "views.taskList.movement.noChange",
 							})
 						);
-		this.setMovementFeedback(text);
+		this.setMovementFeedback(text, element);
 		this.itemsContainer
 			?.querySelectorAll<HTMLElement>(
 				".task-card, .task-group, [data-tn-movement-destination]"
@@ -1663,6 +1667,7 @@ export class TaskListView extends BasesViewBase {
 				const target = this.elementDestinations.get(candidate);
 				const matches =
 					plan.kind === "move" &&
+					!candidate.matches(".task-card") &&
 					target?.groupKey === destination.groupKey &&
 					(destination.subGroupKey === undefined ||
 						target.subGroupKey === destination.subGroupKey);
@@ -1681,7 +1686,7 @@ export class TaskListView extends BasesViewBase {
 			msg({ message: "No value", context: "views.taskList.movement.noValue" })
 		);
 		if (!change.isListGrouping || !change.frontmatterKey || !this.draggedTaskPath)
-			return `${name} → ${change.normalizedTargetGroupKey ?? noValue}`;
+			return `${name} → ${change.normalizedTargetGroupKey === null ? noValue : this.groupDisplayLabel(change.normalizedTargetGroupKey ?? "", change.groupByPropertyId)}`;
 		const current = this.movementProperties.get(this.draggedTaskPath)?.[change.frontmatterKey];
 		const before = getListMembers(current);
 		const after = moveGroupListValue(
@@ -1696,7 +1701,7 @@ export class TaskListView extends BasesViewBase {
 		return `${name}: ${format(before)} → ${format(after)}`;
 	}
 
-	private setMovementFeedback(text: string): void {
+	private setMovementFeedback(text: string, target?: HTMLElement): void {
 		if (!this.movementFeedback) {
 			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
 			this.movementFeedback.className = "task-list-view__movement-feedback";
@@ -1705,6 +1710,11 @@ export class TaskListView extends BasesViewBase {
 			this.rootElement?.appendChild(this.movementFeedback);
 		}
 		if (this.movementFeedback.textContent !== text) this.movementFeedback.textContent = text;
+		if (target && this.rootElement) {
+			const root = this.rootElement.getBoundingClientRect();
+			const anchor = target.getBoundingClientRect();
+			this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${Math.max(0, anchor.top - root.top) + this.rootElement.scrollTop}px`);
+		}
 	}
 
 	private updateTaskMovementTarget(
@@ -3796,6 +3806,9 @@ export class TaskListView extends BasesViewBase {
 
 	private async refreshGroupedView(): Promise<void> {
 		if (!this.data?.data) return;
+		const focused = this.containerEl.ownerDocument.activeElement;
+		const focusedGroup = focused?.matches(".task-group-toggle")
+			? focused.getAttribute("data-group-key") : null;
 
 		const dataItems = this.dataAdapter.extractDataItems();
 		computeBasesFormulas(this.data, dataItems);
@@ -3851,6 +3864,10 @@ export class TaskListView extends BasesViewBase {
 		} else {
 			// If not using virtual scrolling, do full render
 			await this.render();
+		}
+		if (focusedGroup !== null && !focused?.isConnected) {
+			Array.from(this.containerEl.querySelectorAll<HTMLElement>(".task-group-toggle"))
+				.find((toggle) => toggle.dataset.groupKey === focusedGroup)?.focus({ preventScroll: true });
 		}
 	}
 

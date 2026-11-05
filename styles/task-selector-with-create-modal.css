@@ -27,7 +27,7 @@
    ================================================ */
 
 /* Remove task card hover/background styling - let suggestion item handle it */
-.task-selector-with-create-modal .task-card {
+.tasknotes-plugin.task-selector-with-create-modal .task-card {
     background: transparent;
     box-shadow: none;
     padding: var(--tn-space-1) 0;
@@ -38,7 +38,8 @@
     box-sizing: border-box;
 }
 
-.task-selector-with-create-modal .task-card:hover {
+.tasknotes-plugin.task-selector-with-create-modal .suggestion-item .task-card:hover,
+.tasknotes-plugin.task-selector-with-create-modal .suggestion-item:hover:not(.is-selected) {
     background: transparent;
 }
 

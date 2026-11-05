@@ -22,8 +22,8 @@ describe("Issue #1512: split task modal details pane width", () => {
 			".tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right"
 		);
 
-		expect(leftBlock).toContain("grid-template-columns: 380px minmax(280px, 1fr)");
-		expect(rightBlock).toContain("min-width: 280px");
+		expect(leftBlock).toContain("grid-template-columns: minmax(0, 1fr) minmax(var(--tn-modal-details-min-width), 1fr)");
+		expect(rightBlock).toContain("min-width: var(--tn-modal-details-min-width)");
 		expect(rightBlock).not.toContain("min-width: 0");
 	});
 
@@ -31,7 +31,10 @@ describe("Issue #1512: split task modal details pane width", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 		const wideMediaBlock = extractMediaBlock(cssContent, "@media (min-width: 1200px)");
 
-		expect(wideMediaBlock).toContain("grid-template-columns: 480px minmax(280px, 1fr)");
+		expect(wideMediaBlock).toContain("grid-template-columns: minmax(0, 1fr) minmax(var(--tn-modal-details-min-width), 1fr)");
+		expect(wideMediaBlock).toContain("width: var(--tn-modal-composer-width)");
+		const tokens = fs.readFileSync(path.resolve(__dirname, "../../../styles/tokens.css"), "utf-8");
+		expect(tokens).toContain("--tn-modal-details-min-width: 280px");
 	});
 });
 

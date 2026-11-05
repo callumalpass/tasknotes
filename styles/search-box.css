@@ -51,7 +51,8 @@
 }
 
 .tn-search-box__input::placeholder {
-	color: var(--text-muted);
+	color: var(--tn-text-placeholder);
+	opacity: 1;
 	font-style: italic;
 }
 
