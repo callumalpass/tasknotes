@@ -28,7 +28,12 @@ export function updateTaskCardCompletionState(
 	isCompleted: boolean,
 	effectiveStatus: string
 ): void {
+	const justCompleted = isCompleted && !card.classList.contains("task-card--completed");
 	card.classList.toggle("task-card--completed", isCompleted);
+	card.classList.toggle("task-card--just-completed", justCompleted);
+	if (justCompleted) {
+		card.addEventListener("animationend", () => card.classList.remove("task-card--just-completed"), { once: true });
+	}
 	card.classList.toggle(
 		"task-card--completed-strikethrough",
 		isCompleted && shouldStrikeThroughCompletedTasks(plugin)

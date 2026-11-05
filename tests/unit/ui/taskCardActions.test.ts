@@ -5,6 +5,7 @@ import {
 	createRecurrenceClickHandler,
 	createReminderClickHandler,
 	createStatusCycleHandler,
+	syncTaskCardWriteState,
 } from "../../../src/ui/taskCardActions";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
@@ -125,6 +126,52 @@ describe("taskCardActions", () => {
 			"done",
 			true
 		);
+	});
+
+	it("keeps failed-save feedback when the shared mutation path returns no changed task", async () => {
+		jest.mocked(changeTaskProperty).mockResolvedValueOnce([]);
+		const card = document.createElement("div");
+		card.className = "task-card";
+		const status = card.createSpan({ cls: "task-card__status-dot" });
+		const handler = createStatusCycleHandler({ task, plugin: createPlugin(), targetDate: new Date(), updateStatusVisuals: jest.fn() });
+		handler({ target: status, stopPropagation: jest.fn(), shiftKey: false } as unknown as MouseEvent);
+		await flushAsyncHandlers();
+		expect(card.classList.contains("task-card--write-failed")).toBe(true);
+		expect(card.classList.contains("task-card--pending")).toBe(false);
+		expect(status.hasAttribute("aria-disabled")).toBe(false);
+	});
+
+	it("disables the actual delegated status control while writing and restores it after failure", async () => {
+		let rejectWrite!: (reason: Error) => void;
+		const plugin = createPlugin({ updateTaskProperty: jest.fn(() => new Promise((_resolve, reject) => { rejectWrite = reject; })) } as unknown as Partial<TaskNotesPlugin>);
+		const card = document.createElement("div");
+		card.className = "task-card";
+		const status = card.createSpan({ cls: "task-card__status-dot" });
+		const icon = status.createSpan();
+		const handler = createStatusCycleHandler({ task, plugin, targetDate: new Date(), updateStatusVisuals: jest.fn() });
+		const event = { target: icon, currentTarget: document.body, stopPropagation: jest.fn(), shiftKey: false } as unknown as MouseEvent;
+		handler(event);
+		await flushAsyncHandlers();
+		expect(status.getAttribute("aria-busy")).toBe("true");
+		expect(status.getAttribute("aria-disabled")).toBe("true");
+		handler(event);
+		expect(plugin.updateTaskProperty).toHaveBeenCalledTimes(1);
+		const replacement = document.createElement("div");
+		replacement.className = "task-card";
+		replacement.dataset.taskPath = task.path;
+		const replacementStatus = replacement.createDiv({ cls: "task-card__main-row" }).createSpan({ cls: "task-card__status-dot" });
+		document.body.append(replacement);
+		syncTaskCardWriteState(replacement, plugin, task.path);
+		expect(replacementStatus.getAttribute("aria-disabled")).toBe("true");
+		rejectWrite(new Error("Write denied"));
+		await flushAsyncHandlers();
+		expect(replacement.classList.contains("task-card--write-failed")).toBe(true);
+		expect(replacementStatus.hasAttribute("aria-disabled")).toBe(false);
+		replacement.remove();
+		expect(card.classList.contains("task-card--pending")).toBe(false);
+		expect(card.classList.contains("task-card--write-failed")).toBe(true);
+		expect(status.hasAttribute("aria-busy")).toBe(false);
+		expect(status.hasAttribute("aria-disabled")).toBe(false);
 	});
 
 	it("uses the previous status when shift-clicking the status indicator", async () => {

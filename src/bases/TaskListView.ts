@@ -11,7 +11,8 @@ import {
 import { displayError } from "../i18n/runtime";
 import { showToast } from "../ui/kit/toast";
 import { showTaskUndo } from "../ui/taskPropertyPickers";
-import { createFileUndo } from "../ui/taskMutationUndo";
+import { collectFileUndo, createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
+import { readCompletionContent } from "../services/task-service/recurringCompletionUndo";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -220,6 +221,8 @@ export class TaskListView extends BasesViewBase {
 	// Drag-to-reorder state
 	private basesController: TaskListController;
 	private draggedTaskPath: string | null = null;
+	private draggedTaskPaths: string[] = [];
+	private dragDestinations = new Map<string, TaskListDestination>();
 	private dragGroupKey: string | null = null;
 	private currentInsertionGroupKey: string | null = null;
 	private currentInsertionSegmentIndex = -1;
@@ -1007,8 +1010,12 @@ export class TaskListView extends BasesViewBase {
 		);
 
 		const existingHandle = cardEl.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR);
+		const handleContainer = this.isMobileDragHandleOnlyMode(cardEl)
+			? cardEl.querySelector<HTMLElement>(":scope > .task-card__main-row") ?? cardEl
+			: cardEl;
 		if (existingHandle) {
 			existingHandle.setAttribute("draggable", "true");
+			if (existingHandle.parentElement !== handleContainer) handleContainer.prepend(existingHandle);
 			return;
 		}
 
@@ -1044,7 +1051,7 @@ export class TaskListView extends BasesViewBase {
 				this.showTaskMovementMenu(task, cardEl);
 			}
 		});
-		cardEl.insertBefore(handle, cardEl.firstChild);
+		handleContainer.prepend(handle);
 	}
 
 	/**
@@ -1107,11 +1114,15 @@ export class TaskListView extends BasesViewBase {
 
 			e.stopPropagation();
 			this.beginTaskMovement(cardEl, task, groupKey);
+			this.updateTouchGhost(e.clientX, e.clientY);
 			if (e.dataTransfer) {
 				// copyMove: Calendar views accept the task path as a copy-style drop
 				e.dataTransfer.effectAllowed = "copyMove";
 				e.dataTransfer.setData("text/plain", task.path);
 				e.dataTransfer.setData(TASK_PATH_DRAG_TYPE, task.path);
+				const image = createElementInDocument(cardEl.ownerDocument, "canvas");
+				image.width = image.height = 1;
+				e.dataTransfer.setDragImage(image, 0, 0);
 			}
 		});
 
@@ -1123,6 +1134,15 @@ export class TaskListView extends BasesViewBase {
 
 	private beginTaskMovement(card: HTMLElement, task: TaskInfo, groupKey: string | null): void {
 		this.draggedTaskPath = task.path;
+		const selection = this.plugin.taskSelectionService;
+		this.draggedTaskPaths = selection?.isSelected(task.path)
+			? [...this.currentVisibleTaskPaths].filter((path) => selection.isSelected(path))
+			: [task.path];
+		if (!this.draggedTaskPaths.length) this.draggedTaskPaths = [task.path];
+		this.dragDestinations = new Map(this.draggedTaskPaths.map((path) => [path, {
+			groupKey: this.taskGroupKeys.get(path) ?? groupKey,
+			subGroupKey: this.movementSubGroupKeys.get(path),
+		}]));
 		this.rootElement?.classList.add("task-list-view--moving");
 		this.itemsContainer
 			?.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
@@ -1131,7 +1151,20 @@ export class TaskListView extends BasesViewBase {
 		this.dragSourceDestination = this.elementDestinations.get(card) ?? { groupKey };
 		this.showEmptyMovementDestinations();
 		card.classList.add("task-card--dragging", "task-list-view__drag-source");
+		this.itemsContainer?.querySelectorAll<HTMLElement>(".task-card[data-task-path]").forEach((element) => {
+			if (this.draggedTaskPaths.includes(element.dataset.taskPath ?? ""))
+				element.classList.add("task-card--dragging", "task-list-view__drag-source");
+		});
 		this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+		this.touchGhost = createElementInDocument(card.ownerDocument, "div");
+		this.touchGhost.className = "task-list-view__touch-ghost";
+		this.touchGhost.setAttribute("aria-hidden", "true");
+		this.touchGhost.createDiv({ cls: "task-list-view__drag-title", text: task.title });
+		const detail = this.draggedTaskPaths.length > 1
+			? uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: this.draggedTaskPaths.length })
+			: Array.from(card.querySelectorAll(".task-card__metadata-date")).map((date) => date.getAttribute("aria-label") ?? date.textContent).join(" · ");
+		if (detail) this.touchGhost.createDiv({ cls: "task-list-view__drag-detail", text: detail });
+		this.rootElement?.appendChild(this.touchGhost);
 		// Keep the source row and target measurements stable throughout the gesture.
 		this.currentInsertionGroupKey = groupKey;
 		this.currentInsertionSegmentIndex = -1;
@@ -1171,10 +1204,15 @@ export class TaskListView extends BasesViewBase {
 	private async finishTaskMovement(target: EventTarget | null, clientY: number): Promise<void> {
 		if (!this.draggedTaskPath) return;
 		const plan = this.updateTaskMovementTarget(target, clientY);
-		const path = this.draggedTaskPath;
+		const paths = [...this.draggedTaskPaths];
+		const sources = new Map(this.dragDestinations);
+		const undos: Array<() => Promise<void>> = [];
 		if (plan?.kind === "parent") {
 			this.cancelTaskMovement();
-			if (plan.state === "assign") await this.performParentAssignment(path, plan.parentPath);
+			if (plan.state === "assign") {
+				for (const sourcePath of paths) await this.performParentAssignment(sourcePath, plan.parentPath, undos);
+				showTaskUndo(undos, false, undos.length, this.plugin.app.vault);
+			}
 			return;
 		}
 		const source = this.dragSourceDestination;
@@ -1183,7 +1221,11 @@ export class TaskListView extends BasesViewBase {
 		const insertion = plan?.kind === "reorder" ? this.getCurrentInsertionTarget() : null;
 		this.cancelTaskMovement();
 		if (source && destination && plan && plan.kind !== "blocked" && plan.kind !== "none") {
-			await this.performTaskMovement(path, source, destination, isHeader, insertion);
+			const ordered = insertion && !insertion.above ? [...paths].reverse() : paths;
+			for (const sourcePath of ordered) {
+				await this.performTaskMovement(sourcePath, sources.get(sourcePath) ?? source, destination, isHeader, insertion, undos);
+			}
+			showTaskUndo(undos, false, undos.length, this.plugin.app.vault);
 		}
 	}
 
@@ -1669,6 +1711,12 @@ export class TaskListView extends BasesViewBase {
 		target: EventTarget | null,
 		clientY: number
 	): TaskListDropIntent | null {
+		const element = this.getEventTargetElement(target)?.closest<HTMLElement>(".task-card[data-task-path]");
+		this.itemsContainer?.querySelectorAll(".task-list-view__move-candidate").forEach((card) => {
+			if (card !== element) card.classList.remove("task-list-view__move-candidate");
+		});
+		if (element && !this.draggedTaskPaths.includes(element.dataset.taskPath ?? ""))
+			element.classList.add("task-list-view__move-candidate");
 		const intent = this.resolveTaskMovementTarget(target, clientY);
 		this.currentDropAllowed =
 			intent?.kind === "move" ||
@@ -1696,18 +1744,21 @@ export class TaskListView extends BasesViewBase {
 				this.draggedTaskPath,
 				parentPath
 			);
+			const batchState = this.draggedTaskPaths.map((path) => previewTaskParentAssignment(this.plugin, path, parentPath));
+			const invalidState = batchState.find((value) => value !== "assign");
+			const resolvedState = invalidState ?? state;
 			this.clearMovementPreview();
 			this.clearDropIndicators();
 			parentTarget.classList.toggle(
 				"task-list-view__parent-target--active",
-				state === "assign"
+				resolvedState === "assign"
 			);
 			parentTarget.classList.toggle(
 				"task-list-view__move-target--blocked",
-				state !== "assign" && state !== "already"
+				resolvedState !== "assign"
 			);
-			this.setMovementFeedback(this.parentAssignmentMessage(state, parentPath));
-			return { kind: "parent", parentPath, state };
+			this.setMovementFeedback(this.parentAssignmentMessage(resolvedState, parentPath));
+			return { kind: "parent", parentPath, state: resolvedState };
 		}
 		this.itemsContainer
 			?.querySelectorAll(
@@ -1729,7 +1780,7 @@ export class TaskListView extends BasesViewBase {
 		);
 		const card = this.getTopLevelDropCard(targetElement);
 		// Releasing on the original row (or its subtasks) cancels rather than guessing a neighbour.
-		if (!header && card?.dataset.taskPath === this.draggedTaskPath) return clear();
+		if (!header && this.draggedTaskPaths.includes(card?.dataset.taskPath ?? "")) return clear();
 		// The shelf's label and padding are not destinations.
 		if (!header && targetElement.closest(".task-list-view__empty-destinations")) return clear();
 		const visibleCard = card && this.getVisibleDropCards().includes(card) ? card : null;
@@ -1744,7 +1795,10 @@ export class TaskListView extends BasesViewBase {
 			groupKey:
 				slot?.groupKey ?? this.taskGroupKeys.get(element.dataset.taskPath ?? "") ?? null,
 		};
-		const plan = this.planMovement(this.dragSourceDestination, destination, isHeader);
+		const plans = [...this.dragDestinations.values()].map((source) => this.planMovement(source, destination, isHeader));
+		const plan = plans.find((candidate) => candidate.kind === "blocked")
+			?? plans.find((candidate) => candidate.kind === "move" || candidate.kind === "reorder")
+			?? this.planMovement(this.dragSourceDestination, destination, isHeader);
 		this.dropDestination = destination;
 		this.dropIsHeader = isHeader;
 		if (plan.kind === "reorder") {
@@ -1803,6 +1857,9 @@ export class TaskListView extends BasesViewBase {
 		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
 		this.rootElement?.classList.remove("task-list-view--moving");
 		this.draggedTaskPath = null;
+		this.draggedTaskPaths = [];
+		this.dragDestinations.clear();
+		this.itemsContainer?.querySelectorAll(".task-list-view__move-candidate").forEach((card) => card.classList.remove("task-list-view__move-candidate"));
 		this.dragGroupKey = null;
 		this.dragSourceDestination = null;
 		this.pendingDragClientY = null;
@@ -1819,15 +1876,21 @@ export class TaskListView extends BasesViewBase {
 		source: TaskListDestination,
 		destination: TaskListDestination,
 		isHeader: boolean,
-		insertion: { taskPath: string; above: boolean } | null
+		insertion: { taskPath: string; above: boolean } | null,
+		undos?: Array<() => Promise<void>>
 	): Promise<void> {
 		const plan = this.planMovement(source, destination, isHeader);
+		if (plan.kind === "none" || plan.kind === "blocked") return;
 		// The members the user saw when acting. Values added by another edit before the
 		// queued write lands are not part of the move and must survive it.
 		const shown = this.movementProperties.get(path);
 		const shownOccurrence = getShownOccurrence(this.taskInfoCache.get(path), (task) =>
 			this.getTaskActionDate(task)
 		);
+		const card = Array.from(this.itemsContainer?.querySelectorAll<HTMLElement>(".task-card[data-task-path]") ?? []).find((element) => element.dataset.taskPath === path);
+		card?.classList.remove("task-card--write-failed", "task-card--drop-settled");
+		card?.classList.add("task-card--pending");
+		card?.setAttribute("aria-busy", "true");
 		try {
 			if (plan.kind === "reorder" && insertion) {
 				await this.handleSortOrderDrop(
@@ -1837,7 +1900,8 @@ export class TaskListView extends BasesViewBase {
 					destination.groupKey,
 					source.groupKey,
 					this.getVisibleSortScopePathsForDrag(destination.groupKey),
-					destination
+					destination,
+					undos
 				);
 			} else if (plan.kind === "move") {
 				await this.dropQueue.enqueue(`move:${path}`, async () => {
@@ -1847,6 +1911,9 @@ export class TaskListView extends BasesViewBase {
 						status: getTaskListMovementStatus(plan),
 						shownOccurrence,
 						getOccurrenceDate: (task) => this.getTaskActionDate(task),
+						...(undos ? { onUndo: (undo: () => Promise<boolean>) => undos.push(async () => {
+							if (!await undo()) throw new Error("Task changed since movement");
+						}) } : {}),
 					});
 					if (isSettled) return;
 
@@ -1930,11 +1997,14 @@ export class TaskListView extends BasesViewBase {
 						undoChanges,
 						originalTask ?? null,
 						updatedTask ?? null,
-						plan.changes
+						plan.changes,
+						undefined,
+						undos
 					);
 				});
 			}
 		} catch (error) {
+			card?.classList.add("task-card--write-failed");
 			tasknotesLogger.error("Task movement failed", {
 				category: "persistence",
 				operation: "task-movement",
@@ -1949,6 +2019,12 @@ export class TaskListView extends BasesViewBase {
 				)
 			);
 		} finally {
+			card?.classList.remove("task-card--pending");
+			card?.removeAttribute("aria-busy");
+			if (!card?.classList.contains("task-card--write-failed")) {
+				card?.classList.add("task-card--drop-settled");
+				card?.addEventListener("animationend", () => card.classList.remove("task-card--drop-settled"), { once: true });
+			}
 			this.debouncedRefresh();
 		}
 	}
@@ -1959,14 +2035,17 @@ export class TaskListView extends BasesViewBase {
 		originalTask: TaskInfo | null,
 		_updatedTask: TaskInfo | null,
 		propertyChanges: readonly Pick<TaskListGroupDropPlan, "groupByTaskProp">[],
-		successMessage?: string
+		successMessage?: string,
+		undos?: Array<() => Promise<void>>
 	): void {
 		const message = successMessage ?? this.plugin.i18n.translate(messageForKey("views.taskList.movement.moved"));
 		if (!changes.length || ((originalTask?.recurrence || originalTask?.recurrence_parent) && propertyChanges.some(change => change.groupByTaskProp === "status"))) {
 			showToast({ message });
 			return;
 		}
-		showTaskUndo([createFileUndo(this.plugin, [{ file, content: { changes: [...changes], beforeBody: "", afterBody: "" } }])], false, 1, this.plugin.app.vault, message);
+		const undo = createFileUndo(this.plugin, [{ file, content: { changes: [...changes], beforeBody: "", afterBody: "" } }]);
+		if (undos) undos.push(undo);
+		else showTaskUndo([undo], false, 1, this.plugin.app.vault, message);
 	}
 
 	private configureParentDropTarget(card: HTMLElement): void {
@@ -2048,7 +2127,7 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
-	private async performParentAssignment(sourcePath: string, parentPath: string): Promise<void> {
+	private async performParentAssignment(sourcePath: string, parentPath: string, undos?: Array<() => Promise<void>>): Promise<void> {
 		try {
 			await this.dropQueue.enqueue(`move:${sourcePath}`, async () => {
 				const result = await assignTaskParent(this.plugin, sourcePath, parentPath);
@@ -2070,7 +2149,8 @@ export class TaskListView extends BasesViewBase {
 							context: "views.taskList.movement.parentAssigned",
 						}),
 						{ parent }
-					)
+					),
+					undos
 				);
 			});
 		} catch (error) {
@@ -2306,7 +2386,7 @@ export class TaskListView extends BasesViewBase {
 		return Array.from(
 			this.itemsContainer.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
 		).filter((card) => {
-			if (card.dataset.taskPath === this.draggedTaskPath) return false;
+			if (this.draggedTaskPaths.includes(card.dataset.taskPath ?? "")) return false;
 			const parentTaskCard = card.parentElement?.closest<HTMLElement>(
 				".task-card[data-task-path]"
 			);
@@ -2401,11 +2481,6 @@ export class TaskListView extends BasesViewBase {
 					task,
 					this.elementDestinations.get(card)?.groupKey ?? null
 				);
-				this.touchGhost = createElementInDocument(doc, "div");
-				this.touchGhost.className = "task-list-view__touch-ghost";
-				this.touchGhost.setAttribute("aria-hidden", "true");
-				this.touchGhost.textContent = task.title;
-				this.rootElement?.appendChild(this.touchGhost);
 				this.updateTouchGhost(x, y);
 				return true;
 			},
@@ -2423,9 +2498,10 @@ export class TaskListView extends BasesViewBase {
 		this.registerDomEvent(this.containerEl.ownerDocument, "keydown", (event: KeyboardEvent) => {
 			if (event.key === "Escape" && this.draggedTaskPath) {
 				event.preventDefault();
+				event.stopImmediatePropagation();
 				this.cancelTaskMovement();
 			}
-		});
+		}, { capture: true });
 
 		// dragenter: required by the HTML5 DnD spec alongside dragover to
 		// indicate this container is a valid drop zone.
@@ -2435,6 +2511,7 @@ export class TaskListView extends BasesViewBase {
 			// Do not let an older queued dragover overwrite a newly entered target.
 			this.pendingDragTarget = e.target;
 			this.pendingDragClientY = e.clientY;
+			this.updateTouchGhost(e.clientX, e.clientY);
 			this.updateTaskMovementTarget(e.target, e.clientY);
 			if (e.dataTransfer)
 				e.dataTransfer.dropEffect = this.currentDropAllowed ? "move" : "none";
@@ -2455,6 +2532,7 @@ export class TaskListView extends BasesViewBase {
 			this.pendingDragClientY = e.clientY;
 			this.pendingDragTarget = e.target;
 			this.edgeScroll?.update(e.clientX, e.clientY);
+			this.updateTouchGhost(e.clientX, e.clientY);
 			if (!this.dragOverRafId) {
 				this.dragOverRafId = (
 					this.containerEl.ownerDocument.defaultView ?? window
@@ -2491,7 +2569,8 @@ export class TaskListView extends BasesViewBase {
 		targetGroupKey: string | null,
 		sourceGroupKey: string | null,
 		targetVisiblePaths?: string[],
-		destination?: TaskListDestination
+		destination?: TaskListDestination,
+		undos?: Array<() => Promise<void>>
 	): Promise<void> {
 		const groupByPropertyId = this.getGroupByPropertyId() ?? this.subGroupPropertyId;
 		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
@@ -2564,13 +2643,26 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
+			const receipts: FileUndoReceipt[] = [];
+			const collect = collectFileUndo(this.plugin, receipts);
+			const additionalBefore = await Promise.all(sortOrderPlan.additionalWrites.map(async (write) => {
+				const target = this.plugin.app.vault.getAbstractFileByPath(write.path);
+				if (!(target instanceof TFile)) throw new Error("Task file no longer exists");
+				return { file: target, frontmatter: readCompletionContent(await this.plugin.app.vault.read(target)).frontmatter };
+			}));
 
 			await applySortOrderPlan(draggedPath, sortOrderPlan, this.plugin, {
 				includeDragged: false,
 			});
+			for (const before of additionalBefore) {
+				const after = readCompletionContent(await this.plugin.app.vault.read(before.file)).frontmatter;
+				const pick = (frontmatter: Record<string, unknown>) => Object.prototype.hasOwnProperty.call(frontmatter, sortOrderField) ? { [sortOrderField]: frontmatter[sortOrderField] } : {};
+				collect(before.file, pick(before.frontmatter), pick(after));
+			}
 
 			// Single atomic write: group property + sort_order + derivative fields
 			await processVaultFrontMatter(this.plugin.app, file, (fm) => {
+				const before = structuredClone(fm);
 				applyTaskListDropFrontmatterMutation({
 					frontmatter: fm,
 					plan: groupDropPlan,
@@ -2588,7 +2680,13 @@ export class TaskListView extends BasesViewBase {
 						),
 					getTimestamp: getCurrentTimestamp,
 				});
+				collect(file, before, fm);
 			});
+			if (receipts.length) {
+				const undo = createFileUndo(this.plugin, receipts);
+				if (undos) undos.push(undo);
+				else showTaskUndo([undo], false, 1, this.plugin.app.vault);
+			}
 
 			// Fire post-write side effects for known TaskInfo property changes
 			if (groupDropPlan.needsGroupUpdate && groupDropPlan.groupByTaskProp) {
@@ -3276,6 +3374,10 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
+		if (this.draggedTaskPath) {
+			this.pendingRender = true;
+			return;
+		}
 		// Update cache
 		this.taskInfoCache.set(task.path, task);
 		this.lastTaskSignatures.set(task.path, this.buildTaskSignature(task));

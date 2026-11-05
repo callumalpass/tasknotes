@@ -61,8 +61,8 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 - Space: 4px grid: `--tn-space-1` (4) to `--tn-space-8` (32), plus `--tn-space-half` (2).
 - Radius: `--tn-radius-sm` 4 (chips, keys), `--tn-radius-md` 6 (buttons, inputs, rows), `--tn-radius-lg` 8 (cards, menus), `--tn-radius-xl` 12 (modals), `--tn-radius-full`.
 - Depth: flat at rest. `--tn-shadow-raised` for cards on drag. `--tn-shadow-overlay` for popovers and menus. `--tn-shadow-modal` for modals. Overlays add a hairline border.
-- Motion: `--tn-motion-fast` 80ms (hover), `--tn-motion-base` 140ms (pickers, reveals), `--tn-motion-slow` 220ms (panels). Ease out with `--tn-ease`. Animate only transform and opacity. No bounce. `prefers-reduced-motion` removes all of it.
-- Controls: 28px default height, 24px small. Row height 34px in list, 28px compact. On mobile, touch targets are 40px minimum.
+- Motion: `--tn-motion-fast` 80ms (hover), `--tn-motion-base` 140ms (pickers, reveals), `--tn-motion-slow` 220ms (panels). Ease out with `--tn-ease`. Spatial motion uses transform and opacity; state fills may cross-fade without changing geometry. No bounce. `prefers-reduced-motion` removes all of it.
+- Controls: 28px default height, 24px small. Task rows use `--tn-task-row-height` (58px) and `--tn-task-row-height-compact` (46px); the older 34px/28px row tokens remain for non-task controls. On mobile, touch targets are 40px minimum.
 
 ## Kit
 
@@ -82,11 +82,13 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 
 ## Task row anatomy
 
-`[expand][status][priority] Title  ·indicators·        [chips][assignee-ish values][date][⋯]`
+`[expand][status][priority] Title ·indicators· [⋯]`
+
+`                          values        Scheduled value    Due value`
 
 - Left cluster is fixed-width so titles align across rows.
 - Desktop titles truncate with an ellipsis. Hover or focus can reveal the full title via tooltip. Mobile list, agenda and inline titles wrap on their own full-width line, with metadata beneath and primary actions grouped on a separate line with 40px targets.
-- Right cluster is right-aligned. Dates sit in a fixed column so they align down the list.
+- Metadata occupies a quiet second line: plain tags, contexts and projects at the start, then aligned scheduled/due columns on wide lists. There are no chip borders. Narrow layouts retain the compact date icons; desktop dates use muted field labels and stronger values. Overdue deadlines include the word **Overdue**, not colour alone.
 - Metadata values are atomic: overflow becomes a focusable `+N` with all hidden values in its tooltip and a read-only kit popover on activation. No chip truncation, masks or word-breaking. Explicit file-name columns retain the name without `.md`.
 - Scheduled dates use a calendar, deadlines a flag. `taskDateLabel` in `src/ui/kit/dateLabel.ts` is the shared relative-date formatter: Yesterday/Today/Tomorrow, otherwise `MMM d` (with year outside this year), plus the configured time.
 - Workflow glyphs follow configured order. The seeded unassigned status (stable ID `none`, not its editable value) is dashed and excluded from progress ranking; the first active status is an empty ring. Custom icons always win. Unknown status/priority values use a neutral question glyph, never the None glyph, with their raw value and unconfigured state in the accessible label.
@@ -94,8 +96,17 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 - Indicators (recurring, reminder, subtasks progress, details, blocked, blocking) are 14px glyphs in `--text-faint`, hidden when absent. Blocked is the only one with colour.
 - `⋯` appears on hover and focus only.
 - Completed tasks: muted title, no strikethrough animation, filled check.
-- Below a container width of 760px the title and metadata stack, preserving complete date labels and chip overflow. Kanban cards always use that shape.
+- Titles and metadata stack at every list width. Below a container width of 760px, date icons replace the field labels and metadata overflow preserves complete values. Kanban cards retain their own host layout.
 - Desktop list titles stay on one line; board titles have up to two lines with an indicator/menu gutter that does not change on hover. Board columns retain a useful minimum width and scroll with snap instead of crushing their contents. Mobile columns leave a neighbouring lane visible and retain a horizontal scroll track. Below 260px desktop list metadata yields completely to the title. Selection is a quiet tint; only the keyboard-focused row has a focus ring. Mobile actions remain visible; long-press retains the context menu.
+
+### List interaction states
+
+- A row's highlight is painted behind its main row only, never behind expanded children. The same inset and radius apply to hover, press, selection and drop. Row controls retain their own smaller hover target. Nothing translates, grows or reflows on hover.
+- Fine-pointer hover enters immediately (`--tn-motion-hover-in`) and exits with `--tn-motion-fast`. Hover rules exclude `body.is-mobile`; taps do not leave a sticky highlight. Selection uses `--tn-selected`, selected hover uses `--tn-selected-hover`, and only keyboard navigation paints the row focus ring. Focus entering an inner control removes the competing row ring.
+- Card refresh preserves view-owned selection, drag and keyboard classes while replacing task-data classes. During a list drag, task updates wait until cancellation/drop so targets cannot move beneath the pointer.
+- Dragging a selected row moves the visible selection; dragging an unselected row moves only that row. The source dims in place via `--tn-drag-source-opacity`; a theme-backed pointer preview includes the title and selection count. Drag surfaces, shadows, insertion lines, invalid targets and settle motion come from the shared drag/drop tokens.
+- Manual reorder uses an overlay insertion line rather than shifting neighbouring rows. Group destinations get a quiet fill; invalid/read-only targets show an explanation and cannot write. Escape, touch cancellation and drag end remove every source/target/preview class and stop edge scrolling. Successful reorder and group changes use guarded Undo.
+- A pending status write disables its actual delegated control, not the list container. Failed writes retain a visible status outline and the shared writable-note recovery toast; retrying clears it. Completion and drop settle use short interruptible motion, disabled by reduced-motion preference.
 
 ### Task presentation contract
 
