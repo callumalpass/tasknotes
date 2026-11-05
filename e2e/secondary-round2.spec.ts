@@ -94,13 +94,13 @@ test('inline references remain atomic in reading and live preview', async () => 
         const geometries = await cards.evaluateAll(elements => elements.map(element => {
           const card = element.getBoundingClientRect();
           const selectors = ['.task-card__status-dot', '.task-card__title'];
-          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, tops: selectors.map(selector => element.querySelector(selector)!.getBoundingClientRect().top), display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
+          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, tops: selectors.map(selector => element.querySelector(selector)!.getBoundingClientRect().top), sentence: element.closest('.tasknotes-inline-widget--sentence') !== null, display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
         }));
         expect(geometries).toHaveLength(2);
         for (const geometry of geometries) {
           expect(geometry.connected).toBe(true);
           expect(geometry.dateAlignment).toBe('flex-start');
-          expect(geometry.display).toBe('inline-flex');
+          expect(geometry.display).toBe(geometry.sentence ? 'inline' : 'inline-flex');
           expect(geometry.width).toBeLessThanOrEqual(geometry.parentWidth + 1);
           expect(Math.max(...geometry.tops) - Math.min(...geometry.tops)).toBeLessThan(24);
         }

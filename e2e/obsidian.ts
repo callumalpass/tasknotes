@@ -522,16 +522,11 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
 }
 
 export async function openCommandPalette(page: Page): Promise<void> {
-  // Close any existing modals first
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(200);
-
-  // Click on workspace to ensure focus
-  const workspace = page.locator('.workspace');
-  if (await workspace.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await workspace.click({ position: { x: 10, y: 10 } }).catch(() => {});
-    await page.waitForTimeout(100);
-  }
+  await expect(async () => {
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.modal-container:visible, .tn-popover:visible')).toHaveCount(0);
+  }).toPass({ timeout: 5000 });
+  await page.locator('.workspace').click({ position: { x: 10, y: 10 } });
 
   // Use Ctrl+P to open command palette
   await page.keyboard.press('Control+p');
@@ -539,24 +534,18 @@ export async function openCommandPalette(page: Page): Promise<void> {
   // Clear any existing text in the prompt input
   const promptInput = page.locator('.prompt-input');
   await promptInput.fill('');
+  await expect(promptInput).toBeFocused();
 }
 
 export async function runCommand(page: Page, command: string): Promise<void> {
   await openCommandPalette(page);
-  // Type the command
-  await page.keyboard.type(command, { delay: 30 });
-  await page.waitForTimeout(500); // Wait for search to filter
-
-  // Wait for suggestions to appear
-  const suggestion = page.locator('.suggestion-item').first();
-  try {
-    await suggestion.waitFor({ timeout: 3000, state: 'visible' });
-    await page.keyboard.press('Enter');
-  } catch {
-    // If no suggestions found, still try to press Enter and close palette
-    await page.keyboard.press('Escape');
-    throw new Error(`Command not found: "${command}". Make sure TaskNotes plugin is loaded.`);
-  }
+  const promptInput = page.locator('.prompt-input');
+  await promptInput.fill(command);
+  await expect(promptInput).toHaveValue(command);
+  const suggestion = page.locator('.suggestion-item').filter({ hasText: command }).first();
+  await expect(suggestion).toBeVisible({ timeout: 3000 });
+  await suggestion.click();
+  await expect(page.locator('.prompt')).toBeHidden();
 }
 
 export async function waitForNotice(page: Page, text?: string): Promise<void> {

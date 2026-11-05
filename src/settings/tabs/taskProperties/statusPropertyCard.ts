@@ -242,6 +242,7 @@ function renderStatusList(
 
 	const sortedStatuses = [...plugin.settings.customStatuses].sort((a, b) => a.order - b.order);
 	const glyphUpdates: Array<() => void> = [];
+	const nextStatusUpdates: Array<() => void> = [];
 
 	sortedStatuses.forEach((status) => {
 		let previousStatusValue = status.value;
@@ -288,8 +289,10 @@ function renderStatusList(
 			}
 		);
 
-		const nextStatusSelect = createCardSelect(
-			[
+		const nextStatusSelect = createCardSelect([], "");
+		const updateNextStatusSelect = () => {
+			nextStatusSelect.empty();
+			const options = [
 				{
 					value: "",
 					label: translate(
@@ -302,9 +305,15 @@ function renderStatusList(
 						value: statusOption.value,
 						label: configLabel(statusOption) || statusOption.value,
 					})),
-			],
-			status.nextStatus === status.value ? "" : status.nextStatus || ""
-		);
+			];
+			const selectedValue = status.nextStatus === status.value ? "" : status.nextStatus || "";
+			for (const option of options) {
+				const optionEl = nextStatusSelect.createEl("option", { value: option.value, text: option.label });
+				if (option.value === selectedValue) optionEl.selected = true;
+			}
+		};
+		nextStatusUpdates.push(updateNextStatusSelect);
+		updateNextStatusSelect();
 
 		const autoArchiveToggle = createCardToggle(status.autoArchive || false, (value) => {
 			status.autoArchive = value;
@@ -496,7 +505,7 @@ function renderStatusList(
 			});
 			previousStatusValue = status.value;
 			save();
-			renderStatusList(container, plugin, save, translate, onStatusesChanged);
+			nextStatusUpdates.forEach((update) => update());
 		});
 
 		labelInput.addEventListener("input", () => {

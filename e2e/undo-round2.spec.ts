@@ -62,32 +62,46 @@ async function openView(type: string, name: string, manual = false) {
   return root;
 }
 
-test('five property changes survive toast replacement and undo in reverse order on disk', async () => {
+test('five property changes survive toast replacement and undo in reverse order on disk', async ({}, testInfo) => {
   const before = Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`));
   const root = await openView('tasknotesTaskList', 'History');
   await page.keyboard.press('j');
   for (let index = 0; index < 5; index++) {
+    await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', `${folder}/Task ${index}.md`);
+    await expect(root).toBeFocused();
+    const previousToast = await page.$('.tn-toast');
     await page.keyboard.press('p');
-    await page.locator('.tn-picker__row[data-picker-id="high"]').click();
+    const high = page.locator('.tn-picker__row[data-picker-id="high"]');
+    await expect(high).toHaveAttribute('aria-selected', 'false');
+    await high.click();
+    await expect(page.locator('.tn-picker')).toBeHidden();
     await expect.poll(() => disk(`Task ${index}`).properties.priority).toBe('high');
+    await expect(root.locator(`.task-card[data-task-path="${folder}/Task ${index}.md"]`)).toHaveAttribute('data-priority', 'high');
+    if (previousToast) await expect.poll(() => previousToast.evaluate(element => element.isConnected)).toBe(false);
+    await expect(page.locator('.tn-toast__action')).toBeVisible();
+    await expect(root).toBeFocused();
+    await testInfo.attach(`disk-after-change-${index}`, { body: JSON.stringify(Array.from({ length: 5 }, (_, taskIndex) => disk(`Task ${taskIndex}`))), contentType: 'application/json' });
     if (index < 4) await page.keyboard.press('j');
   }
+  const changed = Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`));
   for (const theme of ['light', 'dark']) {
     await page.evaluate(theme => {
       if (!document.body.classList.contains(`theme-${theme}`)) (window as any).app.commands.executeCommandById('theme:toggle-light-dark');
     }, theme);
     await expect(page.locator('body')).toHaveClass(new RegExp(`theme-${theme}`));
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    await page.waitForTimeout(200);
     await page.screenshot({ path: `test-results/undo-round2-${theme}.png`, animations: 'disabled' });
   }
   await page.locator('.tn-toast__action').click();
-  await expect.poll(() => disk('Task 4')).toEqual(before[4]);
+  await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`))).toEqual([...changed.slice(0, 4), before[4]]);
   await expect(root).toBeFocused();
   for (let index = 3; index >= 0; index--) {
     await page.keyboard.press('Control+z');
-    await expect.poll(() => disk(`Task ${index}`)).toEqual(before[index]);
+    await expect.poll(() => Array.from({ length: 5 }, (_, taskIndex) => disk(`Task ${taskIndex}`))).toEqual(changed.map((task, taskIndex) => taskIndex >= index ? before[taskIndex] : task));
+    await testInfo.attach(`disk-after-undo-${index}`, { body: JSON.stringify(Array.from({ length: 5 }, (_, taskIndex) => disk(`Task ${taskIndex}`))), contentType: 'application/json' });
   }
+  await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`))).toEqual(before);
+  await testInfo.attach('disk-after-reverse-undo', { body: JSON.stringify(Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`))), contentType: 'application/json' });
 });
 
 test('tracking start and stop use one toast and guarded disk restoration', async () => {

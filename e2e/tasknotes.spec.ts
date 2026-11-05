@@ -1,4 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette, openTaskNotesSettings, closeObsidianSettings } from './obsidian';
 
 let app: ObsidianApp;
@@ -1003,22 +1005,18 @@ test.describe('Keyboard Navigation', () => {
     const page = getPage();
 
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(1000);
-
-    // Wait for calendar to be visible
-    const calendarContainer = page.locator('.tnc').first();
-    if (await calendarContainer.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await calendarContainer.click();
-      await page.waitForTimeout(300);
-
-      // Navigate with arrow keys (if supported)
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: 'test-results/screenshots/calendar-keyboard-nav.png' });
-    } else {
-      // Calendar not visible, just capture the current state
-      await page.screenshot({ path: 'test-results/screenshots/calendar-keyboard-nav.png' });
-    }
+    const calendar = page.locator('.workspace-leaf.mod-active .advanced-calendar-view');
+    await expect(calendar).toBeVisible();
+    const title = calendar.locator('.tnc-title');
+    await expect(title).not.toBeEmpty();
+    const originalTitle = await title.innerText();
+    await calendar.focus();
+    await expect(calendar).toBeFocused();
+    await page.keyboard.press('n');
+    await expect(title).not.toHaveText(originalTitle);
+    await page.keyboard.press('p');
+    await expect(title).toHaveText(originalTitle);
+    await page.screenshot({ path: 'test-results/screenshots/calendar-keyboard-nav.png' });
   });
 });
 
@@ -2096,14 +2094,9 @@ test.describe('Tag and Project Editing', () => {
 
     // Initialize calendar first (required for Bases views)
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(1000);
-
-    // Close any dropdowns
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-
+    await expect(page.locator('.workspace-leaf.mod-active .advanced-calendar-view')).toBeVisible();
     await runCommand(page, 'Open kanban board');
-    await page.waitForTimeout(1500);
+    await expect(page.locator('.workspace-leaf.mod-active .tn-tasknotesKanban')).toBeVisible();
 
     // Bases renders file.tags as native property chips rather than legacy a.tag links.
     // Assert a known fixture tag in the active board, not a hidden Markdown leaf.
@@ -7417,7 +7410,6 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
     const addNewButton = statusValuesSection.locator('button:has-text("Add status")').first();
     await expect(addNewButton).toBeVisible({ timeout: 5000 });
     await addNewButton.click();
-    await page.waitForTimeout(500);
 
     // Find the newly added status card (should be the last one, collapsed by default)
     // The new status has empty value so its header shows "untitled"
@@ -7426,24 +7418,19 @@ test.describe('Issue #1419: Custom statuses not saving', () => {
 
     // Fill in the value field
     const valueInput = newStatusCard.locator('input[type="text"]').first();
-    if (await valueInput.isVisible({ timeout: 2000 })) {
-      await valueInput.fill(testStatusValue);
-      await valueInput.dispatchEvent('change');
-      await page.waitForTimeout(200);
-    }
+    await expect(valueInput).toBeVisible();
+    await valueInput.fill(testStatusValue);
+    await valueInput.dispatchEvent('change');
 
     // Fill in the label field
     const labelInput = newStatusCard.locator('input[type="text"]').nth(1);
-    if (await labelInput.isVisible({ timeout: 2000 })) {
-      await labelInput.fill(testStatusLabel);
-      await labelInput.dispatchEvent('change');
-      await page.waitForTimeout(200);
-    }
-
-    // Wait for debounced save (500ms + buffer)
-    await page.waitForTimeout(1000);
+    await expect(labelInput).toBeVisible();
+    await labelInput.fill(testStatusLabel);
+    await labelInput.dispatchEvent('change');
 
     await closeObsidianSettings(workspacePage, page);
+    const settingsPath = resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? 'tasknotes-e2e-vault', '.obsidian/plugins/tasknotes/data.json');
+    await expect.poll(() => JSON.parse(readFileSync(settingsPath, 'utf8')).customStatuses.find((status: any) => status.value === testStatusValue)?.label).toBe(testStatusLabel);
     page = await openTaskNotesSettings(workspacePage, 'Task properties');
     // Native Settings recreates its document, so do not reuse closed-window locators.
     settingsModal = page.locator('.tasknotes-settings');
