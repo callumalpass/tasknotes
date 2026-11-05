@@ -129,9 +129,15 @@ test('round one: current values, palette order, viewport bounds and theme parity
         expect(bounds!.y).toBeGreaterThanOrEqual(8);
         expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(792);
         expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width - 8);
-        if (['status', 'priority', 'date'].includes(surface)) {
+        if (['status', 'priority'].includes(surface)) {
           await expect(overlay.locator('.tn-picker__row.is-active.is-selected')).toHaveCount(1);
           await expect(overlay.locator('.tn-picker__row.is-active .tn-picker__check svg')).toHaveCount(1);
+        }
+        if (surface === 'date') {
+          await expect(overlay.locator('.tn-picker__row.is-active')).toHaveAttribute('data-picker-id', 'custom');
+          await expect(overlay.locator('.tn-picker__row.is-selected')).toHaveCount(1);
+          await expect(overlay.locator('.tn-picker__row.is-selected .tn-picker__check svg')).toHaveCount(1);
+          expect(await overlay.locator('.tn-picker__list').evaluate(element => element.scrollTop)).toBe(0);
         }
         if (surface === 'palette') {
           await expect(overlay.locator('.tn-picker__row').first()).toHaveAttribute('data-picker-id', 'edit-task');
@@ -430,7 +436,10 @@ test('virtual list focus survives scrolling, eight custom statuses and empty pri
   }
   await root.focus();
   await page.keyboard.press('p');
-  await expect(page.locator('.tn-picker__row')).toHaveCount(2);
+  await expect(page.locator('.tn-picker__row')).toHaveCount(3);
+  await expect(page.locator('.tn-picker__row.is-selected')).toContainText('low');
+  await expect(page.locator('.tn-picker__row[data-picker-id=""]')).toHaveText('Clear');
+  await expect(page.locator('.tn-picker__row').last()).toHaveText('Task settings');
   await page.keyboard.press('Escape');
   }
 });

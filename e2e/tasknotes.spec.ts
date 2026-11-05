@@ -1396,7 +1396,7 @@ test.describe('Filter Panel Exploration', () => {
     await page.waitForTimeout(500);
 
     // Open filter panel
-    const filterButton = page.locator('button:has-text("Filter"), [aria-label*="Filter"]');
+    const filterButton = page.locator('.workspace-leaf.mod-active .bases-toolbar').getByRole('button', { name: 'Filter', exact: true });
     if (await filterButton.isVisible()) {
       await filterButton.click();
       await page.waitForTimeout(500);

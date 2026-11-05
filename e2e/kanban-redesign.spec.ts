@@ -259,7 +259,7 @@ test('batch drops aggregate Undo while stale axis receipts refuse to replace new
     await plugin.updateTaskProperty(await plugin.cacheManager.getTaskInfo(path), 'priority', 'normal', { suppressNotice: true });
   }, `${folder}/${titles[0]}.md`);
   await page.locator('.tn-toast__action').click();
-  await expect(page.locator('.tn-toast__message')).toHaveText('→ waiting · low · 1 · Cannot undo: the note has changed.');
+  await expect(page.locator('.tn-toast__message')).toHaveText(`→ waiting · low · 1 · Cannot undo: the note has changed. · ${folder}/${titles[0]}.md`);
   expect(await readTask(titles[0])).toMatchObject({ status: 'waiting', priority: 'normal' });
 });
 

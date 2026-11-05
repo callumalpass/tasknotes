@@ -126,6 +126,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 	if (Observer) {
 		const observer = new Observer(fit);
 		observer.observe(values);
+		observer.observe(metadataLine);
 		metadataObservers.set(metadataLine, observer);
 	}
 }

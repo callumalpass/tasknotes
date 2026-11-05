@@ -886,7 +886,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     }
 
     .tasknotes-plugin .tn-report-horizons {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--tn-space-2);
     }
 

@@ -133,9 +133,10 @@ describe("taskCardMetadata", () => {
 	it("removes the empty values gap after rejecting a chip so both dates fit", () => {
 		const original = window.ResizeObserver;
 		let resize = () => {};
+		const observe = jest.fn();
 		window.ResizeObserver = class {
 			constructor(callback: () => void) { resize = callback; }
-			observe() {}
+			observe = observe;
 			unobserve() {}
 			disconnect() {}
 		} as unknown as typeof ResizeObserver;
@@ -155,6 +156,8 @@ describe("taskCardMetadata", () => {
 			resize();
 			expect(chip.hidden).toBe(true);
 			expect(values.hidden).toBe(true);
+			expect(observe).toHaveBeenCalledWith(values);
+			expect(observe).toHaveBeenCalledWith(metadataLine);
 			expect(scheduled.hidden).toBe(false);
 			expect(due.hidden).toBe(false);
 		} finally {

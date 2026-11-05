@@ -169,7 +169,12 @@ test('collisions expand without widening the week, timed lines fit and deadlines
   await expect.poll(() => grid.evaluate(element => Number(getComputedStyle(element).getPropertyValue('--tnc-collision-columns')))).toBeGreaterThanOrEqual(3);
   expect(await grid.locator('.tnc-tg-scroll').evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(2);
   await grid.locator('.tnc-more--collision').first().click();
-  await expect(page.locator('.tnc-popover .tnc-item')).toHaveCount(5);
+  const appointments = page.locator('.tnc-popover .tnc-item');
+  await expect(appointments).toHaveCount(4);
+  for (const appointmentTitle of [title, ...Array.from({ length: 3 }, (_, index) => `Review overlapping supplier appointment ${index + 1}`)]) {
+    await expect(appointments.filter({ hasText: appointmentTitle })).toHaveCount(1);
+  }
+  await expect(appointments.filter({ hasText: 'Confirm the supplier onboarding deadline' })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.locator('.tnc-btn-view-day').click();
   const events = grid.locator('.tnc-item--timed');

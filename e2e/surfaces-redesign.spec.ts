@@ -40,7 +40,7 @@ test.beforeAll(async () => {
     for (const [name, status, priority] of [['Unknown', 'retired', 'unconfigured'], ['Review', 'review', 'urgent'], ['Custom', 'done', 'urgent']]) {
       await app.vault.create(`${folder}/${name}.md`, `---\ntitle: ${name}\ntags: [task, design]\n${plugin.fieldMapper.toUserField('status')}: ${status}\n${plugin.fieldMapper.toUserField('priority')}: ${priority}\n${plugin.fieldMapper.toUserField('due')}: 2026-11-01\n${name === 'Review' ? `${plugin.fieldMapper.toUserField('blockedBy')}: ["[[${folder}/Unknown]]"]\n` : ''}projects: ["[[Surface project]]"]\n---\n`);
     }
-    await app.vault.create(`${folder}/Prose.md`, `# A working note\n\nBefore [[${folder}/Review]] and after.\n\nA missing configuration: [[${folder}/Unknown]].\n\nKeep the cursor here.\n\nA custom icon: [[${folder}/Custom]].\n`);
+    await app.vault.create(`${folder}/Prose.md`, `# A working note\n\nBefore [[${folder}/Review]] and after.\n\nA missing configuration: [[${folder}/Unknown]].\n\nKeep the cursor here.\n\nA custom icon: [[${folder}/Custom]].\n\n[[${folder}/Review]]\n`);
     (window as any).surfaceTestLeaf = app.workspace.getLeaf(true);
     return original;
   }, folder);
@@ -279,7 +279,8 @@ test('empty list and board actions create tasks and search clearing restores res
         await expect(page.locator('.tn-search-no-results')).toHaveCount(0);
         await expect(page.locator('.workspace-leaf.mod-active .task-card').first()).toBeVisible();
       } else {
-        await expect(page.locator('.tn-empty__message')).toHaveText('No tasks in this view.');
+        await expect(page.locator('.tn-empty__message')).toHaveText('No tasks match this view. Review its filters.');
+        await expect(page.locator('.tn-empty').getByRole('button', { name: 'Filters', exact: true })).toBeVisible();
         for (const theme of ['theme-light', 'theme-dark']) {
           for (const mobile of [false, true]) {
             await appearance(theme, mobile);
@@ -308,14 +309,15 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
           if (view.editor) view.editor.setCursor({ line: 6, ch: 0 });
         }, { path: `${folder}/Prose.md`, mode });
         const cards = page.locator('.task-card--layout-inline:visible');
-        await expect(cards).toHaveCount(3);
+        await expect(cards).toHaveCount(4);
         await expect(cards.first().locator('.tn-glyph').first()).toBeVisible();
         expect(await cards.first().locator('.tn-glyph').first().evaluate(element => element.getBoundingClientRect().width)).toBe(16);
         await expect(cards.first().locator('.task-card__priority-dot .lucide-flame')).toBeAttached();
         await expect(cards.nth(2).locator('.task-card__status-dot .lucide-rocket')).toBeAttached();
         await expect(cards.nth(1).locator('[data-tn-glyph="unknown"]').first()).toBeAttached();
         await expect(cards.first().locator('.task-card__metadata-date--overdue')).toBeAttached();
-        await expect(cards.first().locator('.task-card__metadata-pill--blocked')).toBeVisible();
+        await expect(cards.first().locator('.task-card__metadata-pill--blocked')).toBeHidden();
+        await expect(cards.last().locator('.task-card__metadata-pill--blocked')).toBeVisible();
         if (mobile) await expectTouchTargets('.task-card--layout-inline .task-card__status-dot, .task-card--layout-inline .task-card__priority-dot, .task-card--layout-inline .task-card__metadata-date, .task-card--layout-inline .task-card__context-menu');
         await screenshot(`inline-${mode}-${theme}-${mobile ? 'mobile' : 'desktop'}`);
       }

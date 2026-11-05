@@ -68,6 +68,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
+- Narrow task and agenda rows keep dates and their overflow controls within the pane, including larger text sizes.
+- Statistics period sections stack in narrow panes instead of squeezing into three columns.
 - Calendar Undo publishes restored task data before the next note edit, and partial group Undo identifies the tasks that were not restored.
 - Background calendar refreshes preserve open overflow dialogs and active interactions instead of navigating to the date that is already displayed.
 - Legacy calendar stack limits retain readable visible appointments at narrower pane widths. Month overflow keeps its focus anchor during refreshes, so Escape returns to the same control.

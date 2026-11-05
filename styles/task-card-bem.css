@@ -1538,6 +1538,8 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__m
 }
 
 body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__date-slot {
+    flex: 0 1 auto;
+    min-width: var(--tn-touch-target);
     max-width: 100%;
 }
 
@@ -1545,6 +1547,14 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card__m
     min-width: var(--tn-touch-target);
     min-height: var(--tn-touch-target);
     align-items: center;
+}
+
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry) .task-card .task-card__metadata-date > span:last-child {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 /* High density displays */

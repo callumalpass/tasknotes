@@ -100,7 +100,7 @@ for (const kind of ['drop', 'resize']) {
     await page.screenshot({ path: `test-results/r3-timeblock-${kind}.png`, animations: 'disabled' });
     const times = await modal.locator('select').evaluateAll(elements => elements.map(element => (element as HTMLSelectElement).value));
     expect(times).toEqual(['14', '0', '16', '0']);
-    await modal.locator('input[type=text]').first().fill(`Fresh title ${kind}`);
+    await modal.locator('textarea:not(.tn-modal__description)').fill(`Fresh title ${kind}`);
     await modal.getByRole('button', { name: /Save/ }).click();
     await expect.poll(() => page.evaluate(async folder => {
       const app = (window as any).app;
@@ -137,7 +137,7 @@ test('native timeblock drag and resize keep event payload and writable editor fr
   const modal = page.locator('.timeblock-info-modal');
   await expect(modal).toBeVisible();
   expect(await modal.locator('select').evaluateAll(elements => elements.map(element => (element as HTMLSelectElement).value))).toEqual(['14', '0', '16', '0']);
-  await modal.locator('input[type=text]').first().fill('Native drag kept');
+  await modal.locator('textarea:not(.tn-modal__description)').fill('Native drag kept');
   await modal.getByRole('button', { name: /Save/ }).click();
   await expect.poll(payload).toMatchObject({ startTime: '14:00', endTime: '16:00' });
 });

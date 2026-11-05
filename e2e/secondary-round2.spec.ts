@@ -93,7 +93,7 @@ test('inline references remain atomic in reading and live preview', async () => 
       await expect(async () => {
         const geometries = await cards.evaluateAll(elements => elements.map(element => {
           const card = element.getBoundingClientRect();
-          const selectors = ['.task-card__status-dot', '.task-card__title', '.task-card__metadata', '.task-card__context-menu'];
+          const selectors = ['.task-card__status-dot', '.task-card__title'];
           return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, tops: selectors.map(selector => element.querySelector(selector)!.getBoundingClientRect().top), display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
         }));
         expect(geometries).toHaveLength(2);
@@ -102,14 +102,16 @@ test('inline references remain atomic in reading and live preview', async () => 
           expect(geometry.dateAlignment).toBe('flex-start');
           expect(geometry.display).toBe('inline-flex');
           expect(geometry.width).toBeLessThanOrEqual(geometry.parentWidth + 1);
-          const actionTops = mobile ? [geometry.tops[0], geometry.tops[3]] : geometry.tops;
-          expect(Math.max(...actionTops) - Math.min(...actionTops)).toBeLessThan(24);
-          if (mobile) {
-            expect(geometry.tops[1]).toBeLessThan(geometry.tops[2]);
-            expect(geometry.tops[2]).toBeLessThan(geometry.tops[0]);
-          }
+          expect(Math.max(...geometry.tops) - Math.min(...geometry.tops)).toBeLessThan(24);
         }
       }).toPass({ timeout: 5000 });
+      for (const card of await cards.all()) {
+        await expect(card.locator('.task-card__metadata')).toBeHidden();
+        await expect(card.locator('.task-card__priority-dot')).toBeHidden();
+        await card.hover();
+        await expect(card.locator('.task-card__context-menu')).toBeVisible();
+        if (mobile) expect((await card.locator('.task-card__status-dot').boundingBox())!.height).toBeGreaterThanOrEqual(40);
+      }
       await capture(`inline-${theme}-${width}-${mobile}-${mode}`);
     }
   }
@@ -257,6 +259,7 @@ test('empty agenda offers task creation and narrow views use full names', async 
       await expect(page.locator('.tnc-list-empty')).toHaveText('Nothing scheduled');
     } else {
       await expect(page.locator('.tnc-list-empty .tn-empty')).toBeVisible();
+      await expect(page.locator('.tnc-list-empty .tn-empty__message')).toHaveText('No tasks match this view. Review its filters.');
     }
     if (width === 400 && !publishedFallback) {
       const select = page.locator('.tnc-toolbar-view-select');
