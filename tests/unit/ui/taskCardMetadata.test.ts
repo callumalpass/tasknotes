@@ -182,6 +182,30 @@ describe("taskCardMetadata", () => {
 			}
 		);
 
+		it.each([
+			{ state: "unresolved", instances: {}, past: true },
+			{ state: "completed", instances: { complete_instances: ["2026-08-05"] }, past: false },
+			{ state: "skipped", instances: { skipped_instances: ["2026-08-05"] }, past: false },
+		])("classifies a past occurrence by its own $state state", ({ instances, past }) => {
+			const { card, metadataLine } = createMetadataHost();
+
+			renderTaskCardMetadata({
+				metadataLine,
+				card,
+				task: createTask({ scheduled: "2026-08-19", ...instances }),
+				plugin: createPlugin(),
+				visibleProperties: ["scheduled"],
+				propertyOptions: { occurrenceScheduled: "2026-08-05" },
+				onBlockedByToggle: jest.fn(),
+			});
+
+			expect(
+				getDateMetadata(metadataLine, "scheduled").classList.contains(
+					"task-card__metadata-date--past"
+				)
+			).toBe(past);
+		});
+
 		it("does not classify a completed past due date as future when overdue styling is hidden", () => {
 			const { metadataLine } = renderMetadataForTask(
 				createTask({

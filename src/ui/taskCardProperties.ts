@@ -277,7 +277,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 				task,
 				plugin,
 				options.propertyLabels,
-				false
+				true
 			);
 		} else if (typeof value === "string") {
 			renderScheduledDateProperty(element, value, task, plugin, options?.propertyLabels);
@@ -890,16 +890,24 @@ function renderDueDateProperty(
 	attachDateClickHandler(element, task, plugin, "due");
 }
 
+function isOccurrenceResolved(task: TaskInfo, date: string): boolean {
+	return (
+		(task.complete_instances?.includes(date) || task.skipped_instances?.includes(date)) ?? false
+	);
+}
+
 function renderScheduledDateProperty(
 	element: HTMLElement,
 	scheduled: string,
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
 	propertyLabels?: Record<string, string>,
-	editable = true
+	isOccurrence = false
 ): void {
 	const isScheduledToday = isTodayTimeAware(scheduled);
-	const isCompleted = plugin.statusManager.isCompletedStatus(task.status);
+	const isCompleted = isOccurrence
+		? isOccurrenceResolved(task, getDatePart(scheduled))
+		: plugin.statusManager.isCompletedStatus(task.status);
 	const hideCompletedFromOverdue = plugin.settings?.hideCompletedFromOverdue ?? true;
 	const isScheduledPast = isOverdueTimeAware(scheduled, isCompleted, hideCompletedFromOverdue);
 
@@ -946,7 +954,7 @@ function renderScheduledDateProperty(
 	if (!isScheduledToday && !isOverdueTimeAware(scheduled, false, false)) {
 		element.classList.add("task-card__metadata-date--future");
 	}
-	if (!editable) {
+	if (isOccurrence) {
 		element.classList.add("task-card__metadata-date--readonly");
 		return;
 	}

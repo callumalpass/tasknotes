@@ -113,6 +113,46 @@ test("a projected occurrence shows its own date and its chip cannot edit the ser
 	await expect.poll(async () => (await frontmatter("Weekly review")).scheduled).toBe(localDate(1));
 });
 
+test("a timed daily series with matching dates does not look overdue on later rows", async () => {
+	const start = localDate(-1);
+	const name = "Timed daily";
+	await page.evaluate(
+		async ({ root, path, name, start }) => {
+			const app = (window as any).app;
+			await app.vault.create(
+				path,
+				`---\ntags: [task]\ntitle: ${name}\nstatus: open\npriority: normal\nscheduled: ${start}T19:00\ndue: ${start}T19:00\nrecurrence: "DTSTART:${start.replaceAll("-", "")}T190000;FREQ=DAILY;COUNT=5"\n---\n`
+			);
+			for (const leaf of app.workspace.getLeavesOfType("bases")) leaf.detach();
+			const base = await app.vault.create(
+				`${root}/${name}.base`,
+				`filters:\n  and:\n    - file.inFolder("${root}")\n    - file.name == "${name}"\nviews:\n  - type: tasknotesCalendar\n    name: Agenda\n    calendarView: listWeek\n    listDayCount: 7\n    initialDate: ${start}\n    showDue: false\n    order:\n      - status\n      - scheduled\n      - due\n`
+			);
+			await app.workspace.getLeaf("tab").openFile(base);
+		},
+		{ root, path: taskPath(name), name, start }
+	);
+	await expect(card(name, "recurring")).toBeVisible();
+
+	const rows = page.locator(
+		`.workspace-leaf.mod-active [data-event-type="recurring"] .task-card[data-task-path="${taskPath(name)}"]`
+	);
+	await expect(rows).toHaveCount(4);
+	for (const [index, offset] of [[1, 1], [2, 2], [3, 3]]) {
+		const row = rows.nth(index);
+		await expect(row.locator(".task-card__metadata-date--scheduled")).toContainText(
+			shortDate(localDate(offset))
+		);
+		await expect(row.locator(".task-card__metadata-date--scheduled")).toContainText(/19:00|7:00/);
+		await expect(row.locator(".task-card__metadata-date--past")).toHaveCount(0);
+		await expect(row.locator(".task-card__metadata-date--overdue")).toHaveCount(0);
+		await expect(row.locator(".task-card__metadata-date--due")).toHaveCount(0);
+	}
+
+	// Control: the pending occurrence really is overdue.
+	await expect(card(name, "scheduled").locator(".task-card__metadata-date--overdue")).toBeVisible();
+});
+
 test("a projected occurrence leaves out the series' due date", async () => {
 	await agendaWithRecurringTask("Due series", `due: ${due}\n`);
 
