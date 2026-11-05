@@ -1,5 +1,6 @@
 import { Platform, setIcon, setTooltip } from "obsidian";
 import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
 import { viewToBases, type ItemArg } from "@tasknotes/calendar";
 import type TaskNotesPlugin from "../main";
 import type { CalendarEventProps } from "./calendarEngine";
@@ -12,10 +13,12 @@ import type { TaskInfo } from "../types";
 import { createTaskGlyphs } from "../ui/taskGlyphs";
 import { createElementInDocument } from "../utils/documentDom";
 import { taskDueUrgency } from "../ui/kit/dateLabel";
+import { formatTime } from "../utils/dateUtils";
 
 interface CalendarPresentationContext {
  plugin: TaskNotesPlugin;
  rootElement: HTMLElement | null;
+ timeFormat?: "12" | "24";
 }
 
 export function decorateCalendarTaskGlyphs(element: HTMLElement, task: TaskInfo, plugin: TaskNotesPlugin): void {
@@ -85,6 +88,12 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 			el.tabIndex = -1;
 			return;
 		}
+		const tracked = eventType === "timeEntry" && taskInfo && arg.item.end
+			? `${taskInfo.title}\n${uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), {
+				value1: context.plugin.formatTime((new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000),
+			})}\n${formatTime(new Date(arg.item.start), context.timeFormat ?? context.plugin.settings.calendarViewSettings.timeFormat)} – ${formatTime(new Date(arg.item.end), context.timeFormat ?? context.plugin.settings.calendarViewSettings.timeFormat)}`
+			: null;
+		if (tracked) el.setAttribute("aria-label", tracked);
 
 		// List rows are task cards with their own tooltips, previews and menus.
 		if (arg.view.type === "list") {
@@ -145,13 +154,13 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 		}
 
 		// Add hover tooltip for tasks and ICS events
-		if (taskInfo) {
+		if (taskInfo && arg.variant !== "list") {
 			const tooltip = generateTaskTooltip(taskInfo, context.plugin);
 			const deadline = eventType === "due"
 				? context.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }))
 				: null;
-			setTooltip(el, deadline ? `${deadline}: ${tooltip}` : tooltip);
-		} else if (icsEvent) {
+			setTooltip(el, tracked ?? (deadline ? `${deadline}: ${tooltip}` : tooltip));
+		} else if (icsEvent && arg.variant !== "list") {
 			const relatedNotesText =
 				relatedNoteTotal > 0
 					? `\n\n${getCalendarRelatedNoteTooltip(context.plugin, relatedNoteTotal)}`

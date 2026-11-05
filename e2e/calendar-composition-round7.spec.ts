@@ -1,5 +1,5 @@
 import { test, expect, type Locator } from '@playwright/test';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
@@ -7,7 +7,7 @@ let today: string;
 let tomorrow: string;
 const folder = `CalendarR7-${Date.now()}`;
 const baseline = process.env.TASKNOTES_R7_BASELINE === '1';
-const output = `/tmp/tasknotes-r7/w/${baseline ? 'before' : 'after'}`;
+const output = `/tmp/tasknotes-r7/${process.env.TASKNOTES_R7_SLICE ?? 'w'}/${baseline ? 'before' : 'after'}`;
 test.use({ trace: 'on' });
 
 test.beforeAll(async () => {
@@ -58,6 +58,191 @@ test.afterAll(async () => {
       document.body.classList.remove('is-mobile');
     }, folder);
   } finally { await closeObsidian(instance); }
+});
+
+test('council: invalid releases never persist the last valid proposal', async () => {
+  test.setTimeout(120000);
+  const page = instance.page;
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  await page.evaluate(() => document.body.classList.remove('is-mobile'));
+  const evidence = [];
+  for (const view of ['day', 'week', 'days', 'month']) {
+    await mode(view);
+    const filename = view === 'month' ? 'Task 3.md' : 'Adjacent.md';
+    const target = page.locator(`.workspace-leaf.mod-active .tnc-item[data-event-type="scheduled"][data-task-path$="${filename}"]`).first();
+    await target.scrollIntoViewIfNeeded();
+    const initial = await page.evaluate(async ({ folder, filename }) => {
+      const app = (window as any).app;
+      return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/${filename}`));
+    }, { folder, filename });
+    const bounds = (await target.boundingBox())!;
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 8);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 38, { steps: 8 });
+    await page.mouse.move(20, 105, { steps: 12 });
+    const invalid = await page.locator('.workspace-leaf.mod-active .tnc').first().evaluate(element => element.classList.contains('tnc-drop-denied'));
+    await capture(`council-${view}-outside-held`);
+    await page.mouse.up();
+    await expect.poll(() => page.evaluate(() => Boolean((window as any).r7Leaf.view.controller.view.calendar.session))).toBe(false);
+    const final = await page.evaluate(async ({ folder, filename }) => {
+      const app = (window as any).app;
+      return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/${filename}`));
+    }, { folder, filename });
+    evidence.push({ view, invalid, changed: initial !== final });
+    if (!baseline) { expect(invalid).toBe(true); expect(final).toBe(initial); }
+    if (initial !== final) {
+      await page.evaluate(async ({ folder, filename, initial }) => {
+        const app = (window as any).app;
+        await app.vault.modify(app.vault.getAbstractFileByPath(`${folder}/${filename}`), initial);
+        await (window as any).r7Leaf.view.controller.view.refreshCalendarWithFreshData();
+      }, { folder, filename, initial });
+    }
+  }
+  writeFileSync(`${output}/council-outside-drop.json`, JSON.stringify(evidence, null, 2));
+});
+
+test('council: year targets, strip scrolling, short tracked items and empty-day heading', async () => {
+  test.setTimeout(180000);
+  const page = instance.page;
+  const evidence = [];
+  for (const theme of ['light', 'dark']) for (const width of [1180, 400]) {
+    await setObsidianViewport(page, { width, height: 800 });
+    for (const mobile of width === 400 ? [false, true] : [false]) {
+      await page.evaluate(({ theme, mobile }) => {
+        document.body.classList.remove('theme-light', 'theme-dark', 'is-mobile');
+        document.body.classList.add(`theme-${theme}`);
+        document.body.classList.toggle('is-mobile', mobile);
+      }, { theme, mobile });
+      await mode('year');
+      const year = await page.locator('.workspace-leaf.mod-active .tnc-year').evaluate(element => {
+        const months = Array.from(element.querySelectorAll('.tnc-ym'));
+        return {
+          overflow: element.scrollWidth > element.clientWidth + 1,
+          overlaps: months.some(month => Array.from(month.querySelectorAll('.tnc-ym-day')).some(day => day.getBoundingClientRect().right > month.getBoundingClientRect().right + 1)),
+          minTarget: Math.min(...Array.from(element.querySelectorAll('.tnc-ym-day')).map(day => day.getBoundingClientRect().width)),
+          shadow: getComputedStyle(element.querySelector('.tnc-ym-day')!).boxShadow,
+          emptyBackground: getComputedStyle(element.querySelector('.tnc-ym-day:not(.has-items)')!).backgroundColor,
+          titleBackground: getComputedStyle(element.querySelector('.tnc-ym-title')!).backgroundColor,
+        };
+      });
+      evidence.push({ theme, width, mobile, year });
+      await capture(`council-${theme}-${width}-${mobile ? 'mobile' : 'desktop'}-year`);
+      if (!baseline) { expect(year.overflow).toBe(false); expect(year.overlaps).toBe(false); expect(year.minTarget).toBeGreaterThanOrEqual(40); expect(year.shadow).toBe('none'); expect(year.emptyBackground).toMatch(/(?:rgba\(0, 0, 0, 0\)|\/ 0\))$/); expect(year.titleBackground).toBe('rgba(0, 0, 0, 0)'); }
+    }
+    await mode('list');
+    const toolbar = page.locator('.workspace-leaf.mod-active .tnc-toolbar').first();
+    const before = await toolbar.boundingBox();
+    await page.locator(`.workspace-leaf.mod-active .tnc-strip-day[data-date="${tomorrow}"]`).click();
+    const after = await toolbar.boundingBox();
+    evidence.push({ theme, width, toolbarBefore: before?.y, toolbarAfter: after?.y });
+    await capture(`council-${theme}-${width}-strip-select`);
+    if (!baseline) expect(after?.y).toBe(before?.y);
+    await mode('month');
+    const empty = await page.evaluate(today => {
+      const date = new Date(`${today}T12:00`); date.setDate(date.getDate() + 3);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }, today);
+    await page.evaluate(empty => (window as any).r7Leaf.view.controller.view.selectMonthDay(empty), empty);
+    const heading = page.locator('.tn-calendar-day-panel .tnc-list-day');
+    const panel = await page.locator('.tn-calendar-day-panel').boundingBox();
+    evidence.push({ theme, width, emptyHeading: await heading.count(), panelY: panel?.y });
+    await capture(`council-${theme}-${width}-empty-month`);
+    if (!baseline) {
+      await expect(heading).toBeVisible(); expect(panel!.y).toBeLessThan(700);
+      await expect(page.locator('.tn-calendar-day-panel .tnc-list-empty')).toHaveCount(1);
+      await page.evaluate(() => {
+        const view = (window as any).r7Leaf.view.controller.view;
+        (window as any).councilCreateFile = view.createFileForView;
+        view.createFileForView = async (_parent: unknown, transform: (frontmatter: any) => void) => {
+          const frontmatter = {}; transform(frontmatter); (window as any).councilCreated = frontmatter;
+        };
+      });
+      try {
+        await page.locator('.tn-calendar-day-panel-add').click();
+        expect(await page.evaluate(() => (window as any).councilCreated.scheduled)).toBe(empty);
+      } finally {
+        await page.evaluate(() => { (window as any).r7Leaf.view.controller.view.createFileForView = (window as any).councilCreateFile; });
+      }
+    }
+    await mode('day');
+    await page.evaluate(({ folder, today }) => {
+      const view = (window as any).r7Leaf.view.controller.view;
+      const source = view.calendarItems.find((item: any) => item.data?.eventType === 'timeEntry');
+      if (!source) throw new Error('Missing tracked fixture');
+      view.calendar.upsertItems([{ ...source, id: 'council-short-tracked', start: `${today}T12:00:00`, end: `${today}T12:30:00`, data: { ...source.data, taskInfo: { ...source.data.taskInfo, path: `${folder}/Tracked.md`, title: 'Short tracked review' } }, title: 'Short tracked review' }]);
+    }, { folder, today });
+    const tracked = page.locator('[data-id="council-short-tracked"]');
+    await tracked.scrollIntoViewIfNeeded();
+    await capture(`council-${theme}-${width}-short-tracked`);
+    const short = await tracked.evaluate(element => ({ compact: element.classList.contains('is-short'), label: element.getAttribute('aria-label'), title: element.querySelector('.tnc-item-title')?.getBoundingClientRect().toJSON(), box: element.getBoundingClientRect().toJSON() }));
+    evidence.push({ theme, width, short });
+    if (!baseline) { expect(short.compact).toBe(true); expect(short.title!.height).toBeLessThan(24); expect(short.title!.bottom).toBeLessThanOrEqual(short.box.bottom + 1); expect(short.label).toContain('30 min tracked'); expect(short.label).toMatch(/12:00.*12:30/); expect(short.label).not.toContain('Estimate'); }
+  }
+  writeFileSync(`${output}/council-layout.json`, JSON.stringify(evidence, null, 2));
+});
+
+test('council: timeblock Undo restores the rendered move and duration', async () => {
+  test.setTimeout(120000);
+  const page = instance.page;
+  await setObsidianViewport(page, { width: 1180, height: 800 });
+  await page.evaluate(async ({ folder, today }) => {
+    document.body.classList.remove('is-mobile');
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    const daily = app.internalPlugins.getEnabledPluginById('daily-notes');
+    (window as any).councilDailyFolder = daily.options.folder;
+    daily.options.folder = folder;
+    plugin.settings.calendarViewSettings.enableTimeblocking = true;
+    await app.vault.create(`${folder}/${today}.md`, `---\ntimeblocks:\n  - id: council-undo\n    title: Calendar focus\n    startTime: '13:00'\n    endTime: '14:00'\n---\n`);
+  }, { folder, today });
+  const evidence = [];
+  try {
+    await expect.poll(() => page.evaluate(({ folder, today }) => {
+      const app = (window as any).app;
+      return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(`${folder}/${today}.md`))?.frontmatter?.timeblocks?.[0];
+    }, { folder, today })).toMatchObject({ id: 'council-undo', startTime: '13:00', endTime: '14:00' });
+    await mode('day');
+    await page.evaluate(async () => {
+      const view = (window as any).r7Leaf.view.controller.view;
+      view.viewOptions.showTimeblocks = true;
+      await view.refreshCalendarWithFreshData();
+    });
+    await expect.poll(() => page.evaluate(async () => {
+      const view = (window as any).r7Leaf.view.controller.view;
+      await view.refetchEvents();
+      return view.calendar.getItem('timeblock-council-undo')?.data.timeblock;
+    }), { timeout: 15000 }).toMatchObject({ startTime: '13:00', endTime: '14:00' });
+    const block = page.locator('[data-id="timeblock-council-undo"]');
+    await expect(block).toBeVisible();
+    for (const action of ['resize', 'move']) {
+      const before = (await block.boundingBox())!;
+      const handle = action === 'resize' ? block.locator('.tnc-resize-end') : block;
+      await handle.hover();
+      const target = (await handle.boundingBox())!;
+      const point = { x: target.x + target.width / 2, y: action === 'resize' ? target.y + target.height / 2 : target.y + 8 };
+      await page.mouse.move(point.x, point.y); await page.mouse.down();
+      await page.mouse.move(point.x, point.y + before.height / 2, { steps: 12 }); await page.mouse.up();
+      await expect(page.locator('.tn-toast button').filter({ hasText: 'Undo' })).toBeVisible();
+      await capture(`council-timeblock-${action}-changed`);
+      await page.locator('.tn-toast button').filter({ hasText: 'Undo' }).click();
+      await expect.poll(() => page.evaluate(async ({ folder, today }) => {
+        const app = (window as any).app;
+        return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/${today}.md`));
+      }, { folder, today })).toContain('14:00');
+      if (!baseline) await expect.poll(() => page.evaluate(() => (window as any).r7Leaf.view.controller.view.calendar.getItem('timeblock-council-undo')?.data.timeblock)).toMatchObject({ startTime: '13:00', endTime: '14:00' });
+      await capture(`council-timeblock-${action}-undone`);
+      const rendered = await page.evaluate(() => (window as any).r7Leaf.view.controller.view.calendar.getItem('timeblock-council-undo'));
+      evidence.push({ action, before, after: await block.boundingBox(), rendered });
+      if (!baseline) { expect(rendered.data.timeblock.startTime).toBe('13:00'); expect(rendered.data.timeblock.endTime).toBe('14:00'); }
+      await page.evaluate(async () => (window as any).r7Leaf.view.controller.view.refreshCalendarWithFreshData());
+    }
+  } finally {
+    await page.evaluate(() => {
+      const app = (window as any).app;
+      app.internalPlugins.getEnabledPluginById('daily-notes').options.folder = (window as any).councilDailyFolder;
+    });
+    writeFileSync(`${output}/council-timeblock-undo.json`, JSON.stringify(evidence, null, 2));
+  }
 });
 
 async function mode(view: string) {
@@ -142,6 +327,12 @@ async function states(target: Locator, name: string, drag = false) {
   await page.mouse.down();
   await capture(`${name}-pressed`);
   await page.mouse.move(box.x + box.width / 2, box.y + 70, { steps: 10 });
+  if (!baseline && name.includes('-agenda-multi')) {
+    const preview = page.locator('.tnc-drag-preview');
+    await expect(preview).toHaveAttribute('data-drag-count', '2');
+    expect(await preview.evaluate(element => ({ opacity: getComputedStyle(element).opacity, surface: getComputedStyle(element).backgroundColor }))).toMatchObject({ opacity: '1' });
+    expect(await preview.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+  }
   if (name.includes('-invalid')) await expect(page.locator('.tnc-drop-denied')).toHaveCount(1);
   await capture(`${name}-drag`);
   await page.keyboard.press('Escape');
@@ -174,6 +365,11 @@ test('calendar surfaces and real pointer states across themes and widths', async
       const popover = page.locator('.tnc-popover');
       await expect(popover).toBeVisible();
       await states(popover.locator('.tnc-item').first(), `${prefix}-popover`);
+      if (!baseline) {
+        await popover.locator('.tnc-item').first().hover();
+        await page.waitForTimeout(600);
+        await expect(page.locator('.tooltip')).toHaveCount(0);
+      }
       const bounds = (await popover.boundingBox())!;
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
       await page.keyboard.press('Escape');
@@ -402,6 +598,7 @@ test('agenda domain-state fixtures keep metadata and selection readable', async 
 });
 
 test('mini calendar uses the selected-day skin in both themes and widths', async () => {
+  test.setTimeout(120000);
   const page = instance.page;
   await page.evaluate(() => document.querySelectorAll('.tn-toast, .notice').forEach(element => element.remove()));
   await page.evaluate(async folder => {
@@ -418,5 +615,22 @@ test('mini calendar uses the selected-day skin in both themes and widths', async
       if (width === 400) document.body.classList.add('is-mobile');
     }, { theme, width });
     await states(day, `${theme}-${width}-mini`);
+    if (!baseline) {
+      const label = await page.evaluate(tomorrow => new Intl.DateTimeFormat((window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale(), { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${tomorrow}T12:00Z`)), tomorrow);
+      const other = page.getByRole('gridcell', { name: label, exact: true });
+      await other.click();
+      await expect(page.locator('.modal-container')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.modal-container')).toHaveCount(0);
+      await page.mouse.move(5, 5);
+      await expect(other).toHaveClass(/mini-calendar-view__day--selected/);
+      expect(await day.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+      expect(await other.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+      const nav = (await page.locator('.mini-calendar-view__navigation').boundingBox())!;
+      const todayButton = (await page.locator('.mini-calendar-view__today-button').boundingBox())!;
+      expect(Math.abs(nav.y - todayButton.y)).toBeLessThan(12);
+      await capture(`${theme}-${width}-mini-today-vs-selected`);
+      await page.locator('.mini-calendar-view__today-button').click();
+    }
   }
 });

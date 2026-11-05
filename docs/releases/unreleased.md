@@ -76,6 +76,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
+- Calendar drags released outside a valid date target are cancelled instead of saving the last hovered time. Timeblock Undo updates the displayed times without reopening the view.
+- Year calendars keep their date targets inside each month in narrow panes. Agenda date selection no longer scrolls the surrounding workspace, and empty selected days retain their heading.
+- Calendar collision stacks show their full occupied interval, short tracked entries keep readable titles, and narrow month calendars keep the selected-day panel visible. Tracked entries show their actual duration rather than the task estimate.
 - Kanban uses quieter column headers and readable, wrapping card metadata. Dragged tasks remain dimmed in place, multi-task previews show their count without clipping, and insertion markers stay beside the actual drop position. Formula-based boards explain why a move is unavailable before dropping; edge scrolling works vertically as well as horizontally.
 - Narrow task and agenda rows keep dates and their overflow controls within the pane, including larger text sizes.
 - Statistics period sections stack in narrow panes instead of squeezing into three columns.

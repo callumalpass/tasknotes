@@ -6,6 +6,7 @@ interface CalendarBatchPreviewOptions {
 	getItems(): readonly CalendarEventItem[];
 	/** Stable identity of the current canonical item set; invalidates the proposal cache. */
 	getRevision(): unknown;
+	isValidTarget(clientX: number, clientY: number): boolean;
 	build(proposal: CalendarBatchProposal): CalendarEventItem[] | null;
 	upsert(items: CalendarEventItem[]): void;
 	remove(ids: string[]): void;
@@ -54,12 +55,20 @@ export class CalendarBatchPreview {
 		const key = (event: KeyboardEvent) => { if (event.key === "Escape") this.clear(); };
 		const blur = () => this.clear();
 		const visibility = () => { if (doc.hidden) this.clear(); };
+		const move = (event: PointerEvent) => {
+			if (event.pointerId !== this.pointerId || this.options.isValidTarget(event.clientX, event.clientY)) return;
+			this.restore();
+			this.lastKey = null;
+			this.lastRevision = undefined;
+		};
+		doc.addEventListener("pointermove", move, true);
 		doc.addEventListener("pointerup", end, true);
 		doc.addEventListener("pointercancel", end, true);
 		doc.addEventListener("keydown", key, true);
 		doc.addEventListener("visibilitychange", visibility);
 		win?.addEventListener("blur", blur);
 		this.unbindDocument = () => {
+			doc.removeEventListener("pointermove", move, true);
 			doc.removeEventListener("pointerup", end, true);
 			doc.removeEventListener("pointercancel", end, true);
 			doc.removeEventListener("keydown", key, true);

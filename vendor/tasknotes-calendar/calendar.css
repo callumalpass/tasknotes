@@ -1,7 +1,7 @@
 /*
  * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
  * see LICENSE beside this file; library release 0.1.8 is required for integration).
- * Upstream sha256 684254a7639603fcafe3a6a8bf69916a0880ae103a92ee317262ed1df4cfb06e.
+ * Upstream sha256 7a8718d851179e21d9a6a68bc59ccab96a74247c7d1ffa987594d707ac2556f5.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -315,6 +315,16 @@
 .tnc-collision-count {
 	color: var(--tnc-text);
 	font-weight: 650;
+	white-space: nowrap;
+	flex: none;
+	line-height: 1.3;
+}
+.tnc-collision-range {
+	color: var(--tnc-muted);
+	font-size: var(--tnc-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .tnc-item--indicator .tnc-item-title {
 	white-space: nowrap;
@@ -1290,9 +1300,21 @@
 	padding: 12px;
 }
 .tnc-year-grid {
+	--tnc-year-day-min: var(--tnc-theme-date-target, 40px);
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(7 * var(--tnc-year-day-min) + 12px)), 1fr));
 	gap: 18px 16px;
+}
+.tnc-ym {
+	min-width: 0;
+}
+.tnc .tnc-ym-title,
+.tnc .tnc-ym-day {
+	appearance: none;
+	box-shadow: none;
+	background-image: none;
+	font-family: inherit;
+	color: var(--tnc-text);
 }
 .tnc-ym-title {
 	display: block;
@@ -1315,6 +1337,10 @@
 }
 .tnc-ym-day {
 	position: relative;
+	min-width: var(--tnc-year-day-min);
+	min-height: var(--tnc-year-day-min);
+	width: 100%;
+	height: auto;
 	aspect-ratio: 1;
 	border: 0;
 	border-radius: 5px;
@@ -1355,13 +1381,11 @@
 	background: var(--tnc-c, var(--tnc-accent));
 }
 
-/* Two months a row: each day is a shaded square, and its count is in its label. */
 @container (max-width: 520px) {
 	.tnc-year-scroll {
 		padding: 8px 4px;
 	}
 	.tnc-year-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 14px 12px;
 	}
 	.tnc-ym-title {
@@ -1866,7 +1890,11 @@
 	position: absolute;
 	z-index: var(--tnc-theme-drag-z, 1000);
 	pointer-events: none;
-	background: var(--tnc-surface);
+	opacity: 1;
+	background: var(--tnc-theme-drag-surface, var(--tnc-surface));
+	border: 1px solid var(--tnc-theme-drag-border, var(--tnc-line-strong));
+	box-shadow: var(--tnc-theme-drag-shadow, var(--tnc-shadow));
+	outline: none;
 }
 .tnc .tnc-item.is-write-pending {
 	opacity: 0.65;
@@ -1879,6 +1907,10 @@
 .tnc.tnc-drop-denied .tnc-item.is-dragging {
 	outline: 2px dashed var(--tnc-warn);
 	outline-offset: -2px;
+}
+.tnc.tnc-drop-denied,
+.tnc.tnc-drop-denied .tnc-item.is-dragging {
+	cursor: not-allowed;
 }
 .tnc .tnc-item.is-selected {
 	background-color: var(--tnc-selected);
@@ -1910,6 +1942,9 @@
 		filter: none;
 		background-color: var(--tnc-hover);
 		transition: background-color var(--tnc-motion);
+	}
+	.tnc .tnc-item--list:hover {
+		box-shadow: none;
 	}
 	.tnc .tnc-item.is-selected:hover {
 		background-color: var(--tnc-theme-selected-hover, var(--tnc-selected));

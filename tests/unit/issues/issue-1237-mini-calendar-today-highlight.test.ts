@@ -22,8 +22,8 @@ describe("Issue #1237: Mini Calendar today highlight", () => {
 			".tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected"
 		);
 
-		expect(todayBlock).toContain("background: var(--tn-interactive-accent)");
-		expect(todayBlock).toContain("color: var(--text-on-accent)");
+		expect(todayBlock).toContain("background: none");
+		expect(todayBlock).toContain("color: var(--tn-interactive-accent)");
 		expect(todayBlock).toContain("font-weight: var(--tn-font-weight-semibold)");
 		expect(todayBlock).toContain("box-shadow: none");
 		expect(selectedTodayBlock).toContain("background: var(--tn-interactive-accent)");
