@@ -21,6 +21,7 @@ import {
 import {
 	updateTimeblockInDailyNote,
 	copyTimeblockToDailyNote,
+	extractTimeblocksFromNote,
 } from "../utils/helpers";
 import { Notice, TFile } from "obsidian";
 import {
@@ -734,7 +735,7 @@ export async function handleTimeblockDrop(
 	originalDate: string,
 	plugin: TaskNotesPlugin,
 	copyRequested = false
-): Promise<void> {
+): Promise<boolean> {
 	const receipts: FileUndoReceipt[] = [];
 	const record = collectFileUndo(plugin, receipts);
 	try {
@@ -742,7 +743,7 @@ export async function handleTimeblockDrop(
 		const newEnd = dropInfo.event.end;
 		if (!newStart || !newEnd) {
 			dropInfo.revert();
-			return;
+			return false;
 		}
 
 		// Calculate new date and times
@@ -762,7 +763,7 @@ export async function handleTimeblockDrop(
 			dropInfo.revert();
 			plugin.emitter.trigger(EVENT_DATA_CHANGED);
 			showTaskUndo([createFileUndo(plugin, receipts)], false, 1, plugin.app.vault, plugin.i18n.translate(msg({ message: "Timeblock duplicated successfully", context: "notices.audit.timeblockCopied" })));
-			return;
+			return false;
 		}
 
 		// Update timeblock in daily notes
@@ -775,8 +776,12 @@ export async function handleTimeblockDrop(
 			newEndTime,
 			record
 		);
+		if (dropInfo.event.extendedProps) {
+			dropInfo.event.extendedProps.timeblock = { ...timeblock, startTime: newStartTime, endTime: newEndTime };
+		}
 
 		showTaskUndo([createFileUndo(plugin, receipts)], false, 1, plugin.app.vault, plugin.i18n.translate(msg({ message: "Timeblock moved successfully", context: "notices.audit.timeblockMoved" })));
+		return true;
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error moving timeblock:", {
 			category: "provider",
@@ -786,6 +791,7 @@ export async function handleTimeblockDrop(
 		showTaskUndo(receipts.length ? [createFileUndo(plugin, receipts)] : [], true, receipts.length ? 1 : 0, plugin.app.vault, timeblock.title);
 		if (receipts.length) plugin.emitter.trigger(EVENT_DATA_CHANGED);
 		dropInfo.revert();
+		return false;
 	}
 }
 
@@ -797,7 +803,7 @@ export async function handleTimeblockResize(
 	timeblock: TimeBlock,
 	originalDate: string,
 	plugin: TaskNotesPlugin
-): Promise<void> {
+): Promise<boolean> {
 	const receipts: FileUndoReceipt[] = [];
 	try {
 		const start = resizeInfo.event.start;
@@ -805,7 +811,7 @@ export async function handleTimeblockResize(
 
 		if (!start || !end) {
 			resizeInfo.revert();
-			return;
+			return false;
 		}
 
 		// Calculate new times
@@ -822,8 +828,12 @@ export async function handleTimeblockResize(
 			newEndTime,
 			collectFileUndo(plugin, receipts)
 		);
+		if (resizeInfo.event.extendedProps) {
+			resizeInfo.event.extendedProps.timeblock = { ...timeblock, startTime: newStartTime, endTime: newEndTime };
+		}
 
 		showTaskUndo([createFileUndo(plugin, receipts)], false, 1, plugin.app.vault, calendarResizeFeedback(timeblock.title, start, end));
+		return true;
 	} catch (error: unknown) {
 		tasknotesLogger.error("Error resizing timeblock:", {
 			category: "provider",
@@ -832,6 +842,7 @@ export async function handleTimeblockResize(
 		});
 		showTaskUndo(receipts.length ? [createFileUndo(plugin, receipts)] : [], true, receipts.length ? 1 : 0, plugin.app.vault, timeblock.title);
 		resizeInfo.revert();
+		return false;
 	}
 }
 
@@ -845,10 +856,16 @@ export async function showTimeblockInfoModal(
 	plugin: TaskNotesPlugin,
 	onChange?: () => void
 ): Promise<void> {
+	if (!timeblock.id) return;
+	const dailyNote = getDailyNote(getWindowMoment(eventDate), getAllDailyNotes());
+	if (!dailyNote) return;
+	const latest = extractTimeblocksFromNote(await plugin.app.vault.read(dailyNote), dailyNote.path)
+		.find((candidate) => candidate.id === timeblock.id);
+	if (!latest) return;
 	const modal = new TimeblockInfoModal(
 		plugin.app,
 		plugin,
-		timeblock,
+		latest,
 		eventDate,
 		originalDate,
 		onChange

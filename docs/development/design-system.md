@@ -150,9 +150,13 @@ Clicking a status glyph cycles status (Shift-click reverses it), including recur
 
 `openTaskPropertyPicker(plugin, property, tasks, anchor)` in `src/ui/taskPropertyPickers.ts` is the task-writing entry point for views. Dates retain the existing presets, relative adjustments, natural-language parser, date/time editor and clearing. Reversible property and archive actions from this layer offer a toast that restores each task's own previous values; delete retains its existing confirmation.
 
+Undo history belongs to the vault, with one keyboard handler per workspace window. It remains available from inline task controls and commands as well as Bases views. Ordinary editor typing keeps its native Undo; focusing an inline task action opts into task Undo instead.
+
 `openTaskPropertyChoices` builds those same pickers without persisting a task. The task modal routes choices through its draft form setters; only Save persists them. Pickers inside modals stay within the modal's focus boundary and temporarily own the Obsidian keyboard scope, so Escape and outside clicks dismiss only the picker and return focus to its chip. Tags and contexts retain their text fields; projects, recurrence and reminders retain their specialized editors.
 
 ## Theming contract
+
+Small semantic date text uses `--tn-warning-text` and `--tn-danger-text`, rather than the decorative semantic colors. Their defaults mix the theme's semantic colors with `--tn-text-normal` for readable contrast on primary and secondary surfaces; themes can override either text token directly.
 
 ### Secondary composers and reports
 

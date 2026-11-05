@@ -1,5 +1,5 @@
 import { uiData } from "../i18n/dataText";
-import { openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
+import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { uiNumber } from "../i18n/formatters";
@@ -166,7 +166,7 @@ function attachDateClickHandler(
 						} else {
 							finalValue = dateValue;
 						}
-						await plugin.updateTaskProperty(task, dateType, finalValue);
+						await changeTaskProperty(plugin, [task], dateType, finalValue);
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
 						tasknotesLogger.error(`Error updating ${dateType} date:`, {

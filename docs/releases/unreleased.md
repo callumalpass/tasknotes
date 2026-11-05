@@ -54,6 +54,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Task keyboard actions now follow the card containing keyboard focus, including after closing a property picker and tabbing to another task.
+- Editing a moved or resized timeblock now reads its current daily-note values, so saving its title does not restore old times.
+- Inline task status changes now support Undo, including reverse cycling with Shift-click. Current-task status and priority commands, legacy status toggles, and fallback priority and date edits also use the shared Undo path.
+- Selecting an adjacent-month day in the mini calendar now updates its displayed month and day grid together.
+- Today and overdue date labels now use higher-contrast, theme-aware text colors in light and dark themes.
 - Preserved the translated action label on Kanban column collapse buttons when showing their tooltips.
   - Thanks to @nesyeklaf for the collapsible-column contribution.
 - Prevented delayed title focus from stealing typing after another task-modal field is focused.

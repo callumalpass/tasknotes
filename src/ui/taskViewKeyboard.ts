@@ -73,6 +73,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			target.closest("input, textarea, select, [contenteditable]")
 		)
 			return;
+		reconcileFocus(target as HTMLElement);
 		plugin.app.keymap.pushScope(scope);
 		scoped = true;
 	};
@@ -129,6 +130,15 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (card) paintedCard = card;
 	};
 	const observer = new MutationObserver(paint);
+	const reconcileFocus = (target: HTMLElement) => {
+		const card = target.closest<HTMLElement>(selector);
+		if (!card || !root.contains(card)) return;
+		const path = options.pathFromElement?.(card) ?? card.dataset.taskPath ?? null;
+		if (path !== focusedPath) rangeAnchor = null;
+		focusedPath = path;
+		keyboardFocus = true;
+		paint();
+	};
 	observer.observe(root, { childList: true, subtree: true });
 	const taskUpdated = plugin.emitter.on("task-updated", (event: { originalTask?: TaskInfo; updatedTask?: TaskInfo }) => {
 		if (!focusedPath || event.originalTask?.path !== selectionPath(focusedPath) || !event.updatedTask) return;
@@ -224,6 +234,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			)
 		)
 			return;
+		reconcileFocus(target);
 		const key = event.key.toLowerCase();
 		const mod = event.metaKey || event.ctrlKey;
 		if (!mod && target.closest("button, a, [role=button]") && ["enter", " "].includes(key)) return;
@@ -366,25 +377,26 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		}
 		if (pending || event.repeat) return;
 		pending = true;
+		const actionPath = focusedPath;
 		try {
 			if (key === "enter" && options.open) {
-				await options.open(focusedPath);
+				await options.open(actionPath);
 				return;
 			}
 			const selected = paths.filter((path) => {
 				const taskPath = selectionPath(path);
 				return taskPath && selection.getSelectedPaths().includes(taskPath);
 			});
-			const taskPaths = selected.length ? selected : [focusedPath];
+			const taskPaths = selected.length ? selected : [actionPath];
 			const fetchedTasks = (
 				await Promise.all(taskPaths.map(taskFor))
 			).filter((task): task is TaskInfo => !!task);
 			const tasks = [...new Map(fetchedTasks.map((task) => [task.path, task])).values()];
-			const task = await taskFor(focusedPath);
-			if (!task) return;
-			const anchor = cardFor(focusedPath) ?? root;
+			const task = await taskFor(actionPath);
+			if (!task || focusedPath !== actionPath) return;
+			const anchor = cardFor(actionPath) ?? root;
 			if (mod && key === "k") {
-				const targetDate = options.targetDate?.(focusedPath) ?? (task.recurrence
+				const targetDate = options.targetDate?.(actionPath) ?? (task.recurrence
 					? await plugin.taskService.resolveRecurringTaskActionDate(task)
 					: new Date());
 				new TaskActionPaletteModal(plugin.app, task, plugin, targetDate, (existing) => {

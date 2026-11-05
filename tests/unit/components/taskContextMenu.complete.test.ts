@@ -4,6 +4,13 @@ import { createI18nService } from "../../../src/i18n";
 import { formatDateForStorage, getTodayString } from "../../../src/utils/dateUtils";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+}));
 
 type MockMenuItem = Record<string, jest.Mock> | { type: string };
 type MockMenu = { items: MockMenuItem[] };
@@ -303,6 +310,7 @@ describe("completion menu items", () => {
 			const incomplete = findItem("Mark incomplete");
 			expect(incomplete).toBeDefined();
 			await incomplete?.onClick.mock.calls[0]?.[0]();
+			expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [t], "status", "open");
 			expect(plugin.updateTaskProperty).toHaveBeenCalledWith(t, "status", "open");
 		});
 	});

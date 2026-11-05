@@ -25,6 +25,13 @@ import { TaskInfo } from "../../../src/types";
 import { createI18nService } from "../../../src/i18n";
 import { TaskFactory } from "../../helpers/mock-factories";
 import { MockObsidian, TFile, Menu, Notice, Modal, App } from "../../helpers/obsidian-runtime";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+}));
 
 // Mock external dependencies
 jest.mock("date-fns", () => ({
@@ -681,6 +688,7 @@ describe("TaskCard Component", () => {
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+			expect(changeTaskProperty).toHaveBeenCalledWith(mockPlugin, [task], "status", "done");
 			expect(mockPlugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
 		});
 

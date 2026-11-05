@@ -2,6 +2,14 @@ import { observeTranslation as mockObserveTranslation, englishText as mockEnglis
 import { createTaskCard } from "../../../src/ui/TaskCard";
 import { TaskFactory } from "../../helpers/mock-factories";
 
+jest.mock("../../../src/services/task-service/recurringCompletionUndo", () => ({
+	...jest.requireActual("../../../src/services/task-service/recurringCompletionUndo"),
+	completeRecurringTaskWithUndo: jest.fn(async (plugin, task, date) => ({
+		updatedTask: await plugin.toggleRecurringTaskComplete(task, date),
+		changed: false,
+	})),
+}));
+
 jest.mock("../../../src/utils/helpers", () => ({
 	calculateTotalTimeSpent: jest.fn(() => 0),
 	filterEmptyProjects: jest.fn((projects?: string[]) => projects?.filter(Boolean) ?? []),
@@ -45,6 +53,9 @@ function createMockPlugin() {
 		cacheManager: {
 			getTaskInfo: jest.fn(),
 		},
+		taskService: {
+			resolveRecurringTaskActionDate: jest.fn(async (_task, date) => date),
+		},
 		expandedProjectsService: {
 			isExpanded: jest.fn(() => false),
 			toggle: jest.fn(() => false),
@@ -77,6 +88,7 @@ function createMockPlugin() {
 		statusManager: {
         getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			getCompletedStatuses: jest.fn(() => ["done"]),
+			getConfiguredStatusAfterCompletion: jest.fn(() => undefined),
 			getNextStatus: jest.fn(() => "done"),
 			getStatusConfig: jest.fn((status: string) => ({
 				value: status,
@@ -91,8 +103,7 @@ function createMockPlugin() {
 }
 
 async function flushAsyncClick(): Promise<void> {
-	await Promise.resolve();
-	await Promise.resolve();
+	await new Promise(resolve => setTimeout(resolve, 0));
 }
 
 describe("Issue #1594: task note recurring completion target date", () => {
@@ -107,6 +118,7 @@ describe("Issue #1594: task note recurring completion target date", () => {
 			complete_instances: [],
 		});
 		const plugin = createMockPlugin();
+		plugin.cacheManager.getTaskInfo.mockResolvedValue(task);
 		plugin.toggleRecurringTaskComplete.mockResolvedValue({
 			...task,
 			complete_instances: ["2026-04-04"],
@@ -135,6 +147,7 @@ describe("Issue #1594: task note recurring completion target date", () => {
 		});
 		const explicitTargetDate = new Date("2026-04-06T00:00:00.000Z");
 		const plugin = createMockPlugin();
+		plugin.cacheManager.getTaskInfo.mockResolvedValue(task);
 
 		const card = createTaskCard(task, plugin as any, ["status"], {
 			targetDate: explicitTargetDate,

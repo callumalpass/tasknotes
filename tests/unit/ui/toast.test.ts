@@ -120,3 +120,27 @@ it("leaves native input and editor undo alone and restores mouse focus to the ta
 	expect(document.activeElement).toBe(root);
 	dispose();
 });
+
+it("handles inline task controls inside an editor without intercepting typing Undo", async () => {
+	const scope = {};
+	const editor = document.body.createDiv({ cls: "cm-editor" });
+	editor.setAttribute("contenteditable", "true");
+	const card = editor.createDiv({ cls: "task-card--layout-inline" });
+	const control = card.createSpan();
+	control.setAttribute("role", "button");
+	const restore = jest.fn();
+	const dispose = registerUndoKeyboard(document.body, scope);
+	showToast({ message: "Changed", undoScope: scope, action: { label: "Undo", run: restore } });
+	const typingUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	editor.dispatchEvent(typingUndo);
+	await Promise.resolve();
+	expect(typingUndo.defaultPrevented).toBe(false);
+	expect(restore).not.toHaveBeenCalled();
+	const taskUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	control.dispatchEvent(taskUndo);
+	await Promise.resolve();
+	await Promise.resolve();
+	expect(taskUndo.defaultPrevented).toBe(true);
+	expect(restore).toHaveBeenCalledTimes(1);
+	dispose();
+});

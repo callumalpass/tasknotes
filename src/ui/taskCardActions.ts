@@ -78,9 +78,13 @@ export function createStatusCycleHandler(
 		void (async () => {
 			const logger = getTaskCardActionLogger(plugin);
 			try {
-				if (anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+				{
 					const fresh = await plugin.cacheManager.getTaskInfo(task.path);
-					if (!fresh) return;
+					if (!fresh) {
+						new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
+						return;
+					}
+					let updated: TaskInfo | null;
 					const cycle = fresh.recurrence
 						? getRecurringCycleStatus(fresh, plugin, targetDate, e.shiftKey)
 						: e.shiftKey
@@ -91,12 +95,14 @@ export function createStatusCycleHandler(
 									fresh.status || plugin.settings.defaultTaskStatus
 								);
 					if (cycle) {
-						await changeTaskProperty(
+						updated = (await changeTaskProperty(
 							plugin,
-							await tasksForPropertyAction(plugin, fresh),
+							anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")
+								? await tasksForPropertyAction(plugin, fresh)
+								: [fresh],
 							"status",
 							cycle
-						);
+						))[0] ?? null;
 					} else {
 						const date = await plugin.taskService.resolveRecurringTaskActionDate(
 							fresh,
@@ -110,8 +116,8 @@ export function createStatusCycleHandler(
 										throw new Error("Task changed since completion");
 								},
 							], false, 1, plugin.app.vault);
+						updated = await plugin.cacheManager.getTaskInfo(fresh.path);
 					}
-					const updated = await plugin.cacheManager.getTaskInfo(fresh.path);
 					if (updated) {
 						const effective = getEffectiveTaskStatus(
 							updated,
@@ -126,56 +132,6 @@ export function createStatusCycleHandler(
 					}
 					return;
 				}
-				if (task.recurrence) {
-					const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-					const cycleStatus =
-						freshTask &&
-						getRecurringCycleStatus(freshTask, plugin, targetDate, e.shiftKey);
-					if (freshTask && cycleStatus) {
-						const updatedTask = await plugin.updateTaskProperty(
-							freshTask,
-							"status",
-							cycleStatus
-						);
-						updateStatusVisuals(updatedTask, cycleStatus, false);
-						return;
-					}
-					const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-					const newEffectiveStatus = getEffectiveTaskStatus(
-						updatedTask,
-						targetDate,
-						plugin.statusManager.getCompletedStatuses()[0]
-					);
-					const isNowCompleted =
-						plugin.statusManager.isCompletedStatus(newEffectiveStatus);
-					updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
-					return;
-				}
-
-				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-				if (!freshTask) {
-					new Notice(
-						plugin.i18n.translate(
-							msg({
-								message: "Task not found",
-								context: "modals.actionPalette.taskNotFound",
-							})
-						)
-					);
-					return;
-				}
-
-				const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
-				const nextStatus = e.shiftKey
-					? plugin.statusManager.getPreviousStatus(currentStatus)
-					: plugin.statusManager.getNextStatus(currentStatus);
-				const updatedTask = await plugin.updateTaskProperty(
-					freshTask,
-					"status",
-					nextStatus
-				);
-				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
-				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				logger.error("Error cycling task status", {
@@ -222,7 +178,7 @@ export function createPriorityClickHandler(
 				void (async () => {
 					const logger = getTaskCardActionLogger(plugin);
 					try {
-						await plugin.updateTaskProperty(task, "priority", newPriority);
+						await changeTaskProperty(plugin, [task], "priority", newPriority);
 					} catch (error) {
 						logger.error("Error updating priority", {
 							category: "persistence",

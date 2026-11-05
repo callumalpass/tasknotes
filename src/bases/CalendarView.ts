@@ -1880,6 +1880,16 @@ export class CalendarView extends BasesViewBase {
 		return {
 			plugin: this.plugin, options: this.viewOptions, timezone: this.calendarTimezone,
 			refreshTask: task => this.refreshAfterDirectCalendarTaskWrite(task),
+			refreshEvent: event => {
+				this.nonTaskEvents = this.nonTaskEvents.map(previous => previous.id === event.id ? {
+					...previous,
+					start: event.start?.toISOString() ?? previous.start,
+					end: event.end?.toISOString(),
+					allDay: event.allDay,
+					extendedProps: event.extendedProps,
+				} : previous);
+				this.refreshTaskItems();
+			},
 		};
 	}
 

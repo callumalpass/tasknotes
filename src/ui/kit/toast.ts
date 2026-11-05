@@ -67,7 +67,8 @@ export function registerUndoKeyboard(root: HTMLElement, scope: object): () => vo
 		)
 			return;
 		const target = event.target as HTMLElement | null;
-		if (target?.closest("input, textarea, [contenteditable=true], .cm-editor")) return;
+		const inlineControl = target?.closest(".task-card--layout-inline [role=button], .task-card--layout-inline button");
+		if (!inlineControl && target?.closest("input, textarea, [contenteditable=true], .cm-editor")) return;
 		if (!histories.get(scope)?.length) return;
 		event.preventDefault();
 		event.stopImmediatePropagation();
