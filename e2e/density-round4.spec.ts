@@ -234,7 +234,7 @@ test('an empty task index offers creation rather than filter recovery', async ()
   }
 });
 
-test('overview groups are balanced and phone periods remain adjacent', async () => {
+test('overview groups are balanced and phone periods stack without cramped columns', async () => {
   await page.evaluate(async () => (window as any).densityLeaf.setViewState({ type: 'tasknotes-stats-view', active: true }));
   for (const width of [1180, 430]) {
     await setObsidianViewport(page, { width, height: 800 });
@@ -246,8 +246,22 @@ test('overview groups are balanced and phone periods remain adjacent', async () 
     const first = await grid.locator(':scope > div').first().boundingBox();
     expect(first!.width).toBeGreaterThan((await grid.boundingBox())!.width * .9);
     const periods = page.locator('.workspace-leaf.mod-active .tn-report-horizons > div');
-    const boxes = await periods.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().top));
-    expect(Math.max(...boxes) - Math.min(...boxes)).toBeLessThan(2);
+    const boxes = await periods.evaluateAll(elements => elements.map(element => {
+      const bounds = element.getBoundingClientRect();
+      return { top: bounds.top, bottom: bounds.bottom, left: bounds.left, width: bounds.width };
+    }));
+    expect(boxes).toHaveLength(3);
+    if (width === 430) {
+      const horizons = page.locator('.workspace-leaf.mod-active .tn-report-horizons');
+      expect(await horizons.evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1);
+      for (const [index, box] of boxes.entries()) {
+        expect(Math.abs(box.left - boxes[0].left)).toBeLessThan(2);
+        expect(Math.abs(box.width - (await horizons.boundingBox())!.width)).toBeLessThan(2);
+        if (index > 0) expect(box.top).toBeGreaterThanOrEqual(boxes[index - 1].bottom);
+      }
+    } else {
+      expect(Math.max(...boxes.map(box => box.top)) - Math.min(...boxes.map(box => box.top))).toBeLessThan(2);
+    }
     await capture(`statistics-${width}`);
   }
 });
