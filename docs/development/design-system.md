@@ -52,7 +52,7 @@ Surfaces and text come only from the theme: `--background-primary`, `--backgroun
 | `--tn-focus-ring` | Keyboard focus |
 | `--tn-danger`, `--tn-warning`, `--tn-success`, `--tn-info` | Theme-derived semantic colour |
 
-Status and priority colours stay user-configurable. They colour glyphs only, never row backgrounds or large fills.
+Status and priority colours stay user-configurable. They colour glyphs, never task-row backgrounds. Status-grouped Kanban columns retain a restrained 5% body tint from a resolvable status colour, mixed with the theme's secondary surface; invalid colours stay neutral.
 
 Only overdue dates are red. A date due today is `--tn-warning`. All other dates are muted. Scheduled dates are never blue.
 
@@ -101,7 +101,7 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 
 - List rows, board cards, agenda rows, calendar events, modal chips and inline widgets use the kit's workflow-ranked status and weight-ranked priority glyphs, or the user's configured icon and colour. Unknown values retain the unknown glyph and full accessible value. With no configured priorities, absent priority and the seeded empty priority have no glyph; real unconfigured values remain visible. The modal keeps its priority chip as an editing entry point.
 - Due dates use `flag-triangle-right`; only overdue/today due values carry urgency colour. Scheduled dates use the neutral calendar treatment, including Today and past dates. Relative labels and time format come from `taskDateLabel`; date urgency comes from the stored date, not an event's display position.
-- Narrow rows and board cards reserve a single metadata line for dates before fitting atomic property chips into the remaining width. Oversized chips may yield to shorter following chips. When even the dates and summary cannot fit together, a date joins the summary rather than clipping its label or overflowing the row. The keyboard-accessible +N exposes every omitted value in its label and tooltip; it never silently discards properties. Wide lists retain aligned date columns.
+- Narrow rows and board cards reserve a single metadata line for compact dates before fitting atomic property chips into the remaining width. Oversized chips may yield to shorter following chips. When even the dates and summary cannot fit together, scheduled yields before due. The keyboard-accessible +N exposes every omitted value in its label and tooltip; it never silently discards properties. Wide lists retain aligned date columns.
 - Status groups follow configured status order and priority groups follow descending priority weight, matching board defaults. Non-workflow groups retain native Bases order. Counts use the same parenthesised numeral on list and board. Duplicate filename/title metadata is omitted; different filenames remain visible. Native date values in property-event cards are read-only labels, not embedded date editors; task date controls retain their existing pickers.
 - Month-grid adjacent days use secondary surfaces and faint numerals. The native Bases result count counts matching vault records, not additional timeblocks fetched from daily notes; it is not an event total and is not overwritten by the plugin.
 

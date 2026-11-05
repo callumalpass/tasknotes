@@ -9,13 +9,12 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionNotice" });
 
-export function showRecurringCompletionNotice(
+export function recurringCompletionMessage(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
 	date: string,
-	completed: boolean,
-	undo: () => Promise<boolean>
-): void {
+	completed: boolean
+): string {
 	const translate = plugin.i18n.translate.bind(plugin.i18n);
 	const result = translate(
 		completed
@@ -52,9 +51,20 @@ export function showRecurringCompletionNotice(
 						context: "notices.recurringCompletion.noNext",
 					})
 				);
+	return `${task.title} · ${result} · ${next}`;
+}
+
+export function showRecurringCompletionNotice(
+	plugin: TaskNotesPlugin,
+	task: TaskInfo,
+	date: string,
+	completed: boolean,
+	undo: () => Promise<boolean>
+): void {
+	const translate = plugin.i18n.translate.bind(plugin.i18n);
 	showToast({
 		undoScope: plugin.app.vault,
-		message: `${task.title} · ${result} · ${next}`,
+		message: recurringCompletionMessage(plugin, task, date, completed),
 		durationMs: 15000,
 		action: {
 			label: translate(msg({ message: "Undo", context: "notices.recurringCompletion.undo" })),

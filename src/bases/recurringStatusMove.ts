@@ -18,7 +18,7 @@ export type RecurringStatusMove = {
 	status: string | null;
 	shownOccurrence: ShownOccurrence | undefined;
 	getOccurrenceDate: OccurrenceDate;
-	onUndo?: (undo: () => Promise<boolean>) => void;
+	onUndo?: (undo: () => Promise<boolean>, message?: string) => void;
 };
 
 /** The occurrence a rendered card acts on, read when the user acts rather than when the write lands. */

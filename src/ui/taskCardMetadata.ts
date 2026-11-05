@@ -69,7 +69,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		summary.textContent = `+${atoms.length + dateSlots.length}`;
 		for (const atom of atoms) atom.hidden = true;
 		for (const group of groups) group.property.hidden = true;
-		for (const slot of [...dateSlots].reverse()) {
+		for (const slot of dateSlots) {
 			if (fits()) break;
 			slot.hidden = true;
 		}

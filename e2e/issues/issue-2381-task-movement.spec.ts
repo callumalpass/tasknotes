@@ -783,8 +783,11 @@ test("an all-empty primary group still keeps subgroup movement on the correct pr
 
 test("Undo restores group fields and completion metadata while preserving later unrelated edits", async () => {
 	await openView();
+	const previousToast = await instance.page.locator(".tn-toast").elementHandle();
 	await card("Source").dragTo(card("Done"));
 	await expect.poll(async () => (await frontmatter()).status).toBe("done");
+	if (previousToast) await expect.poll(() => previousToast.evaluate((toast) => toast.isConnected)).toBe(false);
+	await expect(instance.page.locator(".tn-toast__action")).toBeVisible();
 	await instance.page.evaluate(async (folder) => {
 		const app = (window as any).app;
 		await app.fileManager.processFrontMatter(
@@ -806,8 +809,11 @@ test("Undo restores group fields and completion metadata while preserving later 
 
 test("Undo refuses to overwrite a later edit to a moved field", async () => {
 	await openView();
+	const previousToast = await instance.page.locator(".tn-toast").elementHandle();
 	await card("Source").dragTo(card("Done"));
 	await expect.poll(async () => (await frontmatter()).status).toBe("done");
+	if (previousToast) await expect.poll(() => previousToast.evaluate((toast) => toast.isConnected)).toBe(false);
+	await expect(instance.page.locator(".tn-toast__action")).toBeVisible();
 	await instance.page.evaluate(async (folder) => {
 		const app = (window as any).app;
 		await app.fileManager.processFrontMatter(

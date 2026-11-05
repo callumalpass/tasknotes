@@ -202,6 +202,20 @@
     .tasknotes-plugin .task-card__date-slot {
         flex-basis: auto;
         flex-shrink: 0;
+        max-width: calc((100% - var(--tn-space-2) * 3 - var(--tn-space-5)) / 2);
+        overflow: hidden;
+    }
+
+    .tasknotes-plugin .task-card__metadata-date {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .tasknotes-plugin .task-card__metadata-date > span:last-child {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .tasknotes-plugin .task-card__metadata-values {

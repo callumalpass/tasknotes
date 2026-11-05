@@ -59,16 +59,33 @@ test('annual checkoff shows years and Undo restores that occurrence, due offset 
 test('stale Undo cannot undo a later completion; latest Undo removes only its own occurrence', async () => {
   const title = 'Issue 2412 consecutive';
   const path = await createTask(title);
+  await instance.page.evaluate(async path => {
+    const app = (window as any).app;
+    const base = await app.vault.create(`${path}.base`, `filters:\n  and:\n    - file.path == "${path}"\nviews:\n  - type: tasknotesTaskList\n    name: Consecutive completions\n`);
+    await app.workspace.getLeaf(false).openFile(base);
+  }, path);
+  const root = instance.page.locator('.workspace-leaf.mod-active .tn-tasknotesTaskList');
+  await expect(root).toBeVisible();
   await complete(path);
+  const staleAction = await notice(title).getByRole('button', { name: 'Undo', exact: true }).elementHandle();
   await complete(path);
   const notices = notice(title);
-  await expect(notices).toHaveCount(2);
-  await notices.first().getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(instance.page.locator('.tn-toast').filter({ hasText: 'Cannot undo:' })).toBeVisible();
+  await expect(instance.page.locator('.tn-toast')).toHaveCount(1);
+  await expect(notices).toContainText('Completed occurrence: 21 Oct 2036');
+  await staleAction!.evaluate(button => button.click());
   expect((await state(path)).task.scheduled).toBe('2037-10-21');
-  await notice(title).last().getByRole('button', { name: 'Undo', exact: true }).click();
+  expect((await state(path)).task.complete_instances).toEqual(['2035-10-21', '2036-10-21']);
+  await notices.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect.poll(async () => (await state(path)).task.scheduled).toBe('2036-10-21');
   expect((await state(path)).task.complete_instances).toEqual(['2035-10-21']);
+  await root.focus();
+  await instance.page.keyboard.press('Control+z');
+  await expect.poll(async () => (await state(path)).task.scheduled).toBe('2035-10-21');
+  expect((await state(path)).task.complete_instances ?? []).toEqual([]);
+  await instance.page.evaluate(async path => {
+    const app = (window as any).app;
+    await app.vault.delete(app.vault.getAbstractFileByPath(`${path}.base`));
+  }, path);
 });
 
 test('completion receipts reject stale restoration while the latest restores only its occurrence', async () => {

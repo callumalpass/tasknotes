@@ -5,6 +5,7 @@ import {
 	renderTaskCardMetadata,
 	renderTaskCardMetadataLine,
 	cleanupTaskCardMetadata,
+	fitTaskCardMetadata,
 } from "../../../src/ui/taskCardMetadata";
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
@@ -95,6 +96,37 @@ describe("taskCardMetadata", () => {
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();
+	});
+
+	it("keeps due before scheduled when only one date fits and summarizes the hidden date", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 100 });
+			const values = metadataLine.createSpan();
+			const scheduled = metadataLine.createSpan({ cls: "task-card__date-slot" });
+			scheduled.createSpan({ attr: { "aria-label": "Scheduled: tomorrow" } });
+			const due = metadataLine.createSpan({ cls: "task-card__date-slot" });
+			due.createSpan({ text: "Today" });
+			metadataLine.getBoundingClientRect = () => ({ right: 100 }) as DOMRect;
+			scheduled.getBoundingClientRect = () => ({ right: 80 }) as DOMRect;
+			due.getBoundingClientRect = () => ({ right: scheduled.hidden ? 80 : 140 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			expect(scheduled.hidden).toBe(true);
+			expect(due.hidden).toBe(false);
+			expect(metadataLine.querySelector(".task-card__metadata-overflow")?.getAttribute("aria-label")).toBe("Scheduled: tomorrow");
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
 	});
 
 	it("disconnects overflow observers on rerender, removal and explicit cleanup", () => {

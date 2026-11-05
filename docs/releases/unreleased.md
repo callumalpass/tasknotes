@@ -16,6 +16,11 @@ Example:
 ```
 ## Fixed
 
+- Restored quiet, live status-colour tints in flat and swimlane Kanban columns, including theme changes and neutral fallback for invalid colours.
+  - Thanks to @nesyeklaf for contributing status-coloured columns in #2260.
+- Kept due and scheduled dates visible in compact phone-width task rows, prioritizing due dates if space runs out.
+- Rendered native Bases dates as read-only labels in property-event cards rather than disabled date inputs.
+- Preserved task-specific next-occurrence feedback when dropping a single recurring task on a completed Kanban column.
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
