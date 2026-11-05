@@ -38,6 +38,11 @@ export interface TaskCardOptions {
 	targetDate?: Date;
 	/** List/board cards represent the pending commitment, not a projected date. */
 	usePendingOccurrenceIdentity?: boolean;
+	/**
+	 * The scheduled value of a recurring occurrence other than the pending one. The card
+	 * shows it read-only: the task's date fields only hold the pending occurrence.
+	 */
+	occurrenceScheduled?: string;
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;

@@ -219,6 +219,8 @@ Recurring tasks can show:
 - **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
 - **Materialized occurrence notes**: dragging updates the occurrence note's own `scheduled` or `due` date like a normal task, without changing the parent's recurrence rule
 
+In list mode and the Agenda, the card for a pattern instance shows that instance's scheduled date as read-only text and leaves out the task's due date. To give one instance its own dates, create an occurrence note for it.
+
 ![Recurring tasks in calendar week view](../assets/views-calendar-week.png)
 
 Materialized occurrence notes keep `occurrence_date` as their identity. If you drag the note for the June 1 occurrence to June 2, it is still the June 1 recurrence instance, now scheduled for June 2. TaskNotes suppresses the June 1 virtual parent event and leaves the June 2 virtual occurrence alone unless that date also has its own materialized note.

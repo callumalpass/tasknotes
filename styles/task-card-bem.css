@@ -929,6 +929,11 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
     color: var(--tn-color-info);
 }
 
+/* Display-only dates: no hover state, and clicks reach the card */
+.tasknotes-plugin .task-card__metadata-date--readonly {
+    pointer-events: none;
+}
+
 /* Overdue due dates - use the hover background color for text */
 .tasknotes-plugin .task-card__metadata-date--overdue {
     color: var(--tn-color-error);

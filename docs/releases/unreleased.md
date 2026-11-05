@@ -46,6 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2503) Fixed calendar list and Agenda cards for recurring occurrences other than the next one showing the task's current dates, with date controls that changed the task. Every row could look overdue, and selecting the date on the card for a later occurrence moved the task's next occurrence instead. These cards now show their own occurrence's scheduled date as read-only text, without the task's due date, and are only marked as past when that occurrence is past and neither completed nor skipped. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#calendar-drag-and-drop).
+  - Thanks to @martin-forge for reporting this, and @14790897 for the report on timed series
 - (#2504) Task List, Kanban, Mini Calendar and Calendar views left open across midnight now update for the new day. Cards show the new relative dates and overdue state, and a calendar still on the previous day moves to today; one you paged elsewhere stays where it is. Hidden views catch up when next shown. This does not re-run Bases filters that use `today()`, which Obsidian evaluates.
   - Thanks to @martin-forge for reporting this.
 - Fixed pressing the save shortcut twice in quick succession creating the task twice.
