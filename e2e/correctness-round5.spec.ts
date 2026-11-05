@@ -194,7 +194,8 @@ test('collision drilldown contains only that group and first entry reveals today
   await page.locator('.tnc-toolbar-view-select').selectOption('week');
   await expect(page.locator('.tnc-dh.is-today')).toBeInViewport();
   const stack = page.locator('.tnc-more--collision').filter({ hasText: '8' }).first();
-  await expect(stack).toHaveText('8 appointments');
+  await expect(stack.locator('.tnc-collision-count')).toHaveText('8 appointments');
+  await expect(stack.locator('.tnc-collision-title')).not.toBeEmpty();
   await stack.click();
   await expect(page.locator('.tnc-popover .tnc-item')).toHaveCount(8);
   await expect(page.locator('.tnc-popover')).not.toContainText('Unrelated morning');

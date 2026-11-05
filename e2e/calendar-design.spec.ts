@@ -375,9 +375,9 @@ views:
       await expect(todayCell).toHaveAttribute('aria-selected', 'false');
       const todayStyle = await todayCell.evaluate(element => {
         const css = getComputedStyle(element);
-        return { border: css.borderWidth, shadow: css.boxShadow };
+        return { border: css.borderWidth, borderColor: css.borderColor, shadow: css.boxShadow };
       });
-      expect(todayStyle).toEqual({ border: '0px', shadow: 'none' });
+      expect(todayStyle).toEqual({ border: '1px', borderColor: 'rgba(0, 0, 0, 0)', shadow: 'none' });
       await expect(todayCell).toHaveClass(/mini-calendar-view__day--intensity-/);
       await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-mini-independent-selection.png`, clip: { x: 0, y: 0, width, height: 800 } });
     }

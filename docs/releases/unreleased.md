@@ -39,6 +39,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Agenda views open with an expandable week-to-month date strip, task-day dots, and an add-task row for each day. The date strip can be turned off in the Base's view options; existing date, filter and display settings still apply.
+- Month views offer an optional selected-day panel with the same task status controls and menus as the agenda. The panel sits beside the month in wide panes and below it in narrow panes; it is off by default to preserve existing month-click behaviour.
+- Calendar stacks show an appointment count and a hint of their contents. Tracked-time titles no longer split into letter fragments, adjacent appointments have a visible boundary, and calendar move feedback uses localised dates and times. Agenda and mini-calendar selection, focus and drag treatments follow the active Obsidian theme.
+
 - Time-bearing dates stay complete in narrow task rows, with lower-priority metadata yielding space first. Unknown status and priority recovery opens the relevant expanded Task properties section, including from board columns.
 - Mini-calendar task choosers use task titles rather than filenames. Calendar collision stacks show appointment counts and expand just their group; narrow weeks reveal the selected day on entry.
 - Failed task-property changes identify the property and affected tasks, with a reminder to check note write access before retrying.
