@@ -319,7 +319,7 @@
     padding: 0;
     margin: 0;
     vertical-align: baseline;
-    color: var(--tn-text-muted);
+    color: var(--tn-text-metadata);
     flex: 0 1 auto;
     justify-content: flex-start;
     min-width: 0;
@@ -475,4 +475,47 @@ body.is-mobile .tasknotes-inline-widget--sentence .task-card--layout-inline .tas
 
 body.is-mobile .tasknotes-inline-widget--sentence .task-card--layout-inline :is(.task-card__metadata, .task-card__priority-dot) {
     display: none;
+}
+
+.tasknotes-inline-widget--sentence .task-card--layout-inline {
+    position: relative;
+    display: inline-flex;
+    width: auto;
+    max-width: 100%;
+    padding: 0;
+    vertical-align: baseline;
+    container-type: normal;
+}
+
+.tasknotes-inline-widget--sentence .task-card--layout-inline .task-card__main-row {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    gap: var(--tn-space-half);
+    width: auto;
+}
+
+.tasknotes-inline-widget--sentence .task-card--layout-inline .task-card__content {
+    flex: 0 1 auto;
+    width: auto;
+}
+
+.tasknotes-inline-widget--sentence .task-card--layout-inline :is(.task-card__metadata, .task-card__priority-dot) {
+    display: none;
+}
+
+.tasknotes-inline-widget--sentence .task-card--layout-inline .task-card__context-menu {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 100%;
+    z-index: var(--layer-popover);
+    background: var(--tn-bg-primary);
+    border-radius: var(--tn-radius-sm);
+    box-shadow: var(--tn-shadow-overlay);
+    pointer-events: none;
+    opacity: 0;
+}
+
+.tasknotes-inline-widget--sentence .task-card--layout-inline:is(:hover, :focus-within) .task-card__context-menu {
+    pointer-events: auto;
+    opacity: 1;
 }

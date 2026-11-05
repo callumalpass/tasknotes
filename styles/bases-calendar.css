@@ -337,6 +337,14 @@
     white-space: nowrap;
 }
 
+.tasknotes-plugin .tnc-dg .tnc-item--bar .tn-task-glyphs__status {
+    display: none;
+}
+
+.tasknotes-plugin .tnc-dg .tnc-item--bar .tn-task-glyphs--status-only {
+    display: none;
+}
+
 .tasknotes-plugin .tnc-tg-day-navigation {
     display: flex;
     flex-wrap: wrap;

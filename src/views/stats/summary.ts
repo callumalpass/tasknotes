@@ -77,10 +77,13 @@ export function renderOverviewStats(plugin: TaskNotesPlugin, container: HTMLElem
 
 export function renderTimeRangeStats(plugin: TaskNotesPlugin, container: HTMLElement, stats: TimeRangeStats) {
 	container.empty();
-	if (stats.overall.totalTasks === 0 && stats.overall.totalTimeSpent === 0 && stats.overall.totalTimeEstimate === 0) {
+	const empty = stats.overall.totalTasks === 0 && stats.overall.totalTimeSpent === 0 && stats.overall.totalTimeEstimate === 0;
+	container.parentElement?.classList.toggle("stats-view__section--empty", empty);
+	if (empty) {
 		container.createEl("p", {
 			cls: "stats-view__period-summary",
-			text: plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })),
+			text: "—",
+			attr: { "aria-label": plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })), title: plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })) },
 		});
 		return;
 	}

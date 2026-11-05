@@ -7,6 +7,23 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
+it("confirms the undone action without resurfacing an older action", async () => {
+	const scope = {};
+	const older = jest.fn();
+	const latest = jest.fn();
+	showToast({ message: "Older status change", undoScope: scope, action: { label: "Undo", run: older } });
+	showToast({ message: "Priority → High · 3", undoMessage: "Undid priority change for 3 tasks", undoScope: scope, action: { label: "Undo", run: latest } });
+	await undoLatest(scope);
+	expect(latest).toHaveBeenCalledTimes(1);
+	expect(document.querySelectorAll(".tn-toast")).toHaveLength(1);
+	expect(document.querySelector(".tn-toast__message")?.textContent).toBe("Undid priority change for 3 tasks");
+	expect(document.querySelector(".tn-toast__action")).toBeNull();
+	expect(older).not.toHaveBeenCalled();
+	await undoLatest(scope);
+	expect(older).toHaveBeenCalledTimes(1);
+	expect(document.querySelector(".tn-toast__message")?.textContent).toBe("Undid: Older status change");
+});
+
 it("retains twenty entries per vault and serializes rapid keyboard requests", async () => {
 	const vault = {};
 	const otherVault = {};

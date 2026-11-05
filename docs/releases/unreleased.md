@@ -64,6 +64,13 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Sentence task references no longer reserve space for hidden actions or separate adjacent punctuation; standalone references keep their metadata.
+- Shared property pickers support Home and End with active-option reveal, and precise date/time dialogs visibly name the Due or Scheduled property.
+- Undo confirms the action that was undone without presenting an older change as new; older changes remain available through the Undo shortcut.
+- Filtered-empty task views prioritize reviewing Filters over creating a new task.
+- Strengthened small task metadata, prioritized desktop titles over low-value chips, and reduced duplicate status decoration in month bars.
+- Details editors keep their layout while typing and switch to the content-sensitive split after focus leaves the editor. Timeblock titles now wrap using the task editor's title control.
+- Long board headings reveal their complete names with keyboard or touch. Settings, shortcut help and statistics use tighter spacing, with compact accessible empty-period indicators.
 - Task keyboard actions now follow the card containing keyboard focus, including after closing a property picker and tabbing to another task.
 - Busy calendar days use expandable collision stacks instead of widening every day in the week. Today reveals its day, and narrow weeks offer persistent day navigation. Calendar overflow stays inside the visible pane when resized, with reachable Close controls, touch-sized rows and readable all-day titles.
 - Editing a moved or resized timeblock now reads its current daily-note values, so saving its title does not restore old times.

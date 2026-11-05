@@ -10,10 +10,11 @@ export interface ToastOptions {
 	action?: ToastAction;
 	durationMs?: number;
 	undoScope?: object;
+	undoMessage?: string;
 }
 
 const DEFAULT_DURATION_MS = 5000;
-const histories = new WeakMap<object, Array<ToastAction & { message: string }>>();
+const histories = new WeakMap<object, Array<ToastAction & { message: string; undoMessage?: string }>>();
 const running = new WeakMap<object, Promise<void>>();
 let toastRevision = 0;
 
@@ -28,17 +29,10 @@ export async function undoLatest(scope: object): Promise<void> {
 			await action.run();
 			const index = history?.indexOf(action) ?? -1;
 			if (index >= 0) history?.splice(index, 1);
-			const previousAction = history?.[history.length - 1];
 			if (toastRevision === revision) {
-				if (previousAction)
-					showToast({
-						message: previousAction.message,
-						action: { label: previousAction.label, run: () => undoLatest(scope) },
-					});
-				else
-					activeDocument.body
-						.querySelector(".tn-toast")
-						?.dispatchEvent(new Event("tn-dismiss"));
+				showToast({
+					message: action.undoMessage ?? uiText(msg({ message: "Undid: {action}", context: "interaction undo confirmation" }), { action: action.message }),
+				});
 			}
 		} catch {
 			if (toastRevision !== revision) return;
@@ -94,7 +88,7 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	if (action && options.undoScope) {
 		const scope = options.undoScope;
 		const history = histories.get(scope) ?? [];
-		const entry = { ...action, message: options.message };
+		const entry = { ...action, message: options.message, undoMessage: options.undoMessage };
 		history.push(entry);
 		if (history.length > 20) history.shift();
 		histories.set(scope, history);

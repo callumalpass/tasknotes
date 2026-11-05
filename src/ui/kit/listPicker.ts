@@ -163,11 +163,11 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	});
 	input.addEventListener("keydown", (event) => {
 		const rowCount = rows().length;
-		if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+		if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
 			event.preventDefault();
 			if (rowCount === 0) return;
 			const step = event.key === "ArrowDown" ? 1 : -1;
-			activeIndex = (activeIndex + step + rowCount) % rowCount;
+			activeIndex = event.key === "Home" ? 0 : event.key === "End" ? rowCount - 1 : (activeIndex + step + rowCount) % rowCount;
 			paintActive();
 		} else if (event.key === "Enter") {
 			event.preventDefault();

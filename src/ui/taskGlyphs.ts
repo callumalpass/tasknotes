@@ -31,8 +31,10 @@ export function createTaskGlyphs(
 			statusGlyphState(task.status, plugin.statusManager.getAllStatuses())
 		);
 	// A task with no priority shows nothing: events are too narrow to spend space on an empty slot.
-	if (!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities()))
+	if (!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())) {
+		glyphs.classList.add("tn-task-glyphs--status-only");
 		return glyphs;
+	}
 	const priorityGlyph = glyphs.createSpan({ cls: "tn-task-glyphs__priority" });
 	if (!priority) priorityGlyph.setAttribute("title", unconfiguredValueLabel(task.priority));
 	priorityGlyph.style.color = priority?.color || "var(--text-muted)";

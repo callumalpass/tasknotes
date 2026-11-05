@@ -1,4 +1,5 @@
 import { applyModalShell, createModalComposer, createModalTimeField, createModalColorField, renderModalSubmitHint } from "../ui/kit/modal";
+import { createTaskModalTitleTextarea, resizeTaskModalTitleTextarea } from "./taskModalTitleInput";
 import { displayError } from "../i18n/runtime";
 import { uiLocale } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
@@ -99,7 +100,7 @@ export class TimeblockCreationModal extends Modal {
 	private translate: (key: MessageDescriptor, variables?: Record<string, unknown>) => string;
 
 	// Form fields
-	private titleInput: HTMLInputElement;
+	private titleInput: HTMLTextAreaElement;
 	private startTimeInput: HTMLInputElement;
 	private endTimeInput: HTMLInputElement;
 	private descriptionInput: HTMLTextAreaElement;
@@ -133,12 +134,13 @@ export class TimeblockCreationModal extends Modal {
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
 
 		const { body, properties, footer } = createModalComposer(this);
-		this.titleInput = body.createEl("input", { cls: "tn-modal__title", type: "text", value: this.options.prefilledTitle || "", attr: {
-			"aria-label": this.translate(msg({ message: "Title", context: "modals.timeblockCreation.titleLabel" })),
+		this.titleInput = createTaskModalTitleTextarea({ container: body, className: "tn-modal__title", value: this.options.prefilledTitle || "",
 			placeholder: this.translate(msg({ message: "e.g., Deep work session", context: "modals.timeblockCreation.titlePlaceholder" })),
-		} });
+			onChange: () => this.validateForm(),
+		});
+		this.titleInput.setAttribute("aria-label", this.translate(msg({ message: "Title", context: "modals.timeblockCreation.titleLabel" })));
 		body.prepend(this.titleInput);
-		this.titleInput.addEventListener("input", () => this.validateForm());
+		this.titleInput.ownerDocument.defaultView?.requestAnimationFrame(() => resizeTaskModalTitleTextarea(this.titleInput));
 		this.descriptionInput = body.createEl("textarea", { cls: "tn-modal__description", attr: {
 			"aria-label": this.translate(msg({ message: "Description", context: "modals.timeblockCreation.descriptionLabel" })),
 			placeholder: this.translate(msg({ message: "Optional description for the timeblock", context: "modals.timeblockCreation.descriptionDesc" })),

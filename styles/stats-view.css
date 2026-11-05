@@ -3,7 +3,7 @@
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-space-4);
+    gap: var(--tn-space-3);
     height: 100%;
     overflow-y: auto; container-type: inline-size; min-width: 0;
 }
@@ -100,7 +100,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: var(--tn-space-4);
-    padding: var(--tn-space-3) 0;
+    padding: var(--tn-space-2) 0;
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--tn-hairline);
@@ -760,4 +760,8 @@ body.is-mobile .tasknotes-plugin.stats-view input { min-height: var(--tn-touch-t
 .tasknotes-plugin .stats-view__project-content-grid { grid-template-columns: minmax(0, 1fr); }
 .tasknotes-plugin .stats-view__filter-grid { grid-template-columns: minmax(0, 1fr); }
 .tasknotes-plugin .stats-view__custom-dates { flex-wrap: wrap; }
+}
+.tasknotes-plugin .stats-view__section--empty .stats-view__period-summary {
+    margin: 0;
+    color: var(--tn-text-metadata);
 }

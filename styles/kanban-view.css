@@ -463,6 +463,16 @@
     line-height: 1.2;
     margin: 0;
     min-width: 0;
+    cursor: pointer;
+}
+
+.tasknotes-plugin .kanban-view__column-title:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__column-title {
+    min-height: var(--tn-touch-target);
 }
 
 .tasknotes-plugin .kanban-view__column-header .kanban-view__column-title {

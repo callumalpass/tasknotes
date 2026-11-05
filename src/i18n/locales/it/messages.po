@@ -4975,6 +4975,7 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "Data di scadenza"
 
+#: src/modals/DateTimePickerModal.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction property"
 msgid "Due date"
@@ -10793,6 +10794,7 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Data pianificata"
 
+#: src/modals/DateTimePickerModal.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction property"
 msgid "Scheduled date"
@@ -11077,6 +11079,7 @@ msgstr "Servizio non inizializzato: riavvia Obsidian"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
+#: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
 msgstr "Imposta data e ora"
@@ -13533,6 +13536,16 @@ msgstr "Ripristina attività"
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "Sotto la stima"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property undo confirmation"
+msgid "Undid {property} change for {count, plural, one {# task} other {# tasks}}"
+msgstr "Modifica di {property} annullata per {count, plural, one {# attività} other {# attività}}"
+
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo confirmation"
+msgid "Undid: {action}"
+msgstr "Annullato: {action}"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction undo"

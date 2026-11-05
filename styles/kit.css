@@ -459,6 +459,7 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     padding: var(--tn-space-2) var(--tn-space-3);
     border-bottom: 1px solid var(--tn-hairline);
     font-weight: var(--tn-font-weight-medium);
+    overflow-wrap: anywhere;
 }
 
 .tn-picker__input.tn-picker__input {
@@ -517,6 +518,10 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     padding: var(--tn-space-2);
     border-radius: var(--tn-radius-sm);
     cursor: pointer;
+}
+
+.tn-shortcut-row {
+    padding-block: var(--tn-space-1);
 }
 
 .tn-picker__row.is-active {
@@ -715,6 +720,13 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     font-size: var(--tn-type-lg);
     font-weight: var(--tn-font-weight-medium);
     padding-inline-end: var(--tn-space-5);
+    field-sizing: content;
+    height: auto;
+    min-height: calc(1lh + var(--tn-space-4));
+    max-height: calc(3lh + var(--tn-space-4));
+    overflow-y: auto;
+    resize: none;
+    line-height: 1.4;
 }
 
 .tasknotes-plugin.tn-modal--composer .tn-modal__description {
@@ -813,7 +825,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 .tasknotes-plugin .tn-report-horizons {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--tn-space-6);
+    gap: var(--tn-space-3);
 }
 
 .tasknotes-plugin .tn-metrics.tn-metrics {
@@ -889,7 +901,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 
     .tasknotes-plugin .tn-report-horizons .stats-view__section {
         min-width: 0;
-        gap: var(--tn-space-4);
+        gap: var(--tn-space-2);
     }
 }
 .tasknotes-plugin:focus-within .tn-task-focused {
