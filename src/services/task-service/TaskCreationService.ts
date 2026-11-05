@@ -376,9 +376,6 @@ export class TaskCreationService {
 			};
 
 			try {
-				if (runtime.cacheManager.waitForFreshTaskData) {
-					await runtime.cacheManager.waitForFreshTaskData(file);
-				}
 				runtime.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
 			} catch (cacheError) {
 				tasknotesLogger.error("Error updating cache for new task:", {

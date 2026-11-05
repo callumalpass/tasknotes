@@ -109,6 +109,14 @@ test('month bars use one line and overflow allocates readable title height', asy
     await expect(popover.locator('.tnc-popover-close')).toBeInViewport();
     const text = popover.locator('.tn-calendar-event-title').first();
     expect(await text.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
+    await page.evaluate(async ({ folder, width }) => {
+      const app = (window as any).app;
+      const file = app.vault.getAbstractFileByPath(`${folder}/Deadline-0.md`);
+      await app.fileManager.processFrontMatter(file, (frontmatter: any) => {
+        frontmatter.title = `${frontmatter.title} refreshed-${width}`;
+      });
+    }, { folder, width });
+    await expect(popover).toContainText(`refreshed-${width}`);
     for (const theme of ['light', 'dark']) {
       await page.evaluate(theme => {
         document.body.classList.remove('theme-light', 'theme-dark');

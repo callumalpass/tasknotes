@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, closeObsidianSettings, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let page: Page;
@@ -30,7 +30,33 @@ test.beforeAll(async () => {
   await expect.poll(() => page.evaluate(async path => Boolean(await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(path)), path)).toBe(true);
 });
 
-test.afterEach(async () => { for (let count = 0; count < 3; count++) await page.keyboard.press('Escape'); });
+test.beforeEach(async () => {
+  await expect(page.locator('.modal-container')).toHaveCount(0);
+});
+test.afterEach(async () => {
+  for (const candidate of page.context().pages()) {
+    if (await candidate.locator('.vertical-tab-content').first().isVisible()) {
+      await closeObsidianSettings(page, candidate);
+    }
+  }
+  while (await page.locator('.modal-container').count()) {
+    const modal = page.locator('.modal-container').last();
+    const previousCount = await page.locator('.modal-container').count();
+    const cancel = modal.getByRole('button', { name: 'Cancel', exact: true });
+    if (await cancel.isVisible()) await cancel.click();
+    else {
+      await modal.locator('.modal').evaluate(element => {
+        (element as HTMLElement).tabIndex = -1;
+        (element as HTMLElement).focus();
+      });
+      await page.keyboard.press('Escape');
+    }
+    const discard = page.getByRole('button', { name: 'Discard changes', exact: true });
+    if (await discard.isVisible()) await discard.click();
+    await expect(page.locator('.modal-container')).toHaveCount(previousCount - 1);
+  }
+  await page.keyboard.press('Escape');
+});
 test.afterAll(async () => {
   try {
     if (page) await page.evaluate(async ({ folder, settings }) => {

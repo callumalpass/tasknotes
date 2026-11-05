@@ -71,6 +71,7 @@ describe("Issue #1316 - Calendar view defaults vs workspace state", () => {
 
 	it("restores date and scroll, ignoring a stale calendarView", () => {
 		const calendar = {
+			getDate: () => new Date("2026-01-15T00:00:00.000Z"),
 			gotoDate: jest.fn(),
 			changeView: jest.fn(),
 			flush: jest.fn(),

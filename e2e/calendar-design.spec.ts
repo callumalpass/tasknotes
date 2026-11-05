@@ -249,6 +249,11 @@ test('dense recurring days retain readable titles and every overflow item', asyn
 test('timeblocks retain drag and resize in both themes', async () => {
   const page = app.page;
   await setObsidianViewport(page, { width: 1180, height: 800 });
+  await page.evaluate(async folder => {
+    const app = (window as any).app;
+    const file = await app.vault.create(`${folder}/Timeblocks.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\nviews:\n  - type: tasknotesCalendar\n    name: Timeblocks\n    calendarView: listWeek\n    showScheduled: false\n    showDue: false\n    showRecurring: false\n    showTimeEntries: false\n    showPropertyBasedEvents: false\n    showTimeblocks: true\n    scrollTime: 08:00:00\n`);
+    await app.workspace.getMostRecentLeaf().openFile(file);
+  }, folder);
   const calendar = page.locator('.workspace-leaf.mod-active .tnc');
   const readBlock = () => page.evaluate(folder => {
     const app = (window as any).app;
@@ -265,7 +270,7 @@ test('timeblocks retain drag and resize in both themes', async () => {
     await calendar.locator('.tnc-btn-view-days').click();
     await expect.poll(() => page.evaluate(async folder => {
       const app = (window as any).app;
-      return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
+      return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Timeblocks.base`));
     }, folder)).toMatch(/calendarView: ["']?timeGridCustom/);
     const block = calendar.locator('.tnc-item[data-event-type="timeblock"]');
     await expect(block).toBeVisible();

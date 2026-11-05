@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { launchObsidian, closeObsidian, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 let app: ObsidianApp;
 const BASE = 'TaskNotes/Views/e2e-calendar-settings.base';
@@ -10,6 +10,7 @@ test.afterAll(async () => { if (app) await closeObsidian(app); });
 
 test('legacy calendar keys keep their rendering when opening the grouped settings', async () => {
   const page = app.page;
+  await setObsidianViewport(page, { width: 1050, height: 900 });
   const source = await page.evaluate(async ({ base, prefix }) => {
     const w = window as any;
     const day = w.moment().format('YYYY-MM-DD');
@@ -26,11 +27,18 @@ test('legacy calendar keys keep their rendering when opening the grouped setting
     const cal = page.locator('.tnc:visible').first();
     await expect(cal).toBeVisible();
     await expect(cal.locator('.tnc-tg-head .tnc-dh')).toHaveCount(3);
+    await expect(cal.locator('.tnc-more:visible')).toHaveCount(2);
+    await page.screenshot({ path: 'test-results/calendar-settings-legacy-width.png' });
     await expect(cal.locator('.tnc-item:visible')).toHaveCount(2);
     await expect(cal.locator('.tnc-more:visible')).toHaveCount(2);
     await expect(cal.locator('.tnc-tg')).toContainText(/\d(am|pm)/);
     const widths = await cal.locator('.tnc-tg-head .tnc-dh').evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
     expect(widths[0]).toBeGreaterThan(widths[1] * 1.5);
+    const timedStack = cal.locator('.tnc-more--stack');
+    await timedStack.click();
+    await expect(cal.locator('.tnc-popover .tnc-item')).toHaveCount(3);
+    await page.keyboard.press('Escape');
+    await expect(timedStack).toBeFocused();
     const rendering = async () => cal.evaluate(el => Array.from(el.querySelectorAll('.tnc-item, .tnc-more')).filter(node => (node as HTMLElement).offsetHeight > 0).map(node => {
       const box = node.getBoundingClientRect();
       const root = el.getBoundingClientRect();

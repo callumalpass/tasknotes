@@ -5,6 +5,12 @@ export interface ToastAction {
 	run: () => void | Promise<unknown>;
 }
 
+export class UndoConflictError extends Error {
+	constructor(readonly notePaths: readonly string[]) {
+		super(`Note changed: ${notePaths.join(", ")}`);
+	}
+}
+
 export interface ToastOptions {
 	message: string;
 	action?: ToastAction;
@@ -34,7 +40,7 @@ export async function undoLatest(scope: object): Promise<void> {
 					message: action.undoMessage ?? uiText(msg({ message: "Undid: {action}", context: "interaction undo confirmation" }), { action: action.message }),
 				});
 			}
-		} catch {
+		} catch (error) {
 			if (toastRevision !== revision) return;
 			showToast({
 				message: `${action.message} · ${uiText(
@@ -42,7 +48,7 @@ export async function undoLatest(scope: object): Promise<void> {
 						message: "Cannot undo: the note has changed.",
 						context: "interaction undo conflict",
 					})
-				)}`,
+				)}${error instanceof UndoConflictError ? ` · ${error.notePaths.join(", ")}` : ""}`,
 			});
 		}
 	});

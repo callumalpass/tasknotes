@@ -200,6 +200,7 @@ msgid "[Formula Error]"
 msgstr "[Errore di formula]"
 
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
 msgstr "{action} — completate: {count}; non riuscite: {failed}."

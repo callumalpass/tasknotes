@@ -81,6 +81,8 @@ it("Undo preserves later date changes and restores unaffected tasks", async () =
 	await expect(undoAction().action!.run()).rejects.toThrow("Note changed");
 	expect(tasks.get(initial[0].path)?.scheduled).toBe("2026-11-20T18:00");
 	expect(tasks.get(initial[1].path)?.scheduled).toBe(initial[1].scheduled);
+	expect(jest.mocked(showToast).mock.calls.at(-1)?.[0].message).toContain("failed: 1");
+	expect(jest.mocked(showToast).mock.calls.at(-1)?.[0].message).toContain(initial[0].title);
 });
 
 it("refuses overlapping batch gestures", async () => {

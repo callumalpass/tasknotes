@@ -13,6 +13,7 @@ import {
 } from "../services/VaultMutationService";
 import { getCurrentTimestamp } from "../utils/dateUtils";
 import { normalizeDependencyEntry } from "../utils/dependencyUtils";
+import { UndoConflictError } from "./kit/toast";
 
 export interface FileUndoReceipt {
 	file: TFile;
@@ -65,12 +66,50 @@ export function createFileUndo(
 			throw new Error("Duplicate note in Undo receipt");
 		const modified = plugin.fieldMapper.toUserField("dateModified");
 		const timestamp = getCurrentTimestamp();
+		const publish = async (): Promise<void> => {
+			for (const entry of ordered) {
+				const current = await plugin.cacheManager.getTaskInfo(entry.file.path);
+				if (!current) continue;
+				const parsed = readCompletionContent(await plugin.app.vault.read(entry.file));
+				const restored = {
+					...current,
+					...plugin.fieldMapper.mapFromFrontmatter(
+						parsed.frontmatter,
+						entry.file.path,
+						plugin.settings.storeTitleInFilename
+					),
+					dateModified: timestamp,
+				};
+				for (const change of entry.content.changes) {
+					const key = taskProperty(plugin, change.property);
+					if (key && !change.hadBefore) Object.assign(restored, { [key]: undefined });
+				}
+				plugin.cacheManager.updateTaskInfoInCache(entry.file.path, restored);
+				plugin.emitter.trigger(EVENT_TASK_UPDATED, {
+					path: entry.file.path,
+					originalTask: current,
+					updatedTask: restored,
+				});
+				for (const change of entry.content.changes) {
+					const key = taskProperty(plugin, change.property);
+					if (key)
+						await plugin.taskService.applyPropertyChangeSideEffects(
+							entry.file, current, restored, key, current[key], restored[key], undefined, true
+						);
+				}
+			}
+			plugin.emitter.trigger(EVENT_DATA_CHANGED);
+		};
 		const lock = async (index: number): Promise<void> => {
 			if (index < ordered.length) {
 				const entry = ordered[index];
 				if (plugin.app.vault.getAbstractFileByPath(entry.file.path) !== entry.file)
 					throw new Error(`Missing note: ${entry.file.path}`);
 				return withVaultFileMutation(entry.file, () => lock(index + 1));
+			}
+			if (diskRestored) {
+				await publish();
+				return;
 			}
 			for (const entry of ordered) {
 				if (
@@ -88,7 +127,7 @@ export function createFileUndo(
 						timestamp
 					) === null
 				)
-					throw new Error(`Note changed: ${entry.file.path}`);
+					throw new UndoConflictError([entry.file.path]);
 			}
 			const written: FileUndoReceipt[] = [];
 			try {
@@ -139,50 +178,10 @@ export function createFileUndo(
 				}
 				throw error;
 			}
-		};
-		if (!diskRestored) {
-			await lock(0);
 			diskRestored = true;
-		}
-		for (const entry of ordered) {
-			const current = await plugin.cacheManager.getTaskInfo(entry.file.path);
-			if (!current) continue;
-			const parsed = readCompletionContent(await plugin.app.vault.read(entry.file));
-			const restored = {
-				...current,
-				...plugin.fieldMapper.mapFromFrontmatter(
-					parsed.frontmatter,
-					entry.file.path,
-					plugin.settings.storeTitleInFilename
-				),
-				dateModified: timestamp,
-			};
-			for (const change of entry.content.changes) {
-				const key = taskProperty(plugin, change.property);
-				if (key && !change.hadBefore) Object.assign(restored, { [key]: undefined });
-			}
-			plugin.cacheManager.updateTaskInfoInCache(entry.file.path, restored);
-			plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-				path: entry.file.path,
-				originalTask: current,
-				updatedTask: restored,
-			});
-			for (const change of entry.content.changes) {
-				const key = taskProperty(plugin, change.property);
-				if (key)
-					await plugin.taskService.applyPropertyChangeSideEffects(
-						entry.file,
-						current,
-						restored,
-						key,
-						current[key],
-						restored[key],
-						undefined,
-						true
-					);
-			}
-		}
-		plugin.emitter.trigger(EVENT_DATA_CHANGED);
+			await publish();
+		};
+		await lock(0);
 	};
 }
 
@@ -259,7 +258,7 @@ export async function captureTaskUndo(
 		undo:
 			changes.length || content.beforeBody !== content.afterBody || renamed
 				? async () => {
-						if (!safe) throw new Error(`Task changed during update: ${file.path}`);
+						if (!safe) throw new UndoConflictError([file.path]);
 						await restore();
 					}
 				: undefined,

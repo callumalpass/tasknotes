@@ -361,7 +361,8 @@ export function showTaskUndo(
 	count = undo.length,
 	scope?: object,
 	message?: string,
-	undoMessage?: string
+	undoMessage?: string,
+	undoTitles?: readonly string[]
 ): void {
 	if (!count && !failed) return;
 	const updated = uiText(
@@ -383,9 +384,16 @@ export function showTaskUndo(
 			? {
 					label: uiText(msg({ message: "Undo", context: "interaction undo" })),
 					run: async () => {
-						while (pending.length) {
-							await pending[pending.length - 1]();
-							pending.pop();
+						try {
+							while (pending.length) {
+								await pending[pending.length - 1]();
+								pending.pop();
+							}
+						} catch (error) {
+							if (undoTitles) showToast({
+								message: `${uiText(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), { action: uiText(msg({ message: "Undo", context: "interaction undo" })), count: undo.length - pending.length, failed: pending.length })} · ${undoTitles.slice(0, pending.length).join(", ")}`,
+							});
+							throw error;
 						}
 					},
 				}

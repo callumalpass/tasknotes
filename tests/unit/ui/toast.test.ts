@@ -1,4 +1,4 @@
-import { showToast, undoLatest, registerUndoKeyboard } from "../../../src/ui/kit/toast";
+import { showToast, undoLatest, registerUndoKeyboard, UndoConflictError } from "../../../src/ui/kit/toast";
 
 beforeEach(() => {
 	jest.useFakeTimers();
@@ -6,6 +6,13 @@ beforeEach(() => {
 	Object.defineProperty(globalThis, "activeDocument", { configurable: true, value: document });
 });
 afterEach(() => jest.useRealTimers());
+
+it("identifies the note that could not be restored", async () => {
+	const scope = {};
+	showToast({ message: "2 tasks updated", undoScope: scope, action: { label: "Undo", run: () => { throw new UndoConflictError(["Tasks/Alpha.md"]); } } });
+	await undoLatest(scope);
+	expect(document.querySelector(".tn-toast__message")?.textContent).toContain("Tasks/Alpha.md");
+});
 
 it("confirms the undone action without resurfacing an older action", async () => {
 	const scope = {};

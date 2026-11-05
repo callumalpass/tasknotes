@@ -1375,7 +1375,6 @@ export class CalendarView extends BasesViewBase {
 
 		// Debounce the save to avoid rapid recreation
 		this._saveViewTypeTimer = window.setTimeout(() => {
-			this._saveViewTypeTimer = null;
 			try {
 				if (this.config && typeof this.config.set === "function") {
 					this.config.set("calendarView", viewType);
@@ -1391,6 +1390,8 @@ export class CalendarView extends BasesViewBase {
 					operation: "save-view-type",
 					error: error,
 				});
+			} finally {
+				this._saveViewTypeTimer = null;
 			}
 		}, 1000);
 	}
@@ -1880,7 +1881,7 @@ export class CalendarView extends BasesViewBase {
 			}
 		} finally {
 			this.batchMoveInProgress = false;
-			if (planned) showTaskUndo(undo, paths.length !== completed.length, completed.length, this.plugin.app.vault, paths.length !== completed.length ? failedTitle : undefined);
+			if (planned) showTaskUndo(undo, paths.length !== completed.length, completed.length, this.plugin.app.vault, paths.length !== completed.length ? failedTitle : undefined, undefined, completed.map(move => move.task.title));
 		}
 	}
 
@@ -2195,7 +2196,10 @@ export class CalendarView extends BasesViewBase {
 		if (this.calendar) {
 			if (typeof state.calendarDate === "string") {
 				try {
-					this.calendar.gotoDate(new Date(state.calendarDate));
+					const restoredDate = new Date(state.calendarDate);
+					if (restoredDate.getTime() !== this.calendar.getDate().getTime()) {
+						this.calendar.gotoDate(restoredDate);
+					}
 				} catch (e) {
 					tasknotesLogger.debug("[CalendarView] Failed to restore calendar date:", {
 						category: "provider",

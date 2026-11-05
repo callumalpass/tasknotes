@@ -307,6 +307,12 @@ export async function launchObsidian(): Promise<ObsidianApp> {
       // Pass the vault path directly to match the manual launch script.
       // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
       const userDataDir = path.resolve(process.env.TASKNOTES_E2E_USER_DATA_DIR ?? path.join(PROJECT_ROOT, '.obsidian-config-e2e'));
+      const pluginSettingsPath = path.join(E2E_VAULT_DIR, '.obsidian/plugins/tasknotes/data.json');
+      if (fs.existsSync(pluginSettingsPath)) {
+        const settings = JSON.parse(fs.readFileSync(pluginSettingsPath, 'utf8'));
+        settings.lastSeenVersion = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'manifest.json'), 'utf8')).version;
+        fs.writeFileSync(pluginSettingsPath, JSON.stringify(settings, null, 2));
+      }
       if (process.env.TASKNOTES_E2E_PRESERVE_WORKSPACE !== '1') {
         fs.rmSync(path.join(E2E_VAULT_DIR, '.obsidian', 'workspace.json'), { force: true });
       }
@@ -420,32 +426,19 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     console.log(`Verified Obsidian ${runtimeVersion.version}, vault: ${vaultPath}`);
     await setObsidianViewport(page, { width: 1400, height: 900 });
 
-    // Handle "Trust this vault" dialog - this enables community plugins
-    const trustButton = page.locator('button:has-text("Trust author and enable plugins")');
-    if (await trustButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await trustButton.click();
-      await page.waitForTimeout(2000);
-    }
-
-    // Alternative trust button text
-    const trustButton2 = page.locator('button:has-text("Trust")');
-    if (await trustButton2.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await trustButton2.click();
-      await page.waitForTimeout(1000);
-    }
-
-    // Handle "Turn on community plugins" dialog if it appears
-    const enablePluginsButton = page.locator('button:has-text("Turn on community plugins")');
-    if (await enablePluginsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await enablePluginsButton.click();
-      await page.waitForTimeout(2000);
-    }
-
-    // Handle any "Enable" button for plugins
-    const enableButton = page.locator('button:has-text("Enable community plugins")');
-    if (await enableButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await enableButton.click();
-      await page.waitForTimeout(1000);
+    const onboardingLabels = ['Trust author and enable plugins', 'Trust', 'Turn on community plugins', 'Enable community plugins'];
+    for (;;) {
+      const state = await page.waitForFunction(labels => {
+        if (Object.keys((window as any).app.commands.commands).some(id => id.startsWith('tasknotes:'))) return 'ready';
+        return labels.find(label => Array.from(document.querySelectorAll('button')).some(button =>
+          button.textContent?.trim() === label && button.getClientRects().length > 0));
+      }, onboardingLabels);
+      const label = await state.jsonValue();
+      await state.dispose();
+      if (label === 'ready') break;
+      const button = page.getByRole('button', { name: label as string, exact: true });
+      await button.click();
+      await button.waitFor({ state: 'hidden' });
     }
 
     // Wait for the workspace to be ready
