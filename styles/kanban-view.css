@@ -860,6 +860,8 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-te
 body.is-mobile .tasknotes-plugin .kanban-view__board {
     align-items: flex-start;
     scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--tn-text-muted) var(--tn-bg-secondary);
 }
 
 body.is-mobile .tasknotes-plugin .kanban-view__column {
@@ -867,6 +869,19 @@ body.is-mobile .tasknotes-plugin .kanban-view__column {
     max-width: min(78vw, 320px);
     max-height: 100%;
     scroll-snap-align: start;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__board::-webkit-scrollbar {
+    height: var(--tn-space-2);
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__board::-webkit-scrollbar-track {
+    background: var(--tn-bg-secondary);
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__board::-webkit-scrollbar-thumb {
+    background: var(--tn-text-muted);
+    border-radius: var(--tn-radius-sm);
 }
 
 body.is-mobile .tasknotes-plugin .kanban-view__column--collapsed {

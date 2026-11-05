@@ -153,14 +153,15 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
       const calendar = page.locator('.workspace-leaf.mod-active .tnc');
       await expect(calendar.locator('.tnc-toolbar-views .tnc-btn-view')).toHaveText(['Year', 'Month', 'Week', '3 days', 'Day', 'List']);
       for (const mode of ['month', 'week', 'days', 'day', 'year', 'list']) {
-        await calendar.locator(`.tnc-btn-view-${mode}`).click();
+        if (width === 400) await calendar.locator('.tnc-toolbar-view-select').selectOption(mode);
+        else await calendar.locator(`.tnc-btn-view-${mode}`).click();
         await expect(calendar.locator(`.tnc-btn-view-${mode}`)).toHaveAttribute('aria-pressed', 'true');
         await expect(calendar.locator('.tnc-toolbar-views .tnc-btn-view')).toHaveCount(6);
-        const toolbarLine = await calendar.locator('.tnc-toolbar-start').evaluate(element => {
-          const title = element.querySelector('.tnc-title')!.getBoundingClientRect();
+        const toolbarLine = await calendar.evaluate((element, width) => {
+          const title = element.querySelector(width === 400 ? '.tnc-toolbar-view-select' : '.tnc-title')!.getBoundingClientRect();
           const navigation = element.querySelector('.tnc-toolbar-nav')!.getBoundingClientRect();
           return Math.abs((title.top + title.bottom) / 2 - (navigation.top + navigation.bottom) / 2);
-        });
+        }, width);
         expect(toolbarLine).toBeLessThan(3);
         if (mode === 'week') {
           const event = calendar.locator('.tnc-item[data-task-path] .tn-calendar-event-title').first();
@@ -185,6 +186,11 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
         }
         await page.mouse.move(5, 5);
         await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-${mode}.png`, clip: { x: 0, y: 0, width, height: 800 } });
+      }
+      if (width === 400) {
+        await expect(calendar.locator('.tnc-toolbar-view-select')).toBeVisible();
+        expect(await calendar.locator('.tnc-toolbar-view-select').evaluate(element => getComputedStyle(element).appearance)).toBe('auto');
+        continue;
       }
       const comparison = await calendar.evaluate(calendar => {
         const kit = document.createElement('div');
@@ -311,7 +317,8 @@ test('empty agendas remain legible at desktop and narrow widths', async () => {
     for (const width of [1180, 400]) {
       await setObsidianViewport(page, { width, height: 800 });
       await page.evaluate(width => document.body.classList.toggle('is-mobile', width === 400), width);
-      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toHaveText('Nothing scheduled');
+      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty')).toContainText('No tasks in this view.');
+      await expect(page.locator('.workspace-leaf.mod-active .tnc-list-empty').getByRole('button', { name: /New/ })).toBeVisible();
       const root = page.locator('.workspace-leaf.mod-active .advanced-calendar-view');
       await root.focus();
       await page.keyboard.press('c');
