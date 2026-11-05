@@ -93,6 +93,8 @@ export class VirtualScroller<T> {
 	};
 
 	private renderedElements = new Map<string, HTMLElement>();
+	private pinnedItemKeys = new Set<string>();
+	private pinnedItemStyles = new Map<string, { position: string; top: string; width: string }>();
 	private scrollRAF: number | null = null;
 
 	// Variable height tracking
@@ -586,7 +588,7 @@ export class VirtualScroller<T> {
 
 			let element = this.renderedElements.get(key);
 
-			if (element && this.invalidatedKeys.has(key)) {
+			if (element && this.invalidatedKeys.has(key) && !this.pinnedItemKeys.has(key)) {
 				if (this.resizeObserver) {
 					this.resizeObserver.unobserve(element);
 				}
@@ -612,7 +614,8 @@ export class VirtualScroller<T> {
 				// Update index for existing element
 				element.dataset.virtualIndex = String(i);
 			}
-			this.invalidatedKeys.delete(key);
+			this.restorePinnedItemStyle(key, element);
+			if (!this.pinnedItemKeys.has(key)) this.invalidatedKeys.delete(key);
 
 			// Only manipulate DOM if element is not in correct position
 			if (previousElement) {
@@ -634,6 +637,21 @@ export class VirtualScroller<T> {
 		// Remove elements that are no longer visible
 		for (const [key, element] of this.renderedElements) {
 			if (!visibleKeys.has(key)) {
+				const pinnedIndex = this.pinnedItemKeys.has(key)
+					? this.items.findIndex((item, index) => this.getItemKey(item, index) === key)
+					: -1;
+				if (pinnedIndex >= 0) {
+					if (!this.pinnedItemStyles.has(key)) {
+						this.pinnedItemStyles.set(key, { position: element.style.position, top: element.style.top, width: element.style.width });
+					}
+					element.setCssProps({
+						position: "absolute",
+						top: `${this.getItemPosition(pinnedIndex) - offsetY}px`,
+						width: "100%",
+					});
+					continue;
+				}
+				this.restorePinnedItemStyle(key, element);
 				if (this.resizeObserver) {
 					this.resizeObserver.unobserve(element);
 				}
@@ -647,6 +665,19 @@ export class VirtualScroller<T> {
 		window.requestAnimationFrame(() => {
 			this.measureRenderedItems();
 		});
+	}
+
+	setPinnedItemKeys(keys: readonly string[]): void {
+		if (keys.length === 0 && this.pinnedItemKeys.size === 0) return;
+		this.pinnedItemKeys = new Set(keys);
+		this.forceVisibleRangeUpdate();
+	}
+
+	private restorePinnedItemStyle(key: string, element: HTMLElement): void {
+		const original = this.pinnedItemStyles.get(key);
+		if (!original) return;
+		Object.assign(element.style, original);
+		this.pinnedItemStyles.delete(key);
 	}
 
 	/**
@@ -678,6 +709,8 @@ export class VirtualScroller<T> {
 		}
 		this.renderedElements.clear();
 		this.contentContainer.empty();
+		this.pinnedItemKeys.clear();
+		this.pinnedItemStyles.clear();
 
 		// Force state reset to trigger re-render at current scroll position
 		this.state.startIndex = -1;
@@ -928,6 +961,8 @@ export class VirtualScroller<T> {
 		}
 		this.scrollContainer.removeEventListener("scroll", this.handleScroll);
 		if (this.scrollContainer !== this.container) this.container.style.removeProperty("min-height");
+		this.pinnedItemKeys.clear();
+		this.pinnedItemStyles.clear();
 		this.renderedElements.clear();
 		this.contentContainer.empty();
 		this.itemHeights.clear();

@@ -9,6 +9,7 @@ export class KanbanDragPreview {
 	private floatingDragPreviewHeight = 40;
 	private floatingDragPreviewPendingX = 0;
 	private floatingDragPreviewPendingY = 0;
+	private invalidReason: string | null = null;
 	show(sourceElement: HTMLElement, event: DragEvent, count: number, fallbackTitle: string): void {
 		this.destroy();
 
@@ -31,26 +32,33 @@ export class KanbanDragPreview {
 		if (sourceCard) {
 			const wrapper = preview.createDiv({ cls: "kanban-view__card-wrapper" });
 			const card = sourceCard.cloneNode(true) as HTMLElement;
+			card.classList.remove("task-card--selected", "task-card--selected-primary", "tn-task-focused", "tn-task-arrived");
 			card.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
 			card.removeAttribute("id");
+			card.removeAttribute("data-task-path");
+			card.removeAttribute("data-keyboard-id");
+			card.querySelectorAll("[data-task-path], [data-keyboard-id]").forEach(element => {
+				element.removeAttribute("data-task-path");
+				element.removeAttribute("data-keyboard-id");
+			});
 			wrapper.appendChild(card);
 		} else {
 			preview.appendChild(titleEl);
 		}
 		preview.setAttribute("aria-hidden", "true");
 		preview.setAttribute("draggable", "false");
+		preview.inert = true;
 		if (count > 1) {
 			preview.dataset.dragCount = `${count}`;
 		}
 		this.floatingDragPreviewWidth = Math.min(Math.max(rect.width, 180), 320);
-		this.floatingDragPreviewHeight = rect.height;
 		preview.setCssProps({
 			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
-			"--tn-kanban-drag-preview-height": `${rect.height}px`,
 			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
 		});
 
 		body.appendChild(preview);
+		this.floatingDragPreviewHeight = preview.getBoundingClientRect().height;
 		this.floatingDragPreviewEl = preview;
 		this.floatingDragPreviewDocument = doc;
 
@@ -62,6 +70,21 @@ export class KanbanDragPreview {
 		doc.addEventListener("dragover", handleMove, true);
 
 		this.positionFloatingDragPreview(event.clientX, event.clientY);
+	}
+
+	setInvalid(reason: string | null): void {
+		const preview = this.floatingDragPreviewEl;
+		if (!preview || this.invalidReason === reason) return;
+		this.invalidReason = reason;
+		preview.classList.toggle("kanban-view__floating-drag-preview--invalid", reason !== null);
+		let feedback = preview.querySelector<HTMLElement>(".kanban-view__drag-feedback");
+		if (reason !== null) {
+			feedback ??= preview.createDiv({ cls: "kanban-view__drag-feedback", attr: { role: "status" } });
+			feedback.textContent = reason;
+		} else {
+			feedback?.remove();
+		}
+		this.floatingDragPreviewHeight = preview.getBoundingClientRect().height;
 	}
 
 	private positionFloatingDragPreview(clientX: number, clientY: number): void {
@@ -115,6 +138,7 @@ export class KanbanDragPreview {
 	}
 
 	destroy(): void {
+		this.invalidReason = null;
 		if (this.floatingDragPreviewRafId !== null) {
 			const win = this.floatingDragPreviewDocument?.defaultView ?? window;
 			win.cancelAnimationFrame(this.floatingDragPreviewRafId);

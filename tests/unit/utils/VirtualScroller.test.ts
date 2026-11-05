@@ -55,6 +55,47 @@ function renderedKeys(container: HTMLElement): string[] {
 }
 
 describe("VirtualScroller", () => {
+	it("defers a pinned item's invalidation until the interaction ends", () => {
+		const { container, scroller } = createTestScroller([{ id: "a", label: "A" }]);
+		const source = container.querySelector('[data-key="a"]');
+		scroller.setPinnedItemKeys(["a"]);
+		scroller.invalidateItem("a");
+		expect(container.querySelector('[data-key="a"]')).toBe(source);
+		scroller.setPinnedItemKeys([]);
+		expect(container.querySelector('[data-key="a"]')).not.toBe(source);
+		scroller.destroy();
+	});
+
+	it("keeps pinned drag sources connected outside the visible range and restores their layout", () => {
+		const container = document.createElement("div");
+		container.style.overflowY = "auto";
+		Object.defineProperty(container, "clientHeight", { value: 40 });
+		document.body.appendChild(container);
+		const { scroller } = createTestScrollerWithContainer(container,
+			Array.from({ length: 30 }, (_, index) => ({ id: String(index), label: `Item ${index}` })));
+		const source = container.querySelector<HTMLElement>('[data-key="0"]')!;
+		source.style.position = "relative";
+		scroller.setPinnedItemKeys(["0"]);
+		container.scrollTop = 240;
+		scroller.recalculate();
+		expect(source.isConnected).toBe(true);
+		expect(source.style.position).toBe("absolute");
+		expect(parseFloat(source.style.top) + scroller.getState().offsetY).toBe(0);
+		expect(renderedKeys(container)).toContain("12");
+		container.scrollTop = 0;
+		scroller.recalculate();
+		expect(container.querySelector('[data-key="0"]')).toBe(source);
+		expect(source.style.position).toBe("relative");
+		expect(source.style.top).toBe("");
+		container.scrollTop = 240;
+		scroller.recalculate();
+		scroller.setPinnedItemKeys([]);
+		expect(source.isConnected).toBe(false);
+		expect(source.style.position).toBe("relative");
+		scroller.destroy();
+		container.remove();
+	});
+
 	it("includes container bottom padding in the spacer height", () => {
 		const container = document.createElement("div");
 		container.style.overflowY = "auto";

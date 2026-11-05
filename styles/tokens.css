@@ -88,6 +88,10 @@
     --tn-interactive-accent: var(--interactive-accent);
     --tn-interactive-accent-hover: var(--interactive-accent-hover);
     --tn-interactive-success: var(--interactive-success);
+    --tn-drag-source-opacity: 0.4;
+    --tn-drag-shadow: var(--tn-shadow-overlay);
+    --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 6%, var(--background-secondary));
+    --tn-drop-indicator: var(--interactive-accent);
 
     /* Semantic colour */
     --tn-danger: var(--color-red, var(--text-error));

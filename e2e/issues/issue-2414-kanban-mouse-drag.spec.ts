@@ -30,6 +30,15 @@ async function drag(source: Locator, target: Locator, below = false) {
     to = await target.boundingBox();
     expect(from).not.toBeNull();
     expect(to).not.toBeNull();
+    const sourceElement = await source.elementHandle();
+    const targetElement = await target.elementHandle();
+    await page.waitForTimeout(200);
+    expect(await sourceElement!.evaluate(element => element.isConnected)).toBe(true);
+    expect(await targetElement!.evaluate(element => element.isConnected)).toBe(true);
+    expect(await source.boundingBox()).toEqual(from);
+    expect(await target.boundingBox()).toEqual(to);
+    await sourceElement!.dispose();
+    await targetElement!.dispose();
   }).toPass({ timeout: 5000 });
   await page.mouse.move(from!.x + from!.width / 2, from!.y + 20);
   await page.mouse.down();

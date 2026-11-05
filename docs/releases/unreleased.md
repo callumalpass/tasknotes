@@ -71,6 +71,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Kept active Kanban drags intact when an appearance or task refresh was already queued, so the drop can finish before the board redraws.
+- Kanban uses quieter column headers and readable, wrapping card metadata. Dragged tasks remain dimmed in place, multi-task previews show their count without clipping, and insertion markers stay beside the actual drop position. Formula-based boards explain why a move is unavailable before dropping; edge scrolling works vertically as well as horizontally.
 - Narrow task and agenda rows keep dates and their overflow controls within the pane, including larger text sizes.
 - Statistics period sections stack in narrow panes instead of squeezing into three columns.
 - Calendar Undo publishes restored task data before the next note edit, and partial group Undo identifies the tasks that were not restored.
