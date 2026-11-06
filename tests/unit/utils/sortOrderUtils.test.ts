@@ -2,6 +2,7 @@ import { jest } from "@jest/globals";
 import { TFile } from "obsidian";
 import {
 	applySortOrderPlan,
+	compareManualOrderValues,
 	getSortOrderDirection,
 	prepareSortOrderUpdate,
 	stripPropertyPrefix,
@@ -87,6 +88,25 @@ describe("sortOrderUtils", () => {
 		expect(next.additionalWrites).toEqual([]);
 		expect(plugin.app.fileManager.processFrontMatter).toHaveBeenCalledTimes(2);
 	});
+	it.each(["asc", "desc"] as const)("keeps missing manual ranks last in %s order", (direction) => {
+		for (const missing of [undefined, null, ""]) {
+			expect(compareManualOrderValues(missing, "tnmmmmmmmmmm", direction)).toBeGreaterThan(0);
+			expect(compareManualOrderValues("tnmmmmmmmmmm", missing, direction)).toBeLessThan(0);
+			for (const otherMissing of [undefined, null, ""]) {
+				expect(compareManualOrderValues(missing, otherMissing, direction)).toBe(0);
+			}
+		}
+	});
+
+	it("compares manual ranks in the configured direction with Bases numeric collation", () => {
+		for (const [left, right] of [["tnaaaaaaaaaa", "tnzzzzzzzzzz"], ["rank2", "rank10"], [2, 10]]) {
+			expect(compareManualOrderValues(left, right, "asc")).toBeLessThan(0);
+			expect(compareManualOrderValues(left, right, "desc")).toBeGreaterThan(0);
+			expect(compareManualOrderValues(left, left, "desc")).toBe(0);
+		}
+		expect(compareManualOrderValues("tnaaaaaaaaaa", "tnzzzzzzzzzz")).toBeLessThan(0);
+	});
+
 	it("strips repeated Bases property prefixes", () => {
 		expect(stripPropertyPrefix("status")).toBe("status");
 		expect(stripPropertyPrefix("task.status")).toBe("status");
