@@ -542,7 +542,8 @@ export async function runCommand(page: Page, command: string): Promise<void> {
   const promptInput = page.locator('.prompt-input');
   await promptInput.fill(command);
   await expect(promptInput).toHaveValue(command);
-  const suggestion = page.locator('.suggestion-item').filter({ hasText: command }).first();
+  const commandPattern = new RegExp(`^${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:\s+/, ':?\\s*')}$`);
+  const suggestion = page.locator('.suggestion-title').filter({ hasText: commandPattern });
   await expect(suggestion).toBeVisible({ timeout: 3000 });
   await suggestion.click();
   await expect(page.locator('.prompt')).toBeHidden();

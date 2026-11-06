@@ -157,11 +157,23 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
         else await calendar.locator(`.tnc-btn-view-${mode}`).click();
         await expect(calendar.locator(`.tnc-btn-view-${mode}`)).toHaveAttribute('aria-pressed', 'true');
         await expect(calendar.locator('.tnc-toolbar-views .tnc-btn-view')).toHaveCount(6);
-        const toolbarLine = await calendar.evaluate((element, width) => {
-          const title = element.querySelector(width === 400 ? '.tnc-toolbar-view-select' : '.tnc-title')!.getBoundingClientRect();
-          const navigation = element.querySelector('.tnc-toolbar-nav')!.getBoundingClientRect();
+        const narrowAgenda = width === 400 && mode === 'list';
+        const titleSelector = narrowAgenda ? '.tnc-strip-title' : width === 400 ? '.tnc-toolbar-view-select' : '.tnc-title';
+        const navigationSelector = narrowAgenda ? '.tnc-strip-prev' : '.tnc-toolbar-nav';
+        await expect(calendar.locator(navigationSelector)).toBeVisible();
+        if (narrowAgenda) {
+          await expect(calendar.locator('.tnc-toolbar-nav')).toBeHidden();
+          await expect(calendar.locator('.tnc-title')).toBeHidden();
+          await expect(calendar.locator('.tnc-strip-next')).toBeVisible();
+          await expect(calendar.locator('.tnc-strip-today')).toBeHidden();
+          await expect(calendar.locator('.tnc-toolbar-view-select')).toBeVisible();
+          await expect(calendar.locator('.tnc-toolbar-nav:visible, .tnc-strip-prev:visible')).toHaveCount(1);
+        }
+        const toolbarLine = await calendar.evaluate((element, { titleSelector, navigationSelector }) => {
+          const title = element.querySelector(titleSelector)!.getBoundingClientRect();
+          const navigation = element.querySelector(navigationSelector)!.getBoundingClientRect();
           return Math.abs((title.top + title.bottom) / 2 - (navigation.top + navigation.bottom) / 2);
-        }, width);
+        }, { titleSelector, navigationSelector });
         expect(toolbarLine).toBeLessThan(3);
         if (mode === 'week') {
           const event = calendar.locator('.tnc-item[data-task-path] .tn-calendar-event-title').first();
@@ -183,6 +195,20 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
           await expect(calendar.locator('.task-card__metadata-date--overdue').first()).toBeVisible();
           await expect(calendar.locator('.timeblock-card__time')).toHaveText('13:00 - 14:00');
           await expect(calendar.locator('.timeblock-card__attachments')).toContainText('1 attachment');
+          if (narrowAgenda) {
+            const firstDay = calendar.locator('.tnc-strip-day').first();
+            const currentWeek = (await firstDay.getAttribute('data-date'))!;
+            await calendar.locator('.tnc-strip-next').click();
+            await expect(firstDay).not.toHaveAttribute('data-date', currentWeek);
+            await calendar.locator('.tnc-strip-prev').click();
+            await expect(firstDay).toHaveAttribute('data-date', currentWeek);
+            await calendar.locator('.tnc-strip-next').click();
+            await firstDay.click();
+            await expect(calendar.locator('.tnc-strip-today')).toBeVisible();
+            await calendar.locator('.tnc-strip-today').click();
+            await expect(calendar.locator('.tnc-strip-today')).toBeHidden();
+            await expect(firstDay).toHaveAttribute('data-date', currentWeek);
+          }
         }
         await page.mouse.move(5, 5);
         await page.screenshot({ path: `test-results/calendar-design/${theme}-${width}-${mode}.png`, clip: { x: 0, y: 0, width, height: 800 } });

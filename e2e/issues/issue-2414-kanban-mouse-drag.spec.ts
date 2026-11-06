@@ -1,4 +1,6 @@
 import { test, expect, type CDPSession, type Locator, type Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { launchObsidian, closeObsidian, type ObsidianApp } from '../obsidian';
 
@@ -8,12 +10,10 @@ let page: Page;
 let inputSession: CDPSession;
 let originalSettings: any;
 let sortField: string;
+let vaultPath: string;
 
 async function readYaml(path: string) {
-  const text = await page.evaluate(async path => {
-    const app = (window as any).app;
-    return app.vault.read(app.vault.getAbstractFileByPath(path));
-  }, path);
+  const text = await readFile(join(vaultPath, path), 'utf8');
   return parse(path.endsWith('.md') ? text.match(/^---\r?\n([\s\S]*?)\r?\n---/)![1] : text);
 }
 
@@ -45,11 +45,13 @@ async function drag(source: Locator, target: Locator, below = false) {
   await page.mouse.move(from!.x + from!.width / 2 + 12, from!.y + 20, { steps: 4 });
   await page.mouse.move(to!.x + to!.width / 2, to!.y + (below ? to!.height - 4 : 4), { steps: 25 });
   await page.mouse.up();
+  await expect(source).not.toHaveAttribute('aria-busy', 'true');
 }
 
 test.beforeAll(async () => {
   instance = await launchObsidian();
   page = instance.page;
+  vaultPath = await page.evaluate(() => (window as any).app.vault.adapter.getBasePath());
   // Keep the session attached: Chromium clears emulation when it detaches.
   inputSession = await page.context().newCDPSession(page);
   await inputSession.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 10 });
@@ -171,6 +173,7 @@ test('coarse-pointer mouse moves, card ordering, column ordering and touch all p
       }] });
     }
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect(card('Beta')).not.toHaveAttribute('aria-busy', 'true');
     await expect.poll(async () => (await readYaml(path('Beta'))).status).toBe('waiting');
     await expect(page.locator('.kanban-view__touch-drag-source')).toHaveCount(0);
     await expect(page.locator('.kanban-view__touch-ghost')).toHaveCount(0);
