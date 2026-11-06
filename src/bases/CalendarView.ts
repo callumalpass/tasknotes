@@ -113,7 +113,8 @@ export { applyBasesSortIndexesToCalendarEvents, filterAllDayEventsForCalendarVie
 
 function sameRange(a: ViewInfo, b: ViewInfo): boolean {
 	return (
-		a.type === b.type && a.range.startDay === b.range.startDay && a.range.endDay === b.range.endDay
+		a.type === b.type && a.range.startDay === b.range.startDay && a.range.endDay === b.range.endDay &&
+		a.dataRange.startDay === b.dataRange.startDay && a.dataRange.endDay === b.dataRange.endDay
 	);
 }
 
@@ -1301,7 +1302,8 @@ export class CalendarView extends BasesViewBase {
 			},
 			onRangeChange: (view) => {
 				if (this.visibleView && sameRange(this.visibleView, view)) return;
-				if (this.visibleView) {
+				if (this.visibleView && (this.visibleView.type !== view.type ||
+					this.visibleView.range.startDay !== view.range.startDay || this.visibleView.range.endDay !== view.range.endDay)) {
 					this.plugin.taskSelectionService?.clearSelection();
 					this.plugin.taskSelectionService?.exitSelectionMode();
 				}
@@ -1356,6 +1358,9 @@ export class CalendarView extends BasesViewBase {
 		}
 		this.applyLayoutClasses();
 		this.syncDayPanel();
+		if (this.calendar && (view.type === "week" || view.type === "days" || view.type === "day")) {
+			this.calendar.scrollToTime(this.viewOptions.scrollTime);
+		}
 		const dayMaxEventRows = this.getAllDayRowLimit();
 		if (this.calendar && this.calendar.getOptions().dayMaxEventRows !== dayMaxEventRows) this.calendar.setOptions({ dayMaxEventRows });
 	}
@@ -1657,7 +1662,7 @@ export class CalendarView extends BasesViewBase {
 
 	private async buildAllEvents(view: ViewInfo): Promise<CalendarEventInput[]> {
 		const allEvents: CalendarEventInput[] = [];
-		const { range } = view;
+		const range = view.dataRange ?? view.range;
 
 		this.taskProjection.setContext({
 			timezone: this.calendarTimezone,
@@ -1764,8 +1769,9 @@ export class CalendarView extends BasesViewBase {
 
 	private buildTaskEvents(view: ViewInfo): CalendarEventInput[] {
 		const tasks = new Map(this.currentTasks.map(task => [calendarTaskId(task), task]));
+		const range = view.dataRange ?? view.range;
 		const events = this.taskProjection.entriesInRange({
-			start: view.range.start.toISOString(), end: view.range.end.toISOString(),
+			start: range.start.toISOString(), end: range.end.toISOString(),
 		}).flatMap(entry => {
 			const task = tasks.get(entry.taskId);
 			return task ? [calendarEntryToEvent(entry, task, {
@@ -2206,6 +2212,7 @@ export class CalendarView extends BasesViewBase {
 			const entry = createElementInDocument(arg.el.ownerDocument, "div");
 			entry.className = "tn-calendar-list-entry";
 			const stamp = entry.createDiv({ cls: "tn-calendar-list-stamp" });
+			const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
 			stamp.dataset.eventType = arg.item.data?.eventType ?? "";
 			if (arg.item.data?.eventType === "scheduled" && arg.timeText) {
 				const marker = stamp.createSpan({ cls: "tn-calendar-list-scheduled" });
@@ -2220,10 +2227,14 @@ export class CalendarView extends BasesViewBase {
 				setIcon(marker.createSpan(), "flag-triangle-right");
 				stamp.setAttribute("aria-label", `${deadline}: ${arg.timeText}`);
 			} else if (arg.item.data?.eventType === "timeEntry" && arg.item.end) {
-				const tracked = stamp.createSpan({ cls: "tn-calendar-list-tracked" });
-				setIcon(tracked.createSpan(), "timer");
-				const duration = (new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000;
-				tracked.createSpan({ text: uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: this.plugin.formatTime(duration) }) });
+				const tracked = metadata?.createSpan({ cls: "tn-calendar-list-tracked" });
+				if (tracked && metadata) {
+					setIcon(tracked.createSpan(), "timer");
+					const duration = (new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000;
+					tracked.createSpan({ text: uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: this.plugin.formatTime(duration) }) });
+					metadata.hidden = false;
+					card.classList.remove("task-card--metadata-empty");
+				}
 			}
 			if (arg.timeText) {
 				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });
@@ -2231,14 +2242,12 @@ export class CalendarView extends BasesViewBase {
 				time.createSpan({ text: start });
 				if (end) time.createSpan({ text: `– ${end}` });
 			}
-			const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
 			const priority = card.querySelector<HTMLElement>(".task-card__priority-dot");
 			const badges = card.querySelector<HTMLElement>(".task-card__badges");
 			if (metadata) {
 				if (priority) metadata.prepend(priority);
 				if (badges) metadata.append(badges);
-				if (inDayPanel && stamp.childElementCount) metadata.prepend(stamp);
-				if (priority || badges?.childElementCount || (inDayPanel && stamp.childElementCount)) {
+				if (priority || badges?.childElementCount) {
 					metadata.hidden = false;
 					card.classList.remove("task-card--metadata-empty");
 				}

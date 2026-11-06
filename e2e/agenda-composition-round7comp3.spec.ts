@@ -115,7 +115,7 @@ test('agenda and selected-day rows keep a compact aligned reading lane', async (
         await capture({ path: `${output}/${surface}-${theme}-${width}.png` });
         if (baseline) continue;
         if (surface === 'list') {
-          expect(geometry[0].titleY).toBeLessThan(width === 400 ? 320 : 340);
+          expect(geometry[0].titleY).toBeLessThan(width === 400 ? 328 : 348);
           expect(geometry.filter(row => row.visible).length).toBeGreaterThanOrEqual(width === 400 ? 6 : 5);
         }
         expect(geometry.filter(row => !row.text?.includes('longer proposal')).every(row => row.height <= 76)).toBe(true);
