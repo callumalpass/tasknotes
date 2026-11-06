@@ -405,6 +405,12 @@ export class CalendarView extends BasesViewBase {
 	 * The calendar observes its own size; this covers hosts that resize without layout changes.
 	 */
 	onResize(): void {
+		if (this.calendar) {
+			const monthDisplay = this.getMonthDisplay();
+			if (this.calendar.getOptions().monthDisplay !== monthDisplay) {
+				this.calendar.setOptions({ monthDisplay });
+			}
+		}
 		if (this.calendar && !this.explicitlyChosenView) {
 			const preferred = basesLayoutOptions<CalendarEventProps>(this.viewOptions).view;
 			const view = this.isNarrowCalendar() && preferred === "week" ? "list" : preferred;
@@ -423,6 +429,12 @@ export class CalendarView extends BasesViewBase {
 
 	private isNarrowCalendar(): boolean {
 		return Boolean(this.rootElement && this.rootElement.clientWidth > 0 && this.rootElement.clientWidth < 640);
+	}
+
+	private getMonthDisplay(): CalendarOptions<CalendarEventProps>["monthDisplay"] {
+		return this.viewOptions.showMonthDayPanel && this.isNarrowCalendar()
+			? "dots"
+			: basesLayoutOptions<CalendarEventProps>(this.viewOptions).monthDisplay ?? "full";
 	}
 
 	/**
@@ -1156,10 +1168,23 @@ export class CalendarView extends BasesViewBase {
 		);
 		return {
 			...layout,
+			monthDisplay: this.getMonthDisplay(),
 			listAgenda: options.showAgendaStrip,
 			listAddText: t(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" }), "Add task"),
 			onListAdd: ({ dateStr }) => this.addTaskOnDay(dateStr),
 			dayClassNames: ({ dateStr }) => dateStr === this.selectedMonthDay ? ["tn-calendar-day-selected"] : [],
+			dayHeaderContent: arg => {
+				if (arg.view.type !== "list") return null;
+				const locale = options.locale || this.plugin.settings.uiLanguage || navigator.language || "en";
+				const heading = createElementInDocument(this.containerEl.ownerDocument, "span");
+				heading.className = "tn-calendar-day-heading";
+				heading.setAttribute("aria-label", new Intl.DateTimeFormat(locale, { dateStyle: "full" }).format(arg.date));
+				heading.createSpan({ cls: "tn-calendar-day-number", text: new Intl.DateTimeFormat(locale, { day: "numeric" }).format(arg.date) });
+				const label = heading.createSpan({ cls: "tn-calendar-day-label" });
+				label.createSpan({ cls: "tn-calendar-day-weekday", text: new Intl.DateTimeFormat(locale, { weekday: "long" }).format(arg.date) });
+				label.createSpan({ cls: "tn-calendar-day-month", text: new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" }).format(arg.date) });
+				return heading;
+			},
 			view: !this.explicitlyChosenView && this.isNarrowCalendar() && layout.view === "week" ? "list" : layout.view,
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
@@ -1350,7 +1375,9 @@ export class CalendarView extends BasesViewBase {
 			this.selectedMonthDay = today.startsWith(month) ? today : `${month}-01`;
 		}
 		for (const cell of this.calendarEl.querySelectorAll<HTMLElement>(".tnc-dg-day[data-date]")) {
-			cell.classList.toggle("tn-calendar-day-selected", cell.dataset.date === this.selectedMonthDay);
+			const selected = cell.dataset.date === this.selectedMonthDay;
+			cell.classList.toggle("tn-calendar-day-selected", selected);
+			cell.setAttribute("aria-selected", String(selected));
 		}
 		const panelRoot = this.dayPanelEl?.querySelector<HTMLElement>(":scope > .tnc");
 		if (this.dayPanel && this.dayPanelEl && this.dayPanelEl.clientWidth > 0 &&
@@ -1379,6 +1406,10 @@ export class CalendarView extends BasesViewBase {
 			cls: "tn-calendar-day-panel-add",
 			text: this.plugin.i18n.translate(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" })),
 		});
+		const addIcon = createElementInDocument(this.containerEl.ownerDocument, "span");
+		addIcon.setAttribute("aria-hidden", "true");
+		setIcon(addIcon, "plus");
+		add.prepend(addIcon);
 		add.addEventListener("click", () => {
 			if (this.selectedMonthDay) this.addTaskOnDay(this.selectedMonthDay);
 		});

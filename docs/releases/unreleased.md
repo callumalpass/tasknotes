@@ -44,6 +44,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes. Phone-width months with the selected-day panel show activity dots instead of clipped event labels; day headings, empty days and year calendars have clearer date hierarchy.
+
 - Mobile task titles use their full row, followed by separate 40px actions and compact metadata. Narrow standalone task references wrap without changing references inside sentences, and settings adapt to their actual pane width.
 - Narrow boards include a column navigator with task counts. Batch property pickers show the affected count, task menus link to shortcut help including Undo, and movement toasts name the configured destination and number of tasks.
 - Date parsing errors stay beside the input until corrected and are announced to assistive technology. Failed task changes offer an Open task action while retaining Undo for successful changes. Compact editor chips disclose their full labels.
