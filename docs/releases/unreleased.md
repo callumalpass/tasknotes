@@ -100,6 +100,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Keep task metadata values whole: values that do not fit move into the counted overflow disclosure instead of showing clipped fragments.
+- Keep Kanban metadata, relationship controls and task options in separate lanes so their click targets do not overlap, with tighter desktop cards.
+- Restore aligned, identifiable scheduled and due dates in wide lists, and keep the selected-task count available for clearing selection.
+- Place list group counts beside their labels and make expand/collapse-all commands available from group-header context menus.
+- Keep inline task titles readable and adjacent to their status, revealing desktop sentence-reference options only on hover or keyboard focus.
 - Restore two-line Kanban titles, prioritize dates over secondary indicators, and dim every selected source during a multi-task drag.
 - Keep keyboard-focused tasks visible below sticky group headers and show refusal feedback outside valid drag destinations.
 - Give mobile inline task controls separate 40px touch targets without covering surrounding prose.

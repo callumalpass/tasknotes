@@ -127,7 +127,7 @@ test('council AA: compact task composition, disclosures, search, month counts an
       const menuBox = (await menu.boundingBox())!;
       const paragraphBottom = await sentence.evaluate(element => element.closest('p')!.getBoundingClientRect().bottom);
       expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(paragraphBottom + 1);
-      expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe(width === 400 ? 'relative' : 'static');
+      expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe(width === 400 ? 'relative' : 'absolute');
       if (width === 400) await expectTouchTarget(menu);
       await menu.focus();
       await page.keyboard.press('Enter');

@@ -90,7 +90,8 @@ test('task rows, board cards and standalone links compose by available width', a
                 expect(geometry[1].empty).toBe(true);
                 expect(geometry[1].height).toBeLessThanOrEqual(59);
                 const controls = await first.locator('.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date:visible, .task-card__metadata-overflow:visible').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().toJSON()));
-                expect(controls.every(control => control.width >= 40 && control.height >= 40)).toBe(true);
+                const minimumTarget = surface === 'Board.base' && !mobile ? 24 : 40;
+                expect(controls.every(control => control.width >= minimumTarget && control.height >= minimumTarget)).toBe(true);
               }
               if (surface === 'List.base' && width <= 430) {
                 expect(geometry[5].bottom - geometry[0].top).toBeLessThan(560);

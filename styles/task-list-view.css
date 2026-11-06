@@ -162,7 +162,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__add-button:hover {
 }
 
 .tn-tasknotesTaskList .task-group-add {
-    margin-inline-start: var(--tn-space-2);
+    margin-inline-start: auto;
     opacity: 0;
 }
 
@@ -745,7 +745,7 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
 .tn-tasknotesTaskList .task-group-header .agenda-view__item-count {
     color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
-    margin-inline-start: auto;
+    margin-inline-start: var(--tn-space-1);
 }
 
 .tn-tasknotesTaskList .task-card__metadata-values {
@@ -755,21 +755,42 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
 .tn-tasknotesTaskList .task-card__date-slot--scheduled { order: 2; }
 .tn-tasknotesTaskList .task-card__date-slot--due { order: 3; }
 
-@container tn-task-card (min-width: 561px) {
+@container tn-task-card (min-width: 761px) {
+    body .tn-tasknotesTaskList :is(.task-card__metadata--with-scheduled, .task-card__metadata--with-due) {
+        --tn-scheduled-column: calc(var(--tn-task-date-width) + var(--tn-space-8));
+        --tn-due-column: calc(var(--tn-task-date-width) + var(--tn-space-8));
+    }
+
     body .tn-tasknotesTaskList .task-card__metadata {
-        display: flex;
-        justify-content: flex-start;
-        gap: var(--tn-space-3);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--tn-scheduled-column, 0) var(--tn-due-column, 0) var(--tn-touch-target);
+        gap: var(--tn-space-2);
     }
 
     body .tn-tasknotesTaskList .task-card__metadata-values {
-        flex: 0 1 auto;
-        max-width: 50%;
+        grid-column: 1;
+        max-width: 100%;
     }
 
     body .tn-tasknotesTaskList .task-card__date-slot {
         flex: none;
-        width: auto;
+        width: 100%;
+    }
+
+    body .tn-tasknotesTaskList .task-card__date-slot--scheduled {
+        grid-column: 2;
+    }
+
+    body .tn-tasknotesTaskList .task-card__date-slot--due {
+        grid-column: 3;
+    }
+
+    body .tn-tasknotesTaskList .task-card__metadata-overflow {
+        grid-column: 4;
+    }
+
+    body .tn-tasknotesTaskList .task-card__metadata > * {
+        grid-row: 1;
     }
 }
 

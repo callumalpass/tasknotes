@@ -204,6 +204,7 @@
 
 @container tn-task-card (min-width: 761px) {
     .tasknotes-plugin .task-card .task-card__date-icon { display: none; }
+    .tasknotes-plugin .task-card .task-card__date-label { display: inline; }
 }
 
 @container tn-task-card (max-width: 760px) {
@@ -1617,6 +1618,25 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.
     min-height: var(--tn-touch-target);
 }
 
+body.is-mobile .tasknotes-plugin .task-card .task-card__metadata-values :is([role="button"], a):not([hidden]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+    margin: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__context-menu {
+        opacity: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline):is(:hover, :focus-within) .task-card__context-menu {
+        opacity: 1;
+    }
+}
+
 body .tasknotes-plugin .task-card .task-card__metadata [hidden] {
     display: none;
 }
@@ -1634,6 +1654,11 @@ body .tasknotes-plugin .task-card .task-card__metadata [hidden] {
 
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .tn-selection-indicator {
+        animation: none;
+        transition: none;
+    }
+
     .tasknotes-plugin .task-card,
     .tasknotes-plugin .task-card *,
     .tasknotes-plugin .task-card::before,
@@ -1904,11 +1929,13 @@ body:not(.is-mobile) .tasknotes-plugin .task-card--selected:hover {
 /* Selection indicator floating badge */
 .tasknotes-plugin .tn-selection-indicator {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: var(--tn-space-5);
+    right: var(--tn-space-5);
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
-    padding: 8px 16px;
+    padding: var(--tn-space-2) var(--tn-space-4);
+    min-height: var(--tn-touch-target);
+    align-items: center;
     border-radius: var(--tn-radius-lg);
     font-size: var(--tn-type-xs);
     font-weight: 500;
@@ -1919,6 +1946,15 @@ body:not(.is-mobile) .tasknotes-plugin .task-card--selected:hover {
     transition: background-color var(--tn-transition-fast);
     border: none;
     cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .tn-selection-indicator.tn-static-display-block-2a1b75c9 {
+    display: inline-flex;
+}
+
+.tasknotes-plugin .tn-selection-indicator:focus-visible {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
 }
 
 @media (hover: hover) and (pointer: fine) {

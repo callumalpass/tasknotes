@@ -333,7 +333,10 @@ export class TaskListView extends BasesViewBase {
 
 	private showGroupHeaderContextMenu(event: MouseEvent, groupKey: string): void {
 		const subGroupKeys = this.currentSubGroupKeysByParent.get(groupKey);
-		if (!subGroupKeys || subGroupKeys.length === 0) return;
+		if (!subGroupKeys || subGroupKeys.length === 0) {
+			this.showContainerContextMenu(event);
+			return;
+		}
 
 		const allSubGroupsCollapsed = subGroupKeys.every((key) => this.collapsedSubGroups.has(key));
 		const menu = new Menu();
@@ -360,12 +363,18 @@ export class TaskListView extends BasesViewBase {
 				.onClick(() => void this.setSubGroupsCollapsed(groupKey, !allSubGroupsCollapsed));
 		});
 
+		menu.addSeparator();
+		this.addAllGroupsContextMenuItems(menu);
 		menu.showAtMouseEvent(event);
 	}
 
 	private showContainerContextMenu(event: MouseEvent): void {
 		const menu = new Menu();
+		this.addAllGroupsContextMenuItems(menu);
+		menu.showAtMouseEvent(event);
+	}
 
+	private addAllGroupsContextMenuItems(menu: Menu): void {
 		menu.addItem((item) => {
 			item.setTitle(
 				this.plugin.i18n.translate(
@@ -414,8 +423,6 @@ export class TaskListView extends BasesViewBase {
 				.setIcon("list-collapse")
 				.onClick(() => void this.setAllGroupsAndSubGroupsCollapsed(true));
 		});
-
-		menu.showAtMouseEvent(event);
 	}
 
 	/**
