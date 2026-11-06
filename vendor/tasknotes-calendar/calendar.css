@@ -1,6 +1,6 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.8 (MIT, see LICENSE beside this file).
- * Upstream sha256 c24c45fbfc02428ca0de935d69aa1fea58437f3e129f58b2accb432e1897270d.
+ * Pinned host copy of @tasknotes/calendar 0.1.10-r8.0 (MIT, see LICENSE beside this file).
+ * Upstream sha256 f3302502b08dabffaae3bf609cc68f5b509989519cc582d176757d406ccd3644.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -727,6 +727,9 @@
 }
 .tnc-tg-body {
 	position: relative;
+}
+.tnc-tg--pinch .tnc-tg-body {
+	touch-action: pan-x pan-y;
 }
 .tnc-gutter {
 	border-right: 1px solid var(--tnc-line);

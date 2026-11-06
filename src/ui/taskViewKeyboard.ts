@@ -229,7 +229,9 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			root.focus({ preventScroll: true });
 	};
 	const help = () => {
-		const overlay = openPopover({ anchor: helpButton, app: plugin.app, onClose: () => root.focus({ preventScroll: true }) });
+		const anchor = helpButton.closest(".tn-bases-toolbar-overflow-panel")
+			? chrome?.querySelector<HTMLElement>(".tn-bases-toolbar-more") ?? helpButton : helpButton;
+		const overlay = openPopover({ anchor, app: plugin.app, onClose: () => root.focus({ preventScroll: true }) });
 		overlay.el.setAttribute("role", "dialog");
 		overlay.el.setAttribute(
 			"aria-label",
@@ -279,6 +281,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	setIcon(helpButton, "circle-help");
 	const chrome = root.closest(".bases-view")?.parentElement;
 	const placeHelp = () => {
+		if (helpButton.closest(".tn-bases-toolbar-overflow-panel")) return;
 		const toolbar = chrome?.querySelector(".bases-toolbar");
 		const newTask = toolbar?.querySelector(".tn-bases-new-task-btn");
 		if (newTask && helpButton.nextElementSibling !== newTask) newTask.before(helpButton);

@@ -8085,6 +8085,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenc
 msgid "Monthly recurrence"
 msgstr "월간 반복"
 
+#: src/bases/basesToolbar.ts
 #: src/modals/taskModalActionButtons.ts
 msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"

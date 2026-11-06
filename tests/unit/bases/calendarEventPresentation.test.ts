@@ -6,6 +6,28 @@ import { TaskFactory } from "../../helpers/mock-factories";
 import type TaskNotesPlugin from "../../../src/main";
 
 describe("calendar task glyphs", () => {
+	const originalCSS = globalThis.CSS;
+	beforeAll(() => { globalThis.CSS = { escape: (value: string) => value } as typeof CSS; });
+	afterAll(() => { globalThis.CSS = originalCSS; });
+	it("links matching date markers without ringing other recurring occurrences", () => {
+		const root = document.createElement("div");
+		root.innerHTML = '<div class="fc-task-event" data-task-path="task.md" data-occurrence-day="1"></div><div class="fc-task-event" data-task-path="task.md" data-occurrence-day="1"></div><div class="fc-task-event" data-task-path="task.md" data-occurrence-day="2"></div>';
+		const event = root.querySelector<HTMLElement>(".fc-task-event")!;
+		attachCalendarTaskHoverLink(root, event, "task.md");
+		event.dispatchEvent(new MouseEvent("mouseenter"));
+		expect(root.querySelectorAll(".fc-task-event--related-hover")).toHaveLength(1);
+		expect(root.lastElementChild?.classList.contains("fc-task-event--related-hover")).toBe(false);
+		event.dispatchEvent(new MouseEvent("mouseleave"));
+		expect(root.querySelectorAll(".fc-task-event--related-hover")).toHaveLength(0);
+	});
+	it("keeps scheduled and deadline markers linked for non-recurring tasks", () => {
+		const root = document.createElement("div");
+		root.innerHTML = '<div class="fc-task-event" data-task-path="task.md" data-date="2026-11-07"></div><div class="fc-task-event" data-task-path="task.md" data-date="2026-11-09"></div>';
+		const event = root.querySelector<HTMLElement>(".fc-task-event")!;
+		attachCalendarTaskHoverLink(root, event, "task.md");
+		event.dispatchEvent(new MouseEvent("mouseenter"));
+		expect(root.querySelectorAll(".fc-task-event--related-hover")).toHaveLength(1);
+	});
 	it("does not start a linked series highlight during a calendar gesture", () => {
 		const root = document.createElement("div");
 		root.innerHTML = '<div class="tnc tnc-dragging"><div class="fc-task-event" data-task-path="task.md"></div><div class="fc-task-event" data-task-path="task.md"></div></div>';
@@ -74,6 +96,7 @@ describe("calendar task glyphs", () => {
 			item: { id: "tracked", title: task.title, start: "2026-11-06T12:00", end: "2026-11-06T12:35", data: { eventType: "timeEntry", taskInfo: task } },
 		} as ItemArg<CalendarEventProps>;
 		decorateCalendarEvent({ plugin, rootElement: null }, argument);
+		expect(element.dataset.occurrenceDay).toBeUndefined();
 		expect(element.getAttribute("aria-label")).toBe("Tracked task\n35 min tracked\n12:00 – 12:35");
 		expect(tooltip).toHaveBeenCalledWith(element, "Tracked task\n35 min tracked\n12:00 – 12:35");
 		tooltip.mockRestore();

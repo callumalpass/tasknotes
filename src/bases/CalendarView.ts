@@ -34,7 +34,8 @@ import {
 } from "./calendar-core";
 import { handleCalendarEventDrop, handleCalendarEventResize, type CalendarMutationContext } from "./calendarMutations";
 import { calendarTaskId } from "@tasknotes/model/calendar";
-import { buildCalendarBatchPreview, isCalendarBatchTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
+import { buildCalendarBatchPreview, isCalendarBatchTarget, isCalendarSelectionTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
+import { installCalendarSwipe } from "./calendarSwipe";
 import { CalendarBatchPreview } from "./calendarBatchPreview";
 import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR } from "../utils/clickHandlers";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
@@ -139,7 +140,7 @@ export class CalendarView extends BasesViewBase {
 	/** Range the current items were built for. */
 	private visibleView: ViewInfo | null = null;
 	private automaticViewChange = false;
-	private explicitlyChosenView = false;
+	private narrowWeek = false;
 	private refetchSeq = 0;
 	private currentTasks: TaskInfo[] = [];
 	private identityTasks: TaskInfo[] = [];
@@ -355,11 +356,26 @@ export class CalendarView extends BasesViewBase {
 		}));
 		if (this.rootElement) {
 			this.register(installCalendarTooltipGuard(this.rootElement));
+			this.register(installCalendarSwipe(this.rootElement, direction => {
+				if (direction > 0) this.calendar?.next();
+				else this.calendar?.prev();
+			}));
 			const observer = new ResizeObserver(() => this.onResize());
 			observer.observe(this.rootElement);
 			this.register(() => observer.disconnect());
+			const chooseCustomDays = () => {
+				if (!this.narrowWeek || !this.calendar) return;
+				this.narrowWeek = false;
+				this.calendar.setOptions({ dayCount: this.viewOptions.customDayCount });
+				this.handleViewChange(this.calendar.view);
+			};
+			this.registerDomEvent(this.rootElement, "change", (event: Event) => {
+				const target = event.target as HTMLSelectElement;
+				if (target.matches(".tnc-toolbar-view-select") && target.value === "days") chooseCustomDays();
+			}, { capture: true });
 			this.registerDomEvent(this.rootElement, "click", (event: MouseEvent) => {
-				if ((event.target as HTMLElement).closest(".tnc-btn-view")) this.explicitlyChosenView = true;
+				const target = event.target as HTMLElement;
+				if (target.closest(".tnc-btn-view-days")) chooseCustomDays();
 				this.openMonthChipOverflow(event);
 			}, { capture: true });
 			this.registerDomEvent(this.rootElement, "keydown", (event: KeyboardEvent) => {
@@ -422,12 +438,14 @@ export class CalendarView extends BasesViewBase {
 				this.calendar.setOptions({ monthDisplay, dayMaxEventRows });
 			}
 		}
-		if (this.calendar && !this.explicitlyChosenView) {
+		if (this.calendar) {
 			const preferred = basesLayoutOptions<CalendarEventProps>(this.viewOptions).view;
-			const view = this.isNarrowCalendar() && preferred === "week" ? "list" : preferred;
+			const view = this.isNarrowCalendar() && preferred === "week" ? "days" : preferred;
+			this.narrowWeek = view === "days" && preferred === "week";
 			if (view && this.calendar.view.type !== view) {
 				this.automaticViewChange = true;
 				try {
+					this.calendar.setOptions({ dayCount: this.narrowWeek ? 3 : this.viewOptions.customDayCount });
 					this.calendar.changeView(view);
 				} finally {
 					this.automaticViewChange = false;
@@ -435,6 +453,7 @@ export class CalendarView extends BasesViewBase {
 			}
 		}
 		this.calendar?.updateSize();
+		this.syncCalendarToolbar();
 		if (this.calendar) this.syncDayPanel();
 	}
 
@@ -1100,7 +1119,7 @@ export class CalendarView extends BasesViewBase {
 
 	protected getVisibleTaskPaths(): string[] {
 		return [...new Set(this.getBatchCalendarItems()
-			.filter(item => isCalendarBatchTarget(item.data))
+			.filter(item => isCalendarSelectionTarget(item.data))
 			.sort((a, b) => String(a.start).localeCompare(String(b.start)))
 			.flatMap(item => item.data?.taskInfo ? [item.data.taskInfo.path] : []))];
 	}
@@ -1131,14 +1150,14 @@ export class CalendarView extends BasesViewBase {
 		const selection = this.plugin.taskSelectionService;
 		this.rootElement.classList.toggle("tn-calendar-has-selection", Boolean(selection?.getSelectedPaths().length));
 		this.calendar?.setOptions({ selected: (this.calendarItems ?? [])
-			.filter(item => isCalendarBatchTarget(item.data) && selection?.isSelected(item.data.taskInfo.path))
+			.filter(item => isCalendarSelectionTarget(item.data) && selection?.isSelected(item.data.taskInfo.path))
 			.map(item => item.id) });
 		for (const el of this.rootElement.querySelectorAll<HTMLElement>(".tnc-item[data-task-path]")) {
-			const selected = Boolean(el.dataset.taskPath && selection?.isSelected(el.dataset.taskPath)) && el.dataset.batchSelectable === "true";
+			const selected = Boolean(el.dataset.taskPath && selection?.isSelected(el.dataset.taskPath));
 			el.classList.toggle("tn-calendar-item-selected", selected);
 			el.setAttribute("aria-pressed", String(selected));
 			const count = selected ? selection?.getSelectedPaths().length ?? 0 : 0;
-			if (count > 1) el.dataset.dragCount = String(count);
+			if (count > 1 && el.dataset.batchSelectable === "true") el.dataset.dragCount = String(count);
 			else delete el.dataset.dragCount;
 		}
 	}
@@ -1183,6 +1202,7 @@ export class CalendarView extends BasesViewBase {
 			msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" }),
 			t(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" }), "Refresh calendar subscriptions")
 		);
+		this.narrowWeek = this.isNarrowCalendar() && layout.view === "week";
 		return {
 			...layout,
 			monthDisplay: this.getMonthDisplay(),
@@ -1204,7 +1224,8 @@ export class CalendarView extends BasesViewBase {
 				label.createSpan({ cls: "tn-calendar-day-month", text: new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" }).format(arg.date) });
 				return heading;
 			},
-			view: !this.explicitlyChosenView && this.isNarrowCalendar() && layout.view === "week" ? "list" : layout.view,
+			view: this.narrowWeek ? "days" : layout.view,
+			dayCount: this.narrowWeek ? 3 : layout.dayCount,
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
@@ -1306,6 +1327,7 @@ export class CalendarView extends BasesViewBase {
 				},
 			},
 			onRangeChange: (view) => {
+				this.syncCalendarToolbar();
 				if (this.visibleView && sameRange(this.visibleView, view)) return;
 				if (this.visibleView && (this.visibleView.type !== view.type ||
 					this.visibleView.range.startDay !== view.range.startDay || this.visibleView.range.endDay !== view.range.endDay)) {
@@ -1353,11 +1375,17 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleViewChange(view: ViewInfo): void {
+		if (view.type === "week" && this.isNarrowCalendar() && this.calendar) {
+			this.narrowWeek = true;
+			this.calendar.setOptions({ dayCount: 3 });
+			this.calendar.changeView("days");
+			return;
+		}
+		if (view.type !== "days") this.narrowWeek = false;
 		this.batchPreview?.clear();
 		this.syncSelectionModeAfterCalendarRender();
-		const viewType = viewToBases(view.type);
+		const viewType = this.narrowWeek ? "timeGridWeek" : viewToBases(view.type);
 		if (!this.automaticViewChange && viewType && viewType !== this.viewOptions.calendarView) {
-			this.explicitlyChosenView = true;
 			this.viewOptions.calendarView = viewType;
 			this.debouncedSaveViewType(viewType);
 		}
@@ -1556,6 +1584,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyLayoutClasses(): void {
+		this.syncCalendarToolbar();
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
@@ -1564,6 +1593,16 @@ export class CalendarView extends BasesViewBase {
 			"advanced-calendar-view__calendar--week-numbers",
 			this.viewOptions.weekNumbers === true
 		);
+	}
+
+	private syncCalendarToolbar(): void {
+		const nav = this.calendarEl?.querySelector<HTMLElement>(".tnc-toolbar-nav");
+		if (nav?.parentElement && nav.parentElement.firstElementChild !== nav) nav.parentElement.prepend(nav);
+		if (!this.narrowWeek) return;
+		const select = this.calendarEl?.querySelector<HTMLSelectElement>(".tnc-toolbar-view-select");
+		if (select) select.value = "week";
+		this.calendarEl?.querySelector(".tnc-btn-view-week")?.setAttribute("aria-pressed", "true");
+		this.calendarEl?.querySelector(".tnc-btn-view-days")?.setAttribute("aria-pressed", "false");
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {
@@ -1948,7 +1987,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventClick(arg: ItemPointerArg<CalendarEventProps>): Promise<void> {
-		if (isCalendarBatchTarget(arg.item.data) &&
+		if (isCalendarSelectionTarget(arg.item.data) &&
 			this.handleSelectionClick(toMouseEvent(arg.jsEvent, arg.el), arg.item.data.taskInfo.path)) return;
 		await handleCalendarEventClick(this.getMenuContext(), arg);
 	}
@@ -2231,9 +2270,7 @@ export class CalendarView extends BasesViewBase {
 			card.addEventListener("click", event => {
 				const control = (event.target as Element).closest(DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR);
 				if (control && card.contains(control)) return;
-				const selectable = isCalendarBatchTarget(arg.item.data);
-				// TaskCard has its own Shift-click selection. Do not let it select a
-				// recurrence preview or tracked-time row through this alternate route.
+				const selectable = isCalendarSelectionTarget(arg.item.data);
 				if ((!selectable && event.shiftKey) || (selectable && this.handleSelectionClick(event, task.path))) {
 					event.preventDefault();
 					event.stopImmediatePropagation();

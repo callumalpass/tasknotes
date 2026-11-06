@@ -83,7 +83,8 @@ async function mode(view: string) {
     return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
   }, folder)).toContain(`calendarView: ${persisted}`);
   await expect.poll(() => instance.page.evaluate(() => Boolean((window as any).cal3Leaf.view.controller.view._saveViewTypeTimer))).toBe(false);
-  await expect(instance.page.locator(`.workspace-leaf.mod-active .tnc--${view}`).first()).toBeVisible();
+  const effective = view === 'week' && await instance.page.locator('.advanced-calendar-view').first().evaluate(element => element.clientWidth < 640) ? 'days' : view;
+  await expect(instance.page.locator(`.workspace-leaf.mod-active .tnc--${effective}`).first()).toBeVisible();
 }
 
 async function capture(name: string) {

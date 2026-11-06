@@ -109,6 +109,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Select recurring tasks in calendar selection mode without opening Edit, and keep recurring-event highlights on the same date rather than the entire series.
+- Fit narrow Bases toolbars into one row with a More actions menu, keep compact Month dates and overflow counts clear, and keep Year headings readable while scrolling.
+- Show three days when Week is opened in a narrow pane, without a tinted Today column. Swipe horizontally across empty calendar space to navigate, while retaining vertical scrolling and long-press event dragging.
+- Keep the initial hour label below the calendar's sticky headers and require a brief pause at a drag edge before auto-scrolling.
+
 - Respect the configured 12- or 24-hour time format in calendar move feedback and reminder notifications.
 - Keep weekday labels, dates and today's marker inside narrow Week headers. Calendar moves now retain a dim copy at the original position while previewing the destination.
 - Compact the phone month overview to reveal selected-day tasks sooner when the panel is enabled, and show quieter inline file identities beside mini-calendar task titles while keeping direct note access.

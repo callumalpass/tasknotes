@@ -104,8 +104,8 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 	await expect(event(page, "Alpha")).toHaveAttribute("aria-pressed", "true");
 	await page.keyboard.press("Control+a");
 	const paths = await selected(page);
-	expect(paths).toHaveLength(4);
-	expect(paths).not.toContain(`${folder}/Recurring.md`);
+	expect(paths).toHaveLength(5);
+	expect(paths).toContain(`${folder}/Recurring.md`);
 	await page.locator(".tn-selection-indicator:visible").click();
 	expect(await selected(page)).toEqual([]);
 	await expect(page.getByRole("button", { name: "Select tasks", exact: true })).toHaveAttribute("aria-pressed", "false");
@@ -117,7 +117,7 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 	await page.keyboard.press("Escape");
 });
 
-test("calendar list mode keeps selection consistent and excludes recurrence previews", async () => {
+test("calendar list mode keeps selection consistent and includes recurring tasks", async () => {
 	const page = obsidian.page;
 	await page.getByRole("button", { name: "List view", exact: true }).click();
 	// Wait for the existing debounced view preference save, not just the first
@@ -128,10 +128,10 @@ test("calendar list mode keeps selection consistent and excludes recurrence prev
 	}, basePath)).toMatch(/calendarView:\s*listWeek/);
 	await event(page, "Alpha").locator(".task-card").click({ modifiers: ["Control"] });
 	await event(page, "Bravo").locator(".task-card").click({ modifiers: ["Control"] });
-	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Shift"] });
-	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`]));
+	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Control"] });
+	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
 	await page.locator(".tnc-btn-selectedTasks:visible").click();
-	await expect(page.getByText("2 tasks selected", { exact: true })).toBeVisible();
+	await expect(page.getByText("3 tasks selected", { exact: true })).toBeVisible();
 	await page.keyboard.press("Escape");
 });
 
@@ -145,7 +145,7 @@ test("select-all excludes tasks hidden by the all-day setting", async () => {
 	await expect(page.locator(".tnc:visible .tnc-tg-allday")).toHaveCount(0);
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await page.keyboard.press("Control+a");
-	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`]));
+	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
 });
 
 test("group dragging keeps relative days, local times and deadlines, and offers Undo", async () => {

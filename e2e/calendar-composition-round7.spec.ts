@@ -123,11 +123,12 @@ test('council: year targets, strip scrolling, short tracked items and empty-day 
           shadow: getComputedStyle(element.querySelector('.tnc-ym-day')!).boxShadow,
           emptyBackground: getComputedStyle(element.querySelector('.tnc-ym-day:not(.has-items)')!).backgroundColor,
           titleBackground: getComputedStyle(element.querySelector('.tnc-ym-title')!).backgroundColor,
+          surfaceBackground: getComputedStyle(element.closest('.tnc')!).backgroundColor,
         };
       });
       evidence.push({ theme, width, mobile, year });
       await capture(`council-${theme}-${width}-${mobile ? 'mobile' : 'desktop'}-year`);
-      if (!baseline) { expect(year.overflow).toBe(false); expect(year.overlaps).toBe(false); expect(year.minTarget).toBeGreaterThanOrEqual(40); expect(year.shadow).toBe('none'); expect(year.emptyBackground).toMatch(/(?:rgba\(0, 0, 0, 0\)|\/ 0\))$/); expect(year.titleBackground).toBe('rgba(0, 0, 0, 0)'); }
+      if (!baseline) { expect(year.overflow).toBe(false); expect(year.overlaps).toBe(false); expect(year.minTarget).toBeGreaterThanOrEqual(40); expect(year.shadow).toBe('none'); expect(year.emptyBackground).toMatch(/(?:rgba\(0, 0, 0, 0\)|\/ 0\))$/); expect(year.titleBackground).toBe(year.surfaceBackground); expect(year.titleBackground).not.toBe('rgba(0, 0, 0, 0)'); }
     }
     await mode('list');
     const toolbar = page.locator('.workspace-leaf.mod-active .tnc-toolbar').first();
@@ -253,7 +254,8 @@ async function mode(view: string, date?: string) {
     return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
   }, folder)).toContain(`calendarView: ${persisted}`);
   await expect.poll(() => instance.page.evaluate(() => Boolean((window as any).r7Leaf.view.controller.view._saveViewTypeTimer))).toBe(false);
-  await expect(instance.page.locator(`.workspace-leaf.mod-active > .workspace-leaf-content .tnc--${view}`).first()).toBeVisible();
+  const effective = view === 'week' && await instance.page.locator('.advanced-calendar-view').first().evaluate(element => element.clientWidth < 640) ? 'days' : view;
+  await expect(instance.page.locator(`.workspace-leaf.mod-active > .workspace-leaf-content .tnc--${effective}`).first()).toBeVisible();
   await instance.page.locator('.workspace-leaf.mod-active #bases-calendar').evaluate(async element => {
     await Promise.all(element.getAnimations({ subtree: true })
       .filter(animation => animation.playState === 'running' && animation.effect?.getTiming().iterations !== Infinity)

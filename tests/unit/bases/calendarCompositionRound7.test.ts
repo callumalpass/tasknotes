@@ -5,6 +5,8 @@ function composition(width: number, showMonthDayPanel = true) {
 	let monthDisplay = "full";
 	let dayMaxEventRows = 0;
 	const calendar = {
+		view: { type: "month" },
+		changeView: jest.fn(),
 		getOptions: () => ({ monthDisplay, dayMaxEventRows }),
 		setOptions: jest.fn((options: { monthDisplay: string; dayMaxEventRows: number }) => {
 			monthDisplay = options.monthDisplay;
@@ -15,7 +17,6 @@ function composition(width: number, showMonthDayPanel = true) {
 	const view = Object.assign(Object.create(CalendarView.prototype), {
 		rootElement, calendar,
 		viewOptions: { showMonthDayPanel, calendarView: "dayGridMonth" },
-		explicitlyChosenView: true,
 		syncDayPanel: jest.fn(),
 	});
 	return { rootElement, calendar, view };

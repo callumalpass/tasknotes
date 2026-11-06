@@ -4,7 +4,7 @@ import type TaskNotesPlugin from "../main";
 import { uiText } from "../i18n/runtime";
 import { installTaskViewKeyboard } from "../ui/taskViewKeyboard";
 import { calendarInputToDate, type CalendarEventProps } from "./calendarEngine";
-import { isCalendarBatchTarget } from "./calendarBatchMove";
+import { isCalendarSelectionTarget } from "./calendarBatchMove";
 
 export function installCalendarKeyboard(options: {
 	plugin: TaskNotesPlugin;
@@ -38,7 +38,7 @@ export function installCalendarKeyboard(options: {
 		horizontalLabel: uiText(msg({ message: "Move focus", context: "interaction shortcut" })),
 		selectionPath: (path) => {
 			const data = mounted.get(path)?.item.data;
-			return data && isCalendarBatchTarget(data) ? data.taskInfo.path : undefined;
+			return isCalendarSelectionTarget(data) ? data.taskInfo.path : undefined;
 		},
 		taskForPath: async (path) => {
 			const task = mounted.get(path)?.item.data?.taskInfo;

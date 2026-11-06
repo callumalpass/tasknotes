@@ -234,10 +234,6 @@
     color: var(--tn-text-normal);
 }
 
-.tasknotes-plugin .tnc-col.is-today {
-    background-color: color-mix(in srgb, var(--tnc-accent) 6%, var(--tn-bg-primary));
-}
-
 .tasknotes-plugin .tnc-dh.is-today .tnc-dh-num,
 .tasknotes-plugin .tnc-dg-day.is-today .tnc-dg-num,
 .tasknotes-plugin .tnc-ym-day.is-today .tnc-ym-num,
@@ -551,13 +547,17 @@
 }
 
 .tasknotes-plugin .tnc .tnc-ym-title {
-    width: auto;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    width: 100%;
     min-width: 0;
-    height: auto;
+    height: var(--tn-touch-target);
     min-height: var(--tn-touch-target);
-    padding: var(--tn-space-1) 0;
+    padding: 0;
+    margin: 0;
     border-radius: var(--tn-radius-sm);
-    background: none;
+    background: var(--tn-bg-primary);
     font-family: var(--font-interface);
     font-size: var(--tn-type-md);
     font-weight: var(--tn-font-weight-semibold);
@@ -760,10 +760,10 @@
 }
 
 /* Hovering one of a task's events (scheduled, due, span) highlights the others. */
-.advanced-calendar-view .tnc-item.fc-task-event--hover-source,
 .advanced-calendar-view .tnc-item.fc-task-event--related-hover {
     outline: 1px solid var(--interactive-accent);
     outline-offset: -1px;
+    filter: saturate(1.08);
 }
 
 .tasknotes-plugin .tnc-btn-selectTasks[aria-pressed="true"] {
@@ -788,10 +788,6 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     order: 1;
     margin-inline: var(--tn-space-1) 0;
     color: var(--tn-text-muted);
-}
-
-.advanced-calendar-view .tnc-item.fc-task-event--related-hover {
-    filter: saturate(1.08);
 }
 
 .advanced-calendar-view .tnc-btn-selectedTasks {
@@ -1520,23 +1516,24 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 }
 
 .tasknotes-plugin .tnc-dg--chips {
-    --tnc-dg-top-h: var(--tn-space-4);
+    --tnc-dg-top-h: calc(var(--tn-space-6) + var(--tn-space-1));
     --tnc-chip-h: var(--tn-space-5);
     --tnc-dot-gap: var(--tn-space-half);
+    --tnc-day-min-h: calc(var(--tn-space-8) * 2 + var(--tn-space-4));
 }
 
 .tasknotes-plugin .tnc-dg--chips .tnc-dg-top {
-    height: var(--tn-space-4);
+    height: var(--tnc-dg-top-h);
     padding-top: 0;
 }
 
 .tasknotes-plugin .tnc-dg--chips .tnc-dg-dots {
-    bottom: 0;
+    bottom: var(--tn-space-1);
 }
 
 .tasknotes-plugin .tnc-dg--chips .tnc-dg-num {
-    min-width: var(--tn-space-4);
-    height: var(--tn-space-4);
+    min-width: var(--tn-space-6);
+    height: var(--tn-space-6);
     font-size: var(--tn-type-xs);
 }
 
@@ -1609,9 +1606,21 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     border-bottom: 1px solid var(--tn-hairline);
 }
 
+.tasknotes-plugin .tnc-ym-dow {
+    position: sticky;
+    top: var(--tn-touch-target);
+    z-index: 1;
+    background: var(--tn-bg-primary);
+    min-height: var(--tn-space-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .tasknotes-plugin .tnc-ym-day {
     aspect-ratio: auto;
     font-size: var(--tn-type-sm);
+    background: transparent;
 }
 
 .tasknotes-plugin .tnc-ym-dots {
