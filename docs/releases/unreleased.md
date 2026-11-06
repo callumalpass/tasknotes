@@ -117,7 +117,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Keep calendar agenda and selected-day titles in the flexible column when status controls are not configured.
 - Keep open task metadata disclosures visible during background row updates in lists, boards, agendas and selected-day panels.
-- Keep Kanban and list manual ordering consistent without reversing other cards after a drop. Reorder feedback counts moved tasks rather than notes updated.
+- Reorder feedback counts moved tasks rather than notes updated.
 - Initialize manual ordering with only the ranks needed for the chosen position. Larger note updates ask once in plain language and remain undoable.
 - Restore list and board scroll positions when cancelling a drag, and open touch-held list rows in their context menu.
 - Keep sentence task menus within their line, preserve Kanban card surfaces on hover, and refine the phone column switcher. Task shortcuts use consistent picker positions and Escape dismisses search.
