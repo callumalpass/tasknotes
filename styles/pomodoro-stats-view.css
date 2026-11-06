@@ -329,8 +329,8 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
         gap: var(--tn-space-1);
     }
     
@@ -339,9 +339,7 @@
     }
     
     .tasknotes-plugin .pomodoro-stats-view__overview-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     
     .tasknotes-plugin .pomodoro-stats-view__stats-grid {

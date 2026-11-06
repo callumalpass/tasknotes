@@ -116,7 +116,7 @@ describe('Issue #1009 - Edit Task modal delete action', () => {
 			isDestructive: true,
 		});
 		expect(plugin.taskService.deleteTask).toHaveBeenCalledWith(task);
-		expect(Notice).toHaveBeenCalledWith('Task "Delete me" deleted successfully');
+		expect(Notice).toHaveBeenCalledWith('Task deleted');
 		expect(modal.forceClose).toHaveBeenCalled();
 	});
 

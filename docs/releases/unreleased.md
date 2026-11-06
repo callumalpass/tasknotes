@@ -44,6 +44,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Make mini-calendar day choices evenly sized, with quieter paths and full titles available on hover.
+- Keep expanded property settings aligned to the full content width and use a single settings selector in narrow panes.
+- Compact Pomodoro statistics and show recent sessions before period summaries; keep timer controls together.
+- Align task and timeblock editor typography and controls, reducing the empty description space in timeblocks.
+- Shorten task and timeblock confirmations while preserving Open, Undo, and filename explanations in every language.
+
 - Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes. Phone-width months with the selected-day panel show activity dots instead of clipped event labels; day headings, empty days and year calendars have clearer date hierarchy.
 
 - Mobile task titles use their full row, followed by separate 40px actions and compact metadata. Narrow standalone task references wrap without changing references inside sentences, and settings adapt to their actual pane width.

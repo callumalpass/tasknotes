@@ -4002,11 +4002,6 @@ msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "Data di creazione: {date}"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "task creation feedback"
-msgid "Created: {title}"
-msgstr "Creata: {title}"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
@@ -12133,31 +12128,6 @@ msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "Attività"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successFilenameSanitized"
-msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-msgstr "Attività «{title}» creata come file «{filename}». I nomi dei file non possono contenere alcuni caratteri, quindi il titolo completo viene conservato nella proprietà del titolo."
-
-#: src/modals/TaskSelectorWithCreateModal.ts
-msgctxt "modals.taskCreation.notices.success"
-msgid "Task \"{title}\" created successfully"
-msgstr "Creata correttamente un’attività: «{title}»"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successShortened"
-msgid "Task \"{title}\" created successfully (filename shortened due to length)"
-msgstr "Creata correttamente l’attività «{title}» (nome file abbreviato per la lunghezza)"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task \"{title}\" deleted successfully"
-msgstr "Attività «{title}» eliminata correttamente"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.updateSuccess"
-msgid "Task \"{title}\" updated successfully"
-msgstr "Attività «{title}» aggiornata correttamente"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12219,6 +12189,22 @@ msgid "Task created"
 msgstr "Attività creata"
 
 #: src/modals/TaskCreationModal.ts
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task creation feedback"
+msgid "Task created"
+msgstr "Attività creata"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successShortened"
+msgid "Task created (filename shortened)"
+msgstr "Attività creata (nome file abbreviato)"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+msgstr "Attività creata come \"{filename}\". Caratteri non consentiti omessi dal nome file; titolo completo conservato nelle proprietà."
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Attività creata, ma un passaggio successivo non è riuscito: {message}"
@@ -12252,6 +12238,11 @@ msgstr "Attività creata: {title}"
 msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "Creazione delle attività"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.deleteSuccess"
+msgid "Task deleted"
+msgstr "Attività eliminata"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
@@ -12424,6 +12415,11 @@ msgstr "Valore della proprietà dell’attività"
 msgctxt "modals.reminder.title"
 msgid "Task reminders"
 msgstr "Promemoria dell’attività"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.updateSuccess"
+msgid "Task saved"
+msgstr "Attività salvata"
 
 #: src/services/TaskService.ts
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
@@ -12997,21 +12993,6 @@ msgctxt "unnamed timeblock tooltip"
 msgid "Timeblock"
 msgstr "Blocco temporale"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.created"
-msgid "Timeblock \"{title}\" created successfully"
-msgstr "Blocco temporale «{title}» creato correttamente"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockDeletedSuccess"
-msgid "Timeblock \"{title}\" deleted successfully"
-msgstr "Blocco temporale \"{title}\" eliminato correttamente"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockUpdatedSuccess"
-msgid "Timeblock \"{title}\" updated successfully"
-msgstr "Blocco temporale \"{title}\" aggiornato correttamente"
-
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
 msgid "Timeblock {timeblockId} not found"
@@ -13027,6 +13008,16 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name
 msgid "Timeblock calendar"
 msgstr "Calendario dei blocchi temporali"
 
+#: src/modals/TimeblockCreationModal.ts
+msgctxt "modals.timeblockCreation.created"
+msgid "Timeblock created"
+msgstr "Blocco temporale creato"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockDeletedSuccess"
+msgid "Timeblock deleted"
+msgstr "Blocco temporale eliminato"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -13041,6 +13032,11 @@ msgstr "Modello per il titolo degli eventi dei blocchi temporali"
 msgctxt "notices.audit.timeblockMoved"
 msgid "Timeblock moved successfully"
 msgstr "Blocco temporale spostato correttamente"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockUpdatedSuccess"
+msgid "Timeblock saved"
+msgstr "Blocco temporale salvato"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.header"

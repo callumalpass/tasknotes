@@ -586,12 +586,9 @@ export class TaskCreationModal extends TaskModal {
 				this.t(
 					msg({
 						message:
-							'Task "{title}" created successfully (filename shortened due to length)',
+							'Task created (filename shortened)',
 						context: "modals.taskCreation.notices.successShortened",
-					}),
-					{
-						title: createdTask.title,
-					}
+					})
 				)
 			);
 		} else if (filenameNotice === "sanitized") {
@@ -599,11 +596,10 @@ export class TaskCreationModal extends TaskModal {
 				this.t(
 					msg({
 						message:
-							'Task "{title}" created as file "{filename}". Filenames cannot contain some characters, so the full title is kept in the title property.',
+							'Task created as "{filename}". Unsupported filename characters omitted; full title kept in properties.',
 						context: "modals.taskCreation.notices.successFilenameSanitized",
 					}),
 					{
-						title: createdTask.title,
 						filename: file.basename,
 					}
 				)
@@ -612,10 +608,9 @@ export class TaskCreationModal extends TaskModal {
 			notify(
 				this.t(
 					msg({
-						message: 'Created: {title}',
+						message: 'Task created',
 						context: "task creation feedback",
-					}),
-					{ title: createdTask.title }
+					})
 				)
 			);
 		}

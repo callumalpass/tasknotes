@@ -1672,6 +1672,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 	) {
 		super(app);
 		applyModalShell(this);
+		this.modalEl.addClass("tn-note-picker");
 		this.containerEl.addClass("tasknotes-plugin");
 		this.plugin = plugin;
 		this.notes = notes;
@@ -1700,12 +1701,13 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 
 	renderSuggestion(item: FuzzyMatch<NoteEntry>, el: HTMLElement): void {
 		const note = item.item;
-		const container = el.createDiv({ cls: "note-selector-modal__suggestion" });
+		const container = el.createDiv({ cls: "note-selector-modal__suggestion tn-picker__row" });
 
 		// Title
 		const title = container.createDiv({
-			cls: "note-selector-modal__title",
+			cls: "note-selector-modal__title tn-picker__label",
 			text: note.title,
+			attr: { title: note.title },
 		});
 		const task = note.kind === "note" ? this.plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
 		if (task) title.prepend(createTaskGlyphs(el.ownerDocument, task, this.plugin));
@@ -1715,8 +1717,9 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		// Path/source (if not same as title)
 		if (subtitle !== note.title) {
 			container.createDiv({
-				cls: "note-selector-modal__path",
+				cls: "note-selector-modal__path tn-picker__detail",
 				text: subtitle,
+				attr: { title: subtitle },
 			});
 		}
 	}

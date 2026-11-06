@@ -8,7 +8,7 @@ let originalSettings: any;
 const folder = `SurfacesR7-${Date.now()}`;
 const taskPath = `${folder}/Review.md`;
 const phase = process.env.TASKNOTES_R7_PHASE ?? 'after';
-const evidence = `/tmp/tasknotes-r7/o/${phase}`;
+const evidence = process.env.TASKNOTES_E2E_ARTIFACT_DIR ?? `/tmp/tasknotes-r7/o/${phase}`;
 
 test.beforeAll(async () => {
   mkdirSync(evidence, { recursive: true });

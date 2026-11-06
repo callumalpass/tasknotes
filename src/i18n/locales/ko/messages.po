@@ -4001,11 +4001,6 @@ msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "생성됨: {date}"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "task creation feedback"
-msgid "Created: {title}"
-msgstr "생성됨: {title}"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
@@ -12132,31 +12127,6 @@ msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "작업"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successFilenameSanitized"
-msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-msgstr "작업 \"{title}\"이(가) 파일 \"{filename}\"(으)로 생성되었습니다. 파일명에는 일부 문자를 사용할 수 없으므로 전체 제목은 제목 속성에 유지됩니다."
-
-#: src/modals/TaskSelectorWithCreateModal.ts
-msgctxt "modals.taskCreation.notices.success"
-msgid "Task \"{title}\" created successfully"
-msgstr "작업 \"{title}\"이(가) 성공적으로 생성되었습니다"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successShortened"
-msgid "Task \"{title}\" created successfully (filename shortened due to length)"
-msgstr "작업 \"{title}\"이(가) 성공적으로 생성되었습니다 (길이로 인해 파일명이 단축됨)"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task \"{title}\" deleted successfully"
-msgstr "작업 \"{title}\"이 삭제되었습니다"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.updateSuccess"
-msgid "Task \"{title}\" updated successfully"
-msgstr "작업 \"{title}\"이(가) 성공적으로 업데이트되었습니다"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12218,6 +12188,22 @@ msgid "Task created"
 msgstr "작업 생성됨"
 
 #: src/modals/TaskCreationModal.ts
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task creation feedback"
+msgid "Task created"
+msgstr "작업 생성됨"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successShortened"
+msgid "Task created (filename shortened)"
+msgstr "작업 생성됨 (파일 이름 단축됨)"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+msgstr "\"{filename}\" 파일로 작업을 생성했습니다. 파일 이름에 사용할 수 없는 문자는 생략하고 전체 제목은 속성에 보존했습니다."
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "작업을 만들었지만 후속 단계가 실패했습니다: {message}"
@@ -12251,6 +12237,11 @@ msgstr "작업 생성됨: {title}"
 msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "작업 생성"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.deleteSuccess"
+msgid "Task deleted"
+msgstr "작업 삭제됨"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
@@ -12423,6 +12414,11 @@ msgstr "작업 속성 값"
 msgctxt "modals.reminder.title"
 msgid "Task reminders"
 msgstr "작업 리마인더"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.updateSuccess"
+msgid "Task saved"
+msgstr "작업 저장됨"
 
 #: src/services/TaskService.ts
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
@@ -12996,21 +12992,6 @@ msgctxt "unnamed timeblock tooltip"
 msgid "Timeblock"
 msgstr "타임블록"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.created"
-msgid "Timeblock \"{title}\" created successfully"
-msgstr "타임블록 \"{title}\"을(를) 만들었습니다"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockDeletedSuccess"
-msgid "Timeblock \"{title}\" deleted successfully"
-msgstr "타임블록 \"{title}\"이(가) 성공적으로 삭제되었습니다"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockUpdatedSuccess"
-msgid "Timeblock \"{title}\" updated successfully"
-msgstr "타임블록 \"{title}\"이(가) 성공적으로 업데이트되었습니다"
-
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
 msgid "Timeblock {timeblockId} not found"
@@ -13026,6 +13007,16 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name
 msgid "Timeblock calendar"
 msgstr "타임블록 캘린더"
 
+#: src/modals/TimeblockCreationModal.ts
+msgctxt "modals.timeblockCreation.created"
+msgid "Timeblock created"
+msgstr "시간 블록 생성됨"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockDeletedSuccess"
+msgid "Timeblock deleted"
+msgstr "시간 블록 삭제됨"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -13040,6 +13031,11 @@ msgstr "타임블록 이벤트 제목 템플릿"
 msgctxt "notices.audit.timeblockMoved"
 msgid "Timeblock moved successfully"
 msgstr "타임블록이 이동되었습니다"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockUpdatedSuccess"
+msgid "Timeblock saved"
+msgstr "시간 블록 저장됨"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.header"

@@ -428,7 +428,7 @@ export class TimeblockInfoModal extends Modal {
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
 
-			new Notice(this.translate(msg({ message: "Timeblock \"{title}\" updated successfully", context: "notices.timeblockUpdatedSuccess" }), { title }));
+			new Notice(this.translate(msg({ message: "Timeblock saved", context: "notices.timeblockUpdatedSuccess" })));
 			this.close();
 		} catch (error) {
 			tasknotesLogger.error("Error updating timeblock:", {
@@ -520,7 +520,7 @@ export class TimeblockInfoModal extends Modal {
 			this.plugin.emitter.trigger("data-changed");
 
 			new Notice(
-				this.translate(msg({ message: "Timeblock \"{title}\" deleted successfully", context: "notices.timeblockDeletedSuccess" }), { title: this.timeblock.title })
+				this.translate(msg({ message: "Timeblock deleted", context: "notices.timeblockDeletedSuccess" }))
 			);
 			this.close();
 		} catch (error) {

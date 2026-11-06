@@ -4004,11 +4004,6 @@ msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "Создано: {date}"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "task creation feedback"
-msgid "Created: {title}"
-msgstr "Создано: {title}"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
@@ -12133,31 +12128,6 @@ msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "Задача"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successFilenameSanitized"
-msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-msgstr "Задача \"{title}\" создана как файл \"{filename}\". Имена файлов не могут содержать некоторые символы, поэтому полное название сохранено в свойстве заголовка."
-
-#: src/modals/TaskSelectorWithCreateModal.ts
-msgctxt "modals.taskCreation.notices.success"
-msgid "Task \"{title}\" created successfully"
-msgstr "Задача \"{title}\" успешно создана"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successShortened"
-msgid "Task \"{title}\" created successfully (filename shortened due to length)"
-msgstr "Задача \"{title}\" успешно создана (имя файла сокращено из-за длины)"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task \"{title}\" deleted successfully"
-msgstr "Задача \"{title}\" успешно удалена"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.updateSuccess"
-msgid "Task \"{title}\" updated successfully"
-msgstr "Задача \"{title}\" успешно обновлена"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12219,6 +12189,22 @@ msgid "Task created"
 msgstr "Задача создана"
 
 #: src/modals/TaskCreationModal.ts
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task creation feedback"
+msgid "Task created"
+msgstr "Задача создана"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successShortened"
+msgid "Task created (filename shortened)"
+msgstr "Задача создана (имя файла сокращено)"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+msgstr "Задача создана в файле «{filename}». Недопустимые символы пропущены в имени файла; полный заголовок сохранён в свойствах."
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Задача создана, но следующий шаг не выполнен: {message}"
@@ -12252,6 +12238,11 @@ msgstr "Задача создана: {title}"
 msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "Создание задач"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.deleteSuccess"
+msgid "Task deleted"
+msgstr "Задача удалена"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
@@ -12424,6 +12415,11 @@ msgstr "Значение свойства задачи"
 msgctxt "modals.reminder.title"
 msgid "Task reminders"
 msgstr "Напоминания о задаче"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.updateSuccess"
+msgid "Task saved"
+msgstr "Задача сохранена"
 
 #: src/services/TaskService.ts
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
@@ -12997,21 +12993,6 @@ msgctxt "unnamed timeblock tooltip"
 msgid "Timeblock"
 msgstr "Временной блок"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.created"
-msgid "Timeblock \"{title}\" created successfully"
-msgstr "Временной блок «{title}» создан"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockDeletedSuccess"
-msgid "Timeblock \"{title}\" deleted successfully"
-msgstr "Временной блок \"{title}\" успешно удален"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockUpdatedSuccess"
-msgid "Timeblock \"{title}\" updated successfully"
-msgstr "Временной блок \"{title}\" успешно обновлен"
-
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
 msgid "Timeblock {timeblockId} not found"
@@ -13027,6 +13008,16 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name
 msgid "Timeblock calendar"
 msgstr "Календарь временных блоков"
 
+#: src/modals/TimeblockCreationModal.ts
+msgctxt "modals.timeblockCreation.created"
+msgid "Timeblock created"
+msgstr "Временной блок создан"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockDeletedSuccess"
+msgid "Timeblock deleted"
+msgstr "Временной блок удалён"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -13041,6 +13032,11 @@ msgstr "Шаблон заголовка событий временных бло
 msgctxt "notices.audit.timeblockMoved"
 msgid "Timeblock moved successfully"
 msgstr "Временной блок перемещён"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockUpdatedSuccess"
+msgid "Timeblock saved"
+msgstr "Временной блок сохранён"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.header"

@@ -4002,11 +4002,6 @@ msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "Created: {date}"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "task creation feedback"
-msgid "Created: {title}"
-msgstr "Created: {title}"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings/tabs/integrationsTab: renderWebhookList display"
 msgid "Creation date unknown"
@@ -12133,31 +12128,6 @@ msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "Task"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successFilenameSanitized"
-msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-msgstr "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-
-#: src/modals/TaskSelectorWithCreateModal.ts
-msgctxt "modals.taskCreation.notices.success"
-msgid "Task \"{title}\" created successfully"
-msgstr "Task \"{title}\" created successfully"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successShortened"
-msgid "Task \"{title}\" created successfully (filename shortened due to length)"
-msgstr "Task \"{title}\" created successfully (filename shortened due to length)"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task \"{title}\" deleted successfully"
-msgstr "Task \"{title}\" deleted successfully"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.updateSuccess"
-msgid "Task \"{title}\" updated successfully"
-msgstr "Task \"{title}\" updated successfully"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.taskProjectStats"
 msgid "Task & project statistics"
@@ -12219,6 +12189,22 @@ msgid "Task created"
 msgstr "Task created"
 
 #: src/modals/TaskCreationModal.ts
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task creation feedback"
+msgid "Task created"
+msgstr "Task created"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successShortened"
+msgid "Task created (filename shortened)"
+msgstr "Task created (filename shortened)"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+msgstr "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Task created, but a follow-up step failed: {message}"
@@ -12252,6 +12238,11 @@ msgstr "Task created: {title}"
 msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "Task creation"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.deleteSuccess"
+msgid "Task deleted"
+msgstr "Task deleted"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
@@ -12424,6 +12415,11 @@ msgstr "Task property value"
 msgctxt "modals.reminder.title"
 msgid "Task reminders"
 msgstr "Task reminders"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.updateSuccess"
+msgid "Task saved"
+msgstr "Task saved"
 
 #: src/services/TaskService.ts
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
@@ -12997,21 +12993,6 @@ msgctxt "unnamed timeblock tooltip"
 msgid "Timeblock"
 msgstr "Timeblock"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.created"
-msgid "Timeblock \"{title}\" created successfully"
-msgstr "Timeblock \"{title}\" created successfully"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockDeletedSuccess"
-msgid "Timeblock \"{title}\" deleted successfully"
-msgstr "Timeblock \"{title}\" deleted successfully"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockUpdatedSuccess"
-msgid "Timeblock \"{title}\" updated successfully"
-msgstr "Timeblock \"{title}\" updated successfully"
-
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
 msgid "Timeblock {timeblockId} not found"
@@ -13027,6 +13008,16 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name
 msgid "Timeblock calendar"
 msgstr "Timeblock calendar"
 
+#: src/modals/TimeblockCreationModal.ts
+msgctxt "modals.timeblockCreation.created"
+msgid "Timeblock created"
+msgstr "Timeblock created"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockDeletedSuccess"
+msgid "Timeblock deleted"
+msgstr "Timeblock deleted"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -13041,6 +13032,11 @@ msgstr "Timeblock event title template"
 msgctxt "notices.audit.timeblockMoved"
 msgid "Timeblock moved successfully"
 msgstr "Timeblock moved successfully"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockUpdatedSuccess"
+msgid "Timeblock saved"
+msgstr "Timeblock saved"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.timeblocking.header"

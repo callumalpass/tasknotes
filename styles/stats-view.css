@@ -1,3 +1,48 @@
+.tasknotes-plugin :is(.stats-view__overview-grid, .pomodoro-stats-view__overview-grid).tn-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--tn-space-2) var(--tn-space-4);
+}
+
+.tasknotes-plugin :is(.stats-view__overview-grid, .pomodoro-stats-view__overview-grid).tn-metrics > div {
+    min-width: 0;
+    padding-block: var(--tn-space-2);
+    gap: var(--tn-space-half);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics :is(.pomodoro-stats-view__overview-value, .pomodoro-stats-view__overview-label) {
+    order: 0;
+    text-align: start;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics > :nth-child(even) .pomodoro-stats-view__overview-value {
+    font-size: var(--tn-type-md);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin :is(.stats-view__refresh-button, .pomodoro-stats-view__refresh-button, .pomodoro-stats-view__bases-help, .pomodoro-stats-view__session-delete-button, .stats-view__filter-disclosure > summary) {
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+}
+
+.tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child {
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--tn-space-1) var(--tn-space-3);
+}
+
+@container (min-width: 760px) {
+    .tasknotes-plugin .stats-view__overview-grid.tn-metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
 .tasknotes-plugin.stats-view {
     padding: var(--tn-space-3);
     max-width: 100%;

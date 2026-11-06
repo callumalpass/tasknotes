@@ -400,10 +400,9 @@ export class TaskEditModal extends TaskModal {
 				showTaskUndo(undo, false, 1, this.app.vault,
 					this.t(
 						msg({
-							message: 'Task "{title}" updated successfully',
+							message: 'Task saved',
 							context: "modals.taskEdit.notices.updateSuccess",
-						}),
-						{ title: updatedTask.title }
+						})
 					)
 				);
 			}
@@ -588,10 +587,9 @@ export class TaskEditModal extends TaskModal {
 			new Notice(
 				this.t(
 					msg({
-						message: 'Task "{title}" deleted successfully',
+						message: 'Task deleted',
 						context: "modals.taskEdit.notices.deleteSuccess",
-					}),
-					{ title: this.task.title }
+					})
 				)
 			);
 			this.forceClose();
