@@ -17,6 +17,7 @@ import { preserveUnownedCanonicalSettings } from "./mdbase/preserveCanonical";
 import { requireFrontmatter as splitFrontmatter } from "./mdbase/frontmatter";
 import { resolveRetainedUserFields } from "./mdbase/resolveUserFields";
 
+import { DEFAULT_SETTINGS } from "../settings/defaults";
 import type { TaskNotesSettings, UserMappedField } from "../types/settings";
 
 type UnknownRecord = Record<string, unknown>;
@@ -200,9 +201,10 @@ export type CanonicalAppSettingsSources = {
 
 /**
  * Apply a canonical type, and the app settings from the settings record, to the
- * plugin settings. Each app setting comes from the record, then from an
- * earlier binding, then stays as the plugin has it, so a missing or late
- * record never loses a value.
+ * plugin settings. With a `record` (empty when there is no record), each app
+ * setting comes from it, then from an earlier binding, then takes its default.
+ * Without one, the app settings stay as the plugin has them, apart from what an
+ * earlier binding holds.
  */
 export function applyCanonicalTaskTypeToSettings(
 	settings: TaskNotesSettings,
@@ -221,7 +223,7 @@ export function applyCanonicalTaskTypeToSettings(
 	const title = asRecord(extension.title);
 	const appSettings = resolveTaskNotesAppSettings(sources.record, {
 		legacyBinding: sources.legacyBinding,
-		fallback: localAppSettings,
+		...(sources.record ? {} : { fallback: localAppSettings }),
 	}).values;
 	const collectionPath = recordAt(type, ["collection", "path"]);
 
@@ -308,7 +310,8 @@ export function applyAppSettingsToPluginSettings(
 	}
 	settings.useFrontmatterMarkdownLinks = values.link_write_format === "markdown";
 	settings.moveArchivedTasks = values.move_on_archive;
-	settings.archiveFolder = values.archive_folder;
+	// An empty folder means the client's default.
+	settings.archiveFolder = values.archive_folder || DEFAULT_SETTINGS.archiveFolder;
 	settings.taskCreationDefaults = {
 		...settings.taskCreationDefaults,
 		useBodyTemplate: values.template_enabled,
