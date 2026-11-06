@@ -5,6 +5,15 @@
 /* Native date/time picker used by task date actions */
 .tasknotes-plugin.date-time-picker-modal {
     min-width: min(360px, calc(100vw - 32px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .date-time-picker-modal__body {
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--tn-space-half);
 }
 
 .tasknotes-plugin .date-time-picker-modal__title {
@@ -109,6 +118,8 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: var(--size-4-2);
+    flex-shrink: 0;
+    padding-bottom: var(--tn-space-2);
 }
 
 /* Date picker modal container */

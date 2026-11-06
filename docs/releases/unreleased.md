@@ -46,6 +46,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Centre the mini calendar in wider panes, make activity dots clearer, and show the selected day's notes and calendar events beneath the grid. Escape clears the date selection without losing the displayed month.
+- Reuse the completion calendar's month grid in precise date pickers, keep picker highlighting compact, align task modal controls, and give settings and Pomodoro metrics consistent spacing and hierarchy.
+
 - Expanded task fields share a compact label-and-control grid, settings expose workflow values sooner, and statistics distinguish headline totals from supporting metrics. Narrow Pomodoro timers keep their controls closer together.
 - Pickers use consistent row insets and touch targets. Task-change feedback uses localized counts and dates, with Undo visually separated from the result message.
 - Compact calendar agendas around a single date-strip header in narrow panes, with aligned times beside task titles and quieter day headings. Previous/next buttons remain available when the month strip is expanded; swiping and keyboard date navigation still work in the collapsed strip.
@@ -105,6 +108,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @UniCode9696 for the suggestion
 
 ## Fixed
+
+- Respect the configured 12- or 24-hour time format in calendar move feedback and reminder notifications.
 
 - Keep calendar agenda and selected-day titles in the flexible column when status controls are not configured.
 - Keep open task metadata disclosures visible during background row updates in lists, boards, agendas and selected-day panels.

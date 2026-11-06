@@ -90,8 +90,8 @@ export function renderModalFieldsTab(
 					.addButton((button) => {
 						button
 							.setButtonText(translate(msg({ message: "Reset to defaults", context: "settings.modalFields.reset.button" })))
-							// Keep destructive styling compatible with Obsidian 1.12.
-							.setClass("mod-warning")
+							.setClass("tn-btn")
+							.setClass("tn-btn--ghost")
 							.onClick(async () => {
 								const confirmed = await showConfirmationModal(plugin.app, {
 									title: translate(msg({ message: "Reset field configuration", context: "settings.modalFields.reset.confirmTitle" })),

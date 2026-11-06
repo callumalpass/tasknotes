@@ -435,12 +435,32 @@
    ===================================================================== */
 
 .tasknotes-plugin .tn-task-modal__action-bar {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: center;
     gap: var(--tn-space-2);
     margin-bottom: 0;
     padding: var(--tn-space-2) 0;
+}
+
+.tasknotes-plugin .tn-task-modal__action-bar > .action-icon {
+    min-width: 0;
+    width: auto;
+    justify-content: flex-start;
+}
+
+.tasknotes-plugin .tn-task-modal__action-bar > .tn-task-modal__details-toggle {
+    grid-column: 1 / -1;
+    max-width: none;
+    width: 100%;
+    justify-content: center;
+    margin-inline-start: 0;
+}
+
+@container (max-width: 480px) {
+    .tasknotes-plugin .tn-task-modal__action-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .tasknotes-plugin .action-icon:not(.tn-chip--property) {
@@ -661,6 +681,16 @@
 .modal.mod-tasknotes .modal-button-container {
     display: flex;
     gap: var(--size-4-2);
+}
+
+.tasknotes-plugin :is(.tn-task-modal__leading-actions, .tn-task-modal__submit-actions) {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-2);
+}
+
+.tasknotes-plugin .tn-task-modal__submit-actions {
+    margin-inline-start: auto;
 }
 
 /* Push Save/Cancel buttons to the right on desktop only */

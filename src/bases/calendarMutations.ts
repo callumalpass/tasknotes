@@ -290,7 +290,7 @@ async function applyTaskCalendarGesture(
 			await context.refreshTask(result.task);
 			const feedback = kind === "resize" && info.event.end
 				? calendarResizeFeedback(result.task.title, info.event.start, info.event.end)
-				: `${result.task.title} · ${formatUIDate(info.event.start, info.event.allDay ? "PP" : "PPp")}`;
+				: `${result.task.title} · ${formatUIDate(info.event.start, info.event.allDay ? "PP" : context.plugin.settings.calendarViewSettings?.timeFormat === "12" ? "PP h:mm a" : "PP HH:mm")}`;
 			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, feedback);
 		}
 		else info.revert();
