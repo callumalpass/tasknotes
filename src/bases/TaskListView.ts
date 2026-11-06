@@ -106,6 +106,7 @@ import {
 	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
 	buildSortOrderUpdateMap,
+	captureTaskViewScroll,
 	moveItemsRelativeToTarget,
 } from "./manualOrderState";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -255,6 +256,8 @@ export class TaskListView extends BasesViewBase {
 	private touchMovement: TaskMovementTouch | null = null;
 	private edgeScroll: TaskMovementAutoScroll | null = null;
 	private touchGhost: HTMLElement | null = null;
+	private restoreDragScroll: (() => void) | null = null;
+	private reorderConfirmed = false;
 
 	/**
 	 * Threshold for enabling virtual scrolling in task list view.
@@ -443,7 +446,7 @@ export class TaskListView extends BasesViewBase {
 			this.subGroupPropertyId = readBasesViewPropertyId(this.config, "subGroup");
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = get("enableSearch");
-			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			this.updateSearchConfiguration((enableSearchValue as boolean) ?? false);
 			const defaultCollapsedStateValue = get("defaultCollapsedState");
 
 			this.defaultCollapsedState =
@@ -935,7 +938,7 @@ export class TaskListView extends BasesViewBase {
 		editCount: number,
 		targetGroupKey: string | null
 	): Promise<boolean> {
-		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
+		if (this.reorderConfirmed) return true;
 		const scopeLabel =
 			targetGroupKey === null
 				? this.plugin.i18n.translate(
@@ -954,21 +957,20 @@ export class TaskListView extends BasesViewBase {
 						}
 					);
 
-		return showConfirmationModal(this.plugin.app, {
+		this.reorderConfirmed = await showConfirmationModal(this.plugin.app, {
 			title: this.plugin.i18n.translate(
 				msg({
-					message: "Confirm large reorder",
+					message: "Save this order?",
 					context: "common.reorder.confirmLargeTitle",
 				})
 			),
 			message: this.plugin.i18n.translate(
 				msg({
 					message:
-						'Reordering here will update "{field}" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?',
+						"To keep this order, {count} notes in {scope} need to be updated. You can undo this change.",
 					context: "common.reorder.confirmLargeMessage",
 				}),
 				{
-					field: sortOrderField,
 					count: editCount,
 					scope: scopeLabel,
 				}
@@ -979,7 +981,9 @@ export class TaskListView extends BasesViewBase {
 			cancelText: this.plugin.i18n.translate(
 				msg({ message: "Cancel", context: "common.cancel" })
 			),
+			defaultToConfirm: true,
 		});
+		return this.reorderConfirmed;
 	}
 
 	private getEventTargetElement(target: EventTarget | null): HTMLElement | null {
@@ -1141,6 +1145,8 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private beginTaskMovement(card: HTMLElement, task: TaskInfo, groupKey: string | null): void {
+		this.reorderConfirmed = false;
+		this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
 		this.draggedTaskPath = task.path;
 		const selection = this.plugin.taskSelectionService;
 		this.draggedTaskPaths = selection?.isSelected(task.path)
@@ -1216,7 +1222,7 @@ export class TaskListView extends BasesViewBase {
 		const sources = new Map(this.dragDestinations);
 		const undos: Array<() => Promise<void>> = [];
 		if (plan?.kind === "parent") {
-			this.cancelTaskMovement();
+			this.cancelTaskMovement(true, plan.state !== "assign");
 			if (plan.state === "assign") {
 				for (const sourcePath of paths) await this.performParentAssignment(sourcePath, plan.parentPath, undos);
 				showTaskUndo(undos, false, undos.length, this.plugin.app.vault, this.parentAssignedMessage(plan.parentPath));
@@ -1227,7 +1233,7 @@ export class TaskListView extends BasesViewBase {
 		const destination = this.dropDestination;
 		const isHeader = this.dropIsHeader;
 		const insertion = plan?.kind === "reorder" ? this.getCurrentInsertionTarget() : null;
-		this.cancelTaskMovement();
+		this.cancelTaskMovement(true, !source || !destination || !plan || plan.kind === "blocked" || plan.kind === "none");
 		if (source && destination && plan && plan.kind !== "blocked" && plan.kind !== "none") {
 			const ordered = insertion && !insertion.above ? [...paths].reverse() : paths;
 			const failedPaths: string[] = [];
@@ -1578,7 +1584,8 @@ export class TaskListView extends BasesViewBase {
 			[];
 		const index = scope.indexOf(path);
 		if (index < 0) return;
-		const reorder = (neighbour: string, above: boolean) => () =>
+		const reorder = (neighbour: string, above: boolean) => () => {
+			this.reorderConfirmed = false;
 			void this.handleSortOrderDrop(
 				path,
 				neighbour,
@@ -1588,6 +1595,7 @@ export class TaskListView extends BasesViewBase {
 				scope,
 				source
 			).finally(() => this.debouncedRefresh());
+		};
 		if (index > 0)
 			menu.addItem((item) =>
 				item
@@ -1870,7 +1878,9 @@ export class TaskListView extends BasesViewBase {
 		return Math.abs(clientY - edge) <= this.NEARBY_SLOT_TOLERANCE_PX ? slot : null;
 	}
 
-	private cancelTaskMovement(cancelTouch = true): void {
+	private cancelTaskMovement(cancelTouch = true, restoreScroll = true): void {
+		const restore = this.restoreDragScroll;
+		this.restoreDragScroll = null;
 		if (cancelTouch) this.touchMovement?.cancel();
 		this.edgeScroll?.stop();
 		this.touchGhost?.remove();
@@ -1896,6 +1906,7 @@ export class TaskListView extends BasesViewBase {
 		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 		this.rootElement?.classList.remove("task-list-view--moving", "task-list-view--invalid-drop");
 		this.draggedTaskPath = null;
+		if (restoreScroll) restore?.();
 		this.draggedTaskPaths = [];
 		this.dragDestinations.clear();
 		this.itemsContainer?.querySelectorAll(".task-list-view__move-candidate").forEach((card) => card.classList.remove("task-list-view__move-candidate"));
@@ -2552,6 +2563,9 @@ export class TaskListView extends BasesViewBase {
 			},
 			commit: (x, y) => void this.finishTaskMovement(doc.elementFromPoint(x, y), y),
 			cancel: () => this.cancelTaskMovement(false),
+			menu: (card, x, y) => {
+				card.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: x, clientY: y }));
+			},
 		});
 		// No window blur handler: native drags always clean up on dragend, and touch
 		// movement cancels itself on blur. Some platforms blur when a native drag starts.
@@ -2686,8 +2700,14 @@ export class TaskListView extends BasesViewBase {
 
 			const totalEditedNotes = sortOrderPlan.additionalWrites.length + 1;
 			if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
+				this.applyOptimisticSortOrderResult(draggedPath, targetPath, above, targetGroupKey, sourceGroupKey, {
+					sortOrder: null, additionalWrites: [], reason: "sparse-init",
+				});
 				const confirmed = await this.confirmLargeReorder(totalEditedNotes, targetGroupKey);
-				if (!confirmed) return;
+				if (!confirmed) {
+					await this.render();
+					return;
+				}
 			}
 
 			// Determine if we need to write anything

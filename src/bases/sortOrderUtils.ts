@@ -77,14 +77,14 @@ class AlphaRank implements RankLike {
 		if (this.value <= 0) {
 			throw new Error("Cannot generate rank before minimum alpha rank");
 		}
-		return new AlphaRank(this.value - 1);
+		return new AlphaRank(Math.floor(this.value / 2));
 	}
 
 	genNext(): RankLike {
 		if (this.value >= ALPHA_RANK_MAX) {
 			throw new Error("Cannot generate rank after maximum alpha rank");
 		}
-		return new AlphaRank(this.value + 1);
+		return new AlphaRank(this.value + Math.max(1, Math.floor((ALPHA_RANK_MAX - this.value) / 2)));
 	}
 
 	between(other: RankLike): RankLike {
@@ -141,6 +141,16 @@ function createAlphaRankForDisplayIndex(
 function compareRankStringsForBases(left: string, right: string): number {
 	const collated = BASES_SORT_COLLATOR.compare(left, right);
 	return collated !== 0 ? collated : left.localeCompare(right);
+}
+
+export function compareManualOrderValues(
+	left: unknown,
+	right: unknown,
+	direction: SortDirection = "asc"
+): number {
+	if (left == null || left === "") return right == null || right === "" ? 0 : 1;
+	if (right == null || right === "") return -1;
+	return compareDisplaySortStrings(stringifyUnknown(left), stringifyUnknown(right), direction);
 }
 
 function compareDisplaySortStrings(
@@ -491,6 +501,35 @@ function createRebalancePlan(
 	};
 }
 
+function createSparseInitPlan(
+	tasks: TaskInfo[],
+	insertAt: number,
+	direction: SortDirection
+): SortOrderPlan | null {
+	const firstUnranked = tasks.findIndex((task) => !task.sortOrder);
+	if (firstUnranked < 0 || insertAt < firstUnranked) return null;
+	if (tasks.slice(firstUnranked).some((task) => task.sortOrder)) return null;
+	const anchor = firstUnranked > 0 ? tasks[firstUnranked - 1].sortOrder : undefined;
+	const anchorValue = anchor ? decodeAlphaRank(anchor) : null;
+	if (anchor && anchorValue === null) return null;
+	for (let index = 1; index < firstUnranked; index++) {
+		if (compareManualOrderValues(tasks[index - 1].sortOrder, tasks[index].sortOrder, direction) >= 0) return null;
+	}
+	const count = insertAt - firstUnranked + 1;
+	const lower = direction === "asc" ? anchorValue ?? 0 : 0;
+	const upper = direction === "desc" ? anchorValue ?? ALPHA_RANK_MAX : ALPHA_RANK_MAX;
+	const step = Math.floor((upper - lower) / (count + 1));
+	if (step < 1) return null;
+	const ranks = Array.from({ length: count }, (_, index) => encodeAlphaRank(
+		direction === "asc" ? lower + step * (index + 1) : upper - step * (index + 1)
+	));
+	return {
+		sortOrder: ranks[count - 1],
+		additionalWrites: tasks.slice(firstUnranked, insertAt).map((task, index) => ({ path: task.path, sortOrder: ranks[index] })),
+		reason: "sparse-init",
+	};
+}
+
 export function generateEndRank(): string {
 	return encodeAlphaRank(ALPHA_RANK_MAX - 1);
 }
@@ -652,7 +691,8 @@ export async function prepareSortOrderUpdate(
 	const nextRank = nextTask ? tryParseSortRank(nextTask.sortOrder) : null;
 
 	if (!targetRank) {
-		return createRebalancePlan(orderedTasks, targetIndex, above, sortDirection);
+		return createSparseInitPlan(orderedTasks, targetIndex + (above ? 0 : 1), sortDirection)
+			?? createRebalancePlan(orderedTasks, targetIndex, above, sortDirection);
 	}
 
 	const previousBoundaryInvalid = previousRank

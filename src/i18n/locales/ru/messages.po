@@ -3406,12 +3406,6 @@ msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "Подтвердить"
 
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeTitle"
-msgid "Confirm large reorder"
-msgstr "Подтвердить массовое изменение порядка"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connect"
 msgid "Connect {provider}"
@@ -10522,12 +10516,6 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "Переупорядочить заметки"
 
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeMessage"
-msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
-msgstr "Область: {scope}. Для сохранения ручного порядка поле «{field}» изменится в заметках (всего: {count}). Это может затронуть и скрытые или отфильтрованные заметки в той же области. Продолжить?"
-
 #: src/commands/taskNotesCommands.ts
 #: src/main.ts
 msgctxt "commands.repeatCurrentTask"
@@ -10747,6 +10735,12 @@ msgstr "Сохранить изменения"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "Сохранить изменения"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeTitle"
+msgid "Save this order?"
+msgstr "Сохранить этот порядок?"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
@@ -13157,6 +13151,12 @@ msgstr "чтобы создать новую задачу"
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "для отмены"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeMessage"
+msgid "To keep this order, {count} notes in {scope} need to be updated. You can undo this change."
+msgstr "Чтобы сохранить этот порядок, нужно обновить заметки ({count}) в {scope}. Это изменение можно отменить."
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"

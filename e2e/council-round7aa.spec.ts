@@ -83,7 +83,7 @@ test('council AA: compact task composition, disclosures, search, month counts an
           height: card.getBoundingClientRect().height,
           width: card.getBoundingClientRect().width,
           titleWidth: card.querySelector('.task-card__title-text')!.getBoundingClientRect().width,
-          dates: Array.from(card.querySelectorAll<HTMLElement>('.task-card__metadata-date > span:last-child')).map(value => ({ text: value.textContent, width: value.clientWidth, scrollWidth: value.scrollWidth })),
+          dates: Array.from(card.querySelectorAll<HTMLElement>('.task-card__metadata-date > .task-card__date-value')).filter(value => getComputedStyle(value).display !== 'none').map(value => ({ text: value.textContent, width: value.clientWidth, scrollWidth: value.scrollWidth })),
         })));
         measurements[`${surface}-${theme}-${width}`] = geometry;
         if (width === 400) {

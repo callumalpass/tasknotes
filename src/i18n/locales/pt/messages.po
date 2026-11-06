@@ -3405,12 +3405,6 @@ msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "Confirmar"
 
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeTitle"
-msgid "Confirm large reorder"
-msgstr "Confirmar reordenação em massa"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connect"
 msgid "Connect {provider}"
@@ -10523,12 +10517,6 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "Reordenar notas"
 
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeMessage"
-msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
-msgstr "Reordenar aqui atualizará \"{field}\" em {count} notas para criar uma ordem manual persistente para {scope}. Notas ocultas ou filtradas no mesmo escopo também podem ser atualizadas. Continuar?"
-
 #: src/commands/taskNotesCommands.ts
 #: src/main.ts
 msgctxt "commands.repeatCurrentTask"
@@ -10748,6 +10736,12 @@ msgstr "Salvar Alterações"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "Salvar Alterações"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeTitle"
+msgid "Save this order?"
+msgstr "Guardar esta ordem?"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
@@ -13158,6 +13152,12 @@ msgstr "para criar nova tarefa"
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "para dispensar"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeMessage"
+msgid "To keep this order, {count} notes in {scope} need to be updated. You can undo this change."
+msgstr "Para manter esta ordem, é necessário atualizar {count} notas em {scope}. Pode anular esta alteração."
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"

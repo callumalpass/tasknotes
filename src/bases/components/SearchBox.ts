@@ -158,6 +158,7 @@ export class SearchBox {
 		void this.searchSettled.then(() => {
 			if (!this.destroyed && this.inputEl === this.inputEl?.ownerDocument.activeElement) {
 				this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-exit', { bubbles: true, detail: firstResult }));
+				if (!firstResult) this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-close', { bubbles: true }));
 			}
 		});
 	}

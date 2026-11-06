@@ -3403,12 +3403,6 @@ msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "确认"
 
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeTitle"
-msgid "Confirm large reorder"
-msgstr "确认大规模重排"
-
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connect"
 msgid "Connect {provider}"
@@ -10521,12 +10515,6 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "重排笔记"
 
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeMessage"
-msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
-msgstr "重排会更新 {count} 篇笔记的“{field}”字段，为 {scope} 保存手动排序。同一范围内隐藏或被筛选的笔记也可能更新。是否继续？"
-
 #: src/commands/taskNotesCommands.ts
 #: src/main.ts
 msgctxt "commands.repeatCurrentTask"
@@ -10746,6 +10734,12 @@ msgstr "保存更改"
 msgctxt "settings.integrations.webhooks.modals.edit.buttons.save"
 msgid "Save changes"
 msgstr "保存更改"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeTitle"
+msgid "Save this order?"
+msgstr "保存此顺序？"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
@@ -13156,6 +13150,12 @@ msgstr "创建新任务"
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "关闭"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeMessage"
+msgid "To keep this order, {count} notes in {scope} need to be updated. You can undo this change."
+msgstr "要保留此顺序，需要更新{scope}中的{count}篇笔记。你可以撤销此更改。"
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"

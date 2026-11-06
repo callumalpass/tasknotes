@@ -40,6 +40,7 @@ import {
 	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
 	buildSortOrderUpdateMap,
+	captureTaskViewScroll,
 	movePathsRelativeToTarget,
 } from "./manualOrderState";
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
@@ -327,6 +328,7 @@ export class KanbanView extends BasesViewBase {
 	private hideEmptySwimLanes = false;
 	private cardLayout: TaskCardOptions["layout"] = "default";
 	private configLoaded = false; // Track if we've successfully loaded config
+	private restoreDragScroll: (() => void) | null = null;
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
 	 * Virtual scrolling activates when a column or cell has >= 15 cards.
@@ -448,7 +450,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = get("enableSearch");
-			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			this.updateSearchConfiguration((enableSearchValue as boolean) ?? false);
 			const expandedRelationshipFilterModeValue = get("expandedRelationshipFilterMode");
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
@@ -1279,7 +1281,6 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		swimLaneKey: string | null
 	): Promise<boolean> {
-		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 		const scopeLabel =
 			swimLaneKey === null
 				? this.plugin.i18n.translate(msg({ message: "column \"{group}\"", context: "views.kanban.reorder.scope.column" }), {
@@ -1291,14 +1292,14 @@ export class KanbanView extends BasesViewBase {
 					});
 
 		return showConfirmationModal(this.plugin.app, {
-			title: this.plugin.i18n.translate(msg({ message: "Confirm large reorder", context: "common.reorder.confirmLargeTitle" })),
-			message: this.plugin.i18n.translate(msg({ message: "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?", context: "common.reorder.confirmLargeMessage" }), {
-				field: sortOrderField,
+			title: this.plugin.i18n.translate(msg({ message: "Save this order?", context: "common.reorder.confirmLargeTitle" })),
+			message: this.plugin.i18n.translate(msg({ message: "To keep this order, {count} notes in {scope} need to be updated. You can undo this change.", context: "common.reorder.confirmLargeMessage" }), {
 				count: editCount,
 				scope: scopeLabel,
 			}),
 			confirmText: this.plugin.i18n.translate(msg({ message: "Reorder notes", context: "common.reorder.confirmButton" })),
 			cancelText: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
+			defaultToConfirm: true,
 		});
 	}
 
@@ -1323,6 +1324,7 @@ export class KanbanView extends BasesViewBase {
 			sortOrderValues: isSortOrderInSortConfig(this.dataAdapter, sortOrderField)
 				? this.getSortOrderValues(taskNotes, sortOrderField)
 				: undefined,
+			sortOrderDirection: getSortOrderDirection(this.dataAdapter, sortOrderField),
 			statusConfigs: this.plugin.settings.customStatuses || [],
 			priorityConfigs:
 				this.plugin.priorityManager?.getAllPriorities?.() ||
@@ -3011,6 +3013,8 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private clearTouchDragState(): void {
+		const restoreScroll = !this.taskDropAccepted ? this.restoreDragScroll : null;
+		this.restoreDragScroll = null;
 		for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys([]);
 		this.boardEl?.classList.remove("kanban-view__board--task-dragging");
 		for (const element of this.touchDragSources) {
@@ -3054,6 +3058,8 @@ export class KanbanView extends BasesViewBase {
 		this.draggedSourceSwimlanes.clear();
 		this.touchDragType = null;
 		this.draggedColumnKey = null;
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
+		restoreScroll?.();
 		if (this.pendingRender) {
 			this.pendingRender = false;
 			this.debouncedRefresh();
@@ -3284,6 +3290,7 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
 			e.stopPropagation();
+			this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
 			const dragSource = dragSourceOverride ?? {
 				taskPath: task.path,
 				sourceElement: cardWrapper,
@@ -3423,6 +3430,8 @@ export class KanbanView extends BasesViewBase {
 					cardWrapper.classList.remove("kanban-view__card--returned");
 				}, { once: true });
 			}
+			if (!this.taskDropAccepted) this.restoreDragScroll?.();
+			this.restoreDragScroll = null;
 			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 
 			// Clear drag state. The drop handler snapshots dropTargetPath and
@@ -3695,6 +3704,8 @@ export class KanbanView extends BasesViewBase {
 		y: number,
 		dragSourceOverride: KanbanTaskDragSource | null = null
 	): void {
+		this.taskDropAccepted = false;
+		this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
 		this.touchDragActive = true;
 		this.touchDragType = "task";
 		this.boardEl?.classList.add("kanban-view__board--task-dragging");
@@ -3772,6 +3783,7 @@ export class KanbanView extends BasesViewBase {
 			element?.setAttribute("aria-busy", "true");
 		}
 		const feedback: TaskUndoFeedback = { undo: [], failed: false };
+		let reorderConfirmed = false;
 		let recurringMessage: string | undefined;
 		const rewritten = new Set<string>();
 		const failedTitles: string[] = [];
@@ -3976,13 +3988,14 @@ export class KanbanView extends BasesViewBase {
 							}
 
 							const totalEditedNotes = sortOrderPlan.additionalWrites.length + 1;
-							if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
+							if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD && !reorderConfirmed) {
 								const confirmed = await this.confirmLargeReorder(
 									totalEditedNotes,
 									newGroupValue,
 									newSwimLaneValue
 								);
 								if (!confirmed) return;
+								reorderConfirmed = true;
 							}
 						} else {
 							// No specific drop target (cross-column drop without card position).
@@ -4205,7 +4218,7 @@ export class KanbanView extends BasesViewBase {
 				element.addEventListener("animationend", () => element.classList.remove("kanban-view__card--settled"), { once: true });
 			}
 			const destination = [this.getGroupDisplayTitle(newGroupValue, this.getGroupByPropertyId()), newSwimLaneValue === null ? "" : this.getGroupDisplayTitle(newSwimLaneValue, this.swimLanePropertyId)].filter(Boolean).join(" · ");
-			showTaskUndo(feedback.undo, feedback.failed, Math.max(rewritten.size, feedback.undo.length), this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? taskMovementMessage(Math.max(rewritten.size, feedback.undo.length), destination), undefined, undefined,
+			showTaskUndo(feedback.undo, feedback.failed, feedback.undo.length, this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? taskMovementMessage(feedback.undo.length, destination), undefined, undefined,
 				feedback.failedPaths?.length ? {
 					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
 					run: async () => { await this.app.workspace.openLinkText(feedback.failedPaths![0], "", false); },
@@ -4259,7 +4272,9 @@ export class KanbanView extends BasesViewBase {
 			this.columnNav = nav;
 			this.previousColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
 			setIcon(this.previousColumn, "chevron-left");
-			this.columnSelect = nav.createEl("select", { cls: "tn-select", attr: { "aria-label": nav.getAttribute("aria-label") ?? "" } });
+			const picker = nav.createDiv({ cls: "kanban-view__column-picker" });
+			this.columnSelect = picker.createEl("select", { cls: "tn-select", attr: { "aria-label": nav.getAttribute("aria-label") ?? "" } });
+			setIcon(picker.createSpan({ cls: "kanban-view__column-picker-icon", attr: { "aria-hidden": "true" } }), "chevron-down");
 			this.nextColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
 			setIcon(this.nextColumn, "chevron-right");
 			this.previousColumn.addEventListener("click", () => this.revealNavigatorColumn((this.columnSelect?.selectedIndex ?? 0) - 1));
@@ -4828,14 +4843,17 @@ export class KanbanView extends BasesViewBase {
 		});
 		this.registerDomEvent(this.boardEl.ownerDocument, "keydown", event => {
 			this.rootElement?.classList.remove("kanban-view--pointer");
-			if (event.key === "Escape" && this.touchDragActive) {
+			if (event.key === "Escape" && (this.touchDragActive || this.draggedTaskPath)) {
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				this.cleanupFloatingDragPreview();
 				this.clearTouchDragState();
 				if (this.pendingRender) {
 					this.pendingRender = false;
 					this.debouncedRefresh();
 				}
 			}
-		});
+		}, { capture: true });
 	}
 
 	private getDropRestriction(): string | null {

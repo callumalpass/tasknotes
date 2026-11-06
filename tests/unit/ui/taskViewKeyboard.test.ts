@@ -156,7 +156,7 @@ it.each(["status", "priority"])("retains the %s control and task identity when i
 		expect(document.activeElement).toBe(replacement.querySelector(`.task-card__${property}-dot`));
 		document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "p", bubbles: true }));
 		await new Promise(resolve => setTimeout(resolve, 0));
-		expect(openTaskPropertyPicker).toHaveBeenCalledWith(expect.anything(), "priority", [expect.objectContaining({ path: "first.md" })], replacement);
+		expect(openTaskPropertyPicker).toHaveBeenCalledWith(expect.anything(), "priority", [expect.objectContaining({ path: "first.md" })], replacement.querySelector(".task-card__status-dot"));
 	} finally { state.dispose(); }
 });
 

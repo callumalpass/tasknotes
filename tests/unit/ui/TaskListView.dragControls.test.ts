@@ -39,6 +39,28 @@ describe("TaskListView drag controls", () => {
 		document.body.innerHTML = "";
 	});
 
+	it("does not reuse a drag confirmation for a later menu reorder", async () => {
+		const view = createView() as any;
+		view.reorderConfirmed = true;
+		view.shouldEnableManualReordering = jest.fn(() => true);
+		view.getVisibleSortScopePaths = jest.fn(() => ["tasks/first.md", "tasks/second.md"]);
+		view.filterMovementSortScope = jest.fn((paths) => paths);
+		view.handleSortOrderDrop = jest.fn(async () => {
+			expect(view.reorderConfirmed).toBe(false);
+		});
+		view.debouncedRefresh = jest.fn();
+		let action: (() => void) | undefined;
+		const item = {
+			setTitle: jest.fn().mockReturnThis(),
+			setIcon: jest.fn().mockReturnThis(),
+			onClick: jest.fn((callback) => { action = callback; }),
+		};
+		view.addReorderMenuItems({ addItem: (configure: (item: unknown) => void) => configure(item) }, "tasks/second.md", { groupKey: "open" });
+		action!();
+		await Promise.resolve();
+		expect(view.handleSortOrderDrop).toHaveBeenCalledTimes(1);
+	});
+
 	it("does not start a drag from no-drag task card controls", () => {
 		const view = createView();
 		const task = TaskFactory.createTask({ path: "tasks/drag-guard.md" });

@@ -107,6 +107,7 @@ export abstract class BasesViewBase extends Component {
 
 	// Search functionality (opt-in via enableSearch flag)
 	protected enableSearch = false;
+	private configuredSearchEnabled: boolean | null = null;
 	protected searchBox: SearchBox | null = null;
 	protected searchContainerEl: HTMLElement | null = null;
 	private nativeSearchButton: HTMLElement | null = null;
@@ -617,6 +618,12 @@ export abstract class BasesViewBase extends Component {
 		);
 	}
 
+	protected updateSearchConfiguration(enabled: boolean): void {
+		if (enabled === this.configuredSearchEnabled) return;
+		this.configuredSearchEnabled = enabled;
+		this.enableSearch = enabled;
+	}
+
 	/**
 	 * Initialize search functionality for this view.
 	 * Call this from render() in subclasses that want search.
@@ -685,6 +692,12 @@ export abstract class BasesViewBase extends Component {
 		this.searchFilter = searchControls.searchFilter;
 		this.searchBox = searchControls.searchBox;
 		this.searchContainerEl = searchControls.searchContainer;
+		searchControls.searchContainer.addEventListener("tn-search-close", () => {
+			this.enableSearch = false;
+			this.teardownSearch();
+			host?.classList.remove("tn-search-active");
+			this.debouncedRefresh();
+		});
 
 		// Register cleanup using Component lifecycle
 		this.register(() => this.teardownSearch());
