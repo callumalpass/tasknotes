@@ -18,14 +18,14 @@ describe("Issue #982: Obsidian text font size inheritance", () => {
 		expect(css).toContain("--tn-type-lg: calc(var(--tn-type-base) * 1.125)");
 	});
 
-	it("keeps mobile titles at the Obsidian text size and metadata above the UI size floor", () => {
+	it("keeps narrow title and supporting type proportional to the Obsidian text size", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__title\s*\{[^}]*font-size:\s*var\(--tn-type-base\);/s
+			/@container tn-task-card \(max-width: 560px\)[\s\S]*\.task-card__title-text\s*\{[^}]*font-size:\s*var\(--tn-type-md\);/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-type-xs\),\s*var\(--font-ui-small,\s*var\(--tn-type-xs\)\)\);/s
+			/@container tn-task-card \(max-width: 560px\)[\s\S]*\.task-card__metadata\s*\{[^}]*font-size:\s*var\(--tn-type-xs\);/s
 		);
 	});
 });

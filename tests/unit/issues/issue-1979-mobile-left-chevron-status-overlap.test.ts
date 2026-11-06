@@ -11,11 +11,11 @@ describe("Issue #1979: mobile left-chevron status overlap", () => {
 	it("keeps the left subtask chevron in the reserved gutter instead of on top of the status indicator", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left \.task-card__chevron\s*\{[^}]*left:\s*calc\(-1 \* var\(--tn-mobile-task-card-menu-size\) - var\(--tn-space-half\)\);/s
+		const narrow = css.slice(css.indexOf("@container tn-task-card (max-width: 560px)"));
+		expect(narrow).toMatch(
+			/\.task-card\.task-card--chevron-left \.task-card__badges \.task-card__chevron\s*\{[^}]*position:\s*static;[^}]*left:\s*auto;[^}]*top:\s*auto;[^}]*transform:\s*none;[^}]*width:\s*var\(--tn-touch-target\);[^}]*height:\s*var\(--tn-touch-target\);/s
 		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\)\s*\{[^}]*padding-left:\s*calc\(var\(--tn-mobile-task-card-menu-size\) \+ var\(--tn-space-1\)\);/s
-		);
+		expect(narrow).toMatch(/\.task-card__badges\s*\{[^}]*grid-column:\s*4;[^}]*grid-row:\s*2;[^}]*flex-wrap:\s*nowrap;/s);
+		expect(narrow).toMatch(/\.task-card__status-dot\s*\{[^}]*grid-column:\s*1;/s);
 	});
 });
