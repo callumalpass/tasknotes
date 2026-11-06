@@ -230,9 +230,11 @@ export function createCalendarListEventCard({
 	const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
 
 	if (taskInfo && eventType !== "ics" && eventType !== "property-based") {
-		const cardProperties = eventType === "scheduled"
-			? visibleProperties.filter((property) => !isPropertyForField(property, "scheduled", plugin))
-			: visibleProperties;
+		const hasDue = visibleProperties.some(property => isPropertyForField(property, "due", plugin));
+		const cardProperties = visibleProperties.filter(property => {
+			if ((eventType === "scheduled" || eventType === "due") && isPropertyForField(property, eventType, plugin)) return false;
+			return property !== "formula.dueIn" || !hasDue;
+		});
 		const enrichedTask = enrichCalendarListTaskInfo({
 			taskInfo,
 			basesEntry: basesEntryByPath.get(taskInfo.path),
