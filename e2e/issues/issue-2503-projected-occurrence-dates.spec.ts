@@ -104,7 +104,15 @@ test("a projected occurrence shows its own date and its chip cannot edit the ser
 	expect((await frontmatter("Weekly review")).scheduled).toBe(nextOccurrence);
 
 	// Control: the pending occurrence's chip still moves it.
-	const pending = card("Weekly review", "scheduled");
+	await page.evaluate(async ({ root, name }) => {
+		const app = (window as any).app;
+		const base = await app.vault.create(
+			`${root}/${name}-list.base`,
+			`filters:\n  and:\n    - file.inFolder("${root}")\n    - file.name == "${name}"\nviews:\n  - type: tasknotesTaskList\n    name: Pending occurrence\n    order: [status, scheduled, due]\n`
+		);
+		await app.workspace.getLeaf("tab").openFile(base);
+	}, { root, name: "Weekly review" });
+	const pending = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${taskPath("Weekly review")}"]`);
 	await expect(pending.locator(".task-card__metadata-date--scheduled")).toContainText(
 		shortDate(nextOccurrence)
 	);
@@ -140,8 +148,11 @@ test("a timed daily series with matching dates does not look overdue on later ro
 	await expect(rows).toHaveCount(4);
 	for (const [index, offset] of [[1, 1], [2, 2], [3, 3]]) {
 		const row = rows.nth(index);
+		await expect(row.locator(".task-card__metadata-date--scheduled")).toHaveAttribute(
+			"aria-label", new RegExp(`^Scheduled: ${shortDate(localDate(offset))} `)
+		);
 		await expect(row.locator(".task-card__metadata-date--scheduled")).toContainText(
-			shortDate(localDate(offset))
+			offset === 1 ? "Tomorrow" : shortDate(localDate(offset))
 		);
 		await expect(row.locator(".task-card__metadata-date--scheduled")).toContainText(/19:00|7:00/);
 		await expect(row.locator(".task-card__metadata-date--past")).toHaveCount(0);

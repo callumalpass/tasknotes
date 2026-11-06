@@ -153,8 +153,8 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await items.evaluate(element => (element as HTMLElement).style.width = '170px');
     await expect(longCard.locator('.task-card__metadata')).toBeVisible();
     await expect(longCard.locator('.task-card__title-text')).toHaveCSS('white-space', 'normal');
-    expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await page.screenshot({ path: `test-results/list-redesign-${theme}-170px.png` });
+    expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
     await items.evaluate(element => (element as HTMLElement).style.removeProperty('width'));
     await page.evaluate(() => {
       document.body.classList.remove('is-mobile');

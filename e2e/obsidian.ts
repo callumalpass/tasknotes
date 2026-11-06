@@ -1,4 +1,4 @@
-import { Page, chromium, Browser, expect } from '@playwright/test';
+import { Page, chromium, Browser, expect, type Locator } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
@@ -111,6 +111,8 @@ export async function setObsidianViewport(
     currentWindow?.setContentSize(width, height);
   }, size);
   await page.setViewportSize(size);
+  await expect.poll(() => page.evaluate(() => [innerWidth, innerHeight]))
+    .toEqual([size.width, size.height]);
 }
 
 /** Obsidian 1.13 uses a separate Settings window; older versions use a modal. */
@@ -537,16 +539,39 @@ export async function openCommandPalette(page: Page): Promise<void> {
   await expect(promptInput).toBeFocused();
 }
 
+export async function expectTouchTarget(target: Locator, minimum = 40): Promise<void> {
+  await target.scrollIntoViewIfNeeded();
+  const description = await target.evaluate(element => element.outerHTML.slice(0, 240));
+  await expect.poll(() => target.evaluate((element, minimum) => {
+    const bounds = element.getBoundingClientRect();
+    const after = getComputedStyle(element, '::after');
+    const height = after.content !== 'none' && after.position === 'absolute'
+      ? Math.max(bounds.height, parseFloat(after.height) || 0)
+      : bounds.height;
+    const centerX = bounds.left + bounds.width / 2;
+    const centerY = bounds.top + bounds.height / 2;
+    return { tallEnough: height >= minimum, hits: [-1, 0, 1].map(direction => {
+      const hit = element.ownerDocument.elementFromPoint(centerX, centerY + direction * (minimum - 1) / 2);
+      return hit === element || element.contains(hit);
+    }) };
+  }, minimum), { message: `Touch target: ${description}` }).toEqual({ tallEnough: true, hits: [true, true, true] });
+}
+
 export async function runCommand(page: Page, command: string): Promise<void> {
   await openCommandPalette(page);
   const promptInput = page.locator('.prompt-input');
   await promptInput.fill(command);
   await expect(promptInput).toHaveValue(command);
-  const commandPattern = new RegExp(`^${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:\s+/, ':?\\s*')}$`);
+  const commandPattern = new RegExp(`^(?:TaskNotes:?\\s*)?${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:\s+/, ':?\\s*')}$`, 'i');
   const suggestion = page.locator('.suggestion-title').filter({ hasText: commandPattern });
   await expect(suggestion).toBeVisible({ timeout: 3000 });
-  await suggestion.click();
-  await expect(page.locator('.prompt')).toBeHidden();
+  const commandPalette = (await page.locator('.prompt').elementHandle())!;
+  try {
+    await suggestion.click();
+    await expect.poll(() => commandPalette.isVisible()).toBe(false);
+  } finally {
+    await commandPalette.dispose();
+  }
 }
 
 export async function waitForNotice(page: Page, text?: string): Promise<void> {

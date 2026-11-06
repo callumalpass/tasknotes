@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { closeObsidian, launchObsidian, type ObsidianApp } from "../obsidian";
+import { closeObsidian, launchObsidian, setObsidianViewport, type ObsidianApp } from "../obsidian";
 
 const folder = `Midnight ${Date.now()}`;
 let instance: ObsidianApp;
@@ -82,6 +82,7 @@ test("open Bases views follow the date across midnight without redrawing while h
 	test.setTimeout(180000);
 	instance = await launchObsidian();
 	page = instance.page;
+	await setObsidianViewport(page, { width: 1920, height: 1000 });
 
 	const listenersBefore = await dateChangedListeners();
 	await page.evaluate(
@@ -101,7 +102,7 @@ test("open Bases views follow the date across midnight without redrawing while h
 			await task("Later", nextWeekPlus);
 			const filters = `filters:\n  and:\n    - file.inFolder("${folder}")\n    - file.hasTag("task")\n`;
 			const list = `views:\n  - type: tasknotesTaskList\n    name: List\n    order: [note.status, note.due]\n`;
-			const calendar = `views:\n  - type: tasknotesCalendar\n    name: Calendar\n    calendarView: listWeek\n    listDayCount: 7\n    showDue: true\n    showOverdueOnToday: true\n`;
+			const calendar = `views:\n  - type: tasknotesCalendar\n    name: Calendar\n    calendarView: listWeek\n    listDayCount: 7\n    showAgendaStrip: false\n    showDue: true\n    showOverdueOnToday: true\n`;
 			await app.vault.create(`${folder}/Hidden.base`, filters + list);
 			await app.vault.create(`${folder}/List.base`, filters + list);
 			await app.vault.create(
@@ -150,10 +151,10 @@ test("open Bases views follow the date across midnight without redrawing while h
 	await crossMidnight();
 
 	// List and Kanban relabel their cards.
-	await expect(dueLabel("List")).toHaveText(/Today at/);
+	await expect(dueLabel("List")).toHaveText(/Today (17:25|5:25)/);
 	await expect(dueLabel("List")).toHaveClass(/task-card__metadata-date--today/);
 	await expect(dueLabel("List")).not.toHaveClass(/--future/);
-	await expect(dueLabel("Board")).toHaveText(/Today at/);
+	await expect(dueLabel("Board")).toHaveText(/Today (17:25|5:25)/);
 	await expect(dueLabel("Board")).toHaveClass(/task-card__metadata-date--today/);
 
 	// A calendar on the old day moves, carrying yesterday's now-overdue task to the new day.
@@ -179,7 +180,7 @@ test("open Bases views follow the date across midnight without redrawing while h
 			.find((candidate: any) => candidate.view.file?.basename === "Hidden");
 		app.workspace.setActiveLeaf(leaf, { focus: true });
 	});
-	await expect(dueLabel("Hidden")).toHaveText(/Today at/);
+	await expect(dueLabel("Hidden")).toHaveText(/Today (17:25|5:25)/);
 
 	// Closing the views removes their listeners.
 	await page.evaluate(() => {

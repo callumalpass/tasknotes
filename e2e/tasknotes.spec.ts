@@ -1305,17 +1305,32 @@ test.describe('Task Quick Add', () => {
     await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(500);
 
-    // Find a day cell and double-click to create task
-    const dayCell = page.locator('.tnc-dg-day').first();
-    if (await dayCell.isVisible()) {
+    const showMonthDayPanel = await page.evaluate(() => {
+      const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
+      const previous = view.viewOptions.showMonthDayPanel;
+      view.config.set('showMonthDayPanel', false);
+      view.calendar.changeView('month');
+      return previous;
+    });
+    await expect.poll(() => page.evaluate(() =>
+      (window as any).app.workspace.getMostRecentLeaf().view.controller.view.viewOptions.showMonthDayPanel
+    )).toBe(false);
+
+    try {
+      const dayCell = page.locator('.tnc-dg-day').first();
+      await expect(dayCell).toBeVisible();
       // Items are drawn over the cells; click the empty bottom edge of the day.
       const cellBox = await dayCell.boundingBox();
       await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
-      await page.waitForTimeout(500);
+      await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
       await page.screenshot({ path: 'test-results/screenshots/quick-add-from-calendar.png' });
 
       // Close any modal that opened
       await page.keyboard.press('Escape');
+    } finally {
+      await page.evaluate(previous => {
+        (window as any).app.workspace.getMostRecentLeaf().view.controller.view.config.set('showMonthDayPanel', previous);
+      }, showMonthDayPanel);
     }
   });
 });
@@ -1823,26 +1838,39 @@ test.describe('Task Edit Modal', () => {
 
   test('should edit task title in modal', async () => {
     const page = getPage();
-
-    // Use command to open edit task interface
-    await runCommand(page, 'Edit task');
-    await page.waitForTimeout(800);
-
-    // Check if task selector or edit modal appeared
-    const modalOrSelector = page.locator('.modal-container, .modal, .suggestion-container');
-    if (await modalOrSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
+    const folder = `Gate title edit ${Date.now()}`;
+    const title = 'Gate title';
+    const updatedTitle = 'Gate title updated';
+    await page.evaluate(async ({ folder, title }) => {
+      const app = (window as any).app;
+      const plugin = app.plugins.plugins.tasknotes;
+      await app.vault.createFolder(folder);
+      const file = await app.vault.create(`${folder}/${title}.md`, `---\ntitle: ${title}\ntags: [${plugin.settings.taskTag}]\nstatus: ${plugin.settings.defaultTaskStatus}\n---\n`);
+      await app.workspace.getLeaf(false).openFile(file);
+    }, { folder, title });
+    try {
+      await expect.poll(() => page.evaluate(async path =>
+        (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(path))?.title,
+      `${folder}/${title}.md`)).toBe(title);
+      await runCommand(page, 'Edit current task');
+      const titleInput = page.locator('.modal textarea.title-input');
+      await expect(titleInput).toHaveValue(title);
+      await titleInput.fill(updatedTitle);
       await page.screenshot({ path: 'test-results/screenshots/edit-task-command.png' });
-
-      // If it's a task selector, pick a task
-      const taskSuggestion = page.locator('.suggestion-item').first();
-      if (await taskSuggestion.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await taskSuggestion.click();
-        await page.waitForTimeout(500);
-        await page.screenshot({ path: 'test-results/screenshots/edit-modal-after-select.png' });
-      }
+      await page.locator('.modal button.mod-cta').click();
+      await expect(titleInput).toHaveCount(0);
+      await expect.poll(() => page.evaluate(async folder => {
+        const app = (window as any).app;
+        const file = app.vault.getMarkdownFiles().find((file: any) => file.parent?.path === folder);
+        return file && (await app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(file.path))?.title;
+      }, folder)).toBe(updatedTitle);
+    } finally {
+      await page.evaluate(async folder => {
+        const app = (window as any).app;
+        const file = app.vault.getAbstractFileByPath(folder);
+        if (file) await app.vault.delete(file, true);
+      }, folder);
     }
-
-    await page.keyboard.press('Escape');
   });
 
   test('should show task metadata in edit modal', async () => {
@@ -2367,22 +2395,13 @@ test.describe('Task Quick Actions', () => {
   test('should open task selector for time tracking', async () => {
     const page = getPage();
 
-    await runCommand(page, 'Start time tracking');
-    await page.waitForTimeout(800);
-
-    const selector = page.locator('.suggestion-container, .prompt, .modal');
-    if (await selector.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await page.screenshot({ path: 'test-results/screenshots/time-tracking-task-selector.png' });
-
-      // Check for task suggestions
-      const suggestions = page.locator('.suggestion-item');
-      const count = await suggestions.count();
-      if (count > 0) {
-        await page.screenshot({ path: 'test-results/screenshots/time-tracking-suggestions.png' });
-      }
-    }
-
+    await runCommand(page, 'Start time tracking (select task)');
+    const selector = page.locator('.prompt.tasknotes-plugin');
+    await expect(selector).toBeVisible();
+    await expect(selector.locator('.suggestion-item').first()).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/time-tracking-task-selector.png' });
     await page.keyboard.press('Escape');
+    await expect(selector).toBeHidden();
   });
 });
 
@@ -2786,7 +2805,7 @@ test.describe('Mobile Mode', () => {
   test('should open calendar view in mobile mode', async () => {
     const page = getPage();
 
-    await runCommand(page, 'Open calendar');
+    await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1500);
 
     // Verify calendar view is visible
