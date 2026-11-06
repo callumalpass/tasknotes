@@ -103,6 +103,14 @@ export function isTaskCardSubtasksExpanded(task: TaskInfo, plugin: TaskNotesPlug
 	);
 }
 
+function syncBadgeInteractionLayout(card: HTMLElement): void {
+	const badges = card.querySelector<HTMLElement>(".task-card__badges");
+	badges?.classList.toggle(
+		"task-card__badges--interactive",
+		Boolean(badges.querySelector('[role="button"]'))
+	);
+}
+
 function removeSecondaryBadges(card: HTMLElement): void {
 	for (const selector of SECONDARY_BADGE_SELECTORS) {
 		for (const badge of card.querySelectorAll(selector)) {
@@ -112,6 +120,7 @@ function removeSecondaryBadges(card: HTMLElement): void {
 	removeRelationshipContainer(card, ".task-card__subtasks");
 	removeRelationshipContainer(card, ".task-card__blocking");
 	removeRelationshipContainer(card, ".task-card__blocked-by");
+	syncBadgeInteractionLayout(card);
 }
 
 function updateChevronElement(
@@ -414,6 +423,7 @@ export function renderTaskCardSecondaryBadges(options: RenderTaskCardSecondaryBa
 
 	renderProjectBadges(options, badgesContainer);
 	renderDependencyToggles(options, badgesContainer);
+	syncBadgeInteractionLayout(options.card);
 }
 
 function updateProjectBadges(options: UpdateTaskCardSecondaryBadgesOptions): void {
@@ -488,6 +498,7 @@ function updateProjectBadges(options: UpdateTaskCardSecondaryBadgesOptions): voi
 			} else {
 				removeRelationshipContainer(card, ".task-card__subtasks");
 			}
+			syncBadgeInteractionLayout(card);
 		})
 		.catch((error: unknown) => {
 			logger.error("Error checking if task is used as project in update", {
@@ -628,4 +639,5 @@ export function updateTaskCardSecondaryBadges(options: UpdateTaskCardSecondaryBa
 	updateProjectBadges({ ...options, mainRow: mainRow ?? badgesContainer });
 	updateBlockingToggle(options);
 	updateBlockedByToggle(options);
+	syncBadgeInteractionLayout(card);
 }

@@ -54,14 +54,17 @@ function setup() {
 describe("Discussion #2355: inline heading and block navigation", () => {
 	afterEach(() => jest.useRealTimers());
 
-	it("groups sentence controls before the title without changing standalone composition", () => {
+	it("keeps sentence status before the title and secondary options after it", () => {
 		const { task, plugin, render } = setup();
 		plugin.settings.inlineVisibleProperties = ["status"];
 		expect(render().querySelector(".task-card__inline-controls")).toBeNull();
 		const sentence = new TaskLinkWidget(task, plugin, "[[Lecture]]", "Alias", undefined, undefined, true).toDOM({} as EditorView);
 		const controls = sentence.querySelector(".task-card__inline-controls")!;
 		expect(controls.querySelector(".task-card__status-dot")).not.toBeNull();
-		expect(controls.querySelector(".task-card__context-menu")?.getAttribute("tabindex")).toBe("0");
+		expect(controls.querySelector(".task-card__context-menu")).toBeNull();
+		const menu = sentence.querySelector(".task-card__context-menu")!;
+		expect(menu.getAttribute("tabindex")).toBe("0");
+		expect(sentence.querySelector(".task-card__content")!.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 		expect(controls.compareDocumentPosition(sentence.querySelector(".task-card__content")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 	});
 

@@ -103,6 +103,7 @@ describe("taskCardSecondaryBadges", () => {
 		});
 
 		expect(card.querySelector(".task-card__recurring-indicator")).not.toBeNull();
+		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(true);
 		expect(card.querySelector(".task-card__reminder-indicator")).not.toBeNull();
 		expect(card.querySelector(".task-card__details-indicator")).not.toBeNull();
 		expect(card.querySelector(".task-card__project-indicator")).not.toBeNull();
@@ -246,6 +247,7 @@ describe("taskCardSecondaryBadges", () => {
 		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
 
 		const originalFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(true);
 		expect(originalFolder?.getAttribute("role")).toBe("button");
 		expect(card.querySelector(".task-card__chevron")).not.toBeNull();
 
@@ -266,6 +268,7 @@ describe("taskCardSecondaryBadges", () => {
 
 		const updatedFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
 		expect(updatedFolder).not.toBe(originalFolder);
+		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(false);
 		expect(updatedFolder?.getAttribute("role")).toBeNull();
 		expect(updatedFolder?.getAttribute("aria-label")).toBe("This task is used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();

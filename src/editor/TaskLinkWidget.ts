@@ -97,9 +97,9 @@ export class TaskLinkWidget extends WidgetType {
 			const controls = activeWindow.createSpan();
 			controls.className = "task-card__inline-controls";
 			if (status) controls.append(status);
-			controls.append(menu);
 			mainRow.insertBefore(controls, content);
 			mainRow.insertBefore(card.ownerDocument.createTextNode("\u2060"), content);
+			mainRow.append(menu);
 		}
 
 		// Add card to wrapper
