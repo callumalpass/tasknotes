@@ -50,6 +50,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 
 - Centre the mini calendar in wider panes, make activity dots clearer, and show the selected day's notes and calendar events beneath the grid. Escape clears the date selection without losing the displayed month.
+- Calendar events use their configured priority or calendar colours as filled surfaces with contrasting text. All-day chips are compact in both themes, and today's column is no longer tinted.
+- Day view groups three or more overlapping appointments into a collision stack rather than drawing obscured, stair-stepped blocks. Turning off event overlap still shows appointments side by side.
+- Agenda rows put times and metadata beneath the title instead of reserving a time gutter. The optional selected-day panel uses the same compact rows and shows a distinct item count.
+- Mini-calendar dates use circular markers, quieter week numbers and clearer activity dots. The selected day's notes and calendar events appear beside the grid in wider panes and beneath it in narrow panes. Escape clears the date selection without losing the displayed month.
 - Reuse the completion calendar's month grid in precise date pickers, keep picker highlighting compact, align task modal controls, and give settings and Pomodoro metrics consistent spacing and hierarchy.
 
 - Expanded task fields share a compact label-and-control grid, settings expose workflow values sooner, and statistics distinguish headline totals from supporting metrics. Narrow Pomodoro timers keep their controls closer together.
@@ -123,6 +127,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Keep the initial hour label below the calendar's sticky headers and require a brief pause at a drag edge before auto-scrolling.
 
 - Respect the configured 12- or 24-hour time format in calendar move feedback and reminder notifications.
+- Keep agenda strip paging, date selection and list scrolling on the same day. Event labels, collision stacks, selection previews and move feedback now use the same clock format; short appointments retain their configured height and remain clickable between their resize handles. Mini-calendar lists no longer repeat titles beside themselves.
 - Keep weekday labels, dates and today's marker inside narrow Week headers. Calendar moves now retain a dim copy at the original position while previewing the destination.
 - Compact the phone month overview to reveal selected-day tasks sooner when the panel is enabled, and show quieter inline file identities beside mini-calendar task titles while keeping direct note access.
 

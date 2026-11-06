@@ -56,6 +56,12 @@
     --tn-segmented-selected-shadow: 0 1px 2px rgb(0 0 0 / 8%);
     --tn-calendar-status-line: 2px;
     --tn-calendar-event-tint: 8%;
+    --tn-calendar-event-saturation: 88%;
+    --tn-calendar-chip-height: 22px;
+    --tn-calendar-ink-light: #ffffff;
+    --tn-calendar-ink-dark: #000000;
+    --tn-calendar-date-lane: 64px;
+    --tn-mini-calendar-day-size: 32px;
     --tn-glyph-size: 14px;
     --tn-modal-composer-width: 720px;
     --tn-modal-details-min-width: 280px;

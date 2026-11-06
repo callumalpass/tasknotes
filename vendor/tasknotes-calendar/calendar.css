@@ -1,6 +1,6 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.10-r8.0 (MIT, see LICENSE beside this file).
- * Upstream sha256 f3302502b08dabffaae3bf609cc68f5b509989519cc582d176757d406ccd3644.
+ * Pinned host copy of @tasknotes/calendar 0.1.10-r8.1 (MIT, see LICENSE beside this file).
+ * Upstream sha256 7fd57fadb04d872569df6fc817a0c356ff9c549e73d345e4a61e982264ec1dbd.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -1229,6 +1229,12 @@
 	font-size: 10px;
 	font-weight: 650;
 	line-height: 1;
+}
+.tnc-strip-dots {
+	display: flex;
+	justify-content: center;
+	gap: 2px;
+	min-height: 5px;
 }
 .tnc-strip-dot {
 	width: 5px;

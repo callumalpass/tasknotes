@@ -165,6 +165,8 @@ test('custom event colours retain contrast, point targets and keyboard or pointe
   });
   const event = page.locator(`${root} .tnc-item[data-id="cal2-colour-0"]`);
   await event.scrollIntoViewIfNeeded();
+  const scroller = page.locator(`${root} > .tnc .tnc-tg-scroll`);
+  const scrollTop = await scroller.evaluate(element => element.scrollTop);
   const geometry = await event.boundingBox();
   expect(geometry!.height).toBeGreaterThanOrEqual(40);
   expect(geometry!.width).toBeGreaterThanOrEqual(40);
@@ -201,7 +203,8 @@ test('custom event colours retain contrast, point targets and keyboard or pointe
     }
     contrastByTheme.push({ theme, colours: restingColours, hoveredColours: await contrasts() });
     await event.hover();
-    expect(await event.boundingBox()).toEqual(geometry);
+    await scroller.evaluate((element, top) => { element.scrollTop = top; }, scrollTop);
+    await expect.poll(() => event.boundingBox()).toEqual(geometry);
     await page.keyboard.press('Tab');
     await event.focus();
     await expect(event).toBeFocused();

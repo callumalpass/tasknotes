@@ -11,6 +11,7 @@ import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import { installCalendarKeyboard } from "./calendarKeyboard";
 import { format } from "date-fns";
+import { formatTime } from "../utils/dateUtils";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
@@ -1207,7 +1208,9 @@ export class CalendarView extends BasesViewBase {
 			...layout,
 			monthDisplay: this.getMonthDisplay(),
 			dayMaxEventRows: this.getAllDayRowLimit(),
-			eventMinHeight: Math.max(40, layout.eventMinHeight ?? 0),
+			eventMinHeight: layout.eventMinHeight,
+			overlapStackThreshold: layout.view === "day" ? 3 : 0,
+			formatTime: minute => formatTime(new Date(2000, 0, 1, 0, minute), options.timeFormat === "12" ? "12" : "24"),
 			listAgenda: options.showAgendaStrip,
 			listAddText: t(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" }), "Add task"),
 			onListAdd: ({ dateStr }) => this.addTaskOnDay(dateStr),
@@ -1468,6 +1471,7 @@ export class CalendarView extends BasesViewBase {
 				this.dayPanel.gotoDate(this.selectedMonthDay);
 			}
 			this.dayPanel.setItems(this.calendarItems);
+			this.updateDayPanelCount();
 			this.dayPanel.updateSize();
 			return;
 		}
@@ -1482,6 +1486,7 @@ export class CalendarView extends BasesViewBase {
 			listEmptyContent: undefined,
 		});
 		this.dayPanel.setItems(this.calendarItems);
+		this.updateDayPanelCount();
 		const add = this.dayPanelEl.createEl("button", {
 			cls: "tn-calendar-day-panel-add",
 			text: this.plugin.i18n.translate(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" })),
@@ -1493,6 +1498,20 @@ export class CalendarView extends BasesViewBase {
 		add.addEventListener("click", () => {
 			if (this.selectedMonthDay) this.addTaskOnDay(this.selectedMonthDay);
 		});
+	}
+
+	private updateDayPanelCount(): void {
+		if (!this.dayPanelEl || !this.selectedMonthDay) return;
+		const start = new Date(`${this.selectedMonthDay}T00:00:00`);
+		const end = new Date(start);
+		end.setDate(end.getDate() + 1);
+		const paths = new Set(this.calendarItems.filter(item => {
+			const event = eventApiFromItem(item);
+			return event.start && event.start < end && (event.end ? event.end > start : event.start >= start);
+		}).map(item => item.data?.taskInfo?.path || item.id));
+		let count = this.dayPanelEl.querySelector<HTMLElement>(".tn-calendar-day-count");
+		if (!count) count = this.dayPanelEl.createDiv({ cls: "tn-calendar-day-count", attr: { role: "status" } });
+		count.textContent = this.plugin.i18n.translate(msg({ message: "{count, plural, one {# item} other {# items}}", context: "calendar selected day count" }), { count: paths.size });
 	}
 
 	private destroyDayPanel(): void {
@@ -2221,7 +2240,7 @@ export class CalendarView extends BasesViewBase {
 				return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
 			};
 			const background = luminance(style.backgroundColor);
-			const candidates = ["--text-normal", "--background-primary", "--text-on-accent"].map(token => style.getPropertyValue(token).trim()).filter(Boolean);
+			const candidates = ["--text-normal", "--background-primary", "--text-on-accent", "--tn-calendar-ink-light", "--tn-calendar-ink-dark"].map(token => style.getPropertyValue(token).trim()).filter(Boolean);
 			const contrast = (color: string): number => {
 				const foreground = luminance(color);
 				return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05);
@@ -2308,20 +2327,21 @@ export class CalendarView extends BasesViewBase {
 			}
 			if (arg.timeText) {
 				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });
-				const [start, end] = arg.timeText.split(" – ");
-				time.createSpan({ text: start });
-				if (end) time.createSpan({ text: `– ${end}` });
+				time.textContent = arg.timeText;
 			}
 			const priority = card.querySelector<HTMLElement>(".task-card__priority-dot");
 			const badges = card.querySelector<HTMLElement>(".task-card__badges");
 			if (metadata) {
+				if (stamp.childElementCount) metadata.prepend(stamp);
 				if (priority) metadata.prepend(priority);
 				if (badges) metadata.append(badges);
-				if (priority || badges?.childElementCount) {
+				if (priority || badges?.childElementCount || stamp.childElementCount) {
 					metadata.hidden = false;
 					card.classList.remove("task-card--metadata-empty");
 				}
 			}
+			if (!metadata && stamp.childElementCount) card.querySelector(".task-card__content")?.append(stamp);
+			entry.classList.toggle("tn-calendar-list-entry--plain", card.classList.contains("task-card--metadata-empty"));
 			if (inDayPanel) entry.classList.add("tn-calendar-list-entry--panel");
 			entry.append(card);
 			return entry;

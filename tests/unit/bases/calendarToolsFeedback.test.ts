@@ -27,13 +27,28 @@ describe("Tools time-format feedback", () => {
 		} as unknown as TaskNotesPlugin;
 		const event = { start: new Date(2026, 10, 7, 13, 5), allDay, extendedProps: { taskInfo: task, modelEntry: {} } };
 		const info = { event, oldEvent: event, revert: jest.fn() } as unknown as CalendarEventChange;
-		await handleCalendarEventDrop({ plugin, refreshTask: jest.fn() } as unknown as CalendarMutationContext, info);
+		await handleCalendarEventDrop({ plugin, options: {}, refreshTask: jest.fn() } as unknown as CalendarMutationContext, info);
 		expect(info.revert).not.toHaveBeenCalled();
 		const feedback = jest.mocked(showTaskUndo).mock.calls[0];
 		expect(feedback.slice(0, 3)).toEqual([[undo], false, 1]);
 		expect(feedback[4]).toContain(expected);
 		expect(/AM|PM/.test(feedback[4] ?? "")).toBe(hasPeriod);
 		if (allDay) expect(feedback[4]).not.toMatch(/\d:\d/);
+	});
+
+	it.each(["12", "24"] as const)("calendar move prefers the effective %s-hour view clock", async timeFormat => {
+		const task = { path: "Tasks/Review.md", title: "Review", scheduled: "2026-11-07T13:05" };
+		jest.mocked(captureTaskUndo).mockResolvedValue({ task } as never);
+		const plugin = {
+			settings: { calendarViewSettings: { timeFormat: timeFormat === "12" ? "24" : "12" } },
+			cacheManager: { getTaskInfo: jest.fn().mockResolvedValue(task) },
+			app: { vault: {} },
+		} as unknown as TaskNotesPlugin;
+		const event = { start: new Date(2026, 10, 7, 13, 5), allDay: false, extendedProps: { taskInfo: task, modelEntry: {} } };
+		const info = { event, oldEvent: event, revert: jest.fn() } as unknown as CalendarEventChange;
+		await handleCalendarEventDrop({ plugin, options: { timeFormat }, refreshTask: jest.fn() } as unknown as CalendarMutationContext, info);
+		expect(info.revert).not.toHaveBeenCalled();
+		expect(jest.mocked(showTaskUndo).mock.calls[0][4]).toContain(timeFormat === "12" ? "1:05 PM" : "13:05");
 	});
 
 	it.each(["12", "24"] as const)("reminder times use the configured %s-hour clock", timeFormat => {

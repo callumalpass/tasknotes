@@ -37,7 +37,7 @@ export function decorateCalendarTaskGlyphs(element: HTMLElement, task: TaskInfo,
 	}
 	const glyphs = createTaskGlyphs(element.ownerDocument, task, plugin);
 	for (const glyph of Array.from(glyphs.children) as HTMLElement[]) {
-		glyph.style.color = `color-mix(in srgb, ${glyph.style.color} 28%, var(--text-normal))`;
+		if (!element.classList.contains("tnc-item--list")) glyph.style.removeProperty("color");
 	}
 	title.prepend(glyphs);
 }
