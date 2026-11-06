@@ -59,10 +59,13 @@ test.each([640, 700, 850])("stacked month compositions retain identity at %ipx",
 	expect(calendar.setOptions).toHaveBeenLastCalledWith({ monthDisplay: "chips", dayMaxEventRows: 0 });
 });
 
-test("compact all-day limits do not override explicit limits or unlimited event settings", () => {
-	const { view } = composition(400);
+test.each([400, 1180])("all-day framing at %ipx preserves explicit limits and unlimited settings", (width) => {
+	const { view } = composition(width);
 	view.viewOptions.calendarView = "timeGridDay";
 	expect(view.getAllDayRowLimit()).toBe(2);
+	view.viewOptions.showTimeGrid = false;
+	expect(view.getAllDayRowLimit()).toBe(0);
+	view.viewOptions.showTimeGrid = true;
 	view.viewOptions.dayMaxEventRows = 5;
 	expect(view.getAllDayRowLimit()).toBe(5);
 	view.viewOptions.dayMaxEventRows = false;

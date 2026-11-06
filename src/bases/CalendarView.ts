@@ -444,7 +444,7 @@ export class CalendarView extends BasesViewBase {
 
 	private getAllDayRowLimit(): number {
 		const layout = basesLayoutOptions<CalendarEventProps>(this.viewOptions);
-		return isTimeGridCalendarView(this.viewOptions.calendarView) && this.isNarrowCalendar() && !layout.dayMaxEventRows && layout.dayMaxEvents === true ? 2 : layout.dayMaxEventRows ?? 0;
+		return isTimeGridCalendarView(this.viewOptions.calendarView) && this.viewOptions.showTimeGrid !== false && !layout.dayMaxEventRows && layout.dayMaxEvents === true ? 2 : layout.dayMaxEventRows ?? 0;
 	}
 
 	/**
@@ -2112,6 +2112,13 @@ export class CalendarView extends BasesViewBase {
 		this.keyboard?.mount(arg);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		decorateCalendarEvent({ plugin: this.plugin, rootElement: this.rootElement, timeFormat: this.viewOptions.timeFormat === "12" ? "12" : "24" }, arg);
+		if (arg.view.type === "month") {
+			const status = arg.el.dataset.status;
+			if (status && !this.plugin.statusManager.getStatusConfig(status)?.color) {
+				arg.el.setCssProps({ "--tn-calendar-status-color": "var(--tnc-accent)" });
+			}
+			arg.el.style.removeProperty("opacity");
+		}
 		if (arg.variant !== "list") this.refreshEventInk(arg.el);
 	}
 

@@ -1,7 +1,7 @@
 /*
  * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
  * see LICENSE beside this file; library release 0.1.8 is required for integration).
- * Upstream sha256 ef388a9b07206fc84c8132d9edccaaf0ecbee51ed9b5446757ce3b7cfbd8bb16.
+ * Upstream sha256 7376a78124d41b816748eb9b549ff222e7ac5afd3059e0b16c1f199c6144c6a3.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -278,6 +278,7 @@
 
 /* timed (time grid) */
 .tnc-item--timed {
+	container-type: size;
 	padding: 2px 5px 2px 6px;
 	background: var(--tnc-bg, color-mix(in srgb, var(--c) 14%, var(--tnc-surface)));
 	border: 1px solid var(--tnc-border, color-mix(in srgb, var(--c) 34%, transparent));
@@ -300,12 +301,13 @@
 	padding-bottom: 0;
 }
 .tnc-more.tnc-more--collision {
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-content: center;
 	align-items: stretch;
 	justify-content: center;
-	gap: 3px;
-	padding: 7px 9px;
+	gap: 2px 4px;
+	padding: 2px 4px;
 	border: 1px solid var(--tnc-line-strong);
 	border-radius: var(--tnc-radius);
 	background: var(--tnc-surface-2);
@@ -320,7 +322,9 @@
 	line-height: 1.3;
 }
 .tnc-collision-range {
-	color: var(--tnc-muted);
+	min-width: 0;
+	text-align: end;
+	color: var(--tnc-text);
 	font-size: var(--tnc-small);
 	white-space: nowrap;
 	overflow: hidden;
@@ -349,8 +353,13 @@
 .tnc-item--timed.is-short .tnc-item-time {
 	flex: none;
 }
-.tnc-item--timed.is-short .tnc-item-time-end {
-	display: none;
+@container (max-width: 109px) {
+	.tnc-item--timed .tnc-item-time-end {
+		display: none;
+	}
+}
+.tnc:is(.tnc-dragging-resize-start, .tnc-dragging-resize-end) .tnc-item--timed.is-dragging .tnc-item-time-end {
+	display: inline;
 }
 .tnc-item--timed.is-cont-start {
 	border-top-left-radius: 0;
@@ -558,20 +567,24 @@
 	text-underline-offset: 3px;
 }
 .tnc-more--collision {
-	display: flex;
-	align-items: start;
-	gap: 4px;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-content: center;
+	align-items: center;
+	gap: 2px 4px;
+	padding: 2px 4px;
 	min-height: 40px;
 	white-space: normal;
 	text-align: start;
 }
 .tnc-collision-title {
+	grid-column: 1 / -1;
 	flex: 1;
 	min-width: 0;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: var(--tnc-muted);
-	font-weight: 400;
+	color: var(--tnc-text);
+	font-weight: 500;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 3;
@@ -951,7 +964,7 @@
 }
 
 .tnc-dg--chips {
-	--tnc-chip-h: 14px;
+	--tnc-chip-h: 20px;
 }
 .tnc-dg--chips .tnc-dg-dots {
 	left: 2px;
@@ -964,6 +977,7 @@
 .tnc-dg--chips .tnc-dg-dots > .tnc-item--indicator {
 	width: 100%;
 	height: var(--tnc-chip-h);
+	border: 0;
 	border-radius: var(--tnc-radius);
 	padding: 0 2px;
 	color: var(--tnc-fg, var(--tnc-text));
@@ -1385,7 +1399,7 @@
 	padding: 0;
 	cursor: pointer;
 	font-size: 11px;
-	background: color-mix(in srgb, var(--tnc-accent) calc(var(--tnc-heat, 0) * 38%), transparent);
+	background: color-mix(in srgb, var(--tnc-accent) calc(var(--tnc-heat, 0) * 14%), transparent);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -1416,7 +1430,7 @@
 	width: 4px;
 	height: 4px;
 	border-radius: 50%;
-	background: var(--tnc-c, var(--tnc-accent));
+	background: color-mix(in srgb, var(--tnc-c, var(--tnc-accent)) 65%, var(--tnc-text));
 }
 
 @container (max-width: 520px) {
@@ -1439,7 +1453,7 @@
 	}
 	/* Without dots, one item must still read as busy. */
 	.tnc-ym-day.has-items {
-		background: color-mix(in srgb, var(--tnc-accent) calc((0.3 + var(--tnc-heat) * 0.7) * 50%), transparent);
+		background: color-mix(in srgb, var(--tnc-accent) calc((0.3 + var(--tnc-heat) * 0.7) * 20%), transparent);
 	}
 	.tnc-ym-dots {
 		display: none;

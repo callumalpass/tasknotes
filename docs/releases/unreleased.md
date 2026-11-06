@@ -102,6 +102,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Keep compact recurring calendar labels readable, with quieter status colours and clear completed tasks in Month view.
+- Show timed calendar ranges whenever they fit, including the changing end time during resizing.
+- Improve collision-summary and Year activity contrast, and keep the default all-day area to two rows with additional events available from its overflow control.
 - Keep task metadata values whole: values that do not fit move into the counted overflow disclosure instead of showing clipped fragments.
 - Restore two-line Kanban titles, prioritize dates over secondary indicators, and dim every selected source during a multi-task drag.
 - Keep keyboard-focused tasks visible below sticky group headers and show refusal feedback outside valid drag destinations.
