@@ -101,6 +101,12 @@ test('month recurrence keeps readable geometry and ink in both themes and input 
         await mode('month');
         const recurring = instance.page.locator('.tnc-dg .fc-pattern-instance-event').first();
         await expect(recurring).toBeVisible();
+        if (await recurring.evaluate(element => Boolean(element.closest('.tnc-dg--dots:not(.tnc-dg--chips)')))) {
+          expect(await recurring.evaluate(element => Math.round(element.getBoundingClientRect().height))).toBeGreaterThanOrEqual(6);
+          await expect(instance.page.locator('.tn-calendar-day-panel .task-card').first()).toBeVisible();
+          await capture(`month-${theme}-${width}${mobile ? '-touch' : ''}`);
+          continue;
+        }
         const geometry = await recurring.evaluate(element => {
           const style = getComputedStyle(element);
           const title = element.querySelector<HTMLElement>('.tn-calendar-event-title')!;

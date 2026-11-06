@@ -126,8 +126,9 @@ test('calendar composition matrix preserves identity, geometry and interaction',
           top: getComputedStyle(node).top, bottom: getComputedStyle(node).bottom,
         }))), null, 2));
         const day = page.locator(`${root} > .tnc .tnc-dg-day[data-date="2026-11-10"]`);
-        await expect(day.locator('.tnc-dg-dots-more')).toBeVisible();
-        const hiddenCount = Number((await day.locator('.tnc-dg-dots-more').innerText()).slice(1));
+        await expect(day.locator('.tnc-item--indicator').first()).toBeVisible();
+        const count = day.locator('.tnc-dg-dots-more');
+        const hiddenCount = await count.isVisible() ? Number((await count.innerText()).slice(1)) : 0;
         expect(await day.locator('.tnc-item--indicator').count() + hiddenCount).toBe(6);
         const panel = page.locator(`${root} .tn-calendar-day-panel`);
         await expect(panel.locator('.task-card')).toHaveCount(6);

@@ -1,7 +1,7 @@
 /*
  * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
  * see LICENSE beside this file; library release 0.1.8 is required for integration).
- * Upstream sha256 7376a78124d41b816748eb9b549ff222e7ac5afd3059e0b16c1f199c6144c6a3.
+ * Upstream sha256 a2276af8d074028d207240b33e3128a72fe31ee26e79e74e6132302a3c50a975.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -352,6 +352,11 @@
 }
 .tnc-item--timed.is-short .tnc-item-time {
 	flex: none;
+}
+@container (max-height: 50px) and (max-width: 239px) {
+	.tnc-item--timed .tnc-item-time {
+		display: none;
+	}
 }
 @container (max-width: 109px) {
 	.tnc-item--timed .tnc-item-time-end {
@@ -932,6 +937,9 @@
 .tnc-dg-dots.is-unlimited {
 	position: static;
 	padding: 0 6px 4px;
+}
+.tnc-dg-dots[hidden] {
+	display: none;
 }
 .tnc-dg-dots > .tnc-item--indicator {
 	position: static;

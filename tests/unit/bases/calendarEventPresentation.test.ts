@@ -1,11 +1,19 @@
 import * as obsidian from "obsidian";
-import { decorateCalendarEvent, decorateCalendarTaskGlyphs } from "../../../src/bases/calendarEventPresentation";
+import { attachCalendarTaskHoverLink, decorateCalendarEvent, decorateCalendarTaskGlyphs } from "../../../src/bases/calendarEventPresentation";
 import type { ItemArg } from "@tasknotes/calendar";
 import type { CalendarEventProps } from "../../../src/bases/calendarEngine";
 import { TaskFactory } from "../../helpers/mock-factories";
 import type TaskNotesPlugin from "../../../src/main";
 
 describe("calendar task glyphs", () => {
+	it("does not start a linked series highlight during a calendar gesture", () => {
+		const root = document.createElement("div");
+		root.innerHTML = '<div class="tnc tnc-dragging"><div class="fc-task-event" data-task-path="task.md"></div><div class="fc-task-event" data-task-path="task.md"></div></div>';
+		const event = root.querySelector<HTMLElement>(".fc-task-event")!;
+		attachCalendarTaskHoverLink(root, event, "task.md");
+		event.dispatchEvent(new MouseEvent("mouseenter"));
+		expect(root.querySelector(".fc-task-event--related-hover")).toBeNull();
+	});
 	const statuses = [
 		{ value: "open", order: 0, isCompleted: false, color: "red" },
 		{ value: "active", order: 1, isCompleted: false, color: "orange" },
