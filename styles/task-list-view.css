@@ -534,36 +534,11 @@ body.tn-drag-active.tn-drag-invalid * {
     cursor: not-allowed;
 }
 
-.task-list-view__touch-ghost--invalid {
-    border-color: var(--tn-drop-invalid);
-}
-
 .tasknotes-plugin.task-list-view__movement-root .task-card[draggable="true"]:active,
 .tasknotes-plugin.task-list-view__movement-root .task-card--dragging {
     transform: none;
     box-shadow: none;
     z-index: auto;
-}
-
-.tasknotes-plugin .task-list-view__touch-ghost {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: translate3d(var(--tn-movement-x, 0), var(--tn-movement-y, 0), 0);
-    width: var(--tn-drag-preview-width);
-    max-width: calc(100% - var(--tn-space-4));
-    padding: var(--tn-space-3);
-    background: var(--tn-drag-surface);
-    color: var(--tn-text-normal);
-    border: 1px solid var(--tn-drag-border);
-    border-radius: var(--tn-radius-lg);
-    box-shadow: var(--tn-drag-shadow);
-    font-size: var(--tn-type-md);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    pointer-events: none;
-    z-index: var(--tn-z-dropdown);
 }
 
 .tasknotes-plugin .task-list-view__movement-feedback {
@@ -809,20 +784,6 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
     body .tn-tasknotesTaskList .task-card__metadata > * {
         grid-row: 1;
     }
-}
-
-.tasknotes-plugin .task-list-view__drag-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-weight: var(--tn-font-weight-medium);
-}
-
-.tasknotes-plugin .task-list-view__drag-detail {
-    margin-top: var(--tn-space-1);
-    font-size: var(--tn-type-xs);
-    color: var(--tn-text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .tn-drag-active .task-list-view__movement-root {

@@ -295,7 +295,6 @@ msgctxt "interaction feedback archive"
 msgid "{count, plural, one {# task archived} other {# tasks archived}}"
 msgstr "{count, plural, one {Архивирована # задача} few {Архивированы # задачи} many {Архивировано # задач} other {Архивировано # задачи}}"
 
-#: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"

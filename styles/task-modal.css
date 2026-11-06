@@ -443,6 +443,10 @@
     padding: var(--tn-space-2) 0;
 }
 
+.tasknotes-plugin.minimalist-task-modal .minimalist-modal-container {
+    container-type: inline-size;
+}
+
 .tasknotes-plugin .tn-task-modal__action-bar > .action-icon {
     min-width: 0;
     width: auto;
@@ -627,8 +631,8 @@
 @container (max-width: 380px) {
     .tasknotes-plugin.minimalist-task-modal .details-container .setting-item {
         grid-template-columns: minmax(0, 1fr);
-        gap: var(--tn-space-1);
-        padding-block: var(--tn-space-2);
+        gap: var(--tn-space-half);
+        padding-block: var(--tn-space-1);
     }
 }
 
