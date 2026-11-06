@@ -87,6 +87,23 @@ describe("taskCardContextMenu", () => {
 		);
 	});
 
+	it("opens the menu on the card's occurrence", async () => {
+		const task = createTask();
+		const plugin = createPlugin(task);
+		const occurrenceDate = new Date("2026-11-15T00:00:00.000Z");
+
+		createTaskCardContextMenuButton({
+			mainRow: document.createElement("div"),
+			taskPath: task.path,
+			plugin,
+			targetDate: occurrenceDate,
+			occurrenceDate,
+		}).dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+		await Promise.resolve();
+
+		expect(TaskContextMenu).toHaveBeenCalledWith(expect.objectContaining({ occurrenceDate }));
+	});
+
 	it("shows a fresh task context menu and refreshes views after updates", async () => {
 		const task = createTask();
 		const plugin = createPlugin(task);
