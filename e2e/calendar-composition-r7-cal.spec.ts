@@ -6,7 +6,7 @@ let instance: ObsidianApp;
 let today: string;
 let emptyDay: string;
 const folder = `CalendarComposition-${Date.now()}`;
-const output = '/tmp/tasknotes-r7/cal/regression';
+const output = '/tmp/tasknotes-r7/cal2/regression';
 const root = '.workspace-leaf.mod-active #bases-calendar';
 test.use({ trace: 'on' });
 
@@ -78,8 +78,8 @@ async function resize(width: number, theme: string, mobile = false) {
   await expect.poll(() => page.evaluate(() => (window as any).require('electron').remote.getCurrentWindow().getContentSize())).toEqual([width, 820]);
 }
 
-async function mode(view: string) {
-  await instance.page.evaluate(view => (window as any).calCompositionLeaf.view.controller.view.calendar.changeView(view), view);
+async function mode(view: string, date?: string) {
+  await instance.page.evaluate(({ view, date }) => (window as any).calCompositionLeaf.view.controller.view.calendar.changeView(view, date), { view, date });
   await instance.page.locator(root).evaluate(async element => {
     await Promise.all(element.getAnimations({ subtree: true })
       .filter(animation => animation.playState === 'running')
@@ -137,7 +137,7 @@ test('month summaries and selected-day empty state survive pointer, keyboard and
   for (const theme of ['light', 'dark']) {
     await resize(400, theme);
     await mode('month');
-    await expect(page.locator(`${root} > .tnc .tnc-dg--dots`)).toBeVisible();
+    await expect(page.locator(`${root} > .tnc .tnc-dg--chips`)).toBeVisible();
     await expect.poll(() => page.locator(`${root} > .tnc`).evaluate(element => {
       const weeks = element.querySelectorAll('.tnc-dg-week');
       return weeks[weeks.length - 1].getBoundingClientRect().bottom <= element.getBoundingClientRect().bottom + 1;
@@ -204,7 +204,7 @@ test('year targets, configured glyphs and reduced-motion view changes stay usabl
   await mode('month');
   expect(await page.locator(`${root} > .tnc .tnc-dg`).evaluate(element => getComputedStyle(element).animationDuration)).toBe('0.25s');
   await resize(1180, 'light');
-  await mode('day');
+  await mode('day', today);
   await expect(page.locator(`${root} .tnc-item[data-task-path$="/Timed.md"] .tn-task-glyphs__priority`).first()).toBeVisible();
   await page.screenshot({ path: `${output}/day-chips-light-1180.png` });
 });

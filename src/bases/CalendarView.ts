@@ -318,6 +318,9 @@ export class CalendarView extends BasesViewBase {
 		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		this.registerEvent(this.plugin.app.workspace.on("css-change", () => {
+			for (const element of this.rootElement?.querySelectorAll<HTMLElement>(".tnc-item:not(.tnc-item--list)") ?? []) this.refreshEventInk(element);
+		}));
 		if (this.rootElement) {
 			this.keyboard = installCalendarKeyboard({
 				plugin: this.plugin,
@@ -407,8 +410,9 @@ export class CalendarView extends BasesViewBase {
 	onResize(): void {
 		if (this.calendar) {
 			const monthDisplay = this.getMonthDisplay();
-			if (this.calendar.getOptions().monthDisplay !== monthDisplay) {
-				this.calendar.setOptions({ monthDisplay });
+			const dayMaxEventRows = this.getAllDayRowLimit();
+			if (this.calendar.getOptions().monthDisplay !== monthDisplay || this.calendar.getOptions().dayMaxEventRows !== dayMaxEventRows) {
+				this.calendar.setOptions({ monthDisplay, dayMaxEventRows });
 			}
 		}
 		if (this.calendar && !this.explicitlyChosenView) {
@@ -432,9 +436,15 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private getMonthDisplay(): CalendarOptions<CalendarEventProps>["monthDisplay"] {
-		return this.viewOptions.showMonthDayPanel && this.isNarrowCalendar()
-			? "dots"
+		const width = this.rootElement?.clientWidth ?? 0;
+		return this.viewOptions.showMonthDayPanel && width > 0 && width <= 850
+			? width < 280 ? "dots" : "chips"
 			: basesLayoutOptions<CalendarEventProps>(this.viewOptions).monthDisplay ?? "full";
+	}
+
+	private getAllDayRowLimit(): number {
+		const layout = basesLayoutOptions<CalendarEventProps>(this.viewOptions);
+		return isTimeGridCalendarView(this.viewOptions.calendarView) && this.isNarrowCalendar() && !layout.dayMaxEventRows && layout.dayMaxEvents === true ? 2 : layout.dayMaxEventRows ?? 0;
 	}
 
 	/**
@@ -1128,9 +1138,9 @@ export class CalendarView extends BasesViewBase {
 
 	private setCalendarItems(items: CalendarEventItem[]): void {
 		this.batchPreview?.clear(false);
-		this.calendarItems = items;
-		this.calendar?.setItems(items);
-		this.dayPanel?.setItems(items);
+		this.calendarItems = items.map(item => item.data?.eventType === "due" ? { ...item, timeDisplay: "start" } : item);
+		this.calendar?.setItems(this.calendarItems);
+		this.dayPanel?.setItems(this.calendarItems);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		this.updateSelectionVisuals();
 	}
@@ -1169,6 +1179,8 @@ export class CalendarView extends BasesViewBase {
 		return {
 			...layout,
 			monthDisplay: this.getMonthDisplay(),
+			dayMaxEventRows: this.getAllDayRowLimit(),
+			eventMinHeight: Math.max(40, layout.eventMinHeight ?? 0),
 			listAgenda: options.showAgendaStrip,
 			listAddText: t(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" }), "Add task"),
 			onListAdd: ({ dateStr }) => this.addTaskOnDay(dateStr),
@@ -1343,6 +1355,8 @@ export class CalendarView extends BasesViewBase {
 		}
 		this.applyLayoutClasses();
 		this.syncDayPanel();
+		const dayMaxEventRows = this.getAllDayRowLimit();
+		if (this.calendar && this.calendar.getOptions().dayMaxEventRows !== dayMaxEventRows) this.calendar.setOptions({ dayMaxEventRows });
 	}
 
 	private addTaskOnDay(dateStr: string): void {
@@ -1354,9 +1368,7 @@ export class CalendarView extends BasesViewBase {
 	private selectMonthDay(dateStr: string): void {
 		this.selectedMonthDay = dateStr;
 		this.calendar?.unselect();
-		if (this.calendar && !dateStr.startsWith(format(this.calendar.getDate(), "yyyy-MM"))) {
-			this.calendar.gotoDate(dateStr);
-		}
+		this.calendar?.gotoDate(dateStr);
 		this.syncDayPanel();
 	}
 
@@ -2100,6 +2112,36 @@ export class CalendarView extends BasesViewBase {
 		this.keyboard?.mount(arg);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		decorateCalendarEvent({ plugin: this.plugin, rootElement: this.rootElement, timeFormat: this.viewOptions.timeFormat === "12" ? "12" : "24" }, arg);
+		if (arg.variant !== "list") this.refreshEventInk(arg.el);
+	}
+
+	private refreshEventInk(element: HTMLElement): void {
+		(element.ownerDocument.defaultView ?? window).requestAnimationFrame(() => {
+			if (!element.isConnected) return;
+			const style = getComputedStyle(element);
+			const canvas = createElementInDocument(element.ownerDocument, "canvas");
+			canvas.width = canvas.height = 1;
+			const context = canvas.getContext("2d");
+			if (!context) return;
+			const luminance = (color: string): number => {
+				context.clearRect(0, 0, 1, 1);
+				context.fillStyle = color;
+				context.fillRect(0, 0, 1, 1);
+				const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(value => {
+					const channel = value / 255;
+					return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+				});
+				return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+			};
+			const background = luminance(style.backgroundColor);
+			const candidates = ["--text-normal", "--background-primary", "--text-on-accent"].map(token => style.getPropertyValue(token).trim()).filter(Boolean);
+			const contrast = (color: string): number => {
+				const foreground = luminance(color);
+				return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05);
+			};
+			const ink = candidates.sort((first, second) => contrast(second) - contrast(first))[0];
+			if (ink) element.style.setProperty("--tn-calendar-event-ink", ink);
+		});
 	}
 
 	/** Right-click, the context-menu key or Shift+F10 on an event. */

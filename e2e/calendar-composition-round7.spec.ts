@@ -164,7 +164,7 @@ test('council: year targets, strip scrolling, short tracked items and empty-day 
         await page.evaluate(() => { (window as any).r7Leaf.view.controller.view.createFileForView = (window as any).councilCreateFile; });
       }
     }
-    await mode('day');
+    await mode('day', today);
     await page.evaluate(({ folder, today }) => {
       const view = (window as any).r7Leaf.view.controller.view;
       const source = view.calendarItems.find((item: any) => item.data?.eventType === 'timeEntry');
@@ -245,8 +245,8 @@ test('council: timeblock Undo restores the rendered move and duration', async ()
   }
 });
 
-async function mode(view: string) {
-  await instance.page.evaluate(view => (window as any).r7Leaf.view.controller.view.calendar.changeView(view), view);
+async function mode(view: string, date?: string) {
+  await instance.page.evaluate(({ view, date }) => (window as any).r7Leaf.view.controller.view.calendar.changeView(view, date), { view, date });
   const persisted = ({ month: 'dayGridMonth', week: 'timeGridWeek', day: 'timeGridDay', list: 'listWeek' } as Record<string, string>)[view];
   if (persisted) await expect.poll(() => instance.page.evaluate(async folder => {
     const app = (window as any).app;
@@ -254,6 +254,11 @@ async function mode(view: string) {
   }, folder)).toContain(`calendarView: ${persisted}`);
   await expect.poll(() => instance.page.evaluate(() => Boolean((window as any).r7Leaf.view.controller.view._saveViewTypeTimer))).toBe(false);
   await expect(instance.page.locator(`.workspace-leaf.mod-active > .workspace-leaf-content .tnc--${view}`).first()).toBeVisible();
+  await instance.page.locator('.workspace-leaf.mod-active #bases-calendar').evaluate(async element => {
+    await Promise.all(element.getAnimations({ subtree: true })
+      .filter(animation => animation.playState === 'running' && animation.effect?.getTiming().iterations !== Infinity)
+      .map(animation => animation.finished.catch(() => undefined)));
+  });
 }
 
 async function capture(name: string) {
@@ -298,6 +303,11 @@ async function states(target: Locator, name: string, drag = false) {
       return getComputedStyle(element).backgroundColor;
     });
     await page.evaluate(() => (window as any).r7Leaf.view.controller.view.calendar.rerender());
+    await page.locator('.workspace-leaf.mod-active #bases-calendar').evaluate(async element => {
+      await Promise.all(element.getAnimations({ subtree: true })
+        .filter(animation => animation.playState === 'running' && animation.effect?.getTiming().iterations !== Infinity)
+        .map(animation => animation.finished.catch(() => undefined)));
+    });
     await expect.poll(() => target.evaluate(element => element.matches(':hover'))).toBe(true);
     await expect.poll(() => target.evaluate(element => getComputedStyle(element).backgroundColor)).toBe(background);
     expect(await target.boundingBox()).toEqual(before);
