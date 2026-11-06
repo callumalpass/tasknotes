@@ -1564,7 +1564,16 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     }
 
     .tasknotes-plugin .tn-calendar-composition .tnc-dg-week {
-        min-height: calc(var(--tn-space-6) + var(--tn-space-8));
+        min-height: calc(var(--tn-touch-target) + var(--tn-space-1));
+    }
+
+    .tasknotes-plugin .tn-calendar-composition .tnc-dg--dots:not(.tnc-dg--chips) {
+        --tnc-dg-top-h: calc(var(--tn-space-8) + var(--tn-space-half));
+    }
+
+    .tasknotes-plugin .tn-calendar-composition .tnc-dg--dots:not(.tnc-dg--chips) .tnc-dg-top {
+        height: var(--tnc-dg-top-h);
+        padding-block-start: 0;
     }
 
     .tasknotes-plugin .tn-calendar-day-panel .tnc-list-scroll {

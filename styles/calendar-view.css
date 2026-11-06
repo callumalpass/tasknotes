@@ -136,8 +136,9 @@
 
 .tasknotes-plugin .mini-calendar-view__entry .mini-calendar-view__entry-content {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--tn-space-half);
+    grid-template-columns: minmax(0, 1fr) fit-content(30%);
+    align-items: center;
+    gap: var(--tn-space-2);
     width: 100%;
     min-width: 0;
     padding-inline: 0;
@@ -151,8 +152,10 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__entry .tn-picker__detail {
+    max-width: 100%;
+    margin-inline-start: 0;
     color: var(--tn-text-muted);
-    font-size: var(--tn-type-xs);
+    font-size: var(--tn-type-2xs);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

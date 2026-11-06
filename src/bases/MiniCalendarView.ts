@@ -1061,7 +1061,7 @@ export class MiniCalendarView extends BasesViewBase {
 			return;
 		}
 		for (const entry of [...entries].sort((first, second) => first.title.localeCompare(second.title))) {
-			const button = section.createEl("button", { cls: "mini-calendar-view__entry tn-btn tn-btn--ghost", attr: { type: "button", title: entry.title } });
+			const button = section.createEl("button", { cls: "mini-calendar-view__entry tn-btn tn-btn--ghost", attr: { type: "button", title: `${entry.title}\n${entry.path}` } });
 			button.dataset.entryPath = entry.path;
 			renderCalendarEntry(button, entry, this.plugin, "mini-calendar-view__entry-content");
 			button.addEventListener("click", () => this.openCalendarEntry(entry));
@@ -1768,7 +1768,12 @@ function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNot
 	const task = note.kind === "note" ? plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
 	if (task) title.prepend(createTaskGlyphs(host.ownerDocument, task, plugin));
 	const subtitle = note.kind === "external" ? note.sourceName || note.path : note.path;
-	if (subtitle !== note.title) container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: subtitle, attr: { title: subtitle } });
+	if (subtitle !== note.title) {
+		const identity = className === "mini-calendar-view__entry-content" && note.kind === "note"
+			? note.path.split("/").pop()?.replace(/\.md$/, "") || subtitle
+			: subtitle;
+		container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: identity, attr: { title: subtitle } });
+	}
 }
 
 // Factory function
