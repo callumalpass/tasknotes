@@ -49,7 +49,6 @@ export function renderTaskPropertiesTab(
 
 	// ===== CORE PROPERTIES SECTION =====
 	createSectionHeader(container, translate(msg({ message: "Core properties", context: "settings.taskProperties.sections.coreProperties" })));
-	createHelpText(container, translate(msg({ message: "Status and priority are the core properties that define a task''s state and importance.", context: "settings.taskProperties.sections.corePropertiesDesc" })));
 
 	// Title Property Card (with filename settings)
 	renderTitlePropertyCard(container, plugin, save, translate);
@@ -62,7 +61,6 @@ export function renderTaskPropertiesTab(
 
 	// ===== DATE PROPERTIES SECTION =====
 	createSectionHeader(container, translate(msg({ message: "Date properties", context: "settings.taskProperties.sections.dateProperties" })));
-	createHelpText(container, translate(msg({ message: "Configure when tasks are due and scheduled.", context: "settings.taskProperties.sections.datePropertiesDesc" })));
 
 	// Due Date Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
@@ -128,7 +126,6 @@ export function renderTaskPropertiesTab(
 
 	// ===== ORGANIZATION PROPERTIES SECTION =====
 	createSectionHeader(container, translate(msg({ message: "Organization properties", context: "settings.taskProperties.sections.organizationProperties" })));
-	createHelpText(container, translate(msg({ message: "Organize tasks with contexts, projects, and tags.", context: "settings.taskProperties.sections.organizationPropertiesDesc" })));
 
 	// Contexts Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {
@@ -155,7 +152,6 @@ export function renderTaskPropertiesTab(
 
 	// ===== TASK DETAILS SECTION =====
 	createSectionHeader(container, translate(msg({ message: "Task details", context: "settings.taskProperties.sections.taskDetails" })));
-	createHelpText(container, translate(msg({ message: "Additional details like time estimates, recurrence, and reminders.", context: "settings.taskProperties.sections.taskDetailsDesc" })));
 
 	// Time Estimate Property Card
 	renderSimplePropertyCard(container, plugin, save, translate, {

@@ -5,16 +5,17 @@
 /* Pomodoro View Container - Root Block */
 .tasknotes-plugin.pomodoro-view {
     box-sizing: border-box;
-    padding: var(--tn-space-4);
+    padding: var(--tn-space-3);
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
     overflow-y: auto;
-    gap: var(--tn-space-4);
+    gap: var(--tn-space-2);
     max-width: 100%;
     min-width: 0;
     min-height: 0;
+    container-type: inline-size;
     align-items: center;
     justify-content: flex-start;
     background: var(--tn-bg-primary);
@@ -48,7 +49,7 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
-    min-height: 2.5rem;
+    min-height: 0;
     margin-bottom: var(--tn-space-half);
     text-align: center;
 }
@@ -93,6 +94,7 @@
     font-weight: var(--tn-font-weight-medium);
     letter-spacing: normal;
     font-variant-numeric: tabular-nums;
+    line-height: 1.2;
 }
 
 .tasknotes-plugin .pomodoro-view__timer-display--editable {
@@ -173,7 +175,7 @@
     appearance: none;
     width: min(240px, 80%);
     height: var(--tn-space-half);
-    margin: var(--tn-space-3) 0;
+    margin: var(--tn-space-2) 0;
     border: none;
     background: var(--tn-hairline);
 }
@@ -453,7 +455,7 @@
 }
 
 .tasknotes-plugin.pomodoro-view > .pomodoro-view__timer-section {
-    margin-top: var(--tn-space-6);
+    margin-top: 0;
 }
 
 .tasknotes-plugin.pomodoro-view > .pomodoro-view__stats-section {
@@ -511,7 +513,7 @@
    RESPONSIVE DESIGN
    ================================================ */
 
-@media (max-width: 768px) {
+@container (max-width: 768px) {
     .tasknotes-plugin.pomodoro-view {
         padding: var(--tn-space-2);
         gap: var(--tn-space-2);
@@ -521,7 +523,7 @@
         width: 100%;
         height: auto;
         min-height: 0;
-        padding: var(--tn-space-4) 0;
+        padding: var(--tn-space-2) 0;
     }
     
     .tasknotes-plugin .pomodoro-view__timer-display {
@@ -557,12 +559,12 @@
     }
 }
 
-@media (max-width: 480px) {
+@container (max-width: 480px) {
     .tasknotes-plugin .pomodoro-view__progress-container {
         width: 100%;
         height: auto;
         min-height: 0;
-        padding: var(--tn-space-4) 0;
+        padding: var(--tn-space-2) 0;
     }
     
     .tasknotes-plugin .pomodoro-view__timer-display {
@@ -789,9 +791,9 @@ body:not(.is-mobile) .tasknotes-plugin.pomodoro-view--very-narrow .task-card__co
     pointer-events: auto;
 }
 
-body.is-mobile .tasknotes-plugin.pomodoro-view button,
-body.is-mobile .tasknotes-plugin.pomodoro-view input,
-body.is-mobile .tasknotes-plugin.pomodoro-view .pomodoro-view__timer-display {
+.tasknotes-plugin.pomodoro-view button,
+.tasknotes-plugin.pomodoro-view input,
+.tasknotes-plugin.pomodoro-view .pomodoro-view__timer-display {
     min-height: var(--tn-touch-target);
     min-width: var(--tn-touch-target);
 }

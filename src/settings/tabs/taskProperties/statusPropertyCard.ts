@@ -74,9 +74,10 @@ export function renderStatusPropertyCard(
 		"tasknotes-settings__collapsible-section"
 	);
 
-	const statusValuesHeader = statusValuesSection.createDiv(
-		"tasknotes-settings__collapsible-section-header"
-	);
+	const statusValuesHeader = statusValuesSection.createEl("button", {
+		cls: "tasknotes-settings__collapsible-section-header",
+		attr: { type: "button", "aria-expanded": "true" },
+	});
 	statusValuesHeader.createSpan({
 		text: translate(msg({ message: "Status values", context: "settings.taskProperties.statusCard.valuesHeader" })),
 		cls: "tasknotes-settings__collapsible-section-title",
@@ -189,6 +190,10 @@ export function renderStatusPropertyCard(
 			"tasknotes-settings__collapsible-section--collapsed",
 			!statusValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed")
 		);
+		const collapsed = statusValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed");
+		statusValuesHeader.setAttribute("aria-expanded", String(!collapsed));
+		statusValuesContent.hidden = collapsed;
+		statusValuesContent.inert = collapsed;
 	});
 
 	const nlpRows = createNLPTriggerRows(plugin, "status", "*", save, translate);
@@ -212,7 +217,7 @@ export function renderStatusPropertyCard(
 	createCard(container, {
 		id: "property-status",
 		collapsible: true,
-		defaultCollapsed: true,
+		defaultCollapsed: false,
 		header: {
 			primaryText: translate(msg({ message: "Status", context: "settings.taskProperties.properties.status.name" })),
 			secondaryText: plugin.settings.fieldMapping.status,

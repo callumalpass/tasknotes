@@ -94,9 +94,6 @@ export class PomodoroStatsView extends ItemView {
 		const overviewSection = container.createDiv({
 			cls: "pomodoro-stats-section pomodoro-stats-view__section",
 		});
-		new Setting(overviewSection)
-			.setName(this.t(msg({ message: "Overview", context: "views.pomodoroStats.sections.overview" })))
-			.setHeading();
 		this.overviewStatsEl = overviewSection.createDiv({
 			cls: "pomodoro-overview-grid pomodoro-stats-view__overview-grid tn-metrics",
 		});

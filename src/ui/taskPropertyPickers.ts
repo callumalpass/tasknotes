@@ -355,10 +355,14 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 		const values = updatedTasks.map(task => {
 			const configs = property === "status" ? plugin.statusManager.getAllStatuses() : property === "priority" ? plugin.priorityManager.getAllPriorities() : [];
 			const config = configs.find(config => config.value === task[property]);
+			const date = property === "due" ? task.due : property === "scheduled" ? task.scheduled : undefined;
+			if (date) {
+				return taskDateLabel(date, plugin.settings.calendarViewSettings.timeFormat);
+			}
 			return config ? configLabel(config) : String(task[property] ?? "—");
 		});
-		const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}", context: "interaction feedback" }), { count: updatedTasks.length });
-		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : `${outcome} · ${taskPropertyLabel(property as TaskPickerProperty)} → ${[...new Set(values)].join(", ")}`,
+		const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}", context: "interaction property feedback" }), { count: updatedTasks.length, property: taskPropertyLabel(property as TaskPickerProperty), value: [...new Set(values)].join(", ") });
+		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : outcome,
 			uiText(msg({ message: "Undid {property} change for {count, plural, one {# task} other {# tasks}}", context: "interaction property undo confirmation" }), { property: taskPropertyLabel(property as TaskPickerProperty), count: undo.length }), undefined,
 			failedPaths.length ? {
 				label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),

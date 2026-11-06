@@ -312,6 +312,11 @@ msgctxt "interaction feedback"
 msgid "{count, plural, one {# task updated} other {# tasks updated}}"
 msgstr "{count, plural, one {# tarea actualizada} other {# tareas actualizadas}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
+msgstr "{count, plural, one {# tarea actualizada} other {# tareas actualizadas}}: {property} → {value}"
+
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
@@ -1709,11 +1714,6 @@ msgstr "Recordatorio añadido: {description}"
 msgctxt "contextMenus.task.organization.notices.addedToProject"
 msgid "Added to project: {project}"
 msgstr "Agregado al proyecto: {project}"
-
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.taskDetailsDesc"
-msgid "Additional details like time estimates, recurrence, and reminders."
-msgstr "Detalles adicionales como estimaciones de tiempo, recurrencia y recordatorios."
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.advanced"
@@ -3361,11 +3361,6 @@ msgstr "Configurar webhooks para integrar con herramientas de automatización, s
 msgctxt "settings.features.taskCreation.description"
 msgid "Configure what happens after tasks are created."
 msgstr "Configura qué ocurre después de crear tareas."
-
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.datePropertiesDesc"
-msgid "Configure when tasks are due and scheduled."
-msgstr "Configura cuándo las tareas vencen y están programadas."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.dataStorage.description"
@@ -9464,11 +9459,6 @@ msgctxt "settings.taskProperties.sections.organizationProperties"
 msgid "Organization properties"
 msgstr "Propiedades de organización"
 
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.organizationPropertiesDesc"
-msgid "Organize tasks with contexts, projects, and tags."
-msgstr "Organiza tareas con contextos, proyectos y etiquetas."
-
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
@@ -9515,16 +9505,6 @@ msgstr "Vencida: {date}"
 msgctxt "generated Bases grouping label"
 msgid "Overdue/Past"
 msgstr "Vencidas/Pasadas"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.overview"
-msgid "Overview"
-msgstr "Resumen"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.overview"
-msgid "Overview"
-msgstr "Resumen"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.description"
@@ -11689,11 +11669,6 @@ msgstr "Estado"
 msgctxt "ui.filterBar.group.status"
 msgid "Status"
 msgstr "Estado"
-
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.corePropertiesDesc"
-msgid "Status and priority are the core properties that define a task''s state and importance."
-msgstr "Estado y prioridad son las propiedades principales que definen el estado e importancia de una tarea."
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.statusDot"

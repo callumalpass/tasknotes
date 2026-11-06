@@ -43,6 +43,28 @@ body:not(.is-mobile) .tasknotes-settings {
     padding-block: var(--tn-space-1);
 }
 
+.tasknotes-plugin .settings-view__tab-content .setting-item:not(.setting-item-heading) {
+    padding-block: var(--tn-space-2);
+    gap: var(--tn-space-2) var(--tn-space-4);
+    border-color: var(--tn-hairline);
+}
+
+.tasknotes-plugin .settings-view__tab-content .setting-item-info {
+    margin-inline-end: 0;
+    min-width: 0;
+}
+
+.tasknotes-plugin .settings-view__tab-content .setting-item-description {
+    margin-top: var(--tn-space-1);
+    font-size: var(--tn-type-xs);
+    line-height: 1.4;
+}
+
+.tasknotes-plugin .settings-view__tab-content :is(button, select, input:not([type="checkbox"]), summary, .tasknotes-settings__collapsible-section-header) {
+    min-height: var(--tn-touch-target);
+    min-width: var(--tn-touch-target);
+}
+
 .tasknotes-plugin .settings-view__help-note {
     margin-block: 0 var(--tn-space-2);
     color: var(--tn-text-metadata);
@@ -337,15 +359,15 @@ body:not(.is-mobile) .tasknotes-settings {
 
 /* Card Content */
 .tasknotes-settings__card-content {
-    padding: var(--tn-space-2) 0 var(--tn-space-4);
+    padding: var(--tn-space-1) 0 var(--tn-space-3);
 }
 
 .tasknotes-settings__card-config-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     align-items: center;
-    gap: var(--tn-space-3);
-    margin-bottom: var(--tn-space-3);
+    gap: var(--tn-space-2) var(--tn-space-3);
+    margin-bottom: var(--tn-space-2);
     min-width: 0;
 }
 
@@ -1172,11 +1194,22 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
     align-items: center;
     justify-content: space-between;
     cursor: var(--cursor-link, pointer);
-    padding: 8px 12px;
-    margin: 0 -12px 12px -12px;
+    width: 100%;
+    height: auto;
+    padding: var(--tn-space-2) 0;
+    margin: 0 0 var(--tn-space-2);
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    text-align: start;
     border-radius: var(--tn-radius-sm);
     transition: background-color 0.2s ease;
     user-select: none;
+}
+
+.tasknotes-plugin .tasknotes-settings__collapsible-section-header:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: 2px;
 }
 
 @media (hover: hover) {

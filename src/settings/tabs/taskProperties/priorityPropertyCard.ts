@@ -76,9 +76,10 @@ export function renderPriorityPropertyCard(
 		"tasknotes-settings__collapsible-section"
 	);
 
-	const priorityValuesHeader = priorityValuesSection.createDiv(
-		"tasknotes-settings__collapsible-section-header"
-	);
+	const priorityValuesHeader = priorityValuesSection.createEl("button", {
+		cls: "tasknotes-settings__collapsible-section-header",
+		attr: { type: "button", "aria-expanded": "true" },
+	});
 	priorityValuesHeader.createSpan({
 		text: translate(msg({ message: "Priority values", context: "settings.taskProperties.priorityCard.valuesHeader" })),
 		cls: "tasknotes-settings__collapsible-section-title",
@@ -194,6 +195,10 @@ export function renderPriorityPropertyCard(
 			"tasknotes-settings__collapsible-section--collapsed",
 			!priorityValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed")
 		);
+		const collapsed = priorityValuesSection.hasClass("tasknotes-settings__collapsible-section--collapsed");
+		priorityValuesHeader.setAttribute("aria-expanded", String(!collapsed));
+		priorityValuesContent.hidden = collapsed;
+		priorityValuesContent.inert = collapsed;
 	});
 
 	const nlpRows = createNLPTriggerRows(plugin, "priority", "!", save, translate);
@@ -217,7 +222,7 @@ export function renderPriorityPropertyCard(
 	createCard(container, {
 		id: "property-priority",
 		collapsible: true,
-		defaultCollapsed: true,
+		defaultCollapsed: false,
 		header: {
 			primaryText: translate(msg({ message: "Priority", context: "settings.taskProperties.properties.priority.name" })),
 			secondaryText: plugin.settings.fieldMapping.priority,

@@ -143,10 +143,11 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	el.addEventListener("focusin", pause);
 	el.addEventListener("focusout", () => queueMicrotask(resume));
 
+	const actions = action || options.secondaryAction ? el.createDiv({ cls: "tn-toast__actions" }) : null;
 	for (const toastAction of [action, options.secondaryAction]) {
-		if (!toastAction) continue;
+		if (!toastAction || !actions) continue;
 		const { label, run } = toastAction;
-		const button = el.createEl("button", { cls: "tn-toast__action", text: label });
+		const button = actions.createEl("button", { cls: "tn-toast__action", text: label });
 		button.addEventListener("click", () => {
 			if (actionPending) return;
 			pause();

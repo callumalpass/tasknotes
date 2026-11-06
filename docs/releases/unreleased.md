@@ -44,6 +44,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Expanded task fields share a compact label-and-control grid, settings expose workflow values sooner, and statistics distinguish headline totals from supporting metrics. Narrow Pomodoro timers keep their controls closer together.
+- Pickers use consistent row insets and touch targets. Task-change feedback uses localized counts and dates, with Undo visually separated from the result message.
+
 - Make mini-calendar day choices evenly sized, with quieter paths and full titles available on hover.
 - Keep expanded property settings aligned to the full content width and use a single settings selector in narrow panes.
 - Compact Pomodoro statistics and show recent sessions before period summaries; keep timer controls together.

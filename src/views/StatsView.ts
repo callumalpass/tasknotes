@@ -171,9 +171,6 @@ export class StatsView extends ItemView {
 
 		// Overview section
 		const overviewSection = container.createDiv({ cls: "stats-section stats-view__section" });
-		new Setting(overviewSection)
-			.setName(this.plugin.i18n.translate(msg({ message: "Overview", context: "views.stats.sections.overview" })))
-			.setHeading();
 		this.overviewStatsEl = overviewSection.createDiv({
 			cls: "stats-overview-grid stats-view__overview-grid tn-metrics",
 		});

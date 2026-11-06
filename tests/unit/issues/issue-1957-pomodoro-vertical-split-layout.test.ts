@@ -29,7 +29,7 @@ describe("Issue #1957: Pomodoro vertical split layout", () => {
 
 		expect(rootBlock).toContain("justify-content: flex-start;");
 		expect(rootBlock).not.toContain("justify-content: center;");
-		expect(timerSectionBlock).toContain("margin-top: var(--tn-space-6);");
+		expect(timerSectionBlock).toContain("margin-top: 0;");
 		expect(statsSectionBlock).toContain("margin-bottom: 0;");
 	});
 });

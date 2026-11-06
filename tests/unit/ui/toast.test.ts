@@ -7,6 +7,17 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
+it("separates result text from actions without leaving an empty action gutter", () => {
+	showToast({ message: "1 task updated: Due date → Tomorrow", action: { label: "Undo", run: jest.fn() } });
+	const toast = document.querySelector(".tn-toast")!;
+	expect(toast.querySelector(".tn-toast__message")?.textContent).toBe("1 task updated: Due date → Tomorrow");
+	expect(toast.querySelector(".tn-toast__actions")?.textContent).toBe("Undo");
+	expect(toast.querySelector(".tn-toast__message button")).toBeNull();
+	showToast({ message: "Task saved" });
+	expect(document.querySelectorAll(".tn-toast")).toHaveLength(1);
+	expect(document.querySelector(".tn-toast__actions")).toBeNull();
+});
+
 it("offers recovery without recording it as Undo or losing successful receipts", async () => {
 	const scope = {};
 	const undo = jest.fn();

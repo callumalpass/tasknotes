@@ -312,6 +312,11 @@ msgctxt "interaction feedback"
 msgid "{count, plural, one {# task updated} other {# tasks updated}}"
 msgstr "{count, plural, one {Обновлена # задача} few {Обновлены # задачи} many {Обновлено # задач} other {Обновлено # задачи}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
+msgstr "{count, plural, one {Обновлена # задача} few {Обновлены # задачи} many {Обновлено # задач} other {Обновлено # задачи}}: {property} → {value}"
+
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
@@ -1711,11 +1716,6 @@ msgstr "Напоминание добавлено: {description}"
 msgctxt "contextMenus.task.organization.notices.addedToProject"
 msgid "Added to project: {project}"
 msgstr "Добавлено в проект: {project}"
-
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.taskDetailsDesc"
-msgid "Additional details like time estimates, recurrence, and reminders."
-msgstr "Дополнительные детали: оценка времени, повторения и напоминания."
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.advanced"
@@ -3363,11 +3363,6 @@ msgstr "Настройте веб-хуки для интеграции с инс
 msgctxt "settings.features.taskCreation.description"
 msgid "Configure what happens after tasks are created."
 msgstr "Настройте, что происходит после создания задач."
-
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.datePropertiesDesc"
-msgid "Configure when tasks are due and scheduled."
-msgstr "Настройте сроки выполнения и запланированные даты задач."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.dataStorage.description"
@@ -9464,11 +9459,6 @@ msgctxt "settings.taskProperties.sections.organizationProperties"
 msgid "Organization properties"
 msgstr "Свойства организации"
 
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.organizationPropertiesDesc"
-msgid "Organize tasks with contexts, projects, and tags."
-msgstr "Организуйте задачи с помощью контекстов, проектов и тегов."
-
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
@@ -9515,16 +9505,6 @@ msgstr "Просрочено: {date}"
 msgctxt "generated Bases grouping label"
 msgid "Overdue/Past"
 msgstr "Просрочено / в прошлом"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.overview"
-msgid "Overview"
-msgstr "Обзор"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.overview"
-msgid "Overview"
-msgstr "Обзор"
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.updateDefaultFiles.description"
@@ -11689,11 +11669,6 @@ msgstr "Статус"
 msgctxt "ui.filterBar.group.status"
 msgid "Status"
 msgstr "Статус"
-
-#: src/settings/tabs/taskPropertiesTab.ts
-msgctxt "settings.taskProperties.sections.corePropertiesDesc"
-msgid "Status and priority are the core properties that define a task''s state and importance."
-msgstr "Статус и приоритет — это основные свойства, определяющие состояние и важность задачи."
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
