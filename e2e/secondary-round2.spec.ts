@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, expectTouchTarget, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let originalSettings: Record<string, unknown>;
@@ -82,7 +82,7 @@ async function capture(name: string, page = instance.page) {
   await page.screenshot({ path: `test-results/secondary-r2/${name}.png`, animations: 'disabled', clip: { x: 0, y: 0, ...page.viewportSize()! } });
 }
 
-test('inline references remain atomic in reading and live preview', async () => {
+test('sentence references preserve prose flow and grouped controls in reading and live preview', async () => {
   const page = instance.page;
   for (const theme of ['theme-light', 'theme-dark']) for (const [width, mobile] of [[1180, false], [400, false], [400, true]] as const) {
     await appearance(page, theme, width, mobile);
@@ -90,11 +90,18 @@ test('inline references remain atomic in reading and live preview', async () => 
       await openFile('Prose.md', mode);
       const cards = page.locator('.workspace-leaf.mod-active .task-card--layout-inline:visible');
       await expect(cards).toHaveCount(2);
+      await capture(`inline-layout-${theme}-${width}-${mobile}-${mode}`);
       await expect(async () => {
         const geometries = await cards.evaluateAll(elements => elements.map(element => {
           const card = element.getBoundingClientRect();
-          const selectors = ['.task-card__status-dot', '.task-card__title'];
-          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, tops: selectors.map(selector => element.querySelector(selector)!.getBoundingClientRect().top), sentence: element.closest('.tasknotes-inline-widget--sentence') !== null, display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
+          const status = element.querySelector('.task-card__status-dot')!.getBoundingClientRect();
+          const menu = element.querySelector('.task-card__context-menu')!.getBoundingClientRect();
+          const title = element.querySelector('.task-card__title-text')!;
+          const range = document.createRange();
+          range.selectNodeContents(title);
+          const titleLines = Array.from(range.getClientRects()).filter(bounds => bounds.width > 0);
+          const controls = element.querySelector('.task-card__inline-controls')!;
+          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, controlLineGap: Math.min(...titleLines.map(bounds => Math.abs(bounds.top - status.top))), proseLineHeight: Math.max(parseFloat(getComputedStyle(title).lineHeight), controls.getBoundingClientRect().height), controlsAligned: Math.abs(status.top + status.height / 2 - menu.top - menu.height / 2) < 1, controlsBeforeTitle: Boolean(controls.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING), sentence: element.closest('.tasknotes-inline-widget--sentence') !== null, display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
         }));
         expect(geometries).toHaveLength(2);
         for (const geometry of geometries) {
@@ -102,7 +109,9 @@ test('inline references remain atomic in reading and live preview', async () => 
           expect(geometry.dateAlignment).toBe('flex-start');
           expect(geometry.display).toBe(geometry.sentence ? 'inline' : 'inline-flex');
           expect(geometry.width).toBeLessThanOrEqual(geometry.parentWidth + 1);
-          expect(Math.max(...geometry.tops) - Math.min(...geometry.tops)).toBeLessThan(24);
+          expect(geometry.controlLineGap).toBeLessThanOrEqual(geometry.proseLineHeight);
+          expect(geometry.controlsAligned).toBe(true);
+          expect(geometry.controlsBeforeTitle).toBe(true);
         }
       }).toPass({ timeout: 5000 });
       for (const card of await cards.all()) {
@@ -110,7 +119,11 @@ test('inline references remain atomic in reading and live preview', async () => 
         await expect(card.locator('.task-card__priority-dot')).toBeHidden();
         await card.hover();
         await expect(card.locator('.task-card__context-menu')).toBeVisible();
-        if (mobile) expect((await card.locator('.task-card__status-dot').boundingBox())!.height).toBeGreaterThanOrEqual(40);
+        if (mobile) {
+          expect((await card.locator('.task-card__status-dot').boundingBox())!.height).toBeLessThanOrEqual(24);
+          await expectTouchTarget(card.locator('.task-card__status-dot'));
+          await expectTouchTarget(card.locator('.task-card__context-menu'));
+        }
       }
       await capture(`inline-${theme}-${width}-${mobile}-${mode}`);
     }

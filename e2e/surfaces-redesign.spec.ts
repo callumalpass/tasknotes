@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { stringify } from 'yaml';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, expectTouchTarget, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let originalSettings: Record<string, unknown>;
@@ -325,8 +325,11 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
         await expect(cards.last().locator('.task-card__metadata-date--overdue')).toBeVisible();
         await expect(cards.first().locator('.task-card__metadata-pill--blocked')).toBeHidden();
         await expect(cards.last().locator('.task-card__metadata-pill--blocked')).toBeVisible();
-        if (mobile) await expectTouchTargets('.task-card--layout-inline .task-card__status-dot, .task-card--layout-inline .task-card__priority-dot, .task-card--layout-inline .task-card__metadata-date, .task-card--layout-inline .task-card__context-menu');
         await screenshot(`inline-${mode}-${theme}-${mobile ? 'mobile' : 'desktop'}`);
+        if (mobile) {
+          await expectTouchTargets('.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card__status-dot, .tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card__priority-dot, .tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card__metadata-date, .tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card__context-menu');
+          for (const target of await page.locator('.tasknotes-inline-widget--sentence .task-card__status-dot:visible, .tasknotes-inline-widget--sentence .task-card__context-menu:visible').all()) await expectTouchTarget(target);
+        }
       }
       await page.evaluate(async path => {
         const app = (window as any).app;

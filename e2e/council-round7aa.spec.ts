@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { stringify } from 'yaml';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, expectTouchTarget } from './obsidian';
 
 const evidence = '/tmp/tasknotes-r7/aa/regression';
 const folder = `CouncilAA-${Date.now()}`;
@@ -127,7 +127,8 @@ test('council AA: compact task composition, disclosures, search, month counts an
       const menuBox = (await menu.boundingBox())!;
       const paragraphBottom = await sentence.evaluate(element => element.closest('p')!.getBoundingClientRect().bottom);
       expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(paragraphBottom + 1);
-      expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe('static');
+      expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe(width === 400 ? 'relative' : 'static');
+      if (width === 400) await expectTouchTarget(menu);
       await menu.focus();
       await page.keyboard.press('Enter');
       await expect(page.locator('.menu')).toBeVisible();

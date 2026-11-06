@@ -493,6 +493,7 @@ body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card.task-card--l
 
 body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card--layout-inline :is(.task-card__status-dot, .task-card__context-menu) {
     position: relative;
+    z-index: 1;
     width: var(--tn-control-sm);
     height: var(--tn-control-sm);
     min-width: var(--tn-control-sm);

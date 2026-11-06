@@ -19,6 +19,7 @@ Example:
 - Prevent calendar collision-popover rows from showing redundant tooltips over neighbouring tasks, while preserving their accessible labels and regular calendar-event tooltips.
 
 - Keep sentence-reference task menus fully visible when hovering their task, without moving the surrounding prose.
+- Keep mobile sentence-reference touch targets clickable across their full height in live preview, including beside empty lines.
 
 - Restored quiet, live status-colour tints in flat and swimlane Kanban columns, including theme changes and neutral fallback for invalid colours.
   - Thanks to @nesyeklaf for contributing status-coloured columns in #2260.

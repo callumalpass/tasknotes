@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, expectTouchTarget, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let page: Page;
@@ -91,7 +91,8 @@ for (const width of [1180, 400]) for (const theme of ['light', 'dark']) test(`se
   const sentence = page.locator('.workspace-leaf.mod-active .tasknotes-inline-widget--sentence:visible').first();
   const menu = sentence.locator('.task-card__context-menu');
   await expect(sentence).toBeVisible();
-  await expect(menu).toHaveCSS('position', 'static');
+  await expect(menu).toHaveCSS('position', width === 400 ? 'relative' : 'static');
+  if (width === 400) await expectTouchTarget(menu);
   await expect(menu).toHaveCSS('opacity', '1');
   const before = await sentence.boundingBox();
   await sentence.hover();

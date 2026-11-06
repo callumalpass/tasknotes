@@ -147,7 +147,7 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
   });
 }
 
-test('narrow calendar keeps navigation and selector together and retains secondary actions', async () => {
+test('narrow calendar shares agenda navigation and retains week selection and secondary actions', async () => {
   const page = instance.page;
   await setObsidianViewport(page, { width: 400, height: 800 });
   await page.evaluate(() => document.body.classList.add('is-mobile'));
@@ -155,9 +155,20 @@ test('narrow calendar keeps navigation and selector together and retains seconda
   const calendar = page.locator('.workspace-leaf.mod-active .tnc');
   const selector = calendar.locator('.tnc-toolbar-view-select');
   await expect(selector).toBeVisible();
-  const navigation = await calendar.locator('.tnc-toolbar-nav').boundingBox();
+  await expect(calendar.locator('.tnc-toolbar-nav')).toBeHidden();
+  await expect(calendar.locator('.tnc-strip-head')).toBeVisible();
+  await expect(calendar.locator('.tnc-strip-today')).toBeHidden();
+  await expect(calendar.locator('.tnc-strip-prev:visible')).toHaveCount(1);
+  await expect(calendar.locator('.tnc-strip-next:visible')).toHaveCount(1);
+  await calendar.locator('.tnc-strip-next').click();
+  await calendar.locator('.tnc-strip-grid button').first().click();
+  await expect(calendar.locator('.tnc-strip-today:visible')).toHaveCount(1);
+  await calendar.locator('.tnc-strip-today').click();
+  await expect(calendar.locator('.tnc-strip-today')).toBeHidden();
+  const navigation = await calendar.locator('.tnc-strip-head').boundingBox();
   const selection = await selector.boundingBox();
-  expect(Math.abs(navigation!.y - selection!.y)).toBeLessThan(4);
+  expect(navigation!.y).toBeGreaterThan(selection!.y);
+  expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(400);
   expect(selection!.height).toBeGreaterThanOrEqual(40);
   expect(await selector.evaluate(element => getComputedStyle(element).appearance)).toBe('auto');
   expect(await selector.evaluate(element => getComputedStyle(element).borderTopColor)).not.toBe('rgba(0, 0, 0, 0)');
@@ -167,6 +178,10 @@ test('narrow calendar keeps navigation and selector together and retains seconda
   await page.keyboard.press('Escape');
   await selector.selectOption('week');
   await expect(calendar.locator('.tnc-tg')).toBeVisible();
+  await expect(calendar.locator('.tnc-toolbar-nav')).toBeVisible();
+  const weekNavigation = await calendar.locator('.tnc-toolbar-nav').boundingBox();
+  const weekSelection = await selector.boundingBox();
+  expect(Math.abs(weekNavigation!.y - weekSelection!.y)).toBeLessThan(4);
   await calendar.locator('.tnc-btn-today').click();
   await calendar.locator('.tnc-more--collision').first().click();
   const timedTask = calendar.locator('.tnc-popover .tnc-item').filter({ hasText: title }).first();
