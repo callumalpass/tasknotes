@@ -70,7 +70,7 @@ test('week stays overviewable and overflow remains readable and reachable after 
   })).toMatchObject({ inside: true });
   await expect(popover.locator('.tnc-popover-close')).toBeInViewport();
   await expect(popover.locator('.tnc-item').first()).toBeVisible();
-  expect((await popover.locator('.tnc-item').first().boundingBox())!.height).toBeGreaterThanOrEqual(40);
+  await expect.poll(() => popover.locator('.tnc-item').first().evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(40);
   await page.keyboard.press('End');
   await expect(popover.locator('.tnc-item').last()).toBeFocused();
   await expect(popover.locator('.tnc-item').last()).toBeInViewport();
@@ -112,7 +112,7 @@ test('month bars use one line and overflow allocates readable title height', asy
   expect(await title.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
   for (const width of [1180, 440]) {
     await setObsidianViewport(page, { width, height: 800 });
-    const more = page.locator('.tnc-dg .tnc-more').first();
+    const more = page.locator(width < 520 ? '.tnc-dg--compact .tnc-dg-day.is-today' : '.tnc-dg .tnc-more').first();
     await expect(more).toBeVisible();
     await more.click();
     const popover = page.locator('.tnc-popover');

@@ -110,6 +110,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Initialize manual ordering with only the ranks needed for the chosen position. Larger note updates ask once in plain language and remain undoable.
 - Restore list and board scroll positions when cancelling a drag, and open touch-held list rows in their context menu.
 - Keep sentence task menus within their line, preserve Kanban card surfaces on hover, and refine the phone column switcher. Task shortcuts use consistent picker positions and Escape dismisses search.
+- Made calendar events easier to read with title-first compact blocks, softer colours, clearer today markers, and quieter overflow rows.
+- Kept task indicators visible on busy days in narrow month calendars and prevented recurring-event highlights from sticking during a drag.
+- Made calendar selection mode visible and kept its actions clear of Undo feedback.
 - Keep the empty Details editor visible and steady while typing in the expanded task composer.
 - Give selected Pomodoro tasks enough metadata width to keep their dates visible on narrow screens.
 - Keep scheduled and due dates on one line in narrow lists, with compact dates and secondary metadata behind the existing overflow control when needed. Full dates remain available in accessible labels and date pickers.

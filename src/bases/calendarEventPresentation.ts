@@ -35,7 +35,11 @@ export function decorateCalendarTaskGlyphs(element: HTMLElement, task: TaskInfo,
 		text.append(...Array.from(title.childNodes));
 		title.append(text);
 	}
-	title.prepend(createTaskGlyphs(element.ownerDocument, task, plugin));
+	const glyphs = createTaskGlyphs(element.ownerDocument, task, plugin);
+	for (const glyph of Array.from(glyphs.children) as HTMLElement[]) {
+		glyph.style.color = `color-mix(in srgb, ${glyph.style.color} 28%, var(--text-normal))`;
+	}
+	title.prepend(glyphs);
 }
 
 export function suppressCalendarContextMenuOnMobile(element: HTMLElement): void {
@@ -197,6 +201,7 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 
 export function attachCalendarTaskHoverLink(root: HTMLElement | null, element: HTMLElement, taskPath: string): void {
 		const setRelatedState = (active: boolean) => {
+			if (active && (element.closest(".tnc-dragging") || root?.querySelector(".tnc-dragging"))) return;
 			const selector = `.fc-task-event[data-task-path="${CSS.escape(taskPath)}"]`;
 			const relatedEvents = root?.querySelectorAll<HTMLElement>(selector) ?? [];
 
