@@ -7,7 +7,7 @@ let today: string;
 let tomorrow: string;
 const folder = `CalendarR7-${Date.now()}`;
 const baseline = process.env.TASKNOTES_R7_BASELINE === '1';
-const output = `/tmp/tasknotes-r7/${process.env.TASKNOTES_R7_SLICE ?? 'w'}/${baseline ? 'before' : 'after'}`;
+const output = process.env.TASKNOTES_E2E_EVIDENCE_DIR ? `${process.env.TASKNOTES_E2E_EVIDENCE_DIR}/composition` : `/tmp/tasknotes-r7/${process.env.TASKNOTES_R7_SLICE ?? 'w'}/${baseline ? 'before' : 'after'}`;
 test.use({ trace: 'on' });
 
 test.beforeAll(async () => {

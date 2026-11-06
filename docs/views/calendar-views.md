@@ -55,7 +55,7 @@ The focused marker's Alt+arrow keyboard move also moves the selected group. Resi
 
 The Calendar View supports the following view modes:
 
-- **Month**: Month grid showing all-day and timed events. Clicking a day selects it and lists its tasks in the selected-day panel, with **Add task** for that date. Turn off **Show selected day panel** in the view options to have a day click open the creation menu and a date number open the daily note
+- **Month**: Month grid showing all-day and timed events. By default, clicking a day opens the creation menu and clicking a date number opens the daily note. Turn on **Show selected day panel** in the view options to select a day and list its tasks, with **Add task** for that date.
 
 Busy timed columns collapse overlapping appointments into a labelled stack when there is not enough room to read them side by side. Open the stack to access its appointments without widening the whole week. At narrow widths, day buttons above the grid reveal offscreen dates; **Today** also brings the current day into view. Overflow lists stay within the visible calendar pane and scroll vertically. All-day bars use single-line ellipsis in the grid, while overflow rows wrap their titles.
 - **Week**: Week view with hourly time slots for detailed scheduling

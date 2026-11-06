@@ -19,7 +19,7 @@ test('calendar cards without status controls keep the title in the flexible trac
       await host.vault.createFolder(folder);
       const day = (window as any).moment().format('YYYY-MM-DD');
       await host.vault.create(`${folder}/Task.md`, `---\ntitle: Recurring project check with a readable title\ntags: [task]\nstatus: open\npriority: high\nscheduled: ${day}\nrecurrence: FREQ=DAILY\n---\n`);
-      const file = await host.vault.create(`${folder}/Calendar.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\nviews:\n  - type: tasknotesCalendar\n    name: Gate eight\n    calendarView: dayGridMonth\n`);
+      const file = await host.vault.create(`${folder}/Calendar.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\nviews:\n  - type: tasknotesCalendar\n    name: Gate eight\n    calendarView: dayGridMonth\n    showMonthDayPanel: true\n`);
       const leaf = host.workspace.getLeaf(false);
       await leaf.openFile(file);
       host.workspace.setActiveLeaf(leaf, { focus: true });

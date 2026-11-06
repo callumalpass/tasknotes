@@ -34,11 +34,10 @@ test("narrow month summaries follow available pane width without rebuilding on e
 	expect(calendar.setOptions).toHaveBeenCalledTimes(2);
 });
 
-test("a narrow month without a selected-day panel retains detailed event bars", () => {
-	const { calendar, view } = composition(400, false);
+test.each([240, 400, 700, 850])("a month without a selected-day panel retains readable chips at %ipx", (width) => {
+	const { calendar, view } = composition(width, false);
 	view.onResize();
-	expect(calendar.setOptions).not.toHaveBeenCalled();
-	expect(view.getMonthDisplay()).toBe("full");
+	expect(calendar.setOptions).toHaveBeenLastCalledWith({ monthDisplay: "chips", dayMaxEventRows: 0 });
 });
 
 test("a hidden pane does not switch to summary mode at zero width", () => {

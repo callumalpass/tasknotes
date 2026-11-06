@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 const baseline = process.env.TASKNOTES_CAL3_BASELINE === '1';
-const evidence = `/tmp/tasknotes-r7/cal3/${baseline ? 'before' : 'after'}`;
+const evidence = process.env.TASKNOTES_E2E_EVIDENCE_DIR ? `${process.env.TASKNOTES_E2E_EVIDENCE_DIR}/cal3` : `/tmp/tasknotes-r7/cal3/${baseline ? 'before' : 'after'}`;
 const folder = `CalendarCal3-${Date.now()}`;
 let instance: ObsidianApp;
 let today: string;

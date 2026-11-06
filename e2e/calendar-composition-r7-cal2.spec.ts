@@ -5,7 +5,7 @@ import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } 
 let instance: ObsidianApp;
 const folder = 'CalendarCal2';
 const root = '.workspace-leaf.mod-active #bases-calendar';
-const output = '/tmp/tasknotes-r7/cal2';
+const output = process.env.TASKNOTES_E2E_EVIDENCE_DIR ?? '/tmp/tasknotes-r7/cal2';
 const baseline = process.env.CAL2_BASELINE === '1';
 test.use({ trace: 'on' });
 

@@ -60,9 +60,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Align task and timeblock editor typography and controls, reducing the empty description space in timeblocks.
 - Shorten task and timeblock confirmations while preserving Open, Undo, and filename explanations in every language.
 
-- Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes. Phone-width months with the selected-day panel show activity dots instead of clipped event labels; day headings, empty days and year calendars have clearer date hierarchy.
-- Calendar events use clearer filled colours and emphasize titles over decorative glyphs. Narrow Month cells retain compact title chips, with the full selected-day task list below and dots reserved for extremely narrow panes.
-- Calendar Month gives more width to the grid beside its selected-day panel. Narrow calendars use one scrolling composition, and agenda rows share a title edge without repeating the same date range above the date strip.
+- Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes. Narrow months use compact title chips; the smallest panes can use activity dots when the optional selected-day panel is on. Day headings, empty days and year calendars have clearer date hierarchy.
+- Calendar events use clearer filled colours and emphasize titles over decorative glyphs. Narrow Month cells retain compact title chips; enabling the selected-day panel adds the full task list below and allows dots in extremely narrow panes.
+- Calendar Month gives more width to the grid beside the optional selected-day panel. Narrow calendars use one scrolling composition, and agenda rows share a title edge without repeating the same date range above the date strip.
 
 - Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes; day headings, empty days and year calendars have clearer date hierarchy.
 
@@ -78,7 +78,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Task lists use calmer two-line rows, plain-text metadata, aligned dates and right-aligned section counts. Hover stays still, selection and keyboard focus remain distinct, and mobile row controls have separate touch targets.
 - List dragging shows a title and selection count, dims source rows and keeps drop positions stable during background refresh. Dragging a selected row moves the visible selection; Escape cancels without changes, and manual reorder supports Undo. Status controls show pending and failed writes without accepting duplicate clicks.
 - Agenda views open with an expandable week-to-month date strip, task-day dots, and an add-task row for each day. The date strip can be turned off in the Base's view options; existing date, filter and display settings still apply.
-- Month views show a selected-day panel by default, with the same task status controls and menus as the agenda. The panel sits beside the month in wide panes and below it in narrow panes. Clicking a day or its date number now selects that day; turn off Show selected day panel in the view options to keep opening the daily note and creation menu instead.
+- Month views offer a **Show selected day panel** option, with the same task status controls and menus as the agenda. The panel sits beside the month in wide panes and below it in narrow panes. By default, clicking a day opens the creation menu and clicking a date number opens the daily note. Turning on the panel selects the day and lists its tasks with **Add task**. Narrow months keep readable title chips and overflow lists with the panel on or off.
 - Calendar stacks show an appointment count and a hint of their contents. Tracked-time titles no longer split into letter fragments, adjacent appointments have a visible boundary, and calendar move feedback uses localised dates and times. Agenda and mini-calendar selection, focus and drag treatments follow the active Obsidian theme.
 
 - Time-bearing dates stay complete in narrow task rows, with lower-priority metadata yielding space first. Unknown status and priority recovery opens the relevant expanded Task properties section, including from board columns.
@@ -111,7 +111,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Respect the configured 12- or 24-hour time format in calendar move feedback and reminder notifications.
 - Keep weekday labels, dates and today's marker inside narrow Week headers. Calendar moves now retain a dim copy at the original position while previewing the destination.
-- Compact the phone month overview to reveal selected-day tasks sooner, and show quieter inline file identities beside mini-calendar task titles while keeping direct note access.
+- Compact the phone month overview to reveal selected-day tasks sooner when the panel is enabled, and show quieter inline file identities beside mini-calendar task titles while keeping direct note access.
 
 - Keep reading-mode task widgets alongside Markdown checkboxes, fit recurrence and reminder controls in narrow task forms, and use the same lifted task-card preview when dragging in lists and boards.
 
@@ -149,7 +149,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Keep desktop list dates aligned when optional metadata is absent, and show the full Kanban hidden-property count.
 - Keep invalid-drop explanations inside the visible list and show Kanban insertion markers when dragging near a card's edge.
 - Restore mini-calendar keyboard navigation after dismissing its note chooser.
-- Keep the selected-day panel visible after calendar overflow, theme and width changes, preserving the selected date and tasks.
+- Keep the selected-day panel visible when enabled after calendar overflow, theme and width changes, preserving the selected date and tasks.
 - Keep mobile task status targets separate from movement handles, preserve keyboard navigation in open task menus, and use the shared title, action/date and metadata layout in Pomodoro and selected-day rows without horizontal panning.
 - Pomodoro history shows the resolved task title, falling back to the filename only for unavailable tasks.
 - Held calendar drags no longer leave duplicate source text underneath neighbouring events. Sentence task references keep compact controls with out-of-line touch areas.
@@ -176,7 +176,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Search placeholders have stronger theme-derived contrast, and default metadata field labels use consistent casing while preserving custom labels.
 - Calendar drags released outside a valid date target are cancelled instead of saving the last hovered time. Timeblock Undo updates the displayed times without reopening the view.
 - Year calendars keep their date targets inside each month in narrow panes. Agenda date selection no longer scrolls the surrounding workspace, and empty selected days retain their heading.
-- Calendar collision stacks show their full occupied interval, short tracked entries keep readable titles, and narrow month calendars keep the selected-day panel visible. Tracked entries show their actual duration rather than the task estimate.
+- Calendar collision stacks show their full occupied interval, short tracked entries keep readable titles, and narrow month calendars keep the selected-day panel visible when enabled. Tracked entries show their actual duration rather than the task estimate.
 - Kanban uses quieter column headers and readable, wrapping card metadata. Dragged tasks remain dimmed in place, multi-task previews show their count without clipping, and insertion markers stay beside the actual drop position. Formula-based boards explain why a move is unavailable before dropping; edge scrolling works vertically as well as horizontally.
 - Narrow task and agenda rows keep dates and their overflow controls within the pane, including larger text sizes.
 - Statistics period sections stack in narrow panes instead of squeezing into three columns.

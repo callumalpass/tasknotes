@@ -18,6 +18,7 @@ import { openListPicker } from "../ui/kit/listPicker";
 import {
 	Calendar,
 	basesLayoutOptions,
+	parseDay,
 	viewToBases,
 	type CalendarOptions,
 	type ExternalDropArg,
@@ -272,7 +273,7 @@ export class CalendarView extends BasesViewBase {
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
 			showAgendaStrip: true,
-			showMonthDayPanel: true,
+			showMonthDayPanel: false,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -359,6 +360,10 @@ export class CalendarView extends BasesViewBase {
 			this.register(() => observer.disconnect());
 			this.registerDomEvent(this.rootElement, "click", (event: MouseEvent) => {
 				if ((event.target as HTMLElement).closest(".tnc-btn-view")) this.explicitlyChosenView = true;
+				this.openMonthChipOverflow(event);
+			}, { capture: true });
+			this.registerDomEvent(this.rootElement, "keydown", (event: KeyboardEvent) => {
+				if (event.key === "Enter" || event.key === " ") this.openMonthChipOverflow(event);
 			}, { capture: true });
 			const preview = new CalendarBatchPreview({
 				root: this.rootElement,
@@ -439,8 +444,8 @@ export class CalendarView extends BasesViewBase {
 
 	private getMonthDisplay(): CalendarOptions<CalendarEventProps>["monthDisplay"] {
 		const width = this.rootElement?.clientWidth ?? 0;
-		return this.viewOptions.showMonthDayPanel && width > 0 && width <= 850
-			? width < 280 ? "dots" : "chips"
+		return width > 0 && width <= 850
+			? width < 280 && this.viewOptions.showMonthDayPanel ? "dots" : "chips"
 			: basesLayoutOptions<CalendarEventProps>(this.viewOptions).monthDisplay ?? "full";
 	}
 
@@ -840,7 +845,7 @@ export class CalendarView extends BasesViewBase {
 				this.viewOptions.listDayCount
 			);
 			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
-			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", true);
+			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
@@ -1378,7 +1383,35 @@ export class CalendarView extends BasesViewBase {
 		this.syncDayPanel();
 	}
 
+	private openMonthChipOverflow(event: MouseEvent | KeyboardEvent): void {
+		if (this.viewOptions.showMonthDayPanel) return;
+		const target = (event.target as HTMLElement).closest<HTMLElement>(".tnc-dg--chips .tnc-dg-dots-more");
+		const date = target?.closest<HTMLElement>("[data-date]")?.dataset.date;
+		const day = date ? parseDay(date) : null;
+		if (!target || day === null) return;
+		event.preventDefault();
+		this.calendar?.openMore(day, target, event);
+	}
+
+	private syncMonthChipControls(): void {
+		if (!this.calendar || this.viewOptions.showMonthDayPanel) return;
+		for (const cell of this.calendarEl?.querySelectorAll<HTMLElement>(".tnc-dg--chips .tnc-dg-day") ?? []) {
+			const day = parseDay(cell.dataset.date ?? "");
+			if (day === null) continue;
+			const number = cell.querySelector<HTMLElement>(".tnc-dg-top > span.tnc-dg-num");
+			if (number) number.replaceWith(this.calendar.navLink(day, number.textContent ?? "", "tnc-dg-num"));
+			const more = cell.querySelector<HTMLElement>(".tnc-dg-dots-more");
+			if (more) {
+				more.parentElement?.removeAttribute("aria-hidden");
+				more.setAttribute("role", "button");
+				more.setAttribute("tabindex", "0");
+				more.setAttribute("data-tnc-no-drag", "");
+			}
+		}
+	}
+
 	private syncDayPanel(): void {
+		this.syncMonthChipControls();
 		this.calendarEl?.classList.toggle("tn-calendar-agenda-strip", this.viewOptions.showAgendaStrip && this.visibleView?.type === "list");
 		const enabled = this.viewOptions.showMonthDayPanel && this.visibleView?.type === "month";
 		this.calendarEl?.classList.toggle("tn-calendar-composition", enabled);

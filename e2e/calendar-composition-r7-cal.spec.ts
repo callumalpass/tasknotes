@@ -6,7 +6,7 @@ let instance: ObsidianApp;
 let today: string;
 let emptyDay: string;
 const folder = `CalendarComposition-${Date.now()}`;
-const output = '/tmp/tasknotes-r7/cal2/regression';
+const output = `${process.env.TASKNOTES_E2E_EVIDENCE_DIR ?? '/tmp/tasknotes-r7/cal2'}/regression`;
 const root = '.workspace-leaf.mod-active #bases-calendar';
 test.use({ trace: 'on' });
 

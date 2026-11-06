@@ -1306,33 +1306,24 @@ test.describe('Task Quick Add', () => {
     const calendar = page.locator('.workspace-leaf.mod-active #bases-calendar > .tnc');
     await expect(calendar).toBeVisible();
 
-    const showMonthDayPanel = await page.evaluate(() => {
+    await page.evaluate(() => {
       const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
-      const previous = view.viewOptions.showMonthDayPanel;
-      view.config.set('showMonthDayPanel', false);
       view.calendar.changeView('month');
-      return previous;
     });
     await expect.poll(() => page.evaluate(() =>
       (window as any).app.workspace.getMostRecentLeaf().view.controller.view.viewOptions.showMonthDayPanel
     )).toBe(false);
 
-    try {
-      const dayCell = calendar.locator('.tnc-dg-day').first();
-      await expect(dayCell).toBeVisible();
-      // Items are drawn over the cells; click the empty bottom edge of the day.
-      const cellBox = await dayCell.boundingBox();
-      await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
-      await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
-      await page.screenshot({ path: 'test-results/screenshots/quick-add-from-calendar.png' });
+    const dayCell = calendar.locator('.tnc-dg-day').first();
+    await expect(dayCell).toBeVisible();
+    // Items are drawn over the cells; click the empty bottom edge of the day.
+    const cellBox = await dayCell.boundingBox();
+    await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
+    await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/quick-add-from-calendar.png' });
 
-      // Close any modal that opened
-      await page.keyboard.press('Escape');
-    } finally {
-      await page.evaluate(previous => {
-        (window as any).app.workspace.getMostRecentLeaf().view.controller.view.config.set('showMonthDayPanel', previous);
-      }, showMonthDayPanel);
-    }
+    // Close any modal that opened
+    await page.keyboard.press('Escape');
   });
 });
 

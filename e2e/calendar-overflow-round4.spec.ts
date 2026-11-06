@@ -44,7 +44,7 @@ async function openCalendar(showMonthDayPanel = true) {
   }, { folder, content });
 }
 
-test('week stays overviewable and overflow remains readable and reachable after resize', async () => {
+test('week stays overviewable and overflow remains readable and reachable after resize', async ({}, testInfo) => {
   const page = instance.page;
   await openCalendar();
   const grid = page.locator('.workspace-leaf.mod-active .tnc-tg-scroll');
@@ -52,7 +52,7 @@ test('week stays overviewable and overflow remains readable and reachable after 
   await page.locator('.tnc-btn-view-day').click();
   await page.locator('.tnc-btn-view-week').click();
   await expect(page.locator('.tnc-item, .tnc-more').first()).toBeVisible();
-  await page.screenshot({ path: '/tmp/slice-p-week.png' });
+  await page.screenshot({ path: testInfo.outputPath('week.png') });
   expect(await grid.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(2);
   const more = page.locator('.tnc-more--collision').first();
   await more.click();
@@ -77,12 +77,12 @@ test('week stays overviewable and overflow remains readable and reachable after 
   await page.keyboard.press('Home');
   await expect(popover.locator('.tnc-item').first()).toBeFocused();
   await page.locator('.notice-container .notice').evaluateAll(elements => elements.forEach(element => element.remove()));
-  await page.screenshot({ path: '/tmp/slice-p-mobile-overflow.png' });
+  await page.screenshot({ path: testInfo.outputPath('mobile-overflow.png') });
   await page.evaluate(() => {
     document.body.classList.remove('theme-light');
     document.body.classList.add('theme-dark');
   });
-  await page.screenshot({ path: '/tmp/slice-p-mobile-overflow-dark.png' });
+  await page.screenshot({ path: testInfo.outputPath('mobile-overflow-dark.png') });
   await page.keyboard.press('Escape');
   await expect(popover).toBeHidden();
   await page.locator('.tnc-btn-today').click();
@@ -90,11 +90,12 @@ test('week stays overviewable and overflow remains readable and reachable after 
   await setObsidianViewport(page, { width: 1180, height: 800 });
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
   await expect(page.locator('.tnc-tg-day-navigation')).toBeHidden();
-  await page.screenshot({ path: '/tmp/slice-p-week-dark.png' });
+  await page.screenshot({ path: testInfo.outputPath('week-dark.png') });
 });
 
-test('month bars use one line and overflow allocates readable title height', async () => {
+test('month bars use one line and overflow allocates readable title height', async ({}, testInfo) => {
   const page = instance.page;
+  await setObsidianViewport(page, { width: 1180, height: 800 });
   await openCalendar(false);
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
   await page.evaluate(async folder => {
@@ -112,7 +113,7 @@ test('month bars use one line and overflow allocates readable title height', asy
   expect(await title.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
   for (const width of [1180, 440]) {
     await setObsidianViewport(page, { width, height: 800 });
-    const more = page.locator(width < 520 ? '.tnc-dg--compact .tnc-dg-day.is-today' : '.tnc-dg .tnc-more').first();
+    const more = page.locator(width < 520 ? '.tnc-dg--chips .tnc-dg-day.is-today .tnc-dg-dots-more' : '.tnc-dg .tnc-more').first();
     await expect(more).toBeVisible();
     await more.click();
     const popover = page.locator('.tnc-popover');
@@ -133,7 +134,7 @@ test('month bars use one line and overflow allocates readable title height', asy
         document.body.classList.remove('theme-light', 'theme-dark');
         document.body.classList.add(`theme-${theme}`);
       }, theme);
-      await page.screenshot({ path: `/tmp/slice-p-month-${width}-${theme}.png` });
+      await page.screenshot({ path: testInfo.outputPath(`month-${width}-${theme}.png`) });
     }
     await page.keyboard.press('Escape');
     await expect(more).toBeFocused();

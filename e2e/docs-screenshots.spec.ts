@@ -40,6 +40,8 @@ test.beforeAll(async () => {
   app = await launchObsidian();
   // Set viewport for consistent screenshots
   await setObsidianViewport(app.page, DOC_VIEWPORT);
+  const notice = app.page.locator('.notice').filter({ hasText: 'Secrets are stored without encryption' });
+  if (await notice.count()) await notice.click({ position: { x: 8, y: 8 } });
 });
 
 test.afterAll(async () => {
@@ -601,32 +603,20 @@ test.describe('Workflows', () => {
       await page.waitForTimeout(500);
     }
 
-    const showMonthDayPanel = await page.evaluate(() => {
-      const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
-      const previous = view.viewOptions.showMonthDayPanel;
-      view.config.set('showMonthDayPanel', false);
-      return previous;
-    });
     await expect.poll(() => page.evaluate(() =>
       (window as any).app.workspace.getMostRecentLeaf().view.controller.view.viewOptions.showMonthDayPanel
     )).toBe(false);
 
-    try {
-      const dayCell = page.locator('.workspace-leaf.mod-active .tnc-dg-day').nth(15); // Middle of month
-      await expect(dayCell).toBeVisible();
-      // Items are drawn over the cells; click the empty bottom edge of the day.
-      const cellBox = await dayCell.boundingBox();
-      await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
-      await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
+    const dayCell = page.locator('.workspace-leaf.mod-active .tnc-dg-day').nth(15); // Middle of month
+    await expect(dayCell).toBeVisible();
+    // Items are drawn over the cells; click the empty bottom edge of the day.
+    const cellBox = await dayCell.boundingBox();
+    await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
+    await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
 
-      await docScreenshot(page, 'workflow-quick-add-calendar');
+    await docScreenshot(page, 'workflow-quick-add-calendar');
 
-      await page.keyboard.press('Escape');
-    } finally {
-      await page.evaluate(previous => {
-        (window as any).app.workspace.getMostRecentLeaf().view.controller.view.config.set('showMonthDayPanel', previous);
-      }, showMonthDayPanel);
-    }
+    await page.keyboard.press('Escape');
   });
 
   test('task-context-menu', async () => {
