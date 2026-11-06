@@ -1,6 +1,5 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
- * see LICENSE beside this file; library release 0.1.8 is required for integration).
+ * Pinned host copy of @tasknotes/calendar 0.1.8 (MIT, see LICENSE beside this file).
  * Upstream sha256 c24c45fbfc02428ca0de935d69aa1fea58437f3e129f58b2accb432e1897270d.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
