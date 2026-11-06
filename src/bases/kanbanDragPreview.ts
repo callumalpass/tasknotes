@@ -10,7 +10,13 @@ export class KanbanDragPreview {
 	private floatingDragPreviewPendingX = 0;
 	private floatingDragPreviewPendingY = 0;
 	private invalidReason: string | null = null;
-	show(sourceElement: HTMLElement, event: DragEvent, count: number, fallbackTitle: string): void {
+	show(
+		sourceElement: HTMLElement,
+		event: Pick<DragEvent, "clientX" | "clientY">,
+		count: number,
+		fallbackTitle: string,
+		className?: string
+	): void {
 		this.destroy();
 
 		const doc = sourceElement.ownerDocument;
@@ -26,13 +32,19 @@ export class KanbanDragPreview {
 		titleEl.textContent = title;
 
 		preview.classList.add("tasknotes-plugin", "kanban-view__floating-drag-preview");
+		if (className) preview.classList.add(className);
 		const sourceCard = sourceElement.matches(".task-card")
 			? sourceElement
 			: sourceElement.querySelector(".task-card");
 		if (sourceCard) {
 			const wrapper = preview.createDiv({ cls: "kanban-view__card-wrapper" });
 			const card = sourceCard.cloneNode(true) as HTMLElement;
-			card.classList.remove("task-card--selected", "task-card--selected-primary", "tn-task-focused", "tn-task-arrived");
+			card.classList.remove(
+				"task-card--selected", "task-card--selected-primary", "tn-task-focused", "tn-task-arrived",
+				"task-card--dragging", "task-list-view__drag-source", "kanban-view__card--dragging",
+				"task-card--reorderable", "task-card--drag-handle-only"
+			);
+			card.querySelectorAll(".task-card__drag-handle").forEach(element => element.remove());
 			card.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
 			card.removeAttribute("id");
 			card.removeAttribute("data-task-path");
@@ -63,13 +75,13 @@ export class KanbanDragPreview {
 		this.floatingDragPreviewDocument = doc;
 
 		const handleMove = (dragEvent: DragEvent) => {
-			this.positionFloatingDragPreview(dragEvent.clientX, dragEvent.clientY);
+			this.move(dragEvent.clientX, dragEvent.clientY);
 		};
 		this.floatingDragPreviewMoveHandler = handleMove;
 		doc.addEventListener("drag", handleMove, true);
 		doc.addEventListener("dragover", handleMove, true);
 
-		this.positionFloatingDragPreview(event.clientX, event.clientY);
+		this.move(event.clientX, event.clientY);
 	}
 
 	setInvalid(reason: string | null): void {
@@ -87,7 +99,7 @@ export class KanbanDragPreview {
 		this.floatingDragPreviewHeight = preview.getBoundingClientRect().height;
 	}
 
-	private positionFloatingDragPreview(clientX: number, clientY: number): void {
+	move(clientX: number, clientY: number): void {
 		const preview = this.floatingDragPreviewEl;
 		if (!preview || (clientX === 0 && clientY === 0)) return;
 

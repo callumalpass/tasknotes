@@ -176,7 +176,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     }, folder);
     await startDrag(card(0), { x: target.x + 180, y: target.y + 3 });
     await expect(root().locator('.task-list-view__drag-source')).toHaveCount(2);
-    await expect(page.locator('.task-list-view__drag-detail')).toHaveText('2 tasks selected');
+    await expect(page.locator('.task-list-view__touch-ghost')).toHaveAttribute('data-drag-count', '2');
     await capture(`${theme}-1180-multi-drag`);
     await page.keyboard.press('Escape');
     await page.mouse.up();

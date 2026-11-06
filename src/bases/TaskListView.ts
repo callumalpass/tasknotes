@@ -29,6 +29,7 @@ import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
+import { KanbanDragPreview } from "./kanbanDragPreview";
 import { groupKeyLabel, NONE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
@@ -255,7 +256,7 @@ export class TaskListView extends BasesViewBase {
 	private emptyDestinations: HTMLElement | null = null;
 	private touchMovement: TaskMovementTouch | null = null;
 	private edgeScroll: TaskMovementAutoScroll | null = null;
-	private touchGhost: HTMLElement | null = null;
+	private dragPreview = new KanbanDragPreview();
 	private restoreDragScroll: (() => void) | null = null;
 	private reorderConfirmed = false;
 
@@ -1125,7 +1126,7 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			e.stopPropagation();
-			this.beginTaskMovement(cardEl, task, groupKey);
+			this.beginTaskMovement(cardEl, task, groupKey, e);
 			this.updateTouchGhost(e.clientX, e.clientY);
 			if (e.dataTransfer) {
 				// copyMove: Calendar views accept the task path as a copy-style drop
@@ -1144,7 +1145,12 @@ export class TaskListView extends BasesViewBase {
 		});
 	}
 
-	private beginTaskMovement(card: HTMLElement, task: TaskInfo, groupKey: string | null): void {
+	private beginTaskMovement(
+		card: HTMLElement,
+		task: TaskInfo,
+		groupKey: string | null,
+		position: Pick<DragEvent, "clientX" | "clientY">
+	): void {
 		this.reorderConfirmed = false;
 		this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
 		this.draggedTaskPath = task.path;
@@ -1170,15 +1176,7 @@ export class TaskListView extends BasesViewBase {
 				element.classList.add("task-card--dragging", "task-list-view__drag-source");
 		});
 		this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
-		this.touchGhost = createElementInDocument(card.ownerDocument, "div");
-		this.touchGhost.className = "task-list-view__touch-ghost";
-		this.touchGhost.setAttribute("aria-hidden", "true");
-		this.touchGhost.createDiv({ cls: "task-list-view__drag-title", text: task.title });
-		const detail = this.draggedTaskPaths.length > 1
-			? uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: this.draggedTaskPaths.length })
-			: Array.from(card.querySelectorAll(".task-card__metadata-date")).map((date) => date.getAttribute("aria-label") ?? date.textContent).join(" · ");
-		if (detail) this.touchGhost.createDiv({ cls: "task-list-view__drag-detail", text: detail });
-		this.rootElement?.appendChild(this.touchGhost);
+		this.dragPreview.show(card, position, this.draggedTaskPaths.length, task.title, "task-list-view__touch-ghost");
 		// Keep the source row and target measurements stable throughout the gesture.
 		this.currentInsertionGroupKey = groupKey;
 		this.currentInsertionSegmentIndex = -1;
@@ -1187,32 +1185,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private updateTouchGhost(x: number, y: number): void {
-		if (!this.touchGhost) return;
-		const win = this.containerEl.ownerDocument.defaultView ?? window;
-		const bounds = this.rootElement?.getBoundingClientRect();
-		const left = Math.max(
-			8,
-			Math.min(
-				x - (bounds?.left ?? 0) + 12,
-				Math.min(bounds?.right ?? win.innerWidth, win.innerWidth) -
-					(bounds?.left ?? 0) -
-					this.touchGhost.offsetWidth -
-					8
-			)
-		);
-		const top =
-			Math.max(
-				8,
-				Math.min(
-					y - (bounds?.top ?? 0) + 12,
-					Math.min(bounds?.bottom ?? win.innerHeight, win.innerHeight) -
-						(bounds?.top ?? 0) -
-						this.touchGhost.offsetHeight -
-						8
-				)
-			) + (this.rootElement?.scrollTop ?? 0);
-		this.touchGhost?.style.setProperty("--tn-movement-x", `${left}px`);
-		this.touchGhost?.style.setProperty("--tn-movement-y", `${top}px`);
+		this.dragPreview.move(x, y);
 	}
 
 	private async finishTaskMovement(target: EventTarget | null, clientY: number): Promise<void> {
@@ -1768,7 +1741,7 @@ export class TaskListView extends BasesViewBase {
 			(intent?.kind === "parent" && intent.state === "assign");
 		this.rootElement?.classList.toggle("task-list-view--invalid-drop", !this.currentDropAllowed);
 		this.containerEl.ownerDocument.body.classList.toggle("tn-drag-invalid", !this.currentDropAllowed);
-		this.touchGhost?.classList.toggle("task-list-view__touch-ghost--invalid", !this.currentDropAllowed);
+		this.dragPreview.setInvalid(this.currentDropAllowed ? null : this.movementFeedback?.textContent ?? "");
 		return intent;
 	}
 
@@ -1883,8 +1856,7 @@ export class TaskListView extends BasesViewBase {
 		this.restoreDragScroll = null;
 		if (cancelTouch) this.touchMovement?.cancel();
 		this.edgeScroll?.stop();
-		this.touchGhost?.remove();
-		this.touchGhost = null;
+		this.dragPreview.destroy();
 		if (this.dragOverRafId) {
 			(this.containerEl.ownerDocument.defaultView ?? window).cancelAnimationFrame(
 				this.dragOverRafId
@@ -2551,7 +2523,8 @@ export class TaskListView extends BasesViewBase {
 				this.beginTaskMovement(
 					card,
 					task,
-					this.elementDestinations.get(card)?.groupKey ?? null
+					this.elementDestinations.get(card)?.groupKey ?? null,
+					{ clientX: x, clientY: y }
 				);
 				this.updateTouchGhost(x, y);
 				return true;

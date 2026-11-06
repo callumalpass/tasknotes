@@ -601,6 +601,9 @@ export class ReadingModeTaskLinkProcessor {
 
 			const textContainer = linkEl.closest("p, li, h1, h2, h3, h4, h5, h6, td, th") ?? linkEl.parentElement;
 			const inSentence = (textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? "");
+			if (!inSentence && linkEl.closest("li.task-list-item")) {
+				linkEl.parentElement?.classList.add("tasknotes-inline-widget-host");
+			}
 			// Create a task widget instance
 			const widget = new TaskLinkWidget(
 				taskInfo, this.plugin, originalText, displayText,

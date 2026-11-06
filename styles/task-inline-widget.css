@@ -527,12 +527,22 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
     container-type: inline-size;
 }
 
+.markdown-preview-view .tasknotes-inline-widget-host {
+    container-type: inline-size;
+}
+
+.markdown-preview-view .tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
+    display: inline;
+    container-type: normal;
+}
+
 @container (max-width: 480px) {
     .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
-        display: block;
+        display: inline-block;
         width: 100%;
         max-width: 100%;
         white-space: normal;
+        vertical-align: top;
     }
 
     .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline .task-card__main-row {

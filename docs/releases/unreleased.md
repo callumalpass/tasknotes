@@ -113,6 +113,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Keep weekday labels, dates and today's marker inside narrow Week headers. Calendar moves now retain a dim copy at the original position while previewing the destination.
 - Compact the phone month overview to reveal selected-day tasks sooner, and show quieter inline file identities beside mini-calendar task titles while keeping direct note access.
 
+- Keep reading-mode task widgets alongside Markdown checkboxes, fit recurrence and reminder controls in narrow task forms, and use the same lifted task-card preview when dragging in lists and boards.
+
 - Keep calendar agenda and selected-day titles in the flexible column when status controls are not configured.
 - Keep open task metadata disclosures visible during background row updates in lists, boards, agendas and selected-day panels.
 - Keep Kanban and list manual ordering consistent without reversing other cards after a drop. Reorder feedback counts moved tasks rather than notes updated.
