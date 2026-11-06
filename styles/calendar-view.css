@@ -92,10 +92,74 @@
     color: var(--tn-text-normal);
 }
 
+.tasknotes-plugin.tn-tasknotesMiniCalendar {
+    container-type: inline-size;
+}
+
 .tasknotes-plugin .mini-calendar-bases-view {
     width: 100%;
-    max-width: 360px;
-    align-self: flex-start;
+    max-width: calc(var(--tn-space-8) * 16);
+    align-self: center;
+    margin-inline: auto;
+    padding: var(--tn-space-4);
+    box-sizing: border-box;
+}
+
+@container (max-width: 430px) {
+    .tasknotes-plugin .mini-calendar-bases-view {
+        padding-inline: 0;
+    }
+}
+
+.tasknotes-plugin .mini-calendar-view__selected-day {
+    margin-block-start: var(--tn-space-4);
+    border-top: 1px solid var(--tn-hairline);
+    padding-block-start: var(--tn-space-3);
+}
+
+.tasknotes-plugin .mini-calendar-view__selected-heading {
+    margin: 0 0 var(--tn-space-2);
+    color: var(--tn-text-normal);
+    font-size: var(--tn-type-sm);
+    font-weight: var(--tn-font-weight-semibold);
+}
+
+.tasknotes-plugin .mini-calendar-view__entry {
+    display: flex;
+    width: 100%;
+    height: auto;
+    min-height: var(--tn-touch-target);
+    padding: 0 var(--tn-space-2);
+    text-align: start;
+    white-space: normal;
+}
+
+.tasknotes-plugin .mini-calendar-view__entry .mini-calendar-view__entry-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--tn-space-half);
+    width: 100%;
+    min-width: 0;
+    padding-inline: 0;
+    pointer-events: none;
+}
+
+.tasknotes-plugin .mini-calendar-view__entry .tn-picker__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tasknotes-plugin .mini-calendar-view__entry .tn-picker__detail {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .mini-calendar-view__week .mini-calendar-view__day {
+    min-height: var(--tn-touch-target);
 }
 
 .tasknotes-plugin .calendar-view__nav-button,
@@ -1220,25 +1284,22 @@ body.is-mobile .tasknotes-plugin .mini-calendar-view__grid .mini-calendar-view__
     position: absolute;
     bottom: var(--tn-space-half);
     width: var(--tn-space-1);
-    height: var(--tn-space-half);
+    height: var(--tn-space-1);
     border-radius: var(--tn-radius-full);
     background: currentColor;
-    opacity: 0.35;
-}
-
-.tasknotes-plugin .mini-calendar-view__day--intensity-medium::before {
-    width: var(--tn-space-2);
-    opacity: 0.5;
-}
-
-.tasknotes-plugin .mini-calendar-view__day--intensity-high::before {
-    width: var(--tn-space-3);
     opacity: 0.65;
 }
 
-.tasknotes-plugin .mini-calendar-view__day--intensity-very-high::before {
-    width: var(--tn-space-4);
+.tasknotes-plugin .mini-calendar-view__day--intensity-medium::before {
     opacity: 0.8;
+}
+
+.tasknotes-plugin .mini-calendar-view__day--intensity-high::before {
+    opacity: 0.9;
+}
+
+.tasknotes-plugin .mini-calendar-view__day--intensity-very-high::before {
+    opacity: 1;
 }
 
 /* Preserve hover effect on heat map days */

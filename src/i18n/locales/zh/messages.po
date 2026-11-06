@@ -8299,7 +8299,7 @@ msgid "Next export: {time}"
 msgstr "下次导出：{time}"
 
 #: src/bases/MiniCalendarView.ts
-#: src/modals/taskEditCompletions.ts
+#: src/ui/kit/monthCalendar.ts
 msgctxt "components.dateContextMenu.nextMonth"
 msgid "Next month"
 msgstr "下个月"
@@ -9901,7 +9901,7 @@ msgid "Previous"
 msgstr "上一个"
 
 #: src/bases/MiniCalendarView.ts
-#: src/modals/taskEditCompletions.ts
+#: src/ui/kit/monthCalendar.ts
 msgctxt "modals.taskEdit.previousMonth"
 msgid "Previous month"
 msgstr "上个月"

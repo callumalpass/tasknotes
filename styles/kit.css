@@ -529,9 +529,9 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     display: flex;
     align-items: center;
     gap: var(--tn-space-2);
-    min-height: var(--tn-touch-target);
+    min-height: var(--tn-control-md);
     box-sizing: border-box;
-    padding: var(--tn-space-2);
+    padding: var(--tn-space-1) var(--tn-space-2);
     border-radius: var(--tn-radius-sm);
     cursor: pointer;
 }
@@ -925,13 +925,9 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     overflow-wrap: anywhere;
 }
 
-.tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child .stats-view__overview-value,
-.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics > :nth-child(odd) .pomodoro-stats-view__overview-value {
+.tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child .stats-view__overview-value {
     font-size: var(--tn-type-xl);
     color: var(--tn-text-normal);
-}
-
-.tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child .stats-view__overview-value {
     order: 0;
 }
 
@@ -1046,12 +1042,65 @@ body.is-mobile .tasknotes-plugin .tn-btn {
 }
 
 .tn-picker[data-input-mode="keyboard"] .tn-picker__row.is-active:not([aria-disabled="true"]) {
-    outline: var(--tn-space-half) solid var(--tn-focus-ring);
-    outline-offset: calc(-1 * var(--tn-space-half));
+    background: var(--tn-selected);
+    outline: none;
 }
 
 .tn-picker[data-input-mode] .tn-picker__input:focus-visible {
     outline: none;
+}
+
+.tasknotes-plugin .tn-month-calendar {
+    margin-block: var(--tn-space-3);
+}
+
+.tasknotes-plugin .tn-month-calendar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tn-space-2);
+    margin-bottom: var(--tn-space-2);
+}
+
+.tasknotes-plugin .tn-month-calendar__month {
+    font-size: var(--tn-type-sm);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+.tasknotes-plugin .tn-month-calendar__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--tn-space-half);
+}
+
+.tasknotes-plugin .tn-month-calendar__day {
+    min-width: 0;
+    min-height: var(--tn-touch-target);
+    padding: var(--tn-space-1);
+    justify-content: center;
+    border-radius: var(--tn-radius-md);
+    font-variant-numeric: tabular-nums;
+}
+
+.tasknotes-plugin .tn-month-calendar__weekday {
+    padding-block: var(--tn-space-1);
+    text-align: center;
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .tn-month-calendar__day.is-outside-month {
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .tn-month-calendar__day[aria-current="date"] {
+    color: var(--tn-interactive-accent);
+    font-weight: var(--tn-font-weight-semibold);
+}
+
+.tasknotes-plugin .tn-month-calendar__day[aria-pressed="true"] {
+    background: var(--tn-interactive-accent);
+    color: var(--text-on-accent);
 }
 
 .tasknotes-plugin :is(button, [role="button"]).tn-focus-from-pointer:focus-visible,

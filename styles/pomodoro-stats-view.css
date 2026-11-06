@@ -120,6 +120,23 @@
     gap: 0;
 }
 
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics.tn-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--tn-space-3);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics .pomodoro-stats-view__overview-value {
+    font-size: var(--tn-type-lg);
+    line-height: 1.2;
+    order: 0;
+    overflow-wrap: normal;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics .pomodoro-stats-view__overview-label {
+    font-size: var(--tn-type-xs);
+    line-height: 1.4;
+}
+
 .tasknotes-plugin .pomodoro-stats-view__overview-card {
     display: flex;
     flex-direction: row;

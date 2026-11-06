@@ -5,6 +5,9 @@ import type TaskNotesPlugin from "../main";
 import { createI18nService, type MessageDescriptor, type InterpolationValues } from "../i18n";
 import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalLanguageParser";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
+import { renderMonthCalendar } from "../ui/kit/monthCalendar";
+import { uiNumber } from "../i18n/formatters";
+import { formatDateForStorage } from "../utils/dateUtils";
 
 export interface DateTimePickerOptions {
 	currentDate?: string | null;
@@ -95,6 +98,7 @@ export class DateTimePickerModal extends Modal {
 	private timeInput: HTMLInputElement | null = null;
 	private selectButtonEl: HTMLButtonElement | null = null;
 	private detachDateInputBehavior: (() => void) | null = null;
+	private monthCalendarEl: HTMLElement | null = null;
 
 	constructor(app: App, options: DateTimePickerOptions) {
 		super(app);
@@ -127,11 +131,14 @@ export class DateTimePickerModal extends Modal {
 		this.modalEl.setAttribute("aria-modal", "true");
 		this.modalEl.setAttribute("aria-labelledby", heading.id);
 
-		this.renderQuickActions(contentEl);
-		this.renderNaturalLanguageInput(contentEl);
-		this.renderDateInput(contentEl);
+		const body = contentEl.createDiv({ cls: "date-time-picker-modal__body" });
+		this.renderQuickActions(body);
+		this.renderNaturalLanguageInput(body);
+		this.renderDateInput(body);
+		this.monthCalendarEl = body.createDiv();
+		this.renderCalendar();
 		if (this.shouldShowTime()) {
-			this.renderTimeInput(contentEl);
+			this.renderTimeInput(body);
 		}
 		this.renderActions(contentEl);
 		this.updateSelectButtonState();
@@ -346,6 +353,59 @@ export class DateTimePickerModal extends Modal {
 		});
 	}
 
+	private renderCalendar(month?: Date, focusDate?: string): void {
+		if (!this.monthCalendarEl) return;
+		const selectedValue = this.selectedDate ? new Date(`${this.selectedDate}T00:00:00Z`) : null;
+		const selected = selectedValue && Number.isFinite(selectedValue.getTime()) ? selectedValue : null;
+		const today = new Date();
+		const todayKey = formatCalendarDate(today.getFullYear(), today.getMonth(), today.getDate());
+		const displayed = month ?? selected ?? new Date(`${todayKey}T00:00:00Z`);
+		const focusValue = focusDate ?? (selected && selected.getUTCFullYear() === displayed.getUTCFullYear() && selected.getUTCMonth() === displayed.getUTCMonth()
+			? this.selectedDate
+			: month ? formatDateForStorage(new Date(Date.UTC(displayed.getUTCFullYear(), displayed.getUTCMonth(), 1))) : todayKey);
+		renderMonthCalendar(this.monthCalendarEl, {
+			month: displayed,
+			locale: this.options.plugin?.i18n?.getCurrentLocale() ?? "en",
+			monthFormat: "long",
+			firstDay: this.options.plugin?.settings.calendarViewSettings?.firstDay ?? 0,
+			onNavigate: (next) => this.renderCalendar(next),
+			renderDay: (grid, day) => {
+				const value = formatDateForStorage(day);
+				const button = grid.createEl("button", {
+					cls: "tn-month-calendar__day tn-btn tn-btn--ghost",
+					text: uiNumber(day.getUTCDate()),
+					attr: {
+						type: "button",
+						"data-date": value,
+						"aria-label": new Intl.DateTimeFormat(this.options.plugin?.i18n?.getCurrentLocale() ?? "en", { dateStyle: "full", timeZone: "UTC" }).format(day),
+						"aria-pressed": String(value === this.selectedDate),
+						tabindex: value === focusValue ? "0" : "-1",
+					},
+				});
+				button.toggleClass("is-outside-month", day.getUTCMonth() !== displayed.getUTCMonth());
+				if (value === todayKey) button.setAttribute("aria-current", "date");
+				button.addEventListener("click", () => {
+					this.updateSelectedDate(value);
+					this.monthCalendarEl?.querySelector<HTMLButtonElement>(`[data-date="${value}"]`)?.focus();
+				});
+				button.addEventListener("keydown", (event) => {
+					const offsets: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+					let target = new Date(day);
+					if (event.key in offsets) target.setUTCDate(target.getUTCDate() + offsets[event.key]);
+					else if (event.key === "Home") target.setUTCDate(target.getUTCDate() - (target.getUTCDay() - (this.options.plugin?.settings.calendarViewSettings?.firstDay ?? 0) + 7) % 7);
+					else if (event.key === "End") target.setUTCDate(target.getUTCDate() + 6 - (target.getUTCDay() - (this.options.plugin?.settings.calendarViewSettings?.firstDay ?? 0) + 7) % 7);
+					else if (event.key === "PageUp" || event.key === "PageDown") target = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth() + (event.key === "PageUp" ? -1 : 1), 1));
+					else return;
+					event.preventDefault();
+					event.stopPropagation();
+					const key = formatDateForStorage(target);
+					this.renderCalendar(target, key);
+					this.monthCalendarEl?.querySelector<HTMLButtonElement>(`[data-date="${key}"]`)?.focus();
+				});
+			},
+		});
+	}
+
 	private renderActions(container: HTMLElement): void {
 		const actions = container.createDiv({ cls: "date-time-picker-modal__actions" });
 
@@ -392,6 +452,7 @@ export class DateTimePickerModal extends Modal {
 			this.dateInput.value = date ?? "";
 		}
 		this.updateSelectButtonState();
+		this.renderCalendar();
 	}
 
 	private confirmSelectedDate(): void {

@@ -15,11 +15,6 @@
     text-align: start;
 }
 
-.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics > :nth-child(even) .pomodoro-stats-view__overview-value {
-    font-size: var(--tn-type-md);
-    color: var(--tn-text-muted);
-}
-
 .tasknotes-plugin :is(.stats-view__refresh-button, .pomodoro-stats-view__refresh-button, .pomodoro-stats-view__bases-help, .pomodoro-stats-view__session-delete-button, .stats-view__filter-disclosure > summary) {
     min-width: var(--tn-touch-target);
     min-height: var(--tn-touch-target);

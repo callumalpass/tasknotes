@@ -1,21 +1,19 @@
 import { uiNumber } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Menu, setIcon } from "obsidian";
+import { Menu } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import {
 	formatDateForStorage,
-	generateUTCCalendarDates,
 	getTodayLocal,
 	getUTCEndOfMonth,
-	getUTCEndOfWeek,
 	getUTCStartOfMonth,
-	getUTCStartOfWeek,
 	parseDateAsLocal,
 } from "../utils/dateUtils";
 import { generateRecurringInstances } from "../utils/helpers";
 import { openOrCreateOccurrenceNote } from "../ui/occurrenceNoteActions";
+import { renderMonthCalendar } from "../ui/kit/monthCalendar";
 
 interface TaskEditCompletionsOptions {
 	task: TaskInfo;
@@ -80,45 +78,8 @@ function renderCalendarMonth(
 	displayDate: Date,
 	options: TaskEditCompletionsOptions
 ): void {
-	container.empty();
-
-	const header = container.createDiv("recurring-calendar__header");
-	const prevButton = header.createEl("button", {
-		cls: "recurring-calendar__nav",
-		attr: {
-			type: "button",
-			"aria-label": options.translate(
-				msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })
-			),
-		},
-	});
-	setIcon(prevButton, "chevron-left");
-	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
-	const monthFormatter = new Intl.DateTimeFormat(locale, {
-		month: "short",
-		year: "numeric",
-		timeZone: "UTC",
-	});
-	monthLabel.textContent = monthFormatter.format(displayDate);
-	const nextButton = header.createEl("button", {
-		cls: "recurring-calendar__nav",
-		attr: {
-			type: "button",
-			"aria-label": options.translate(
-				msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })
-			),
-		},
-	});
-	setIcon(nextButton, "chevron-right");
-
-	const grid = container.createDiv("recurring-calendar__grid");
-	const monthStart = getUTCStartOfMonth(displayDate);
-	const monthEnd = getUTCEndOfMonth(displayDate);
 	const firstDaySetting = options.plugin.settings.calendarViewSettings.firstDay || 0;
-	const calendarStart = getUTCStartOfWeek(monthStart, firstDaySetting);
-	const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
-	const allDays = generateUTCCalendarDates(calendarStart, calendarEnd);
 
 	const bufferStart = getUTCStartOfMonth(displayDate);
 	bufferStart.setUTCMonth(bufferStart.getUTCMonth() - 1);
@@ -130,62 +91,56 @@ function renderCalendarMonth(
 	const completedInstances = getCurrentCompletedInstances(options);
 	const skippedInstances = getCurrentSkippedInstances(options);
 
-	allDays.forEach((day) => {
-		const dayStr = formatDateForStorage(day);
-		const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
-		const isOccurrenceDate = recurringDateStrings.has(dayStr);
-		const occurrenceDate = new Date(day);
-		const dayElement = grid.createDiv("recurring-calendar__day");
-		dayElement.textContent = uiNumber(day.getUTCDate());
-		dayElement.addClass("recurring-calendar__day--clickable");
-		dayElement.setAttribute("data-occurrence-date", dayStr);
+	renderMonthCalendar(container, {
+		month: displayDate,
+		locale,
+		firstDay: firstDaySetting,
+		onNavigate: (month) => renderCalendarMonth(container, month, options),
+		renderDay: (grid, day) => {
+			const dayStr = formatDateForStorage(day);
+			const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
+			const isOccurrenceDate = recurringDateStrings.has(dayStr);
+			const occurrenceDate = new Date(day);
+			const dayElement = grid.createDiv("recurring-calendar__day");
+			dayElement.textContent = uiNumber(day.getUTCDate());
+			dayElement.addClass("recurring-calendar__day--clickable");
+			dayElement.setAttribute("data-occurrence-date", dayStr);
 
-		if (!isCurrentMonth) {
-			dayElement.addClass("recurring-calendar__day--faded");
-		}
-		if (isOccurrenceDate) {
-			dayElement.addClass("recurring-calendar__day--recurring");
-			dayElement.addClass("recurring-calendar__day--contextable");
-			dayElement.setAttribute(
-				"aria-label",
-				options.translate(
-					msg({
-						message: "Occurrence {date}",
-						context: "modals.taskEdit.occurrenceDate",
-					}),
-					{ date: dayStr }
-				)
-			);
-		}
-		if (completedInstances.has(dayStr)) {
-			dayElement.addClass("recurring-calendar__day--completed");
-		}
-		if (skippedInstances.has(dayStr)) {
-			dayElement.addClass("recurring-calendar__day--skipped");
-		}
+			if (!isCurrentMonth) {
+				dayElement.addClass("recurring-calendar__day--faded");
+			}
+			if (isOccurrenceDate) {
+				dayElement.addClass("recurring-calendar__day--recurring");
+				dayElement.addClass("recurring-calendar__day--contextable");
+				dayElement.setAttribute(
+					"aria-label",
+					options.translate(
+						msg({
+							message: "Occurrence {date}",
+							context: "modals.taskEdit.occurrenceDate",
+						}),
+						{ date: dayStr }
+					)
+				);
+			}
+			if (completedInstances.has(dayStr)) {
+				dayElement.addClass("recurring-calendar__day--completed");
+			}
+			if (skippedInstances.has(dayStr)) {
+				dayElement.addClass("recurring-calendar__day--skipped");
+			}
 
-		dayElement.addEventListener("click", () => {
-			syncInstanceChangeState(options, dayStr, "complete");
-			renderCalendarMonth(container, displayDate, options);
-		});
-
-		if (isOccurrenceDate) {
-			dayElement.addEventListener("contextmenu", (event) => {
-				showOccurrenceContextMenu(event, container, displayDate, occurrenceDate, options);
+			dayElement.addEventListener("click", () => {
+				syncInstanceChangeState(options, dayStr, "complete");
+				renderCalendarMonth(container, displayDate, options);
 			});
-		}
-	});
 
-	prevButton.addEventListener("click", () => {
-		const prevMonth = new Date(displayDate);
-		prevMonth.setUTCMonth(prevMonth.getUTCMonth() - 1);
-		renderCalendarMonth(container, prevMonth, options);
-	});
-
-	nextButton.addEventListener("click", () => {
-		const nextMonth = new Date(displayDate);
-		nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
-		renderCalendarMonth(container, nextMonth, options);
+			if (isOccurrenceDate) {
+				dayElement.addEventListener("contextmenu", (event) => {
+					showOccurrenceContextMenu(event, container, displayDate, occurrenceDate, options);
+				});
+			}
+		},
 	});
 }
 

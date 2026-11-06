@@ -126,6 +126,7 @@ export class MiniCalendarView extends BasesViewBase {
 	private displayedMonth: number;
 	private displayedYear: number;
 	private selectedDate: Date; // UTC-anchored
+	private hasDateSelection = true;
 	private configLoaded = false; // Track if we've successfully loaded config
 	private isInitialRender = true; // Track if this is the first render
 	private shouldRestoreFocus = false; // Track if focus should be restored after render
@@ -256,6 +257,7 @@ export class MiniCalendarView extends BasesViewBase {
 			const doc = this.containerEl.ownerDocument;
 			const gridHadFocus =
 				this.calendarEl.querySelector(".mini-calendar-view__grid") === doc.activeElement;
+			const focusedEntry = (doc.activeElement as HTMLElement | null)?.closest<HTMLElement>(".mini-calendar-view__entry")?.dataset.entryPath;
 
 			// Clear calendar
 			this.calendarEl.empty();
@@ -269,6 +271,11 @@ export class MiniCalendarView extends BasesViewBase {
 			// Render calendar grid
 			this.renderCalendarControls();
 			this.renderCalendarGrid();
+			this.renderSelectedEntries();
+			if (focusedEntry) {
+				Array.from(this.calendarEl.querySelectorAll<HTMLButtonElement>(".mini-calendar-view__entry"))
+					.find((entry) => entry.dataset.entryPath === focusedEntry)?.focus({ preventScroll: true });
+			}
 
 			// Focus strategy:
 			// 1. Initial render: auto-focus to enable keyboard navigation
@@ -928,7 +935,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const today = createUTCDateFromLocalCalendarDate(todayLocal);
 
 		const isToday = isSameDay(dayDate, today);
-		const isSelected = isSameDay(dayDate, this.selectedDate);
+		const isSelected = this.hasDateSelection && isSameDay(dayDate, this.selectedDate);
 
 		let classNames = "mini-calendar-view__day";
 		if (isToday) classNames += " mini-calendar-view__day--today";
@@ -996,6 +1003,7 @@ export class MiniCalendarView extends BasesViewBase {
 	}
 
 	private async handleDayClick(date: Date, event?: MouseEvent): Promise<void> {
+		this.hasDateSelection = true;
 		// Update selected date
 		this.selectedDate = date;
 		if (date.getUTCMonth() !== this.displayedMonth || date.getUTCFullYear() !== this.displayedYear) {
@@ -1034,6 +1042,38 @@ export class MiniCalendarView extends BasesViewBase {
 			);
 			modal.open();
 		}
+	}
+
+	private renderSelectedEntries(): void {
+		if (!this.calendarEl || !this.hasDateSelection) return;
+		const entries = this.notesByDate.get(formatDateForStorage(this.selectedDate)) ?? [];
+		const section = this.calendarEl.createEl("section", { cls: "mini-calendar-view__selected-day" });
+		section.addEventListener("keydown", (event) => {
+			if (event.key !== "Escape") return;
+			event.preventDefault();
+			event.stopPropagation();
+			this.clearDateSelection();
+		});
+		const heading = new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), { dateStyle: "full", timeZone: "UTC" }).format(this.selectedDate);
+		section.createEl("h3", { cls: "mini-calendar-view__selected-heading", text: heading });
+		if (!entries.length) {
+			section.createDiv({ cls: "tn-picker__empty", text: this.plugin.i18n.translate(msg({ message: "No notes found for selected dates", context: "notices.audit.noNotes" })) });
+			return;
+		}
+		for (const entry of [...entries].sort((first, second) => first.title.localeCompare(second.title))) {
+			const button = section.createEl("button", { cls: "mini-calendar-view__entry tn-btn tn-btn--ghost", attr: { type: "button", title: entry.title } });
+			button.dataset.entryPath = entry.path;
+			renderCalendarEntry(button, entry, this.plugin, "mini-calendar-view__entry-content");
+			button.addEventListener("click", () => this.openCalendarEntry(entry));
+		}
+	}
+
+	private clearDateSelection(): void {
+		this.multiSelectMode = false;
+		this.selectedDates.clear();
+		this.hasDateSelection = false;
+		this.shouldRestoreFocus = true;
+		this.refresh();
 	}
 
 	private renderExternalEventIndicators(dayEl: HTMLElement, entries: NoteEntry[]): void {
@@ -1203,6 +1243,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const newDate = new Date(this.selectedDate.getTime());
 		newDate.setUTCMonth(this.selectedDate.getUTCMonth() - 1);
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 		this.displayedMonth = newDate.getUTCMonth();
 		this.displayedYear = newDate.getUTCFullYear();
 		this.monthCalculationCache.clear();
@@ -1214,6 +1255,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const newDate = new Date(this.selectedDate.getTime());
 		newDate.setUTCMonth(this.selectedDate.getUTCMonth() + 1);
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 		this.displayedMonth = newDate.getUTCMonth();
 		this.displayedYear = newDate.getUTCFullYear();
 		this.monthCalculationCache.clear();
@@ -1225,6 +1267,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const todayLocal = getTodayLocal();
 		const todayUTC = createUTCDateFromLocalCalendarDate(todayLocal);
 		this.selectedDate = todayUTC;
+		this.hasDateSelection = true;
 		this.displayedMonth = todayUTC.getUTCMonth();
 		this.displayedYear = todayUTC.getUTCFullYear();
 		this.monthCalculationCache.clear();
@@ -1313,11 +1356,10 @@ export class MiniCalendarView extends BasesViewBase {
 
 				// Escape - clear multi-select mode
 				if (e.key === "Escape") {
-					if (this.multiSelectMode) {
+					if (this.multiSelectMode || this.hasDateSelection) {
 						e.preventDefault();
-						this.multiSelectMode = false;
-						this.selectedDates.clear();
-						this.refresh();
+						e.stopPropagation();
+						this.clearDateSelection();
 					}
 					return;
 				}
@@ -1360,6 +1402,7 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 
 		// Update displayed month if we moved to a different month
 		if (
@@ -1387,6 +1430,7 @@ export class MiniCalendarView extends BasesViewBase {
 		newDate.setUTCDate(newDate.getUTCDate() - daysToSubtract);
 
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 
 		// Update displayed month if needed
 		if (
@@ -1415,6 +1459,7 @@ export class MiniCalendarView extends BasesViewBase {
 		newDate.setUTCDate(newDate.getUTCDate() + daysToAdd);
 
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 
 		// Update displayed month if needed
 		if (
@@ -1439,6 +1484,7 @@ export class MiniCalendarView extends BasesViewBase {
 		);
 
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 		this.shouldRestoreFocus = true;
 		this.refresh();
 	}
@@ -1452,6 +1498,7 @@ export class MiniCalendarView extends BasesViewBase {
 		);
 
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 		this.shouldRestoreFocus = true;
 		this.refresh();
 	}
@@ -1464,6 +1511,7 @@ export class MiniCalendarView extends BasesViewBase {
 		newDate.setUTCFullYear(newDate.getUTCFullYear() + yearOffset);
 
 		this.selectedDate = newDate;
+		this.hasDateSelection = true;
 		this.displayedMonth = newDate.getUTCMonth();
 		this.displayedYear = newDate.getUTCFullYear();
 		this.monthCalculationCache.clear();
@@ -1700,28 +1748,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 	}
 
 	renderSuggestion(item: FuzzyMatch<NoteEntry>, el: HTMLElement): void {
-		const note = item.item;
-		const container = el.createDiv({ cls: "note-selector-modal__suggestion tn-picker__row" });
-
-		// Title
-		const title = container.createDiv({
-			cls: "note-selector-modal__title tn-picker__label",
-			text: note.title,
-			attr: { title: note.title },
-		});
-		const task = note.kind === "note" ? this.plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
-		if (task) title.prepend(createTaskGlyphs(el.ownerDocument, task, this.plugin));
-
-		const subtitle = note.kind === "external" ? note.sourceName || note.path : note.path;
-
-		// Path/source (if not same as title)
-		if (subtitle !== note.title) {
-			container.createDiv({
-				cls: "note-selector-modal__path tn-picker__detail",
-				text: subtitle,
-				attr: { title: subtitle },
-			});
-		}
+		renderCalendarEntry(el, item.item, this.plugin);
 	}
 
 	onChooseItem(item: NoteEntry, evt: MouseEvent | KeyboardEvent): void {
@@ -1733,6 +1760,15 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 		super.onClose();
 		if (!this.chosen) queueMicrotask(() => this.onDismiss?.());
 	}
+}
+
+function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNotesPlugin, className = "note-selector-modal__suggestion"): void {
+	const container = host.createDiv({ cls: `${className} tn-picker__row` });
+	const title = container.createDiv({ cls: "note-selector-modal__title tn-picker__label", text: note.title, attr: { title: note.title } });
+	const task = note.kind === "note" ? plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
+	if (task) title.prepend(createTaskGlyphs(host.ownerDocument, task, plugin));
+	const subtitle = note.kind === "external" ? note.sourceName || note.path : note.path;
+	if (subtitle !== note.title) container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: subtitle, attr: { title: subtitle } });
 }
 
 // Factory function

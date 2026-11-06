@@ -38,8 +38,11 @@ export function createTaskModalActionButtons(
 	const buttonContainer = options.container.createDiv(
 		"modal-button-container tn-task-modal__button-bar"
 	);
+	const leadingContainer = options.onCreateMoreChange || options.leadingButtons?.length || options.overflowActions?.length
+		? buttonContainer.createDiv("tn-task-modal__leading-actions")
+		: buttonContainer;
 	if (options.onCreateMoreChange) {
-		const label = buttonContainer.createEl("label", { cls: "tn-modal__create-more" });
+		const label = leadingContainer.createEl("label", { cls: "tn-modal__create-more" });
 		const checkbox = label.createEl("input", { attr: { type: "checkbox" } });
 		checkbox.checked = options.createMore ?? false;
 		label.createSpan({
@@ -52,7 +55,7 @@ export function createTaskModalActionButtons(
 	}
 
 	for (const buttonConfig of options.leadingButtons ?? []) {
-		const button = buttonContainer.createEl("button", {
+		const button = leadingContainer.createEl("button", {
 			cls: buttonConfig.className,
 			text: buttonConfig.text,
 		});
@@ -60,15 +63,16 @@ export function createTaskModalActionButtons(
 	}
 
 	if (options.overflowActions?.length) {
-		createOverflowButton(buttonContainer, context, options.overflowActions);
+		createOverflowButton(leadingContainer, context, options.overflowActions);
 	}
 
-	const cancelButton = buttonContainer.createEl("button", {
+	const submitContainer = buttonContainer.createDiv("tn-task-modal__submit-actions");
+	const cancelButton = submitContainer.createEl("button", {
 		cls: "tn-btn",
 		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
 	cancelButton.addEventListener("click", options.onCancel);
-	const saveButton = buttonContainer.createEl("button", {
+	const saveButton = submitContainer.createEl("button", {
 		cls: "mod-cta tn-btn tn-btn--primary",
 	});
 	saveButton.setAttribute(
