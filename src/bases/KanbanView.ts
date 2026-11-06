@@ -2200,6 +2200,10 @@ export class KanbanView extends BasesViewBase {
 			container, tasks, visibleProperties, cardOptions, plugin: this.plugin,
 			document: this.containerEl.ownerDocument,
 			onRender: (wrapper, task) => {
+				this.currentTaskElements.set(task.path, wrapper);
+				if (this.draggedTaskPaths.includes(task.path)) {
+					wrapper.classList.add("kanban-view__card--dragging");
+				}
 				this.taskInfoCache.set(task.path, task);
 				this.setupCardDragHandlers(wrapper, task);
 			},
@@ -2403,7 +2407,7 @@ export class KanbanView extends BasesViewBase {
 		this.cleanupFloatingDragPreview();
 		this.stopAutoScroll();
 		this.clearDragoverFeedback();
-		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 		if (this.pendingRender) {
 			this.pendingRender = false;
 			this.debouncedRefresh();
@@ -3419,7 +3423,7 @@ export class KanbanView extends BasesViewBase {
 					cardWrapper.classList.remove("kanban-view__card--returned");
 				}, { once: true });
 			}
-			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 
 			// Clear drag state. The drop handler snapshots dropTargetPath and
 			// clears it before its first await, so this is safe even if
@@ -4784,6 +4788,17 @@ export class KanbanView extends BasesViewBase {
 
 	private registerBoardListeners(): void {
 		if (!this.boardEl) return;
+		for (const eventName of ["dragenter", "dragover"] as const) {
+			this.registerDomEvent(this.boardEl.ownerDocument, eventName, event => {
+				if (!this.draggedTaskPath || this.boardEl?.contains(event.target as Node)) return;
+				this.boardEl?.classList.add("kanban-view__board--invalid-drop");
+				this.boardEl?.ownerDocument.body.classList.add("tn-drag-invalid");
+				this.dragPreview.setInvalid("");
+				this.clearDragoverFeedback();
+				this.cleanupDragShift();
+				this.stopAutoScroll();
+			}, { capture: true });
+		}
 		this.registerDomEvent(this.boardEl, "pointerdown", () => {
 			this.rootElement?.classList.add("kanban-view--pointer");
 		}, { capture: true });
@@ -4835,8 +4850,10 @@ export class KanbanView extends BasesViewBase {
 
 	private updateNativeDropFeedback(event: DragEvent): void {
 		const restriction = this.getDropRestriction();
-		this.boardEl?.classList.toggle("kanban-view__board--invalid-drop", restriction !== null);
-		this.dragPreview.setInvalid(restriction);
+		const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(".kanban-view__column, .kanban-view__swimlane-column");
+		this.boardEl?.classList.toggle("kanban-view__board--invalid-drop", restriction !== null || !target);
+		this.boardEl?.ownerDocument.body.classList.toggle("tn-drag-invalid", restriction !== null || !target);
+		this.dragPreview.setInvalid(restriction ?? (target ? null : ""));
 		this.clearDragoverFeedback();
 		if (restriction) {
 			if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
@@ -4845,8 +4862,8 @@ export class KanbanView extends BasesViewBase {
 			this.cleanupDragShift();
 			return;
 		}
-		const target = (event.target as HTMLElement).closest<HTMLElement>(".kanban-view__column, .kanban-view__swimlane-column");
 		if (!target) {
+			if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
 			this.cleanupDragShift();
 			return;
 		}
@@ -4969,7 +4986,7 @@ export class KanbanView extends BasesViewBase {
 	onunload(): void {
 		this.pendingRender = false;
 		this.structureDragActive = false;
-		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 		this.clearTouchDragState();
 		if (this.postDropTimer) {
 			window.clearTimeout(this.postDropTimer);

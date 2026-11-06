@@ -89,6 +89,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Keep task metadata values whole: values that do not fit move into the counted overflow disclosure instead of showing clipped fragments.
+- Restore two-line Kanban titles, prioritize dates over secondary indicators, and dim every selected source during a multi-task drag.
+- Keep keyboard-focused tasks visible below sticky group headers and show refusal feedback outside valid drag destinations.
+- Give mobile inline task controls separate 40px touch targets without covering surrounding prose.
 - Month selected-day rows use the panel width without reserving an empty time column. Narrow agendas share one set of date navigation controls with the date strip.
 - Update Kanban drop highlights and insertion feedback as soon as a dragged task enters an existing card, including in swimlanes.
 - Remove the unused touch-handle gutter from narrow reorderable task rows so 170px mobile panes do not overflow horizontally.

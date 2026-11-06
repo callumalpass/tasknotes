@@ -78,7 +78,7 @@ export class KanbanDragPreview {
 		this.invalidReason = reason;
 		preview.classList.toggle("kanban-view__floating-drag-preview--invalid", reason !== null);
 		let feedback = preview.querySelector<HTMLElement>(".kanban-view__drag-feedback");
-		if (reason !== null) {
+		if (reason) {
 			feedback ??= preview.createDiv({ cls: "kanban-view__drag-feedback", attr: { role: "status" } });
 			feedback.textContent = reason;
 		} else {

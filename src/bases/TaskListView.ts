@@ -1730,6 +1730,9 @@ export class TaskListView extends BasesViewBase {
 			const gap = 4;
 			const top = Math.max(root.top + gap, Math.min(anchor.top - height - gap, root.bottom - height - gap));
 			this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${top - root.top + this.rootElement.scrollTop}px`);
+			const width = this.movementFeedback.getBoundingClientRect().width;
+			const left = Math.max(root.left + gap, Math.min(anchor.left + gap, root.right - width - gap));
+			this.movementFeedback.style.setProperty("--tn-movement-hint-left", `${left - root.left + this.rootElement.scrollLeft}px`);
 		}
 	}
 
@@ -1748,6 +1751,9 @@ export class TaskListView extends BasesViewBase {
 			intent?.kind === "move" ||
 			intent?.kind === "reorder" ||
 			(intent?.kind === "parent" && intent.state === "assign");
+		this.rootElement?.classList.toggle("task-list-view--invalid-drop", !this.currentDropAllowed);
+		this.containerEl.ownerDocument.body.classList.toggle("tn-drag-invalid", !this.currentDropAllowed);
+		this.touchGhost?.classList.toggle("task-list-view__touch-ghost--invalid", !this.currentDropAllowed);
 		return intent;
 	}
 
@@ -1783,7 +1789,7 @@ export class TaskListView extends BasesViewBase {
 				"task-list-view__move-target--blocked",
 				resolvedState !== "assign"
 			);
-			this.setMovementFeedback(this.parentAssignmentMessage(resolvedState, parentPath));
+			this.setMovementFeedback(this.parentAssignmentMessage(resolvedState, parentPath), parentTarget);
 			return { kind: "parent", parentPath, state: resolvedState };
 		}
 		this.itemsContainer
@@ -1880,8 +1886,8 @@ export class TaskListView extends BasesViewBase {
 		this.cleanupDragShift();
 		this.clearDropIndicators();
 		this.clearMovementFeedback();
-		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
-		this.rootElement?.classList.remove("task-list-view--moving");
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
+		this.rootElement?.classList.remove("task-list-view--moving", "task-list-view--invalid-drop");
 		this.draggedTaskPath = null;
 		this.draggedTaskPaths = [];
 		this.dragDestinations.clear();
@@ -2505,6 +2511,14 @@ export class TaskListView extends BasesViewBase {
 	private setupContainerDragHandlers(): void {
 		if (!this.itemsContainer) return;
 		const doc = this.containerEl.ownerDocument;
+		for (const eventName of ["dragenter", "dragover"] as const) {
+			this.registerDomEvent(doc, eventName, event => {
+				if (!this.draggedTaskPath || this.itemsContainer?.contains(event.target as Node)) return;
+				this.updateTaskMovementTarget(event.target, event.clientY);
+				this.updateTouchGhost(event.clientX, event.clientY);
+				this.edgeScroll?.stop();
+			}, { capture: true });
+		}
 		this.edgeScroll = new TaskMovementAutoScroll(this.itemsContainer, (x, y) => {
 			this.updateTouchGhost(x, y);
 			this.updateTaskMovementTarget(doc.elementFromPoint(x, y), y);

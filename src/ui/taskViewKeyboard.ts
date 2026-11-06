@@ -21,6 +21,28 @@ const PROPERTY_KEYS: Record<string, TaskPickerProperty> = {
 	t: "tags",
 };
 
+export function revealTaskViewCard(card: HTMLElement, root: HTMLElement): void {
+	card.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+	const headers = Array.from(root.querySelectorAll<HTMLElement>(
+		".task-list-virtual-sticky-header__group, .task-group, .kanban-view__column-header, .kanban-view__column-header-cell"
+	)).filter(header => header.closest(".task-list-virtual-sticky-header") ||
+		header.ownerDocument.defaultView?.getComputedStyle(header).position === "sticky");
+	for (let scroller = card.parentElement; scroller && root.contains(scroller); scroller = scroller.parentElement) {
+		if (scroller.scrollHeight <= scroller.clientHeight) continue;
+		const overflow = scroller.ownerDocument.defaultView?.getComputedStyle(scroller).overflowY;
+		if (overflow !== "auto" && overflow !== "scroll") continue;
+		const viewport = scroller.getBoundingClientRect();
+		const target = card.getBoundingClientRect();
+		let top = viewport.top;
+		for (const bounds of headers.map(header => header.getBoundingClientRect()).sort((first, second) => first.top - second.top)) {
+			if (bounds.height && bounds.left < target.right && bounds.right > target.left && bounds.top <= top + 1) {
+				top = Math.max(top, bounds.bottom);
+			}
+		}
+		if (target.top < top) scroller.scrollTop -= top - target.top;
+	}
+}
+
 export interface TaskViewKeyboardOptions {
 	plugin: TaskNotesPlugin;
 	root: HTMLElement;
@@ -53,6 +75,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	let highlightTimer: number | undefined;
 	let arrivalPath: string | undefined;
 	let revealFrame: number | undefined;
+	let visibilityFrame: number | undefined;
 	let pending = false;
 	let triage: { path: string; key: string; candidates: string[] } | undefined;
 	const selection = plugin.taskSelectionService;
@@ -79,6 +102,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			return;
 		focusedControl = target as HTMLElement;
 		reconcileFocus(target as HTMLElement);
+		if (keyboardFocus && focusedPath) reveal(focusedPath);
 		plugin.app.keymap.pushScope(scope);
 		scoped = true;
 	};
@@ -86,6 +110,19 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		Array.from(root.querySelectorAll<HTMLElement>(".task-card[data-task-path]")).find(
 			(card) => card.dataset.taskPath === path
 		);
+	const reveal = (path: string) => {
+		options.reveal(path);
+		const show = () => {
+			const card = cardFor(path);
+			if (card) revealTaskViewCard(card, root);
+		};
+		show();
+		if (visibilityFrame !== undefined) root.ownerDocument.defaultView?.cancelAnimationFrame(visibilityFrame);
+		visibilityFrame = root.ownerDocument.defaultView?.requestAnimationFrame(() => {
+			visibilityFrame = undefined;
+			if (keyboardFocus && focusedPath === path) show();
+		});
+	};
 	const highlightArrival = (card: HTMLElement) => {
 		card.classList.add("tn-task-arrived");
 		if (highlightTimer !== undefined) return;
@@ -140,8 +177,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			if (!active || active === card || !card?.contains(active)) card?.classList.add("tn-task-focused");
 			if (card && paintedCard && card !== paintedCard && paintedCard.dataset.taskPath === focusedPath) {
 				if (arrivalPath === focusedPath) {
-					options.reveal(focusedPath);
-					card.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+					reveal(focusedPath);
 				}
 				highlightArrival(card);
 			}
@@ -355,8 +391,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 				focusedPath = next;
 				keyboardFocus = true;
 				rangeAnchor = null;
-				options.reveal(next);
-				cardFor(next)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+				reveal(next);
 				paint();
 			}
 			return;
@@ -392,8 +427,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			} else rangeAnchor = null;
 			focusedPath = next;
 			keyboardFocus = true;
-			options.reveal(next);
-			cardFor(next)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+			reveal(next);
 			paint();
 			return;
 		}
@@ -526,7 +560,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			keyboardFocus = !!focusedPath;
 		}
 		root.focus({ preventScroll: true });
-		if (focusedPath) options.reveal(focusedPath);
+		if (focusedPath) reveal(focusedPath);
 		paint();
 	};
 	scope.register(["Mod"], "k", (event) => {
@@ -543,6 +577,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		helpButton.remove();
 		root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
 		if (revealFrame !== undefined) root.ownerDocument.defaultView?.cancelAnimationFrame(revealFrame);
+		if (visibilityFrame !== undefined) root.ownerDocument.defaultView?.cancelAnimationFrame(visibilityFrame);
 		plugin.emitter.offref(taskUpdated);
 		releaseScope();
 		root.removeEventListener("focusin", focusScope);

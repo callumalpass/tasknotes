@@ -730,14 +730,16 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__main-row
 
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-text,
 body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-text {
-    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     flex-basis: 100%;
     grid-column: 1 / -1;
     grid-row: 1;
     padding-right: 0;
     white-space: normal;
     overflow-wrap: anywhere;
-    overflow: visible;
+    overflow: hidden;
     text-overflow: clip;
 }
 
@@ -1329,6 +1331,35 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
 }
 
 @container tn-task-card (max-width: 560px) {
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card__main-row {
+        grid-template-columns: var(--tn-touch-target) var(--tn-touch-target) minmax(0, 1fr) var(--tn-touch-target);
+        grid-template-rows: auto var(--tn-touch-target) auto;
+    }
+
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__metadata {
+        grid-column: 1 / 4;
+    }
+
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card:not(.task-card--metadata-empty) .task-card__priority-dot {
+        grid-column: 4;
+        grid-row: 1;
+    }
+
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__status-dot {
+        grid-row: 1;
+    }
+
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__badges:not(:empty) {
+        grid-column: 2 / -1;
+        grid-row: 3;
+        justify-self: end;
+        max-width: 100%;
+    }
+
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card :is(.task-card__context-menu, .task-card__drag-handle) {
+        grid-column: 4;
+    }
+
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__title {
         display: grid;
         grid-template-columns: subgrid;
@@ -1339,7 +1370,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__title-text {
-        grid-column: 2 / -1;
+        grid-column: 2 / 4;
         padding: 0;
     }
 

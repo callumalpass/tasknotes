@@ -228,6 +228,45 @@ describe("taskCardMetadata", () => {
 		}
 	});
 
+	it("moves a clipped atom wholly into overflow and restores it when its lane grows", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
+			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			const values = metadataLine.createSpan();
+			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			const project = values.createSpan({ text: "+Product refresh" });
+			let width = 27;
+			Object.defineProperties(project, {
+				clientWidth: { get: () => width },
+				scrollWidth: { value: 94 },
+			});
+			project.getBoundingClientRect = () => ({ right: width }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			expect(project.hidden).toBe(true);
+			expect(overflow.textContent).toBe("+1");
+			expect(overflow.getAttribute("aria-label")).toBe("+Product refresh");
+			width = 94;
+			resize();
+			expect(project.hidden).toBe(false);
+			expect(values.hidden).toBe(false);
+			expect(overflow.hidden).toBe(true);
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
+
 	it("disconnects overflow observers on rerender, removal and explicit cleanup", () => {
 		const original = window.ResizeObserver;
 		const callbacks: Array<() => void> = [];

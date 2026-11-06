@@ -512,6 +512,15 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__task-item:hover {
 
 .tasknotes-plugin.task-list-view__movement-root { position: relative; }
 
+body.tn-drag-active.tn-drag-invalid,
+body.tn-drag-active.tn-drag-invalid * {
+    cursor: not-allowed;
+}
+
+.task-list-view__touch-ghost--invalid {
+    border-color: var(--tn-drop-invalid);
+}
+
 .tasknotes-plugin.task-list-view__movement-root .task-card[draggable="true"]:active,
 .tasknotes-plugin.task-list-view__movement-root .task-card--dragging {
     transform: none;
@@ -543,7 +552,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__task-item:hover {
 .tasknotes-plugin .task-list-view__movement-feedback {
     position: absolute;
     top: var(--tn-movement-hint-top, 0);
-    right: var(--tn-space-3);
+    left: var(--tn-movement-hint-left, var(--tn-space-3));
     width: fit-content;
     max-width: min(28em, calc(100% - var(--tn-space-6)));
     margin-inline: var(--tn-space-1);
@@ -727,10 +736,10 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
 }
 
 .tn-tasknotesTaskList .task-group-header {
-    padding-block: var(--tn-space-2);
+    padding-block: var(--tn-space-1);
     border-radius: var(--tn-radius-md);
     transition: background-color var(--tn-transition-fast);
-    font-size: var(--tn-type-md);
+    font-size: var(--tn-type-sm);
 }
 
 .tn-tasknotesTaskList .task-group-header .agenda-view__item-count {

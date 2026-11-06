@@ -51,6 +51,7 @@ describe("Kanban drag feedback", () => {
 		expect(column.classList.contains("kanban-view__column--dragover")).toBe(false);
 		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(false);
 		expect(view.dragContainer).toBeNull();
+		expect(view.boardEl.classList.contains("kanban-view__board--invalid-drop")).toBe(true);
 	});
 
 	it.each(["kanban-view__column", "kanban-view__swimlane-column"])("updates %s feedback on nested dragenter without waiting for dragover", columnClass => {

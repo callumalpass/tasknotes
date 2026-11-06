@@ -1,6 +1,6 @@
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
-import { installTaskViewKeyboard } from "../../../src/ui/taskViewKeyboard";
+import { installTaskViewKeyboard, revealTaskViewCard } from "../../../src/ui/taskViewKeyboard";
 import { openTaskPropertyPicker } from "../../../src/ui/taskPropertyPickers";
 
 jest.mock("../../../src/ui/taskPropertyPickers", () => ({
@@ -8,6 +8,10 @@ jest.mock("../../../src/ui/taskPropertyPickers", () => ({
 	taskPropertyLabel: (property: string) => property,
 	archiveTasksWithUndo: jest.fn(),
 }));
+
+beforeEach(() => {
+	HTMLElement.prototype.scrollIntoView = jest.fn();
+});
 
 function harness() {
 	const root = document.body.createDiv();
@@ -33,6 +37,38 @@ function harness() {
 }
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
+
+it("reveals the whole target below stacked sticky headers using their live bounds", () => {
+	const root = document.body.createDiv();
+	root.style.overflowY = "auto";
+	Object.defineProperties(root, { scrollHeight: { value: 1000 }, clientHeight: { value: 400 } });
+	root.scrollTop = 200;
+	root.getBoundingClientRect = () => ({ top: 100, bottom: 500 }) as DOMRect;
+	const pin = root.createDiv({ cls: "task-list-virtual-sticky-header" });
+	for (const [top, bottom] of [[100, 140], [140, 172]]) {
+		const header = pin.createDiv({ cls: "task-list-virtual-sticky-header__group" });
+		header.getBoundingClientRect = () => ({ top, bottom, height: bottom - top, left: 0, right: 400 }) as DOMRect;
+	}
+	const card = root.createDiv({ cls: "task-card" });
+	card.getBoundingClientRect = () => ({ top: 130, bottom: 188, left: 0, right: 400 }) as DOMRect;
+	revealTaskViewCard(card, root);
+	expect(root.scrollTop).toBe(158);
+});
+
+it("does not scroll for a sticky header in a neighbouring board column", () => {
+	const root = document.body.createDiv();
+	root.style.overflowY = "auto";
+	Object.defineProperties(root, { scrollHeight: { value: 1000 }, clientHeight: { value: 400 } });
+	root.scrollTop = 200;
+	root.getBoundingClientRect = () => ({ top: 100, bottom: 500 }) as DOMRect;
+	const header = root.createDiv({ cls: "kanban-view__column-header" });
+	header.style.position = "sticky";
+	header.getBoundingClientRect = () => ({ top: 100, bottom: 150, height: 50, left: 500, right: 800 }) as DOMRect;
+	const card = root.createDiv({ cls: "task-card" });
+	card.getBoundingClientRect = () => ({ top: 130, bottom: 188, left: 0, right: 400 }) as DOMRect;
+	revealTaskViewCard(card, root);
+	expect(root.scrollTop).toBe(200);
+});
 
 it("releases the view scope synchronously when a modal begins opening", () => {
 	const state = harness();

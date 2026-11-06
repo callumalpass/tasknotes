@@ -82,6 +82,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			return;
 		}
 		if (metadataLine.clientWidth === 0) return;
+		values.hidden = false;
 		for (const atom of atoms) atom.hidden = false;
 		for (const group of groups) group.property.hidden = false;
 		for (const slot of dateSlots) slot.hidden = false;
@@ -91,9 +92,9 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			values.hidden = !atoms.some((atom) => !atom.hidden);
 			return [...atoms, ...dateSlots, summary].every((element) => {
 				if (element.hidden) return true;
-				const right = element.getBoundingClientRect().right;
+				const bounds = element.getBoundingClientRect();
 				const boundary = atoms.includes(element) ? values.getBoundingClientRect().right : metadataLine.getBoundingClientRect().right;
-				return right <= boundary + 0.5;
+				return bounds.right <= boundary + 0.5 && element.scrollWidth <= element.clientWidth + 1;
 			});
 		};
 		if (fits()) return;
