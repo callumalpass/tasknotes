@@ -53,6 +53,33 @@ describe("Kanban drag feedback", () => {
 		expect(view.dragContainer).toBeNull();
 	});
 
+	it.each(["kanban-view__column", "kanban-view__swimlane-column"])("updates %s feedback on nested dragenter without waiting for dragover", columnClass => {
+		const view = makeView();
+		view.boardEl = document.createElement("div");
+		view.draggedTaskPath = "tasks/source.md";
+		const previous = document.createElement("div");
+		previous.className = `${columnClass} ${columnClass}--dragover`;
+		const destination = document.createElement("div");
+		destination.className = columnClass;
+		const card = document.createElement("div");
+		card.className = "kanban-view__card-wrapper";
+		const content = document.createElement("div");
+		content.className = "task-card__main-row";
+		card.appendChild(content);
+		destination.appendChild(card);
+		view.boardEl.append(previous, destination);
+		jest.spyOn(view, "handleAutoScroll").mockImplementation(() => {});
+		jest.spyOn(view, "getGroupByPropertyId").mockReturnValue("note.status");
+		card.addEventListener("dragenter", event => event.stopPropagation());
+		view.registerBoardListeners();
+
+		content.dispatchEvent(new MouseEvent("dragenter", { bubbles: true, clientX: 100, clientY: 120 }));
+
+		expect(previous.classList.contains(`${columnClass}--dragover`)).toBe(false);
+		expect(destination.classList.contains(`${columnClass}--dragover`)).toBe(true);
+		view.unload();
+	});
+
 	it("touch previews never duplicate live task identities or selection rings", () => {
 		const view = makeView();
 		const source = document.createElement("div");

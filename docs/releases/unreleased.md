@@ -90,6 +90,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Month selected-day rows use the panel width without reserving an empty time column. Narrow agendas share one set of date navigation controls with the date strip.
+- Update Kanban drop highlights and insertion feedback as soon as a dragged task enters an existing card, including in swimlanes.
+- Remove the unused touch-handle gutter from narrow reorderable task rows so 170px mobile panes do not overflow horizontally.
 - Keep task-view shortcuts and open property pickers out of the edit modal while it loads, so cancelling an edit cannot leave changes to a background task.
 - Reveal the current month when entering the calendar's Year view or pressing Today.
 - Keep desktop list dates aligned when optional metadata is absent, and show the full Kanban hidden-property count.

@@ -4787,15 +4787,17 @@ export class KanbanView extends BasesViewBase {
 		this.registerDomEvent(this.boardEl, "pointerdown", () => {
 			this.rootElement?.classList.add("kanban-view--pointer");
 		}, { capture: true });
-		this.registerDomEvent(this.boardEl, "dragover", event => {
-			if (this.structureDragActive) {
+		for (const eventName of ["dragenter", "dragover"] as const) {
+			this.registerDomEvent(this.boardEl, eventName, event => {
+				if (this.structureDragActive) {
+					this.handleAutoScroll(event.clientX, event.clientY);
+					return;
+				}
+				if (!this.draggedTaskPath) return;
 				this.handleAutoScroll(event.clientX, event.clientY);
-				return;
-			}
-			if (!this.draggedTaskPath) return;
-			this.handleAutoScroll(event.clientX, event.clientY);
-			this.updateNativeDropFeedback(event);
-		}, { capture: true });
+				this.updateNativeDropFeedback(event);
+			}, { capture: true });
+		}
 		this.registerDomEvent(this.boardEl, "drop", event => {
 			if (this.draggedTaskPath && this.getDropRestriction()) {
 				event.preventDefault();

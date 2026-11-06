@@ -1542,6 +1542,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
     body .tasknotes-plugin .task-card.task-card--reorderable:not(.task-card--layout-inline) .task-card__main-row {
         grid-template-columns: var(--tn-touch-target) minmax(0, 1fr) auto repeat(2, var(--tn-touch-target));
         grid-template-rows: minmax(var(--tn-touch-target), auto) var(--tn-touch-target);
+        padding-left: 0;
     }
 
     body .tasknotes-plugin .task-card.task-card--reorderable:not(.task-card--layout-inline) .task-card__title-text {

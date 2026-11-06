@@ -161,6 +161,46 @@ for (const theme of ['theme-light', 'theme-dark']) {
       document.body.style.removeProperty('--font-text-size');
     });
   });
+  test(`${theme}: 170px mobile list property grid stays within the pane`, async () => {
+    await setObsidianViewport(page, { width: 400, height: 800 });
+    await page.evaluate(theme => {
+      document.body.classList.remove('theme-light', 'theme-dark');
+      document.body.classList.add(theme, 'is-mobile');
+      document.body.style.setProperty('--font-text-size', '20px');
+    }, theme);
+    try {
+      const content = stringify({
+        filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] },
+        views: [{ type: 'tasknotesTaskList', name: 'Narrow list', groupBy: { property: 'status', direction: 'DESC' },
+          order: ['status', 'priority', 'projects', 'tags', 'contexts', 'scheduled', 'due'], enableSearch: true }],
+      });
+      await page.evaluate(async ({ path, content }) => {
+        const app = (window as any).app;
+        await app.workspace.getLeaf(false).openFile(await app.vault.create(path, content));
+        app.workspace.leftSplit.collapse();
+        app.workspace.rightSplit.collapse();
+      }, { path: `${folder}/${theme}-170px.base`, content });
+      const items = page.locator('.workspace-leaf.mod-active .tn-bases-items-container');
+      await expect(items.locator('.task-card')).toHaveCount(6);
+      await items.evaluate(element => (element as HTMLElement).style.width = '170px');
+      const longCard = items.locator(`.task-card[data-task-path="${folder}/Task 3.md"]`);
+      await longCard.scrollIntoViewIfNeeded();
+      await expect(longCard.locator('.task-card__metadata')).toBeVisible();
+      await expect(longCard.locator('.task-card__title-text')).toHaveCSS('white-space', 'normal');
+      await expect(items).toHaveCSS('width', '170px');
+      await page.screenshot({ path: `test-results/list-redesign-${theme}-170px-focused.png` });
+      expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      const controls = longCard.locator('.task-card__drag-handle, .task-card__context-menu, .task-card__metadata-overflow');
+      await expect(controls).toHaveCount(3);
+      const sizes = await controls.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().toJSON()));
+      expect(sizes.every(size => size.width >= 40 && size.height >= 40)).toBe(true);
+    } finally {
+      await page.evaluate(() => {
+        document.body.classList.remove('is-mobile');
+        document.body.style.removeProperty('--font-text-size');
+      });
+    }
+  });
 }
 
 test('shared compact cards and inline task links retain their layout', async () => {
