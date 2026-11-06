@@ -97,3 +97,44 @@ it('restores pointer focus without carrying the picker input ring into the ancho
 	anchor.blur();
 	expect(anchor.classList.contains('tn-focus-from-pointer')).toBe(false);
 });
+
+it('keeps a disclosure and its focus while its logical anchor is replaced', async () => {
+	const frames: FrameRequestCallback[] = [];
+	const requestFrame = jest.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => frames.push(callback));
+	const host = document.body.createDiv();
+	const anchor = host.createEl('button');
+	anchor.getBoundingClientRect = () => ({ left: 20, top: 30, bottom: 70 }) as DOMRect;
+	const onClose = jest.fn();
+	const popover = openPopover({ anchor, resolveAnchor: () => host.querySelector('button'), onClose });
+	const input = popover.el.createEl('input');
+	input.focus();
+	const replacement = document.createElement('button');
+	replacement.getBoundingClientRect = () => ({ left: 80, top: 90, bottom: 130 }) as DOMRect;
+	anchor.remove();
+	await Promise.resolve();
+	host.appendChild(replacement);
+	await Promise.resolve();
+	expect(frames).toHaveLength(1);
+	frames.shift()!(0);
+	expect(popover.el.isConnected).toBe(true);
+	expect(popover.el.style.getPropertyValue('--tn-popover-left')).toBe('80px');
+	expect(document.activeElement).toBe(input);
+	expect(onClose).not.toHaveBeenCalled();
+	replacement.remove();
+	await Promise.resolve();
+	frames.shift()!(0);
+	expect(popover.el.isConnected).toBe(false);
+	expect(onClose).toHaveBeenCalledTimes(1);
+	requestFrame.mockRestore();
+});
+
+it('disconnects logical anchor observation when a disclosure is dismissed', async () => {
+	const host = document.body.createDiv();
+	const anchor = host.createEl('button');
+	const resolveAnchor = jest.fn(() => anchor);
+	const popover = openPopover({ anchor, resolveAnchor });
+	popover.close();
+	host.createEl('button');
+	await Promise.resolve();
+	expect(resolveAnchor).not.toHaveBeenCalled();
+});

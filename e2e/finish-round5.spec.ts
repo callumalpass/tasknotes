@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, expectTouchTarget, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
@@ -83,6 +83,35 @@ async function appearance(width: number, theme = 'light') {
 
 async function capture(name: string) {
   await page.screenshot({ path: `/tmp/tasknotes-r5-finish/${name}.png` });
+}
+
+async function metadataContrast(metadata: Locator): Promise<{ color: string; background: string; ratio: number }> {
+  let sample: { color: string; background: string; ratio: number } | null = null;
+  await expect.poll(async () => {
+    sample = await metadata.evaluate(element => {
+      const style = getComputedStyle(element);
+      if (!element.isConnected || !element.getClientRects().length || !style.color || !style.getPropertyValue('--background-primary')) return null;
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      const luminance = (color: string) => {
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = color;
+        context.fillRect(0, 0, 1, 1);
+        const channels = Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3).map(value => {
+          const channel = value / 255;
+          return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+        });
+        return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+      };
+      const color = style.color;
+      const background = style.getPropertyValue('--background-primary');
+      const foregroundLuminance = luminance(color);
+      const backgroundLuminance = luminance(background);
+      return { color, background, ratio: (Math.max(foregroundLuminance, backgroundLuminance) + .05) / (Math.min(foregroundLuminance, backgroundLuminance) + .05) };
+    });
+    return sample !== null;
+  }).toBe(true);
+  return sample!;
 }
 
 for (const width of [1180, 400]) for (const theme of ['light', 'dark']) test(`sentence references preserve line flow: ${width} ${theme}`, async () => {
@@ -261,31 +290,57 @@ test('batch Undo confirms the property and count without resurfacing older actio
   }, { folder, path })).toEqual(['finish-1', 'finish-1', 'finish-1']);
 });
 
-for (const theme of ['light', 'dark']) test(`desktop title allocation and small metadata contrast: ${theme}`, async () => {
+for (const theme of ['light', 'dark']) test(`desktop title allocation and small metadata contrast: ${theme}`, async ({}, testInfo) => {
   await appearance(1180, theme);
   await open('List.base');
   const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${path}"]`);
   await expect(card).toBeVisible();
   await expect.poll(() => card.locator('.task-card__title-text').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
-  const contrast = await card.locator('.task-card__metadata').evaluate(element => {
-    const style = getComputedStyle(element);
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d')!;
-    const luminance = (color: string) => {
-      context.fillStyle = color;
-      context.fillRect(0, 0, 1, 1);
-      const channels = Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3).map(value => {
-        const channel = value / 255;
-        return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
-      });
-      return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
-    };
-    const foreground = luminance(style.color);
-    const background = luminance(style.getPropertyValue('--background-primary'));
-    return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
-  });
-  expect(contrast).toBeGreaterThanOrEqual(4.5);
-  await capture(`list-${theme}-contrast-${contrast.toFixed(2)}`);
+  const contrast = await metadataContrast(card.locator('.task-card__metadata'));
+  await testInfo.attach('metadata-contrast', { body: JSON.stringify(contrast), contentType: 'application/json' });
+  expect(contrast.ratio).toBeGreaterThanOrEqual(4.5);
+  await capture(`list-${theme}-contrast-${contrast.ratio.toFixed(2)}`);
+});
+
+test('metadata contrast distinguishes a replaced row from low-contrast ink', async ({}, testInfo) => {
+  await appearance(1180);
+  await open('List.base');
+  const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${path}"]`);
+  const metadata = card.locator('.task-card__metadata');
+  const previous = await metadata.elementHandle();
+  const refreshedTitle = `${title} after background refresh`;
+  try {
+    await page.evaluate(async ({ path, refreshedTitle }) => {
+      const app = (window as any).app;
+      await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter.title = refreshedTitle; });
+    }, { path, refreshedTitle });
+    await expect(card.locator('.task-card__title-text')).toHaveText(refreshedTitle);
+    await expect.poll(() => previous!.evaluate(element => element.isConnected)).toBe(false);
+    const detached = await previous!.evaluate(element => {
+      const style = getComputedStyle(element);
+      const context = document.createElement('canvas').getContext('2d')!;
+      const pixel = (color: string) => {
+        context.fillStyle = color;
+        context.fillRect(0, 0, 1, 1);
+        return Array.from(context.getImageData(0, 0, 1, 1).data);
+      };
+      return { color: style.color, background: style.getPropertyValue('--background-primary'), foregroundPixel: pixel(style.color), backgroundPixel: pixel(style.getPropertyValue('--background-primary')) };
+    });
+    await testInfo.attach('detached-metadata-measurement', { body: JSON.stringify(detached), contentType: 'application/json' });
+    expect(detached.color).toBe('');
+    expect(detached.background).toBe('');
+    expect(detached.foregroundPixel).toEqual([0, 0, 0, 255]);
+    expect(detached.backgroundPixel).toEqual(detached.foregroundPixel);
+    const live = await metadataContrast(metadata);
+    await testInfo.attach('live-metadata-contrast', { body: JSON.stringify(live), contentType: 'application/json' });
+    expect(live.ratio).toBeGreaterThanOrEqual(4.5);
+  } finally {
+    await page.evaluate(async ({ path, title }) => {
+      const app = (window as any).app;
+      await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter.title = title; });
+    }, { path, title });
+    await expect(card.locator('.task-card__title-text')).toHaveText(title);
+  }
 });
 
 test('shortcut help and empty statistics keep a compact rhythm', async () => {

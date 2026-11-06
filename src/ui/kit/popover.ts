@@ -7,6 +7,7 @@ export interface PopoverPoint {
 
 export interface PopoverOptions {
 	anchor: HTMLElement | PopoverPoint;
+	resolveAnchor?: () => HTMLElement | null;
 	app?: App;
 	className?: string;
 	onClose?: () => void;
@@ -55,7 +56,7 @@ export function dismissTooltips(doc: Document): void {
 export function openPopover(options: PopoverOptions): PopoverHandle {
 	closeActivePopover();
 
-	const { anchor } = options;
+	let { anchor } = options;
 	const doc = isElementAnchor(anchor) ? anchor.ownerDocument : activeDocument;
 	const win = doc.defaultView ?? activeWindow;
 	const viewRoot = isElementAnchor(anchor)
@@ -72,6 +73,14 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	});
 
 	const reposition = () => {
+		if (options.resolveAnchor) {
+			const nextAnchor = options.resolveAnchor();
+			if (!nextAnchor) {
+				handle.close();
+				return;
+			}
+			anchor = nextAnchor;
+		}
 		el.setCssProps({ "--tn-popover-height": `${Math.max(0, win.innerHeight - VIEWPORT_MARGIN * 2)}px` });
 		const rect = isElementAnchor(anchor)
 			? anchor.getBoundingClientRect()
@@ -84,6 +93,7 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	};
 
 	let closed = false;
+	let anchorFrame: number | null = null;
 	let pointerInteraction = false;
 	const isOtherModal = (target: EventTarget | null) => {
 		const element = target as HTMLElement | null;
@@ -128,6 +138,8 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 			if (closed) return;
 			closed = true;
 			if (scope) options.app?.keymap.popScope(scope);
+			anchorObserver?.disconnect();
+			if (anchorFrame !== null) win.cancelAnimationFrame(anchorFrame);
 			doc.removeEventListener("pointerdown", onPointerDown, true);
 			doc.removeEventListener("click", onClick, true);
 			win.removeEventListener("keydown", onKeyDown, true);
@@ -153,6 +165,15 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 		},
 	};
 
+	const Observer = doc.defaultView?.MutationObserver ?? MutationObserver;
+	const anchorObserver = options.resolveAnchor ? new Observer(() => {
+		if (anchorFrame !== null) return;
+		anchorFrame = win.requestAnimationFrame(() => {
+			anchorFrame = null;
+			reposition();
+		});
+	}) : null;
+	anchorObserver?.observe(doc.body, { childList: true, subtree: true });
 	const scope = options.app ? new Scope(options.app.scope) : null;
 	scope?.register(null, "Escape", (event) => {
 		onKeyDown(event);

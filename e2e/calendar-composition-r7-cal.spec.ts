@@ -215,3 +215,49 @@ test('year targets, configured glyphs and reduced-motion view changes stay usabl
   await expect(page.locator(`${root} .tnc-item[data-task-path$="/Timed.md"] .tn-task-glyphs__priority`).first()).toBeVisible();
   await page.screenshot({ path: `${output}/day-chips-light-1180.png` });
 });
+
+for (const surface of ['list', 'board', 'agenda', 'panel']) test(`metadata disclosure survives background updates: ${surface}`, async ({}, testInfo) => {
+  const page = instance.page;
+  const path = `${folder}/Disclosure.md`;
+  await page.evaluate(async ({ folder, path, today, surface }) => {
+    const app = (window as any).app;
+    if (!app.vault.getAbstractFileByPath(path)) {
+      await app.vault.create(path, `---\ntitle: Background refresh disclosure fixture\ntags: [task, review]\nstatus: open\npriority: high\nscheduled: ${today}\ncontexts: [${Array.from({ length: 12 }, (_, index) => `long-context-name-${index}`).join(', ')}]\n---\n`);
+    }
+    const name = surface === 'list' ? 'List' : surface === 'board' ? 'Board' : 'Calendar';
+    if (name !== 'Calendar' && !app.vault.getAbstractFileByPath(`${folder}/${name}.base`)) {
+      await app.vault.create(`${folder}/${name}.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\nviews:\n  - type: ${name === 'List' ? 'tasknotesTaskList' : 'tasknotesKanban'}\n    name: ${name}\n${name === 'Board' ? '    groupBy:\n      property: status\n      direction: ASC\n' : ''}    order: [status, priority, scheduled, contexts, file.tags]\n`);
+    }
+    await (window as any).calCompositionLeaf.openFile(app.vault.getAbstractFileByPath(`${folder}/${name}.base`));
+    app.workspace.setActiveLeaf((window as any).calCompositionLeaf, { focus: true });
+  }, { folder, path, today, surface });
+  for (const theme of ['light', 'dark']) for (const width of [1180, 700, 400]) {
+    await resize(width, theme, width === 400);
+    if (surface === 'agenda') await mode('list', today);
+    if (surface === 'panel') {
+      await mode('month', today);
+      await page.locator(`${root} > .tnc .tnc-dg-day[data-date="${today}"] .tnc-dg-num`).click();
+    }
+    const host = surface === 'panel' ? `${root} .tn-calendar-day-panel` : '.workspace-leaf.mod-active';
+    const card = page.locator(`${host} .task-card[data-task-path="${path}"]`).first();
+    const overflow = card.locator('.task-card__metadata-overflow:not([hidden])');
+    await expect(overflow).toBeVisible();
+    await overflow.click();
+    const picker = page.locator('.tn-picker');
+    await expect(picker).toContainText('long-context-name-11');
+    const original = await picker.elementHandle();
+    const title = `Refreshed ${surface} ${theme} ${width}`;
+    await page.evaluate(async ({ path, title }) => {
+      const app = (window as any).app;
+      await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter.title = title; });
+    }, { path, title });
+    await expect(card.locator('.task-card__title-text')).toHaveText(title);
+    await expect(picker).toContainText('long-context-name-11');
+    expect(await original!.evaluate(element => element.isConnected)).toBe(true);
+    await expect(overflow).toHaveAttribute('aria-expanded', 'true');
+    await page.screenshot({ path: `${testInfo.outputDir}/${surface}-${theme}-${width}-disclosure.png` });
+    await page.keyboard.press('Escape');
+    await expect(picker).toHaveCount(0);
+    await expect(overflow).toHaveAttribute('aria-expanded', 'false');
+  }
+});

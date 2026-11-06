@@ -1510,29 +1510,20 @@ test.describe('Agenda View Details', () => {
   test('should show agenda with readable day separators', async () => {
     const page = getPage();
 
-    // Open calendar first
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(500);
-
-    // Open agenda view
-    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
-    if (await agendaItem.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await agendaItem.click();
-      await page.waitForTimeout(1500);
-    }
-
-    // Check for day headers in agenda
-    const dayHeaders = page.locator('.tnc-list-day');
-    const headerCount = await dayHeaders.count();
-
+    const calendar = page.locator('.workspace-leaf.mod-active #bases-calendar');
+    await expect(calendar).toBeVisible();
+    await runCommand(page, 'Open agenda view');
+    await page.evaluate(() => {
+      const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
+      view.calendar.changeView('list');
+    });
+    const dayHeaders = calendar.locator(':scope > .tnc .tnc-list-day');
+    const firstHeader = dayHeaders.first();
+    await expect(firstHeader).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/agenda-day-headers.png' });
-
-    // If headers exist, verify styling
-    if (headerCount > 0) {
-      const firstHeader = dayHeaders.first();
-      await firstHeader.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: 'test-results/screenshots/agenda-day-header-detail.png' });
-    }
+    await firstHeader.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: 'test-results/screenshots/agenda-day-header-detail.png' });
   });
 });
 

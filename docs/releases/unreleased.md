@@ -105,6 +105,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Keep calendar agenda and selected-day titles in the flexible column when status controls are not configured.
+- Keep open task metadata disclosures visible during background row updates in lists, boards, agendas and selected-day panels.
 - Keep the empty Details editor visible and steady while typing in the expanded task composer.
 - Give selected Pomodoro tasks enough metadata width to keep their dates visible on narrow screens.
 - Keep long scheduled and due dates visible together in narrow task rows by wrapping their values inside the existing touch targets.

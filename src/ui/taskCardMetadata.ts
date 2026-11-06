@@ -14,23 +14,20 @@ import {
 } from "./taskCardProperties";
 import { getBlockedByTaskPaths } from "./taskCardRelationships";
 import { prepareInteractiveControl } from "./taskCardIndicators";
-import { openPopover, type PopoverHandle } from "./kit/popover";
+import { openPopover } from "./kit/popover";
 import {
 	toggleTaskCardBlockedByExpansion,
 	type TaskCardSecondaryBadgeHandlers,
 } from "./taskCardSecondaryBadges";
 
 const metadataObservers = new WeakMap<HTMLElement, ResizeObserver>();
-const metadataPopovers = new WeakMap<HTMLElement, PopoverHandle>();
 
 export function cleanupTaskCardMetadata(metadataLine: HTMLElement): void {
-	metadataPopovers.get(metadataLine)?.close();
-	metadataPopovers.delete(metadataLine);
 	metadataObservers.get(metadataLine)?.disconnect();
 	metadataObservers.delete(metadataLine);
 }
 
-export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement, plugin?: TaskNotesPlugin): void {
+export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement, plugin?: TaskNotesPlugin, occurrenceScheduled = ""): void {
 	const atoms: HTMLElement[] = [];
 	const groups: Array<{ property: HTMLElement; chips: HTMLElement[] }> = [];
 	for (const property of Array.from(values.children) as HTMLElement[]) {
@@ -52,21 +49,38 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		attr: { "aria-haspopup": "dialog", "aria-expanded": "false" },
 	});
 	prepareInteractiveControl(summary);
+	summary.dataset.occurrenceScheduled = occurrenceScheduled;
 	summary.hidden = true;
 	let hiddenLabels: string[] = [];
 	summary.addEventListener("click", (event) => {
 		event.stopPropagation();
 		if (!hiddenLabels.length) return;
+		const card = summary.closest<HTMLElement>(".task-card");
+		const root = summary.closest<HTMLElement>(".tasknotes-plugin") ?? card?.parentElement;
+		const path = card?.dataset.taskPath;
+		const inDayPanel = !!summary.closest(".tn-calendar-day-panel");
+		let currentSummary = summary;
+		const resolveAnchor = () => {
+			if (!root?.isConnected) return null;
+			if (currentSummary.isConnected) return currentSummary;
+			const replacement = Array.from(root.querySelectorAll<HTMLElement>(".task-card"))
+				.filter((element) => element.dataset.taskPath === path && !!element.closest(".tn-calendar-day-panel") === inDayPanel)
+				.flatMap((element) => Array.from(element.querySelectorAll<HTMLElement>(".task-card__metadata-overflow")))
+				.find((element) => element.dataset.occurrenceScheduled === occurrenceScheduled);
+			if (!replacement) return null;
+			currentSummary = replacement;
+			currentSummary.setAttribute("aria-expanded", "true");
+			return currentSummary;
+		};
 		const popover = openPopover({
 			anchor: summary,
+			resolveAnchor,
 			app: plugin?.app,
 			className: "tn-picker",
 			onClose: () => {
-				summary.setAttribute("aria-expanded", "false");
-				metadataPopovers.delete(metadataLine);
+				currentSummary.setAttribute("aria-expanded", "false");
 			},
 		});
-		metadataPopovers.set(metadataLine, popover);
 		summary.setAttribute("aria-expanded", "true");
 		popover.el.setAttribute("role", "dialog");
 		popover.el.setAttribute("aria-label", summary.getAttribute("aria-label") || "");
@@ -404,7 +418,7 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		slot.hidden = !date;
 		if (date) slot.appendChild(date);
 	}
-	fitTaskCardMetadata(values, metadataLine, plugin);
+	fitTaskCardMetadata(values, metadataLine, plugin, propertyOptions.occurrenceScheduled);
 	return metadataElements;
 }
 
