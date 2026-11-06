@@ -34,6 +34,44 @@ function harness() {
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
 
+it("releases the view scope synchronously when a modal begins opening", () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		expect(state.keymap.pushScope).toHaveBeenCalled();
+		document.dispatchEvent(new Event("tn-modal-opening"));
+		expect(state.keymap.popScope).toHaveBeenCalled();
+		jest.mocked(state.keymap.pushScope).mockClear();
+		document.body.createDiv({ cls: "modal-container" });
+		state.root.focus();
+		expect(state.keymap.pushScope).not.toHaveBeenCalled();
+	} finally { state.dispose(); }
+});
+
+it("does not open a live picker while an unfocused modal is loading", async () => {
+	const state = harness();
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		document.body.createDiv({ cls: "modal-container" });
+		control.dispatchEvent(new KeyboardEvent("keydown", { key: "s", bubbles: true, cancelable: true }));
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
+	} finally { state.dispose(); }
+});
+
+it("abandons an in-flight view action when a modal opens during task resolution", async () => {
+	const state = harness();
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		control.dispatchEvent(new KeyboardEvent("keydown", { key: "s", bubbles: true, cancelable: true }));
+		document.body.createDiv({ cls: "modal-container" });
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
+	} finally { state.dispose(); }
+});
+
 it("keeps native menu keyboard ownership when a refreshed task control regains focus", async () => {
 	const state = harness();
 	try {

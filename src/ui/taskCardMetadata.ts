@@ -329,6 +329,10 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 	metadataLine.empty();
 	const metadataElements: HTMLElement[] = [];
 	const propertiesToShow = getPropertiesToShow(visibleProperties, plugin);
+	for (const field of ["scheduled", "due"] as const) {
+		metadataLine.classList.toggle(`task-card__metadata--with-${field}`,
+			propertiesToShow.some((property) => isPropertyForField(property, field, plugin)));
+	}
 
 	const occurrencePill = createOccurrenceMetadataPill(config);
 	if (occurrencePill) {

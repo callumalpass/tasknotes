@@ -1029,7 +1029,8 @@ export class MiniCalendarView extends BasesViewBase {
 				new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
 					dateStyle: "full",
 					timeZone: "UTC",
-				}).format(date)
+				}).format(date),
+				() => this.containerEl.querySelector<HTMLElement>(".mini-calendar-view__grid")?.focus({ preventScroll: true })
 			);
 			modal.open();
 		}
@@ -1512,7 +1513,9 @@ export class MiniCalendarView extends BasesViewBase {
 					if (selectedNote) {
 						this.openCalendarEntry(selectedNote);
 					}
-				}
+				},
+				undefined,
+				() => this.containerEl.querySelector<HTMLElement>(".mini-calendar-view__grid")?.focus({ preventScroll: true })
 			);
 			modal.open();
 		} else {
@@ -1657,13 +1660,15 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 	private notes: NoteEntry[];
 	private onChooseNote: (note: NoteEntry | null) => void;
 	private plugin: TaskNotesPlugin;
+	private chosen = false;
 
 	constructor(
 		app: App,
 		plugin: TaskNotesPlugin,
 		notes: NoteEntry[],
 		onChooseNote: (note: NoteEntry | null) => void,
-		dateLabel?: string
+		dateLabel?: string,
+		private readonly onDismiss?: () => void
 	) {
 		super(app);
 		applyModalShell(this);
@@ -1717,7 +1722,13 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 	}
 
 	onChooseItem(item: NoteEntry, evt: MouseEvent | KeyboardEvent): void {
+		this.chosen = true;
 		this.onChooseNote(item);
+	}
+
+	onClose(): void {
+		super.onClose();
+		if (!this.chosen) queueMicrotask(() => this.onDismiss?.());
 	}
 }
 

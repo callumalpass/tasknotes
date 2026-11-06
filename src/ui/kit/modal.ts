@@ -4,12 +4,22 @@ import { setIcon } from "obsidian";
 import { colorValueToInputValue, normalizeThemeColor } from "../../utils/themeColors";
 import { uiText, uiLocale } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
+import { closeActivePopover } from "./popover";
 
-export function applyModalShell(modal: Pick<Modal, "modalEl" | "contentEl" | "onClose">): void {
+export function applyModalShell(modal: Pick<Modal, "modalEl" | "contentEl" | "onOpen" | "onClose">): void {
 	modal.modalEl.addClass("tasknotes-plugin", "tn-modal");
 	modal.contentEl.addClass("tn-modal__content");
 	const opener = modal.modalEl.ownerDocument.activeElement as HTMLElement | null;
 	const view = opener?.closest<HTMLElement>(".bases-view .tasknotes-plugin[tabindex]");
+	const open = modal.onOpen.bind(modal);
+	modal.onOpen = () => {
+		closeActivePopover();
+		const doc = modal.modalEl.ownerDocument;
+		doc.dispatchEvent(new (doc.defaultView ?? window).Event("tn-modal-opening"));
+		modal.modalEl.tabIndex = -1;
+		modal.modalEl.focus({ preventScroll: true });
+		open();
+	};
 	const close = modal.onClose.bind(modal);
 	modal.onClose = () => {
 		close();

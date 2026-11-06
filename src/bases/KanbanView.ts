@@ -4849,7 +4849,6 @@ export class KanbanView extends BasesViewBase {
 			return;
 		}
 		target.classList.add(target.matches(".kanban-view__column") ? "kanban-view__column--dragover" : "kanban-view__swimlane-column--dragover");
-		if ((event.target as HTMLElement).closest(".kanban-view__card-wrapper")) return;
 		const container = target.querySelector<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
 		if (!container || !isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) return;
 		if (this.dragOverRafId) {

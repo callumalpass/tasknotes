@@ -93,6 +93,22 @@ function getDateMetadata(metadataLine: HTMLElement, dateType: "due" | "scheduled
 }
 
 describe("taskCardMetadata", () => {
+	it("keeps configured date tracks even for empty values and removes them when unconfigured", () => {
+		const { card, metadataLine } = createMetadataHost();
+		const plugin = createPlugin();
+		jest.mocked(plugin.fieldMapper.isPropertyForField).mockImplementation((property, field) => property === field);
+		const config = { card, metadataLine, task: createTask(), plugin, onBlockedByToggle: jest.fn() };
+		renderTaskCardMetadata({ ...config, visibleProperties: ["scheduled", "due"] });
+		expect(metadataLine.classList.contains("task-card__metadata--with-scheduled")).toBe(true);
+		expect(metadataLine.classList.contains("task-card__metadata--with-due")).toBe(true);
+		expect(metadataLine.querySelectorAll(".task-card__date-slot")).toHaveLength(2);
+		renderTaskCardMetadata({ ...config, visibleProperties: ["due"] });
+		expect(metadataLine.classList.contains("task-card__metadata--with-scheduled")).toBe(false);
+		expect(metadataLine.classList.contains("task-card__metadata--with-due")).toBe(true);
+		expect(metadataLine.querySelectorAll(".task-card__date-slot")).toHaveLength(1);
+		cleanupTaskCardMetadata(metadataLine);
+	});
+
 	it("never paints a zero overflow count after final geometry fits all metadata", () => {
 		const original = window.ResizeObserver;
 		let resize = () => {};

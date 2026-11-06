@@ -1726,7 +1726,10 @@ export class TaskListView extends BasesViewBase {
 		if (target && this.rootElement) {
 			const root = this.rootElement.getBoundingClientRect();
 			const anchor = target.getBoundingClientRect();
-			this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${Math.max(0, anchor.top - root.top) + this.rootElement.scrollTop}px`);
+			const height = this.movementFeedback.getBoundingClientRect().height;
+			const gap = 4;
+			const top = Math.max(root.top + gap, Math.min(anchor.top - height - gap, root.bottom - height - gap));
+			this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${top - root.top + this.rootElement.scrollTop}px`);
 		}
 	}
 
