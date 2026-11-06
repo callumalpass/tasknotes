@@ -218,21 +218,29 @@ test('reports disclose filters and use the pane width', async () => {
   }
 });
 
-test('settings navigation wraps inside the host pane', async () => {
+test('settings navigation keeps every section reachable inside the host pane', async () => {
   const page = await openTaskNotesSettings(instance.page);
   try {
     for (const theme of ['theme-light', 'theme-dark']) for (const [width, mobile] of [[1180, false], [400, false], [400, true]] as const) {
       await appearance(page, theme, width, mobile);
-      if (width === 400) {
-        const select = page.locator('.settings-view__tab-select');
-        await expect(select).toBeVisible();
-        await select.selectOption('features');
-        await expect(page.locator('#settings-tab-features')).toBeVisible();
+      const select = page.locator('.settings-view__tab-select');
+      if (await select.isVisible()) {
+        const sections = await select.locator('option').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value));
+        for (const section of sections) {
+          await select.selectOption(section);
+          await expect(page.locator(`#settings-tab-${section}`)).toBeVisible();
+        }
         await select.selectOption('general');
+      } else {
+        const tabs = page.getByRole('tab');
+        for (const tab of await tabs.all()) {
+          await tab.click();
+          await expect(tab).toHaveAttribute('aria-selected', 'true');
+        }
       }
       await expect(page.locator('.settings-view__tab-content--active')).toHaveCSS('opacity', '1');
       await capture(`settings-${theme}-${width}-${mobile}`, page);
-      expect(await page.locator('.settings-view__tab-nav').evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+      expect(await page.locator('.settings-view__toolbar').evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
     }
   } finally { await closeObsidianSettings(instance.page, page); }
 });

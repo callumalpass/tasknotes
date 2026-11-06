@@ -143,6 +143,7 @@ export class PomodoroStatsView extends ItemView {
 		this.recentSessionsEl = recentSection.createDiv({
 			cls: "pomodoro-recent-sessions pomodoro-stats-view__recent-sessions",
 		});
+		horizons.before(recentSection);
 
 		// Initial load
 		await this.refreshStats();

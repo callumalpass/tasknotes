@@ -142,8 +142,10 @@ export async function openTaskNotesSettings(workspacePage: Page, tabName?: strin
   await pluginTab.click();
   await expect(page.locator('.tasknotes-settings')).toBeVisible();
   if (tabName) {
-    const tab = page.getByRole('tab', { name: tabName, exact: true });
-    await tab.click();
+    const tab = page.getByRole('tab', { name: tabName, exact: true, includeHidden: true });
+    const select = page.locator('.settings-view__tab-select');
+    if (await select.isVisible()) await select.selectOption({ label: tabName });
+    else await tab.click();
     await expect(tab).toHaveAttribute('aria-selected', 'true');
   }
   return page;

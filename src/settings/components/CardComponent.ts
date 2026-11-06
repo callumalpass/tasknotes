@@ -508,6 +508,7 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 				const configRow = content.createDiv("tasknotes-settings__card-config-row");
 
 				if (row.fullWidth) {
+					configRow.addClass("tasknotes-settings__card-config-row--full-width");
 					configRow.classList.remove(
 						"tn-static-display-flex-4d51fc62",
 						"tn-static-display-flex-8bb39979",

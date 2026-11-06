@@ -452,14 +452,12 @@
     box-sizing: border-box;
 }
 
-/* Center the timer group only when there is spare height. Auto margins collapse
-   when the pane is shorter than the content, keeping the top scrollable. */
 .tasknotes-plugin.pomodoro-view > .pomodoro-view__timer-section {
-    margin-top: auto;
+    margin-top: var(--tn-space-6);
 }
 
 .tasknotes-plugin.pomodoro-view > .pomodoro-view__stats-section {
-    margin-bottom: auto;
+    margin-bottom: 0;
 }
 
 /* Statistics Grid */

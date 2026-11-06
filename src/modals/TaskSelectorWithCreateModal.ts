@@ -582,10 +582,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 			new Notice(
 				this.translate(
-					msg({ message: "Task \"{title}\" created successfully", context: "modals.taskCreation.notices.success" }),
-					{
-						title: result.taskInfo.title,
-					}
+					msg({ message: "Task created", context: "task creation feedback" })
 				)
 			);
 

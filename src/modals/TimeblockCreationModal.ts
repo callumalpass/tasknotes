@@ -316,7 +316,7 @@ export class TimeblockCreationModal extends Modal {
 				dailyNote,
 			});
 
-			showTaskUndo([undo], false, 1, this.app.vault, this.translate(msg({ message: "Timeblock \"{title}\" created successfully", context: "modals.timeblockCreation.created" }), { title }));
+			showTaskUndo([undo], false, 1, this.app.vault, this.translate(msg({ message: "Timeblock created", context: "modals.timeblockCreation.created" })));
 			this.close();
 		} catch (error) {
 			tasknotesLogger.error("Error creating timeblock:", {

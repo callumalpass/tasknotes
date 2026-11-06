@@ -57,7 +57,7 @@ body:not(.is-mobile) .tasknotes-settings {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--tn-space-half) var(--tn-space-2);
     margin-bottom: var(--tn-space-2);
 }
@@ -111,7 +111,7 @@ body:not(.is-mobile) .tasknotes-settings {
     display: flex;
     align-items: center;
     flex: 1 1 auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--tn-space-half);
     min-width: 0;
     width: auto;
@@ -121,7 +121,7 @@ body:not(.is-mobile) .tasknotes-settings {
     border: 1px solid var(--tn-hairline);
     border-radius: var(--tn-radius-lg);
     background: var(--background-secondary);
-    overflow-x: visible;
+    overflow-x: auto;
     white-space: nowrap;
     scrollbar-width: thin;
 }
@@ -132,7 +132,7 @@ body:not(.is-mobile) .tasknotes-settings {
     min-width: 0;
 }
 
-@container (max-width: 360px) {
+@container (max-width: 700px) {
     .tasknotes-plugin .settings-view__tab-nav {
         display: none;
     }
@@ -149,7 +149,7 @@ body:not(.is-mobile) .tasknotes-settings {
     flex-shrink: 0;
     max-width: 100%;
     height: auto;
-    min-height: 28px;
+    min-height: var(--tn-touch-target);
     padding: 3px 9px;
     border: 1px solid transparent;
     border-radius: var(--radius-m);
@@ -245,6 +245,8 @@ body:not(.is-mobile) .tasknotes-settings {
 /* Tab Content Panel */
 .tasknotes-plugin .settings-view__tab-content {
     display: none;
+    min-width: 0;
+    width: 100%;
 }
 
 .tasknotes-plugin .settings-view__tab-content--active {
@@ -339,10 +341,39 @@ body:not(.is-mobile) .tasknotes-settings {
 }
 
 .tasknotes-settings__card-config-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
+    gap: var(--tn-space-3);
+    margin-bottom: var(--tn-space-3);
+    min-width: 0;
+}
+
+.tasknotes-settings__card-config-row--full-width {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.tasknotes-settings__card-config-row--full-width > .tasknotes-settings__card-config-label:empty {
+    display: none;
+}
+
+.tasknotes-settings__card-config-row > :not(.tasknotes-settings__card-config-label) {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+}
+
+.tasknotes-settings__card-config-row > .checkbox-container {
+    width: var(--toggle-width);
+    min-width: var(--tn-touch-target);
+    justify-self: start;
+}
+
+@container (max-width: 480px) {
+    .tasknotes-plugin .tasknotes-settings__card-config-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--tn-space-1);
+    }
 }
 
 .tasknotes-settings__card-config-row:last-child {
