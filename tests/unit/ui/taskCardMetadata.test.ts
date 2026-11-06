@@ -102,10 +102,26 @@ describe("taskCardMetadata", () => {
 		expect(metadataLine.classList.contains("task-card__metadata--with-scheduled")).toBe(true);
 		expect(metadataLine.classList.contains("task-card__metadata--with-due")).toBe(true);
 		expect(metadataLine.querySelectorAll(".task-card__date-slot")).toHaveLength(2);
+		expect(metadataLine.hidden).toBe(true);
+		expect(Array.from(metadataLine.querySelectorAll<HTMLElement>(".task-card__date-slot")).every(slot => slot.hidden)).toBe(true);
 		renderTaskCardMetadata({ ...config, visibleProperties: ["due"] });
 		expect(metadataLine.classList.contains("task-card__metadata--with-scheduled")).toBe(false);
 		expect(metadataLine.classList.contains("task-card__metadata--with-due")).toBe(true);
 		expect(metadataLine.querySelectorAll(".task-card__date-slot")).toHaveLength(1);
+		cleanupTaskCardMetadata(metadataLine);
+	});
+
+	it("restores the supporting line when a date is added to an empty task", () => {
+		const { card, metadataLine } = createMetadataHost();
+		const plugin = createPlugin();
+		jest.mocked(plugin.fieldMapper.isPropertyForField).mockImplementation((property, field) => property === field);
+		const config = { card, metadataLine, task: createTask(), plugin, onBlockedByToggle: jest.fn(), visibleProperties: ["scheduled", "due"] };
+		renderTaskCardMetadata(config);
+		expect(metadataLine.hidden).toBe(true);
+		renderTaskCardMetadata({ ...config, task: createTask({ due: "2026-11-08" }) });
+		expect(metadataLine.hidden).toBe(false);
+		expect(metadataLine.querySelector<HTMLElement>(".task-card__date-slot--scheduled")?.hidden).toBe(true);
+		expect(metadataLine.querySelector<HTMLElement>(".task-card__date-slot--due")?.hidden).toBe(false);
 		cleanupTaskCardMetadata(metadataLine);
 	});
 

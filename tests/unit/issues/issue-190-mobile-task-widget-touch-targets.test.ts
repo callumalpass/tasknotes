@@ -8,34 +8,19 @@ function readRepoFile(relativePath: string): string {
 }
 
 describe("Issue #190: mobile task widget touch targets", () => {
-	it("keeps mobile controls touchable without wrapping titles or clipping metadata", () => {
+	it("keeps narrow controls touchable in a single supporting line without clipping metadata", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 		const tokens = readRepoFile("styles/tokens.css");
-		expect(tokens).toContain("--tn-mobile-task-card-indicator-size: 24px");
-		expect(tokens).toContain("--tn-mobile-task-card-menu-size: 32px");
-		for (const control of ["status-dot", "priority-dot", "context-menu"]) {
-			const selector = "body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__" + control;
-			const block = css.slice(css.indexOf(selector + " {"));
-			const rules = block.slice(0, block.indexOf("}"));
-			const size = control === "context-menu" ? "menu" : "indicator";
-			expect(rules).toContain("width: var(--tn-mobile-task-card-" + size + "-size)");
-			expect(rules).toContain("height: var(--tn-mobile-task-card-" + size + "-size)");
-		}
-		const row = css.slice(css.indexOf("body.is-mobile .tasknotes-plugin .task-card__main-row {"));
-		expect(row.slice(0, row.indexOf("}"))).toContain("flex-wrap: nowrap");
-		expect(css).toContain(".task-card:focus-within .task-card__drag-handle");
-		expect(css).toContain(".task-card--selected .task-card__context-menu");
-		const secondary = css.slice(css.indexOf("body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) :is("));
-		const secondaryRules = secondary.slice(0, secondary.indexOf("}"));
-		for (const control of ["recurring-indicator", "reminder-indicator", "attachment-indicator", "project-indicator", "blocking-toggle", "blocked-toggle"]) {
-			expect(secondaryRules).toContain(".task-card__" + control);
-		}
-		expect(secondaryRules).toContain("min-width: var(--tn-mobile-task-card-indicator-size)");
-		expect(secondaryRules).toContain("min-height: var(--tn-mobile-task-card-indicator-size)");
-		expect(secondaryRules).not.toContain(".task-card__details-indicator");
-		expect(css).toMatch(/body\.is-mobile \.tasknotes-plugin \.task-card \.task-card__details-indicator\s*\{[^}]*min-width:\s*var\(--tn-icon-sm\);[^}]*min-height:\s*var\(--tn-icon-sm\);/s);
+		expect(tokens).toContain("--tn-touch-target: 40px");
+		const narrow = css.slice(css.indexOf("@container tn-task-card (max-width: 560px)"));
+		expect(narrow).toContain("grid-template-rows: auto var(--tn-touch-target)");
+		expect(narrow).toMatch(/:is\(\.task-card__status-dot, \.task-card__priority-dot, \.task-card__context-menu, \.task-card__drag-handle,[^}]*min-width: var\(--tn-touch-target\);[^}]*min-height: var\(--tn-touch-target\);/s);
+		expect(narrow).toContain('.task-card__badges [role="button"]');
+		expect(narrow).toMatch(/\.task-card__metadata-date > span:last-child\s*\{[^}]*white-space:\s*nowrap;[^}]*overflow:\s*visible;/s);
+		expect(narrow).toMatch(/\.task-card__context-menu\s*\{[^}]*opacity:\s*1;/s);
+		expect(narrow).toMatch(/\.task-card__drag-handle\s*\{[^}]*opacity:\s*1;/s);
+		expect(css).toMatch(/\.task-card__details-indicator\s*\{[^}]*width:\s*14px;[^}]*height:\s*14px;/s);
 	});
-
 	it("keeps inline controls touchable without applying mobile sizing to desktop", () => {
 		const css = readRepoFile("styles/task-inline-widget.css");
 		const mobileControls = css.slice(css.indexOf("body.is-mobile .tasknotes-plugin .task-card--layout-inline :is("));

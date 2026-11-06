@@ -324,7 +324,7 @@ function createOccurrenceMetadataPill(config: RenderTaskCardMetadataConfig): HTM
 }
 
 export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HTMLElement[] {
-	const { metadataLine, task, plugin, visibleProperties, propertyOptions = {} } = config;
+	const { metadataLine, card, task, plugin, visibleProperties, propertyOptions = {} } = config;
 	cleanupTaskCardMetadata(metadataLine);
 	metadataLine.empty();
 	const metadataElements: HTMLElement[] = [];
@@ -384,6 +384,8 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 	}
 
 	updateMetadataVisibility(metadataLine, metadataElements);
+	metadataLine.hidden = metadataElements.length === 0;
+	card.classList.toggle("task-card--metadata-empty", metadataLine.hidden);
 	const values = metadataLine.createSpan({ cls: "task-card__metadata-values" });
 	for (const element of metadataElements) {
 		if (!element.classList.contains("task-card__metadata-date")) values.appendChild(element);
@@ -398,6 +400,7 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		const date = metadataElements.find((element) =>
 			element.classList.contains(`task-card__metadata-date--${field}`)
 		);
+		slot.hidden = !date;
 		if (date) slot.appendChild(date);
 	}
 	fitTaskCardMetadata(values, metadataLine, plugin);

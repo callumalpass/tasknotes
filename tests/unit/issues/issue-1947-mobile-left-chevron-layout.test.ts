@@ -11,17 +11,11 @@ describe("Issue #1947: mobile left-chevron task cards", () => {
 	it("keeps the left subtask chevron visible and badges on the main row", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left \.task-card__chevron\s*\{[^}]*left:\s*calc\(-1 \* var\(--tn-mobile-task-card-menu-size\) - var\(--tn-space-half\)\);[^}]*width:\s*32px;[^}]*height:\s*32px;/s
+		const narrow = css.slice(css.indexOf("@container tn-task-card (max-width: 560px)"));
+		expect(narrow).toMatch(
+			/\.task-card\.task-card--chevron-left \.task-card__badges \.task-card__chevron\s*\{[^}]*position:\s*static;[^}]*left:\s*auto;[^}]*top:\s*auto;[^}]*transform:\s*none;[^}]*width:\s*var\(--tn-touch-target\);[^}]*height:\s*var\(--tn-touch-target\);/s
 		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\)\s*\{[^}]*padding-left:\s*calc\(var\(--tn-mobile-task-card-menu-size\) \+ var\(--tn-space-1\)\);/s
-		);
-		expect(css).not.toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\)\s*\{[^}]*margin-left:/s
-		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card\.task-card--chevron-left:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__badges\s*\{[^}]*order:\s*0;[^}]*flex:\s*0 0 auto;[^}]*padding-left:\s*0;/s
-		);
+		expect(narrow).toMatch(/\.task-card__badges\s*\{[^}]*grid-column:\s*4;[^}]*grid-row:\s*2;[^}]*flex-wrap:\s*nowrap;/s);
+		expect(narrow).toMatch(/\.task-card__status-dot\s*\{[^}]*grid-column:\s*1;/s);
 	});
 });

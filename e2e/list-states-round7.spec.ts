@@ -39,7 +39,13 @@ async function openList(theme: string, width = 1180, mobile = false, manual = fa
     app.workspace.rightSplit.collapse();
   }, { theme, mobile, path, content });
   await expect(card(0)).toBeVisible();
-  await expect(card(0).locator('.task-card__metadata-values')).toBeVisible();
+  await expect(card(0).locator('.task-card__metadata')).toBeVisible();
+  if (width > 600) {
+    await expect(card(0).locator('.task-card__metadata-values')).toBeVisible();
+  } else if (!await card(0).locator('.task-card__metadata-values').isVisible()) {
+    await expect(card(0).locator('.task-card__metadata-overflow')).toBeVisible();
+    await expect(card(0).locator('.task-card__metadata-overflow')).toHaveAttribute('aria-label', /studio/);
+  }
   const notice = page.getByText("Don't show again", { exact: true });
   if (await notice.isVisible()) await notice.click();
 }
@@ -256,7 +262,11 @@ for (const theme of ['theme-light', 'theme-dark']) {
       expect(rect.width).toBeGreaterThanOrEqual(40);
       expect(rect.height).toBeGreaterThanOrEqual(40);
     }
-    for (let index = 1; index < controls.length; index++) expect(controls[index].left).toBeGreaterThanOrEqual(controls[index - 1].right);
+    for (const [index, control] of controls.entries()) {
+      for (const other of controls.slice(index + 1)) {
+        expect(control.right <= other.left || other.right <= control.left || control.bottom <= other.top || other.bottom <= control.top).toBe(true);
+      }
+    }
     const before = await card(0).evaluate(element => getComputedStyle(element.querySelector('.task-card__main-row')!, '::before').backgroundColor);
     await card(0).hover();
     expect(await card(0).evaluate(element => getComputedStyle(element.querySelector('.task-card__main-row')!, '::before').backgroundColor)).toBe(before);
