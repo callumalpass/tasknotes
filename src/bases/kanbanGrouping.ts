@@ -3,7 +3,7 @@ import { uiNumber } from "../i18n/formatters";
 import { NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
 import type { PriorityConfig, StatusConfig, TaskInfo } from "../types";
 import { stringifyUnknown } from "../utils/stringUtils";
-import { stripPropertyPrefix } from "./sortOrderUtils";
+import { compareManualOrderValues, stripPropertyPrefix, type SortDirection } from "./sortOrderUtils";
 
 type BasesDisplayValue = {
 	constructor?: { name?: string };
@@ -39,6 +39,7 @@ export type KanbanTaskGroupingOptions = {
 	getListPropertyValue: (task: TaskInfo, propertyName: string) => unknown;
 	canonicalizeGroupKey: (groupKey: string, propertyId: string) => string;
 	sortOrderValues?: ReadonlyMap<string, unknown>;
+	sortOrderDirection?: SortDirection;
 	statusConfigs: readonly StatusConfig[];
 	priorityConfigs: readonly PriorityConfig[];
 	isStatusGroupingProperty: (propertyId: string) => boolean;
@@ -522,7 +523,8 @@ function sortKanbanGroupsByTaskOrder(
 
 function sortKanbanGroupsBySortOrder(
 	groups: Map<string, TaskInfo[]>,
-	sortOrderValues: ReadonlyMap<string, unknown> | undefined
+	sortOrderValues: ReadonlyMap<string, unknown> | undefined,
+	direction: SortDirection = "asc"
 ): void {
 	if (!sortOrderValues) {
 		return;
@@ -532,12 +534,7 @@ function sortKanbanGroupsBySortOrder(
 		tasks.sort((a, b) => {
 			const soA = sortOrderValues.get(a.path);
 			const soB = sortOrderValues.get(b.path);
-			if (soA != null && soB != null) {
-				return stringifyUnknown(soA).localeCompare(stringifyUnknown(soB));
-			}
-			if (soA != null) return -1;
-			if (soB != null) return 1;
-			return 0;
+			return compareManualOrderValues(soA, soB, direction);
 		});
 	}
 }
@@ -618,7 +615,7 @@ export function buildKanbanTaskGroups(options: KanbanTaskGroupingOptions): Map<s
 	}
 
 	sortKanbanGroupsByTaskOrder(groups, taskOrder);
-	sortKanbanGroupsBySortOrder(groups, options.sortOrderValues);
+	sortKanbanGroupsBySortOrder(groups, options.sortOrderValues, options.sortOrderDirection);
 
 	addEmptyKanbanStatusGroups(
 		groups,

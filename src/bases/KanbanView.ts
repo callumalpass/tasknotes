@@ -1297,6 +1297,7 @@ export class KanbanView extends BasesViewBase {
 			sortOrderValues: isSortOrderInSortConfig(this.dataAdapter, sortOrderField)
 				? this.getSortOrderValues(taskNotes, sortOrderField)
 				: undefined,
+			sortOrderDirection: getSortOrderDirection(this.dataAdapter, sortOrderField),
 			statusConfigs: this.plugin.settings.customStatuses || [],
 			priorityConfigs:
 				this.plugin.priorityManager?.getAllPriorities?.() ||
