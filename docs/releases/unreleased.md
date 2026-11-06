@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- Added a time slot height setting for the calendar time grid, in Settings → Appearance → Time settings and in each calendar view's time grid options. Short slots such as 15 minutes no longer force a taller day: lower the height and the whole time range fits without scrolling.
+
 ## Changed
 
 - Reworked the task create and edit modals. Status, priority, dates, recurrence and reminders are now labelled chips that show their current value, replacing the icons with a dot. The edit modal starts with the title, **Task information** is collapsed, and **Archive** and **Delete** moved into a **More actions** (⋯) menu beside **Open note**. Empty field rows are more compact.
