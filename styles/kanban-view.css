@@ -777,6 +777,13 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__title-te
     white-space: nowrap;
 }
 
+.tasknotes-plugin .kanban-view__card-wrapper .task-card__metadata > .task-card__metadata-overflow {
+    flex: none;
+    min-width: max-content;
+    overflow: visible;
+    text-overflow: clip;
+}
+
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__date-slot {
     order: 0;
     flex: none;

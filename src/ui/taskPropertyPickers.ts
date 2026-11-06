@@ -452,6 +452,8 @@ export async function openTaskPropertyPicker(
 	const multiple = ["tags", "contexts", "projects"].includes(property);
 	const feedback: TaskUndoFeedback = { undo: [], failed: false };
 	const previous = await Promise.all(tasks.map(async task => (await plugin.cacheManager.getTaskInfo(task.path))?.[property]));
+	const doc = "ownerDocument" in anchor ? anchor.ownerDocument : activeDocument;
+	if (doc.querySelector(".modal-container")) return;
 	const apply = (value: TaskPropertyChoice) => {
 		changes = changes.then(async () => { await changeTaskProperty(plugin, tasks, property, value, multiple ? feedback : undefined); });
 	};
@@ -480,6 +482,9 @@ export async function openTaskPropertyChoices(
 	onClose?: () => void
 ): Promise<PopoverHandle | undefined> {
 	if (!tasks.length) return;
+	const doc = "ownerDocument" in anchor ? anchor.ownerDocument : activeDocument;
+	const blocked = () => !!doc.querySelector(".modal-container") && !("closest" in anchor && anchor.closest(".modal-container"));
+	if (blocked()) return;
 	const clear = uiText(msg({ message: "Clear", context: "interaction clear" }));
 	const label = taskPropertyLabel(property);
 	const title = tasks.length > 1 ? `${label} · ${uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: tasks.length })}` : undefined;
@@ -634,6 +639,7 @@ export async function openTaskPropertyChoices(
 		});
 	}
 	const allTasks = await plugin.cacheManager.getAllTasks();
+	if (blocked()) return;
 	const values = new Set(allTasks.flatMap((task) => task[property] ?? []));
 	for (const task of tasks) for (const value of task[property] ?? []) values.add(value);
 	const toggle = (value: string, selected: boolean) =>

@@ -84,6 +84,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Month selected-day rows use the panel width without reserving an empty time column. Narrow agendas share one set of date navigation controls with the date strip.
+- Keep task-view shortcuts and open property pickers out of the edit modal while it loads, so cancelling an edit cannot leave changes to a background task.
+- Reveal the current month when entering the calendar's Year view or pressing Today.
+- Keep desktop list dates aligned when optional metadata is absent, and show the full Kanban hidden-property count.
+- Keep invalid-drop explanations inside the visible list and show Kanban insertion markers when dragging near a card's edge.
+- Restore mini-calendar keyboard navigation after dismissing its note chooser.
 - Keep the selected-day panel visible after calendar overflow, theme and width changes, preserving the selected date and tasks.
 - Keep mobile task status targets separate from movement handles, preserve keyboard navigation in open task menus, and use the shared title, action/date and metadata layout in Pomodoro and selected-day rows without horizontal panning.
 - Pomodoro history shows the resolved task title, falling back to the filename only for unavailable tasks.

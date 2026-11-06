@@ -72,6 +72,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (
 			!target ||
 			!root.contains(target) ||
+			root.ownerDocument.querySelector(".modal-container") ||
 			root.ownerDocument.querySelector(".menu") ||
 			target.closest("input, textarea, select, [contenteditable]")
 		)
@@ -255,6 +256,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		const target = event.target as HTMLElement;
 		if (
 			event.defaultPrevented ||
+			root.ownerDocument.querySelector(".modal-container") ||
 			root.ownerDocument.querySelector(".menu") ||
 			event.isComposing ||
 			event.altKey ||
@@ -422,7 +424,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			).filter((task): task is TaskInfo => !!task);
 			const tasks = [...new Map(fetchedTasks.map((task) => [task.path, task])).values()];
 			const task = await taskFor(actionPath);
-			if (!task || focusedPath !== actionPath) return;
+			if (!task || focusedPath !== actionPath || root.ownerDocument.querySelector(".modal-container")) return;
 			const anchor = cardFor(actionPath) ?? root;
 			if (mod && key === "k") {
 				const targetDate = options.targetDate?.(actionPath) ?? (task.recurrence
@@ -532,6 +534,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		return false;
 	});
 	root.addEventListener("focusin", focusScope);
+	root.ownerDocument.addEventListener("tn-modal-opening", releaseScope);
 	root.addEventListener("focusout", blurScope);
 	root.addEventListener("keydown", listener);
 	root.addEventListener("tn-search-exit", searchExit);
@@ -543,6 +546,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		plugin.emitter.offref(taskUpdated);
 		releaseScope();
 		root.removeEventListener("focusin", focusScope);
+		root.ownerDocument.removeEventListener("tn-modal-opening", releaseScope);
 		root.removeEventListener("focusout", blurScope);
 		observer.disconnect();
 		chromeObserver.disconnect();
