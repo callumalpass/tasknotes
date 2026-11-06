@@ -418,6 +418,7 @@ export class CalendarView extends BasesViewBase {
 			}
 		}
 		this.calendar?.updateSize();
+		if (this.calendar) this.syncDayPanel();
 	}
 
 	private isNarrowCalendar(): boolean {
@@ -1351,9 +1352,17 @@ export class CalendarView extends BasesViewBase {
 		for (const cell of this.calendarEl.querySelectorAll<HTMLElement>(".tnc-dg-day[data-date]")) {
 			cell.classList.toggle("tn-calendar-day-selected", cell.dataset.date === this.selectedMonthDay);
 		}
+		const panelRoot = this.dayPanelEl?.querySelector<HTMLElement>(":scope > .tnc");
+		if (this.dayPanel && this.dayPanelEl && this.dayPanelEl.clientWidth > 0 &&
+			(!panelRoot || panelRoot.getClientRects().length === 0)) {
+			this.destroyDayPanel();
+		}
 		if (this.dayPanel) {
-			this.dayPanel.gotoDate(this.selectedMonthDay);
+			if (format(this.dayPanel.getDate(), "yyyy-MM-dd") !== this.selectedMonthDay) {
+				this.dayPanel.gotoDate(this.selectedMonthDay);
+			}
 			this.dayPanel.setItems(this.calendarItems);
+			this.dayPanel.updateSize();
 			return;
 		}
 		this.dayPanelEl = this.calendarEl.createDiv({ cls: "tn-calendar-day-panel" });

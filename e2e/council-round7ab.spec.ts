@@ -103,8 +103,9 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
         await expect(first.locator('.task-card__context-menu')).toBeAttached();
         if (width === 400) {
           const bounds = await first.evaluate(card => ({ title: card.querySelector('.task-card__title-text')!.getBoundingClientRect().toJSON(), status: card.querySelector('.task-card__status-dot')!.getBoundingClientRect().toJSON() }));
-          expect(bounds.status.top).toBeLessThan(bounds.title.bottom);
-          expect(bounds.status.bottom).toBeGreaterThan(bounds.title.top);
+          expect(bounds.status.top).toBeGreaterThanOrEqual(bounds.title.bottom);
+          const priority = await first.locator('.task-card__priority-dot').boundingBox();
+          expect(Math.abs(bounds.status.top - priority!.y)).toBeLessThan(2);
         }
       }
       await capture(`month-${variant}`);
@@ -180,6 +181,7 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
         const sentence = page.locator('.tasknotes-inline-widget--sentence:visible').first();
         const menu = sentence.locator('.task-card__context-menu');
         expect(await menu.evaluate(element => !!(element.compareDocumentPosition(element.closest('.task-card')!.querySelector('.task-card__content')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+        await page.mouse.move(1, 1);
         await menu.focus();
         await page.keyboard.press('Enter');
         await expect(page.locator('.menu:visible')).toBeVisible();

@@ -757,22 +757,22 @@
     font-size: var(--tn-type-xs);
 }
 
-.tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__main-row {
+body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__main-row {
     flex-wrap: wrap;
 }
 
-.tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__content {
+body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__content {
     flex: 1 0 100%;
     order: -1;
     padding-right: 0;
 }
 
-.tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__title {
+body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__title {
     display: block;
     width: 100%;
 }
 
-body .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card .task-card__title-text {
+body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card .task-card__title-text {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -785,7 +785,7 @@ body .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .
     font-size: var(--tn-type-2xs);
 }
 
-.tasknotes-plugin.pomodoro-view--very-narrow .task-card__context-menu {
+body:not(.is-mobile) .tasknotes-plugin.pomodoro-view--very-narrow .task-card__context-menu {
     position: static;
     opacity: 1;
     pointer-events: auto;

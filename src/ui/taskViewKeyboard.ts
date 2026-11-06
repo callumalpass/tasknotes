@@ -72,6 +72,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (
 			!target ||
 			!root.contains(target) ||
+			root.ownerDocument.querySelector(".menu") ||
 			target.closest("input, textarea, select, [contenteditable]")
 		)
 			return;
@@ -254,6 +255,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		const target = event.target as HTMLElement;
 		if (
 			event.defaultPrevented ||
+			root.ownerDocument.querySelector(".menu") ||
 			event.isComposing ||
 			event.altKey ||
 			target.closest(

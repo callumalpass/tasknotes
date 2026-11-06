@@ -20,7 +20,7 @@ function harness() {
 	}
 	const plugin = {
 		app: { scope: {}, keymap: { pushScope: jest.fn(), popScope: jest.fn() } },
-		taskSelectionService: { getSelectedPaths: () => [] },
+		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => 0 },
 		emitter: { on: jest.fn(), offref: jest.fn() },
 	} as unknown as TaskNotesPlugin;
 	const dispose = installTaskViewKeyboard({
@@ -29,10 +29,48 @@ function harness() {
 		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
 	});
 	const first = root.querySelector<HTMLElement>('[data-task-path="first.md"]')!;
-	return { root, first, dispose };
+	return { root, first, dispose, keymap: plugin.app.keymap };
 }
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
+
+it("keeps native menu keyboard ownership when a refreshed task control regains focus", async () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		jest.mocked(state.keymap.pushScope).mockClear();
+		const menu = document.body.createDiv({ cls: "menu" });
+		state.first.replaceWith(state.first.cloneNode(true));
+		await Promise.resolve();
+		expect(jest.mocked(state.keymap.pushScope).mock.calls.length).toBe(0);
+		menu.remove();
+		state.root.focus();
+		expect(state.keymap.pushScope).toHaveBeenCalledTimes(1);
+	} finally {
+		state.dispose();
+	}
+});
+
+it.each(["ArrowDown", "p", "Escape"])("defers %s to an open native menu while its trigger retains focus", async key => {
+	const state = harness();
+	const received = jest.fn();
+	document.addEventListener("keydown", received);
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		document.body.createDiv({ cls: "menu" });
+		const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+		control.dispatchEvent(event);
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(event.defaultPrevented).toBe(false);
+		expect(received).toHaveBeenCalledWith(event);
+		expect(document.activeElement).toBe(control);
+		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
+	} finally {
+		document.removeEventListener("keydown", received);
+		state.dispose();
+	}
+});
 
 it.each(["status", "priority"])("retains the %s control and task identity when its row is replaced", async property => {
 	const state = harness();

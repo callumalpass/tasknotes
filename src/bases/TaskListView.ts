@@ -1013,9 +1013,7 @@ export class TaskListView extends BasesViewBase {
 		);
 
 		const existingHandle = cardEl.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR);
-		const handleContainer = this.isMobileDragHandleOnlyMode(cardEl)
-			? cardEl.querySelector<HTMLElement>(":scope > .task-card__main-row") ?? cardEl
-			: cardEl;
+		const handleContainer = cardEl.querySelector<HTMLElement>(":scope > .task-card__main-row") ?? cardEl;
 		if (existingHandle) {
 			existingHandle.setAttribute("draggable", "true");
 			if (existingHandle.parentElement !== handleContainer) handleContainer.prepend(existingHandle);

@@ -1,7 +1,7 @@
 /*
  * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
  * see LICENSE beside this file; library release 0.1.8 is required for integration).
- * Upstream sha256 7a8718d851179e21d9a6a68bc59ccab96a74247c7d1ffa987594d707ac2556f5.
+ * Upstream sha256 58e24d04e1767d576039ad073af14b29d27fe83c09762e3441ae1089c1cebe2e.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -1875,12 +1875,6 @@
 	box-shadow: var(--tnc-theme-drag-lift, var(--tnc-shadow));
 	outline: 1px solid var(--tnc-focus);
 	outline-offset: -1px;
-}
-.tnc .tnc-item.tnc-drag-origin {
-	opacity: var(--tnc-drag-opacity);
-	pointer-events: none;
-	filter: none;
-	box-shadow: none;
 }
 .tnc .tnc-item--list.is-dragging:not(.tnc-drag-preview) {
 	opacity: var(--tnc-drag-opacity);

@@ -84,6 +84,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Month selected-day rows use the panel width without reserving an empty time column. Narrow agendas share one set of date navigation controls with the date strip.
+- Keep the selected-day panel visible after calendar overflow, theme and width changes, preserving the selected date and tasks.
+- Keep mobile task status targets separate from movement handles, preserve keyboard navigation in open task menus, and use the shared title, action/date and metadata layout in Pomodoro and selected-day rows without horizontal panning.
+- Pomodoro history shows the resolved task title, falling back to the filename only for unavailable tasks.
+- Held calendar drags no longer leave duplicate source text underneath neighbouring events. Sentence task references keep compact controls with out-of-line touch areas.
 - Mobile boards align the first populated column and retain the visible column after task updates. Contexts and tags wrap together instead of stacking individually.
 - Sentence task references keep punctuation next to the title, with the keyboard- and touch-accessible menu before the link.
 - Drag Undo reconciles grouped task rows before confirming completion. Pomodoro history keeps delete actions aligned for sessions without tasks, and narrow timers allow two-line task titles.

@@ -502,6 +502,10 @@ body:not(.is-mobile) .tn-tasknotesTaskList .task-card--reorderable:not(.task-car
     padding-left: calc(var(--tn-space-2) + var(--tn-space-5));
 }
 
+body:not(.is-mobile) .tn-tasknotesTaskList .task-card--reorderable:not(.task-card--layout-inline) > .task-card__main-row > .task-card__drag-handle {
+    left: calc(var(--tn-space-half) - var(--tn-space-2) - var(--tn-space-5));
+}
+
 .tasknotes-plugin .task-card [role="button"]:focus-visible,
 .tasknotes-plugin .tn-selection-indicator:focus-visible {
     outline: var(--tn-space-half) solid var(--tn-focus-ring);
@@ -1506,11 +1510,11 @@ body.is-mobile .tasknotes-plugin .task-card {
     --tn-mobile-task-card-menu-size: var(--tn-touch-target);
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card.task-card--chevron-left:not(.task-card--layout-inline):not(.task-card--layout-compact) {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card.task-card--chevron-left:not(.task-card--layout-inline):not(.task-card--layout-compact) {
     padding-left: var(--tn-space-2);
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__main-row {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__main-row {
     display: grid;
     grid-template-columns: repeat(2, var(--tn-touch-target)) repeat(2, minmax(0, 1fr)) var(--tn-touch-target);
     grid-template-rows: auto var(--tn-touch-target) auto;
@@ -1518,15 +1522,15 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     align-items: center;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card--drag-handle-only .task-card__main-row {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card--reorderable .task-card__main-row {
     grid-template-columns: repeat(2, var(--tn-touch-target)) repeat(2, minmax(0, 1fr)) repeat(2, var(--tn-touch-target));
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card.task-card--drag-handle-only .task-card__main-row {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card.task-card--reorderable .task-card__main-row {
     padding-left: 0;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__content {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__content {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 1 / span 3;
@@ -1536,7 +1540,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     pointer-events: none;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__title {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__title {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 1 / span 3;
@@ -1545,7 +1549,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     gap: 0;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__title-text {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__title-text {
     grid-column: 1 / -1;
     grid-row: 1;
     white-space: normal;
@@ -1556,7 +1560,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     pointer-events: auto;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__metadata {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__metadata {
     display: grid;
     grid-column: 1 / -1;
     grid-row: 2 / span 2;
@@ -1565,7 +1569,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     gap: 0;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__metadata-values:not([hidden]) {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__metadata-values:not([hidden]) {
     grid-column: 1 / -1;
     grid-row: 2;
     display: flex;
@@ -1577,13 +1581,13 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     pointer-events: auto;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__metadata-chips {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__metadata-chips {
     flex-direction: row;
     flex-wrap: wrap;
     max-width: 100%;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card.task-card--drag-handle-only .task-card__drag-handle {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card.task-card--reorderable .task-card__drag-handle {
     position: static;
     grid-column: 6;
     grid-row: 2;
@@ -1593,21 +1597,21 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     opacity: 1;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card--drag-handle-only .task-card__status-dot {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card--reorderable .task-card__status-dot {
     margin-left: 0;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__status-dot {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__status-dot {
     grid-column: 1;
     grid-row: 2;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__priority-dot {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__priority-dot {
     grid-column: 2;
     grid-row: 2;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__badges {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__badges {
     flex-wrap: wrap;
     min-width: 0;
     grid-column: -2 / -1;
@@ -1624,7 +1628,7 @@ body.is-mobile .tasknotes-plugin .task-card .task-card__details-indicator {
     min-height: var(--tn-icon-sm);
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__context-menu {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__context-menu {
     grid-column: 5;
     grid-row: 2;
     position: static;
@@ -1633,7 +1637,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     transform: none;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__metadata-overflow {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__metadata-overflow {
     grid-column: 3;
     grid-row: 2;
     justify-self: start;
@@ -1645,7 +1649,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     justify-content: center;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__date-slot {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__date-slot {
     grid-column: 3;
     grid-row: 1;
     min-width: var(--tn-touch-target);
@@ -1654,11 +1658,11 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     pointer-events: auto;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__date-slot--due {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__date-slot--due {
     grid-column: 4;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card__metadata-date {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card__metadata-date {
     flex-direction: column;
     gap: 0;
     min-width: var(--tn-touch-target);
@@ -1669,7 +1673,7 @@ body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view_
     line-height: 1.2;
 }
 
-body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper) .task-card .task-card__metadata-date > span:last-child {
+body.is-mobile :is(.tn-tasknotesTaskList, .tn-calendar-list-entry, .kanban-view__card-wrapper, .pomodoro-view__task-card-container) .task-card .task-card__metadata-date > span:last-child {
     flex: 0 1 auto;
     min-width: 0;
     overflow: visible;

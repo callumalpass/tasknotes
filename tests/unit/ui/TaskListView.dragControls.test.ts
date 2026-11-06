@@ -69,6 +69,22 @@ describe("TaskListView drag controls", () => {
 		expect(card.getAttribute("draggable")).toBe("true");
 	});
 
+	it("keeps a desktop-created handle in the action row when switching to mobile", () => {
+		const view = createView();
+		const task = TaskFactory.createTask({ path: "tasks/responsive-drag.md" });
+		const card = document.createElement("div");
+		card.className = "task-card";
+		const mainRow = card.createDiv({ cls: "task-card__main-row" });
+		(view as any).setupCardDragHandlers(card, task, null);
+		const handle = card.querySelector<HTMLElement>("[data-tn-drag-handle='true']")!;
+		expect(handle.parentElement).toBe(mainRow);
+		document.body.classList.add("is-mobile");
+		mainRow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 }));
+		expect(card.getAttribute("draggable")).toBe("false");
+		handle.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 }));
+		expect(card.getAttribute("draggable")).toBe("true");
+	});
+
 	it("starts mobile list reordering only from the dedicated drag handle", () => {
 		document.body.classList.add("is-mobile");
 		const view = createView();

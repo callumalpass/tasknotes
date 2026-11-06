@@ -13,6 +13,7 @@ import { getTodayLocal, createUTCDateFromLocalCalendarDate } from "../utils/date
 import { getSessionDuration } from "../utils/pomodoroUtils";
 import { calculatePomodoroStats } from "../utils/pomodoroStats";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { getTaskCardTitleText } from "../ui/taskCardTitle";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Views/PomodoroStatsView" });
 
@@ -29,6 +30,7 @@ export class PomodoroStatsView extends ItemView {
 	private weekStatsEl: HTMLElement | null = null;
 	private recentSessionsEl: HTMLElement | null = null;
 	private overallStatsEl: HTMLElement | null = null;
+	private recentSessionsGeneration = 0;
 
 	constructor(leaf: WorkspaceLeaf, plugin: TaskNotesPlugin) {
 		super(leaf);
@@ -58,6 +60,7 @@ export class PomodoroStatsView extends ItemView {
 	}
 
 	async onClose() {
+		this.recentSessionsGeneration++;
 		this.contentEl.empty();
 	}
 
@@ -218,7 +221,7 @@ export class PomodoroStatsView extends ItemView {
 			}
 
 			if (this.recentSessionsEl) {
-				this.renderRecentSessions(this.recentSessionsEl, history);
+				await this.renderRecentSessions(this.recentSessionsEl, history);
 			}
 		} catch (error) {
 			tasknotesLogger.error("Failed to refresh stats:", {
@@ -229,11 +232,18 @@ export class PomodoroStatsView extends ItemView {
 		}
 	}
 
-	private renderRecentSessions(container: HTMLElement, history: PomodoroSessionHistory[]) {
+	private async renderRecentSessions(container: HTMLElement, history: PomodoroSessionHistory[]) {
+		const generation = ++this.recentSessionsGeneration;
 		const recentSessions = history
 			.filter((session: PomodoroSessionHistory) => session.type === "work")
 			.slice(-10)
 			.reverse();
+		const titles = await Promise.all(recentSessions.map(async session => {
+			if (!session.taskPath) return "";
+			const task = await this.plugin.cacheManager.getTaskInfo(session.taskPath);
+			return task ? getTaskCardTitleText(task) : session.taskPath.split("/").pop()?.replace(/\.md$/i, "") || "";
+		}));
+		if (generation !== this.recentSessionsGeneration) return;
 
 		container.empty();
 
@@ -246,7 +256,7 @@ export class PomodoroStatsView extends ItemView {
 			return;
 		}
 
-		for (const session of recentSessions) {
+		for (const [index, session] of recentSessions.entries()) {
 			const sessionEl = container.createDiv({
 				cls: "pomodoro-session-item pomodoro-stats-view__session-item",
 			});
@@ -290,10 +300,7 @@ export class PomodoroStatsView extends ItemView {
 			const taskEl = sessionEl.createSpan({
 				cls: "session-task pomodoro-stats-view__session-task",
 			});
-			if (session.taskPath) {
-				const taskName = session.taskPath.split("/").pop()?.replace(".md", "") || "";
-				taskEl.textContent = taskName;
-			}
+			taskEl.textContent = titles[index];
 
 			const deleteButton = sessionEl.createEl("button", {
 				cls: "pomodoro-stats-view__session-delete-button",

@@ -989,19 +989,6 @@
     }
 }
 
-body.is-mobile .tasknotes-plugin .tn-calendar-day-panel .task-card__title-text {
-    grid-column: 2 / -1;
-    align-self: center;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-day-panel .task-card__status-dot {
-    grid-row: 1;
-}
-
-body.is-mobile .tasknotes-plugin .tn-calendar-day-panel .task-card__priority-dot {
-    grid-column: 1;
-}
-
 .tasknotes-plugin .tnc-dg-day.tn-calendar-day-selected .tnc-dg-num {
     border-radius: var(--tn-radius-full);
     background: var(--tn-interactive-accent);
