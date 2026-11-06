@@ -1,10 +1,12 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { launchObsidian, closeObsidian, setObsidianViewport } from './obsidian';
 
 const phase = process.env.TASKNOTES_R7_PHASE ?? 'after';
-const evidence = `/tmp/tasknotes-r7/board/653f67e0/${phase}`;
+const evidence = join(tmpdir(), 'tasknotes-r7', 'board', '653f67e0', phase);
 const folder = `BoardOP1-${Date.now()}`;
 let instance: Awaited<ReturnType<typeof launchObsidian>>;
 let page: Page;

@@ -46,6 +46,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Match Create and Edit title styling.
+- Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
+
 - Centre the mini calendar in wider panes, make activity dots clearer, and show the selected day's notes and calendar events beneath the grid. Escape clears the date selection without losing the displayed month.
 - Reuse the completion calendar's month grid in precise date pickers, keep picker highlighting compact, align task modal controls, and give settings and Pomodoro metrics consistent spacing and hierarchy.
 
@@ -94,7 +97,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Calendar event titles use height-aware line limits and a separate time line; week-view deadlines have more room. Mobile boards retain a visible horizontal scroll track and neighbouring column space.
 - Hidden task metadata opens in a small read-only disclosure instead of the full editor; dates continue to take precedence over tags when space is tight.
 
-- Task creation shows one title editor at a time: expand **More fields** to edit the parsed title, or collapse it to return to natural language input. Date pickers put precise date and time entry first and group weekday shortcuts. Unconfigured property values show one warning, and project chips use a quiet border.
+- Task creation keeps the natural-language editor and raw input visible when expanding **More fields**, without moving the top of the composer. Date pickers put precise date and time entry first and group weekday shortcuts. Unconfigured property values show one warning, and project chips use a quiet border.
 - Statistics use compact metric groups, settings distinguish sections and values more clearly, and inline task references and Pomodoro task selection use shared controls. Mini-calendar item pickers show the selected date, calendar resize feedback includes the resulting duration with Undo, and release notes put changes before announcements and notices.
 
 - Reworked the task create and edit modals. Status, priority, dates, recurrence and reminders are now labelled chips that show their current value, replacing the icons with a dot. The edit modal starts with the title, **Task information** is collapsed, and **Archive** and **Delete** moved into a **More actions** (⋯) menu beside **Open note**. Empty field rows are more compact.
@@ -108,6 +111,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @UniCode9696 for the suggestion
 
 ## Fixed
+
+- Stop list edge scrolling when a drag ends or is cancelled, use a gentler edge ramp, and show one unclipped drop explanation beside the pointer. Preserve the grab offset and show a stack for multi-task list drags.
+- Keep long-press task actions open after lifting a finger, and treat Escape on the unsaved-changes prompt as Keep editing.
+- Consume complete natural-language priority shortcuts without leaving punctuation in task titles, and hide priority controls when no priorities are configured.
+- Accept drops throughout Kanban columns, restore spacing in virtualized lanes, and keep card titles and metadata on predictable rows.
+- Keep the Pomodoro timer bright and stationary when starting a session, and align the settings section selector and disclosure controls with their content.
 
 - Respect the configured 12- or 24-hour time format in calendar move feedback and reminder notifications.
 - Keep weekday labels, dates and today's marker inside narrow Week headers. Calendar moves now retain a dim copy at the original position while previewing the destination.

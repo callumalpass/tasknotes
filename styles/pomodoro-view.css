@@ -165,10 +165,16 @@
     line-height: 1.25;
     text-align: center;
     max-width: 100%;
+    min-height: 1.25em;
 }
 
 .tasknotes-plugin .pomodoro-view__session-meta:empty {
-    display: none;
+    visibility: hidden;
+}
+
+.tasknotes-plugin .pomodoro-view__timer-display[aria-disabled="true"] {
+    opacity: 1;
+    cursor: default;
 }
 
 .tasknotes-plugin .pomodoro-view__progress-line {

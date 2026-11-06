@@ -122,7 +122,7 @@
     flex-wrap: nowrap;
     scroll-snap-type: x proximity;
     scroll-padding-inline: var(--tn-space-2);
-    align-items: flex-start;
+    align-items: stretch;
     background: var(--background-primary);
     color: var(--text-normal);
 }
@@ -218,8 +218,8 @@
     border-radius: var(--tn-radius-lg);
     display: flex;
     flex-direction: column;
-    height: fit-content;
-    max-height: calc(100vh - 200px);
+    height: 100%;
+    max-height: 100%;
     scroll-snap-align: start;
     transition: width var(--tn-transition-fast), min-width var(--tn-transition-fast), max-width var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), background-color var(--tn-transition-fast);
 }
@@ -499,6 +499,7 @@
 
 body.is-mobile .tasknotes-plugin .kanban-view__column-title {
     min-height: var(--tn-touch-target);
+    align-content: center;
 }
 
 .tasknotes-plugin .kanban-view__column-header .kanban-view__column-title {
@@ -602,6 +603,16 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
 .tasknotes-plugin .kanban-view__tasks-container,
 .tasknotes-plugin .kanban-view__cards {
     position: relative;
+}
+
+.tasknotes-plugin .kanban-view__cards .virtual-scroller__content > .kanban-view__card-wrapper {
+    padding-bottom: var(--tn-space-2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .tasknotes-plugin .kanban-view__cards:not(:hover, :focus-within) {
+        scrollbar-color: transparent transparent;
+    }
 }
 
 .tasknotes-plugin .kanban-view__cards {
@@ -1338,21 +1349,22 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
 @container tn-task-card (max-width: 560px) {
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card__main-row {
         --tn-board-control-size: var(--tn-touch-target);
-        grid-template-columns: var(--tn-board-control-size) var(--tn-board-control-size) minmax(0, 1fr) auto var(--tn-board-control-size);
-        grid-template-rows: auto var(--tn-board-control-size) auto;
+        grid-template-columns: var(--tn-board-control-size) minmax(0, 1fr) auto auto var(--tn-board-control-size);
+        grid-template-rows: auto var(--tn-board-control-size);
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__content {
-        grid-row: 1 / span 3;
+        grid-row: 1 / span 2;
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__metadata {
-        grid-column: 1 / 4;
+        grid-column: 2 / 4;
+        min-width: 0;
     }
 
-    body .tasknotes-plugin .kanban-view__card-wrapper .task-card:not(.task-card--metadata-empty) .task-card__priority-dot {
-        grid-column: 5;
-        grid-row: 1;
+    body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__priority-dot {
+        grid-column: 1;
+        grid-row: 2;
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__status-dot {
@@ -1360,7 +1372,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__badges:not(:empty) {
-        grid-column: 4;
+        grid-column: 4 / -1;
         grid-row: 2;
         justify-self: end;
         max-width: 100%;
@@ -1368,9 +1380,9 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__badges.task-card__badges--interactive {
-        grid-column: 1 / -1;
-        grid-row: 3;
-        flex-wrap: wrap;
+        grid-column: 4 / -1;
+        grid-row: 2;
+        flex-wrap: nowrap;
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card :is(.task-card__context-menu, .task-card__drag-handle) {
@@ -1382,13 +1394,14 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
         grid-template-columns: subgrid;
         grid-template-rows: subgrid;
         grid-column: 1 / -1;
-        grid-row: 1 / span 3;
+        grid-row: 1 / span 2;
         padding: 0;
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card .task-card__title-text {
         grid-column: 2 / 5;
         padding: 0;
+        min-height: var(--tn-board-title-height);
     }
 
     body .tasknotes-plugin .kanban-view__card-wrapper .task-card__metadata > .task-card__date-slot {

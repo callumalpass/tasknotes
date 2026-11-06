@@ -434,6 +434,20 @@ describe('NaturalLanguageParser - Status Extraction', () => {
     });
   });
   describe('Priority Extraction (New Logic)', () => {
+    it('consumes a whole priority token before date and duration cleanup without eating authored punctuation', () => {
+      const parser = new NaturalLanguageParser([], [
+        { id: 'high', value: 'high', label: 'High', color: '#ff0000', weight: 1 }
+      ], true);
+      const parsed = parser.parseInput('Call Sam tomorrow at 3pm #work @phone !high 30m');
+      expect(parsed.title).toBe('Call Sam');
+      expect(parsed.priority).toBe('high');
+      expect(parsed.estimate).toBe(30);
+      expect(parser.parseInput('Call Sam! !high tomorrow').title).toBe('Call Sam!');
+      const literal = parser.parseInput('Call Sam `!high` tomorrow');
+      expect(literal.title).toContain('!high');
+      expect(literal.priority).toBeUndefined();
+    });
+
     it('should extract priority with trigger', () => {
       const priorityConfigs: PriorityConfig[] = [
         { id: 'high', value: 'high', label: 'High', color: '#red', weight: 1 }

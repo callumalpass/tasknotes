@@ -331,6 +331,17 @@
     border-color: var(--tn-border-color);
 }
 
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-stats-view__session-delete-button {
+        opacity: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-stats-view__session-item:is(:hover, :focus-within) .pomodoro-stats-view__session-delete-button,
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-stats-view__session-delete-button:focus-visible {
+        opacity: 1;
+    }
+}
+
 
 @media (hover: hover) {
     .tasknotes-plugin .pomodoro-stats-view__session-delete-button:hover:not(:disabled):not([aria-disabled="true"]) {

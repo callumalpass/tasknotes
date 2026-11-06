@@ -47,6 +47,7 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardProperties" });
 
 export interface TaskCardPropertyOptions {
+	plainTags?: boolean;
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
 	/** See TaskCardOptions.occurrenceScheduled. */
 	occurrenceScheduled?: string;
@@ -319,7 +320,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderContextsValue(element, value, tagServices);
 		}
 	},
-	tags: (element, value, _, plugin) => {
+	tags: (element, value, _, plugin, options) => {
 		if (Array.isArray(value)) {
 			let tagsToRender = value;
 			if (
@@ -335,6 +336,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 
 			if (tagsToRender.length > 0) {
 				const tagServices: TagServices = {
+					showHashPrefix: !options?.plainTags,
 					onTagClick: async (tag) => {
 						const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
 						await plugin.openTagsPane(`#${searchTag}`);
@@ -588,7 +590,8 @@ export function renderPropertyMetadata(
 	plugin: TaskNotesPlugin,
 	options: TaskCardPropertyOptions = {}
 ): HTMLElement | null {
-	const value = getTaskCardPropertyValue(task, propertyId, plugin);
+	const plainTags = options.plainTags && (propertyId === "file.tags" || propertyId === "note.tags");
+	const value = plainTags ? task.tags : getTaskCardPropertyValue(task, propertyId, plugin);
 
 	if (!hasValidValue(value)) {
 		return null;
@@ -603,7 +606,7 @@ export function renderPropertyMetadata(
 
 	try {
 		const mappingKey = plugin.fieldMapper.lookupMappingKey(propertyId);
-		const rendererKey = mappingKey || propertyId;
+		const rendererKey = plainTags ? "tags" : mappingKey || propertyId;
 
 		if (rendererKey in PROPERTY_RENDERERS) {
 			PROPERTY_RENDERERS[rendererKey](element, value, task, plugin, options);

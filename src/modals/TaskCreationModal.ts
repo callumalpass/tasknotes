@@ -4,7 +4,6 @@ import { msg } from "@lingui/core/macro";
 import { App, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal, type TaskSubmitOptions } from "./TaskModal";
-import { resizeTaskModalTitleTextarea } from "./taskModalTitleInput";
 import { TaskInfo } from "../types";
 import { sanitizeTags } from "../utils/helpers";
 import {
@@ -146,6 +145,7 @@ export class TaskCreationModal extends TaskModal {
 	/** Without natural language the title input is the primary field, with everything visible. */
 	protected createPrimaryInput(container: HTMLElement): void {
 		if (this.usesNaturalLanguage()) {
+			this.modalEl.addClass("tn-task-modal--composer");
 			this.createNaturalLanguageInput(container);
 			if (this.usesNaturalLanguage() && this.shouldShowField("title", this.plugin.settings.modalFieldsConfig)) {
 				this.createTitleInput(container);
@@ -172,10 +172,9 @@ export class TaskCreationModal extends TaskModal {
 
 	private updateTitleEditorVisibility(): void {
 		if (!this.nlContainer || !this.titleInput) return;
-		this.nlContainer.hidden = this.isExpanded;
+		this.nlContainer.hidden = false;
 		const titleContainer = this.titleInput.parentElement;
-		if (titleContainer) titleContainer.hidden = !this.isExpanded;
-		if (this.isExpanded) resizeTaskModalTitleTextarea(this.titleInput);
+		if (titleContainer) titleContainer.hidden = true;
 	}
 
 	private createNaturalLanguageInput(container: HTMLElement): void {

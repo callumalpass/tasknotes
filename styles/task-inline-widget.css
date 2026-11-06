@@ -479,6 +479,7 @@ body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__inline-cont
     align-items: center;
     vertical-align: middle;
     white-space: nowrap;
+    margin-inline-end: var(--tn-space-1);
 }
 
 body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card.task-card--layout-inline .task-card__context-menu {

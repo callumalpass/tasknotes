@@ -110,9 +110,18 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 				coreInput = coreInput.replace(pattern, (_match, prefix: string) => prefix + trigger + config.value);
 			}
 		}
+		const priorityTrigger = this.getPriorityTrigger();
+		const triggeredPriority = priorityTrigger ? this.taskNotesPriorityConfigs.flatMap((config) =>
+			[config.value, config.label, configLabel(config)].map((label) => ({ config, token: `${priorityTrigger}${label}` }))
+		).sort((first, second) => second.token.length - first.token.length)
+			.find(({ token }) => this.containsToken(coreInput, token)) : undefined;
+		if (triggeredPriority) {
+			coreInput = coreInput.replace(new RegExp(`(^|\\s)${this.escapeRegexLiteral(triggeredPriority.token)}(?=\\s|$)`, "iu"), "$1");
+		}
 		const parsed = super.parseInput(shielded.restore(coreInput));
+		if (triggeredPriority) parsed.priority = triggeredPriority.config.value;
 		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(shielded.text, parsed);
-		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(
+		const withPriorityShortcutResidueRemoved = triggeredPriority ? withStatusShortcutResidueRemoved : this.removePriorityShortcutResidue(
 			shielded.text,
 			withStatusShortcutResidueRemoved
 		);
@@ -238,7 +247,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		const priorityTrigger = this.taskNotesNlpTriggers?.triggers.find(
 			(trigger) => trigger.propertyId === "priority"
 		);
-		return priorityTrigger?.trigger || "";
+		return priorityTrigger?.trigger || "!";
 	}
 
 	private getStatusTrigger(): string {
