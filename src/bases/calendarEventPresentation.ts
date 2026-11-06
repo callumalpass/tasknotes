@@ -4,7 +4,7 @@ import { uiText } from "../i18n/runtime";
 import { viewToBases, type ItemArg } from "@tasknotes/calendar";
 import type TaskNotesPlugin from "../main";
 import type { CalendarEventProps } from "./calendarEngine";
-import { isCalendarBatchTarget } from "./calendarBatchMove";
+import { isCalendarBatchTarget, isCalendarSelectionTarget } from "./calendarBatchMove";
 import { applyTimeblockStyling, generateTimeblockTooltip, applyRecurringTaskStyling, generateTaskTooltip, addTaskHoverPreview, getTargetDateForEvent } from "./calendar-core";
 import { appendCalendarAttachmentIndicator, decorateCalendarIcsEventElement, getCalendarRelatedNoteTooltip, normalizeCalendarRelatedNoteCount } from "./calendarEventMount";
 import { filterEmptyProjects, sanitizeForCssClass, getEffectiveTaskStatus } from "../utils/helpers";
@@ -75,12 +75,14 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 
 		// Set event type attribute
 		el.setAttribute("data-event-type", eventType || "unknown");
+		if (taskInfo?.recurrence) el.dataset.occurrenceDay = String(arg.day);
+		else delete el.dataset.occurrenceDay;
 		if (taskInfo?.path) {
 			el.setAttribute("data-task-path", taskInfo.path);
 			el.classList.add("fc-task-event");
 			const selectable = isCalendarBatchTarget(extendedProps);
 			el.dataset.batchSelectable = String(selectable);
-			if (selectable) {
+			if (isCalendarSelectionTarget(extendedProps)) {
 				const selected = Boolean(context.plugin.taskSelectionService?.isSelected(taskInfo.path));
 				el.classList.toggle("tn-calendar-item-selected", selected);
 				el.setAttribute("aria-pressed", String(selected));
@@ -209,7 +211,8 @@ export function attachCalendarTaskHoverLink(root: HTMLElement | null, element: H
 				if (relatedEvent === element) {
 					relatedEvent.classList.toggle("fc-task-event--hover-source", active);
 				} else {
-					relatedEvent.classList.toggle("fc-task-event--related-hover", active);
+					relatedEvent.classList.toggle("fc-task-event--related-hover", active &&
+						relatedEvent.dataset.occurrenceDay === element.dataset.occurrenceDay);
 				}
 			});
 		};

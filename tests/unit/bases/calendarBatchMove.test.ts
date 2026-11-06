@@ -1,5 +1,5 @@
 import { buildCalendarEntries } from "@tasknotes/model/calendar";
-import { buildCalendarBatchPreview, isCalendarBatchTarget, planCalendarBatchMove } from "../../../src/bases/calendarBatchMove";
+import { buildCalendarBatchPreview, isCalendarBatchTarget, isCalendarSelectionTarget, planCalendarBatchMove } from "../../../src/bases/calendarBatchMove";
 import { eventApiFromItem, type CalendarEventChange, type CalendarEventItem } from "../../../src/bases/calendarEngine";
 import { TaskFactory } from "../../helpers/mock-factories";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/core/defaultFieldMapping";
@@ -106,11 +106,13 @@ describe("calendar task batch moves", () => {
 		}, "UTC", DEFAULT_FIELD_MAPPING, "2026-03-01T00:00:00Z")).toBeNull();
 	});
 
-	it("does not offer task-level selection for time entries or recurring previews", () => {
+	it("does not offer task-level batch movement for time entries or recurring previews", () => {
 		const { items } = fixture();
 		const props = items[0].data!;
 		expect(isCalendarBatchTarget(props)).toBe(true);
 		expect(isCalendarBatchTarget({ ...props, modelEntry: { ...props.modelEntry!, recurringKind: "pattern" } })).toBe(false);
+		expect(isCalendarSelectionTarget({ ...props, modelEntry: { ...props.modelEntry!, recurringKind: "pattern" } })).toBe(true);
+		expect(isCalendarSelectionTarget({ ...props, isBatchPreview: true })).toBe(false);
 		expect(isCalendarBatchTarget({ ...props, modelEntry: { ...props.modelEntry!, type: "timeEntry" } })).toBe(false);
 		expect(isCalendarBatchTarget({ ...props, modelEntry: { ...props.modelEntry!, type: "scheduledToDueSpan" } })).toBe(false);
 		expect(isCalendarBatchTarget({ ...props, modelEntry: { ...props.modelEntry!, isOverdueOnToday: true } })).toBe(false);

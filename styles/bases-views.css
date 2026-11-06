@@ -128,19 +128,44 @@
     container: tn-bases-chrome / inline-size;
 }
 
+.tn-bases-toolbar-more {
+    display: none;
+}
+
+.tasknotes-plugin.tn-bases-toolbar-overflow-panel {
+    display: grid;
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-2);
+    min-width: var(--tn-space-8);
+}
+
 @container tn-bases-chrome (max-width: 480px) {
     .tasknotes-view-active .bases-toolbar {
         flex-wrap: nowrap;
         gap: 0;
-        overflow-x: auto;
+        overflow: visible;
+        height: calc(var(--tn-touch-target) + var(--tn-space-2));
+        min-height: calc(var(--tn-touch-target) + var(--tn-space-2));
     }
 
     .tasknotes-view-active .bases-toolbar > .tn-bases-new-task-btn {
-        position: sticky;
-        right: 0;
-        background: var(--background-primary);
-        color: var(--text-normal);
-        z-index: 1;
+        margin-inline-start: 0;
+    }
+
+    .tasknotes-view-active .bases-toolbar > :is(.bases-toolbar-results-menu, .bases-toolbar-sort-menu, .bases-toolbar-filter-menu, .bases-toolbar-properties-menu, .bases-toolbar-search, .tn-shortcut-help) {
+        display: none;
+    }
+
+    .tasknotes-view-active .bases-toolbar > .bases-toolbar-views-menu {
+        flex: 1 1 auto;
+        overflow: hidden;
+    }
+
+    .tasknotes-view-active .tn-bases-toolbar-more {
+        display: flex;
+        min-width: var(--tn-touch-target);
+        min-height: var(--tn-touch-target);
+        margin-inline-start: auto;
     }
 
     .tasknotes-view-active .bases-toolbar .bases-toolbar-item {
