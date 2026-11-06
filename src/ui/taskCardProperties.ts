@@ -41,7 +41,7 @@ import {
 } from "./renderers/linkRenderer";
 import { renderContextsValue, renderTagsValue, type TagServices } from "./renderers/tagRenderer";
 import { normalizeDependencyEntry, resolveDependencyEntry } from "../utils/dependencyUtils";
-import { taskDateLabel } from "./kit/dateLabel";
+import { relativeDay, taskDateLabel } from "./kit/dateLabel";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardProperties" });
@@ -875,8 +875,16 @@ function renderDateValue(
 		cls: "task-card__date-value",
 		text: taskDateLabel(dateValue, plugin.settings.calendarViewSettings.timeFormat),
 	});
+	element.createSpan({
+		cls: "task-card__date-value task-card__date-value--compact",
+		text: relativeDay(dateValue) ? taskDateLabel(dateValue, plugin.settings.calendarViewSettings.timeFormat) : formatDateTimeForDisplay(dateValue, {
+			dateFormat: "MMM d",
+			showTime: true,
+			userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
+		}),
+	});
 	element.setAttribute("aria-label", fullText);
-	setTooltip(element, fullText, { placement: "top" });
+	if (!element.ownerDocument.body.classList.contains("is-mobile")) setTooltip(element, fullText, { placement: "top" });
 }
 
 function renderDueDateProperty(

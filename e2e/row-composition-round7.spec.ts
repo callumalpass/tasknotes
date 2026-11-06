@@ -77,7 +77,7 @@ test('task rows, board cards and standalone links compose by available width', a
                 top: card.getBoundingClientRect().top, bottom: card.getBoundingClientRect().bottom,
                 title: title.getBoundingClientRect().toJSON(), status: status.getBoundingClientRect().toJSON(),
                 metadataHeight: metadata.getBoundingClientRect().height, empty: card.classList.contains('task-card--metadata-empty'),
-                dateFragments: Array.from(card.querySelectorAll<HTMLElement>('.task-card__date-slot:not([hidden]) .task-card__metadata-date > span:last-child')).filter(label => label.scrollWidth > label.clientWidth + 1).length,
+                dateFragments: Array.from(card.querySelectorAll<HTMLElement>('.task-card__date-slot:not([hidden]) .task-card__metadata-date > .task-card__date-value')).filter(label => getComputedStyle(label).display !== 'none' && label.scrollWidth > label.clientWidth + 1).length,
               };
             }));
             measurements.push({ surface, width, theme, mobile, geometry });

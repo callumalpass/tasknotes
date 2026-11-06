@@ -159,6 +159,22 @@ describe("TaskListView group collapse controls", () => {
 		expect((view as any).defaultCollapsedState).toBe("Collapsed");
 	});
 
+	it("preserves dismissed search across refreshes but honours changed view options", () => {
+		const view = createView() as any;
+		let enabled = true;
+		view.config = { get: (key: string) => key === "enableSearch" ? enabled : undefined, getAsPropertyId: () => null };
+		view.readViewOptions();
+		expect(view.enableSearch).toBe(true);
+		view.enableSearch = false;
+		view.readViewOptions();
+		expect(view.enableSearch).toBe(false);
+		enabled = false;
+		view.readViewOptions();
+		enabled = true;
+		view.readViewOptions();
+		expect(view.enableSearch).toBe(true);
+	});
+
 	it("collapses and expands subgroups within a primary group without affecting the parent", () => {
 		const view = createView();
 		(view as any).currentSubGroupKeysByParent = new Map([

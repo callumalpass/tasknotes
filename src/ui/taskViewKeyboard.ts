@@ -459,7 +459,8 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			const tasks = [...new Map(fetchedTasks.map((task) => [task.path, task])).values()];
 			const task = await taskFor(actionPath);
 			if (!task || focusedPath !== actionPath || root.ownerDocument.querySelector(".modal-container")) return;
-			const anchor = cardFor(actionPath) ?? root;
+			const card = cardFor(actionPath);
+			const anchor = card?.querySelector<HTMLElement>(".task-card__status-dot") ?? card ?? root;
 			if (mod && key === "k") {
 				const targetDate = options.targetDate?.(actionPath) ?? (task.recurrence
 					? await plugin.taskService.resolveRecurringTaskActionDate(task)
@@ -552,7 +553,16 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		pointerFocus = false;
 		void handle(event);
 	};
-	const keyboard = () => { pointerFocus = false; };
+	const keyboard = (event: KeyboardEvent) => {
+		pointerFocus = false;
+		if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "k" ||
+			!root.contains(event.target as Node) || (event.target as HTMLElement).closest("input, textarea, select, [contenteditable], .cm-editor")) return;
+		for (const element of [root, ...Array.from(root.querySelectorAll<HTMLElement>(".task-card"))]) {
+			(element as HTMLElement & { hoverPopover?: { hide(): void } }).hoverPopover?.hide();
+		}
+		void handle(event);
+		if (event.defaultPrevented) event.stopImmediatePropagation();
+	};
 	root.ownerDocument.addEventListener("keydown", keyboard, true);
 	const searchExit = (event: Event) => {
 		if ((event as CustomEvent<boolean>).detail) {

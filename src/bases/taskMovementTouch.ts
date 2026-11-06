@@ -3,6 +3,7 @@ type TouchMovementCallbacks = {
 	update: (x: number, y: number) => void;
 	commit: (x: number, y: number) => void;
 	cancel: () => void;
+	menu?: (card: HTMLElement, x: number, y: number) => void;
 };
 
 /**
@@ -12,6 +13,8 @@ type TouchMovementCallbacks = {
 export class TaskMovementTouch {
 	private pointerId: number | null = null;
 	private handle: HTMLElement | null = null;
+	private menuTarget: HTMLElement | null = null;
+	private menuOpened = false;
 	private startX = 0;
 	private startY = 0;
 	private active = false;
@@ -42,20 +45,30 @@ export class TaskMovementTouch {
 		if (!event.isPrimary || this.pointerId !== null) return;
 		const target = event.target as HTMLElement | null;
 		const handle = target?.closest<HTMLElement>("[data-tn-drag-handle]");
-		if (!handle || !this.container.contains(handle)) return;
+		const card = target?.closest<HTMLElement>(".task-card[data-task-path]");
+		if (!handle && (!this.callbacks.menu || !card || target?.closest("button, a, input, select, textarea, [role=button]"))) return;
+		if (!this.container.contains(handle ?? card ?? null)) return;
 		event.stopPropagation();
 		this.pointerId = event.pointerId;
-		this.handle = handle;
+		this.handle = handle ?? null;
+		this.menuTarget = handle ? null : card ?? null;
 		this.startX = event.clientX;
 		this.startY = event.clientY;
-		this.suppressNativeDrag(handle);
+		if (handle) this.suppressNativeDrag(handle);
+		this.doc.querySelectorAll(".tooltip").forEach((tooltip) => tooltip.remove());
 		this.doc.addEventListener("pointermove", this.onPointerMove, {
 			capture: true,
 			passive: false,
 		});
 		this.doc.addEventListener("pointerup", this.onPointerUp, true);
 		this.doc.addEventListener("pointercancel", this.onPointerCancel, true);
-		this.timer = this.win.setTimeout(() => this.activate(this.startX, this.startY), 200);
+		this.timer = this.win.setTimeout(() => {
+			if (this.menuTarget) {
+				this.menuOpened = true;
+				this.suppressClickUntil = Date.now() + 1000;
+				this.callbacks.menu?.(this.menuTarget, this.startX, this.startY);
+			} else this.activate(this.startX, this.startY);
+		}, handle ? 200 : 450);
 	};
 
 	private activate(x: number, y: number): void {
@@ -88,6 +101,10 @@ export class TaskMovementTouch {
 	private onPointerMove = (event: PointerEvent): void => {
 		if (event.pointerId !== this.pointerId) return;
 		if (Math.hypot(event.clientX - this.startX, event.clientY - this.startY) >= 6) {
+			if (this.menuTarget) {
+				this.reset();
+				return;
+			}
 			this.moved = true;
 			if (!this.active) this.activate(event.clientX, event.clientY);
 		}
@@ -101,7 +118,14 @@ export class TaskMovementTouch {
 		if (event.pointerId !== this.pointerId) return;
 		const wasActive = this.active;
 		const moved = this.moved;
+		const menuOpened = this.menuOpened;
 		this.reset();
+		if (menuOpened) {
+			event.preventDefault();
+			event.stopPropagation();
+			this.suppressClickUntil = Date.now() + 500;
+			return;
+		}
 		if (!wasActive) return;
 		if (!moved) {
 			// Released in place: nothing was previewed, so never write. Let the click open the menu.
@@ -142,6 +166,8 @@ export class TaskMovementTouch {
 		this.restoreNativeDrag();
 		this.pointerId = null;
 		this.handle = null;
+		this.menuTarget = null;
+		this.menuOpened = false;
 		this.active = false;
 		this.moved = false;
 	}

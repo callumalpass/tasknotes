@@ -203,6 +203,23 @@ body:not(.is-mobile) .tn-tasknotesTaskList .task-group-header:hover .task-group-
     }
 }
 
+@container tn-task-card (max-width: 760px) {
+    body .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date > .task-card__date-value {
+        display: none;
+        white-space: nowrap;
+        flex: none;
+    }
+
+    body .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata-date > .task-card__date-value--compact {
+        display: inline;
+    }
+
+    body .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__date-slot {
+        flex: none;
+        max-width: none;
+    }
+}
+
 
 .tasknotes-plugin .task-group-right { margin-left:auto; display:flex; align-items:center; gap: var(--tn-space-half); }
 

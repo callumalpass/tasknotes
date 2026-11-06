@@ -332,7 +332,7 @@
     white-space: nowrap;
 }
 
-.tasknotes-plugin .task-card--layout-inline .task-card__metadata-date > span:last-child {
+.tasknotes-plugin .task-card--layout-inline .task-card__metadata-date > .task-card__date-value {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -493,11 +493,6 @@ body .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card.task-card--l
 
 @media (hover: hover) and (pointer: fine) {
     body:not(.is-mobile) .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card.task-card--layout-inline .task-card__context-menu {
-        position: absolute;
-        inset-inline-end: 0;
-        bottom: 100%;
-        background: var(--tn-bg-primary);
-        z-index: var(--layer-popover);
         opacity: 0;
         pointer-events: none;
     }
@@ -597,7 +592,7 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
     }
 
     .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline .task-card__metadata-date,
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline .task-card__metadata-date > span:last-child {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline .task-card__metadata-date > .task-card__date-value {
         flex: none;
         white-space: nowrap;
         overflow: visible;

@@ -35,6 +35,12 @@
     margin-bottom: var(--tn-space-1);
 }
 
+.tasknotes-plugin .kanban-view__board.kanban-view__board--task-dragging,
+.tasknotes-plugin .kanban-view__board--task-dragging .kanban-view__cards,
+.tasknotes-plugin .kanban-view__board--task-dragging .kanban-view__tasks-container {
+    overflow: hidden;
+}
+
 .tasknotes-plugin .kanban-view__actions {
     display: flex;
     align-items: center;
@@ -620,16 +626,16 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
 }
 
 @media (hover: hover) {
-    .tasknotes-plugin .kanban-view__card-wrapper > .task-card:hover {
+    body:not(.is-mobile) .tasknotes-plugin .kanban-view__card-wrapper > .task-card:hover {
         border-color: var(--tn-border-color-hover);
-        background: color-mix(in srgb, var(--tn-hover), var(--background-primary) 60%);
+        background: var(--tn-bg-primary);
         box-shadow: none;
         transform: none;
         transition-duration: 0ms;
     }
 
-    .tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected:hover,
-    .tasknotes-plugin .kanban-view__card-wrapper--selected > .task-card:hover {
+    body:not(.is-mobile) .tasknotes-plugin .kanban-view__card-wrapper > .task-card--selected:hover,
+    body:not(.is-mobile) .tasknotes-plugin .kanban-view__card-wrapper--selected > .task-card:hover {
         background: var(--tn-selected-hover);
     }
 }
@@ -1427,10 +1433,45 @@ body.is-mobile .tasknotes-plugin .kanban-view__card-wrapper .task-card__context-
     }
 
     .tasknotes-plugin .kanban-view__column-nav select {
+        appearance: none;
+        min-width: 0;
+        width: 100%;
+        height: var(--tn-touch-target);
+        margin: 0;
+        padding-inline: var(--tn-space-3) var(--tn-touch-target);
+        border: 1px solid var(--tn-hairline);
+        border-radius: var(--tn-radius-md);
+        background: var(--tn-bg-primary);
+        color: var(--tn-text-normal);
+        box-shadow: none;
+        font: inherit;
+        text-overflow: ellipsis;
+    }
+
+    .tasknotes-plugin .kanban-view__column-picker {
+        position: relative;
         flex: 1;
         min-width: 0;
-        height: var(--tn-touch-target);
-        text-overflow: ellipsis;
+    }
+
+    .tasknotes-plugin .kanban-view__column-picker-icon {
+        position: absolute;
+        inset-inline-end: var(--tn-space-3);
+        top: 50%;
+        display: flex;
+        transform: translateY(-50%);
+        color: var(--tn-text-muted);
+        pointer-events: none;
+    }
+
+    .tasknotes-plugin .kanban-view__column-picker-icon svg {
+        width: var(--tn-space-4);
+        height: var(--tn-space-4);
+    }
+
+    .tasknotes-plugin .kanban-view__column-nav select:focus-visible {
+        outline: 2px solid var(--tn-focus-ring);
+        outline-offset: 1px;
     }
 
     .tasknotes-plugin .kanban-view__column-nav button {

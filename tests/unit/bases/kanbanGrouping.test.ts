@@ -187,7 +187,7 @@ describe("Kanban grouping helpers", () => {
 		).toBe("high");
 	});
 
-	it("builds exploded list groups, preserves source order, replays sort order, and adds empty configured groups", () => {
+	it.each(["asc", "desc"] as const)("builds exploded list groups with %s manual order and preserves stored rank meaning", (direction) => {
 		const alpha = taskInfo("alpha.md", { contexts: ["work", "call"] });
 		const beta = taskInfo("beta.md", { contexts: ["work"] });
 		const gamma = taskInfo("gamma.md", { contexts: [] });
@@ -207,6 +207,7 @@ describe("Kanban grouping helpers", () => {
 				["alpha.md", "002"],
 				["beta.md", "001"],
 			]),
+			sortOrderDirection: direction,
 			statusConfigs: [status("todo"), status("done")],
 			priorityConfigs: [priority("high")],
 			isStatusGroupingProperty: () => false,
@@ -215,7 +216,7 @@ describe("Kanban grouping helpers", () => {
 			pinnedColumns: ["pinned"],
 		});
 
-		expect(groups.get("work")?.map((item) => item.path)).toEqual(["beta.md", "alpha.md"]);
+		expect(groups.get("work")?.map((item) => item.path)).toEqual(direction === "asc" ? ["beta.md", "alpha.md"] : ["alpha.md", "beta.md"]);
 		expect(groups.get("call")?.map((item) => item.path)).toEqual(["alpha.md"]);
 		expect(groups.get("None")?.map((item) => item.path)).toEqual(["gamma.md"]);
 		expect(groups.get("pinned")).toEqual([]);
