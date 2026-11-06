@@ -51,7 +51,7 @@ Each status value has:
 - **Icon**: Optional icon identifier
 - **Completed**: Whether this status represents a finished task
 - **Skip when cycling**: Exclude this status from the click-to-cycle order on task cards while keeping it available in menus, suggestions, and direct edits
-- **Next status**: Optional override for the status used when cycling forward from this status; leave it set to the status order to use the normal sequence
+- **Next status**: Optional override for the status used when cycling forward from this status; leave it set to the status order to use the normal sequence. On the first status marked **Completed**, it is also the status a recurring series moves to once an occurrence is finished, and it lets recurring tasks follow the click cycle. In new setups, TaskNotes' built-in Done status moves on to Open. See [Recurring Tasks](../features/recurring-tasks.md#completion-tracking)
 - **Auto-archive**: Automatically archive tasks after a delay (1-1440 minutes)
 
 Status cards support drag-and-drop reordering.
@@ -91,7 +91,7 @@ Each priority value has:
 Priority cards support drag-and-drop reordering.
 Status and priority values are stored in frontmatter; renaming them later may require migration of existing task files.
 
-> **Note for Bases plugin users:** Obsidian's Bases plugin sorts priorities alphabetically by their **Value**. To control sort order, name values to sort alphabetically in the desired order:
+> **Note for Bases plugin users:** Obsidian's Bases plugin sorts the `priority` property alphabetically by its **Value**. To sort in the order of your priority cards, sort by `formula.priorityWeight` in descending order; see [Sort by priority](../guides/custom-bases.md#sort-by-priority). Alternatively, name values to sort alphabetically in the desired order:
 > - Example: `1-urgent`, `2-high`, `3-medium`, `4-normal`, `5-low`
 > - Or: `a-urgent`, `b-high`, `c-medium`, `d-normal`, `e-low`
 
@@ -144,8 +144,12 @@ Control which notes appear when selecting projects:
 - **Required tags**: Comma-separated list of tags (shows notes with ANY of these tags)
 - **Include folders**: Comma-separated list of folder paths (shows notes in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
-- **Required property value**: Expected value for the property (optional)
-These filters reduce suggestion noise in large vaults.
+- **Required property value**: Optional comma-separated allow-list, such as `active, planned`, or an explicit `containsAny("active", "planned")` expression. Use `!containsAny("completed", "archived")` or `not containsAny("done")` to exclude values. Matching is case-insensitive, including list-valued properties.
+  - Quoted expression arguments can contain commas; escape quotes and backslashes with a backslash. Malformed `containsAny(...)` calls match no notes.
+  - Plain filters remain literal: `not started` and `"active"` keep their original meaning. Negation only applies to explicit `containsAny(...)` calls.
+  - With no value filter, the property only has to exist (empty strings and lists are allowed). With a value filter, missing or null properties, blank strings and empty lists are excluded, including under negation.
+
+These filters reduce suggestion noise in large vaults, including hiding completed or archived projects from the `+` suggestions and project picker. Folder exclusions and suggestion sort order are separate settings/features.
 
 A "Filters On" badge appears when any filters are configured.
 
@@ -271,7 +275,7 @@ Each custom field can configure filters to control which files appear in wikilin
 - **Required tags**: Comma-separated list of tags (shows files with ANY of these tags)
 - **Include folders**: Comma-separated list of folder paths (shows files in ANY of these folders)
 - **Required property key**: Frontmatter property that must exist
-- **Required property value**: Expected value for the property (optional)
+- **Required property value**: Optional comma-separated allow-list or `containsAny("a", "b")` expression. Prefix the expression with `!` to exclude values, for example `!containsAny("archived")`.
 
 A "Filters On" badge appears when filters are configured.
 

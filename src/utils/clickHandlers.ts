@@ -17,12 +17,14 @@ export interface ClickHandlerOptions {
 	excludeSelector?: string; // CSS selector for elements that should not trigger click behavior
 	onSingleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for single click
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
+	/** A view can consume selection before standalone card navigation runs. */
+	onSelectionClick?: (e: MouseEvent) => boolean;
 	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
 	createBatchContextMenu?: BatchContextMenuFactory;
 	navigationSubpath?: string;
 }
 
-const DEFAULT_EXCLUDE_SELECTOR = [
+export const DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR = [
 	"a",
 	"button",
 	"input",
@@ -47,12 +49,13 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		onSingleClick,
 		onDoubleClick,
 		contextMenuHandler,
+		onSelectionClick,
 		createBatchContextMenu,
 		navigationSubpath,
 	} = options;
 	const clickExcludeSelector = excludeSelector
-		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
-		: DEFAULT_EXCLUDE_SELECTOR;
+		? `${DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR}, ${excludeSelector}`
+		: DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR;
 
 	let clickTimeout: number | null = null;
 
@@ -112,7 +115,17 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			return;
 		}
 
-		// Check for selection mode - only shift+click triggers selection
+		if (onSelectionClick?.(e)) {
+			e.preventDefault();
+			e.stopPropagation();
+			if (clickTimeout) {
+				window.clearTimeout(clickTimeout);
+				clickTimeout = null;
+			}
+			return;
+		}
+
+		// Standalone cards keep Shift-selection and Ctrl/Cmd source navigation.
 		const selectionService = plugin.taskSelectionService;
 		if (selectionService) {
 			if (e.shiftKey) {

@@ -414,6 +414,13 @@ export function subscriptionList(ctx: SettingsContext): SettingDefinitionList {
 						},
 						() => read().type !== "remote"
 					),
+					ctx.text(`${id}.filter`, {
+						name: ctx.t(msg({ message: "Title contains:", context: "settings.integrations.subscriptionsList.titleFilter.label" })),
+						desc: ctx.t(msg({ message: "Case-insensitive text, not regex; empty shows all events", context: "settings.integrations.subscriptionsList.titleFilter.help" })),
+						getValue: () => read().filter ?? "",
+						setValue: (filter) => update({ filter }),
+					}),
+					...subscriptionAuthentication(ctx, id, subscription.id, read, update),
 					{
 						name: ctx.t(msg({ message: "Last sync", context: "settings.native.lastSync" })),
 						desc:
@@ -445,6 +452,89 @@ export function subscriptionList(ctx: SettingsContext): SettingDefinitionList {
 			};
 		}),
 	};
+}
+
+function subscriptionAuthentication(
+	ctx: SettingsContext,
+	id: string,
+	subscriptionId: string,
+	read: () => ICSSubscription,
+	update: (patch: Partial<ICSSubscription>) => Promise<void>
+): SettingDefinition[] {
+	const service = ctx.plugin.icsSubscriptionService;
+	const credentialsHidden = () => read().type !== "remote" || read().authType !== "basic";
+	return [
+		ctx.dropdown(
+			`${id}.authType`,
+			{
+				name: ctx.t(msg({ message: "Authentication:", context: "settings.integrations.subscriptionsList.labels.authentication" })),
+				options: [
+					{
+						value: "none",
+						label: ctx.t(msg({ message: "None", context: "settings.integrations.subscriptionsList.authOptions.none" })),
+					},
+					{
+						value: "basic",
+						label: ctx.t(msg({ message: "Username and password (HTTP Basic)", context: "settings.integrations.subscriptionsList.authOptions.basic" })),
+					},
+				],
+				getValue: () => (read().authType === "basic" ? "basic" : "none"),
+				setValue: async (value) => {
+					await update({ authType: value === "basic" ? "basic" : "none" });
+					ctx.refresh();
+				},
+			},
+			() => read().type !== "remote"
+		),
+		{
+			...ctx.text(`${id}.username`, {
+				name: ctx.t(msg({ message: "Username:", context: "settings.integrations.subscriptionsList.labels.username" })),
+				getValue: () => read().username ?? "",
+				setValue: (username) => update({ username: username.trim() }),
+			}),
+			visible: () => !credentialsHidden(),
+		},
+		{
+			name: ctx.t(msg({ message: "Password:", context: "settings.integrations.subscriptionsList.labels.password" })),
+			desc: service?.isPasswordStorageAvailable()
+				? ctx.t(msg({ message: "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings.", context: "settings.integrations.subscriptionsList.authHelp" }))
+				: ctx.t(msg({ message: "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device.", context: "settings.integrations.subscriptionsList.authStorageUnavailable" })),
+			visible: () => !credentialsHidden(),
+			render: (setting) => {
+				setting.addText((text) => {
+					const setPlaceholder = () =>
+						text.setPlaceholder(
+							service?.hasPassword(subscriptionId)
+								? ctx.t(msg({ message: "Saved. Enter a new password to replace it", context: "settings.integrations.subscriptionsList.placeholders.passwordSaved" }))
+								: ctx.t(msg({ message: "Password", context: "settings.integrations.subscriptionsList.placeholders.password" }))
+						);
+					text.inputEl.type = "password";
+					text.inputEl.autocomplete = "new-password";
+					setPlaceholder();
+					// The input never shows a stored value.
+					text.inputEl.addEventListener("change", () => {
+						const password = text.getValue();
+						text.setValue("");
+						if (!password || !service) return;
+						if (!service.isPasswordStorageAvailable()) {
+							new Notice(
+								ctx.t(msg({ message: "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device.", context: "settings.integrations.subscriptionsList.authStorageUnavailable" }))
+							);
+							return;
+						}
+						void service
+							.setPassword(subscriptionId, password)
+							.catch(() => {
+								new Notice(
+									ctx.t(msg({ message: "Failed to save the calendar password", context: "settings.integrations.subscriptionsList.notices.passwordSaveFailure" }))
+								);
+							})
+							.then(setPlaceholder);
+					});
+				});
+			},
+		},
+	];
 }
 
 function localFile(

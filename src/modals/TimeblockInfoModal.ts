@@ -10,6 +10,8 @@ import {
 	stringifyYaml,
 	TFile,
 	setTooltip,
+	getFrontMatterInfo,
+	parseLinktext,
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -74,6 +76,8 @@ export class TimeblockInfoModal extends Modal {
 
 	// Attachment management
 	private selectedAttachments: TAbstractFile[] = [];
+	// Preserve existing link text rather than rewriting it to a file path on save.
+	private attachmentLinks = new Map<string, string>();
 	private attachmentsList: HTMLElement;
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
 
@@ -312,9 +316,13 @@ export class TimeblockInfoModal extends Modal {
 		for (const attachmentPath of this.timeblock.attachments) {
 			// Remove wikilink brackets if present
 			const cleanPath = attachmentPath.replace(/^\[\[|\]\]$/g, "");
-			const file = this.app.vault.getAbstractFileByPath(cleanPath);
-			if (file) {
+			const linkpath = parseLinktext(cleanPath.split("|")[0]).path;
+			const file =
+				this.app.metadataCache.getFirstLinkpathDest(linkpath, "") ??
+				this.app.vault.getAbstractFileByPath(cleanPath);
+			if (file && !this.attachmentLinks.has(file.path)) {
 				this.selectedAttachments.push(file);
+				this.attachmentLinks.set(file.path, attachmentPath);
 			}
 		}
 	}
@@ -466,7 +474,7 @@ export class TimeblockInfoModal extends Modal {
 
 			// Convert selected attachments to wikilinks
 			const attachments: string[] = this.selectedAttachments.map(
-				(file) => `[[${file.path}]]`
+				(file) => this.attachmentLinks.get(file.path) ?? `[[${file.path}]]`
 			);
 			this.timeblock.attachments = attachments.length > 0 ? attachments : undefined;
 
@@ -511,24 +519,19 @@ export class TimeblockInfoModal extends Modal {
 
 		// Parse existing frontmatter
 		let frontmatter: Record<string, unknown> = {};
-		let bodyContent = content;
+		const info = getFrontMatterInfo(content);
+		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
 
-		if (content.startsWith("---")) {
-			const endOfFrontmatter = content.indexOf("---", 3);
-			if (endOfFrontmatter !== -1) {
-				const frontmatterText = content.substring(3, endOfFrontmatter);
-				bodyContent = content.substring(endOfFrontmatter + 3);
-
-				try {
-					frontmatter = parseFrontmatterRecord(frontmatterText);
-				} catch (error) {
-					tasknotesLogger.error("Error parsing existing frontmatter:", {
-						category: "validation",
-						operation: "parsing-existing-frontmatter",
-						error: error,
-					});
-					frontmatter = {};
-				}
+		if (info.exists) {
+			try {
+				frontmatter = parseFrontmatterRecord(info.frontmatter);
+			} catch (error) {
+				tasknotesLogger.error("Error parsing existing frontmatter:", {
+					category: "validation",
+					operation: "parsing-existing-frontmatter",
+					error: error,
+				});
+				frontmatter = {};
 			}
 		}
 
@@ -552,10 +555,10 @@ export class TimeblockInfoModal extends Modal {
 		}
 
 		// Convert frontmatter back to YAML
-		const frontmatterText = stringifyYaml(frontmatter);
+		const newFrontmatterText = stringifyYaml(frontmatter);
 
 		// Reconstruct file content
-		const newContent = `---\n${frontmatterText}---${bodyContent}`;
+		const newContent = `---\n${newFrontmatterText}---\n${bodyContent}`;
 
 		// Write back to file
 		await modifyVaultFile(this.app, dailyNote, newContent);
@@ -688,24 +691,19 @@ export class TimeblockInfoModal extends Modal {
 
 		// Parse existing frontmatter
 		let frontmatter: Record<string, unknown> = {};
-		let bodyContent = content;
+		const info = getFrontMatterInfo(content);
+		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
 
-		if (content.startsWith("---")) {
-			const endOfFrontmatter = content.indexOf("---", 3);
-			if (endOfFrontmatter !== -1) {
-				const frontmatterText = content.substring(3, endOfFrontmatter);
-				bodyContent = content.substring(endOfFrontmatter + 3);
-
-				try {
-					frontmatter = parseFrontmatterRecord(frontmatterText);
-				} catch (error) {
-					tasknotesLogger.error("Error parsing existing frontmatter:", {
-						category: "validation",
-						operation: "parsing-existing-frontmatter",
-						error: error,
-					});
-					frontmatter = {};
-				}
+		if (info.exists) {
+			try {
+				frontmatter = parseFrontmatterRecord(info.frontmatter);
+			} catch (error) {
+				tasknotesLogger.error("Error parsing existing frontmatter:", {
+					category: "validation",
+					operation: "parsing-existing-frontmatter",
+					error: error,
+				});
+				frontmatter = {};
 			}
 		}
 
@@ -734,12 +732,12 @@ export class TimeblockInfoModal extends Modal {
 		}
 
 		// Convert frontmatter back to YAML
-		const frontmatterText =
+		const newFrontmatterText =
 			Object.keys(frontmatter).length > 0 ? stringifyYaml(frontmatter) : "";
 
 		// Reconstruct file content
-		const newContent = frontmatterText
-			? `---\n${frontmatterText}---${bodyContent}`
+		const newContent = newFrontmatterText
+			? `---\n${newFrontmatterText}---\n${bodyContent}`
 			: bodyContent.trim();
 
 		// Write back to file

@@ -1005,7 +1005,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 				method: settings.taskIdentificationMethod ?? "tag",
 				tag: settings.taskTag ?? "task",
 				propertyName: settings.taskPropertyName ?? "type",
-				propertyValue: settings.taskPropertyValue ?? "task",
+				propertyValue: (settings.taskPropertyValue ?? "task").trim(),
 				excludedFolders: settings.excludedFolders ?? "",
 			},
 			storeTitleInFilename: settings.storeTitleInFilename ?? false,

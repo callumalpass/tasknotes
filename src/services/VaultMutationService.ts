@@ -1,4 +1,5 @@
 export {
+	createVaultBinaryFile,
 	createVaultFile,
 	createVaultFolder,
 	modifyVaultFile,

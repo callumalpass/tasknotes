@@ -18,10 +18,19 @@ async function readYaml(path: string) {
 }
 
 async function drag(source: Locator, target: Locator, below = false) {
-  const from = await source.boundingBox();
-  const to = await target.boundingBox();
-  expect(from).not.toBeNull();
-  expect(to).not.toBeNull();
+  // Persisted YAML can update before the view finishes replacing the moved card.
+  let from: Awaited<ReturnType<Locator['boundingBox']>> = null;
+  let to: Awaited<ReturnType<Locator['boundingBox']>> = null;
+  await expect(async () => {
+    await expect(source).toBeVisible();
+    await expect(target).toBeVisible();
+    await source.scrollIntoViewIfNeeded();
+    await target.scrollIntoViewIfNeeded();
+    from = await source.boundingBox();
+    to = await target.boundingBox();
+    expect(from).not.toBeNull();
+    expect(to).not.toBeNull();
+  }).toPass({ timeout: 5000 });
   await page.mouse.move(from!.x + from!.width / 2, from!.y + 20);
   await page.mouse.down();
   await page.mouse.move(from!.x + from!.width / 2 + 12, from!.y + 20, { steps: 4 });
@@ -97,7 +106,7 @@ test.afterAll(async () => {
 test('coarse-pointer mouse moves, card ordering, column ordering and touch all persist', async () => {
   test.setTimeout(90_000);
   expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches)).toBe(true);
-  const card = (name: string) => page.locator(`.kanban-view__card-wrapper[data-task-path="${folder}/${name}.md"]`);
+  const card = (name: string) => page.locator(`.kanban-view__card-wrapper:not(.kanban-view__touch-ghost)[data-task-path="${folder}/${name}.md"]`);
   const column = (key: string) => page.locator(`.kanban-view__column[data-group="${key}"]`);
   const path = (name: string) => `${folder}/${name}.md`;
   await page.evaluate(() => {

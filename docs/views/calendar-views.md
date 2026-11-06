@@ -33,7 +33,23 @@ Mini Calendar is commonly used as an entry view: select a date, then open Task L
 
 ## Calendar View
 
-The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times.
+The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times. To schedule a task from elsewhere, drag its inline task widget, or its card in a Task List or Kanban view, onto a date or time slot: TaskNotes sets the task's scheduled date, with a time when it is dropped on a time slot.
+
+### Selecting and Rescheduling Multiple Tasks
+
+Use **Ctrl/Cmd-click** to select individual task markers, or **Shift-click** to select a range. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
+
+Open **Task options** in the toolbar, or right-click a selected marker, to change the selected tasks together. **Scheduled date** and **Due date** offer quick dates and **Pick date & time…** for any date with an optional time. This assigns the same value to every selected task; choosing a date without a time makes that property date-only. Cancel leaves the tasks unchanged.
+
+Drag a selected marker to move the group while keeping relative dates and local times:
+
+- Dragging a scheduled marker changes scheduled dates only. Dragging a due marker changes deadlines only.
+- Each selected task must have a visible, editable marker of the same type. Incompatible or hidden selections are rejected before writing.
+- Date-only tasks stay date-only. Timed tasks retain their relative times, including across daylight-saving changes. A group drag cannot convert the dragged marker between all-day and timed areas.
+- Recurring templates/previews, scheduled-to-due span bars, tracked time, external events, and property-based events are not included in task selection. Materialized occurrence notes with ordinary scheduled/due markers can be selected.
+- **Undo** is available briefly after a group move. It refuses to overwrite a task whose dates have since changed. If a write fails partway through, the result reports the number moved and Undo covers those successful moves.
+
+The focused marker's Alt+arrow keyboard move also moves the selected group. Resizing remains a single-task action. While dragging, the other selected markers preview their proposed dates with dashed outlines, including in crowded cells with a "+ more" limit. Preview markers are non-interactive, and no task files change until you drop. Escape, a cancelled pointer gesture, or the window losing focus removes the previews.
 
 ### View Modes
 

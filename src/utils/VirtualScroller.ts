@@ -25,6 +25,11 @@ export interface VirtualScrollerOptions<T> {
 	renderItem: (item: T, index: number) => HTMLElement;
 	/** Optional function to get unique key for item */
 	getItemKey?: (item: T, index: number) => string;
+	/**
+	 * Called on scroll (RAF-throttled) with the current scrollTop.
+	 * Fires even when the visible item range does not change — useful for sticky headers.
+	 */
+	onScroll?: (scrollTop: number) => void;
 }
 
 export interface VirtualScrollState {
@@ -78,6 +83,7 @@ export class VirtualScroller<T> {
 	private overscan: number;
 	private renderItem: (item: T, index: number) => HTMLElement;
 	private getItemKey: (item: T, index: number) => string;
+	private onScroll: ((scrollTop: number) => void) | null;
 
 	private state: VirtualScrollState = {
 		startIndex: 0,
@@ -105,6 +111,7 @@ export class VirtualScroller<T> {
 		this.overscan = options.overscan ?? 5;
 		this.renderItem = options.renderItem;
 		this.getItemKey = options.getItemKey ?? ((item, index) => String(index));
+		this.onScroll = options.onScroll ?? null;
 
 		this.setupDOM();
 		this.attachScrollListener();
@@ -150,6 +157,7 @@ export class VirtualScroller<T> {
 
 		// Find the actual scrolling container by walking up the DOM
 		this.scrollContainer = this.findScrollContainer(this.container);
+		this.updateSpacerHeight();
 	}
 
 	/**
@@ -221,7 +229,12 @@ export class VirtualScroller<T> {
 	}
 
 	private updateSpacerHeight(): void {
-		this.spacer.style.height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
+		const height = `${this.totalHeight + this.getContainerBottomPadding()}px`;
+		this.spacer.style.height = height;
+		if (this.scrollContainer && this.scrollContainer !== this.container) {
+			// Transforms and the absolute spacer do not size the sticky boundary.
+			this.container.style.minHeight = height;
+		}
 	}
 
 	/**
@@ -487,12 +500,13 @@ export class VirtualScroller<T> {
 
 		this.scrollRAF = window.requestAnimationFrame(() => {
 			this.updateVisibleRange();
+			this.onScroll?.(this.scrollContainer.scrollTop);
 			this.scrollRAF = null;
 		});
 	};
 
 	private updateVisibleRange(): void {
-		const scrollTop = this.scrollContainer.scrollTop;
+		const scrollTop = this.getScrollTop();
 		let containerHeight = this.scrollContainer.clientHeight;
 
 		// If container height is 0, try to get a better estimate
@@ -835,6 +849,13 @@ export class VirtualScroller<T> {
 	 * Force recalculation of visible range (useful after container resize)
 	 */
 	recalculate(): void {
+		// Bases may attach an embedded view only after its first render.
+		const scrollContainer = this.findScrollContainer(this.container);
+		if (scrollContainer !== this.scrollContainer) {
+			this.scrollContainer.removeEventListener("scroll", this.handleScroll);
+			this.scrollContainer = scrollContainer;
+			this.attachScrollListener();
+		}
 		// Force a fresh calculation by resetting state
 		this.state.startIndex = -1;
 		this.state.endIndex = -1;
@@ -868,6 +889,30 @@ export class VirtualScroller<T> {
 	}
 
 	/**
+	 * Top offset of an item within the virtual list (pixels from content start).
+	 */
+	getItemOffset(index: number): number {
+		return this.getItemPosition(index);
+	}
+
+	/**
+	 * Measured or estimated height of an item at the given index.
+	 */
+	getMeasuredItemHeight(index: number): number {
+		return this.getItemHeight(index);
+	}
+
+	/**
+	 * Current scroll offset of the scroll container.
+	 */
+	getScrollTop(): number {
+		if (this.container === this.scrollContainer) return this.scrollContainer.scrollTop;
+		// Embedded lists begin below the note's scroll origin.
+		return this.scrollContainer.getBoundingClientRect().top + this.scrollContainer.clientTop -
+			this.container.getBoundingClientRect().top;
+	}
+
+	/**
 	 * Clean up event listeners
 	 */
 	destroy(): void {
@@ -882,6 +927,7 @@ export class VirtualScroller<T> {
 			this.resizeObserver = null;
 		}
 		this.scrollContainer.removeEventListener("scroll", this.handleScroll);
+		if (this.scrollContainer !== this.container) this.container.style.removeProperty("min-height");
 		this.renderedElements.clear();
 		this.contentContainer.empty();
 		this.itemHeights.clear();

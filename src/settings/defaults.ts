@@ -67,6 +67,8 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
 		color: "#00aa00",
 		isCompleted: true,
 		excludeFromCycle: false,
+		// Reopening a task, or finishing a recurring occurrence, starts again at Open.
+		nextStatus: "open",
 		order: 3,
 		autoArchive: false,
 		autoArchiveDelay: 5,
@@ -206,6 +208,9 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	defaultEventDuration: 60, // 1 hour if timed events
 	includeObsidianLink: true, // Include link back to Obsidian
 	defaultReminderMinutes: null, // No reminder override by default (user opts in)
+	syncTimeblocks: false, // Timeblock sync is opt-in
+	timeblockTargetCalendarId: "", // Empty = use the task target calendar
+	timeblockEventTitleTemplate: "{{title}}",
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {

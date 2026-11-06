@@ -28,6 +28,7 @@ import { TaskNotesSettings } from "./types/settings";
 import { generateBasesFileTemplate } from "./templates/defaultBasesFiles";
 import {
 	MINI_CALENDAR_VIEW_TYPE,
+	RecurringCompletionOptions,
 	TaskInfo,
 	EVENT_DATA_CHANGED,
 	EVENT_TASK_UPDATED,
@@ -49,6 +50,7 @@ import { FieldMapper } from "./services/FieldMapper";
 import { StatusManager } from "./services/StatusManager";
 import { PriorityManager } from "./services/PriorityManager";
 import { TaskService } from "./services/TaskService";
+import { isMaterializedOccurrenceTask } from "@tasknotes/model/operations";
 import { FilterService } from "./services/FilterService";
 import { TaskStatsService } from "./services/TaskStatsService";
 import type { ViewPerformanceService } from "./services/ViewPerformanceService";
@@ -118,6 +120,7 @@ import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
 import { sanitizeLinkAliasText } from "./utils/linkAliasUtils";
 import { generateLink } from "./utils/linkUtils";
+import { withPluginDataWriteLock } from "./utils/pluginDataWriteLock";
 import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "./api/runtime-api";
 import {
 	createTaskNotesPerformanceProfiler,
@@ -910,12 +913,14 @@ export default class TaskNotesPlugin extends Plugin {
 			return;
 		}
 
-		const data = await this.loadPluginDataForSafeWrite("save-settings-data-only");
-		if (!data) {
-			return;
-		}
+		await withPluginDataWriteLock(this, async () => {
+			const data = await this.loadPluginDataForSafeWrite("save-settings-data-only");
+			if (!data) {
+				return;
+			}
 
-		await this.saveData(buildSettingsDataForSave(data, this.settings));
+			await this.saveData(buildSettingsDataForSave(data, this.settings));
+		});
 	}
 
 	async onExternalSettingsChange(): Promise<void> {
@@ -1309,21 +1314,28 @@ export default class TaskNotesPlugin extends Plugin {
 	/**
 	 * Toggles a recurring task's completion status for the selected date
 	 */
-	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
+	async toggleRecurringTaskComplete(
+		task: TaskInfo,
+		date?: Date,
+		options?: RecurringCompletionOptions
+	): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const { updatedTask, completed, undo } = await completeRecurringTaskWithUndo(
+			const { updatedTask, completed, changed, undo } = await completeRecurringTaskWithUndo(
 				this,
 				task,
-				targetDate
+				targetDate,
+				options
 			);
-			showRecurringCompletionNotice(
-				this,
-				updatedTask,
-				formatDateForStorage(targetDate),
-				completed,
-				undo
-			);
+			if (changed) {
+				showRecurringCompletionNotice(
+					this,
+					updatedTask,
+					formatDateForStorage(targetDate),
+					completed,
+					undo
+				);
+			}
 			return updatedTask;
 		} catch (error) {
 			tasknotesLogger.error("Failed to toggle recurring task completion:", {
@@ -1890,6 +1902,46 @@ export default class TaskNotesPlugin extends Plugin {
 				error: error,
 			});
 			new Notice(this.i18n.translate(msg({ message: "Failed to cycle task status", context: "notices.commands.statusCycleFailed" })));
+		}
+	}
+
+	async repeatCurrentTask(): Promise<void> {
+		try {
+			const taskInfo = await this.getCurrentTaskForCommand();
+			if (!taskInfo) {
+				return;
+			}
+			if (taskInfo.recurrence) {
+				new Notice(this.i18n.translate(msg({ message: "Recurring tasks already track each occurrence", context: "notices.commands.repeatRecurring" })));
+				return;
+			}
+			if (isMaterializedOccurrenceTask(taskInfo)) {
+				new Notice(this.i18n.translate(msg({ message: "This task is an occurrence of a recurring task", context: "notices.commands.repeatOccurrence" })));
+				return;
+			}
+			if (!this.statusManager.isCompletedStatus(taskInfo.status)) {
+				new Notice(this.i18n.translate(msg({ message: "Current task is not completed", context: "notices.commands.repeatNotCompleted" })));
+				return;
+			}
+
+			const { showConfirmationModal } = await import("./modals/ConfirmationModal");
+			const confirmed = await showConfirmationModal(this.app, {
+				title: this.i18n.translate(msg({ message: "Repeat current task", context: "commands.repeatCurrentTask" })),
+				message: this.i18n.translate(msg({ message: "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes.", context: "commands.repeatCurrentTask.confirm" })),
+			});
+			if (!confirmed) {
+				return;
+			}
+
+			const repeatedTask = await this.taskService.repeatTask(taskInfo);
+			await this.openTaskEditModal(repeatedTask);
+		} catch (error) {
+			tasknotesLogger.error("Failed to repeat current task:", {
+				category: "persistence",
+				operation: "repeat-current-task",
+				error,
+			});
+			new Notice(this.i18n.translate(msg({ message: "Could not finish repeating task. Earlier changes were kept; check the task before trying again.", context: "notices.commands.repeatFailed" })));
 		}
 	}
 

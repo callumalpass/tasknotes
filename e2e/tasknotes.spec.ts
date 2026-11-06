@@ -6587,8 +6587,8 @@ test.describe('Issue #1297: TaskSelectorWithCreate modal mobile support', () => 
 
     if (isFooterVisible) {
       // Check for the keyboard shortcut hint
-      const shortcutHint = page.locator('.task-selector-create-footer__shortcut');
-      await expect(shortcutHint).toContainText('⇧↵');
+      const shortcutHint = page.locator('.task-selector-create-footer__hint-text');
+      await expect(shortcutHint).toHaveText('Create with ⇧↵');
 
       await page.screenshot({ path: 'test-results/screenshots/issue-1297-footer-visible.png' });
     }
@@ -8554,7 +8554,7 @@ test.describe('Issue #1430: Modal Fields Property ID Display', () => {
     await expect(modalFieldCard).toBeVisible({ timeout: 5000 });
 
     // Get the secondary text (which shows the ID/key)
-    const secondaryText = modalFieldCard.locator('.tasknotes-settings__card-header-secondary');
+    const secondaryText = modalFieldCard.locator('.tasknotes-settings__card-secondary-text');
     const secondaryTextContent = await secondaryText.textContent();
 
     // BUG: This assertion will fail because it shows internal ID instead of property key

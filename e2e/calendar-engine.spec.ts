@@ -87,6 +87,56 @@ test('month settings from the .base file apply', async () => {
 	const days = await cal.locator('.tnc-dg-dow').allTextContents();
 	expect(days.map((d) => d.trim().slice(0, 3).toUpperCase())).toEqual(['WED', 'THU', 'FRI', 'MON', 'TUE']);
 	await expect(cal.locator('.tnc-weeknum').first()).toBeVisible();
+	// The event layer starts after the week-number column and the day cells fill each week row.
+	const week = await cal.locator('.tnc-dg-week').first().evaluate((row) => {
+		const box = (el: Element | null) => el!.getBoundingClientRect();
+		const cells = Array.from(row.querySelectorAll('.tnc-dg-day')).map(box);
+		return { weeknum: box(row.querySelector('.tnc-weeknum')), layer: box(row.querySelector('.tnc-dg-layer')), cells, row: box(row) };
+	});
+	expect(Math.abs(week.layer.left - week.weeknum.right)).toBeLessThan(1);
+	expect(Math.abs(week.cells[0].left - week.weeknum.right)).toBeLessThan(1);
+	expect(Math.abs(week.cells[4].right - week.row.right)).toBeLessThan(1);
+	for (const cell of week.cells) expect(cell.height).toBeGreaterThan(week.row.height - 2);
+});
+
+test('a hovered timed item rises above the items it overlaps', async () => {
+	const page = app.page;
+	const today = await page.evaluate(() => {
+		const d = new Date();
+		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+	});
+	await page.evaluate(async ([a, b, day]) => {
+		for (const [path, title] of [[a, 'E2E overlap one'], [b, 'E2E overlap two']]) {
+			await (window as any).app.vault.create(
+				path,
+				`---\ntitle: ${title}\nstatus: open\npriority: normal\nscheduled: ${day}T10:00\ntimeEstimate: 120\ntags:\n  - task\n---\n`
+			);
+		}
+	}, [TASK_PATH, CHILD_PATH, today]);
+	await openBase(page, baseFile(`    calendarView: timeGridDay
+    scrollTime: 09:00:00
+`));
+	const cal = page.locator('.tnc:visible').first();
+	const items = cal.locator('.tnc-item--timed', { hasText: 'E2E overlap' });
+	await expect(items).toHaveCount(2, { timeout: 10000 });
+	// The engine stacks overlapping items with an inline z-index; take the lower one.
+	const lowerIndex = await items.evaluateAll((els) => els.findIndex((el) => (el as HTMLElement).style.zIndex === '1'));
+	const lower = items.nth(lowerIndex);
+	const upper = items.nth(1 - lowerIndex);
+	const [lb, ub] = [(await lower.boundingBox())!, (await upper.boundingBox())!];
+	const overlapX = (Math.max(lb.x, ub.x) + Math.min(lb.x + lb.width, ub.x + ub.width)) / 2;
+	const midY = lb.y + lb.height / 2;
+	const itemAt = (x: number, y: number) => page.evaluate(([px, py]) =>
+		document.elementFromPoint(px, py)?.closest('.tnc-item')?.textContent ?? '', [x, y]);
+	const lowerTitle = (await lower.textContent())!;
+	expect(await itemAt(overlapX, midY)).not.toBe(lowerTitle);
+
+	const outside = lb.x < ub.x ? lb.x + 4 : lb.x + lb.width - 4;
+	await page.mouse.move(outside, midY);
+	await expect(lower).toHaveClass(/is-hover/);
+	expect(await itemAt(overlapX, midY)).toBe(lowerTitle);
+
+	await page.mouse.move(5, 5);
 });
 
 test('dragging and resizing a task writes back to its frontmatter', async () => {

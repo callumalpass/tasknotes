@@ -291,6 +291,45 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		},
 		{
 			type: "page",
+			name: t(msg({ message: "Export timeblocks to Google Calendar", context: "settings.integrations.googleCalendarTimeblockExport.header" })),
+			desc: t(msg({ message: "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarTimeblockExport.description" })),
+			items: [
+				field(google, "syncTimeblocks", "googleCalendarExport.syncTimeblocks", { name: msg({ message: "Sync timeblocks", context: "settings.integrations.googleCalendarTimeblockExport.enable.name" }), description: msg({ message: "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them.", context: "settings.integrations.googleCalendarTimeblockExport.enable.description" }) }),
+				ctx.field(
+					google,
+					"timeblockTargetCalendarId",
+					"googleCalendarExport.timeblockTargetCalendarId",
+					t(msg({ message: "Timeblock calendar", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name" })),
+					{
+						type: "dropdown",
+						desc: t(msg({ message: "Select which calendar to create timeblock events in.", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description" })),
+						options: {
+							"": t(msg({ message: "Same as task calendar", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks" })),
+							...(google.timeblockTargetCalendarId
+								? { [google.timeblockTargetCalendarId]: google.timeblockTargetCalendarId }
+								: {}),
+							...Object.fromEntries(
+								(plugin.googleCalendarService?.getAvailableCalendars() ?? []).map(
+									(calendar) => [calendar.id, calendar.summary]
+								)
+							),
+						},
+					}
+				),
+				ctx.text("googleCalendarExport.timeblockEventTitleTemplate", {
+					name: t(msg({ message: "Timeblock event title template", context: "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name" })),
+					desc: t(msg({ message: "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'", context: "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description" })),
+					placeholder: t(msg({ message: "'{{title}}'", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder" })),
+					getValue: () => google.timeblockEventTitleTemplate,
+					setValue: (value) => {
+						google.timeblockEventTitleTemplate = value || "{{title}}";
+						ctx.save();
+					},
+				}),
+			],
+		},
+		{
+			type: "page",
 			name: t(msg({ message: "Automatic ICS export", context: "settings.integrations.autoExport.header" })),
 			desc: t(msg({ message: "Automatically export all your tasks to an ICS file.", context: "settings.integrations.autoExport.description" })),
 			items: [

@@ -33,6 +33,7 @@ import {
 } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { VirtualScroller } from "../utils/VirtualScroller";
+import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
 import {
 	isSortOrderInSortConfig,
 	getSortOrderDirection,
@@ -78,11 +79,13 @@ import {
 	type TaskListGroupDropPlan,
 } from "./taskListDropPlanning";
 import {
+	getTaskListMovementStatus,
 	planTaskListMovement,
 	taskListDestinationKey,
 	type TaskListDestination,
 	type TaskListMovementPlan,
 } from "./taskListMovement";
+import { completeOccurrenceForStatusMove, getShownOccurrence } from "./recurringStatusMove";
 import {
 	buildTaskMovementUndo,
 	applyTaskMovementUndo,
@@ -192,6 +195,11 @@ export class TaskListView extends BasesViewBase {
 	private containerListenersRegistered = false;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
+	/** Pinned group header overlay for virtualized lists (CSS sticky cannot work under transform). */
+	private virtualStickyHeaderPin: HTMLElement | null = null;
+	private virtualStickyHeaderKey: string | null = null;
+	private virtualStickyHeaderIndices: number[] = [];
+	private groupHeaderResizeObserver: ResizeObserver | null = null;
 	private collapsedGroups = new Set<string>(); // Track collapsed group keys
 	private collapsedSubGroups = new Set<string>(); // Track collapsed sub-group keys
 	private subGroupPropertyId: string | null = null; // Property ID for sub-grouping
@@ -989,8 +997,10 @@ export class TaskListView extends BasesViewBase {
 			e.stopPropagation();
 			this.beginTaskMovement(cardEl, task, groupKey);
 			if (e.dataTransfer) {
-				e.dataTransfer.effectAllowed = "move";
+				// copyMove: Calendar views accept the task path as a copy-style drop
+				e.dataTransfer.effectAllowed = "copyMove";
 				e.dataTransfer.setData("text/plain", task.path);
+				e.dataTransfer.setData(TASK_PATH_DRAG_TYPE, task.path);
 			}
 		});
 
@@ -1618,6 +1628,9 @@ export class TaskListView extends BasesViewBase {
 		// The members the user saw when acting. Values added by another edit before the
 		// queued write lands are not part of the move and must survive it.
 		const shown = this.movementProperties.get(path);
+		const shownOccurrence = getShownOccurrence(this.taskInfoCache.get(path), (task) =>
+			this.getTaskActionDate(task)
+		);
 		try {
 			if (plan.kind === "reorder" && insertion) {
 				await this.handleSortOrderDrop(
@@ -1631,6 +1644,15 @@ export class TaskListView extends BasesViewBase {
 				);
 			} else if (plan.kind === "move") {
 				await this.dropQueue.enqueue(`move:${path}`, async () => {
+					const isSettled = await completeOccurrenceForStatusMove({
+						plugin: this.plugin,
+						path,
+						status: getTaskListMovementStatus(plan),
+						shownOccurrence,
+						getOccurrenceDate: (task) => this.getTaskActionDate(task),
+					});
+					if (isSettled) return;
+
 					const file = this.plugin.app.vault.getAbstractFileByPath(path);
 					if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
 					const originalTask =
@@ -2823,8 +2845,10 @@ export class TaskListView extends BasesViewBase {
 		visibleProperties: string[] | undefined,
 		cardOptions: TaskCardOptions
 	): Promise<void> {
+		this.containerEl.closest(".bases-embed")?.classList.add("tasknotes-list-embed");
 		// Populate group key lookup for cross-group drag detection
 		this.syncGroupedDragMetadata(items);
+		this.virtualStickyHeaderIndices = this.collectVirtualStickyHeaderIndices(items);
 
 		if (!this.virtualScroller) {
 			this.virtualScroller = new VirtualScroller<TaskListVirtualItem>({
@@ -2871,10 +2895,16 @@ export class TaskListView extends BasesViewBase {
 						return item.task.path;
 					}
 				},
+				onScroll: () => this.updateVirtualStickyHeader(),
 			});
 
+			// VirtualScroller empties the container on setup — mount the pin after that.
+			this.ensureVirtualStickyHeaderPin();
+
 			window.setTimeout(() => {
+				this.containerEl.closest(".bases-embed")?.classList.add("tasknotes-list-embed");
 				this.virtualScroller?.recalculate();
+				this.updateVirtualStickyHeader();
 			}, 0);
 		} else {
 			this.resetVirtualScrollerIfCardRenderChanged(
@@ -2885,6 +2915,12 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 			this.virtualScroller.updateItems(items);
+			// Assign before refreshing the pin so it reads the current items, not stale data
+			// from before this collapse/expand or data update.
+			this.lastVirtualItems = items;
+			// updateItems clears container content but keeps structure; re-ensure pin.
+			this.ensureVirtualStickyHeaderPin();
+			this.updateVirtualStickyHeader();
 		}
 		this.lastVirtualItems = items;
 		this.lastCardRenderSignature = this.buildCardRenderSignature(
@@ -2893,19 +2929,111 @@ export class TaskListView extends BasesViewBase {
 		);
 	}
 
+	private collectVirtualStickyHeaderIndices(items: readonly TaskListRenderItem[]): number[] {
+		const indices: number[] = [];
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			if (item.type === "primary-header" || item.type === "sub-header") {
+				indices.push(i);
+			}
+		}
+		return indices;
+	}
+
+	private ensureVirtualStickyHeaderPin(): void {
+		if (!this.itemsContainer) return;
+		if (this.virtualStickyHeaderPin?.isConnected) return;
+
+		const doc = this.containerEl.ownerDocument;
+		const pin = createElementInDocument(doc, "div");
+		pin.className = "task-list-virtual-sticky-header";
+		pin.setAttribute("aria-hidden", "true");
+		this.itemsContainer.prepend(pin);
+		this.virtualStickyHeaderPin = pin;
+		this.virtualStickyHeaderKey = null;
+	}
+
+	private clearVirtualStickyHeaderPin(): void {
+		this.virtualStickyHeaderPin?.remove();
+		this.virtualStickyHeaderPin = null;
+		this.virtualStickyHeaderKey = null;
+		this.virtualStickyHeaderIndices = [];
+	}
+
+	private updateVirtualStickyHeader(): void {
+		const pin = this.virtualStickyHeaderPin;
+		const scroller = this.virtualScroller;
+		if (!pin || !scroller) return;
+
+		const scrollTop = scroller.getScrollTop();
+		let primary: TaskListHeaderItem | undefined;
+		let sub: TaskListHeaderItem | undefined;
+		const parentHeight = pin.firstElementChild?.getBoundingClientRect().height ?? 0;
+		for (const index of this.virtualStickyHeaderIndices) {
+			const item = this.lastVirtualItems[index];
+			if (!("type" in item)) continue;
+			const offset = scroller.getItemOffset(index);
+			if (item.type === "primary-header") {
+				if (offset >= scrollTop) break;
+				primary = item;
+				sub = undefined;
+			} else if (item.type === "sub-header" && primary && offset < scrollTop + parentHeight) {
+				sub = item;
+			}
+		}
+		const headers = [primary, sub].filter((item): item is TaskListHeaderItem => !!item);
+		const signature = JSON.stringify(headers.map(item => [
+			item.groupKey, item.type === "sub-header" ? item.subGroupKey : null,
+			item.type === "sub-header" ? item.subGroupTitle : item.groupTitle,
+			item.taskCount, item.isCollapsed,
+		]));
+		if (signature === this.virtualStickyHeaderKey) return;
+		pin.empty();
+		pin.classList.toggle("is-empty", headers.length === 0);
+		for (const item of headers) {
+			const header = this.createGroupHeader(item);
+			header.classList.add("task-list-virtual-sticky-header__group");
+			// The in-list header remains the keyboard/AT control. The visual copy
+			// supports pointer collapse without taking focus away from the list.
+			header.querySelectorAll("button, a").forEach(el => el.setAttribute("tabindex", "-1"));
+			header.addEventListener("mousedown", event => event.preventDefault());
+			pin.appendChild(header);
+		}
+		this.virtualStickyHeaderKey = signature;
+	}
+
 	private async renderGroupedNormal(
 		items: TaskListRenderItem[],
 		visibleProperties: string[] | undefined,
 		cardOptions: TaskCardOptions
 	): Promise<void> {
+		this.containerEl.closest(".bases-embed")?.classList.add("tasknotes-list-embed");
 		this.lastVirtualItems = [];
+		this.groupHeaderResizeObserver?.disconnect();
+		this.groupHeaderResizeObserver = new ResizeObserver(entries => {
+			for (const { target } of entries) {
+				(target.parentElement as HTMLElement).style.setProperty(
+					"--task-list-parent-header-height", `${target.getBoundingClientRect().height}px`
+				);
+			}
+		});
+		let groupContainer = this.itemsContainer!;
+		let sectionContainer = groupContainer;
 		// Populate group key lookup for cross-group drag detection
 		this.syncGroupedDragMetadata(items);
 
 		for (const item of items) {
 			if (item.type === "primary-header" || item.type === "sub-header") {
 				const headerEl = this.createGroupHeader(item);
-				this.itemsContainer!.appendChild(headerEl);
+				if (item.type === "primary-header") {
+					groupContainer = this.itemsContainer!.createDiv({ cls: "task-list-group" });
+					sectionContainer = groupContainer;
+					groupContainer.appendChild(headerEl);
+					this.groupHeaderResizeObserver.observe(headerEl);
+				} else {
+					sectionContainer = groupContainer.createDiv({ cls: "task-list-subgroup" });
+					sectionContainer.appendChild(headerEl);
+				}
 			} else {
 				const cardEl = createTaskCard(
 					item.task,
@@ -2918,7 +3046,7 @@ export class TaskListView extends BasesViewBase {
 					this.createMovementDestination(item.groupKey, item.subGroupKey)
 				);
 				this.configureCardForManualReordering(cardEl, item.task, item.groupKey);
-				this.itemsContainer!.appendChild(cardEl);
+				sectionContainer.appendChild(cardEl);
 				this.currentTaskElements.set(item.task.path, cardEl);
 				this.taskInfoCache.set(item.task.path, item.task);
 				this.lastTaskSignatures.set(item.task.path, this.buildTaskSignature(item.task));
@@ -2989,7 +3117,9 @@ export class TaskListView extends BasesViewBase {
 		// Add group title
 		const titleContainer = headerElement.createSpan({ cls: "task-group-title" });
 		const displayTitle = isSubHeader ? headerItem.subGroupTitle : headerItem.groupTitle;
-		this.renderGroupTitle(titleContainer, this.groupDisplayLabel(displayTitle, isSubHeader ? this.subGroupPropertyId : this.getGroupByPropertyId() ?? this.subGroupPropertyId));
+		const groupPropertyId = isSubHeader ? this.subGroupPropertyId : this.getGroupByPropertyId() ?? this.subGroupPropertyId;
+		const linkTitle = !isSubHeader && groupPropertyId === this.getGroupByPropertyId() ? this.dataAdapter?.getGroupLinkTitle(displayTitle) : null;
+		this.renderGroupTitle(titleContainer, linkTitle ?? this.groupDisplayLabel(displayTitle, groupPropertyId));
 
 		// Add count
 		headerElement.createSpan({
@@ -3158,6 +3288,7 @@ export class TaskListView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
+		this.containerEl.closest(".bases-embed")?.classList.remove("tasknotes-list-embed");
 		// Component.register() calls will be automatically cleaned up (including search cleanup)
 		// We just need to clean up view-specific state
 		this.touchMovement?.destroy();
@@ -3282,6 +3413,7 @@ export class TaskListView extends BasesViewBase {
 		return this.buildTaskCardOptions({
 			targetDate,
 			usePendingOccurrenceIdentity: true,
+			onSelectionClick: (event, path) => this.handleSelectionClick(event, path),
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
 				normalizeExpandedRelationshipFilterMode(
@@ -3503,6 +3635,12 @@ export class TaskListView extends BasesViewBase {
 		if (this.useVirtualScrolling && this.virtualScroller) {
 			this.syncGroupedDragMetadata(items);
 			this.virtualScroller.updateItems(items);
+			// Recompute before refreshing the pin so header indices and the item
+			// array they reference agree — otherwise the pin can briefly show
+			// header content from the pre-toggle layout (wrong group/count).
+			this.virtualStickyHeaderIndices = this.collectVirtualStickyHeaderIndices(items);
+			this.lastVirtualItems = items;
+			this.updateVirtualStickyHeader();
 		} else {
 			// If not using virtual scrolling, do full render
 			await this.render();
@@ -3909,10 +4047,13 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private destroyVirtualScroller(): void {
+		this.groupHeaderResizeObserver?.disconnect();
+		this.groupHeaderResizeObserver = null;
 		if (this.virtualScroller) {
 			this.virtualScroller.destroy();
 			this.virtualScroller = null;
 		}
+		this.clearVirtualStickyHeaderPin();
 		this.lastVirtualItems = [];
 	}
 

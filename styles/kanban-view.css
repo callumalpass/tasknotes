@@ -193,7 +193,44 @@
     flex-direction: column;
     height: fit-content;
     max-height: calc(100vh - 200px);
-    transition: border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), background-color var(--tn-transition-fast);
+    transition: width var(--tn-transition-fast), min-width var(--tn-transition-fast), max-width var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), background-color var(--tn-transition-fast);
+}
+
+.tasknotes-plugin .kanban-view__column--collapsed {
+    min-width: var(--tn-kanban-collapsed-column-width, 48px);
+    max-width: var(--tn-kanban-collapsed-column-width, 48px);
+}
+
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-header {
+    flex-direction: column;
+    align-items: center;
+    padding: var(--tn-spacing-sm) var(--tn-spacing-xs);
+    border-bottom: 0;
+}
+
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__drag-handle,
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-count,
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__cards,
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__add-task-button {
+    display: none;
+}
+
+/* Collapsed strip label: icon, then the title reading top to bottom, cut off with an
+   ellipsis. The title always starts at the top, also in right-to-left layouts. */
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-header .kanban-view__column-title {
+    flex: none;
+    max-height: var(--tn-kanban-collapsed-title-max-height, 240px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+.tasknotes-plugin .kanban-view__column--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 6%, var(--tn-bg-primary));
+    border-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
 }
 
 .tasknotes-plugin .kanban-view__column--dragover {
@@ -369,6 +406,47 @@
     font-weight: var(--tn-font-weight-semibold);
 }
 
+.tasknotes-plugin .kanban-view__column-collapse-button {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: var(--tn-radius-sm);
+    box-shadow: none;
+    background: transparent;
+    color: var(--tn-text-muted);
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .kanban-view__column-collapse-button:hover,
+.tasknotes-plugin .kanban-view__column-collapse-button:focus-visible {
+    background: var(--tn-interactive-hover);
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .kanban-view__column-collapse-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tasknotes-plugin .kanban-view__column--collapsed .kanban-view__column-collapse-button {
+    order: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .kanban-view__column {
+        transition: none;
+    }
+}
+
 /* KANBAN TASK CARDS */
 
 /* Cards container (used for non-virtualized columns) */
@@ -531,6 +609,11 @@ body.is-mobile .tasknotes-plugin .kanban-view__column {
     max-width: min(78vw, 320px);
     max-height: 100%;
     scroll-snap-align: start;
+}
+
+body.is-mobile .tasknotes-plugin .kanban-view__column--collapsed {
+    min-width: var(--tn-kanban-collapsed-column-width, 48px);
+    max-width: var(--tn-kanban-collapsed-column-width, 48px);
 }
 
 body.is-mobile .tasknotes-plugin .kanban-view__board--swimlanes {

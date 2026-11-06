@@ -64,15 +64,12 @@ for (const mode of ["creation", "edit"] as const) {
 							.click();
 					}
 					await expect(
-						page
-							.locator(".notice")
-							.filter({
-								hasText:
-									failure === "validation"
-										? /title/i
-										: /Issue 2421 simulated write failure/,
-							})
-							.last()
+						failure === "validation"
+							? modal.locator(".tn-task-modal__field-error").filter({ hasText: /title/i })
+							: page
+									.locator(".notice")
+									.filter({ hasText: /Issue 2421 simulated write failure/ })
+									.last()
 					).toBeVisible();
 					await expect(modal).toBeVisible();
 					await expect(title).toHaveValue(

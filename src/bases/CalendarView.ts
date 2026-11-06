@@ -2,7 +2,6 @@ import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { applyCalendarDateDisplay, getCalendarDateDisplayOptions } from "./calendarDateDisplay";
-import { observeCalendarLayering } from "./calendarStyleCompatibility";
 import type { MessageDescriptor } from "@lingui/core";
 import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
@@ -16,6 +15,7 @@ import {
 	basesLayoutOptions,
 	viewToBases,
 	type CalendarOptions,
+	type ExternalDropArg,
 	type ItemArg,
 	type ItemPointerArg,
 	type SelectArg,
@@ -36,11 +36,15 @@ import {
 } from "./calendar-core";
 import { handleCalendarEventDrop, handleCalendarEventResize, type CalendarMutationContext } from "./calendarMutations";
 import { calendarTaskId } from "@tasknotes/model/calendar";
+import { buildCalendarBatchPreview, isCalendarBatchTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
+import { CalendarBatchPreview } from "./calendarBatchPreview";
+import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR } from "../utils/clickHandlers";
+import { messageForKey } from "../i18n/messages";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { TaskCreationModal } from "../modals/TaskCreationModal";
 import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
-import { Menu, Platform, TFile, setIcon, setTooltip } from "obsidian";
+import { Menu, Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
 import type { EventRef } from "obsidian";
 import {
 	CalendarRecreateNavigationState,
@@ -61,8 +65,10 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
-import { buildExternalCalendarEvents, setProviderCalendarToggle } from "./calendarExternalEvents";
+import { buildExternalCalendarEvents, buildLinkedGoogleEventPredicate, setProviderCalendarToggle } from "./calendarExternalEvents";
+import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
+	appendCalendarAttachmentIndicator,
 	decorateCalendarIcsEventElement,
 	getCalendarRelatedNoteTooltip,
 	createCalendarListEventCard,
@@ -73,6 +79,7 @@ import {
 	eventApiFromItem,
 	eventChangeFromArg,
 	toCalendarItems,
+	type CalendarEventItem,
 	type CalendarEventChange,
 	type CalendarEventInput,
 	type CalendarEventProps,
@@ -425,6 +432,26 @@ export class CalendarView extends BasesViewBase {
 		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		if (this.plugin.icsSubscriptionService) {
+			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
+				if (this.rootElement?.isConnected) void this.refetchEvents();
+			}));
+		}
+		if (this.rootElement) {
+			const preview = new CalendarBatchPreview({
+				root: this.rootElement,
+				getItems: () => this.calendarItems,
+				getRevision: () => this.calendarItems,
+				build: proposal => buildCalendarBatchPreview(this.getBatchCalendarItems(),
+					this.plugin.taskSelectionService?.getSelectedPaths() ?? [], proposal,
+					this.calendarTimezone, this.plugin.fieldMapper.getMapping(), new Date().toISOString()),
+				upsert: items => this.calendar?.upsertItems(items),
+				remove: ids => this.calendar?.removeItems(ids),
+				onInvalidDrop: () => this.showUnsupportedCalendarBatchMove(),
+			});
+			this.batchPreview = preview;
+			this.register(() => { preview.dispose(); this.batchPreview = null; });
+		}
 		// Bases ignores metadata-only updates and deletions outside its query. Such
 		// children still own occurrence dates in the model's materialization context.
 		const updateRef = this.plugin.emitter.on(EVENT_TASK_UPDATED, (eventData: unknown) => {
@@ -511,6 +538,25 @@ export class CalendarView extends BasesViewBase {
 		}
 
 		this.scheduleDeferredDataUpdate(Date.now(), controllerViewChanged);
+	}
+
+	/**
+	 * The calendar moves its own today marks. Its date stays put, and so do items
+	 * placed relative to now, so a view following today has to be moved here.
+	 */
+	protected handleDateRollover(previousDay: string): void {
+		const calendar = this.calendar;
+		if (!calendar) return;
+
+		const rangeBefore = this.visibleView;
+		const hasConfiguredDate = this.viewOptions.initialDate || this.viewOptions.initialDateProperty;
+		if (!hasConfiguredDate && calendar.getDate().toDateString() === previousDay) {
+			const scroll = calendar.getScroll();
+			calendar.gotoDate(new Date());
+			calendar.setScroll(scroll);
+		}
+		// A move into a new range has already refetched through onRangeChange.
+		if (this.visibleView === rangeBefore) void this.refetchEvents();
 	}
 
 	/**
@@ -1004,6 +1050,7 @@ export class CalendarView extends BasesViewBase {
 					this.calendar.setOptions(this.buildCalendarOptions());
 					applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
 					this.applyLayoutClasses();
+					this.syncSelectionModeAfterCalendarRender();
 				}
 			} else {
 				// Normal render - just re-read event toggles
@@ -1067,6 +1114,67 @@ export class CalendarView extends BasesViewBase {
 		}
 	}
 
+	private calendarItems: CalendarEventItem[] = [];
+	private batchMoveInProgress = false;
+	private batchPreview: CalendarBatchPreview | null = null;
+
+	private getBatchCalendarItems(): CalendarEventItem[] {
+		const view = this.calendar?.getView();
+		const timeGrid = view && isTimeGridCalendarView(viewToBases(view.type) ?? view.type);
+		return (this.calendarItems ?? []).filter(item => !timeGrid ||
+			(item.allDay ? this.viewOptions.showAllDaySlot : this.viewOptions.showTimeGrid));
+	}
+
+	protected getVisibleTaskPaths(): string[] {
+		return [...new Set(this.getBatchCalendarItems()
+			.filter(item => isCalendarBatchTarget(item.data))
+			.sort((a, b) => String(a.start).localeCompare(String(b.start)))
+			.flatMap(item => item.data?.taskInfo ? [item.data.taskInfo.path] : []))];
+	}
+
+	private syncSelectionModeAfterCalendarRender(): void {
+		if (!this.rootElement) return;
+		(this.containerEl.ownerDocument.defaultView ?? window).requestAnimationFrame(() => {
+			if (this.rootElement?.isConnected) {
+				this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
+			}
+		});
+	}
+
+	protected updateSelectionModeUI(active: boolean): void {
+		super.updateSelectionModeUI(active);
+		this.rootElement?.querySelector(".tnc-btn-selectTasks")?.setAttribute("aria-pressed", String(active));
+	}
+
+	protected updateSelectionIndicator(count: number): void {
+		super.updateSelectionIndicator(count);
+		this.selectionIndicatorEl?.classList.toggle("tn-calendar-selection-indicator-visible", count > 0);
+	}
+
+	protected updateSelectionVisuals(): void {
+		this.batchPreview?.clear();
+		super.updateSelectionVisuals();
+		if (!this.rootElement) return;
+		const selection = this.plugin.taskSelectionService;
+		this.rootElement.classList.toggle("tn-calendar-has-selection", Boolean(selection?.getSelectedPaths().length));
+		this.calendar?.setOptions({ selected: (this.calendarItems ?? [])
+			.filter(item => isCalendarBatchTarget(item.data) && selection?.isSelected(item.data.taskInfo.path))
+			.map(item => item.id) });
+		for (const el of this.rootElement.querySelectorAll<HTMLElement>(".tnc-item[data-task-path]")) {
+			const selected = Boolean(el.dataset.taskPath && selection?.isSelected(el.dataset.taskPath)) && el.dataset.batchSelectable === "true";
+			el.classList.toggle("tn-calendar-item-selected", selected);
+			el.setAttribute("aria-pressed", String(selected));
+		}
+	}
+
+	private setCalendarItems(items: CalendarEventItem[]): void {
+		this.batchPreview?.clear(false);
+		this.calendarItems = items;
+		this.calendar?.setItems(items);
+		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
+		this.updateSelectionVisuals();
+	}
+
 	private async initializeCalendar(taskNotes: TaskInfo[]): Promise<void> {
 		if (!this.calendarEl) return;
 
@@ -1076,7 +1184,6 @@ export class CalendarView extends BasesViewBase {
 			...this.buildCalendarOptions(),
 			...(initialDate ? { date: initialDate } : {}),
 		});
-		this.register(observeCalendarLayering(this.calendar.root));
 		applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
 		this.applyLayoutClasses();
 		await this.refetchEvents();
@@ -1095,7 +1202,6 @@ export class CalendarView extends BasesViewBase {
 				embedded: this.getEffectiveHeightMode() === "auto",
 			}),
 			...getCalendarDateDisplayOptions<CalendarEventProps>(this.plugin.settings.dateDisplayFormat),
-			dayHeaderDidMount: ({ el }) => el.classList.toggle("tnc-dh--capacity", el.querySelector(".tnc-cap") !== null),
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
@@ -1107,6 +1213,28 @@ export class CalendarView extends BasesViewBase {
 				views: ["year", "month", "week", "days", "day", "list"],
 				extraPlacement: "start",
 				extraButtons: [
+					{
+						id: "selectTasks",
+						text: t(msg({ message: "Select tasks", context: "views.basesCalendar.selectTasks" }), "Select tasks"),
+						hint: t(msg({ message: "Select tasks", context: "views.basesCalendar.selectTasks" }), "Select tasks"),
+						onClick: () => {
+							this.plugin.taskSelectionService?.toggleSelectionMode();
+							this.rootElement?.focus({ preventScroll: true });
+						},
+					},
+					{
+						id: "selectedTasks",
+						text: t(msg({ message: "Task options", context: "ui.taskCard.taskOptions" }), "Task options"),
+						icon: () => {
+							const icon = createElementInDocument(this.containerEl.ownerDocument, "span");
+							setIcon(icon, "ellipsis");
+							return icon;
+						},
+						onClick: event => {
+							const anchor = this.rootElement?.querySelector<HTMLElement>(".tnc-btn-selectedTasks");
+							if (anchor) this.showBatchContextMenu(toMouseEvent(event.detail ? event : null, anchor));
+						},
+					},
 					{
 						id: "refreshCalendars",
 						text: t(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" }), "Refresh"),
@@ -1146,6 +1274,10 @@ export class CalendarView extends BasesViewBase {
 			},
 			onRangeChange: (view) => {
 				if (this.visibleView && sameRange(this.visibleView, view)) return;
+				if (this.visibleView) {
+					this.plugin.taskSelectionService?.clearSelection();
+					this.plugin.taskSelectionService?.exitSelectionMode();
+				}
 				this.visibleView = view;
 				void this.refetchEvents();
 			},
@@ -1161,15 +1293,20 @@ export class CalendarView extends BasesViewBase {
 				void this.handleEventClick(arg);
 			},
 			onItemContextMenu: (arg) => this.handleEventContextMenu(arg),
+			canDrop: proposal => this.batchPreview?.allow(proposal) ?? true,
 			onItemDrop: (arg) => this.handleEventDrop(eventChangeFromArg(arg, "drop")),
 			onItemResize: (arg) => this.handleEventResize(eventChangeFromArg(arg, "resize")),
 			onSelect: (arg) => this.handleDateSelect(arg),
+			acceptNativeDrop: acceptsExternalTaskDrop,
+			onExternalDrop: (arg) => void this.handleExternalTaskDrop(arg),
 			itemDidMount: (arg) => this.handleEventDidMount(arg),
 			listItemContent: (arg) => this.renderListItem(arg),
 		};
 	}
 
 	private handleViewChange(view: ViewInfo): void {
+		this.batchPreview?.clear();
+		this.syncSelectionModeAfterCalendarRender();
 		const viewType = viewToBases(view.type);
 		if (viewType && viewType !== this.viewOptions.calendarView) {
 			this.viewOptions.calendarView = viewType;
@@ -1260,10 +1397,14 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyLayoutClasses(): void {
-		this.rootElement?.classList.toggle("advanced-calendar-view--week-numbers", this.viewOptions.weekNumbers);
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
+		// Lets bases-calendar.css offset the month event layer past the week-number column.
+		this.calendarEl?.classList.toggle(
+			"advanced-calendar-view__calendar--week-numbers",
+			this.viewOptions.weekNumbers === true
+		);
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {
@@ -1382,7 +1523,7 @@ export class CalendarView extends BasesViewBase {
 		try {
 			const events = await this.buildAllEvents(view);
 			if (seq !== this.refetchSeq || this.calendar !== calendar) return;
-			calendar.setItems(toCalendarItems(events));
+			this.setCalendarItems(toCalendarItems(events));
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error fetching events:", {
 				category: "provider",
@@ -1473,7 +1614,25 @@ export class CalendarView extends BasesViewBase {
 			viewToBases(view.type) ?? this.viewOptions.calendarView,
 			this.viewOptions.showAllDaySlot
 		);
-		return [...this.buildTaskEvents(view), ...this.nonTaskEvents];
+		return this.buildVisibleEvents(view);
+	}
+
+	private buildVisibleEvents(view: ViewInfo): CalendarEventInput[] {
+		const taskEvents = this.buildTaskEvents(view);
+		const isLinked = buildLinkedGoogleEventPredicate(
+			taskEvents.flatMap(event => {
+				const props = event.extendedProps;
+				const task = props && "taskInfo" in props ? props.taskInfo : undefined;
+				return task && ["scheduled", "due", "scheduledToDueSpan", "recurring"].includes(event.extendedProps?.eventType ?? "")
+					? [{ task, date: String(event.start) }]
+					: [];
+			}),
+			this.plugin
+		);
+		return [...taskEvents, ...this.nonTaskEvents.filter(event => {
+			const props = event.extendedProps;
+			return !props || !("icsEvent" in props) || !props.icsEvent || !isLinked(props.icsEvent);
+		})];
 	}
 
 	private getMaterializedOccurrences(): Record<string, string[]> {
@@ -1600,7 +1759,7 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendar) return;
 		++this.refetchSeq;
 		const view = this.calendar.getView();
-		this.calendar.setItems(toCalendarItems([...this.buildTaskEvents(view), ...this.nonTaskEvents]));
+		this.setCalendarItems(toCalendarItems(this.buildVisibleEvents(view)));
 	}
 
 	private async refreshAfterExpectedCalendarTaskWrite(updatedTask: TaskInfo): Promise<void> {
@@ -1628,6 +1787,8 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventClick(arg: ItemPointerArg<CalendarEventProps>): Promise<void> {
+		if (isCalendarBatchTarget(arg.item.data) &&
+			this.handleSelectionClick(toMouseEvent(arg.jsEvent, arg.el), arg.item.data.taskInfo.path)) return;
 		await handleCalendarEventClick(this.getMenuContext(), arg);
 	}
 
@@ -1687,11 +1848,141 @@ export class CalendarView extends BasesViewBase {
 		this.register(cleanup);
 	}
 
+	/** Schedules a task dragged in from outside the calendar, such as an inline task widget. */
+	private async handleExternalTaskDrop(arg: ExternalDropArg<CalendarEventProps>): Promise<void> {
+		const taskPath = getExternalTaskDropPath(arg.dataTransfer);
+		if (!taskPath) return;
+
+		try {
+			const task = await this.plugin.cacheManager.getTaskInfo(taskPath);
+			if (!task) {
+				tasknotesLogger.warn("[TaskNotes][CalendarView] Dropped task not found", {
+					category: "persistence",
+					operation: "external-task-drop",
+				});
+				return;
+			}
+			this.expectImmediateUpdate();
+			const updated = await this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr);
+			await this.refreshAfterDirectCalendarTaskWrite(updated);
+		} catch (error) {
+			tasknotesLogger.error("[TaskNotes][CalendarView] Error scheduling dropped task", {
+				category: "persistence",
+				operation: "external-task-drop",
+				error,
+			});
+		}
+	}
+
 	private async handleEventDrop(info: CalendarEventChange): Promise<void> {
+		this.batchPreview?.clear();
+		if (this.batchMoveInProgress) {
+			info.revert();
+			return;
+		}
+		const selection = this.plugin.taskSelectionService;
+		const path = info.oldEvent.extendedProps.taskInfo?.path;
+		if (path && isCalendarBatchTarget(info.oldEvent.extendedProps) && selection?.isSelected(path) && selection.getSelectedPaths().length > 1) {
+			await this.moveSelectedCalendarTasks(info, selection.getSelectedPaths());
+			return;
+		}
 		await handleCalendarEventDrop(this.getMutationContext(), info);
 	}
 
+	private async moveSelectedCalendarTasks(info: CalendarEventChange, paths: string[]): Promise<void> {
+		if (this.batchMoveInProgress) {
+			info.revert();
+			return;
+		}
+		this.batchMoveInProgress = true;
+		const completed: CalendarBatchMove[] = [];
+		let planned = false;
+		try {
+			const tasks = await Promise.all(paths.map(async path => {
+				const task = await this.plugin.cacheManager.getTaskInfo(path);
+				if (!task) throw new Error(`Task no longer exists: ${path}`);
+				return task;
+			}));
+			// Validate the entire selection before the first write. Never silently skip hidden tasks.
+			const moves = planCalendarBatchMove(this.getBatchCalendarItems(), tasks, info, this.calendarTimezone,
+				this.plugin.fieldMapper.getMapping(), new Date().toISOString());
+			planned = true;
+			for (const move of moves) {
+				const fresh = await this.plugin.cacheManager.getTaskInfo(move.task.path);
+				if (!fresh || fresh.recurrence || fresh.scheduled !== move.before.scheduled || fresh.due !== move.before.due) {
+					throw new Error("Task dates changed during batch move");
+				}
+				const updated = await this.plugin.taskService.applyCalendarEdit(fresh, move.entry, move.change, this.calendarTimezone);
+				if (!updated) throw new Error("Calendar move was cancelled");
+				completed.push(move);
+				await this.refreshAfterDirectCalendarTaskWrite(updated);
+			}
+		} catch (error) {
+			info.revert();
+			// The engine's revert restores the dragged item, not already-written
+			// notes. Reproject successful writes so partial failure cannot show stale dates.
+			if (completed.length) this.refreshTaskItems();
+			tasknotesLogger.warn("Calendar batch move stopped", { category: "persistence", operation: "calendar-batch-move", error });
+			if (planned) {
+				new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), {
+					action: this.plugin.i18n.translate(msg({ message: "Update tasks", context: "notices.audit.update" })),
+				}));
+			} else {
+				this.showUnsupportedCalendarBatchMove();
+			}
+		} finally {
+			this.batchMoveInProgress = false;
+			if (completed.length) this.showCalendarBatchUndo(completed, paths.length - completed.length);
+		}
+	}
+
+	private showUnsupportedCalendarBatchMove(): void {
+		new Notice(this.plugin.i18n.translate(msg({
+			message: "Group moves require visible, non-recurring tasks with matching date markers. Keep the dragged task in the same all-day or timed area.",
+			context: "views.basesCalendar.batchMoveUnsupported",
+		})));
+	}
+
+	private showCalendarBatchUndo(moves: CalendarBatchMove[], failed: number): void {
+		const fragment = (this.containerEl.ownerDocument.defaultView ?? window).createFragment();
+		fragment.append(this.plugin.i18n.translate(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
+			action: this.plugin.i18n.translate(msg({ message: "Update tasks", context: "notices.audit.update" })), count: moves.length, failed,
+		}), " ");
+		const button = createElementInDocument(this.containerEl.ownerDocument, "button");
+		button.textContent = this.plugin.i18n.translate(messageForKey("views.taskList.movement.undo"));
+		fragment.append(button);
+		const notice = new Notice(fragment, 12000);
+		button.addEventListener("click", () => {
+			if (this.batchMoveInProgress) return;
+			button.disabled = true;
+			this.batchMoveInProgress = true;
+			void (async () => {
+				try {
+					for (const move of [...moves].reverse()) {
+						const task = await this.plugin.cacheManager.getTaskInfo(move.task.path);
+						if (!task || task.recurrence || task.scheduled !== move.after.scheduled || task.due !== move.after.due) {
+							new Notice(this.plugin.i18n.translate(messageForKey("views.taskList.movement.undoConflict")));
+							continue;
+						}
+						const updated = await this.plugin.taskService.applyCalendarEdit(task, move.undoEntry, move.undoChange, this.calendarTimezone);
+						if (updated) await this.refreshAfterDirectCalendarTaskWrite(updated);
+					}
+				} catch (error) {
+					tasknotesLogger.error("Calendar batch undo failed", { category: "persistence", operation: "calendar-batch-undo", error });
+					new Notice(this.plugin.i18n.translate(messageForKey("views.taskList.movement.undoFailed")));
+				} finally {
+					this.batchMoveInProgress = false;
+					notice.hide();
+				}
+			})();
+		});
+	}
+
 	private async handleEventResize(info: CalendarEventChange): Promise<void> {
+		if (this.batchMoveInProgress) {
+			info.revert();
+			return;
+		}
 		await handleCalendarEventResize(this.getMutationContext(), info);
 	}
 
@@ -1703,6 +1994,11 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleDateSelect(info: SelectArg): void {
+		if (this.plugin.taskSelectionService?.isSelectionModeActive()) {
+			this.plugin.taskSelectionService.exitSelectionMode(true);
+			this.calendar?.unselect();
+			return;
+		}
 		// Determine what type of event to create based on view
 		const menu = new Menu();
 
@@ -1799,6 +2095,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleEventDidMount(arg: ItemArg<CalendarEventProps>): void {
+		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		const extendedProps = arg.item.data;
 		if (!extendedProps) return;
 		const el = arg.el;
@@ -1820,6 +2117,19 @@ export class CalendarView extends BasesViewBase {
 		if (taskInfo?.path) {
 			el.setAttribute("data-task-path", taskInfo.path);
 			el.classList.add("fc-task-event");
+			const selectable = isCalendarBatchTarget(extendedProps);
+			el.dataset.batchSelectable = String(selectable);
+			if (selectable) {
+				const selected = Boolean(this.plugin.taskSelectionService?.isSelected(taskInfo.path));
+				el.classList.toggle("tn-calendar-item-selected", selected);
+				el.setAttribute("aria-pressed", String(selected));
+			}
+		}
+
+		if (extendedProps.isBatchPreview) {
+			el.setAttribute("aria-hidden", "true");
+			el.tabIndex = -1;
+			return;
 		}
 
 		// List rows are task cards with their own tooltips, previews and menus.
@@ -1855,6 +2165,8 @@ export class CalendarView extends BasesViewBase {
 
 			// Apply recurring task styling (handles completion styling as well)
 			applyRecurringTaskStyling(el, extendedProps);
+
+			appendCalendarAttachmentIndicator(el, this.plugin, taskInfo.attachments?.length ?? 0);
 		}
 
 		// Add hover tooltip for tasks and ICS events
@@ -1897,6 +2209,11 @@ export class CalendarView extends BasesViewBase {
 
 	/** Right-click, the context-menu key or Shift+F10 on an event. */
 	private handleEventContextMenu(arg: ItemPointerArg<CalendarEventProps>): void {
+		const path = arg.item.data?.taskInfo?.path;
+		if (path && isCalendarBatchTarget(arg.item.data) && this.plugin.taskSelectionService?.isSelected(path)) {
+			this.showBatchContextMenu(toMouseEvent(arg.jsEvent, arg.el));
+			return;
+		}
 		handleCalendarEventContextMenu(this.getMenuContext(), arg);
 	}
 
@@ -1924,6 +2241,20 @@ export class CalendarView extends BasesViewBase {
 					details: data.length > 0 ? { values: data } : undefined,
 				}),
 		});
+		const task = arg.item.data?.taskInfo;
+		if (card && task) {
+			card.addEventListener("click", event => {
+				const control = (event.target as Element).closest(DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR);
+				if (control && card.contains(control)) return;
+				const selectable = isCalendarBatchTarget(arg.item.data);
+				// TaskCard has its own Shift-click selection. Do not let it select a
+				// recurrence preview or tracked-time row through this alternate route.
+				if ((!selectable && event.shiftKey) || (selectable && this.handleSelectionClick(event, task.path))) {
+					event.preventDefault();
+					event.stopImmediatePropagation();
+				}
+			}, { capture: true });
+		}
 		arg.el.classList.toggle("tn-calendar-list-card", card !== null);
 		return card;
 	}

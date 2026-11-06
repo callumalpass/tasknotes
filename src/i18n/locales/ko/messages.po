@@ -133,6 +133,11 @@ msgctxt "settings.defaults.bodyTemplate.variables.time"
 msgid "'{{time}}' - Current time (HH:MM)"
 msgstr "'{{time}}' - 현재 시간 (HH:MM)"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder"
+msgid "'{{title}}'"
+msgstr "'{{title}}'"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
@@ -143,6 +148,16 @@ msgstr "'{{title}}' - 작업 제목"
 msgctxt "notices.timeblockAttachmentExists"
 msgid "\"{fileName}\" is already attached"
 msgstr "\"{fileName}\"이(가) 이미 첨부되어 있습니다"
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.unsupportedNameNotice"
+msgid "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters."
+msgstr "\"{name}\"을(를) 첨부할 수 없습니다. 파일 확장자가 있고 [ ] # | 문자가 없도록 이름을 바꾸세요."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.duplicateNotice"
+msgid "\"{name}\" is already attached"
+msgstr "\"{name}\"이(가) 이미 첨부되어 있습니다"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "empty task property display"
@@ -159,6 +174,7 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[수식 오류]"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -213,6 +229,11 @@ msgstr "{count, plural, =0 {컨텍스트 없음} =1 {컨텍스트 있음 (1)} ot
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
 msgstr "{count, plural, =0 {프로젝트 없음} =1 {프로젝트 있음 (1)} other {프로젝트 있음 (2+)}}"
+
+#: src/ui/taskCardHelpers.ts
+msgctxt "ui.taskCard.attachmentsTooltip"
+msgid "{count, plural, one {{count, number} attachment} other {{count, number} attachments}}"
+msgstr "{count, plural, other {첨부 파일 {count, number}개}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -782,59 +803,17 @@ msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
 msgid "**Start:** {value1}"
 msgstr "**시작:** {value1}"
 
+#: src/i18n/releaseNotesAnnouncement.ts
+msgctxt "release announcement Markdown"
+msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+""
+msgstr "**TaskNotes v5 베타.** Markdown 작업을 Obsidian과 새로운 TaskNotes 앱에서 사용하세요. [플러그인 베타]({token1}) · [웹 앱]({token2}) · [iOS]({token3}). 베타를 사용하기 전에 보관함을 백업하세요.\n"
+""
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.url"
 msgid "**URL:** {value}"
 msgstr "**URL:** {value}"
-
-#: src/i18n/releaseNotesAnnouncement.ts
-msgctxt "release announcement Markdown"
-msgid "## TaskNotes v5 and the TaskNotes app — join the beta\n"
-"\n"
-"**TaskNotes v5** introduces portable collections that you can use in both Obsidian and the new **TaskNotes app**. Your tasks remain ordinary Markdown files in your vault, with [mdbase Connect]({token1}) providing access from the app.\n"
-"\n"
-"Available to try now:\n"
-"- **[Try the TaskNotes v5 plugin beta]({token2})**\n"
-"- **[Try the TaskNotes web app]({token3})**\n"
-"- **[Download TaskNotes for iOS]({token4})**\n"
-"\n"
-"These are early releases under active development. Please back up your vault before trying them and [report any problems]({token5}). TaskNotes 4.13 remains the recommended stable plugin release.\n"
-"\n"
-"### Help bring TaskNotes to Android\n"
-"\n"
-"**We need at least 12 testers for the TaskNotes Android app before we can apply for a public Google Play release.**\n"
-"\n"
-"If you have an Android device and would like to help:\n"
-"\n"
-"1. **[Join the tester Google Group]({token6})** using the Google account you use for Google Play.\n"
-"2. **[Opt in to the Google Play test]({token7})** with that same account and install TaskNotes.\n"
-"3. Stay opted in for **at least 14 consecutive days**, use the app regularly during that time, and let us know how it goes.\n"
-"\n"
-"You don’t need to be a developer—using TaskNotes for your everyday tasks and sharing anything confusing or broken is valuable feedback. Your participation will help make the Android release possible.\n"
-""
-msgstr "## TaskNotes v5와 TaskNotes 앱 — 베타에 참여하세요\n"
-"\n"
-"**TaskNotes v5**에서는 Obsidian과 새로운 **TaskNotes 앱** 모두에서 사용할 수 있는 이식 가능한 컬렉션을 도입했습니다. 작업은 보관함에 일반 Markdown 파일로 남으며, 앱에서는 [mdbase Connect]({token1})를 통해 접근합니다.\n"
-"\n"
-"지금 사용해 볼 수 있습니다.\n"
-"- **[TaskNotes v5 플러그인 베타 사용하기]({token2})**\n"
-"- **[TaskNotes 웹 앱 사용하기]({token3})**\n"
-"- **[iOS용 TaskNotes 다운로드]({token4})**\n"
-"\n"
-"아직 활발히 개발 중인 초기 버전입니다. 사용하기 전에 보관함을 백업하고 [문제가 생기면 알려 주세요]({token5}). 안정적인 플러그인 버전으로는 TaskNotes 4.13을 권장합니다.\n"
-"\n"
-"### Android용 TaskNotes 출시에 힘을 보태 주세요\n"
-"\n"
-"**TaskNotes Android 앱을 Google Play에 공개 출시하려면 최소 12명의 테스터가 필요합니다.**\n"
-"\n"
-"Android 기기가 있고 도움을 주고 싶다면 다음을 따라 주세요.\n"
-"\n"
-"1. Google Play에서 사용하는 Google 계정으로 **[테스터 Google 그룹에 가입]({token6})**하세요.\n"
-"2. 같은 계정으로 **[Google Play 테스트에 참여]({token7})**하고 TaskNotes를 설치하세요.\n"
-"3. **연속 14일 이상** 테스트 참여 상태를 유지하면서 앱을 정기적으로 사용하고 경험을 알려 주세요.\n"
-"\n"
-"개발자일 필요는 없습니다. 일상적인 작업에 TaskNotes를 사용하면서 혼란스럽거나 제대로 작동하지 않는 부분을 알려 주는 것만으로도 큰 도움이 됩니다. 여러분의 참여가 Android 출시를 가능하게 합니다.\n"
-""
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.descriptionHeading"
@@ -1122,6 +1101,7 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "절대 시간 리마인더는 at:YYYY-MM-DDTHH:MM 또는 전체 ISO 날짜·시간을 사용해야 합니다"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1213,6 +1193,11 @@ msgstr "컨텍스트 추가…"
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "이벤트에 대한 세부정보 추가..."
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultButton"
+msgid "Add from vault"
+msgstr "보관함에서 추가"
 
 #: src/settings/components/ListEditorComponent.ts
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderAddButton text"
@@ -1626,6 +1611,11 @@ msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "이벤트 시간에"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultTooltip"
+msgid "Attach an existing vault file"
+msgstr "보관함의 기존 파일 첨부"
+
 #: src/settings/native/features.ts
 msgctxt "settings.native.attachmentSearchOrder"
 msgid "Attachment search order"
@@ -1640,6 +1630,26 @@ msgstr "첨부 파일"
 msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "첨부 파일"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Attachments"
+msgstr "첨부 파일"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "인증이 필요한 피드는 https://를 사용해야 합니다. 비밀번호는 플러그인 설정이 아니라 Obsidian 보안 저장소에 저장됩니다."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "캘린더 \"{name}\" 인증에 실패했습니다. 사용자 이름과 비밀번호를 확인하세요."
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "인증:"
 
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
@@ -1988,9 +1998,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "캘린더 \"{name}\" 액세스가 거부되었습니다 (500). Microsoft Outlook 서버 제한 때문일 수 있습니다. 캘린더 설정에서 ICS URL을 다시 생성해 보세요."
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "캘린더 \"{name}\"에 비밀번호가 필요합니다. 캘린더 구독 설정에서 입력하세요."
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "캘린더 \"{name}\"을(를) 찾을 수 없습니다 (404). ICS URL이 올바르고 캘린더가 공개적으로 접근 가능한지 확인하세요."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "캘린더 \"{name}\"은(는) 사용자 이름과 비밀번호를 사용하므로 URL이 https://로 시작해야 합니다. 자격 증명은 전송되지 않았습니다."
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarAccountsSubscriptionsTaskExportAndInteroperability"
@@ -2308,6 +2328,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Card layout"
 msgstr "카드 레이아웃"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.help"
+msgid "Case-insensitive text, not regex; empty shows all events"
+msgstr "대소문자를 구분하지 않는 일반 텍스트입니다. 정규식은 지원하지 않으며 비워 두면 모든 이벤트가 표시됩니다"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.statusAction"
 msgid "Change status to \"{label}\""
@@ -2388,6 +2413,11 @@ msgstr "체크리스트 진행률"
 msgctxt "settings.native.chooseBaseFile"
 msgid "Choose a .base file."
 msgstr ".base 파일을 선택하세요."
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importTooltip"
+msgid "Choose a file from this device. It is copied into the vault when the task is saved."
+msgstr "이 기기에서 파일을 선택하세요. 작업을 저장할 때 보관함로 복사됩니다."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.chooseCalendarFile"
@@ -2956,6 +2986,11 @@ msgctxt "commands.convertCurrentNoteToTask.success"
 msgid "Converted ''{title}'' to a task"
 msgstr "''{title}''을(를) 작업으로 변환했습니다"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.pendingHint"
+msgid "Copied into the vault when the task is saved"
+msgstr "작업을 저장할 때 보관함로 복사됨"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.copyLinkDesc"
 msgid "Copy a wikilink to this task"
@@ -3087,6 +3122,11 @@ msgstr "텍스트에서 날짜를 찾을 수 없습니다."
 msgctxt "modals.taskEdit.notices.fileMissing"
 msgid "Could not find task file: {path}"
 msgstr "작업 파일을 찾을 수 없습니다: {path}"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatFailed"
+msgid "Could not finish repeating task. Earlier changes were kept; check the task before trying again."
+msgstr "작업 반복을 마치지 못했습니다. 앞서 적용된 변경 사항은 유지됩니다. 다시 시도하기 전에 작업을 확인하세요."
 
 #: src/main.ts
 msgctxt "notices.languagePackDownloadFailed"
@@ -3311,6 +3351,11 @@ msgctxt "task selector create keyboard hint"
 msgid "Create with {shortcut}"
 msgstr "{shortcut}으로 만들기"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.description"
+msgid "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them."
+msgstr "타임블록을 추가, 편집, 삭제할 때 캘린더 이벤트를 생성, 업데이트, 삭제합니다. 기존 타임블록은 다음에 편집할 때 동기화됩니다."
+
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "task selector create action accessible name"
 msgid "Create: {title}"
@@ -3407,6 +3452,11 @@ msgstr "현재 리마인더"
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "현재 작업 파일을 찾을 수 없습니다"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatNotCompleted"
+msgid "Current task is not completed"
+msgstr "현재 작업이 완료되지 않았습니다"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -4109,7 +4159,7 @@ msgctxt "settings.integrations.subscriptionsList.statusLabels.disabled"
 msgid "Disabled"
 msgstr "비활성화됨"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.discard"
 msgid "Discard changes"
 msgstr "변경 사항 버리기"
@@ -4306,6 +4356,7 @@ msgstr "마감일"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "마감일"
@@ -4355,11 +4406,6 @@ msgstr "마감까지"
 msgctxt "modals.unscheduledTasksSelector.dueToday"
 msgid "Due today: {date}"
 msgstr "오늘 마감: {date}"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.due"
-msgid "Due:"
-msgstr "마감:"
 
 #: src/modals/ReminderModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -4436,6 +4482,11 @@ msgstr "편집"
 msgctxt "commands.editCurrentTask"
 msgid "Edit current task"
 msgstr "현재 작업 편집"
+
+#: src/modals/ReminderModal.ts
+msgctxt "modals.reminder.edit"
+msgid "Edit reminder"
+msgstr "리마인더 편집"
 
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
@@ -4652,10 +4703,20 @@ msgctxt "settings.native.enterAPropertyKey"
 msgid "Enter a property key."
 msgstr "속성 키를 입력하세요."
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "속성 이름을 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 속성 이름을 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다."
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validTime"
 msgid "Enter a time from 00:00 to 23:59."
 msgstr "00:00부터 23:59 사이의 시각을 입력하세요."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.timeEstimateInvalid"
+msgid "Enter a time such as 45 or 1h 30m"
+msgstr "45 또는 1h 30m처럼 시간을 입력하세요"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validDate"
@@ -4676,11 +4737,6 @@ msgstr "HTTP 또는 HTTPS URL을 입력하세요."
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "HTTP://, HTTPS://, webcal:// 또는 webcals:// URL을 입력하세요"
-
-#: src/settings/native/general.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -5011,6 +5067,11 @@ msgstr "내보내기 상태:"
 msgctxt "settings.integrations.googleCalendarExport.header"
 msgid "Export tasks to Google Calendar"
 msgstr "Google 캘린더로 작업 내보내기"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
+msgid "Export timeblocks to Google Calendar"
+msgstr "Google 캘린더로 타임블록 내보내기"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
@@ -5573,6 +5634,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "리마인더를 저장하지 못했습니다. 다시 시도하세요."
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "캘린더 비밀번호를 저장하지 못했습니다"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -5777,6 +5843,11 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFil
 msgid "File is not an ICS file: {normalizedFilePath}"
 msgstr "ICS 파일이 아닙니다: {normalizedFilePath}"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.missingHint"
+msgid "File not found"
+msgstr "파일을 찾을 수 없음"
+
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileUnindexed"
 msgid "File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault."
@@ -5846,11 +5917,6 @@ msgstr "이 타임블록에 연결할 파일 또는 노트"
 msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "컨테이너 채우기"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.fillFromNaturalLanguage"
-msgid "Fill form from natural language"
-msgstr "자연어에서 양식 채우기"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
@@ -6130,6 +6196,11 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.name"
 msgid "Group complete and skip actions in a submenu"
 msgstr "완료 및 건너뛰기 동작을 하위 메뉴로 묶기"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.batchMoveUnsupported"
+msgid "Group moves require visible, non-recurring tasks with matching date markers. Keep the dragged task in the same all-day or timed area."
+msgstr "그룹 이동에는 같은 종류의 날짜 표시가 있는, 화면에 보이는 반복되지 않는 작업이 필요합니다. 드래그한 작업은 원래의 종일 영역 또는 시간 지정 영역 안에서 이동하세요."
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
@@ -6270,6 +6341,11 @@ msgstr "ID: {id}"
 msgctxt "settings.general.taskIdentification.identifyBy.name"
 msgid "Identify tasks by"
 msgstr "작업 식별 기준"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importButton"
+msgid "Import file"
+msgstr "파일 가져오기"
 
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
@@ -6542,7 +6618,7 @@ msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
 msgstr "현재 하위 그룹 유지"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "계속 편집"
@@ -7101,6 +7177,21 @@ msgstr "월간 반복"
 msgctxt "contextMenus.task.more"
 msgid "More"
 msgstr "더 보기"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "modals.task.buttons.moreActions"
+msgid "More actions"
+msgstr "추가 작업"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveDownAriaLabel"
+msgid "Move {name} down"
+msgstr "{name} 아래로 이동"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveUpAriaLabel"
+msgid "Move {name} up"
+msgstr "{name} 위로 이동"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -7711,6 +7802,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "없음"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "없음"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -7872,6 +7968,11 @@ msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URL이 클립보드에 복사되었습니다"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "Obsidian 보안 저장소를 사용할 수 없어 이 기기에서는 비밀번호를 저장할 수 없습니다."
+
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
 msgid "Occurrence {date}"
@@ -7998,6 +8099,11 @@ msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "열기"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.openAriaLabel"
+msgid "Open {name}"
+msgstr "{name} 열기"
+
 #: src/i18n/messages.ts
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
@@ -8103,7 +8209,6 @@ msgid "Open note"
 msgstr "노트 열기"
 
 #: src/modals/TaskEditModal.ts
-#: src/modals/TaskModal.ts
 msgctxt "modals.task.buttons.openNote"
 msgid "Open note"
 msgstr "노트 열기"
@@ -8341,6 +8446,16 @@ msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "작업 생성 시 자연어에서 마감일, 우선순위, 컨텍스트 파싱"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "비밀번호"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "비밀번호:"
+
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
 msgid "Past scheduled"
@@ -8432,6 +8547,7 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "{field} 날짜 선택"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.date.pickDateTime"
@@ -8468,13 +8584,8 @@ msgctxt "modals.taskSelectorWithCreate.notices.emptyQuery"
 msgid "Please enter a task description"
 msgstr "작업 설명을 입력하세요"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.notices.titleRequired"
-msgid "Please enter a task title"
-msgstr "작업 제목을 입력하세요"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.titleRequired"
 msgid "Please enter a task title"
 msgstr "작업 제목을 입력하세요"
 
@@ -8846,6 +8957,7 @@ msgid "Recurrence"
 msgstr "반복"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "반복"
@@ -8899,6 +9011,11 @@ msgstr "반복 작업의 회차가 완료되었습니다"
 msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
 msgstr "반복 작업"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatRecurring"
+msgid "Recurring tasks already track each occurrence"
+msgstr "반복 작업은 이미 각 회차를 기록합니다"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
@@ -9065,6 +9182,7 @@ msgid "Reminder: {title}"
 msgstr "리마인더: {title}"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "리마인더"
@@ -9084,6 +9202,11 @@ msgstr "원격 구독에 URL이 없습니다"
 msgctxt "settings.integrations.subscriptionsList.typeOptions.remote"
 msgid "Remote URL"
 msgstr "원격 URL"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.removeAriaLabel"
+msgid "Remove {name} from this task"
+msgstr "이 작업에서 {name} 제거"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.removeTag"
@@ -9172,6 +9295,11 @@ msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "\"{name}\"(으)로 이름이 변경되었습니다"
 
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask.confirm"
+msgid "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes."
+msgstr "이 작업을 다시 열고 완료 날짜를 저장한 다음 보관을 해제할까요? 설정이 켜져 있으면 본문의 체크박스도 초기화됩니다. 날짜는 나중에 편집할 수 있지만, 해당 편집을 취소해도 이 변경 사항은 되돌려지지 않습니다."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmButton"
@@ -9188,6 +9316,12 @@ msgstr "여기서 재정렬하면 {scope}에 대한 지속적인 수동 순서�
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
 msgstr "TaskNotes에서 복구"
+
+#: src/commands/taskNotesCommands.ts
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask"
+msgid "Repeat current task"
+msgstr "현재 작업 반복"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -9320,6 +9454,11 @@ msgctxt "notices.audit.exportedRows"
 msgid "Rows exported: {count}"
 msgstr "내보낸 행: {count}개"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks"
+msgid "Same as task calendar"
+msgstr "작업 캘린더와 동일"
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.sat"
 msgid "Sat"
@@ -9353,7 +9492,7 @@ msgctxt "modals.task.buttons.save"
 msgid "Save"
 msgstr "저장"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.save"
 msgid "Save changes"
 msgstr "변경 사항 저장"
@@ -9363,6 +9502,11 @@ msgstr "변경 사항 저장"
 msgctxt "modals.timeblockInfo.saveButton"
 msgid "Save changes"
 msgstr "변경 사항 저장"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "저장됨. 바꾸려면 새 비밀번호를 입력하세요"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -9396,6 +9540,7 @@ msgstr "예정일"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "예정일"
@@ -9435,11 +9580,6 @@ msgstr "예정일 또는 날짜·시간(YYYY-MM-DD 또는 YYYY-MM-DDTHH:MM)"
 msgctxt "modals.actionPalette.scheduledSet"
 msgid "Scheduled date set"
 msgstr "예정일이 설정되었습니다"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.scheduled"
-msgid "Scheduled:"
-msgstr "예정:"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -9483,6 +9623,11 @@ msgstr "작업을 검색하거나 새로 만들려면 입력하세요..."
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Search tasks..."
 msgstr "작업 검색..."
+
+#: src/modals/AttachmentFileSuggestModal.ts
+msgctxt "modals.task.attachments.pickerPlaceholder"
+msgid "Search vault files to attach..."
+msgstr "첨부할 보관함 파일 검색..."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
@@ -9605,6 +9750,11 @@ msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
 msgstr "작업 카드 속성 선택"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.selectTasks"
+msgid "Select tasks"
+msgstr "작업 선택"
+
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
@@ -9619,6 +9769,11 @@ msgstr "TaskNotes 인터페이스 텍스트에 사용할 언어 선택"
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.description"
 msgid "Select which calendar to create task events in."
 msgstr "작업 이벤트를 생성할 캘린더를 선택하세요."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description"
+msgid "Select which calendar to create timeblock events in."
+msgstr "타임블록 이벤트를 생성할 캘린더를 선택하세요."
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.selectWhichPropertiesToShowInInlineTaskCards"
@@ -9686,6 +9841,7 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "서비스가 초기화되지 않았습니다 - Obsidian을 다시 시작하세요"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
@@ -10548,6 +10704,16 @@ msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
 msgstr "속성 동기화"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.name"
+msgid "Sync timeblocks"
+msgstr "타임블록 동기화"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
+msgstr "데일리 노트의 타임블록을 Google 캘린더 이벤트로 동기화합니다. 위에서 Google 캘린더가 연결되어 있어야 합니다."
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
 msgid "Sync to Google Calendar"
@@ -10667,6 +10833,11 @@ msgid "Task"
 msgstr "작업"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "작업 \"{title}\"이(가) 파일 \"{filename}\"(으)로 생성되었습니다. 파일명에는 일부 문자를 사용할 수 없으므로 전체 제목은 제목 속성에 유지됩니다."
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -10739,6 +10910,11 @@ msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "작업 변환됨: \"{title}\" (길이로 인해 파일명이 단축됨)"
 
 #: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "작업 변환됨: \"{title}\", 파일 \"{filename}\". 파일명에는 일부 문자를 사용할 수 없으므로 전체 제목은 제목 속성에 유지됩니다."
+
+#: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"
 msgid "Task converted: {title}"
 msgstr "작업 변환됨: {title}"
@@ -10747,6 +10923,16 @@ msgstr "작업 변환됨: {title}"
 msgctxt "settings.integrations.webhooks.events.taskCreated.label"
 msgid "Task created"
 msgstr "작업 생성됨"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.followUpFailure"
+msgid "Task created, but a follow-up step failed: {message}"
+msgstr "작업을 만들었지만 후속 단계가 실패했습니다: {message}"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.attachmentImportFailure"
+msgid "Task created, but some attachments could not be imported: {message}"
+msgstr "작업이 생성되었지만 일부 첨부 파일을 가져오지 못했습니다: {message}"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.openCreatedTaskFailure"
@@ -10907,15 +11093,11 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Task not found for title: {title}"
 msgstr "제목에 해당하는 작업을 찾을 수 없습니다: {title}"
 
+#: src/bases/CalendarView.ts
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "작업 옵션"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display"
-msgid "Task preview"
-msgstr "작업 미리보기"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskProperty.name"
@@ -11190,6 +11372,11 @@ msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.descripti
 msgid "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'"
 msgstr "이벤트 제목 템플릿. 사용 가능한 변수: '{{title}}', '{{status}}', '{{priority}}'"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description"
+msgid "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+msgstr "타임블록 이벤트 제목 템플릿. 사용 가능한 변수: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+
 #: src/services/ICSNoteService.ts
 msgctxt "services.icsNote.notices.templateNotFound"
 msgid "Template not found: {path}"
@@ -11219,6 +11406,11 @@ msgstr "템플릿"
 msgctxt "settings.taskProperties.customUserFields.types.text"
 msgid "Text"
 msgstr "텍스트"
+
+#: src/bases/recurringStatusMove.ts
+msgctxt "views.recurringStatusMove.stale"
+msgid "That occurrence was already completed, skipped or rescheduled."
+msgstr "이 반복 회차는 이미 완료, 건너뛰기 또는 일정 변경되었습니다."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11262,8 +11454,8 @@ msgstr "반복 회차가 나타나야 하는 시간 (선택사항)"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "노트를 작업으로 식별하는 값 (예: \"task\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "노트를 작업으로 식별하는 값 (예: \"task\"). 비워 두면 값과 관계없이 이 속성이 있는 모든 노트를 작업으로 처리합니다."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
@@ -11304,6 +11496,11 @@ msgstr "TaskNotes 양식에서만 속성을 제거하며 기존 노트에서는 
 msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "Obsidian 비밀 저장소에서 클라이언트 ID와 비밀 키를 제거합니다."
+
+#: src/main.ts
+msgctxt "notices.commands.repeatOccurrence"
+msgid "This task is an occurrence of a recurring task"
+msgstr "이 작업은 반복 작업의 개별 회차입니다"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -11568,6 +11765,11 @@ msgctxt "utils/helpers: updateTimeblockTimes display"
 msgid "Timeblock {timeblockId} not found"
 msgstr "타임블록 {timeblockId}을(를) 찾을 수 없습니다"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name"
+msgid "Timeblock calendar"
+msgstr "타임블록 캘린더"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -11577,6 +11779,11 @@ msgstr "타임블록이 복제되었습니다"
 msgctxt "notices.audit.timeblockResized"
 msgid "Timeblock duration updated"
 msgstr "타임블록 길이가 업데이트되었습니다"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
+msgid "Timeblock event title template"
+msgstr "타임블록 이벤트 제목 템플릿"
 
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockMoved"
@@ -11647,6 +11854,11 @@ msgstr "제목"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "제목"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.label"
+msgid "Title contains:"
+msgstr "제목에 포함된 텍스트:"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
@@ -11758,6 +11970,7 @@ msgid "today"
 msgstr "오늘"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "오늘"
@@ -11799,6 +12012,11 @@ msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
 msgid "Today column width (×)"
 msgstr "오늘 열 너비 (배)"
 
+#: src/bases/KanbanView.ts
+msgctxt "views.kanban.toggleColumn"
+msgid "Toggle {column} column"
+msgstr "{column} 열 접기/펼치기"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
@@ -11825,6 +12043,7 @@ msgid "tomorrow"
 msgstr "내일"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "내일"
@@ -12114,7 +12333,7 @@ msgctxt "settings.taskProperties.customUserFields.defaultNames.unnamedField"
 msgid "Unnamed field"
 msgstr "이름 없는 필드"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "저장되지 않은 변경 사항"
@@ -12213,6 +12432,12 @@ msgctxt "settings.integrations.autoExport.interval.name"
 msgid "Update interval (between 5 and 1440 minutes)"
 msgstr "업데이트 간격 (5~1440분)"
 
+#: src/modals/ReminderModal.ts
+msgctxt "modals.reminder.updateButton"
+msgid "Update reminder"
+msgstr "리마인더 업데이트"
+
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"
@@ -12234,6 +12459,11 @@ msgstr "URL"
 msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "사용법: 캘린더에서 드래그하여 이벤트를 만듭니다. 컨텍스트 메뉴에서 ''타임블록''을 선택하세요 (타임블로킹이 활성화된 경우에만 표시됨). 드래그하여 기존 타임블록을 이동합니다. 가장자리를 드래그하여 기간을 조정합니다."
+
+#: src/settings/components/FilterSettingsComponent.ts
+msgctxt "Property value filter syntax help"
+msgid "Use a comma-separated allow-list or containsAny(...). Prefix containsAny(...) with ! to exclude values."
+msgstr "쉼표로 구분된 허용 목록 또는 containsAny(...)를 사용하세요. 값을 제외하려면 containsAny(...) 앞에 !를 붙이세요."
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.useAPropertyKeyWithoutSurroundingSpacesLineBreaks"
@@ -12324,6 +12554,16 @@ msgstr "수신 애플리케이션에서 페이로드를 검증할 때 이 비밀
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
 msgstr "사용자"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "사용자 이름과 비밀번호(HTTP Basic)"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "사용자 이름:"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
@@ -12763,7 +13003,7 @@ msgctxt "modals.storageLocation.finalNote.switch"
 msgid "You can switch back to plugin storage at any time in the future."
 msgstr "향후 언제든지 플러그인 저장소로 다시 전환할 수 있습니다."
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "저장되지 않은 변경 사항이 있습니다. 저장하시겠습니까?"

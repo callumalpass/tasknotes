@@ -133,6 +133,11 @@ msgctxt "settings.defaults.bodyTemplate.variables.time"
 msgid "'{{time}}' - Current time (HH:MM)"
 msgstr "'{{time}}' - Текущее время (ЧЧ:ММ)"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder"
+msgid "'{{title}}'"
+msgstr "'{{title}}'"
+
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.bodyTemplate.variables.title"
 msgid "'{{title}}' - Task title"
@@ -143,6 +148,16 @@ msgstr "'{{title}}' - Название задачи"
 msgctxt "notices.timeblockAttachmentExists"
 msgid "\"{fileName}\" is already attached"
 msgstr "\"{fileName}\" уже прикреплен"
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.unsupportedNameNotice"
+msgid "\"{name}\" can't be attached. Rename it so it has a file extension and no [ ] # or | characters."
+msgstr "Не удаётся прикрепить «{name}». Переименуйте файл так, чтобы у него было расширение и не было символов [ ] # или |."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.attachments.duplicateNotice"
+msgid "\"{name}\" is already attached"
+msgstr "«{name}» уже прикреплён"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "empty task property display"
@@ -159,6 +174,7 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[Ошибка формулы]"
 
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
@@ -213,6 +229,11 @@ msgstr "{count, plural, =0 {Нет контекстов} =1 {Контексто�
 msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
 msgstr "{count, plural, =0 {Нет проектов} =1 {Проектов: 1} few {Не один проект} many {Не один проект} other {Не один проект} one {Не один проект}}"
+
+#: src/ui/taskCardHelpers.ts
+msgctxt "ui.taskCard.attachmentsTooltip"
+msgid "{count, plural, one {{count, number} attachment} other {{count, number} attachments}}"
+msgstr "{count, plural, one {{count, number} вложение} few {{count, number} вложения} many {{count, number} вложений} other {{count, number} вложения}}"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.reminderTooltip"
@@ -785,59 +806,17 @@ msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
 msgid "**Start:** {value1}"
 msgstr "**Начало:** {value1}"
 
+#: src/i18n/releaseNotesAnnouncement.ts
+msgctxt "release announcement Markdown"
+msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+""
+msgstr "**Бета-версия TaskNotes v5.** Работайте со своими задачами в Markdown в Obsidian и новом приложении TaskNotes. [Бета-версия плагина]({token1}) · [Веб-приложение]({token2}) · [iOS]({token3}). Перед использованием бета-версии сделайте резервную копию хранилища.\n"
+""
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.url"
 msgid "**URL:** {value}"
 msgstr "**URL:** {value}"
-
-#: src/i18n/releaseNotesAnnouncement.ts
-msgctxt "release announcement Markdown"
-msgid "## TaskNotes v5 and the TaskNotes app — join the beta\n"
-"\n"
-"**TaskNotes v5** introduces portable collections that you can use in both Obsidian and the new **TaskNotes app**. Your tasks remain ordinary Markdown files in your vault, with [mdbase Connect]({token1}) providing access from the app.\n"
-"\n"
-"Available to try now:\n"
-"- **[Try the TaskNotes v5 plugin beta]({token2})**\n"
-"- **[Try the TaskNotes web app]({token3})**\n"
-"- **[Download TaskNotes for iOS]({token4})**\n"
-"\n"
-"These are early releases under active development. Please back up your vault before trying them and [report any problems]({token5}). TaskNotes 4.13 remains the recommended stable plugin release.\n"
-"\n"
-"### Help bring TaskNotes to Android\n"
-"\n"
-"**We need at least 12 testers for the TaskNotes Android app before we can apply for a public Google Play release.**\n"
-"\n"
-"If you have an Android device and would like to help:\n"
-"\n"
-"1. **[Join the tester Google Group]({token6})** using the Google account you use for Google Play.\n"
-"2. **[Opt in to the Google Play test]({token7})** with that same account and install TaskNotes.\n"
-"3. Stay opted in for **at least 14 consecutive days**, use the app regularly during that time, and let us know how it goes.\n"
-"\n"
-"You don’t need to be a developer—using TaskNotes for your everyday tasks and sharing anything confusing or broken is valuable feedback. Your participation will help make the Android release possible.\n"
-""
-msgstr "## TaskNotes v5 и приложение TaskNotes — присоединяйтесь к бета-тестированию\n"
-"\n"
-"**TaskNotes v5** вводит переносимые коллекции, доступные и в Obsidian, и в новом **приложении TaskNotes**. Задачи остаются обычными файлами Markdown в вашем хранилище, а [mdbase Connect]({token1}) обеспечивает доступ к ним из приложения.\n"
-"\n"
-"Уже можно попробовать:\n"
-"- **[Бета-версию плагина TaskNotes v5]({token2})**\n"
-"- **[Веб-приложение TaskNotes]({token3})**\n"
-"- **[Скачать TaskNotes для iOS]({token4})**\n"
-"\n"
-"Это ранние версии, которые активно разрабатываются. Перед использованием создайте резервную копию хранилища и [сообщайте о проблемах]({token5}). Рекомендуемая стабильная версия плагина — TaskNotes 4.13.\n"
-"\n"
-"### Помогите выпустить TaskNotes для Android\n"
-"\n"
-"**Для подачи заявки на общедоступный выпуск TaskNotes для Android в Google Play нам нужно не менее 12 тестировщиков.**\n"
-"\n"
-"Если у вас есть устройство Android и вы хотите помочь:\n"
-"\n"
-"1. **[Вступите в группу тестировщиков Google]({token6})** с той же учётной записью Google, которую используете в Google Play.\n"
-"2. **[Присоединитесь к тестированию в Google Play]({token7})** с этой учётной записью и установите TaskNotes.\n"
-"3. Участвуйте в тестировании **не менее 14 дней подряд**, регулярно пользуйтесь приложением и рассказывайте о впечатлениях.\n"
-"\n"
-"Необязательно быть разработчиком: обычное использование TaskNotes для повседневных задач и сообщения о непонятных или неработающих функциях тоже очень помогают. Ваше участие сделает выпуск для Android возможным.\n"
-""
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.descriptionHeading"
@@ -1125,6 +1104,7 @@ msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "Для абсолютного напоминания используйте at:YYYY-MM-DDTHH:MM или полную дату и время ISO"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1216,6 +1196,11 @@ msgstr "Добавить контекст…"
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "Добавить подробности о событии..."
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultButton"
+msgid "Add from vault"
+msgstr "Добавить из хранилища"
 
 #: src/settings/components/ListEditorComponent.ts
 msgctxt "settings/components/ListEditorComponent: ListEditorComponent.renderAddButton text"
@@ -1629,6 +1614,11 @@ msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "Во время события"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.addFromVaultTooltip"
+msgid "Attach an existing vault file"
+msgstr "Прикрепить существующий файл из хранилища"
+
 #: src/settings/native/features.ts
 msgctxt "settings.native.attachmentSearchOrder"
 msgid "Attachment search order"
@@ -1643,6 +1633,26 @@ msgstr "Вложения"
 msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "Вложения"
+
+#: src/i18n/fieldLabels.ts
+msgctxt "utils/fieldConfigDefaults: defaults displayName"
+msgid "Attachments"
+msgstr "Вложения"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authHelp"
+msgid "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings."
+msgstr "Для фидов с аутентификацией нужен https://. Пароль хранится в защищённом хранилище Obsidian, а не в настройках плагина."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authenticationFailed"
+msgid "Authentication failed for calendar \"{name}\". Check the username and password."
+msgstr "Не удалось пройти аутентификацию для календаря \"{name}\". Проверьте имя пользователя и пароль."
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.labels.authentication"
+msgid "Authentication:"
+msgstr "Аутентификация:"
 
 #: src/services/OAuthService.ts
 msgctxt "OAuth callback title"
@@ -1991,9 +2001,19 @@ msgid "Calendar \"{name}\" access denied (500). This may be due to Microsoft Out
 msgstr "Доступ к календарю \"{name}\" запрещен (500). Это может быть из-за ограничений сервера Microsoft Outlook. Попробуйте перегенерировать URL ICS из настроек календаря."
 
 #: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authPasswordMissing"
+msgid "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings."
+msgstr "Календарю \"{name}\" нужен пароль. Введите его в настройках подписки на календарь."
+
+#: src/services/ICSSubscriptionService.ts
 msgctxt "services.icsSubscription.notices.calendarNotFound"
 msgid "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible."
 msgstr "Календарь \"{name}\" не найден (404). Пожалуйста, проверьте, что URL ICS правильный и календарь общедоступен."
+
+#: src/services/ICSSubscriptionService.ts
+msgctxt "services.icsSubscription.notices.authRequiresHttps"
+msgid "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent."
+msgstr "Календарь \"{name}\" использует имя пользователя и пароль, поэтому его URL должен начинаться с https://. Учётные данные не были отправлены."
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.calendarAccountsSubscriptionsTaskExportAndInteroperability"
@@ -2311,6 +2331,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Card layout"
 msgstr "Расположение карточек"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.help"
+msgid "Case-insensitive text, not regex; empty shows all events"
+msgstr "Текст без учёта регистра, не регулярное выражение; пустое поле показывает все события"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.statusAction"
 msgid "Change status to \"{label}\""
@@ -2391,6 +2416,11 @@ msgstr "Прогресс чек-листа"
 msgctxt "settings.native.chooseBaseFile"
 msgid "Choose a .base file."
 msgstr "Выберите файл .base."
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importTooltip"
+msgid "Choose a file from this device. It is copied into the vault when the task is saved."
+msgstr "Выберите файл на этом устройстве. Он будет скопирован в хранилище при сохранении задачи."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.chooseCalendarFile"
@@ -2959,6 +2989,11 @@ msgctxt "commands.convertCurrentNoteToTask.success"
 msgid "Converted ''{title}'' to a task"
 msgstr "''{title}'' преобразовано в задачу"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.pendingHint"
+msgid "Copied into the vault when the task is saved"
+msgstr "Будет скопирован в хранилище при сохранении задачи"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.copyLinkDesc"
 msgid "Copy a wikilink to this task"
@@ -3090,6 +3125,11 @@ msgstr "В этом тексте не найдена дата."
 msgctxt "modals.taskEdit.notices.fileMissing"
 msgid "Could not find task file: {path}"
 msgstr "Не удалось найти файл задачи: {path}"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatFailed"
+msgid "Could not finish repeating task. Earlier changes were kept; check the task before trying again."
+msgstr "Не удалось закончить повторение задачи. Предыдущие изменения сохранены; проверьте задачу перед повторной попыткой."
 
 #: src/main.ts
 msgctxt "notices.languagePackDownloadFailed"
@@ -3314,6 +3354,11 @@ msgctxt "task selector create keyboard hint"
 msgid "Create with {shortcut}"
 msgstr "Создать с помощью {shortcut}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.description"
+msgid "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them."
+msgstr "Создавать, обновлять и удалять события календаря при добавлении, изменении и удалении временных блоков. Существующие временные блоки синхронизируются при следующем изменении."
+
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "task selector create action accessible name"
 msgid "Create: {title}"
@@ -3410,6 +3455,11 @@ msgstr "Текущие напоминания"
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "Файл текущей задачи не найден"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatNotCompleted"
+msgid "Current task is not completed"
+msgstr "Текущая задача не завершена"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -4112,7 +4162,7 @@ msgctxt "settings.integrations.subscriptionsList.statusLabels.disabled"
 msgid "Disabled"
 msgstr "Отключено"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.discard"
 msgid "Discard changes"
 msgstr "Отменить изменения"
@@ -4309,6 +4359,7 @@ msgstr "Срок выполнения"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "Срок выполнения"
@@ -4358,11 +4409,6 @@ msgstr "До срока"
 msgctxt "modals.unscheduledTasksSelector.dueToday"
 msgid "Due today: {date}"
 msgstr "Срок сегодня: {date}"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.due"
-msgid "Due:"
-msgstr "Срок:"
 
 #: src/modals/ReminderModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -4439,6 +4485,11 @@ msgstr "Изменить"
 msgctxt "commands.editCurrentTask"
 msgid "Edit current task"
 msgstr "Редактировать текущую задачу"
+
+#: src/modals/ReminderModal.ts
+msgctxt "modals.reminder.edit"
+msgid "Edit reminder"
+msgstr "Изменить напоминание"
 
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
@@ -4655,10 +4706,20 @@ msgctxt "settings.native.enterAPropertyKey"
 msgid "Enter a property key."
 msgstr "Введите ключ свойства."
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
+msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
+msgstr "Введите имя свойства. Текст примера не является сохранённой настройкой. TaskNotes не может определять задачи, пока не задано имя свойства. Существующие фильтры .base должны соответствовать этим настройкам."
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validTime"
 msgid "Enter a time from 00:00 to 23:59."
 msgstr "Введите время от 00:00 до 23:59."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.timeEstimateInvalid"
+msgid "Enter a time such as 45 or 1h 30m"
+msgstr "Введите время, например 45 или 1h 30m"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validDate"
@@ -4679,11 +4740,6 @@ msgstr "Введите URL с протоколом HTTP или HTTPS."
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "Введите URL с протоколом HTTP://, HTTPS://, webcal:// или webcals://"
-
-#: src/settings/native/general.ts
-msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
-msgid "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings."
-msgstr "Введите имя свойства и значение. Текст примера не является сохранённой настройкой. TaskNotes не может определять задачи, пока оба поля не заполнены. Существующие фильтры .base должны соответствовать этим настройкам."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
@@ -5014,6 +5070,11 @@ msgstr "Статус экспорта:"
 msgctxt "settings.integrations.googleCalendarExport.header"
 msgid "Export tasks to Google Calendar"
 msgstr "Экспорт задач в Google Календарь"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
+msgid "Export timeblocks to Google Calendar"
+msgstr "Экспорт временных блоков в Google Календарь"
 
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
@@ -5576,6 +5637,11 @@ msgctxt "modals.reminder.saveFailed"
 msgid "Failed to save reminders. Please try again."
 msgstr "Не удалось сохранить напоминания. Попробуйте ещё раз."
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
+msgid "Failed to save the calendar password"
+msgstr "Не удалось сохранить пароль календаря"
+
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.timeEntryEditor.saveFailed"
 msgid "Failed to save time entries"
@@ -5780,6 +5846,11 @@ msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFil
 msgid "File is not an ICS file: {normalizedFilePath}"
 msgstr "Файл не является файлом ICS: {normalizedFilePath}"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.missingHint"
+msgid "File not found"
+msgstr "Файл не найден"
+
 #: src/ui/WorkspaceNavigationService.ts
 msgctxt "notices.interface.commandFileUnindexed"
 msgid "File not found in vault: {path}. The file exists but Obsidian cannot find it. Try reloading the vault."
@@ -5849,11 +5920,6 @@ msgstr "Файлы или заметки для связи с этим врем�
 msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Заполнить контейнер"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.fillFromNaturalLanguage"
-msgid "Fill form from natural language"
-msgstr "Заполнить форму из естественного языка"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
@@ -6131,6 +6197,11 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.name"
 msgid "Group complete and skip actions in a submenu"
 msgstr "Объединять действия выполнения и пропуска в подменю"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.batchMoveUnsupported"
+msgid "Group moves require visible, non-recurring tasks with matching date markers. Keep the dragged task in the same all-day or timed area."
+msgstr "Для группового перемещения нужны видимые неповторяющиеся задачи с однотипными отметками дат. Перемещайте задачу в пределах исходной области: на весь день или с указанием времени."
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
@@ -6271,6 +6342,11 @@ msgstr "ID: {id}"
 msgctxt "settings.general.taskIdentification.identifyBy.name"
 msgid "Identify tasks by"
 msgstr "Идентифицировать задачи по"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.importButton"
+msgid "Import file"
+msgstr "Импортировать файл"
 
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
@@ -6543,7 +6619,7 @@ msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
 msgstr "Сохранить текущую подгруппу"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "Продолжить редактирование"
@@ -7102,6 +7178,21 @@ msgstr "Ежемесячное повторение"
 msgctxt "contextMenus.task.more"
 msgid "More"
 msgstr "Ещё"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "modals.task.buttons.moreActions"
+msgid "More actions"
+msgstr "Другие действия"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveDownAriaLabel"
+msgid "Move {name} down"
+msgstr "Переместить {name} вниз"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.moveUpAriaLabel"
+msgid "Move {name} up"
+msgstr "Переместить {name} вверх"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.postponeConfirm"
@@ -7712,6 +7803,11 @@ msgctxt "settings.defaults.options.none"
 msgid "None"
 msgstr "Нет"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.none"
+msgid "None"
+msgstr "Нет"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "None"
@@ -7873,6 +7969,11 @@ msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "URL Obsidian скопирован в буфер обмена"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authStorageUnavailable"
+msgid "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device."
+msgstr "Защищённое хранилище Obsidian недоступно, поэтому на этом устройстве нельзя сохранить пароли."
+
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.occurrenceDate"
 msgid "Occurrence {date}"
@@ -7999,6 +8100,11 @@ msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "Открыть"
 
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.openAriaLabel"
+msgid "Open {name}"
+msgstr "Открыть {name}"
+
 #: src/i18n/messages.ts
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.advancedCalendar"
@@ -8104,7 +8210,6 @@ msgid "Open note"
 msgstr "Открыть заметку"
 
 #: src/modals/TaskEditModal.ts
-#: src/modals/TaskModal.ts
 msgctxt "modals.task.buttons.openNote"
 msgid "Open note"
 msgstr "Открыть заметку"
@@ -8342,6 +8447,16 @@ msgctxt "settings.features.nlp.enable.description"
 msgid "Parse due dates, priorities, and contexts from natural language when creating tasks"
 msgstr "Анализировать сроки выполнения, приоритеты и контексты из естественного языка при создании задач"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.password"
+msgid "Password"
+msgstr "Пароль"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.labels.password"
+msgid "Password:"
+msgstr "Пароль:"
+
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.past"
 msgid "Past scheduled"
@@ -8433,6 +8548,7 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "Выбрать дату {field}"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.date.pickDateTime"
@@ -8469,13 +8585,8 @@ msgctxt "modals.taskSelectorWithCreate.notices.emptyQuery"
 msgid "Please enter a task description"
 msgstr "Пожалуйста, введите описание задачи"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.notices.titleRequired"
-msgid "Please enter a task title"
-msgstr "Пожалуйста, введите название задачи"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.titleRequired"
 msgid "Please enter a task title"
 msgstr "Пожалуйста, введите название задачи"
 
@@ -8847,6 +8958,7 @@ msgid "Recurrence"
 msgstr "Повторение"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "Повторение"
@@ -8900,6 +9012,11 @@ msgstr "Повторение задачи завершено"
 msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
 msgstr "Повторяющиеся задачи"
+
+#: src/main.ts
+msgctxt "notices.commands.repeatRecurring"
+msgid "Recurring tasks already track each occurrence"
+msgstr "Повторяющиеся задачи уже учитывают каждый экземпляр"
 
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
@@ -9066,6 +9183,7 @@ msgid "Reminder: {title}"
 msgstr "Напоминание: {title}"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "Напоминания"
@@ -9085,6 +9203,11 @@ msgstr "В удалённой подписке не указан URL"
 msgctxt "settings.integrations.subscriptionsList.typeOptions.remote"
 msgid "Remote URL"
 msgstr "Удаленный URL"
+
+#: src/modals/taskModalAttachments.ts
+msgctxt "modals.task.attachments.removeAriaLabel"
+msgid "Remove {name} from this task"
+msgstr "Убрать {name} из этой задачи"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.removeTag"
@@ -9173,6 +9296,11 @@ msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "Переименовано в \"{name}\""
 
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask.confirm"
+msgid "Reopen this task, save its completion date and unarchive it? Body checkboxes will reset if enabled. You can edit dates afterwards; cancelling that editor will not undo these changes."
+msgstr "Открыть эту задачу заново, сохранить дату её завершения и разархивировать её? Если соответствующая настройка включена, флажки в тексте будут сброшены. Даты можно изменить позже; отмена редактирования не отменит эти изменения."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmButton"
@@ -9189,6 +9317,12 @@ msgstr "Область: {scope}. Для сохранения ручного по
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
 msgstr "Восстановить из TaskNotes"
+
+#: src/commands/taskNotesCommands.ts
+#: src/main.ts
+msgctxt "commands.repeatCurrentTask"
+msgid "Repeat current task"
+msgstr "Повторить текущую задачу"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -9321,6 +9455,11 @@ msgctxt "notices.audit.exportedRows"
 msgid "Rows exported: {count}"
 msgstr "Экспортировано строк: {count}"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks"
+msgid "Same as task calendar"
+msgstr "Как календарь задач"
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.sat"
 msgid "Sat"
@@ -9354,7 +9493,7 @@ msgctxt "modals.task.buttons.save"
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.save"
 msgid "Save changes"
 msgstr "Сохранить изменения"
@@ -9364,6 +9503,11 @@ msgstr "Сохранить изменения"
 msgctxt "modals.timeblockInfo.saveButton"
 msgid "Save changes"
 msgstr "Сохранить изменения"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
+msgid "Saved. Enter a new password to replace it"
+msgstr "Сохранён. Введите новый пароль, чтобы заменить его"
 
 #: src/modals/ReminderModal.ts
 msgctxt "common.saving"
@@ -9397,6 +9541,7 @@ msgstr "Запланированная дата"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Запланированная дата"
@@ -9436,11 +9581,6 @@ msgstr "Запланированная дата или дата и время (Y
 msgctxt "modals.actionPalette.scheduledSet"
 msgid "Scheduled date set"
 msgstr "Запланированная дата задана"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.scheduled"
-msgid "Scheduled:"
-msgstr "Запланировано:"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -9484,6 +9624,11 @@ msgstr "Поиск задач или введите для создания но
 msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Search tasks..."
 msgstr "Поиск задач…"
+
+#: src/modals/AttachmentFileSuggestModal.ts
+msgctxt "modals.task.attachments.pickerPlaceholder"
+msgid "Search vault files to attach..."
+msgstr "Поиск файлов хранилища для прикрепления..."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
@@ -9606,6 +9751,11 @@ msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
 msgstr "Выбрать свойства карточек задач"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.selectTasks"
+msgid "Select tasks"
+msgstr "Выбрать задачи"
+
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
@@ -9620,6 +9770,11 @@ msgstr "Выберите язык, используемый для текста 
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.description"
 msgid "Select which calendar to create task events in."
 msgstr "Выберите, в каком календаре создавать события задач."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description"
+msgid "Select which calendar to create timeblock events in."
+msgstr "Выберите, в каком календаре создавать события временных блоков."
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.selectWhichPropertiesToShowInInlineTaskCards"
@@ -9687,6 +9842,7 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "Служба не инициализирована - пожалуйста, перезапустите Obsidian"
 
+#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
@@ -10549,6 +10705,16 @@ msgctxt "settings.native.syncProperties"
 msgid "Sync properties"
 msgstr "Синхронизировать свойства"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.enable.name"
+msgid "Sync timeblocks"
+msgstr "Синхронизировать временные блоки"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
+msgstr "Синхронизируйте временные блоки из ежедневных заметок с Google Календарём как события. Требуется подключение Google Календаря выше."
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
 msgid "Sync to Google Calendar"
@@ -10668,6 +10834,11 @@ msgid "Task"
 msgstr "Задача"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "Задача \"{title}\" создана как файл \"{filename}\". Имена файлов не могут содержать некоторые символы, поэтому полное название сохранено в свойстве заголовка."
+
+#: src/modals/TaskCreationModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskCreation.notices.success"
 msgid "Task \"{title}\" created successfully"
@@ -10740,6 +10911,11 @@ msgid "Task converted: \"{title}\" (filename shortened due to length)"
 msgstr "Задача преобразована: \"{title}\" (имя файла сокращено из-за длины)"
 
 #: src/services/InstantTaskConvertService.ts
+msgctxt "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized"
+msgid "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
+msgstr "Задача преобразована: \"{title}\" как файл \"{filename}\". Имена файлов не могут содержать некоторые символы, поэтому полное название сохранено в свойстве заголовка."
+
+#: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionComplete"
 msgid "Task converted: {title}"
 msgstr "Задача преобразована: {title}"
@@ -10748,6 +10924,16 @@ msgstr "Задача преобразована: {title}"
 msgctxt "settings.integrations.webhooks.events.taskCreated.label"
 msgid "Task created"
 msgstr "Задача создана"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.followUpFailure"
+msgid "Task created, but a follow-up step failed: {message}"
+msgstr "Задача создана, но следующий шаг не выполнен: {message}"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.attachmentImportFailure"
+msgid "Task created, but some attachments could not be imported: {message}"
+msgstr "Задача создана, но некоторые вложения не удалось импортировать: {message}"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.openCreatedTaskFailure"
@@ -10908,15 +11094,11 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Task not found for title: {title}"
 msgstr "Задача с названием {title} не найдена"
 
+#: src/bases/CalendarView.ts
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "Параметры задачи"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display"
-msgid "Task preview"
-msgstr "Предпросмотр задачи"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskProperty.name"
@@ -11191,6 +11373,11 @@ msgctxt "settings.integrations.googleCalendarExport.eventTitleTemplate.descripti
 msgid "Template for event titles. Available variables: '{{title}}', '{{status}}', '{{priority}}'"
 msgstr "Шаблон для заголовков событий. Доступные переменные: '{{title}}', '{{status}}', '{{priority}}'"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description"
+msgid "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+msgstr "Шаблон для заголовков событий временных блоков. Доступные переменные: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'"
+
 #: src/services/ICSNoteService.ts
 msgctxt "services.icsNote.notices.templateNotFound"
 msgid "Template not found: {path}"
@@ -11220,6 +11407,11 @@ msgstr "Шаблоны"
 msgctxt "settings.taskProperties.customUserFields.types.text"
 msgid "Text"
 msgstr "Текст"
+
+#: src/bases/recurringStatusMove.ts
+msgctxt "views.recurringStatusMove.stale"
+msgid "That occurrence was already completed, skipped or rescheduled."
+msgstr "Этот повтор уже выполнен, пропущен или перенесён."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11263,8 +11455,8 @@ msgstr "Время, когда должны появляться повторя�
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
-msgid "The value that identifies a note as a task (e.g., \"task\")"
-msgstr "Значение, которое идентифицирует заметку как задачу (например, \"задача\")"
+msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
+msgstr "Значение, которое идентифицирует заметку как задачу (например, \"задача\"). Оставьте пустым, чтобы считать задачей любую заметку с этим свойством, независимо от его значения."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
@@ -11305,6 +11497,11 @@ msgstr "Удаляет свойство из форм TaskNotes, но не из 
 msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "Удаляет ID и секрет клиента из секретного хранилища Obsidian."
+
+#: src/main.ts
+msgctxt "notices.commands.repeatOccurrence"
+msgid "This task is an occurrence of a recurring task"
+msgstr "Эта задача является экземпляром повторяющейся задачи"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -11569,6 +11766,11 @@ msgctxt "utils/helpers: updateTimeblockTimes display"
 msgid "Timeblock {timeblockId} not found"
 msgstr "Временной блок {timeblockId} не найден"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name"
+msgid "Timeblock calendar"
+msgstr "Календарь временных блоков"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
@@ -11578,6 +11780,11 @@ msgstr "Временной блок продублирован"
 msgctxt "notices.audit.timeblockResized"
 msgid "Timeblock duration updated"
 msgstr "Длительность временного блока обновлена"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
+msgid "Timeblock event title template"
+msgstr "Шаблон заголовка событий временных блоков"
 
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockMoved"
@@ -11648,6 +11855,11 @@ msgstr "Заголовок"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "Название"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.titleFilter.label"
+msgid "Title contains:"
+msgstr "Заголовок содержит:"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.titleDesc"
@@ -11759,6 +11971,7 @@ msgid "today"
 msgstr "сегодня"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "Сегодня"
@@ -11800,6 +12013,11 @@ msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
 msgid "Today column width (×)"
 msgstr "Ширина столбца сегодняшнего дня (×)"
 
+#: src/bases/KanbanView.ts
+msgctxt "views.kanban.toggleColumn"
+msgid "Toggle {column} column"
+msgstr "Свернуть или развернуть столбец {column}"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
@@ -11826,6 +12044,7 @@ msgid "tomorrow"
 msgstr "завтра"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "Завтра"
@@ -12115,7 +12334,7 @@ msgctxt "settings.taskProperties.customUserFields.defaultNames.unnamedField"
 msgid "Unnamed field"
 msgstr "Безымянное поле"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "Несохранённые изменения"
@@ -12214,6 +12433,12 @@ msgctxt "settings.integrations.autoExport.interval.name"
 msgid "Update interval (between 5 and 1440 minutes)"
 msgstr "Интервал обновления (между 5 и 1440 минут)"
 
+#: src/modals/ReminderModal.ts
+msgctxt "modals.reminder.updateButton"
+msgid "Update reminder"
+msgstr "Обновить напоминание"
+
+#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.update"
 msgid "Update tasks"
@@ -12235,6 +12460,11 @@ msgstr "URL"
 msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "Использование: Перетащите в календаре для создания событий. Выберите ''Timeblock'' из контекстного меню (видно только когда блокировка времени включена). Перетащите для перемещения существующих временных блоков. Измените размер краев для настройки длительности."
+
+#: src/settings/components/FilterSettingsComponent.ts
+msgctxt "Property value filter syntax help"
+msgid "Use a comma-separated allow-list or containsAny(...). Prefix containsAny(...) with ! to exclude values."
+msgstr "Используйте список разрешённых значений через запятую или containsAny(...). Добавьте ! перед containsAny(...), чтобы исключить значения."
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.useAPropertyKeyWithoutSurroundingSpacesLineBreaks"
@@ -12325,6 +12555,16 @@ msgstr "Используйте этот секрет для проверки д�
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
 msgstr "Пользовательское"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.authOptions.basic"
+msgid "Username and password (HTTP Basic)"
+msgstr "Имя пользователя и пароль (HTTP Basic)"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.integrations.subscriptionsList.labels.username"
+msgid "Username:"
+msgstr "Имя пользователя:"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
@@ -12764,7 +13004,7 @@ msgctxt "modals.storageLocation.finalNote.switch"
 msgid "You can switch back to plugin storage at any time in the future."
 msgstr "Вы можете переключиться обратно на хранение в плагине в любое время в будущем."
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "У вас есть несохранённые изменения. Хотите сохранить их?"

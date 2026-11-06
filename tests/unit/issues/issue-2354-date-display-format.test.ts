@@ -139,7 +139,7 @@ describe("#2354 date display preference", () => {
 		const container = document.createElement("div");
 		modal.createMetadataSection(container);
 		const values = Array.from(container.querySelectorAll(".metadata-value"), el => el.textContent);
-		expect(values).toEqual(["2026-08-23 7:16 PM", "2026-08-23", "2026-08-23 7:16 PM", "2026-08-23 7:16 PM", task.path]);
+		expect(values).toEqual(["2026-08-23 7:16 PM", "2026-08-23 7:16 PM", task.path]);
 	});
 
 	it("invalidates calendar and task-list render caches when only the date setting changes", () => {

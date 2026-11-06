@@ -15,7 +15,7 @@ TaskNotes keeps a storage title and a filename-safe title separate. When **Store
 
 For existing tasks, the **Quick actions for current task** command opens a keyboard-searchable action palette. It includes status, priority, time-tracking, archive, edit, and date actions, including built-in due and scheduled date presets such as today, tomorrow, this weekend, next week, and next month.
 
-TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."
+TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority." The form updates as you type: removing text undoes what it set, and a field you change by hand keeps your value.
 
 In most workflows, users combine both approaches: fast capture with natural language, then occasional structured edits in the modal when more precision is needed.
 
@@ -108,7 +108,7 @@ When typing the status trigger character (default `*`) in the natural language i
 
 Status suggestions allow quick selection of statuses when creating tasks. For example, typing `*in` shows "In Progress" as a suggestion if that's one of your configured statuses.
 
-Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → Task Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps.
+Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → Task Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps. When the first status marked **Completed** has a **Next status**, recurring tasks follow the same cycle and complete the occurrence when it reaches a completed status. Otherwise, a click completes the occurrence directly. See [Recurring Tasks](recurring-tasks.md#completion-tracking).
 
 Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 
@@ -181,6 +181,36 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ![Task context menu](../assets/feature-task-context-menu.png)
 
+## Attachments
+
+Attachments are files that belong to a task, such as a receipt, a scan or a PDF. They are stored as an ordered list of links in the task's `attachments` frontmatter property:
+
+```yaml
+attachments:
+  - "[[Files/receipt.png]]"
+  - "[[Files/invoice.pdf]]"
+```
+
+Each entry links to a file in the vault by its full path. The property name follows the `attachments` field mapping, and the field can be used in Bases filters, formulas and columns like other list properties.
+
+### Managing attachments in the task modals
+
+The **Attachments** field in the task creation and edit modals shows the task's attachments in order. From there you can:
+
+- **Add from vault** to pick an existing file with fuzzy search. The picker only selects files; it does not create new ones.
+- **Import file** to choose a file from your device, or drag files onto the field. Imported files are copied into the vault only when you save the task, into the folder set by Obsidian's **Default location for new attachments** setting (relative to the task note). If you cancel or discard the modal, nothing is written.
+- Select a file name to open it in a new tab.
+- Use the arrow buttons to change the order.
+- Use the remove button to unlink a file from the task. Removing an attachment never deletes the file from the vault; delete it from Obsidian's file explorer if you no longer need it.
+
+Files need a file extension, and their names can't contain `[`, `]`, `#` or `|`, because those characters would break the link. Rename such a file before attaching it. If saving fails, files that save had already copied in are moved to the trash, and they stay in the list waiting to be imported again.
+
+All controls are buttons with labels, so they can be reached with the keyboard and used on touch devices. You can hide the field, or show it only in one of the modals, in [Modal Fields Settings](../settings/modal-fields.md).
+
+### Attachment indicators
+
+Task cards show a paperclip with the number of attachments next to their other badges. Calendar views show a paperclip after the title of task events, and the event tooltip includes the attachment count.
+
 ## Automation
 
 ### Auto-Archiving
@@ -220,6 +250,25 @@ By default the actions are grouped under a single **Mark complete or skip** entr
 With the submenu grouping turned off, the same actions appear directly in the menu:
 
 ![Completion actions shown flat in the menu](../assets/feature-completion-date-actions-flat.png)
+
+## Repeating a Completed Task
+
+For tasks that come back irregularly, **TaskNotes: Repeat current task** reuses the same note instead of creating a new one. Open the completed task's note and run the command from the command palette.
+
+A confirmation appears **before any changes**. Cancel or dismiss it to leave the note unchanged. Confirming:
+
+1. Unarchives the task, moving it back to the task folder if **Move archived tasks to folder** is enabled.
+2. Saves its completion date in `complete_instances`, returns it to the default status and clears `completedDate`.
+3. Resets body checkboxes if **Reset checkboxes on recurrence** is enabled.
+4. Opens the task editor to choose new scheduled and due dates.
+
+The previous scheduled and due dates stay unchanged until you save the editor. **Cancelling that editor does not undo the confirmed repeat.**
+
+The history stores **distinct completion dates**, not every completion: repeating a task completed twice on the same date adds that date only once. A completed task without `completedDate` is reopened without adding a history entry. This history is available in frontmatter and Bases; the editor's completions calendar remains specific to recurring tasks.
+
+Recurring tasks and materialized occurrence notes cannot be repeated with this command; they already have an occurrence workflow.
+
+If a step fails, earlier changes are kept, not rolled back, and later steps are not attempted. Check the note before retrying: for example, reopening can fail after unarchiving, or a checkbox reset can fail after the task has reopened and saved its history. Archive moves follow the existing best-effort behavior: if the move fails, a notice appears and the task is still unarchived and repeated at its existing path.
 
 ## Recurring Tasks
 

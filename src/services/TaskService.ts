@@ -6,6 +6,7 @@ import {
 	EVENT_TASK_UPDATED,
 	TaskCreationData,
 	TaskDependency,
+	RecurringCompletionOptions,
 	TaskInfo,
 	IWebhookNotifier,
 } from "../types";
@@ -101,6 +102,7 @@ import {
 import { resolveTaskPropertyFrontmatterField } from "./task-service/taskPropertyFrontmatterField";
 import { processVaultFile, processVaultFrontMatter } from "./VaultMutationService";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { applyPropertyTaskIdentifier } from "../utils/taskIdentificationFrontmatter";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskService" });
 
@@ -764,6 +766,15 @@ export class TaskService {
 						this.plugin.statusManager.isCompletedStatus(status),
 					currentDateString: completionDateString,
 				});
+				// Clearing a field can remove the identifying property (for example `due` with
+				// presence identification), which would stop the note being a task.
+				if (this.plugin.settings.taskIdentificationMethod === "property") {
+					applyPropertyTaskIdentifier(
+						frontmatter,
+						this.plugin.settings.taskPropertyName,
+						this.plugin.settings.taskPropertyValue
+					);
+				}
 
 				this.writeOptionalFrontmatterField(
 					frontmatter,
@@ -1054,17 +1065,27 @@ export class TaskService {
 	async toggleRecurringTaskCompleteWithOccurrenceNotes(
 		task: TaskInfo,
 		date?: Date,
-		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void,
+		options: RecurringCompletionOptions = {}
 	): Promise<TaskInfo> {
 		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 		if (!freshTask.recurrence) {
 			throw new Error("Task is not recurring");
+		}
+		if (options.onlyIf && !options.onlyIf(freshTask)) {
+			return freshTask;
 		}
 
 		const targetDate = this.getRecurringTaskActionDate(freshTask, date);
 		const dateStr = formatDateForStorage(targetDate);
 		const existingOccurrence = await this.findMaterializedOccurrence(freshTask, targetDate);
 		if (existingOccurrence) {
+			if (
+				options.onlyIf &&
+				this.plugin.statusManager.isCompletedStatus(existingOccurrence.status)
+			) {
+				return existingOccurrence;
+			}
 			return onRecurringParentUpdated
 				? this.toggleStatus(existingOccurrence, onRecurringParentUpdated)
 				: this.toggleStatus(existingOccurrence);
@@ -1085,7 +1106,7 @@ export class TaskService {
 				: this.toggleStatus(occurrence);
 		}
 
-		return this.toggleRecurringTaskComplete(freshTask, targetDate);
+		return this.toggleRecurringTaskComplete(freshTask, targetDate, options);
 	}
 
 	async getMaterializedOccurrenceParent(occurrenceTask: TaskInfo): Promise<TaskInfo | null> {
@@ -2061,11 +2082,82 @@ export class TaskService {
 		return this.getRecurringTaskActionDate(freshTask, date);
 	}
 
+	private getStatusAfterOccurrence(task: TaskInfo): string | undefined {
+		const { statusManager } = this.plugin;
+		return statusManager.isCompletedStatus(task.status)
+			? undefined
+			: statusManager.getConfiguredStatusAfterCompletion();
+	}
+
 	private getRecurringTaskActionDate(task: TaskInfo, date?: Date): Date {
 		return getRecurringTaskActionDate(task, date);
 	}
 
-	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
+	/**
+	 * Reset checkboxes against the latest serialized file contents, preserving
+	 * frontmatter changes and body edits made while the operation was queued.
+	 */
+	private async resetTaskBodyCheckboxes(file: TFile): Promise<string | null> {
+		let resetDetails: string | null = null;
+		await processVaultFile(this.plugin.app, file, (currentContent) => {
+			const { frontmatter: frontmatterText, body } = splitFrontmatterAndBody(currentContent);
+			const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
+			if (!changed) {
+				return currentContent;
+			}
+
+			const frontmatterBlock =
+				frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
+			const finalBody = resetBody.trimEnd();
+			resetDetails = resetBody.replace(/\r\n/g, "\n").trimEnd();
+			return finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
+		});
+		return resetDetails;
+	}
+
+	/**
+	 * Repeat only after the caller has obtained confirmation. Steps are kept if
+	 * a later step fails; archive moves retain toggleArchive's best-effort policy.
+	 */
+	async repeatTask(task: TaskInfo): Promise<TaskInfo> {
+		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
+		if (freshTask.recurrence || isMaterializedOccurrenceTask(freshTask)) {
+			throw new Error("Task is recurring");
+		}
+		if (!this.plugin.statusManager.isCompletedStatus(freshTask.status)) {
+			throw new Error("Task is not completed");
+		}
+
+		// Unarchiving can move the note: subsequent writes must use its new path.
+		const activeTask = freshTask.archived ? await this.toggleArchive(freshTask) : freshTask;
+		const updates: Partial<TaskInfo> = { status: this.plugin.settings.defaultTaskStatus };
+		const completedDate = this.getSafeDatePart(activeTask.completedDate);
+		const completeInstances = Array.isArray(activeTask.complete_instances)
+			? activeTask.complete_instances
+			: [];
+		if (completedDate && !completeInstances.includes(completedDate)) {
+			updates.complete_instances = [...completeInstances, completedDate];
+		}
+
+		const updatedTask = await this.updateTask(activeTask, updates);
+		if (this.plugin.settings.resetCheckboxesOnRecurrence) {
+			const file = this.plugin.app.vault.getAbstractFileByPath(updatedTask.path);
+			if (!(file instanceof TFile)) {
+				throw new Error(`Cannot find task file: ${updatedTask.path}`);
+			}
+			const resetDetails = await this.resetTaskBodyCheckboxes(file);
+			if (resetDetails !== null) {
+				updatedTask.details = resetDetails;
+			}
+		}
+		return updatedTask;
+	}
+
+	async toggleRecurringTaskComplete(
+		task: TaskInfo,
+		date?: Date,
+		options: RecurringCompletionOptions = {}
+	): Promise<TaskInfo> {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) {
 			throw new Error(`Cannot find task file: ${task.path}`);
@@ -2083,8 +2175,15 @@ export class TaskService {
 			targetDate: this.getRecurringTaskActionDate(freshTask, date),
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
+
+		// Decide on the same read that sets the direction of the toggle, so nothing
+		// landing after the caller's own check can be reversed or overwritten.
+		if (options.onlyIf && (!newComplete || !options.onlyIf(freshTask))) {
+			return freshTask;
+		}
 
 		// Step 2: Persist to file
 		await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
@@ -2110,6 +2209,7 @@ export class TaskService {
 				recurrenceField,
 				recurrenceOriginalDateField:
 					this.plugin.fieldMapper.toUserField("recurrenceOriginalDate"),
+				statusField: this.plugin.fieldMapper.toUserField("status"),
 				googleCalendarExceptionOriginalScheduledField,
 				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,
@@ -2118,21 +2218,7 @@ export class TaskService {
 
 		// Step 2b: Reset checkboxes in task body when completing (if setting enabled)
 		if (newComplete && this.plugin.settings.resetCheckboxesOnRecurrence) {
-			let resetDetails: string | null = null;
-			await processVaultFile(this.plugin.app, file, (currentContent) => {
-				const { frontmatter: frontmatterText, body } =
-					splitFrontmatterAndBody(currentContent);
-				const { content: resetBody, changed } = resetMarkdownCheckboxes(body);
-				if (!changed) {
-					return currentContent;
-				}
-
-				const frontmatterBlock =
-					frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
-				const finalBody = resetBody.trimEnd();
-				resetDetails = resetBody.replace(/\r\n/g, "\n").trimEnd();
-				return finalBody.length > 0 ? `${frontmatterBlock}${finalBody}\n` : frontmatterBlock;
-			});
+			const resetDetails = await this.resetTaskBodyCheckboxes(file);
 
 			if (resetDetails !== null) {
 				updatedTask.details = resetDetails;
@@ -2239,6 +2325,7 @@ export class TaskService {
 			targetDate: this.getRecurringTaskActionDate(freshTask, date),
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
 		});
 		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
@@ -2264,6 +2351,7 @@ export class TaskService {
 				dueField,
 				recurrenceOriginalDateField:
 					this.plugin.fieldMapper.toUserField("recurrenceOriginalDate"),
+				statusField: this.plugin.fieldMapper.toUserField("status"),
 				googleCalendarExceptionOriginalScheduledField,
 				googleCalendarMovedOriginalDatesField,
 				plan: recurringPlan,

@@ -77,6 +77,38 @@ describe("taskModalProjects", () => {
 		});
 	});
 
+	it.each([
+		"[[Projects/Alpha|Project Alpha]]",
+		"[[Projects/Alpha#Heading|Project Alpha]]",
+		"[[Projects/Alpha#^block-id|Project Alpha]]",
+		"[[Projects/Alpha#Heading]]",
+	])("resolves %s using only the note path and preserves the original reference", (reference) => {
+		const alpha = file("Projects/Alpha.md");
+		const resolveLink = jest.fn(() => alpha);
+		const context = { ...createContext(), resolveLink };
+
+		expect(createTaskModalProjectItemFromString(reference, context)).toEqual({
+			file: alpha,
+			name: "Alpha",
+			link: reference,
+		});
+		expect(resolveLink).toHaveBeenCalledWith("Projects/Alpha", "Tasks/current.md");
+	});
+
+	it("keeps a missing aliased project unresolved after normalizing the lookup", () => {
+		const resolveLink = jest.fn(() => null);
+		const context = { ...createContext(), resolveLink };
+
+		expect(createTaskModalProjectItemFromString("[[Projects/Missing|Alias]]", context)).toEqual(
+			{
+				name: "Projects/Missing",
+				link: "[[Projects/Missing|Alias]]",
+				unresolved: true,
+			}
+		);
+		expect(resolveLink).toHaveBeenCalledWith("Projects/Missing", "Tasks/current.md");
+	});
+
 	it("preserves unresolved wiki, markdown, and plain project values", () => {
 		const context = createContext();
 

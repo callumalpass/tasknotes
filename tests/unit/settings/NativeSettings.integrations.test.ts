@@ -11,7 +11,7 @@ import {
 	normalizeCalendarUrl,
 	validateHttpUrl,
 } from "../../../src/settings/native/connections";
-import { apiDefinitions } from "../../../src/settings/native/integrations";
+import { apiDefinitions, calendarDefinitions } from "../../../src/settings/native/integrations";
 import type { ICSSubscription } from "../../../src/types";
 
 jest.mock("../../../src/modals/ConfirmationModal", () => ({
@@ -50,6 +50,8 @@ describe("Native integration settings", () => {
 			updateSubscription: update,
 			getLastError: () => undefined,
 			getLastFetched: () => undefined,
+			hasPassword: () => false,
+			isPasswordStorageAvailable: () => true,
 		} as never;
 		subscriptionList(ctx);
 		await ctx.write("subscription.calendar.enabled", true);
@@ -64,6 +66,28 @@ describe("Native integration settings", () => {
 		await ctx.write("subscription.calendar.filePath", "Calendar.ics");
 		await ctx.write("subscription.calendar.enabled", true);
 		expect(subscription.enabled).toBe(true);
+	});
+
+	test("timeblock export settings persist and keep the default title template when cleared", async () => {
+		const { plugin, ctx } = settingsFixture();
+		plugin.googleCalendarService = {
+			getAvailableCalendars: () => [{ id: "work", summary: "Work" }],
+		} as never;
+		calendarDefinitions(ctx);
+		const google = plugin.settings.googleCalendarExport;
+		expect(ctx.read("googleCalendarExport.syncTimeblocks")).toBe(false);
+
+		await ctx.write("googleCalendarExport.syncTimeblocks", true);
+		await ctx.write("googleCalendarExport.timeblockTargetCalendarId", "work");
+		await ctx.write("googleCalendarExport.timeblockEventTitleTemplate", "[TB] {{title}}");
+		expect(google).toMatchObject({
+			syncTimeblocks: true,
+			timeblockTargetCalendarId: "work",
+			timeblockEventTitleTemplate: "[TB] {{title}}",
+		});
+
+		await ctx.write("googleCalendarExport.timeblockEventTitleTemplate", "");
+		expect(google.timeblockEventTitleTemplate).toBe("{{title}}");
 	});
 
 	test("new webhooks are inactive until URL and events are configured; secret is never indexed", async () => {

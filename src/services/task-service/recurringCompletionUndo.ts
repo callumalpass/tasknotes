@@ -1,6 +1,11 @@
 import { parseYaml, stringifyYaml, TFile } from "obsidian";
 import type TaskNotesPlugin from "../../main";
-import { EVENT_TASK_UPDATED, type TaskInfo, type FieldMapping } from "../../types";
+import {
+	EVENT_TASK_UPDATED,
+	type FieldMapping,
+	type RecurringCompletionOptions,
+	type TaskInfo,
+} from "../../types";
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
 import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
@@ -105,8 +110,14 @@ export function restoreCompletionContent(
 export async function completeRecurringTaskWithUndo(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
-	date: Date
-): Promise<{ updatedTask: TaskInfo; completed: boolean; undo: () => Promise<boolean> }> {
+	date: Date,
+	options: RecurringCompletionOptions = {}
+): Promise<{
+	updatedTask: TaskInfo;
+	completed: boolean;
+	changed: boolean;
+	undo: () => Promise<boolean>;
+}> {
 	const service = plugin.taskService;
 	const parent = (await plugin.cacheManager.getTaskInfo(task.path)) || task;
 	const identityDate = getRecurringTaskActionDate(parent, date);
@@ -114,7 +125,8 @@ export async function completeRecurringTaskWithUndo(
 	if (
 		!occurrence &&
 		parent.occurrence_materialization === "on_completion" &&
-		!parent.complete_instances?.includes(formatDateForStorage(identityDate))
+		!parent.complete_instances?.includes(formatDateForStorage(identityDate)) &&
+		(options.onlyIf?.(parent) ?? true)
 	) {
 		occurrence = await service.materializeOccurrence(parent, identityDate);
 	}
@@ -137,7 +149,8 @@ export async function completeRecurringTaskWithUndo(
 		(original, updated) => {
 			parentTransition.original = structuredClone(original);
 			parentTransition.updated = structuredClone(updated);
-		}
+		},
+		options
 	);
 	const updatedTask = result.path === parent.path ? result : parentTransition.updated || parent;
 	const modifiedProperty = plugin.fieldMapper.toUserField("dateModified");
@@ -197,7 +210,7 @@ export async function completeRecurringTaskWithUndo(
 					resetMarkdownCheckboxes(undo.beforeBody).content.trimEnd() ===
 						undo.afterBody.trimEnd();
 			}
-			return { ...previous, nextTask, undo, safe };
+			return { ...previous, nextTask, undo, safe, changed: afterContent !== previous.content };
 		})
 	);
 	const completed = occurrence
@@ -209,6 +222,7 @@ export async function completeRecurringTaskWithUndo(
 	return {
 		updatedTask,
 		completed,
+		changed: entries.some(entry => entry.changed),
 		undo: async () => {
 			if (used || entries.some((entry) => !entry.safe)) return false;
 			used = true;

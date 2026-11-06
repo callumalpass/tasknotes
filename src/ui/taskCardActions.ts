@@ -29,6 +29,34 @@ function getTaskCardActionLogger(plugin: TaskNotesPlugin) {
 }
 
 /**
+ * The status a click moves a recurring series to, or undefined when the click
+ * completes or reopens the occurrence shown instead.
+ *
+ * A recurring card follows the status cycle once a finished series has a status
+ * to start its next occurrence in. Without one, the series would carry the
+ * status reached during this occurrence into the next, so the click completes
+ * the occurrence directly.
+ */
+function getRecurringCycleStatus(
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	targetDate: Date,
+	reverse: boolean
+): string | undefined {
+	const { statusManager } = plugin;
+	if (!statusManager.getConfiguredStatusAfterCompletion()) return undefined;
+	const completedStatus = statusManager.getCompletedStatuses()[0];
+	if (statusManager.isCompletedStatus(getEffectiveTaskStatus(task, targetDate, completedStatus))) {
+		return undefined;
+	}
+	const currentStatus = task.status || plugin.settings.defaultTaskStatus;
+	const nextStatus = reverse
+		? statusManager.getPreviousStatus(currentStatus)
+		: statusManager.getNextStatus(currentStatus);
+	return statusManager.isCompletedStatus(nextStatus) ? undefined : nextStatus;
+}
+
+/**
  * Creates a click handler for cycling task status.
  */
 export function createStatusCycleHandler(
@@ -41,6 +69,14 @@ export function createStatusCycleHandler(
 			const logger = getTaskCardActionLogger(plugin);
 			try {
 				if (task.recurrence) {
+					const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
+					const cycleStatus =
+						freshTask && getRecurringCycleStatus(freshTask, plugin, targetDate, e.shiftKey);
+					if (freshTask && cycleStatus) {
+						const updatedTask = await plugin.updateTaskProperty(freshTask, "status", cycleStatus);
+						updateStatusVisuals(updatedTask, cycleStatus, false);
+						return;
+					}
 					const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
 					const newEffectiveStatus = getEffectiveTaskStatus(
 						updatedTask,

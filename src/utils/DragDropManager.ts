@@ -1,5 +1,8 @@
 import TaskNotesPlugin from "../main";
 
+/** Drag data type carrying a task file path, accepted by views that schedule dropped tasks. */
+export const TASK_PATH_DRAG_TYPE = "application/x-task-path";
+
 /**
  * Centralized drag and drop manager for task elements
  */
@@ -40,7 +43,7 @@ export class DragDropManager {
 			// Set data for HTML5 drag and drop (needed for editor drops)
 			if (e.dataTransfer) {
 				e.dataTransfer.setData("text/plain", taskPath);
-				e.dataTransfer.setData("application/x-task-path", taskPath);
+				e.dataTransfer.setData(TASK_PATH_DRAG_TYPE, taskPath);
 				e.dataTransfer.effectAllowed = "copy";
 			}
 		});

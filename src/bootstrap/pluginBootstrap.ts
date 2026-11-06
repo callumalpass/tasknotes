@@ -427,21 +427,46 @@ function registerEditorIntegrations(plugin: TaskNotesPlugin): void {
 	plugin.registerMarkdownPostProcessor(createReadingModeTaskLinkProcessor(plugin));
 }
 
+/**
+ * Runs one lazy initialization step, logging its failure so that the steps
+ * after it still run.
+ */
+async function runLazyInitStep(
+	operation: string,
+	step: () => void | Promise<void>
+): Promise<void> {
+	try {
+		await step();
+	} catch (error) {
+		tasknotesLogger.error("Error during lazy service initialization:", {
+			category: "internal",
+			operation: `lazy-service-initialization:${operation}`,
+			error: error,
+		});
+	}
+}
+
 export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 	window.setTimeout(() => {
 		void (async () => {
-			try {
+			await runLazyInitStep("pomodoro", async () => {
 				if (!plugin.pomodoroService) {
 					plugin.pomodoroService = new PomodoroService(plugin);
 					await plugin.pomodoroService.initialize();
 				}
+			});
 
+			await runLazyInitStep("auto-export", () => {
 				plugin.autoExportService = new AutoExportService(plugin);
 				plugin.autoExportService.start();
+			});
 
-				if (!isCalendarIntegrationDisabledOnMobile(plugin.settings)) {
-					await plugin.icsSubscriptionService.initialize();
+			if (!isCalendarIntegrationDisabledOnMobile(plugin.settings)) {
+				await runLazyInitStep("ics-subscriptions", () =>
+					plugin.icsSubscriptionService.initialize()
+				);
 
+				await runLazyInitStep("google-calendar", async () => {
 					plugin.googleCalendarService.on("data-changed", () => {
 						plugin.notifyDataChanged(undefined, false, true);
 					});
@@ -451,8 +476,12 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 						await import("../services/TaskCalendarSyncService")
 					).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
 					await plugin.taskCalendarSyncService.initializeExternalFileReconciliation();
+					plugin.taskCalendarSyncService.timeblocks.initialize();
+					plugin.taskCalendarSyncService.timeblocks.registerVaultEvents();
 					plugin.taskCalendarSyncService.startRecoveryQueueProcessor();
+				});
 
+				await runLazyInitStep("google-calendar-task-events", () => {
 					plugin.registerEvent(
 						plugin.emitter.on("file-updated", (data: FileUpdatedEventData) => {
 							if (!plugin.taskCalendarSyncService || !data?.path) {
@@ -518,19 +547,25 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 							}
 						})
 					);
+				});
 
+				await runLazyInitStep("microsoft-calendar", async () => {
 					plugin.microsoftCalendarService.on("data-changed", () => {
 						plugin.notifyDataChanged(undefined, false, true);
 					});
 					await plugin.microsoftCalendarService.initialize();
-				}
+				});
+			}
 
+			await runLazyInitStep("task-file-lifecycle-reconciliation", async () => {
 				plugin.taskFileLifecycleReconciliationService =
 					new TaskFileLifecycleReconciliationService(plugin);
 				await plugin.taskFileLifecycleReconciliationService.initialize();
+			});
 
-				await initializeHTTPAPI(plugin);
+			await runLazyInitStep("http-api", () => initializeHTTPAPI(plugin));
 
+			await runLazyInitStep("editor-services", async () => {
 				const { TaskLinkDetectionService } = await import(
 					"../services/TaskLinkDetectionService"
 				);
@@ -595,18 +630,17 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 						}, 100);
 					})
 				);
+			});
 
+			await runLazyInitStep("event-listeners", () => {
 				plugin.setupStatusBarEventListeners();
 				plugin.setupTimeTrackingEventListeners();
+			});
+
+			await runLazyInitStep("version-check", async () => {
 				await plugin.checkForVersionUpdate();
 				void plugin.checkForNewReleaseOnStartup();
-			} catch (error) {
-				tasknotesLogger.error("Error during lazy service initialization:", {
-					category: "internal",
-					operation: "lazy-service-initialization",
-					error: error,
-				});
-			}
+			});
 		})();
 	}, 10);
 }

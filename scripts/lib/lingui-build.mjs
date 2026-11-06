@@ -2,6 +2,11 @@ import { transformAsync } from "@babel/core";
 import { readFile } from "node:fs/promises";
 import { deflateSync } from "node:zlib";
 import { resolve } from "node:path";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+
+const require = createRequire(import.meta.url);
+const pluginRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 export function linguiMacros() {
   return {
@@ -14,7 +19,7 @@ export function linguiMacros() {
           const catalogue = JSON.parse(await readFile(path, "utf8"));
           const compressed = deflateSync(Buffer.from(JSON.stringify(catalogue.messages)), { level: 9 }).toString("base64");
           return {
-            contents: `import { unpackBundledCatalogue } from ${JSON.stringify(resolve("src/i18n/compressedCatalogue.ts"))}; export default unpackBundledCatalogue(${JSON.stringify(compressed)});`,
+            contents: `import { unpackBundledCatalogue } from ${JSON.stringify(resolve(pluginRoot, "src/i18n/compressedCatalogue.ts"))}; export default unpackBundledCatalogue(${JSON.stringify(compressed)});`,
             loader: "js", resolveDir: resolve("src/i18n"), watchFiles: [path],
           };
         });
@@ -24,10 +29,10 @@ export function linguiMacros() {
         const source = await readFile(path, "utf8");
         if (!source.includes("@lingui/core/macro")) return;
         const result = await transformAsync(source, {
-          filename: path, babelrc: false, configFile: false,
+          filename: path, cwd: pluginRoot, babelrc: false, configFile: false,
           // Preserve TS/decorators for esbuild; transform only the Lingui macros.
           parserOpts: { plugins: ["typescript", "decorators-legacy"] },
-          plugins: [["@lingui/babel-plugin-lingui-macro", { descriptorFields: build.initialOptions.minify ? "id-only" : "all" }]],
+          plugins: [[require.resolve("@lingui/babel-plugin-lingui-macro"), { descriptorFields: build.initialOptions.minify ? "id-only" : "all" }]],
         });
         return { contents: result.code, loader: "ts" };
       });

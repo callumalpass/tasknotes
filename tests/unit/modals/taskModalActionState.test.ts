@@ -181,6 +181,7 @@ describe("taskModalActionState", () => {
 			priority: "high",
 			recurrenceRule: "FREQ=WEEKLY;BYDAY=TU",
 			recurrenceDisplayText: "Weekly on Tuesday",
+			timeFormat: "24",
 			reminderCount: 1,
 			defaultStatus: "open",
 			defaultPriority: "normal",

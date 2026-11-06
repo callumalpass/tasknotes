@@ -6,7 +6,12 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { createRecurrenceClickHandler, createReminderClickHandler } from "./taskCardActions";
-import { getChevronTooltip, getRecurrenceTooltip, getReminderTooltip } from "./taskCardHelpers";
+import {
+	getAttachmentCountLabel,
+	getChevronTooltip,
+	getRecurrenceTooltip,
+	getReminderTooltip,
+} from "./taskCardHelpers";
 import { createBadgeIndicator, updateBadgeIndicator } from "./taskCardIndicators";
 import { removeRelationshipContainer } from "./taskCardRelationshipExpansion";
 import { getBlockedByTaskPaths } from "./taskCardRelationships";
@@ -54,6 +59,7 @@ const SECONDARY_BADGE_SELECTORS = [
 	".task-card__recurring-indicator",
 	".task-card__reminder-indicator",
 	".task-card__details-indicator",
+	".task-card__attachment-indicator",
 	".task-card__project-indicator",
 	".task-card__chevron",
 	".task-card__blocking-toggle",
@@ -254,6 +260,18 @@ export async function toggleTaskCardBlockedByExpansion(
 	await handlers.toggleBlockedByTasks(card, task, expanded);
 }
 
+function setAttachmentCount(indicator: HTMLElement, count: number): void {
+	indicator.dataset.count = String(count);
+	let countEl = indicator.querySelector<HTMLElement>(".task-card__attachment-count");
+	if (!countEl) {
+		countEl = indicator.createSpan({
+			cls: "task-card__attachment-count",
+			attr: { "aria-hidden": "true" },
+		});
+	}
+	countEl.textContent = String(count);
+}
+
 function renderProjectBadges(
 	options: RenderTaskCardSecondaryBadgesOptions,
 	badgesContainer: HTMLElement
@@ -379,6 +397,19 @@ export function renderTaskCardSecondaryBadges(options: RenderTaskCardSecondaryBa
 			icon: "file-text",
 			tooltip: tTaskCard(plugin, "detailsTooltip"),
 		});
+	}
+
+	const attachmentCount = task.attachments?.length ?? 0;
+	if (attachmentCount > 0) {
+		const indicator = createBadgeIndicator({
+			container: badgesContainer,
+			className: "task-card__attachment-indicator",
+			icon: "paperclip",
+			tooltip: getAttachmentCountLabel(plugin, attachmentCount),
+		});
+		if (indicator) {
+			setAttachmentCount(indicator, attachmentCount);
+		}
 	}
 
 	renderProjectBadges(options, badgesContainer);
@@ -582,6 +613,17 @@ export function updateTaskCardSecondaryBadges(options: UpdateTaskCardSecondaryBa
 		icon: "file-text",
 		tooltip: tTaskCard(plugin, "detailsTooltip"),
 	});
+
+	const attachmentCount = task.attachments?.length ?? 0;
+	const attachmentIndicator = updateBadgeIndicator(card, ".task-card__attachment-indicator", {
+		shouldExist: attachmentCount > 0,
+		className: "task-card__attachment-indicator",
+		icon: "paperclip",
+		tooltip: getAttachmentCountLabel(plugin, attachmentCount),
+	});
+	if (attachmentIndicator) {
+		setAttachmentCount(attachmentIndicator, attachmentCount);
+	}
 
 	updateProjectBadges({ ...options, mainRow: mainRow ?? badgesContainer });
 	updateBlockingToggle(options);

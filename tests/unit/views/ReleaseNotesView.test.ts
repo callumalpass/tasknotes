@@ -92,6 +92,14 @@ describe("ReleaseNotesView", () => {
 		expect(calls[0][4]).toBe(view);
 	});
 
+	it("keeps the shared announcement compact without Android recruitment or stale stable-version claims", () => {
+		expect(releaseNotesAnnouncement.trim().split(/\n\s*\n/)).toHaveLength(1);
+		expect(releaseNotesAnnouncement.length).toBeLessThan(600);
+		expect(releaseNotesAnnouncement).toContain("Back up your vault");
+		expect(releaseNotesAnnouncement).not.toMatch(/Android|testers|Google Group|14 consecutive|4\.13|beta\.2/);
+		expect(releaseNotesAnnouncement.match(/\]\(https:/g)).toHaveLength(3);
+	});
+
 	it("omits legacy beta callouts without changing other release content", async () => {
 		const content = "# TaskNotes 4.12.4\n\n> [!info] TaskNotes v5 beta\n>\n> Old announcement\n\n## Fixed\n\n- A fix\n\n> [!info] Another notice\n> Keep this\n";
 		await createSection(releaseNote({ content }), true);

@@ -7,7 +7,7 @@ import type { HeadingCache } from "obsidian";
 import type { EditorView } from "@codemirror/view";
 import TaskNotesPlugin from "../main";
 import { TasksPluginParser, ParsedTaskData } from "../utils/TasksPluginParser";
-import { NaturalLanguageParser } from "./NaturalLanguageParser";
+import { createLivePluginParser, type TaskTextParser } from "./NaturalLanguageParser";
 import { Reminder, TaskCreationData } from "../types";
 import {
 	getCurrentTimestamp,
@@ -20,18 +20,58 @@ import { StatusManager } from "./StatusManager";
 import { PriorityManager } from "./PriorityManager";
 import { dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
 import { splitListPreservingLinksAndQuotes } from "../utils/stringSplit";
-import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
+import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { sanitizeGeneratedLinkAlias, sanitizeLinkAliasText } from "../utils/linkAliasUtils";
 import { formatResolvedProjectReference, generateLink } from "../utils/linkUtils";
 import { publishUserNotice } from "../core/userNotices";
-import { modifyVaultFile } from "./VaultMutationService";
+import {
+	modifyVaultFile,
+	processVaultFileWithinMutation,
+	processVaultFrontMatterWithinMutation,
+	withVaultFileMutation,
+} from "./VaultMutationService";
+import {
+	applyPropertyTaskIdentifier,
+	getFrontmatterTags,
+} from "../utils/taskIdentificationFrontmatter";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/InstantTaskConvertService" });
 
 type Nullable<T> = T | null;
 type Optional<T> = T | undefined;
+
+interface ConvertedTaskFile {
+	file: TFile;
+	/** Set when an existing note was reused; undoes the conversion's changes to it. */
+	revert?: () => Promise<void>;
+}
+
+// A task line can name its existing note with a link aliased "note", e.g. [[Skills/Review|note]].
+const LINKED_TASK_NOTE_PATTERN = /(?<!!)\[\[([^\]|]+)\|\s*note\s*\]\]/i;
+
+function frontmatterValueIncludes(existing: unknown, value: unknown): boolean {
+	const existingValues = (Array.isArray(existing) ? existing : [existing]).map(String);
+	return (Array.isArray(value) ? value : [value]).every((item) =>
+		existingValues.includes(String(item))
+	);
+}
+
+/** Add tags without rewriting the note's own tags unless there is something new to add. */
+function addMissingFrontmatterTags(frontmatter: Record<string, unknown>, tags: string[]): void {
+	const existing = Array.isArray(frontmatter.tags)
+		? frontmatter.tags.map(String)
+		: typeof frontmatter.tags === "string"
+			? frontmatter.tags.split(/[,\s]+/).filter(Boolean)
+			: [];
+	const normalize = (tag: string) => tag.replace(/^#/, "").toLowerCase();
+	const known = new Set(existing.map(normalize));
+	const missing = tags.filter((tag) => !known.has(normalize(tag)));
+	if (missing.length > 0) {
+		frontmatter.tags = [...existing, ...new Set(missing)];
+	}
+}
 
 export function findClosestHeadingAboveLine(
 	headings: Optional<HeadingCache[]>,
@@ -100,7 +140,7 @@ export class InstantTaskConvertService {
 	private plugin: TaskNotesPlugin;
 	private statusManager: StatusManager;
 	private priorityManager: PriorityManager;
-	private nlParser: NaturalLanguageParser;
+	private nlParser: TaskTextParser;
 	private inFlightConversions = new WeakMap<Editor, Map<number, Promise<void>>>();
 
 	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
@@ -115,7 +155,7 @@ export class InstantTaskConvertService {
 		this.plugin = plugin;
 		this.statusManager = statusManager;
 		this.priorityManager = priorityManager;
-		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
+		this.nlParser = createLivePluginParser(plugin);
 	}
 
 	/**
@@ -195,7 +235,12 @@ export class InstantTaskConvertService {
 					throw new Error("Failed to parse task");
 				}
 
-				const file = await this.createTaskFile(parsedData, "", task.lineNumber);
+				const { file } = await this.createTaskFile(
+					parsedData,
+					"",
+					task.lineNumber,
+					task.line
+				);
 				const linkText = this.generateLinkText(task.line, file);
 
 				return { lineNumber: task.lineNumber, line: task.line, file, linkText };
@@ -366,7 +411,12 @@ export class InstantTaskConvertService {
 			}
 
 			// Create the task file with default settings and details
-			const file = await this.createTaskFile(parsedData, details, selectionInfo.startLine);
+			const { file, revert } = await this.createTaskFile(
+				parsedData,
+				details,
+				selectionInfo.startLine,
+				currentLine
+			);
 
 			// Replace the original line(s) with a link (includes race condition protection)
 			const replaceResult = await this.replaceOriginalTaskLines(
@@ -378,9 +428,13 @@ export class InstantTaskConvertService {
 
 			if (!replaceResult.success) {
 				publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Failed to replace task line.", context: "services.instantTaskConvert.notices.replaceLineFailed" })));
-				// Clean up the created file since replacement failed
+				// Undo the conversion since replacement failed. A reused note is restored, never trashed.
 				try {
-					await this.plugin.app.fileManager.trashFile(file);
+					if (revert) {
+						await revert();
+					} else {
+						await this.plugin.app.fileManager.trashFile(file);
+					}
 				} catch (cleanupError) {
 					tasknotesLogger.warn(
 						"Failed to clean up created file after replacement failure:",
@@ -396,17 +450,28 @@ export class InstantTaskConvertService {
 
 			await this.persistSourceNoteAfterReplacement(editor);
 
-			if (
-				shouldShowFilenameShortenedNotice(
-					this.plugin.settings,
-					parsedData.title,
-					file.basename
-				)
-			) {
+			// A reused note keeps its own filename, so only a newly created file can need a notice.
+			const filenameNotice = revert
+				? undefined
+				: getTaskFilenameNotice(this.plugin.settings, parsedData.title, file.basename);
+			if (revert) {
+				publishUserNotice(this.plugin.emitter,
+					this.translate(msg({ message: "Task converted: {title}", context: "services.instantTaskConvert.notices.conversionComplete" }), {
+						title: file.basename,
+					})
+				);
+			} else if (filenameNotice === "shortened") {
 				publishUserNotice(this.plugin.emitter,
 					this.translate(
 						msg({ message: "Task converted: \"{title}\" (filename shortened due to length)", context: "services.instantTaskConvert.notices.conversionCompleteShortened" }),
 						{ title: parsedData.title }
+					)
+				);
+			} else if (filenameNotice === "sanitized") {
+				publishUserNotice(this.plugin.emitter,
+					this.translate(
+						msg({ message: "Task converted: \"{title}\" as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property.", context: "services.instantTaskConvert.notices.conversionCompleteFilenameSanitized" }),
+						{ title: parsedData.title, filename: file.basename }
 					)
 				);
 			} else {
@@ -587,11 +652,13 @@ export class InstantTaskConvertService {
 	private async createTaskFile(
 		parsedData: ParsedTaskData,
 		details = "",
-		sourceLineNumber?: number
-	): Promise<TFile> {
+		sourceLineNumber?: number,
+		sourceLine?: string
+	): Promise<ConvertedTaskFile> {
 		// Sanitize and validate input data
 		// Check if title will be truncated and preserve overflow text (issue #1310)
 		const originalTitle = parsedData.title?.trim() || "";
+		const linkedNote = this.findLinkedTaskNote(originalTitle);
 		const titleLinkPreservation = this.extractTitleLinks(originalTitle);
 		const titleSource = titleLinkPreservation.cleanTitle || originalTitle;
 		const title = this.sanitizeTitle(titleSource) || uiData("Untitled Task", "Pre-port persisted instant-conversion fallback title; never localize stored titles");
@@ -892,10 +959,150 @@ export class InstantTaskConvertService {
 				Object.keys(customFrontmatter).length > 0 ? customFrontmatter : undefined,
 		};
 
+		if (linkedNote) {
+			const { cleanTitle } = this.extractTitleLinks(originalTitle.replace(linkedNote.link, " "));
+			const lineText = this.extractLineContentAsTitle(sourceLine ?? originalTitle)
+				.replace(linkedNote.link, " ")
+				.replace(/\s+/g, " ")
+				.trim();
+			// Values written on the line, without defaults, to tell when the note disagrees.
+			const lineFrontmatter: Record<string, unknown> = {
+				...this.plugin.fieldMapper.mapToFrontmatter({
+					due: parsedDueDate ? dueDate : undefined,
+					scheduled: parsedScheduledDate ? scheduledDate : undefined,
+					priority: parsedData.priority ? this.sanitizePriority(parsedData.priority) : undefined,
+					status: parsedData.status ? this.sanitizeStatus(parsedData.status) : undefined,
+					contexts: parsedContexts.length > 0 ? parsedContexts : undefined,
+					projects: parsedProjects.length > 0 ? parsedProjects : undefined,
+					recurrence: parsedData.recurrence,
+					timeEstimate: parsedData.timeEstimate,
+				}),
+				...customFrontmatter,
+			};
+			return this.addTaskDataToExistingNote(linkedNote.file, taskData, {
+				lineFrontmatter,
+				lineText,
+				lineTitleDiffers: cleanTitle.toLowerCase() !== linkedNote.file.basename.toLowerCase(),
+				details: sourceDetails,
+			});
+		}
+
 		// Use the centralized task creation service
 		const { file } = await this.plugin.taskService.createTask(taskData);
 
-		return file;
+		return { file };
+	}
+
+	/**
+	 * Resolve a `[[path|note]]` link in the task text to an existing note, using Obsidian's
+	 * normal link resolution from the source note.
+	 */
+	private findLinkedTaskNote(title: string): Nullable<{ file: TFile; link: string }> {
+		const match = title.match(LINKED_TASK_NOTE_PATTERN);
+		const linkpath = match?.[1].split("#")[0].trim();
+		if (!match || !linkpath) {
+			return null;
+		}
+
+		const sourcePath = this.plugin.app.workspace.getActiveFile()?.path ?? "";
+		const file = this.plugin.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
+		if (!file || file.extension !== "md" || file.path === sourcePath) {
+			return null;
+		}
+		return { file, link: match[0] };
+	}
+
+	/**
+	 * Make an existing note the task. Its frontmatter and body are kept: task fields are only
+	 * added where the note has no value. The task line is replaced by a link, so when the note
+	 * disagrees with it (or the line says more than the note's name) the line text is appended
+	 * to the body, along with any selected details.
+	 */
+	private async addTaskDataToExistingNote(
+		file: TFile,
+		taskData: TaskCreationData,
+		line: {
+			lineFrontmatter: Record<string, unknown>;
+			lineText: string;
+			lineTitleDiffers: boolean;
+			details: string;
+		}
+	): Promise<ConvertedTaskFile> {
+		const { app, settings, fieldMapper } = this.plugin;
+		const taskTag = settings.taskIdentificationMethod === "tag" ? settings.taskTag : undefined;
+		const mapped: Record<string, unknown> = {
+			...fieldMapper.mapToFrontmatter(
+				{ ...taskData, title: file.basename },
+				taskTag,
+				settings.storeTitleInFilename
+			),
+			...(taskData.customFrontmatter || {}),
+		};
+
+		return withVaultFileMutation(file, async () => {
+			const originalContent = await app.vault.read(file);
+			let lineConflicts = false;
+
+			await processVaultFrontMatterWithinMutation(app, file, (frontmatter) => {
+				for (const [key, value] of Object.entries(line.lineFrontmatter)) {
+					if (
+						value !== undefined &&
+						Object.prototype.hasOwnProperty.call(frontmatter, key) &&
+						!frontmatterValueIncludes(frontmatter[key], value)
+					) {
+						lineConflicts = true;
+					}
+				}
+				for (const [key, value] of Object.entries(mapped)) {
+					if (
+						key !== "tags" &&
+						value !== undefined &&
+						!Object.prototype.hasOwnProperty.call(frontmatter, key)
+					) {
+						frontmatter[key] = value;
+					}
+				}
+				addMissingFrontmatterTags(frontmatter, getFrontmatterTags(mapped.tags));
+				if (settings.taskIdentificationMethod === "property") {
+					applyPropertyTaskIdentifier(
+						frontmatter,
+						settings.taskPropertyName,
+						settings.taskPropertyValue
+					);
+				}
+			});
+
+			const keptText = [
+				(lineConflicts || line.lineTitleDiffers) && line.lineText ? line.lineText : "",
+				line.details.replace(/\r\n/g, "\n").trim(),
+			]
+				.filter(Boolean)
+				.join("\n\n");
+			let convertedContent = await app.vault.read(file);
+			// Undo only if nothing else has edited the note since the conversion.
+			const restoreUnchanged = (current: string) =>
+				current === convertedContent ? originalContent : current;
+			if (keptText) {
+				try {
+					convertedContent = await processVaultFileWithinMutation(
+						app,
+						file,
+						(content) => `${content.trimEnd()}\n\n${keptText}\n`
+					);
+				} catch (error) {
+					await processVaultFileWithinMutation(app, file, restoreUnchanged);
+					throw error;
+				}
+			}
+
+			return {
+				file,
+				revert: () =>
+					withVaultFileMutation(file, async () => {
+						await processVaultFileWithinMutation(app, file, restoreUnchanged);
+					}),
+			};
+		});
 	}
 
 	private getParentHeaderProject(currentFile: TFile, sourceLineNumber?: number): string | null {

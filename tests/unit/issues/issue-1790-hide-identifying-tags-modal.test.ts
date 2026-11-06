@@ -104,7 +104,7 @@ describe("issue #1790 identifying tags in task modals", () => {
 
 		await modal.initializeFormData();
 
-		expect((modal as unknown as { tags: string }).tags).toBe("work");
+		expect((modal as unknown as { tags: string }).form.values.tags).toBe("work");
 	});
 
 	it("filters identifying tags from tag field autocomplete when the hide setting is enabled", async () => {

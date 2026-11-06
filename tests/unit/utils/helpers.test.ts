@@ -896,6 +896,64 @@ invalid yaml: [
         const result = extractTimeblocksFromNote(content, '/notes/test.md');
         expect(result).toEqual([]);
       });
+
+      it('should find the real closing fence when a value contains "---" mid-line', () => {
+        // Regression test: a `---` inside a frontmatter value used to be
+        // mistaken for the closing fence, truncating the frontmatter before
+        // the timeblocks list and silently dropping every timeblock.
+        const content = `---
+description: "Section A --- Section B"
+timeblocks:
+  - id: tb-1
+    title: Standup
+    startTime: "09:00"
+    endTime: "09:15"
+---
+
+# Daily Note Content`;
+
+        const result = extractTimeblocksFromNote(content, '/daily/2025-01-15.md');
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ id: 'tb-1', title: 'Standup' });
+      });
+
+      it('should find the real closing fence when a value is literally "---"', () => {
+        const content = `---
+marker: "---"
+timeblocks:
+  - id: tb-1
+    title: Standup
+    startTime: "09:00"
+    endTime: "09:15"
+---
+
+# Daily Note Content`;
+
+        const result = extractTimeblocksFromNote(content, '/daily/2025-01-15.md');
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ id: 'tb-1', title: 'Standup' });
+      });
+
+      it('should handle CRLF line endings', () => {
+        const content =
+          '---\r\ndescription: "A --- B"\r\ntimeblocks:\r\n  - id: tb-1\r\n    title: Standup\r\n    startTime: "09:00"\r\n    endTime: "09:15"\r\n---\r\n\r\n# Daily Note Content';
+
+        const result = extractTimeblocksFromNote(content, '/daily/2025-01-15.md');
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ id: 'tb-1', title: 'Standup' });
+      });
+
+      it('should return empty array for content with no frontmatter at all', () => {
+        const content = '# Just a heading\n\nSome regular text';
+        const result = extractTimeblocksFromNote(content, '/notes/test.md');
+        expect(result).toEqual([]);
+      });
+
+      it('should return empty array (not throw) when the frontmatter fence is never closed', () => {
+        const content = '---\ntimeblocks:\n  - id: tb-1\n    title: Standup';
+        expect(() => extractTimeblocksFromNote(content, '/notes/test.md')).not.toThrow();
+        expect(extractTimeblocksFromNote(content, '/notes/test.md')).toEqual([]);
+      });
     });
   });
 

@@ -107,6 +107,53 @@
 	min-width: 0;
 }
 
+/* Own the vertical scroll so group headers can stick relative to this container.
+   Embed overrides below set overflow-y: visible when a parent note scroller should win. */
+.tn-tasknotesTaskList .tn-bases-items-container {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+/* Each section bounds its sticky header; nested offsets follow measured height. */
+.tn-tasknotesTaskList .task-list-group > .task-group,
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	position: sticky;
+	top: 0;
+	z-index: var(--tn-z-sticky);
+	background: var(--tn-bg-primary);
+}
+
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	top: var(--task-list-parent-header-height, 0px);
+	z-index: calc(var(--tn-z-sticky) - 1);
+}
+
+/*
+ * Virtualized lists position rows with transform, which breaks CSS sticky.
+ * A zero-height sticky pin overlays the active group header instead.
+ */
+.tn-tasknotesTaskList .task-list-virtual-sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: calc(var(--tn-z-sticky) + 1);
+	height: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header.is-empty {
+	display: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header__group {
+	pointer-events: auto;
+	background: var(--tn-bg-primary);
+	position: relative;
+	top: auto;
+	z-index: auto;
+}
+
 /* Toggle button for groups */
 .tn-bases-tasknotes-list .task-group-toggle {
     appearance: none;
@@ -222,6 +269,13 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     flex: 0 1 auto;
     max-height: none;
     overflow-y: visible;
+}
+
+/* Let the note be the sticky/virtual scroll root, rather than an unbounded
+   Bases wrapper that never actually scrolls. */
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed,
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed .bases-view {
+    overflow: visible;
 }
 
 /* Reset indentation for task cards after a primary group header */
@@ -477,6 +531,11 @@ body.is-mobile .tn-bases-kanban-column {
     border-right: 1px solid var(--tn-divider-color);
 }
 
+.kanban-view__column-header-cell--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 12%, var(--tn-bg-secondary));
+    border-right-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
+}
+
 .kanban-view__column-header-cell:active {
     cursor: grabbing;
 }
@@ -519,6 +578,11 @@ body.is-mobile .tn-bases-kanban-column {
     overflow: hidden;
 }
 
+.kanban-view__swimlane-column--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 6%, var(--tn-bg-primary));
+    border-right-color: color-mix(in srgb, var(--tn-kanban-status-color) 38%, var(--tn-border-color));
+}
+
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {
     border-left: 1px dashed var(--tn-text-faint);
     background: var(--tn-bg-secondary);
@@ -543,22 +607,12 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Responsive adjustments for swimlanes */
 @media (max-width: 1200px) {
-    .kanban-view__swimlane-row > :first-child {
-        width: 150px;
-        min-width: 150px;
-    }
-
     .kanban-view__swimlane-label {
         padding: var(--tn-spacing-sm);
     }
 }
 
 @media (max-width: 768px) {
-    .kanban-view__swimlane-row > :first-child {
-        width: 120px;
-        min-width: 120px;
-    }
-
     .kanban-view__swimlane-title {
         font-size: var(--tn-font-size-sm);
     }
@@ -566,4 +620,34 @@ body.is-mobile .tn-bases-kanban-column {
     .kanban-view__column-header-cell .kanban-view__column-title {
         font-size: var(--tn-font-size-sm);
     }
+}
+
+/* Swimlane label drag-to-reorder */
+.kanban-view__swimlane-label[draggable="true"] {
+    cursor: grab;
+}
+
+.kanban-view__swimlane-label[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.kanban-view__swimlane-label .kanban-view__swimlane-drag-handle {
+    position: absolute;
+    top: var(--tn-spacing-xs);
+    right: var(--tn-spacing-xs);
+    opacity: 0;
+}
+
+.kanban-view__swimlane-label:hover .kanban-view__swimlane-drag-handle,
+.kanban-view__swimlane-label--dragging .kanban-view__swimlane-drag-handle {
+    opacity: 1;
+}
+
+.kanban-view__swimlane-label--dragging {
+    opacity: 0.5;
+}
+
+.kanban-view__swimlane-label--dragover {
+    background: var(--tn-interactive-hover);
+    box-shadow: inset 0 0 0 1px var(--tn-interactive-accent);
 }

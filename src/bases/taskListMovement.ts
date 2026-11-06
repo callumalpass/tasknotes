@@ -24,6 +24,12 @@ export type TaskListMovementPlan = {
 	unresolvedProperties: string[];
 };
 
+/** The status a movement would write, if it changes status at all. */
+export function getTaskListMovementStatus(plan: TaskListMovementPlan): string | null {
+	const change = plan.changes.find((candidate) => candidate.groupByTaskProp === "status");
+	return change ? (change.normalizedTargetGroupKey ?? "") : null;
+}
+
 export function taskListDestinationKey(destination: TaskListDestination): string {
 	return JSON.stringify([
 		destination.groupKey,

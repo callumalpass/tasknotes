@@ -562,6 +562,26 @@ body.is-mobile .tasknotes-plugin .task-card.task-card--drag-handle-only .task-ca
     height: 14px;
 }
 
+/* Attachment indicator: paperclip plus count */
+.tasknotes-plugin .task-card__attachment-indicator {
+    height: 14px;
+    gap: 1px;
+    color: var(--tn-text-muted);
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--tn-radius-sm);
+    flex-shrink: 0;
+    font-size: var(--font-ui-smaller);
+    line-height: 1;
+}
+
+.tasknotes-plugin .task-card__attachment-indicator svg {
+    width: 14px;
+    height: 14px;
+}
+
 /* Details indicator */
 .tasknotes-plugin .task-card__details-indicator {
     width: 14px;
@@ -898,6 +918,11 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
     color: var(--tn-color-info);
 }
 
+/* Display-only dates: no hover state, and clicks reach the card */
+.tasknotes-plugin .task-card__metadata-date--readonly {
+    pointer-events: none;
+}
+
 /* Overdue due dates - use the hover background color for text */
 .tasknotes-plugin .task-card__metadata-date--overdue {
     color: var(--tn-color-error);
@@ -1132,6 +1157,7 @@ body.is-mobile .tasknotes-plugin .task-card__context-menu svg {
     body:not(.is-mobile) .tasknotes-plugin .task-card__recurring-indicator,
     body:not(.is-mobile) .tasknotes-plugin .task-card__reminder-indicator,
     body:not(.is-mobile) .tasknotes-plugin .task-card__details-indicator,
+    body:not(.is-mobile) .tasknotes-plugin .task-card__attachment-indicator,
     body:not(.is-mobile) .tasknotes-plugin .task-card__project-indicator,
     body:not(.is-mobile) .tasknotes-plugin .task-card__chevron,
     body:not(.is-mobile) .tasknotes-plugin .task-card__blocking-toggle,
@@ -1284,6 +1310,7 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline) .tag 
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__recurring-indicator,
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__reminder-indicator,
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__details-indicator,
+body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__attachment-indicator,
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__project-indicator,
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__blocking-toggle,
 body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.task-card--layout-compact) .task-card__blocked-toggle {

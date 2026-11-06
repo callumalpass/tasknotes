@@ -47,7 +47,7 @@ export type FilterTaskGroupingContext = {
 	getPriorityWeight(priority: string): number;
 	getStatusOrder(status: string): number;
 	getUserFieldRawValue(task: TaskInfo, fieldKey: string): unknown;
-	resolveProjectToAbsolutePath(projectValue: string): string;
+	resolveProjectToAbsolutePath(projectValue: string, sourcePath?: string): string;
 	translate(
 		key: MessageDescriptor,
 		fallback: string,
@@ -190,7 +190,9 @@ function getGroupValuesForTask(
 		if (filteredProjects.length === 0) {
 			return [getNoProjectLabel(context)];
 		}
-		return filteredProjects.map((project) => context.resolveProjectToAbsolutePath(project));
+		return filteredProjects.map((project) =>
+			context.resolveProjectToAbsolutePath(project, task.path)
+		);
 	}
 
 	if (groupKey === "tags") {

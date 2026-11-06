@@ -1,3 +1,4 @@
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Pomodoro state transitions guard active sessions before dereferencing. */
@@ -141,28 +142,30 @@ export class PomodoroService {
 		}
 
 		try {
-			const data = await this.plugin.loadPluginDataForSafeWrite(
-				"persist-pomodoro-task-path-file-rename"
-			);
-			if (!data) return;
-			let shouldSaveData = false;
+			await withPluginDataWriteLock(this.plugin, async () => {
+				const data = await this.plugin.loadPluginDataForSafeWrite(
+					"persist-pomodoro-task-path-file-rename"
+				);
+				if (!data) return;
+				let shouldSaveData = false;
 
-			if (stateChanged) {
-				data.pomodoroState = this.state;
-				data.lastPomodoroDate = formatDateForStorage(getTodayLocal());
-				shouldSaveData = true;
-			}
+				if (stateChanged) {
+					data.pomodoroState = this.state;
+					data.lastPomodoroDate = formatDateForStorage(getTodayLocal());
+					shouldSaveData = true;
+				}
 
-			if (lastSelectedChanged || data.lastSelectedTaskPath === oldPath) {
-				this.lastSelectedTaskPath = newPath;
-				this.lastSelectedTaskPathLoaded = true;
-				data.lastSelectedTaskPath = newPath;
-				shouldSaveData = true;
-			}
+				if (lastSelectedChanged || data.lastSelectedTaskPath === oldPath) {
+					this.lastSelectedTaskPath = newPath;
+					this.lastSelectedTaskPathLoaded = true;
+					data.lastSelectedTaskPath = newPath;
+					shouldSaveData = true;
+				}
 
-			if (shouldSaveData) {
-				await this.plugin.saveData(data);
-			}
+				if (shouldSaveData) {
+					await this.plugin.saveData(data);
+				}
+			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to persist Pomodoro task path after file rename:", {
 				category: "persistence",
@@ -267,15 +270,17 @@ export class PomodoroService {
 
 	async saveState() {
 		try {
-			const data = await this.plugin.loadPluginDataForSafeWrite("save-pomodoro-state");
-			if (!data) return;
-			const today = formatDateForStorage(getTodayLocal());
-			if (!shouldPersistPomodoroState(data, this.state, today)) {
-				return;
-			}
-			data.pomodoroState = this.state;
-			data.lastPomodoroDate = today;
-			await this.plugin.saveData(data);
+			await withPluginDataWriteLock(this.plugin, async () => {
+				const data = await this.plugin.loadPluginDataForSafeWrite("save-pomodoro-state");
+				if (!data) return;
+				const today = formatDateForStorage(getTodayLocal());
+				if (!shouldPersistPomodoroState(data, this.state, today)) {
+					return;
+				}
+				data.pomodoroState = this.state;
+				data.lastPomodoroDate = today;
+				await this.plugin.saveData(data);
+			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to save pomodoro state:", {
 				category: "persistence",
@@ -289,17 +294,20 @@ export class PomodoroService {
 		this.lastSelectedTaskPath = taskPath;
 		this.lastSelectedTaskPathLoaded = true;
 		try {
-			const data = await this.plugin.loadPluginDataForSafeWrite("save-last-selected-task");
-			if (!data) return;
-			if (!shouldPersistLastSelectedTask(data, taskPath)) {
-				return;
-			}
-			if (taskPath === undefined) {
-				delete data.lastSelectedTaskPath;
-			} else {
-				data.lastSelectedTaskPath = taskPath;
-			}
-			await this.plugin.saveData(data);
+			await withPluginDataWriteLock(this.plugin, async () => {
+				const data =
+					await this.plugin.loadPluginDataForSafeWrite("save-last-selected-task");
+				if (!data) return;
+				if (!shouldPersistLastSelectedTask(data, taskPath)) {
+					return;
+				}
+				if (taskPath === undefined) {
+					delete data.lastSelectedTaskPath;
+				} else {
+					data.lastSelectedTaskPath = taskPath;
+				}
+				await this.plugin.saveData(data);
+			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to save last selected task:", {
 				category: "persistence",
@@ -1464,10 +1472,12 @@ export class PomodoroService {
 	}
 
 	private async savePluginHistory(history: PomodoroSessionHistory[]): Promise<void> {
-		const data = await this.plugin.loadPluginDataForSafeWrite("save-pomodoro-history");
-		if (!data) return;
-		data.pomodoroHistory = history;
-		await this.plugin.saveData(data);
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.plugin.loadPluginDataForSafeWrite("save-pomodoro-history");
+			if (!data) return;
+			data.pomodoroHistory = history;
+			await this.plugin.saveData(data);
+		});
 	}
 
 	private async loadPluginHistoryForDateKey(dateKey: string): Promise<PomodoroSessionHistory[]> {
@@ -1831,36 +1841,54 @@ export class PomodoroService {
 			}
 
 			// Load existing plugin data
-			const data = (await this.plugin.loadData()) as {
-				pomodoroHistory?: PomodoroSessionHistory[];
-			} | null;
-			if (!data) return;
-			const pluginHistory = data.pomodoroHistory || [];
+			await withPluginDataWriteLock(this.plugin, async () => {
+				const data = (await this.plugin.loadData()) as {
+					pomodoroHistory?: PomodoroSessionHistory[];
+				} | null;
+				if (!data) return;
+				const pluginHistory = data.pomodoroHistory || [];
 
-			if (pluginHistory.length === 0) {
-				return; // Nothing to migrate
-			}
+				if (pluginHistory.length === 0) {
+					return; // Nothing to migrate
+				}
 
-			// Save to daily notes
-			await this.saveHistoryToDailyNotes(pluginHistory);
+				// Save to daily notes
+				await this.saveHistoryToDailyNotes(pluginHistory);
 
-			// Clear plugin data after successful migration
-			data.pomodoroHistory = [];
-			await this.plugin.saveData(data);
+				// Clear plugin data after successful migration
+				data.pomodoroHistory = [];
+				await this.plugin.saveData(data);
 
-			publishUserNotice(
-				this.plugin.emitter,
-				this.translate(msg({ message: "Successfully migrated {count} pomodoro sessions to daily notes.", context: "services.pomodoro.notices.migrationSuccess" }), {
-					count: pluginHistory.length,
-				})
-			);
+				publishUserNotice(
+					this.plugin.emitter,
+					this.translate(
+						msg({
+							message:
+								"Successfully migrated {count} pomodoro sessions to daily notes.",
+							context: "services.pomodoro.notices.migrationSuccess",
+						}),
+						{
+							count: pluginHistory.length,
+						}
+					)
+				);
+			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to migrate pomodoro data to daily notes:", {
 				category: "persistence",
 				operation: "migrate-pomodoro-data-daily-notes",
 				error: error,
 			});
-			publishUserNotice(this.plugin.emitter, this.translate(msg({ message: "Failed to migrate Pomodoro data. Please try again or check the console for details.", context: "services.pomodoro.notices.migrationFailure" })));
+			publishUserNotice(
+				this.plugin.emitter,
+				this.translate(
+					msg({
+						message:
+							"Failed to migrate Pomodoro data. Please try again or check the console for details.",
+						context: "services.pomodoro.notices.migrationFailure",
+					})
+				)
+			);
 			throw error;
 		}
 	}

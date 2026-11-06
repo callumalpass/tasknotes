@@ -17,10 +17,12 @@
 		"js-yaml": "^4.3.0",
 		"marked": "^13.0.0",
 		"marked-highlight": "^2.1.0",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"zod": "file:../vendor/zod"
 	},
 	"overrides": {
-		"js-yaml": "^4.3.0"
+		"js-yaml": "^4.3.0",
+		"zod": "$zod"
 	},
 	"devDependencies": {
 		"@axe-core/playwright": "^4.12.1",

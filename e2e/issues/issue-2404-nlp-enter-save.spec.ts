@@ -37,6 +37,8 @@ test.beforeAll(async () => {
 
 test.afterEach(async () => {
 	await instance.page.keyboard.press("Escape");
+	const discard = instance.page.getByRole("button", { name: "Discard changes" });
+	if (await discard.isVisible()) await discard.click();
 	const close = instance.page.locator(".modal-close-button").last();
 	if (await close.isVisible()) await close.click();
 });

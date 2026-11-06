@@ -341,6 +341,9 @@ export interface GoogleCalendarExportSettings {
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
+	syncTimeblocks: boolean; // Sync daily-note timeblocks to Google Calendar (independent of task export)
+	timeblockTargetCalendarId: string; // Calendar for timeblock events (empty = same as targetCalendarId)
+	timeblockEventTitleTemplate: string; // Template for timeblock event titles
 }
 
 export type TimeblockAttachmentSearchOrder =

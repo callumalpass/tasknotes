@@ -16,11 +16,12 @@ import type { LanguagePackManifest } from "../src/i18n/languagePackTypes";
 
 const baseUrl = process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL;
 const root = path.resolve(__dirname, "..");
-const fixturePlugin = path.join(root, "tasknotes-e2e-vault/.obsidian/plugins/tasknotes");
+const vaultRoot = path.resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(root, "tasknotes-e2e-vault"));
+const fixturePlugin = path.join(vaultRoot, ".obsidian/plugins/tasknotes");
 const settingsPath = path.join(fixturePlugin, "data.json");
 const generatedStatsBase = path.join(
-	root,
-	"tasknotes-e2e-vault/TaskNotes/Views/pomodoro-stats.base"
+	vaultRoot,
+	"TaskNotes/Views/pomodoro-stats.base"
 );
 const hadStatsBase = fs.existsSync(generatedStatsBase);
 let app: ObsidianApp | undefined;

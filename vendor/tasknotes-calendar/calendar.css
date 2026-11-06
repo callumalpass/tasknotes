@@ -1,0 +1,1719 @@
+/*
+ * Pinned host copy of @tasknotes/calendar 0.1.6 dist/calendar.css (MIT, see
+ * LICENSE beside this file; upstream sha256 725742e962757e54a56f7e67b823f017
+ * 993bb705f17e181233173d1f3e9ddfe1). build-css.mjs bundles this file in place
+ * of the package stylesheet so styles.css passes the plugin's stylelint rules.
+ * Changes from upstream are marked "Host:" and keep the upstream behaviour:
+ * short hex colours expanded; !important replaced by specificity, source order
+ * or (for z-index over the engine's inline style) a paused animation; :has()
+ * replaced by a margin and a host class; display: contents replaced by an
+ * equivalent grid/block box. Re-copy and re-apply when the package changes.
+ *
+ * @tasknotes/calendar. Every colour and size is a custom property on `.tnc`,
+ * so hosts theme it by setting variables (Obsidian: map to --background-primary
+ * etc.). Nothing here targets elements outside `.tnc`.
+ */
+.tnc {
+	--tnc-bg: initial;
+	--tnc-surface: var(--tnc-theme-bg, #ffffff);
+	--tnc-surface-2: var(--tnc-theme-bg-2, #f8f7f5);
+	--tnc-surface-3: var(--tnc-theme-bg-3, #efede9);
+	--tnc-line: var(--tnc-theme-line, #e7e4df);
+	--tnc-line-strong: var(--tnc-theme-line-strong, #d6d1ca);
+	--tnc-text: var(--tnc-theme-text, #1b1815);
+	--tnc-muted: var(--tnc-theme-muted, #6b645c);
+	--tnc-faint: var(--tnc-theme-faint, #9b948b);
+	--tnc-accent: var(--tnc-theme-accent, #7c5cf0);
+	--tnc-accent-text: var(--tnc-theme-accent-text, #ffffff);
+	--tnc-accent-soft: color-mix(in srgb, var(--tnc-accent) 13%, transparent);
+	--tnc-now: var(--tnc-theme-now, #e5484d);
+	--tnc-warn: var(--tnc-theme-warn, #d92a85);
+	--tnc-ok: var(--tnc-theme-ok, #16a34a);
+	--tnc-amber: var(--tnc-theme-amber, #d97706);
+	--tnc-off: color-mix(in srgb, var(--tnc-text) 3.5%, transparent);
+	--tnc-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+	--tnc-radius: 6px;
+	/* Time-grid share for tracked ("actual") items where they overlap planned ones. */
+	--tnc-actual-w: 22%;
+	--tnc-font-size: 12px;
+	--tnc-small: 11px;
+	--tnc-bar-h: 20px;
+	/* "+N more" link height; rows make room for it. Hosts with taller (touch) links set this. */
+	--tnc-more-h: var(--tnc-bar-h);
+	/* Month dots (monthDisplay: "dots"). */
+	--tnc-dot-size: 8px;
+	--tnc-dot-gap: 3px;
+	--tnc-gutter-w: 52px;
+	/* Narrowest a time-grid day column gets; narrower containers scroll sideways. */
+	--tnc-col-min: 64px;
+	--tnc-weeknum-w: 32px;
+	--tnc-dg-top-h: 24px;
+	--tnc-day-min-h: 92px;
+	--tnc-item-c: var(--tnc-accent);
+
+	position: relative;
+	/* Keep the calendar's own layers (sticky headers, popovers) below host overlays. */
+	isolation: isolate;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	color: var(--tnc-text);
+	background: var(--tnc-surface);
+	font-size: var(--tnc-font-size);
+	line-height: 1.35;
+	-webkit-tap-highlight-color: transparent;
+}
+.tnc *,
+.tnc *::before,
+.tnc *::after {
+	box-sizing: border-box;
+}
+/* Host: (0,2,0) already beats every engine display rule on hidden elements. */
+.tnc [hidden] {
+	display: none;
+}
+.tnc--height-fill {
+	height: 100%;
+}
+.tnc button {
+	font: inherit;
+	color: inherit;
+}
+/* Host: drag cursors and user-select live at the end of this file. */
+
+/* ------------------------------------------------------------- toolbar */
+.tnc-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 12px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--tnc-line);
+}
+.tnc-toolbar-start,
+.tnc-toolbar-end,
+.tnc-toolbar-group {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.tnc-toolbar-start {
+	gap: 10px;
+}
+.tnc-title {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 650;
+	white-space: nowrap;
+}
+.tnc-btn {
+	min-height: 26px;
+	padding: 3px 10px;
+	border: 1px solid var(--tnc-line-strong);
+	border-radius: var(--tnc-radius);
+	background: var(--tnc-surface);
+	cursor: pointer;
+	font-size: var(--tnc-font-size);
+	line-height: 1.2;
+}
+.tnc-btn:hover {
+	background: var(--tnc-surface-3);
+}
+.tnc-btn[aria-pressed="true"] {
+	background: var(--tnc-accent-soft);
+	border-color: var(--tnc-accent);
+	color: var(--tnc-accent);
+}
+.tnc-btn-prev,
+.tnc-btn-next {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	padding: 3px 6px;
+}
+.tnc-btn-prev svg,
+.tnc-btn-next svg {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.tnc-btn:focus-visible,
+.tnc-navlink:focus-visible,
+.tnc-item:focus-visible,
+.tnc-more:focus-visible,
+.tnc-ym-day:focus-visible,
+.tnc-dg-day[tabindex]:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: 1px;
+}
+
+.tnc-view {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+.tnc-view > * {
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.tnc-navlink {
+	border: 0;
+	background: none;
+	padding: 0;
+	cursor: pointer;
+	text-align: inherit;
+}
+.tnc-navlink:hover {
+	text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------- items */
+.tnc-item {
+	--c: var(--tnc-c, var(--tnc-item-c));
+	position: absolute;
+	overflow: hidden;
+	border-radius: var(--tnc-radius);
+	color: var(--tnc-fg, var(--tnc-text));
+	font-size: var(--tnc-small);
+	line-height: 1.25;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+}
+.tnc-item-main {
+	display: flex;
+	min-width: 0;
+	overflow: hidden;
+}
+.tnc-item-title {
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+.tnc-item-time {
+	color: color-mix(in srgb, var(--tnc-fg, var(--tnc-text)) 70%, transparent);
+	white-space: nowrap;
+	flex: none;
+	font-variant-numeric: tabular-nums;
+}
+.tnc-item-time:empty {
+	display: none;
+}
+.tnc-item.is-draggable {
+	/* Long-press drags need the browser not to claim the touch for panning; the calendar pans by hand. */
+	touch-action: none;
+}
+.tnc-item.is-completed {
+	opacity: 0.55;
+}
+.tnc-item.is-completed .tnc-item-title {
+	text-decoration: line-through;
+}
+.tnc-item.is-conflict {
+	box-shadow: 0 0 0 1.5px var(--tnc-warn);
+}
+/*
+ * Host: timed items carry an inline z-index (their overlap column), which only
+ * !important or an animation can override. A paused animation holds the raised
+ * z-index for exactly as long as the class is present.
+ */
+.tnc-item.is-hover {
+	filter: brightness(0.97);
+	animation: tnc-host-raise-hover 1s linear both paused;
+}
+.tnc-item.is-dragging {
+	animation: tnc-host-raise-dragging 1s linear both paused;
+	box-shadow: var(--tnc-shadow);
+	opacity: 0.92;
+}
+@keyframes tnc-host-raise-hover {
+	from,
+	to {
+		z-index: 20;
+	}
+}
+@keyframes tnc-host-raise-dragging {
+	from,
+	to {
+		z-index: 40;
+	}
+}
+/* Host: animation beats inline z-index/pointer-events; specificity keeps the dashed border. */
+@keyframes tnc-host-inert-mirror {
+	from,
+	to {
+		z-index: 40;
+		pointer-events: none;
+	}
+}
+.tnc-item.is-mirror {
+	animation: tnc-host-inert-mirror 1s linear both paused;
+	opacity: 0.8;
+	border-style: dashed;
+	pointer-events: none;
+}
+
+/* timed (time grid) */
+.tnc-item--timed {
+	padding: 2px 5px 2px 6px;
+	background: var(--tnc-bg, color-mix(in srgb, var(--c) 14%, var(--tnc-surface)));
+	border: 1px solid var(--tnc-border, color-mix(in srgb, var(--c) 34%, transparent));
+	border-left: 3px solid var(--tnc-border, var(--c));
+}
+.tnc-item--timed .tnc-item-main {
+	flex-direction: column;
+	gap: 1px;
+	height: 100%;
+}
+.tnc-item--timed .tnc-item-title {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 6;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.tnc-item--timed.is-short {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.tnc-item--timed.is-short .tnc-item-main {
+	flex-direction: row;
+	align-items: center;
+	gap: 5px;
+	white-space: nowrap;
+}
+.tnc-item--timed.is-short .tnc-item-title {
+	-webkit-line-clamp: 1;
+	white-space: nowrap;
+	display: block;
+}
+.tnc-item--timed.is-short .tnc-item-time {
+	flex: none;
+}
+.tnc-item--timed.is-short .tnc-item-time-end {
+	display: none;
+}
+.tnc-item--timed.is-cont-start {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-top-style: dashed;
+}
+.tnc-item--timed.is-cont-end {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	border-bottom-style: dashed;
+}
+.tnc-item--timed.is-actual {
+	padding: 1px 3px;
+	border-left-width: 1px;
+	background: repeating-linear-gradient(
+		45deg,
+		color-mix(in srgb, var(--c) 30%, var(--tnc-surface)) 0 4px,
+		color-mix(in srgb, var(--c) 14%, var(--tnc-surface)) 4px 8px
+	);
+}
+.tnc-item.is-background {
+	left: 0;
+	right: 0;
+	border-radius: 0;
+	background: var(--tnc-bg, color-mix(in srgb, var(--c) 12%, transparent));
+	pointer-events: none;
+}
+
+/* bars (all-day row, month spans, popover) */
+.tnc-item--bar {
+	height: var(--tnc-bar-h);
+	padding: 0 6px;
+	display: flex;
+	align-items: center;
+	background: var(--tnc-bg, color-mix(in srgb, var(--c) 16%, var(--tnc-surface)));
+	border: 1px solid var(--tnc-border, color-mix(in srgb, var(--c) 42%, transparent));
+	white-space: nowrap;
+}
+.tnc-item--bar .tnc-item-main {
+	gap: 5px;
+	align-items: center;
+	width: 100%;
+}
+.tnc-item--bar.is-cont-start {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left-style: dashed;
+}
+.tnc-item--bar.is-cont-end {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	border-right-style: dashed;
+}
+
+/* dots (timed items in day cells); dots have no border, even when a host sets a border style */
+.tnc-item.tnc-item--dot {
+	border-width: 0;
+}
+.tnc-item--dot {
+	height: var(--tnc-bar-h);
+	padding: 0 4px;
+	display: flex;
+	align-items: center;
+	white-space: nowrap;
+}
+.tnc-item--dot:hover,
+.tnc-item--dot.is-hover {
+	background: var(--tnc-surface-3);
+}
+.tnc-item--dot .tnc-item-main {
+	gap: 4px;
+	align-items: center;
+	width: 100%;
+}
+.tnc-item--dot .tnc-item-title {
+	font-weight: 500;
+}
+.tnc-item-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	flex: none;
+	background: var(--tnc-border, var(--c));
+}
+
+/* resize handles */
+.tnc-resize {
+	position: absolute;
+	z-index: 2;
+}
+.tnc-resize.is-v {
+	left: 0;
+	right: 0;
+	height: 8px;
+	cursor: ns-resize;
+}
+.tnc-resize-end.is-v {
+	bottom: -1px;
+}
+.tnc-resize-start.is-v {
+	top: -1px;
+}
+.tnc-resize.is-h {
+	top: 0;
+	bottom: 0;
+	width: 8px;
+	cursor: ew-resize;
+}
+.tnc-resize-end.is-h {
+	right: -1px;
+}
+.tnc-resize-start.is-h {
+	left: -1px;
+}
+
+/* selection */
+.tnc-sel-layer,
+.tnc-more-layer {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.tnc-more-layer > * {
+	pointer-events: auto;
+}
+.tnc-sel {
+	position: absolute;
+	left: 0;
+	right: 0;
+	background: var(--tnc-accent-soft);
+	border-radius: 4px;
+}
+.tnc-sel--mirror {
+	border: 1.5px dashed var(--tnc-accent);
+	color: var(--tnc-accent);
+	font-weight: 600;
+	font-size: var(--tnc-small);
+	padding: 2px 6px;
+	left: 2px;
+	right: 2px;
+	overflow: hidden;
+}
+
+.tnc-more {
+	position: absolute;
+	height: var(--tnc-more-h);
+	border: 0;
+	border-radius: 4px;
+	background: none;
+	padding: 0 4px;
+	text-align: left;
+	color: var(--tnc-muted);
+	font-size: var(--tnc-small);
+	font-weight: 600;
+	cursor: pointer;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.tnc-more:hover {
+	background: var(--tnc-surface-3);
+	color: var(--tnc-text);
+}
+.tnc-more--stack {
+	height: auto;
+	min-height: 20px;
+	text-align: center;
+	background: var(--tnc-surface-3);
+	z-index: 30;
+}
+
+/* ------------------------------------------------------------ time grid */
+.tnc-tg {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+.tnc-tg-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+.tnc--height-auto .tnc-tg-scroll {
+	overflow: visible;
+}
+.tnc-tg-top {
+	position: sticky;
+	top: 0;
+	z-index: 50;
+	background: var(--tnc-surface);
+	box-shadow: 0 1px 0 var(--tnc-line-strong);
+}
+.tnc-tg-cols {
+	display: grid;
+	grid-template-columns: var(--tnc-cols);
+}
+.tnc-tg-top,
+.tnc-tg-body {
+	min-width: calc(var(--tnc-gutter-w) + var(--tnc-ncols, 1) * var(--tnc-col-min));
+}
+.tnc-gutter-head,
+.tnc-gutter-label,
+.tnc-gutter {
+	position: sticky;
+	left: 0;
+	z-index: 6;
+	background: var(--tnc-surface);
+}
+.tnc-gutter-head {
+	display: flex;
+	align-items: flex-end;
+	justify-content: flex-end;
+	padding: 4px 6px;
+	color: var(--tnc-faint);
+	font-size: 10px;
+}
+.tnc-dh {
+	min-width: 0;
+	padding: 5px 6px 5px 7px;
+	border-left: 1px solid var(--tnc-line);
+	overflow: hidden;
+}
+.tnc-dh-label {
+	display: inline-flex;
+	gap: 5px;
+	align-items: baseline;
+	white-space: nowrap;
+}
+.tnc-dh-dow {
+	color: var(--tnc-muted);
+	font-size: var(--tnc-small);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+.tnc-dh-num {
+	font-size: 15px;
+	font-weight: 650;
+	line-height: 1.25;
+}
+.tnc-dh.is-today .tnc-dh-num {
+	background: var(--tnc-accent);
+	color: var(--tnc-accent-text);
+	border-radius: 999px;
+	padding: 0 7px;
+}
+.tnc-cap {
+	position: relative;
+	margin-top: 5px;
+	height: 4px;
+	border-radius: 2px;
+	background: var(--tnc-surface-3);
+}
+.tnc-cap i {
+	display: block;
+	height: 100%;
+	border-radius: 2px;
+	background: var(--tnc-ok);
+	transition: width 0.2s;
+}
+.tnc-cap.is-warn i {
+	background: var(--tnc-amber);
+}
+.tnc-cap.is-over i {
+	background: var(--tnc-warn);
+}
+.tnc-cap-txt {
+	position: absolute;
+	top: 5px;
+	left: 0;
+	font-size: 10px;
+	color: var(--tnc-faint);
+	white-space: nowrap;
+}
+.tnc-cap.is-over .tnc-cap-txt {
+	color: var(--tnc-warn);
+	font-weight: 600;
+}
+/* Host: the cap is the header's last child; its margin adds the 18 - 5px of extra padding upstream gets from :has(). */
+.tnc-dh > .tnc-cap {
+	margin-bottom: 13px;
+}
+.tnc-tg-allday {
+	border-top: 1px solid var(--tnc-line);
+}
+.tnc-gutter-label {
+	padding: 4px 6px;
+	font-size: 10px;
+	color: var(--tnc-faint);
+	text-align: right;
+	line-height: 1.2;
+}
+.tnc-allday-layer {
+	position: relative;
+	grid-column: 2 / -1;
+	min-height: calc(var(--tnc-bar-h) + 8px);
+	border-left: 1px solid var(--tnc-line);
+}
+.tnc-tg--no-grid .tnc-allday-layer {
+	min-height: 160px;
+}
+.tnc-tg-body {
+	position: relative;
+}
+.tnc-gutter {
+	border-right: 1px solid var(--tnc-line);
+}
+.tnc-slot-label {
+	position: absolute;
+	right: 6px;
+	transform: translateY(-50%);
+	font-size: 10.5px;
+	color: var(--tnc-faint);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.tnc-now-label {
+	position: absolute;
+	right: 0;
+	width: 6px;
+	height: 2px;
+	background: var(--tnc-now);
+	transform: translateY(-1px);
+}
+.tnc-col {
+	position: relative;
+	min-width: 0;
+	border-left: 1px solid var(--tnc-line);
+	background-image:
+		repeating-linear-gradient(to bottom, var(--tnc-line) 0 1px, transparent 1px var(--tnc-hour-px)),
+		repeating-linear-gradient(
+			to bottom,
+			color-mix(in srgb, var(--tnc-line) 55%, transparent) 0 1px,
+			transparent 1px var(--tnc-slot-px)
+		);
+	background-position: 0 var(--tnc-grid-offset, 0);
+}
+.tnc-col.is-weekend {
+	background-color: var(--tnc-off);
+}
+.tnc-col.is-today {
+	background-color: color-mix(in srgb, var(--tnc-accent) 5%, transparent);
+}
+/* Items position themselves within the column; see inLane in timegrid.ts. */
+.tnc-col-plan,
+.tnc-col-bg,
+.tnc-col-actual {
+	position: absolute;
+	inset: 0;
+}
+/* Above the plan layer, so it must not swallow clicks meant for plan items. */
+.tnc-col-actual {
+	pointer-events: none;
+}
+.tnc-col-actual > * {
+	pointer-events: auto;
+}
+.tnc-now {
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: var(--tnc-now);
+	z-index: 45;
+	pointer-events: none;
+	transform: translateY(-1px);
+}
+.tnc-now::before {
+	content: "";
+	position: absolute;
+	left: -5px;
+	top: -4px;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--tnc-now);
+}
+
+/* ----------------------------------------------------------------- month */
+.tnc-dg {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+.tnc-dg-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+}
+.tnc-dg-grid {
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
+}
+.tnc-dg--auto .tnc-dg-grid {
+	min-height: 0;
+}
+.tnc-dg-head,
+.tnc-dg-week {
+	display: grid;
+	grid-template-columns: var(--tnc-cols);
+}
+.tnc-dg-head {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	background: var(--tnc-surface);
+	border-bottom: 1px solid var(--tnc-line-strong);
+}
+.tnc-dg-dow {
+	padding: 5px 7px;
+	color: var(--tnc-muted);
+	font-size: var(--tnc-small);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.tnc-dg-week {
+	position: relative;
+	flex: 1 1 0;
+	/* --tnc-dg-need is the tallest cell's content, measured by the view (bars and the real "+N more" height). */
+	min-height: max(var(--tnc-day-min-h), var(--tnc-dg-need, 0px));
+	border-bottom: 1px solid var(--tnc-line);
+}
+.tnc-dg--auto .tnc-dg-week {
+	flex: none;
+}
+.tnc-weeknum,
+.tnc-weeknum-head {
+	padding: 4px;
+	font-size: 10px;
+	color: var(--tnc-faint);
+	text-align: center;
+	border-right: 1px solid var(--tnc-line);
+}
+.tnc-dg-day {
+	min-width: 0;
+	border-left: 1px solid var(--tnc-line);
+}
+.tnc-dg-day:first-of-type {
+	border-left: 0;
+}
+.tnc-dg-day.is-weekend {
+	background: var(--tnc-off);
+}
+.tnc-dg-day.is-other-month .tnc-dg-num {
+	color: var(--tnc-faint);
+}
+.tnc-dg-day.is-today {
+	background: color-mix(in srgb, var(--tnc-accent) 6%, transparent);
+}
+.tnc-dg-top {
+	height: var(--tnc-dg-top-h);
+	padding: 3px 6px 0;
+	display: flex;
+	justify-content: flex-end;
+}
+.tnc-dg-num {
+	font-size: var(--tnc-small);
+	font-weight: 600;
+	line-height: 18px;
+	min-width: 18px;
+	text-align: center;
+	white-space: nowrap;
+}
+.tnc-dg-day.is-today .tnc-dg-num {
+	background: var(--tnc-accent);
+	color: var(--tnc-accent-text);
+	border-radius: 999px;
+	padding: 0 5px;
+}
+.tnc-dg-layer {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+/* Host: TaskNotes adds .advanced-calendar-view__calendar--week-numbers (bases-calendar.css) instead of :has(.tnc-weeknum). */
+.tnc-weeknum ~ .tnc-dg-layer {
+	left: var(--tnc-weeknum-w);
+}
+/*
+ * Host: instead of display: contents, the dates row is its own grid with the
+ * week's columns spanning the week's single row, and the content cell is a
+ * static block, so its absolutely positioned children still lay out against
+ * .tnc-dg-layer. Both keep their ARIA roles.
+ */
+.tnc-dg-dates {
+	display: grid;
+	grid-template-columns: var(--tnc-cols);
+	grid-column: 1 / -1;
+}
+.tnc-dg-content {
+	display: block;
+}
+.tnc-dg-layer .tnc-item {
+	pointer-events: auto;
+}
+.tnc-dg-layer .tnc-sel {
+	top: 0;
+	bottom: 0;
+}
+
+/* month dots: the day cell is the target; dots wrap and only indicate */
+.tnc-dg--dots .tnc-dg-day {
+	position: relative;
+	cursor: pointer;
+}
+.tnc-dg-dots {
+	position: absolute;
+	top: var(--tnc-dg-top-h);
+	left: 6px;
+	right: 6px;
+	bottom: 4px;
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	align-items: center;
+	gap: var(--tnc-dot-gap);
+	overflow: hidden;
+	pointer-events: none;
+}
+.tnc-dg-dots.is-unlimited {
+	position: static;
+	padding: 0 6px 4px;
+}
+.tnc-dg-dots > .tnc-item--indicator {
+	position: static;
+	flex: none;
+	width: var(--tnc-dot-size);
+	height: var(--tnc-dot-size);
+	border-radius: 50%;
+	background: var(--tnc-border, var(--c));
+	pointer-events: none;
+}
+.tnc-dg-dots > .tnc-item--indicator.is-completed {
+	opacity: 0.4;
+}
+.tnc-dg-dots-more {
+	flex: none;
+	font-size: 10px;
+	line-height: var(--tnc-dot-size);
+	color: var(--tnc-muted);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ list */
+.tnc-list {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+.tnc-list-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+}
+.tnc--height-auto .tnc-list-scroll {
+	overflow: visible;
+}
+.tnc-list-day {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	padding: 6px 10px;
+	background: var(--tnc-surface-2);
+	border-bottom: 1px solid var(--tnc-line);
+	font-weight: 650;
+}
+.tnc-list-day.is-today {
+	color: var(--tnc-accent);
+}
+.tnc-list-rows {
+	display: flex;
+	flex-direction: column;
+}
+.tnc-item--list {
+	position: relative;
+	padding: 7px 10px;
+	border-bottom: 1px solid var(--tnc-line);
+	border-radius: 0;
+	font-size: var(--tnc-font-size);
+}
+.tnc-item--list:hover {
+	background: var(--tnc-surface-2);
+}
+.tnc-item--list .tnc-item-main {
+	gap: 10px;
+	align-items: center;
+}
+.tnc-item--list .tnc-item-time {
+	width: 9.5em;
+	color: var(--tnc-muted);
+}
+.tnc-item--list .tnc-item-title {
+	font-weight: 500;
+	white-space: normal;
+}
+.tnc-list-empty {
+	padding: 40px 16px;
+	text-align: center;
+	color: var(--tnc-faint);
+}
+
+/* ---------------------------------------------------------------- agenda */
+.tnc-strip {
+	--tnc-strip-cell: 40px;
+	flex: none;
+	/* Above a time grid's sticky header and now line; popovers stay on top. */
+	position: relative;
+	z-index: 55;
+	padding: 6px 4px 0;
+	background: var(--tnc-surface);
+	border-bottom: 1px solid var(--tnc-line);
+	/* Vertical pans scroll the page; sideways swipes step the strip. */
+	touch-action: pan-y;
+	user-select: none;
+}
+/* At auto height the page scrolls, so the strip sticks below `--tnc-sticky-top`. */
+.tnc--height-auto .tnc-strip {
+	position: sticky;
+	top: var(--tnc-sticky-top, 0px);
+}
+.tnc--height-auto.tnc--has-strip .tnc-tg-top {
+	top: calc(var(--tnc-sticky-top, 0px) + var(--tnc-strip-h, 0px));
+}
+.tnc--height-auto .tnc-list--agenda .tnc-list-day {
+	top: calc(var(--tnc-sticky-top, 0px) + var(--tnc-strip-h, 0px));
+}
+.tnc--height-auto .tnc-list--agenda .tnc-list-section {
+	scroll-margin-top: calc(var(--tnc-sticky-top, 0px) + var(--tnc-strip-h, 0px));
+}
+.tnc-strip-head {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	padding: 0 6px 6px;
+}
+.tnc-strip-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-right: auto;
+	padding: 4px 6px;
+	border: 0;
+	border-radius: var(--tnc-radius);
+	background: none;
+	color: var(--tnc-text);
+	font: inherit;
+	font-size: 15px;
+	font-weight: 650;
+	cursor: pointer;
+}
+.tnc-strip-caret {
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 6px solid currentColor;
+	transition: transform 0.15s;
+}
+.tnc-strip.is-expanded .tnc-strip-title {
+	color: var(--tnc-accent);
+}
+.tnc-strip.is-expanded .tnc-strip-caret {
+	transform: rotate(180deg);
+}
+.tnc-strip-today {
+	margin-right: 4px;
+	padding: 4px 10px;
+	border: 1px solid var(--tnc-line-strong);
+	border-radius: 999px;
+	background: none;
+	color: var(--tnc-text);
+	font: inherit;
+	font-size: var(--tnc-small);
+	font-weight: 600;
+	cursor: pointer;
+}
+.tnc-strip-today[hidden] {
+	display: none;
+}
+.tnc-strip-today:hover {
+	background: var(--tnc-surface-2);
+}
+.tnc-strip-slot {
+	display: flex;
+	align-items: center;
+}
+.tnc-strip-slot:empty {
+	display: none;
+}
+.tnc-strip-nav {
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: var(--tnc-radius);
+	background: none;
+	color: var(--tnc-muted);
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+.tnc-strip-title:hover,
+.tnc-strip-nav:hover {
+	background: var(--tnc-surface-2);
+}
+.tnc-strip-dows,
+.tnc-strip-grid {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.tnc-strip-dows span {
+	padding-bottom: 4px;
+	text-align: center;
+	color: var(--tnc-muted);
+	font-size: var(--tnc-small);
+	font-weight: 600;
+}
+.tnc-strip-day {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: calc(var(--tnc-strip-cell) + 10px);
+	padding: 0;
+	border: 0;
+	border-radius: var(--tnc-radius);
+	background: none;
+	color: var(--tnc-text);
+	font: inherit;
+	cursor: pointer;
+}
+.tnc-strip-num {
+	display: grid;
+	place-items: center;
+	width: min(var(--tnc-strip-cell), 100%);
+	aspect-ratio: 1;
+	border-radius: 50%;
+	font-size: 15px;
+	font-variant-numeric: tabular-nums;
+}
+.tnc-strip-month {
+	position: absolute;
+	top: 0;
+	color: var(--tnc-muted);
+	font-size: 10px;
+	font-weight: 650;
+	line-height: 1;
+}
+.tnc-strip-dot {
+	width: 5px;
+	height: 5px;
+	margin-top: 1px;
+	border-radius: 50%;
+	visibility: hidden;
+	background: var(--tnc-muted);
+}
+.tnc-strip-day.has-items .tnc-strip-dot {
+	visibility: visible;
+}
+.tnc-strip-day.is-past,
+.tnc-strip-day.is-other-month {
+	color: var(--tnc-faint);
+}
+.tnc-strip-day.is-today .tnc-strip-num {
+	color: var(--tnc-accent);
+	font-weight: 700;
+}
+.tnc-strip-day.is-focus .tnc-strip-num {
+	background: var(--tnc-accent);
+	color: var(--tnc-accent-text);
+	font-weight: 700;
+}
+.tnc-strip-day.is-in-range .tnc-strip-num {
+	background: var(--tnc-accent-soft);
+}
+.tnc-strip-day:hover .tnc-strip-num {
+	background: var(--tnc-surface-2);
+}
+.tnc-strip-day.is-focus:hover .tnc-strip-num {
+	background: var(--tnc-accent);
+}
+.tnc-strip-day.is-drop-target .tnc-strip-num {
+	box-shadow: 0 0 0 2px var(--tnc-accent);
+	background: var(--tnc-accent-soft);
+}
+.tnc-strip-day:focus-visible,
+.tnc-strip-title:focus-visible,
+.tnc-strip-today:focus-visible,
+.tnc-strip-nav:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+.tnc-strip-handle {
+	display: block;
+	width: 36px;
+	height: 14px;
+	margin: 0 auto;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+.tnc-strip-handle::before {
+	content: "";
+	display: block;
+	width: 36px;
+	height: 4px;
+	margin: 0 auto;
+	border-radius: 2px;
+	background: var(--tnc-line-strong);
+}
+.tnc-list--agenda .tnc-list-section.is-empty .tnc-list-day {
+	color: var(--tnc-faint);
+	font-weight: 600;
+}
+/* Host: rows are the last child exactly when no add button follows, avoiding :has(). */
+.tnc-list--agenda .tnc-list-section.is-empty .tnc-list-rows:last-child {
+	min-height: 28px;
+}
+.tnc-list-lead-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--tnc-text);
+}
+.tnc-list-lead-title {
+	margin-right: auto;
+}
+.tnc-list-lead-slot {
+	display: flex;
+	align-items: center;
+	font-weight: 400;
+}
+.tnc-list-lead-slot:empty {
+	display: none;
+}
+.tnc-list-add {
+	display: block;
+	width: 100%;
+	padding: 6px 10px;
+	border: 0;
+	background: none;
+	color: var(--tnc-muted);
+	font: inherit;
+	font-size: var(--tnc-small);
+	text-align: left;
+	cursor: pointer;
+}
+.tnc-list-add::before {
+	content: "+";
+	display: inline-block;
+	width: 1em;
+	margin-right: 6px;
+	color: var(--tnc-accent);
+	font-weight: 700;
+	text-align: center;
+}
+.tnc-list-add:hover {
+	color: var(--tnc-accent);
+	background: var(--tnc-surface-2);
+}
+.tnc-list-add:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+.tnc-list-more {
+	height: 1px;
+}
+
+/* ------------------------------------------------------------------ year */
+.tnc-year {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	/* Narrow calendars (phones, sidebars) use the compact year below. */
+	container-type: inline-size;
+}
+.tnc-year-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	padding: 12px;
+}
+.tnc-year-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+	gap: 18px 16px;
+}
+.tnc-ym-title {
+	display: block;
+	border: 0;
+	background: none;
+	padding: 0 0 6px;
+	font-weight: 650;
+	font-size: 13px;
+	cursor: pointer;
+}
+.tnc-ym-days {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+.tnc-ym-dow {
+	font-size: 10px;
+	color: var(--tnc-faint);
+	text-align: center;
+}
+.tnc-ym-day {
+	position: relative;
+	aspect-ratio: 1;
+	border: 0;
+	border-radius: 5px;
+	padding: 0;
+	cursor: pointer;
+	font-size: 11px;
+	background: color-mix(in srgb, var(--tnc-accent) calc(var(--tnc-heat, 0) * 38%), transparent);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1px;
+}
+.tnc-ym-day:hover {
+	outline: 1px solid var(--tnc-line-strong);
+}
+.tnc-ym-day.is-weekend .tnc-ym-num {
+	color: var(--tnc-muted);
+}
+.tnc-ym-day.is-today .tnc-ym-num {
+	background: var(--tnc-accent);
+	color: var(--tnc-accent-text);
+	border-radius: 999px;
+	padding: 0 4px;
+}
+.tnc-ym-dots {
+	display: flex;
+	gap: 2px;
+	height: 4px;
+}
+.tnc-ym-dots i {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--tnc-c, var(--tnc-accent));
+}
+
+/* Two months a row: each day is a shaded square, and its count is in its label. */
+@container (max-width: 520px) {
+	.tnc-year-scroll {
+		padding: 8px 4px;
+	}
+	.tnc-year-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 14px 12px;
+	}
+	.tnc-ym-title {
+		font-size: 12px;
+		padding-bottom: 4px;
+	}
+	.tnc-ym-days {
+		gap: 1px;
+	}
+	.tnc-ym-day {
+		border-radius: 4px;
+		font-size: 10px;
+	}
+	/* Without dots, one item must still read as busy. */
+	.tnc-ym-day.has-items {
+		background: color-mix(in srgb, var(--tnc-accent) calc((0.3 + var(--tnc-heat) * 0.7) * 50%), transparent);
+	}
+	.tnc-ym-dots {
+		display: none;
+	}
+}
+
+/* -------------------------------------------------------------- timeline */
+.tnc-tl {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+.tnc-tl-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+.tnc-tl-canvas {
+	position: relative;
+	min-width: 100%;
+}
+.tnc-tl-head {
+	position: sticky;
+	top: 0;
+	z-index: 30;
+	display: flex;
+	height: 46px;
+	background: var(--tnc-surface);
+	border-bottom: 1px solid var(--tnc-line-strong);
+}
+.tnc-tl-corner {
+	position: sticky;
+	left: 0;
+	z-index: 2;
+	flex: none;
+	width: var(--tnc-tl-label-w);
+	background: var(--tnc-surface);
+	border-right: 1px solid var(--tnc-line);
+}
+.tnc-tl-ticks {
+	position: relative;
+	flex: 1 1 auto;
+}
+.tnc-tl-tier {
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 23px;
+}
+.tnc-tl-tier--major {
+	top: 0;
+}
+.tnc-tl-tier--minor {
+	top: 23px;
+}
+.tnc-tl-tick {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-left: 1px solid var(--tnc-line);
+	overflow: clip;
+	white-space: nowrap;
+	font-size: 10.5px;
+	color: var(--tnc-muted);
+	display: flex;
+	align-items: center;
+	padding: 0 4px;
+}
+.tnc-tl-tier--major .tnc-tl-tick {
+	font-weight: 650;
+	color: var(--tnc-text);
+}
+.tnc-tl-tier--major .tnc-tl-tick > span {
+	position: sticky;
+	left: calc(var(--tnc-tl-label-w) + 4px);
+}
+.tnc-tl-tier--minor .tnc-tl-tick {
+	justify-content: center;
+	font-variant-numeric: tabular-nums;
+}
+.tnc-tl-tick.is-today > span {
+	background: var(--tnc-accent);
+	color: var(--tnc-accent-text);
+	border-radius: 4px;
+	padding: 0 3px;
+}
+.tnc-tl-tick.is-weekend {
+	background: var(--tnc-off);
+}
+.tnc-tl-rows {
+	position: relative;
+}
+.tnc-tl-row {
+	position: relative;
+	display: flex;
+	border-bottom: 1px solid var(--tnc-line);
+}
+.tnc-tl-row.is-group {
+	background: var(--tnc-surface-2);
+}
+.tnc-tl-label {
+	position: sticky;
+	left: 0;
+	z-index: 20;
+	flex: none;
+	width: var(--tnc-tl-label-w);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-right: 8px;
+	background: var(--tnc-surface);
+	border-right: 1px solid var(--tnc-line);
+	/* Cover the row's bottom border too, so lines and arrows never show through. */
+	margin-bottom: -1px;
+	border-bottom: 1px solid var(--tnc-line);
+	overflow: hidden;
+	white-space: nowrap;
+}
+.tnc-tl-row.is-group .tnc-tl-label {
+	background: var(--tnc-surface-2);
+	font-weight: 650;
+}
+.tnc-tl-label-text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.tnc-tl-track {
+	position: relative;
+	flex: 1 1 auto;
+	background-image: repeating-linear-gradient(to right, var(--tnc-line) 0 1px, transparent 1px var(--tnc-tl-col-w));
+	background-size: auto;
+}
+.tnc-item--timeline {
+	top: 0;
+	height: var(--tnc-tl-row-h);
+	padding: 5px 0;
+	overflow: visible;
+	background: none;
+	border: 0;
+}
+.tnc-item--timeline > .tnc-item-main {
+	height: 100%;
+	align-items: center;
+	padding: 0 7px;
+	border-radius: 5px;
+	background: var(--tnc-bg, color-mix(in srgb, var(--c) 72%, var(--tnc-surface)));
+	border: 1px solid var(--tnc-border, var(--c));
+	color: var(--tnc-fg, #ffffff);
+	font-size: 10.5px;
+	white-space: nowrap;
+	overflow: hidden;
+	gap: 5px;
+}
+.tnc-item--timeline.is-all-day > .tnc-item-main {
+	background: var(--tnc-bg, color-mix(in srgb, var(--c) 24%, var(--tnc-surface)));
+	color: var(--tnc-fg, var(--tnc-text));
+}
+.tnc-item--timeline.is-milestone {
+	width: 0;
+	overflow: visible;
+}
+.tnc-item--timeline.is-milestone > .tnc-item-main {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	width: 13px;
+	height: 13px;
+	padding: 0;
+	transform: translate(-50%, -50%) rotate(45deg);
+	border-radius: 2px;
+	font-size: 0;
+}
+.tnc-item--timeline.is-milestone .tnc-item-title,
+.tnc-item--timeline.is-milestone .tnc-item-time {
+	display: none;
+}
+.tnc-item--timeline.is-conflict {
+	box-shadow: none;
+}
+.tnc-item--timeline.is-conflict > .tnc-item-main {
+	box-shadow: 0 0 0 2px var(--tnc-warn);
+}
+.tnc-item--timeline .tnc-resize.is-h {
+	top: 5px;
+	bottom: 5px;
+	width: var(--tnc-grip, 8px);
+}
+.tnc-item--timeline .tnc-resize[tabindex]:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: 1px;
+	border-radius: 2px;
+}
+/* Short bars hide clipped titles; narrow ones drop their grips and get a wider hit area so they still move and tap. */
+.tnc-item--timeline.is-compact > .tnc-item-main {
+	padding: 0;
+}
+.tnc-item--timeline.is-compact .tnc-item-title,
+.tnc-item--timeline.is-compact .tnc-item-time {
+	display: none;
+}
+.tnc-item--timeline.is-narrow .tnc-resize {
+	display: none;
+}
+.tnc-item--timeline.is-narrow::after,
+.tnc-item--timeline.is-milestone::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 20px;
+	margin-left: -10px;
+}
+.tnc-item--timeline.is-selected > .tnc-item-main {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: 1px;
+}
+/* Link handles: a visible dot inside an invisible, larger hit area outside the bar. */
+.tnc-port {
+	--tnc-port-hit: 16px;
+	--tnc-port-dot: 10px;
+	position: absolute;
+	top: 50%;
+	width: var(--tnc-port-hit);
+	height: var(--tnc-port-hit);
+	margin-top: calc(var(--tnc-port-hit) / -2);
+	cursor: crosshair;
+	opacity: 0;
+	z-index: 3;
+	touch-action: none;
+}
+.tnc-port::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: var(--tnc-port-dot);
+	height: var(--tnc-port-dot);
+	margin: calc(var(--tnc-port-dot) / -2) 0 0 calc(var(--tnc-port-dot) / -2);
+	border-radius: 50%;
+	border: 2px solid var(--c);
+	background: var(--tnc-surface);
+}
+.tnc-port-start {
+	left: calc(var(--tnc-port-hit) * -1);
+}
+.tnc-port-finish {
+	right: calc(var(--tnc-port-hit) * -1);
+}
+.tnc-item--timeline.is-milestone .tnc-port-finish {
+	right: auto;
+	left: 8px;
+}
+.tnc-port.is-target::after {
+	background: var(--c);
+	transform: scale(1.3);
+}
+.tnc-port.is-invalid::after {
+	border-color: var(--tnc-warn);
+	background: var(--tnc-warn);
+}
+.tnc-item--timeline.is-link-target > .tnc-item-main {
+	box-shadow: 0 0 0 2px var(--tnc-accent);
+}
+.tnc-item--timeline.is-link-invalid > .tnc-item-main {
+	box-shadow: 0 0 0 2px var(--tnc-warn);
+}
+.tnc-item--timeline:hover .tnc-port,
+.tnc-item--timeline.is-hover .tnc-port,
+.tnc-item--timeline.is-selected .tnc-port,
+.tnc-item--timeline:focus-visible .tnc-port,
+.tnc-tl.is-linking .tnc-item--timeline .tnc-port {
+	opacity: 1;
+}
+@media (pointer: coarse) {
+	.tnc-port {
+		--tnc-port-hit: 44px;
+		--tnc-port-dot: 14px;
+	}
+	.tnc-item--timeline.is-milestone .tnc-port-finish {
+		left: 8px;
+	}
+	.tnc-item--timeline.is-narrow::after,
+	.tnc-item--timeline.is-milestone::after {
+		width: 32px;
+		margin-left: -16px;
+	}
+}
+/* Without hover, handles show only on the selected bar (and on every bar while linking). */
+@media (hover: none) {
+	.tnc-item--timeline:not(.is-selected) .tnc-port {
+		visibility: hidden;
+	}
+	.tnc-tl.is-linking .tnc-item--timeline .tnc-port {
+		visibility: visible;
+	}
+}
+.tnc-tl-deps {
+	position: absolute;
+	top: 0;
+	pointer-events: none;
+	overflow: visible;
+	z-index: 10;
+	color: var(--tnc-muted);
+}
+.tnc-tl-deps path {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+}
+.tnc-tl-deps path.is-conflict {
+	stroke: var(--tnc-warn);
+	stroke-dasharray: 5 3;
+}
+.tnc-tl-deps path.is-linking {
+	stroke: var(--tnc-accent);
+	stroke-dasharray: 4 3;
+}
+.tnc-tl-deps path.is-linking.is-invalid {
+	stroke: var(--tnc-warn);
+}
+.tnc-tl-today-label {
+	position: absolute;
+	top: 1px;
+	z-index: 1;
+	transform: translateX(-50%);
+	padding: 0 4px;
+	border-radius: 3px;
+	background: var(--tnc-now);
+	color: var(--tnc-accent-text, #ffffff);
+	font-size: 10px;
+	font-weight: 650;
+	line-height: 14px;
+	white-space: nowrap;
+	pointer-events: none;
+}
+.tnc-tl-today {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	margin-left: -1px;
+	background: var(--tnc-now);
+	z-index: 15;
+	pointer-events: none;
+}
+.tnc-tl-sel {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.tnc-tl-sel .tnc-sel {
+	right: auto;
+}
+.tnc-tl-sel .tnc-sel.is-column {
+	border-left: 1.5px dashed var(--tnc-accent);
+	border-right: 1.5px dashed var(--tnc-accent);
+	border-radius: 0;
+}
+
+/* ---------------------------------------------------------------- popover */
+.tnc-popover {
+	position: absolute;
+	z-index: 100;
+	max-height: min(420px, calc(100% - 8px));
+	display: flex;
+	flex-direction: column;
+	background: var(--tnc-surface);
+	border: 1px solid var(--tnc-line-strong);
+	border-radius: 8px;
+	box-shadow: var(--tnc-shadow);
+	outline: none;
+}
+.tnc-popover-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 6px 6px 6px 10px;
+	border-bottom: 1px solid var(--tnc-line);
+	font-weight: 650;
+}
+.tnc-popover-close {
+	min-width: 28px;
+	min-height: 28px;
+	border: 0;
+	border-radius: 6px;
+	background: none;
+	cursor: pointer;
+	font-size: 16px;
+	line-height: 1;
+}
+.tnc-popover-close:hover {
+	background: var(--tnc-surface-3);
+}
+.tnc-popover-body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 6px;
+	overflow: auto;
+}
+.tnc-popover-body .tnc-item {
+	position: relative;
+	flex: none;
+}
+
+/* Host: .tnc-cap i is listed because its own transition rule is (0,1,1). The raise animations above are (0,2,0) and stay on. */
+@media (prefers-reduced-motion: reduce) {
+	.tnc *,
+	.tnc .tnc-cap i {
+		transition: none;
+		animation: none;
+	}
+}
+
+/*
+ * Host: drag state, moved from the top of the file and without !important.
+ * Each selector is at least (0,2,0), the highest engine specificity, and wins
+ * ties by coming last; the resize and drop-denied rules keep upstream's order.
+ */
+.tnc.tnc-dragging,
+.tnc.tnc-dragging * {
+	user-select: none;
+	-webkit-user-select: none;
+}
+.tnc.tnc-dragging-move,
+.tnc.tnc-dragging-move * {
+	cursor: grabbing;
+}
+.tnc.tnc-dragging-resize-end .tnc-tg *,
+.tnc.tnc-dragging-resize-start .tnc-tg * {
+	cursor: ns-resize;
+}
+.tnc.tnc-drop-denied,
+.tnc.tnc-drop-denied *,
+.tnc.tnc-drop-denied .tnc-tg * {
+	cursor: not-allowed;
+}

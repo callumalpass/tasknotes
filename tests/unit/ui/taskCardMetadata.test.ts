@@ -182,6 +182,30 @@ describe("taskCardMetadata", () => {
 			}
 		);
 
+		it.each([
+			{ state: "unresolved", instances: {}, past: true },
+			{ state: "completed", instances: { complete_instances: ["2026-08-05"] }, past: false },
+			{ state: "skipped", instances: { skipped_instances: ["2026-08-05"] }, past: false },
+		])("classifies a past occurrence by its own $state state", ({ instances, past }) => {
+			const { card, metadataLine } = createMetadataHost();
+
+			renderTaskCardMetadata({
+				metadataLine,
+				card,
+				task: createTask({ scheduled: "2026-08-19", ...instances }),
+				plugin: createPlugin(),
+				visibleProperties: ["scheduled"],
+				propertyOptions: { occurrenceScheduled: "2026-08-05" },
+				onBlockedByToggle: jest.fn(),
+			});
+
+			expect(
+				getDateMetadata(metadataLine, "scheduled").classList.contains(
+					"task-card__metadata-date--past"
+				)
+			).toBe(past);
+		});
+
 		it("does not classify a completed past due date as future when overdue styling is hidden", () => {
 			const { metadataLine } = renderMetadataForTask(
 				createTask({
@@ -195,6 +219,27 @@ describe("taskCardMetadata", () => {
 			expect(dueElement.classList.contains("task-card__metadata-date--overdue")).toBe(false);
 			expect(dueElement.classList.contains("task-card__metadata-date--future")).toBe(false);
 		});
+	});
+
+	it("shows an occurrence's own date read-only instead of the series' date controls", () => {
+		const plugin = createPlugin();
+		const { card, metadataLine } = createMetadataHost();
+
+		renderTaskCardMetadata({
+			metadataLine,
+			card,
+			task: createTask({ scheduled: "2026-11-08", due: "2026-11-10" }),
+			plugin,
+			visibleProperties: ["scheduled", "due"],
+			propertyOptions: { occurrenceScheduled: "2026-11-15" },
+			onBlockedByToggle: jest.fn(),
+		});
+
+		const scheduled = getDateMetadata(metadataLine, "scheduled");
+		expect(scheduled.textContent).toContain("Nov 15");
+		expect(scheduled.dataset.tnAction).toBeUndefined();
+		expect(scheduled.getAttribute("role")).toBeNull();
+		expect(metadataLine.querySelector(".task-card__metadata-date--due")).toBeNull();
 	});
 
 	it("renders blocked metadata as an interactive blocked-by expansion control", () => {

@@ -1,8 +1,7 @@
-import { TFile, type Vault } from "obsidian";
+import { TFile, getFrontMatterInfo, parseYaml, stringifyYaml, type Vault } from "obsidian";
 import { AutoArchiveService } from "../AutoArchiveService";
 import { EVENT_TASK_UPDATED, IWebhookNotifier, StatusConfig, TaskInfo } from "../../types";
 import type { TaskNotesSettings } from "../../types/settings";
-import { splitFrontmatterAndBody } from "../../utils/helpers";
 import {
 	generateUniqueFilename,
 	isTitleRepresentedByFilename,
@@ -147,7 +146,7 @@ export class TaskUpdateService {
 			const currentDateString =
 				taskUpdates.status !== undefined ? getCurrentDateString() : "";
 
-			await processVaultFrontMatter(runtime.app, file, (frontmatter) => {
+			const updateFrontmatter = (frontmatter: Record<string, unknown>) => {
 				// Rebase the caller's named changes on the bytes Obsidian is about
 				// to modify. A modal's TaskInfo can predate an external completion.
 				const current = runtime.fieldMapper.mapFromFrontmatter(
@@ -191,7 +190,8 @@ export class TaskUpdateService {
 						propertyValue: runtime.settings.taskPropertyValue,
 					},
 					storeTitleInFilename: runtime.settings.storeTitleInFilename,
-					titleIsRepresentedByFilename: taskUpdates.title !== undefined &&
+					titleIsRepresentedByFilename:
+						taskUpdates.title !== undefined &&
 						isTitleRepresentedByFilename(
 							taskUpdates.title,
 							sanitizeForFilename(taskUpdates.title),
@@ -205,21 +205,25 @@ export class TaskUpdateService {
 						),
 				});
 				finalTags = frontmatterResult.finalTags;
-			});
+			};
 
 			if (normalizedDetails !== null) {
-				const targetFile = runtime.app.vault.getAbstractFileByPath(newPath);
-				if (targetFile instanceof TFile) {
-					await processVaultFile(runtime.app, targetFile, (currentContent) => {
-						const { frontmatter: frontmatterText } =
-							splitFrontmatterAndBody(currentContent);
-						const frontmatterBlock =
-							frontmatterText !== null ? `---\n${frontmatterText}\n---\n\n` : "";
-						const bodyContent = normalizedDetails.trimEnd();
-						const finalBody = bodyContent.length > 0 ? `${bodyContent}\n` : "";
-						return `${frontmatterBlock}${finalBody}`;
-					});
-				}
+				// Commit fields and body together. A failed body write must not leave
+				// attachment links behind when the modal rolls back imported files.
+				await processVaultFile(runtime.app, file, (currentContent) => {
+					const info = getFrontMatterInfo(currentContent);
+					const parsed: unknown = info.exists ? parseYaml(info.frontmatter) : {};
+					const frontmatter = parsed ?? {};
+					if (typeof frontmatter !== "object" || Array.isArray(frontmatter)) {
+						throw new Error("Task frontmatter must be a mapping");
+					}
+					updateFrontmatter(frontmatter as Record<string, unknown>);
+					const bodyContent = normalizedDetails.trimEnd();
+					const finalBody = bodyContent.length > 0 ? `${bodyContent}\n` : "";
+					return `---\n${stringifyYaml(frontmatter)}---\n\n${finalBody}`;
+				});
+			} else {
+				await processVaultFrontMatter(runtime.app, file, updateFrontmatter);
 			}
 
 			const updatedTask = buildUpdatedTaskFromPlan({

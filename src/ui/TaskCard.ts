@@ -38,6 +38,11 @@ export interface TaskCardOptions {
 	targetDate?: Date;
 	/** List/board cards represent the pending commitment, not a projected date. */
 	usePendingOccurrenceIdentity?: boolean;
+	/**
+	 * The scheduled value of a recurring occurrence other than the pending one. The card
+	 * shows it read-only: the task's date fields only hold the pending occurrence.
+	 */
+	occurrenceScheduled?: string;
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
@@ -59,6 +64,8 @@ export interface TaskCardOptions {
 	expandedRelationshipTaskPaths?: ReadonlySet<string>;
 	/** Sort order of paths in the current view after Bases/search sorting. */
 	expandedRelationshipTaskOrder?: ReadonlyMap<string, number>;
+	/** Let a containing task view handle modifiers/range selection before card navigation. */
+	onSelectionClick?: (event: MouseEvent, taskPath: string) => boolean;
 	/** When true, occurrence actions are promoted to the top of the card context menu. */
 	promoteOccurrenceControlsInContextMenu?: boolean;
 }
@@ -254,6 +261,10 @@ export function createTaskCard(
 			task,
 			plugin,
 			navigationSubpath: opts.navigationSubpath,
+			onSelectionClick: event => {
+				const path = card.dataset.taskPath;
+				return path ? getStoredTaskCardOptions(card).onSelectionClick?.(event, path) ?? false : false;
+			},
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;
 				if (!path) return;

@@ -33,6 +33,11 @@
     flex: 0 0 auto;
 }
 
+/* Month week numbers take the first column; offset the event layer past it (set by CalendarView). */
+.advanced-calendar-view__calendar--week-numbers .tnc-dg-layer {
+    left: var(--tnc-weeknum-w);
+}
+
 /* Obsidian styles every button; let the calendar's toolbar and links draw their own. */
 .advanced-calendar-view .tnc button:not(.clickable-icon) {
     box-shadow: none;
@@ -47,6 +52,12 @@
 
 .advanced-calendar-view .tnc-item[data-event-type="timeblock"]:hover {
     opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .advanced-calendar-view .tnc-item[data-event-type="timeblock"] {
+        transition: none;
+    }
 }
 
 /* External calendar events */
@@ -83,6 +94,23 @@
     margin-left: 4px;
 }
 
+.advanced-calendar-view .tnc-item .tn-calendar-attachment-indicator {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    margin-left: 4px;
+    color: currentColor;
+    opacity: 0.78;
+    vertical-align: text-bottom;
+}
+
+.advanced-calendar-view .tnc-item .tn-calendar-attachment-indicator svg {
+    width: 12px;
+    height: 12px;
+}
+
 /* Hovering one of a task's events (scheduled, due, span) highlights the others. */
 .advanced-calendar-view .tnc-item.fc-task-event--hover-source,
 .advanced-calendar-view .tnc-item.fc-task-event--related-hover {
@@ -91,6 +119,45 @@
 
 .advanced-calendar-view .tnc-item.fc-task-event--related-hover {
     filter: saturate(1.08);
+}
+
+.advanced-calendar-view .tnc-btn-selectedTasks {
+    display: none;
+}
+
+.advanced-calendar-view.tn-calendar-has-selection .tnc-btn-selectedTasks {
+    display: inline-flex;
+}
+
+.advanced-calendar-view .tn-selection-indicator.tn-calendar-selection-indicator-visible {
+    display: block;
+}
+
+.is-mobile .advanced-calendar-view .tn-selection-indicator {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Selection stays visible independently of priority colors and hover. */
+.advanced-calendar-view .tnc-item.tn-calendar-item-selected {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: -2px;
+    background-color: color-mix(in srgb, var(--interactive-accent) 18%, var(--background-primary));
+}
+
+/* Peers move at their proposed dates without becoming new interaction targets. */
+.advanced-calendar-view .tnc-item.tn-calendar-batch-preview {
+    pointer-events: none;
+    opacity: 0.65;
+    outline: 2px dashed var(--interactive-accent);
+    outline-offset: -2px;
+}
+
+.advanced-calendar-view .tnc-item.tn-calendar-item-selected:focus-visible {
+    outline-offset: 2px;
+}
+
+.advanced-calendar-view.tn-selection-mode .tnc-item[data-batch-selectable="true"] {
+    cursor: pointer;
 }
 
 /* List view rows are task cards. */

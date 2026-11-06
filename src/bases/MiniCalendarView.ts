@@ -42,7 +42,8 @@ import { ICSEventInfoModal } from "../modals/ICSEventInfoModal";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { createElementInDocument } from "../utils/documentDom";
 import { findProviderCalendar } from "../services/CalendarProvider";
-import { setProviderCalendarToggle } from "./calendarExternalEvents";
+import { buildLinkedGoogleEventPredicate, setProviderCalendarToggle } from "./calendarExternalEvents";
+import { createTaskInfoFromBasesData } from "./helpers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/MiniCalendarView" });
 
@@ -166,6 +167,11 @@ export class MiniCalendarView extends BasesViewBase {
 		this.readViewOptions();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		if (this.plugin.icsSubscriptionService) {
+			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
+				if (this.rootElement?.isConnected) void this.render();
+			}));
+		}
 	}
 
 	/**
@@ -456,10 +462,24 @@ export class MiniCalendarView extends BasesViewBase {
 		}
 
 		const calendars = this.plugin.googleCalendarService.getAvailableCalendars();
+		const tasksByPath = new Map(this.dataAdapter.extractDataItems().flatMap(item => {
+			const task = createTaskInfoFromBasesData(item, this.plugin);
+			return task ? [[task.path, task] as const] : [];
+		}));
+		const isLinked = buildLinkedGoogleEventPredicate(
+			Array.from(this.notesByDate).flatMap(([date, entries]) =>
+				entries.flatMap(entry => {
+					const task = entry.kind === "note" ? tasksByPath.get(entry.path) : undefined;
+					return task ? [{ task, date }] : [];
+				})
+			),
+			this.plugin
+		);
 
 		for (const icsEvent of this.plugin.googleCalendarService.getAllEvents()) {
 			const calendarId = icsEvent.subscriptionId.replace("google-", "");
 			if (this.googleCalendarToggles.get(calendarId) === false) continue;
+			if (isLinked(icsEvent)) continue;
 
 			const calendar = findProviderCalendar(calendars, calendarId);
 			this.indexExternalEvent(

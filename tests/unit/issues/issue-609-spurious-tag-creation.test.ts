@@ -150,20 +150,20 @@ describe('Issue #609: Spurious tag creation in property mode', () => {
 			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
 
 			// Initialize form with the task's current values
-			(modal as any).title = mockTask.title;
-			(modal as any).status = mockTask.status;
-			(modal as any).priority = mockTask.priority;
-			(modal as any).tags = ''; // No tags, same as initial
+			(modal as any).form.values.title = mockTask.title;
+			(modal as any).form.values.status = mockTask.status;
+			(modal as any).form.values.priority = mockTask.priority;
+			(modal as any).form.values.tags = ''; // No tags, same as initial
 			(modal as any).initialTags = '';
-			(modal as any).contexts = 'cat, dog';
-			(modal as any).projects = '[[Project Collations for elsewhere]]';
-			(modal as any).timeEstimate = 0;
-			(modal as any).recurrenceRule = mockTask.recurrence;
-			(modal as any).recurrenceAnchor = 'scheduled';
-			(modal as any).reminders = [...(mockTask.reminders || [])];
+			(modal as any).form.values.contexts = 'cat, dog';
+			(modal as any).form.values.projects = '[[Project Collations for elsewhere]]';
+			(modal as any).form.values.timeEstimate = 0;
+			(modal as any).form.values.recurrenceRule = mockTask.recurrence;
+			(modal as any).form.values.recurrenceAnchor = 'scheduled';
+			(modal as any).form.values.reminders = [...(mockTask.reminders || [])];
 
 			// Simulate user adding a comment (custom field change)
-			(modal as any).userFields = { comment: 'A test comment via dialog' };
+			(modal as any).form.values.userFields = { comment: 'A test comment via dialog' };
 
 			const changes = (modal as any).getChanges();
 
@@ -180,18 +180,18 @@ describe('Issue #609: Spurious tag creation in property mode', () => {
 			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
 
 			// Initialize form with the task's current values
-			(modal as any).title = mockTask.title;
-			(modal as any).status = mockTask.status;
-			(modal as any).priority = mockTask.priority;
-			(modal as any).tags = 'cat'; // User added tag "cat"
+			(modal as any).form.values.title = mockTask.title;
+			(modal as any).form.values.status = mockTask.status;
+			(modal as any).form.values.priority = mockTask.priority;
+			(modal as any).form.values.tags = 'cat'; // User added tag "cat"
 			(modal as any).initialTags = ''; // Was empty
-			(modal as any).contexts = 'cat, dog';
-			(modal as any).projects = '[[Project Collations for elsewhere]]';
-			(modal as any).timeEstimate = 0;
-			(modal as any).recurrenceRule = mockTask.recurrence;
-			(modal as any).recurrenceAnchor = 'scheduled';
-			(modal as any).reminders = [...(mockTask.reminders || [])];
-			(modal as any).userFields = {};
+			(modal as any).form.values.contexts = 'cat, dog';
+			(modal as any).form.values.projects = '[[Project Collations for elsewhere]]';
+			(modal as any).form.values.timeEstimate = 0;
+			(modal as any).form.values.recurrenceRule = mockTask.recurrence;
+			(modal as any).form.values.recurrenceAnchor = 'scheduled';
+			(modal as any).form.values.reminders = [...(mockTask.reminders || [])];
+			(modal as any).form.values.userFields = {};
 
 			const changes = (modal as any).getChanges();
 

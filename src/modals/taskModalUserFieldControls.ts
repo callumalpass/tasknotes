@@ -149,7 +149,8 @@ export function updateTaskModalUserFieldControls(
 	for (const field of options.fields) {
 		const currentValue = options.values[field.key];
 		const input = options.inputRefs.get(field.key);
-		if (input) {
+		// Rewriting the field being typed in would move the caret.
+		if (input && input !== input.ownerDocument.activeElement) {
 			input.value = userFieldValueToInputString(currentValue);
 		}
 

@@ -1,3 +1,4 @@
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -12,6 +13,7 @@ import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { resolveTzidToIANA, wallTimeInZoneToUtcIso } from "../utils/icsTimezoneFallback";
+import { ICSSecretStore } from "./ICSSecretStore";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/ICSSubscriptionService" });
 
@@ -81,6 +83,77 @@ function registerCalendarVTimezones(calendar: ICAL.Component): void {
 	});
 }
 
+const ICS_REQUEST_HEADERS: Readonly<Record<string, string>> = {
+	Accept: "text/calendar,*/*;q=0.1",
+	"Accept-Language": "en-US,en;q=0.9",
+	"User-Agent":
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+};
+
+/** Raised before any request is made, so credentials are never sent over plain HTTP. */
+export class ICSInsecureAuthError extends Error {
+	constructor() {
+		super("Authenticated calendar subscriptions require an https:// URL");
+		this.name = "ICSInsecureAuthError";
+	}
+}
+
+export class ICSMissingPasswordError extends Error {
+	constructor() {
+		super("No password is saved for this authenticated calendar subscription");
+		this.name = "ICSMissingPasswordError";
+	}
+}
+
+/** Base64-encodes `username:password` as UTF-8, which `btoa` alone cannot do. */
+export function encodeBasicAuthCredentials(username: string, password: string): string {
+	const bytes = new TextEncoder().encode(`${username}:${password}`);
+	let binary = "";
+	bytes.forEach((byte) => {
+		binary += String.fromCharCode(byte);
+	});
+	return btoa(binary);
+}
+
+export function isHttpsUrl(url: string): boolean {
+	try {
+		return new URL(url).protocol === "https:";
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Builds request headers for a remote subscription. With Basic auth the URL
+ * must be HTTPS and a password must be supplied.
+ */
+export function buildICSRequestHeaders(
+	subscription: Pick<ICSSubscription, "url" | "authType" | "username">,
+	password: string | null
+): Record<string, string> {
+	const headers: Record<string, string> = { ...ICS_REQUEST_HEADERS };
+	if (subscription.authType !== "basic") {
+		return headers;
+	}
+	if (!subscription.url || !isHttpsUrl(subscription.url)) {
+		throw new ICSInsecureAuthError();
+	}
+	if (!password) {
+		throw new ICSMissingPasswordError();
+	}
+	headers.Authorization = `Basic ${encodeBasicAuthCredentials(subscription.username ?? "", password)}`;
+	return headers;
+}
+
+function getRequestErrorStatus(error: unknown): number | undefined {
+	if (typeof error === "object" && error !== null && "status" in error) {
+		const status = (error as { status?: unknown }).status;
+		if (typeof status === "number") return status;
+	}
+	const match = error instanceof Error ? /\bstatus (\d{3})\b/.exec(error.message) : null;
+	return match ? Number(match[1]) : undefined;
+}
+
 function dateOnlyToUtcMs(dateString: string): number | null {
 	if (!DATE_ONLY_PATTERN.test(dateString)) {
 		return null;
@@ -128,6 +201,7 @@ export class ICSSubscriptionService extends EventEmitter {
 	private lastFetched: Map<string, string> = new Map(); // In-memory storage for last fetch timestamps (ISO strings)
 	private lastError: Map<string, string> = new Map(); // In-memory storage for last error messages
 	private destroyed = false;
+	private readonly secretStore: ICSSecretStore;
 
 	// Grace period after cache expiration to show stale data while refreshing (5 minutes)
 	private readonly CACHE_GRACE_PERIOD = 5 * 60 * 1000;
@@ -235,9 +309,43 @@ export class ICSSubscriptionService extends EventEmitter {
 		return new Date(new Date(instanceStart).getTime() + durationMs).toISOString();
 	}
 
-	constructor(plugin: TaskNotesPlugin) {
+	constructor(plugin: TaskNotesPlugin, secretStore?: ICSSecretStore) {
 		super();
 		this.plugin = plugin;
+		this.secretStore = secretStore ?? new ICSSecretStore(plugin.app?.secretStorage);
+	}
+
+	isPasswordStorageAvailable(): boolean {
+		return this.secretStore.isAvailable();
+	}
+
+	hasPassword(id: string): boolean {
+		return this.secretStore.getPassword(id) !== null;
+	}
+
+	/**
+	 * Saves a subscription's password in SecretStorage. Throws
+	 * ICSSecretStorageUnavailableError rather than falling back to data.json.
+	 */
+	async setPassword(id: string, password: string): Promise<void> {
+		if (!this.subscriptions.some((sub) => sub.id === id)) {
+			throw new Error("Subscription not found");
+		}
+		this.secretStore.setPassword(id, password);
+		this.cache.delete(id);
+		await this.fetchSubscription(id);
+	}
+
+	private clearPasswordSafely(id: string): void {
+		try {
+			this.secretStore.clearPassword(id);
+		} catch (error) {
+			tasknotesLogger.warn("Failed to clear ICS subscription password", {
+				category: "configuration",
+				operation: "clear-ics-subscription-password",
+				error: error,
+			});
+		}
 	}
 
 	async initialize(): Promise<void> {
@@ -289,10 +397,12 @@ export class ICSSubscriptionService extends EventEmitter {
 
 	private async saveSubscriptions(): Promise<void> {
 		try {
-			const data = await this.plugin.loadPluginDataForSafeWrite("save-ics-subscriptions");
-			if (!data) return;
-			data.icsSubscriptions = this.subscriptions;
-			await this.plugin.saveData(data);
+			await withPluginDataWriteLock(this.plugin, async () => {
+				const data = await this.plugin.loadPluginDataForSafeWrite("save-ics-subscriptions");
+				if (!data) return;
+				data.icsSubscriptions = this.subscriptions;
+				await this.plugin.saveData(data);
+			});
 		} catch (error) {
 			tasknotesLogger.error("Failed to save ICS subscriptions:", {
 				category: "provider",
@@ -361,6 +471,10 @@ export class ICSSubscriptionService extends EventEmitter {
 
 		await this.saveSubscriptions();
 
+		if (updates.authType === "none" && oldSubscription.authType === "basic") {
+			this.clearPasswordSafely(id);
+		}
+
 		// Update refresh timer or file watcher
 		this.stopRefreshTimer(id);
 		this.stopFileWatcher(id);
@@ -375,7 +489,9 @@ export class ICSSubscriptionService extends EventEmitter {
 		// Clear cache if URL or file path changed
 		if (
 			(updates.url && updates.url !== oldSubscription.url) ||
-			(updates.filePath && updates.filePath !== oldSubscription.filePath)
+			(updates.filePath && updates.filePath !== oldSubscription.filePath) ||
+			(updates.authType !== undefined && updates.authType !== oldSubscription.authType) ||
+			(updates.username !== undefined && updates.username !== oldSubscription.username)
 		) {
 			this.cache.delete(id);
 		}
@@ -398,6 +514,7 @@ export class ICSSubscriptionService extends EventEmitter {
 		this.cache.delete(id);
 		this.lastFetched.delete(id);
 		this.lastError.delete(id);
+		this.clearPasswordSafely(id);
 
 		this.emit("data-changed");
 	}
@@ -416,15 +533,16 @@ export class ICSSubscriptionService extends EventEmitter {
 					throw new Error("Remote subscription missing URL");
 				}
 
+				const headers = buildICSRequestHeaders(
+					subscription,
+					subscription.authType === "basic"
+						? this.secretStore.getPassword(subscription.id)
+						: null
+				);
 				const response = await requestUrl({
 					url: subscription.url,
 					method: "GET",
-					headers: {
-						Accept: "text/calendar,*/*;q=0.1",
-						"Accept-Language": "en-US,en;q=0.9",
-						"User-Agent":
-							"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-					},
+					headers,
 				});
 
 				icsData = response.text;
@@ -468,8 +586,27 @@ export class ICSSubscriptionService extends EventEmitter {
 			this.lastError.set(id, errorMessage);
 
 			// Show user notification for errors with more helpful message
+			const status = getRequestErrorStatus(error);
 			if (subscription.type === "remote") {
-				if (errorMessage.includes("404")) {
+				if (error instanceof ICSInsecureAuthError) {
+					publishUserNotice(this.plugin.emitter,
+						this.translate(msg({ message: "Calendar \"{name}\" uses a username and password, so its URL must start with https://. The credentials were not sent.", context: "services.icsSubscription.notices.authRequiresHttps" }), {
+							name: subscription.name,
+						})
+					);
+				} else if (error instanceof ICSMissingPasswordError) {
+					publishUserNotice(this.plugin.emitter,
+						this.translate(msg({ message: "Calendar \"{name}\" needs a password. Enter it in the calendar subscription settings.", context: "services.icsSubscription.notices.authPasswordMissing" }), {
+							name: subscription.name,
+						})
+					);
+				} else if (subscription.authType === "basic" && (status === 401 || status === 403)) {
+					publishUserNotice(this.plugin.emitter,
+						this.translate(msg({ message: "Authentication failed for calendar \"{name}\". Check the username and password.", context: "services.icsSubscription.notices.authenticationFailed" }), {
+							name: subscription.name,
+						})
+					);
+				} else if (errorMessage.includes("404")) {
 					publishUserNotice(this.plugin.emitter,
 						this.translate(msg({ message: "Calendar \"{name}\" not found (404). Please check the ICS URL is correct and the calendar is publicly accessible.", context: "services.icsSubscription.notices.calendarNotFound" }), {
 							name: subscription.name,
@@ -830,7 +967,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
 			// Return events if within grace period
 			if (now < gracePeriodEnd) {
-				allEvents.push(...cache.events);
+				allEvents.push(...this.filterEvents(cache.events, subscription.filter));
 
 				// Trigger refresh if cache expired but within grace period
 				const isStale = now > expiryDate;
@@ -897,7 +1034,15 @@ export class ICSSubscriptionService extends EventEmitter {
 			);
 		}
 
-		return [...cache.events];
+		const subscription = this.subscriptions.find((sub) => sub.id === subscriptionId);
+		return this.filterEvents(cache.events, subscription?.filter);
+	}
+
+	private filterEvents(events: ICSEvent[], filter = ""): ICSEvent[] {
+		// Filter normalized occurrences, not source VEVENTs: exceptions can have
+		// their own titles, and the complete cache must survive edits/clearing.
+		const titleContains = filter.trim().toLowerCase();
+		return events.filter((event) => event.title.toLowerCase().includes(titleContains));
 	}
 
 	async refreshAllSubscriptions(): Promise<void> {

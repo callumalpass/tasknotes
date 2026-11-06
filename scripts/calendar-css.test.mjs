@@ -1,20 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import { adaptCalendarCss } from "./calendar-css.mjs";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
-test("calendar host styles retain layout and accessible wrappers without lint exemptions", async () => {
-	const source = await readFile(new URL("../node_modules/@tasknotes/calendar/dist/calendar.css", import.meta.url), "utf8");
-	const css = adaptCalendarCss(source);
-	assert.doesNotMatch(css, /!important|:has\(|display:\s*contents|#[\da-f]{3}\b/i);
-	assert.match(css, /\.advanced-calendar-view \.tnc\.tnc \{/);
-	assert.match(css, /\.tnc-dg-dates \{\s*display: grid;\s*grid-template-columns: var\(--tnc-cols\);\s*grid-column: 1 \/ -1;/);
-	assert.match(css, /\.tnc-dg-content \{\s*position: absolute;\s*inset: 0;/);
-	assert.match(css, /\.advanced-calendar-view--week-numbers \.tnc-dg-layer/);
-	assert.match(css, /\.tnc-dh\.tnc-dh--capacity/);
-	assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
-});
-
-test("an engine stylesheet update requires explicit compatibility review", () => {
-	assert.throws(() => adaptCalendarCss(".tnc {}"), /Calendar stylesheet changed/);
+// A dependency upgrade must not silently leave the host stylesheet on an old
+// engine layout. Review/reapply the documented adaptations when this changes.
+test("host calendar stylesheet tracks the pinned upstream engine and license", () => {
+  const packageRoot = new URL("../node_modules/@tasknotes/calendar/", import.meta.url);
+  const version = JSON.parse(readFileSync(new URL("package.json", packageRoot), "utf8")).version;
+  assert.equal(version, "0.1.6");
+  const upstreamHash = createHash("sha256")
+    .update(readFileSync(new URL("dist/calendar.css", packageRoot))).digest("hex");
+  assert.equal(upstreamHash, "725742e962757e54a56f7e67b823f017993bb705f17e181233173d1f3e9ddfe1");
+  const host = readFileSync(new URL("../vendor/tasknotes-calendar/calendar.css", import.meta.url), "utf8");
+  assert.ok(host.replace(/[\s*]+/g, "").includes(upstreamHash));
+  assert.deepEqual(readFileSync(new URL("../vendor/tasknotes-calendar/LICENSE", import.meta.url)),
+    readFileSync(new URL("LICENSE", packageRoot)));
 });

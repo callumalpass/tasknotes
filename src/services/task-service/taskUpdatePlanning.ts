@@ -416,13 +416,11 @@ function applyConfiguredPropertyTaskIdentifier(
 	frontmatter: Record<string, unknown>,
 	taskIdentification: TaskIdentificationSettings
 ): void {
-	if (taskIdentification.propertyName && taskIdentification.propertyValue) {
-		applyPropertyTaskIdentifier(
-			frontmatter,
-			taskIdentification.propertyName,
-			taskIdentification.propertyValue
-		);
-	}
+	applyPropertyTaskIdentifier(
+		frontmatter,
+		taskIdentification.propertyName,
+		taskIdentification.propertyValue
+	);
 }
 
 function removeUnsetMappedFields(
@@ -453,6 +451,12 @@ function removeUnsetMappedFields(
 		} else {
 			delete frontmatter[projectsField];
 		}
+	}
+	if (
+		Object.prototype.hasOwnProperty.call(updates, "attachments") &&
+		(!Array.isArray(updates.attachments) || updates.attachments.length === 0)
+	) {
+		delete frontmatter[fieldMapper.toUserField("attachments")];
 	}
 	if (
 		Object.prototype.hasOwnProperty.call(updates, "timeEstimate") &&

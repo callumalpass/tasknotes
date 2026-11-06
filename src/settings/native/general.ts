@@ -6,7 +6,7 @@ import { MessageDescriptor } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
-import { hasCompletePropertyTaskIdentification } from "../../utils/taskIdentification";
+import { hasUsablePropertyTaskIdentification } from "../../utils/taskIdentification";
 import {
 	createVaultFile,
 	createVaultFolder,
@@ -237,7 +237,7 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 							msg({ message: "Task property value", context: "settings.general.taskIdentification.taskPropertyValue.name" })
 						),
 						desc: translate(
-							msg({ message: "The value that identifies a note as a task (e.g., \"task\")", context: "settings.general.taskIdentification.taskPropertyValue.description" })
+							msg({ message: "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value.", context: "settings.general.taskIdentification.taskPropertyValue.description" })
 						),
 						placeholder: translate(
 							msg({ message: "Enter property value", context: "settings.general.taskIdentification.propertyValuePlaceholder" })
@@ -254,11 +254,11 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 					name: "",
 					visible: () =>
 						plugin.settings.taskIdentificationMethod === "property" &&
-						!hasCompletePropertyTaskIdentification(plugin.settings),
+						!hasUsablePropertyTaskIdentification(plugin.settings),
 					render: (setting) => {
 						setting.settingEl.addClass("settings-view__identification-warning");
 						setting.setDesc(
-							translate(msg({ message: "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.", context: "settings.general.taskIdentification.incompletePropertyWarning" }))
+							translate(msg({ message: "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings.", context: "settings.general.taskIdentification.incompletePropertyWarning" }))
 						);
 						setting.descEl.addClass("mod-warning");
 						setting.descEl.setAttribute("role", "status");

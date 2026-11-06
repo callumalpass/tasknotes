@@ -12,7 +12,7 @@ import {
 	type TaskPropertyValue,
 } from "../../utils/FilterUtils";
 import { getEffectiveTaskStatus } from "../../utils/helpers";
-import { getProjectDisplayName } from "../../utils/linkUtils";
+import { getProjectDisplayName, parseLinkToPath } from "../../utils/linkUtils";
 import {
 	coerceUserFieldTaskValue,
 	findUserFieldById,
@@ -117,7 +117,8 @@ export function evaluateFilterCondition(
 			taskValue,
 			operator,
 			value,
-			context.app
+			context.app,
+			task.path
 		);
 	}
 
@@ -179,7 +180,8 @@ export function evaluateProjectsCondition(
 	taskValue: TaskPropertyValue,
 	operator: FilterOperator,
 	conditionValue: TaskPropertyValue,
-	app?: App
+	app?: App,
+	sourcePath = ""
 ): boolean {
 	if (!Array.isArray(taskValue)) {
 		return false;
@@ -199,7 +201,7 @@ export function evaluateProjectsCondition(
 			return false;
 		}
 
-		const taskProjectName = extractProjectName(taskProject, app);
+		const taskProjectName = extractProjectName(taskProject, app, sourcePath);
 		if (!taskProjectName) {
 			return false;
 		}
@@ -208,38 +210,45 @@ export function evaluateProjectsCondition(
 			return true;
 		}
 
-		return compareProjectWikilinks(taskProject, conditionValue, app);
+		return compareProjectWikilinks(taskProject, conditionValue, app, sourcePath);
 	});
 
 	return operator === "contains" ? hasMatch : !hasMatch;
 }
 
-export function extractProjectName(projectValue: string, app?: App): string | null {
+export function extractProjectName(
+	projectValue: string,
+	app?: App,
+	sourcePath = ""
+): string | null {
 	if (!projectValue || typeof projectValue !== "string") {
 		return null;
 	}
 
-	const displayName = getProjectDisplayName(projectValue, app);
+	const displayName = getProjectDisplayName(projectValue, app, sourcePath);
 	return displayName ? displayName : null;
 }
 
 export function compareProjectWikilinks(
 	taskProject: string,
 	conditionProject: string,
-	app?: App
+	app?: App,
+	sourcePath = ""
 ): boolean {
 	if (!app) {
 		return false;
 	}
 
-	const taskLinkPath = extractWikilinkPath(taskProject);
-	const conditionLinkPath = extractWikilinkPath(conditionProject);
+	// Drop aliases and #heading/#^block subpaths so they don't break resolution.
+	const taskLinkPath = typeof taskProject === "string" ? parseLinkToPath(taskProject) : "";
+	const conditionLinkPath =
+		typeof conditionProject === "string" ? parseLinkToPath(conditionProject) : "";
 
 	if (!taskLinkPath || !conditionLinkPath) {
 		return false;
 	}
 
-	const taskFile = app.metadataCache.getFirstLinkpathDest(taskLinkPath, "");
+	const taskFile = app.metadataCache.getFirstLinkpathDest(taskLinkPath, sourcePath);
 	const conditionFile = app.metadataCache.getFirstLinkpathDest(
 		conditionLinkPath,
 		""
