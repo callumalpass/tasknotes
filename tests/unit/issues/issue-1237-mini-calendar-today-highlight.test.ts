@@ -21,13 +21,19 @@ describe("Issue #1237: Mini Calendar today highlight", () => {
 			cssContent,
 			".tasknotes-plugin .mini-calendar-view__day--today.mini-calendar-view__day--selected"
 		);
+		const circleBlock = extractCssBlock(cssContent, ".tasknotes-plugin .mini-calendar-view__number");
+		const accentBlock = extractCssBlock(cssContent, ".tasknotes-plugin :is(.mini-calendar-view__day--today, .mini-calendar-view__day--selected) .mini-calendar-view__number");
 
 		expect(todayBlock).toContain("background: none");
 		expect(todayBlock).toContain("color: var(--tn-interactive-accent)");
 		expect(todayBlock).toContain("font-weight: var(--tn-font-weight-semibold)");
 		expect(todayBlock).toContain("box-shadow: none");
-		expect(selectedTodayBlock).toContain("background: var(--tn-interactive-accent)");
-		expect(selectedTodayBlock).toContain("color: var(--text-on-accent)");
+		expect(selectedTodayBlock).toContain("background: transparent");
+		expect(circleBlock).toContain("width: var(--tn-mini-calendar-day-size)");
+		expect(circleBlock).toContain("height: var(--tn-mini-calendar-day-size)");
+		expect(circleBlock).toContain("border-radius: var(--tn-radius-full)");
+		expect(accentBlock).toContain("background: var(--tn-interactive-accent)");
+		expect(accentBlock).toContain("color: var(--text-on-accent)");
 		expect(selectedTodayBlock).toContain("box-shadow: none");
 	});
 });

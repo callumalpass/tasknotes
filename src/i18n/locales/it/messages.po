@@ -280,6 +280,11 @@ msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
 msgstr "{count, plural, one {# allegato} other {# allegati}}"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar selected day count"
+msgid "{count, plural, one {# item} other {# items}}"
+msgstr "{count, plural, one {# elemento} many {# elementi} other {# elementi}}"
+
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
@@ -8634,11 +8639,6 @@ msgctxt "notices.recurringCompletion.noNext"
 msgid "No next occurrence"
 msgstr "Nessuna occorrenza successiva"
 
-#: src/bases/MiniCalendarView.ts
-msgctxt "notices.audit.noNotes"
-msgid "No notes found for selected dates"
-msgstr "Nessuna nota trovata per le date selezionate"
-
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.noOverdue"
 msgid "No overdue scheduled tasks to postpone"
@@ -8932,6 +8932,11 @@ msgstr "Riquadro delle note"
 msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
 msgstr "Nota: '{{dueDate}}' e '{{scheduledDate}}' sono nel formato YYYY-MM-DD e rimangono vuoti se non impostati."
+
+#: src/bases/MiniCalendarView.ts
+msgctxt "mini calendar empty selection"
+msgid "Nothing scheduled for the selected dates."
+msgstr "Nessun impegno nelle date selezionate."
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundEnabledName"

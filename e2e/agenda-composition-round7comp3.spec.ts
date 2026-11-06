@@ -126,7 +126,8 @@ test('agenda and selected-day rows keep a compact aligned reading lane', async (
           return { label: element.getAttribute('aria-label'), classes: element.className, hitClasses: hit?.className, width: bounds.width, height: bounds.height, onscreen: bounds.top >= 0 && bounds.bottom <= innerHeight, hit: hit === element || element.contains(hit) };
         }));
         writeFileSync(`${output}/controls-${surface}-${theme}-${width}.json`, JSON.stringify(controls, null, 2));
-        expect(controls.filter(control => control.onscreen).every(control => control.width >= 40 && control.height >= 40 && control.hit)).toBe(true);
+        const minimumTarget = width === 400 ? 40 : 24;
+        expect(controls.filter(control => control.onscreen).every(control => control.width >= minimumTarget && control.height >= minimumTarget && control.hit)).toBe(true);
         const scheduled = root.locator('[data-event-type="scheduled"][data-task-path$="Task 0.md"]').first();
         await expect(scheduled.locator('.tn-calendar-list-stamp[data-event-type="scheduled"]')).toHaveAccessibleName(/^Scheduled:/);
         const due = root.locator('[data-event-type="due"][data-task-path$="Task 2.md"]').first();

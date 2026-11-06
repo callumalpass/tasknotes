@@ -646,7 +646,10 @@ test('mini calendar uses the selected-day skin in both themes and widths', async
       await page.mouse.move(5, 5);
       await expect(other).toHaveClass(/mini-calendar-view__day--selected/);
       expect(await day.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
-      expect(await other.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+      const selectedNumber = other.locator('.mini-calendar-view__number');
+      expect(await selectedNumber.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
+      expect((await selectedNumber.boundingBox())!.width).toBe(32);
+      expect((await selectedNumber.boundingBox())!.height).toBe(32);
       const nav = (await page.locator('.mini-calendar-view__navigation').boundingBox())!;
       const todayButton = (await page.locator('.mini-calendar-view__today-button').boundingBox())!;
       expect(Math.abs(nav.y - todayButton.y)).toBeLessThan(12);

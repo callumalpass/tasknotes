@@ -8,6 +8,7 @@ import {
 	FuzzySuggestModal,
 	FuzzyMatch,
 	setTooltip,
+	setIcon,
 	Notice,
 	App,
 	moment as obsidianMoment,
@@ -724,13 +725,13 @@ export class MiniCalendarView extends BasesViewBase {
 
 		// Previous month button
 		const prevButton = navSection.createEl("button", {
-			text: "‹",
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--prev tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
 				"aria-label": this.plugin.i18n.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
 				title: this.plugin.i18n.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
 			},
 		});
+		setIcon(prevButton, "chevron-left");
 		prevButton.addEventListener("click", () => this.navigateToPreviousMonth());
 
 		// Current month display
@@ -745,13 +746,13 @@ export class MiniCalendarView extends BasesViewBase {
 
 		// Next month button
 		const nextButton = navSection.createEl("button", {
-			text: "›",
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--next tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
 				"aria-label": this.plugin.i18n.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
 				title: this.plugin.i18n.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
 			},
 		});
+		setIcon(nextButton, "chevron-right");
 		nextButton.addEventListener("click", () => this.navigateToNextMonth());
 
 		// Today button
@@ -944,7 +945,6 @@ export class MiniCalendarView extends BasesViewBase {
 
 		const dayEl = weekRow.createDiv({
 			cls: classNames,
-			text: uiNumber(dayNum),
 			attr: {
 				role: "gridcell",
 				"aria-label":
@@ -959,6 +959,7 @@ export class MiniCalendarView extends BasesViewBase {
 				"aria-current": isToday ? "date" : null,
 			},
 		});
+		dayEl.createSpan({ cls: "mini-calendar-view__number", text: uiNumber(dayNum) });
 
 		// Add heatmap styling and tooltips if notes exist for this date
 		const dateKey = formatDateForStorage(dayDate);
@@ -1057,7 +1058,7 @@ export class MiniCalendarView extends BasesViewBase {
 		const heading = new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), { dateStyle: "full", timeZone: "UTC" }).format(this.selectedDate);
 		section.createEl("h3", { cls: "mini-calendar-view__selected-heading", text: heading });
 		if (!entries.length) {
-			section.createDiv({ cls: "tn-picker__empty", text: this.plugin.i18n.translate(msg({ message: "No notes found for selected dates", context: "notices.audit.noNotes" })) });
+			section.createDiv({ cls: "tn-picker__empty", text: this.plugin.i18n.translate(msg({ message: "Nothing scheduled for the selected dates.", context: "mini calendar empty selection" })) });
 			return;
 		}
 		for (const entry of [...entries].sort((first, second) => first.title.localeCompare(second.title))) {
@@ -1567,7 +1568,7 @@ export class MiniCalendarView extends BasesViewBase {
 			);
 			modal.open();
 		} else {
-			new Notice(this.plugin.i18n.translate(msg({ message: "No notes found for selected dates", context: "notices.audit.noNotes" })));
+			new Notice(this.plugin.i18n.translate(msg({ message: "Nothing scheduled for the selected dates.", context: "mini calendar empty selection" })));
 		}
 	}
 
@@ -1772,7 +1773,7 @@ function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNot
 		const identity = className === "mini-calendar-view__entry-content" && note.kind === "note"
 			? note.path.split("/").pop()?.replace(/\.md$/, "") || subtitle
 			: subtitle;
-		container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: identity, attr: { title: subtitle } });
+		if (identity !== note.title) container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: identity, attr: { title: subtitle } });
 	}
 }
 

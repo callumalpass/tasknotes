@@ -47,6 +47,15 @@ describe("calendar task glyphs", () => {
 		expect(element.dataset.status).toBe("active");
 		expect(element.dataset.priority).toBe("normal");
 		expect(element.style.getPropertyValue("--tn-calendar-status-color")).toBe("orange");
+		expect((element.querySelector(".tn-task-glyphs__status") as HTMLElement).style.color).toBe("");
+	});
+
+	it("retains configured glyph colours on unfilled agenda rows", () => {
+		const element = document.createElement("div");
+		element.classList.add("tnc-item--list");
+		element.innerHTML = '<div class="tnc-item-title">Calendar task</div>';
+		decorateCalendarTaskGlyphs(element, TaskFactory.createTask({ status: "active" }), plugin);
+		expect((element.querySelector(".tn-task-glyphs__status") as HTMLElement).style.color).toBe("orange");
 	});
 
 	it("preserves user-configured icons instead of substituting ranked glyphs", () => {

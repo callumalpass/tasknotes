@@ -3,6 +3,7 @@ import type { TaskInfo } from "../types";
 import type { CalendarEventChange } from "./calendarEngine";
 import { format } from "date-fns";
 import { formatUIDate } from "../i18n/formatters";
+import { formatTime } from "../utils/dateUtils";
 import { TFile } from "obsidian";
 import {
 	handleTimeblockDrop,
@@ -24,7 +25,7 @@ import { calendarResizeFeedback } from "./calendarResizeFeedback";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarMutations" });
 export interface CalendarMutationContext {
 	plugin: TaskNotesPlugin;
-	options: { startDateProperty: string | null; endDateProperty: string | null };
+	options: { startDateProperty: string | null; endDateProperty: string | null; timeFormat?: string };
 	timezone: string;
 	refreshTask(task: TaskInfo): Promise<void>;
 	refreshEvent(event: CalendarEventChange["event"]): void;
@@ -290,7 +291,7 @@ async function applyTaskCalendarGesture(
 			await context.refreshTask(result.task);
 			const feedback = kind === "resize" && info.event.end
 				? calendarResizeFeedback(result.task.title, info.event.start, info.event.end)
-				: `${result.task.title} · ${formatUIDate(info.event.start, info.event.allDay ? "PP" : context.plugin.settings.calendarViewSettings?.timeFormat === "12" ? "PP h:mm a" : "PP HH:mm")}`;
+				: `${result.task.title} · ${formatUIDate(info.event.start, "PP")}${info.event.allDay ? "" : ` ${formatTime(info.event.start, (context.options.timeFormat ?? context.plugin.settings.calendarViewSettings?.timeFormat) === "12" ? "12" : "24")}`}`;
 			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, feedback);
 		}
 		else info.revert();
