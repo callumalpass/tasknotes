@@ -23,6 +23,8 @@
 
     /* Space */
     --tn-space-half: 2px;
+    --tn-drag-stack-shadow: 0 4px 0 -1px var(--background-primary), 0 5px 0 0 var(--tn-border-color), 0 8px 0 -1px var(--background-primary), 0 9px 0 0 var(--tn-border-color);
+    --tn-board-title-height: 2.8em;
     --tn-space-1: 4px;
     --tn-space-2: 8px;
     --tn-space-3: 12px;

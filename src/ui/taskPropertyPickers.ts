@@ -363,7 +363,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 		});
 		const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}", context: "interaction property feedback" }), { count: updatedTasks.length, property: taskPropertyLabel(property as TaskPickerProperty), value: [...new Set(values)].join(", ") });
 		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : outcome,
-			uiText(msg({ message: "Undid {property} change for {count, plural, one {# task} other {# tasks}}", context: "interaction property undo confirmation" }), { property: taskPropertyLabel(property as TaskPickerProperty), count: undo.length }), undefined,
+			undefined, undefined,
 			failedPaths.length ? {
 				label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
 				run: async () => { await plugin.app.workspace.openLinkText(failedPaths[0], "", false); },

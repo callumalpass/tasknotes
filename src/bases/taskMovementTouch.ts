@@ -32,7 +32,8 @@ export class TaskMovementTouch {
 		this.doc = container.ownerDocument;
 		this.win = this.doc.defaultView ?? window;
 		container.addEventListener("pointerdown", this.onPointerDown, true);
-		container.addEventListener("click", this.onClick, true);
+		this.win.addEventListener("pointerdown", this.onNewPress, true);
+		for (const type of ["mousedown", "mouseup", "click", "touchend"] as const) this.win.addEventListener(type, this.onClick, { capture: true, passive: false });
 		this.win.addEventListener("blur", this.onBlur);
 	}
 
@@ -65,7 +66,7 @@ export class TaskMovementTouch {
 		this.timer = this.win.setTimeout(() => {
 			if (this.menuTarget) {
 				this.menuOpened = true;
-				this.suppressClickUntil = Date.now() + 1000;
+				this.suppressClickUntil = Infinity;
 				this.callbacks.menu?.(this.menuTarget, this.startX, this.startY);
 			} else this.activate(this.startX, this.startY);
 		}, handle ? 200 : 450);
@@ -144,10 +145,15 @@ export class TaskMovementTouch {
 
 	private onBlur = (): void => this.cancel();
 
-	private onClick = (event: MouseEvent): void => {
+	private onNewPress = (): void => {
+		if (this.pointerId === null) this.suppressClickUntil = 0;
+	};
+
+	private onClick = (event: Event): void => {
 		if (Date.now() >= this.suppressClickUntil) return;
 		event.preventDefault();
-		event.stopPropagation();
+		event.stopImmediatePropagation();
+		if (event.type === "click") this.suppressClickUntil = 0;
 	};
 
 	private clearTimer(): void {
@@ -184,7 +190,8 @@ export class TaskMovementTouch {
 	destroy(): void {
 		this.cancel();
 		this.container.removeEventListener("pointerdown", this.onPointerDown, true);
-		this.container.removeEventListener("click", this.onClick, true);
+		this.win.removeEventListener("pointerdown", this.onNewPress, true);
+		for (const type of ["mousedown", "mouseup", "click", "touchend"] as const) this.win.removeEventListener(type, this.onClick, true);
 		this.win.removeEventListener("blur", this.onBlur);
 	}
 }

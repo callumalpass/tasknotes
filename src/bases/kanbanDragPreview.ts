@@ -10,6 +10,7 @@ export class KanbanDragPreview {
 	private floatingDragPreviewPendingX = 0;
 	private floatingDragPreviewPendingY = 0;
 	private invalidReason: string | null = null;
+	private grabOffset: { x: number; y: number } | null = null;
 	show(
 		sourceElement: HTMLElement,
 		event: Pick<DragEvent, "clientX" | "clientY">,
@@ -64,6 +65,10 @@ export class KanbanDragPreview {
 			preview.dataset.dragCount = `${count}`;
 		}
 		this.floatingDragPreviewWidth = Math.min(Math.max(rect.width, 180), 320);
+		this.grabOffset = className === "task-list-view__touch-ghost" ? {
+			x: Math.max(0, Math.min(rect.width, event.clientX - rect.left)) * this.floatingDragPreviewWidth / rect.width,
+			y: Math.max(0, Math.min(rect.height, event.clientY - rect.top)),
+		} : null;
 		preview.setCssProps({
 			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
 			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
@@ -108,13 +113,13 @@ export class KanbanDragPreview {
 		const offset = 14;
 		const width = this.floatingDragPreviewWidth;
 		const height = this.floatingDragPreviewHeight;
-		let x = clientX + offset;
-		let y = clientY + offset;
+		let x = clientX - (this.grabOffset?.x ?? -offset);
+		let y = clientY - (this.grabOffset?.y ?? -offset);
 
-		if (x + width > win.innerWidth - margin) {
+		if (!this.grabOffset && x + width > win.innerWidth - margin) {
 			x = clientX - width - offset;
 		}
-		if (y + height > win.innerHeight - margin) {
+		if (!this.grabOffset && y + height > win.innerHeight - margin) {
 			y = clientY - height - offset;
 		}
 

@@ -2790,6 +2790,11 @@ msgctxt "settings.features.uiLanguage.description"
 msgid "Change the language of TaskNotes menus, notices, and views."
 msgstr "Altere o idioma dos menus, avisos e visualizações do TaskNotes."
 
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo confirmation"
+msgid "Change undone."
+msgstr "Alteração desfeita."
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.checkForUpdates.name"
 msgid "Check for new releases on startup"
@@ -4946,6 +4951,11 @@ msgstr "Arraste para reordenar"
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.description"
 msgid "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 msgstr "Desenha uma linha sobre os títulos de cartões de tarefas concluídas. Desative para manter tarefas concluídas mais fáceis de ler"
+
+#: src/bases/TaskListView.ts
+msgctxt "task list drop restriction"
+msgid "Drop on a task row or group destination."
+msgstr "Solte em uma linha de tarefa ou em um destino de grupo."
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -9458,7 +9468,6 @@ msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
 msgstr "Outros"
 
-#: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.otherDestinations"
 msgid "Other destinations"
@@ -12674,6 +12683,11 @@ msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotificatio
 msgid "This is a test reminder from TaskNotes."
 msgstr "Este é um lembrete de teste do TaskNotes."
 
+#: src/bases/TaskListView.ts
+msgctxt "task list drop restriction"
+msgid "This is the dragged task."
+msgstr "Esta é a tarefa que você está arrastando."
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "This month"
@@ -13170,6 +13184,11 @@ msgctxt "modals.unscheduledTasksSelector.instructions.navigate"
 msgid "to navigate"
 msgstr "para navegar"
 
+#: src/bases/TaskListView.ts
+msgctxt "task list sorted drop restriction"
+msgid "To reorder tasks, sort this view by {property}."
+msgstr "Para reordenar as tarefas, ordene esta visualização por {property}."
+
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.schedule"
 msgid "to schedule"
@@ -13551,16 +13570,6 @@ msgstr "Desarquivar tarefa"
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "Abaixo da estimativa"
-
-#: src/ui/taskPropertyPickers.ts
-msgctxt "interaction property undo confirmation"
-msgid "Undid {property} change for {count, plural, one {# task} other {# tasks}}"
-msgstr "Alteração de {property} desfeita em {count, plural, one {# tarefa} other {# tarefas}}"
-
-#: src/ui/kit/toast.ts
-msgctxt "interaction undo confirmation"
-msgid "Undid: {action}"
-msgstr "Desfeito: {action}"
 
 #: src/ui/taskPropertyPickers.ts
 #: src/ui/taskViewKeyboard.ts

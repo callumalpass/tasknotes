@@ -4,11 +4,13 @@ export class TaskMovementAutoScroll {
 	private x = 0;
 	private y = 0;
 	private lastTime = 0;
+	private generation = 0;
 	private readonly win: Window;
 
 	constructor(
 		private readonly container: HTMLElement,
-		private readonly onScroll: (x: number, y: number) => void
+		private readonly onScroll: (x: number, y: number) => void,
+		private readonly isActive: () => boolean = () => true
 	) {
 		this.win = container.ownerDocument.defaultView ?? window;
 	}
@@ -23,6 +25,11 @@ export class TaskMovementAutoScroll {
 	}
 
 	private tick = (time: number): void => {
+		const generation = this.generation;
+		if (!this.isActive()) {
+			this.stop();
+			return;
+		}
 		this.frame = 0;
 		let scroller: HTMLElement | null = this.container;
 		while (scroller && scroller.scrollHeight <= scroller.clientHeight) {
@@ -35,24 +42,27 @@ export class TaskMovementAutoScroll {
 		const bottom = Math.min(this.win.innerHeight, rect.bottom);
 		if (this.x < rect.left || this.x > rect.right || this.y < top || this.y > bottom) return;
 		const edge = Math.min(40, (bottom - top) / 4);
-		const speed =
+		const proximity =
 			this.y < top + edge
 				? -Math.min(1, (top + edge - this.y) / edge)
 				: this.y > bottom - edge
 					? Math.min(1, (this.y - bottom + edge) / edge)
 					: 0;
-		if (!speed) return;
+		if (!proximity) return;
+		const speed = Math.sign(proximity) * proximity * proximity;
 		const delta = this.lastTime ? Math.min(32, time - this.lastTime) : 16;
 		this.lastTime = time;
 		const previousTop = scroller.scrollTop;
-		scroller.scrollTop += speed * delta * 0.8;
+		scroller.scrollTop = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, previousTop + speed * delta * 0.45));
 		if (scroller.scrollTop === previousTop) return;
 		this.onScroll(this.x, this.y);
-		this.frame = this.win.requestAnimationFrame(this.tick);
+		if (this.generation === generation && this.isActive() && !this.frame) this.frame = this.win.requestAnimationFrame(this.tick);
 	};
 
 	stop(): void {
+		this.generation++;
 		if (this.frame) this.win.cancelAnimationFrame(this.frame);
 		this.frame = 0;
+		this.lastTime = 0;
 	}
 }

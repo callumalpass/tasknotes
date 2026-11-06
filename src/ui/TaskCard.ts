@@ -44,6 +44,7 @@ export interface TaskCardOptions {
 	 */
 	occurrenceScheduled?: string;
 	layout?: "default" | "compact" | "inline";
+	plainTags?: boolean;
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
 	/** When false, omit secondary badge controls such as reminders, project badges, and toggles. */

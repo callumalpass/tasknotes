@@ -753,7 +753,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected getCoreActionIconSpecs(): TaskModalActionIconSpec[] {
-		return [
+		const specs: TaskModalActionIconSpec[] = [
 			{
 				iconName: "circle",
 				tooltip: this.t(
@@ -821,6 +821,7 @@ export abstract class TaskModal extends Modal {
 				chip: true,
 			},
 		];
+		return specs.filter((spec) => spec.dataType !== "priority" || this.plugin.settings.customPriorities.length > 0);
 	}
 
 	protected createActionIcon(

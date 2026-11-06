@@ -22,6 +22,7 @@ export interface ConfirmationModalOptions {
 export class ConfirmationModal extends Modal {
 	private options: ConfirmationModalOptions;
 	private resolve: (confirmed: boolean) => void;
+	private answered = false;
 
 	constructor(app: App, options: ConfirmationModalOptions) {
 		super(app);
@@ -95,6 +96,7 @@ export class ConfirmationModal extends Modal {
 				text: this.options.thirdButtonText,
 			});
 			thirdButton.addEventListener("click", () => {
+				this.answered = true;
 				if (this.options.onThirdButton) {
 					this.options.onThirdButton();
 				}
@@ -104,6 +106,7 @@ export class ConfirmationModal extends Modal {
 
 		const cancelButton = buttonContainer.createEl("button", { text: this.options.cancelText });
 		cancelButton.addEventListener("click", () => {
+			this.answered = true;
 			this.resolve(false);
 			this.close();
 		});
@@ -140,6 +143,7 @@ export class ConfirmationModal extends Modal {
 		}
 
 		confirmButton.addEventListener("click", () => {
+			this.answered = true;
 			this.resolve(true);
 			this.close();
 		});
@@ -159,6 +163,7 @@ export class ConfirmationModal extends Modal {
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
+		if (!this.answered) this.options.onThirdButton?.();
 		// Ensure promise is resolved even if modal is closed without selection
 		if (this.resolve) {
 			this.resolve(false);

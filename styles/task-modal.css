@@ -550,12 +550,12 @@
 
 .tasknotes-plugin .title-input-detailed {
     width: 100%;
-    padding: var(--size-4-2);
+    padding: var(--tn-space-2) 0;
     font-family: inherit;
-    font-size: var(--font-ui-medium);
-    font-weight: var(--tn-font-weight-normal);
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
     line-height: 1.4;
-    border: 1px solid transparent;
+    border: none;
     border-radius: var(--radius-s);
     background: transparent;
     color: var(--text-normal);
@@ -573,8 +573,18 @@
 .tasknotes-plugin .title-input-detailed:focus-visible {
     outline: none;
     box-shadow: none;
-    border-color: var(--interactive-accent);
     background: transparent;
+}
+
+.tasknotes-plugin .title-input:focus-visible {
+    outline: var(--tn-space-half) solid var(--tn-focus-ring);
+    outline-offset: var(--tn-space-half);
+}
+
+.modal.mod-tasknotes.tn-task-modal--composer {
+    align-self: flex-start;
+    margin-top: var(--tn-space-8);
+    max-height: calc(100% - var(--tn-space-8) * 2);
 }
 
 .tasknotes-plugin .title-input-detailed::placeholder {

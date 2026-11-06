@@ -39,7 +39,7 @@ export async function undoLatest(scope: object): Promise<void> {
 			if (index >= 0) history?.splice(index, 1);
 			if (toastRevision === revision) {
 				showToast({
-					message: action.undoMessage ?? uiText(msg({ message: "Undid: {action}", context: "interaction undo confirmation" }), { action: action.message }),
+					message: action.undoMessage ?? uiText(msg({ message: "Change undone.", context: "interaction undo confirmation" })),
 				});
 			}
 		} catch (error) {
@@ -114,10 +114,23 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 		cls: `tasknotes-plugin tn-toast${options.intent === "error" ? " is-error" : ""}`,
 		attr: { role: options.intent === "error" ? "alert" : "status", "aria-live": options.intent === "error" ? "assertive" : "polite" },
 	});
+	const updateClearance = () => {
+		let clearance = 0;
+		if (doc.body.classList.contains("is-mobile")) {
+			for (const nav of doc.querySelectorAll<HTMLElement>(".mobile-navbar, .mobile-toolbar")) {
+				const rect = nav.getBoundingClientRect();
+				if (rect.height > 0 && rect.bottom >= win.innerHeight - 1) clearance = Math.max(clearance, win.innerHeight - rect.top);
+			}
+		}
+		el.style.setProperty("--tn-toast-clearance", `${clearance}px`);
+	};
+	updateClearance();
+	win.addEventListener("resize", updateClearance);
 	el.createSpan({ cls: "tn-toast__message", text: options.message });
 
 	const dismiss = () => {
 		win.clearTimeout(timer);
+		win.removeEventListener("resize", updateClearance);
 		el.remove();
 	};
 	let remaining = options.durationMs ?? DEFAULT_DURATION_MS;

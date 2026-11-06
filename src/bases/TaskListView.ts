@@ -256,6 +256,9 @@ export class TaskListView extends BasesViewBase {
 	private emptyDestinations: HTMLElement | null = null;
 	private touchMovement: TaskMovementTouch | null = null;
 	private edgeScroll: TaskMovementAutoScroll | null = null;
+	private movementPointer = { x: 0, y: 0 };
+	private nativeMovementActive = false;
+	private nativeMovementCancelled = false;
 	private dragPreview = new KanbanDragPreview();
 	private restoreDragScroll: (() => void) | null = null;
 	private reorderConfirmed = false;
@@ -1125,7 +1128,8 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			e.stopPropagation();
+			this.nativeMovementActive = true;
+			this.nativeMovementCancelled = false;
 			this.beginTaskMovement(cardEl, task, groupKey, e);
 			this.updateTouchGhost(e.clientX, e.clientY);
 			if (e.dataTransfer) {
@@ -1140,6 +1144,8 @@ export class TaskListView extends BasesViewBase {
 		});
 
 		cardEl.addEventListener("dragend", () => {
+			this.nativeMovementActive = false;
+			this.nativeMovementCancelled = false;
 			restoreCardDraggable();
 			this.cancelTaskMovement();
 		});
@@ -1176,6 +1182,7 @@ export class TaskListView extends BasesViewBase {
 				element.classList.add("task-card--dragging", "task-list-view__drag-source");
 		});
 		this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+		this.containerEl.ownerDocument.querySelectorAll(".tooltip").forEach((tooltip) => tooltip.remove());
 		this.dragPreview.show(card, position, this.draggedTaskPaths.length, task.title, "task-list-view__touch-ghost");
 		// Keep the source row and target measurements stable throughout the gesture.
 		this.currentInsertionGroupKey = groupKey;
@@ -1185,7 +1192,9 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private updateTouchGhost(x: number, y: number): void {
+		this.movementPointer = { x, y };
 		this.dragPreview.move(x, y);
+		this.positionMovementFeedback();
 	}
 
 	private async finishTaskMovement(target: EventTarget | null, clientY: number): Promise<void> {
@@ -1213,9 +1222,9 @@ export class TaskListView extends BasesViewBase {
 			for (const sourcePath of ordered) {
 				await this.performTaskMovement(sourcePath, sources.get(sourcePath) ?? source, destination, isHeader, insertion, undos, failedPaths);
 			}
-			const outcome = taskMovementMessage(undos.length, this.movementDestinationLabel(destination));
+			const outcome = plan.kind === "reorder" ? undefined : taskMovementMessage(undos.length, this.movementDestinationLabel(destination));
 			const failedTitles = failedPaths.map(path => this.taskInfoCache.get(path)?.title ?? path).join(", ");
-			showTaskUndo(undos, failedPaths.length > 0, undos.length, this.plugin.app.vault, failedTitles ? `${outcome} · ${failedTitles}` : outcome, undefined, undefined,
+			showTaskUndo(undos, failedPaths.length > 0, undos.length, this.plugin.app.vault, failedTitles ? [outcome, failedTitles].filter(Boolean).join(" · ") : outcome, undefined, undefined,
 				failedPaths.length ? {
 					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
 					run: async () => { await this.plugin.app.workspace.openLinkText(failedPaths[0], "", false); },
@@ -1404,17 +1413,12 @@ export class TaskListView extends BasesViewBase {
 		shelf.className = "task-list-view__empty-destinations";
 		shelf.createDiv({
 			cls: "task-list-view__destination-label",
-			text: this.plugin.i18n.translate(
-				msg({
-					message: "Other destinations",
-					context: "views.taskList.movement.otherDestinations",
-				})
-			),
+			text: this.dataAdapter.getPropertyDisplayName(this.getGroupByPropertyId() ?? this.subGroupPropertyId ?? "status"),
 		});
 		for (const destination of missing) {
 			const target = shelf.createDiv({
 				cls: "task-list-view__destination",
-				text: this.movementDestinationLabel(destination),
+				text: `${this.dataAdapter.getPropertyDisplayName(this.getGroupByPropertyId() ?? this.subGroupPropertyId ?? "status")} → ${this.movementDestinationLabel(destination)}`,
 			});
 			target.dataset.tnMovementDestination = "true";
 			this.elementDestinations.set(target, destination);
@@ -1653,7 +1657,9 @@ export class TaskListView extends BasesViewBase {
 						)
 				: plan.kind === "move"
 					? plan.changes.map((change) => this.describeMovementChange(change)).join(" · ")
-					: this.plugin.i18n.translate(
+					: !this.shouldEnableManualReordering() && !this.dropIsHeader
+						? this.plugin.i18n.translate(msg({ message: "To reorder tasks, sort this view by {property}.", context: "task list sorted drop restriction" }), { property: this.plugin.settings.fieldMapping.sortOrder })
+						: this.plugin.i18n.translate(
 							msg({
 								message: "Already in this group.",
 								context: "views.taskList.movement.noChange",
@@ -1702,26 +1708,26 @@ export class TaskListView extends BasesViewBase {
 		return `${name}: ${format(before)} → ${format(after)}`;
 	}
 
-	private setMovementFeedback(text: string, target?: HTMLElement): void {
+	private setMovementFeedback(text: string, _target?: HTMLElement): void {
 		if (!this.movementFeedback) {
 			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
-			this.movementFeedback.className = "task-list-view__movement-feedback";
+			this.movementFeedback.className = "tasknotes-plugin task-list-view__movement-feedback";
 			this.movementFeedback.setAttribute("role", "status");
 			this.movementFeedback.setAttribute("aria-live", "polite");
-			this.rootElement?.appendChild(this.movementFeedback);
+			this.containerEl.ownerDocument.body.appendChild(this.movementFeedback);
 		}
 		if (this.movementFeedback.textContent !== text) this.movementFeedback.textContent = text;
-		if (target && this.rootElement) {
-			const root = this.rootElement.getBoundingClientRect();
-			const anchor = target.getBoundingClientRect();
-			const height = this.movementFeedback.getBoundingClientRect().height;
-			const gap = 4;
-			const top = Math.max(root.top + gap, Math.min(anchor.top - height - gap, root.bottom - height - gap));
-			this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${top - root.top + this.rootElement.scrollTop}px`);
-			const width = this.movementFeedback.getBoundingClientRect().width;
-			const left = Math.max(root.left + gap, Math.min(anchor.left + gap, root.right - width - gap));
-			this.movementFeedback.style.setProperty("--tn-movement-hint-left", `${left - root.left + this.rootElement.scrollLeft}px`);
-		}
+		this.positionMovementFeedback();
+	}
+
+	private positionMovementFeedback(): void {
+		if (!this.movementFeedback) return;
+		const win = this.containerEl.ownerDocument.defaultView ?? window;
+		const rect = this.movementFeedback.getBoundingClientRect();
+		const left = Math.max(8, Math.min(this.movementPointer.x + 16, win.innerWidth - rect.width - 8));
+		const top = Math.max(8, Math.min(this.movementPointer.y - rect.height - 12, win.innerHeight - rect.height - 8));
+		this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${top + win.scrollY}px`);
+		this.movementFeedback.style.setProperty("--tn-movement-hint-left", `${left + win.scrollX}px`);
 	}
 
 	private updateTaskMovementTarget(
@@ -1735,13 +1741,19 @@ export class TaskListView extends BasesViewBase {
 		if (element && !this.draggedTaskPaths.includes(element.dataset.taskPath ?? ""))
 			element.classList.add("task-list-view__move-candidate");
 		const intent = this.resolveTaskMovementTarget(target, clientY);
+		if (!intent && !this.movementFeedback) {
+			const ownRow = this.draggedTaskPaths.includes(element?.dataset.taskPath ?? "");
+			this.setMovementFeedback(this.plugin.i18n.translate(ownRow
+				? msg({ message: "This is the dragged task.", context: "task list drop restriction" })
+				: msg({ message: "Drop on a task row or group destination.", context: "task list drop restriction" })));
+		}
 		this.currentDropAllowed =
 			intent?.kind === "move" ||
 			intent?.kind === "reorder" ||
 			(intent?.kind === "parent" && intent.state === "assign");
 		this.rootElement?.classList.toggle("task-list-view--invalid-drop", !this.currentDropAllowed);
 		this.containerEl.ownerDocument.body.classList.toggle("tn-drag-invalid", !this.currentDropAllowed);
-		this.dragPreview.setInvalid(this.currentDropAllowed ? null : this.movementFeedback?.textContent ?? "");
+		this.dragPreview.setInvalid(this.currentDropAllowed ? null : "");
 		return intent;
 	}
 
@@ -1804,7 +1816,10 @@ export class TaskListView extends BasesViewBase {
 		// The shelf's label and padding are not destinations.
 		if (!header && targetElement.closest(".task-list-view__empty-destinations")) return clear();
 		const visibleCard = card && this.getVisibleDropCards().includes(card) ? card : null;
-		const slot = header || visibleCard ? null : this.resolveNearbyInsertionSlot(clientY);
+		const cards = this.getVisibleDropCards();
+		const lastCard = cards[cards.length - 1];
+		const belowLastCard = lastCard && clientY >= lastCard.getBoundingClientRect().bottom;
+		const slot = header || visibleCard ? null : belowLastCard ? this.resolveClosestInsertionSlot(clientY) : this.resolveNearbyInsertionSlot(clientY);
 		const element =
 			header && this.itemsContainer?.contains(header)
 				? header
@@ -1852,6 +1867,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private cancelTaskMovement(cancelTouch = true, restoreScroll = true): void {
+		if (this.nativeMovementActive) this.nativeMovementCancelled = true;
 		const restore = this.restoreDragScroll;
 		this.restoreDragScroll = null;
 		if (cancelTouch) this.touchMovement?.cancel();
@@ -2503,16 +2519,23 @@ export class TaskListView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		for (const eventName of ["dragenter", "dragover"] as const) {
 			this.registerDomEvent(doc, eventName, event => {
+				if (this.nativeMovementCancelled) {
+					event.preventDefault();
+					event.stopPropagation();
+					if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+					return;
+				}
 				if (!this.draggedTaskPath || this.itemsContainer?.contains(event.target as Node)) return;
 				this.updateTaskMovementTarget(event.target, event.clientY);
 				this.updateTouchGhost(event.clientX, event.clientY);
 				this.edgeScroll?.stop();
 			}, { capture: true });
 		}
+		this.edgeScroll?.stop();
 		this.edgeScroll = new TaskMovementAutoScroll(this.itemsContainer, (x, y) => {
 			this.updateTouchGhost(x, y);
 			this.updateTaskMovementTarget(doc.elementFromPoint(x, y), y);
-		});
+		}, () => !!this.draggedTaskPath && !!this.rootElement?.isConnected);
 		this.touchMovement = new TaskMovementTouch(this.itemsContainer, {
 			start: (handle, x, y) => {
 				const card = handle.closest<HTMLElement>(".task-card[data-task-path]");
@@ -2540,8 +2563,22 @@ export class TaskListView extends BasesViewBase {
 				card.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: x, clientY: y }));
 			},
 		});
-		// No window blur handler: native drags always clean up on dragend, and touch
-		// movement cancels itself on blur. Some platforms blur when a native drag starts.
+		this.registerDomEvent(doc.defaultView ?? window, "blur", () => this.cancelTaskMovement());
+		for (const type of ["dragend", "pointercancel", "drop"] as const) {
+			this.registerDomEvent(doc, type, (event) => {
+				if (type === "dragend") {
+					this.nativeMovementActive = false;
+					this.nativeMovementCancelled = false;
+				}
+				if (type === "pointercancel" && (event as PointerEvent).pointerType !== "touch") return;
+				if (type === "drop" && this.itemsContainer?.contains(event.target as Node)) return;
+				this.cancelTaskMovement();
+			});
+		}
+		this.registerDomEvent(doc, "keyup", (event) => {
+			if (event.key === "Escape") this.cancelTaskMovement();
+		}, { capture: true });
+		this.registerEvent(this.plugin.app.workspace.on("active-leaf-change", () => this.cancelTaskMovement()));
 
 		this.registerDomEvent(this.containerEl.ownerDocument, "keydown", (event: KeyboardEvent) => {
 			if (event.key === "Escape" && this.draggedTaskPath) {
@@ -2556,6 +2593,7 @@ export class TaskListView extends BasesViewBase {
 		this.itemsContainer.addEventListener("dragenter", (e: DragEvent) => {
 			if (!this.draggedTaskPath) return;
 			e.preventDefault();
+			e.stopPropagation();
 			// Do not let an older queued dragover overwrite a newly entered target.
 			this.pendingDragTarget = e.target;
 			this.pendingDragClientY = e.clientY;
@@ -2568,6 +2606,7 @@ export class TaskListView extends BasesViewBase {
 
 		this.itemsContainer.addEventListener("dragover", (e: DragEvent) => {
 			if (!this.draggedTaskPath) return;
+			e.stopPropagation();
 
 			// Always accept – must be unconditional so the browser keeps
 			// the drop zone active even when the cursor is between cards.
@@ -3677,6 +3716,7 @@ export class TaskListView extends BasesViewBase {
 	private getCardOptions(targetDate: Date): TaskCardOptions {
 		return this.buildTaskCardOptions({
 			targetDate,
+			plainTags: true,
 			usePendingOccurrenceIdentity: true,
 			onSelectionClick: (event, path) => this.handleSelectionClick(event, path),
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,

@@ -7,7 +7,7 @@ describe("shared task identity", () => {
 		expect(hasVisiblePriority(undefined, [])).toBe(false);
 		expect(hasVisiblePriority("", [])).toBe(false);
 		expect(hasVisiblePriority("none", [])).toBe(false);
-		expect(hasVisiblePriority("retired-priority", [])).toBe(true);
+		expect(hasVisiblePriority("retired-priority", [])).toBe(false);
 		expect(hasVisiblePriority("none", [{ value: "none", weight: 7 }])).toBe(true);
 	});
 	it("starts the seeded active workflow with an empty ring without reserving editable values", () => {

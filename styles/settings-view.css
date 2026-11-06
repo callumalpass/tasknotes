@@ -82,6 +82,7 @@ body:not(.is-mobile) .tasknotes-settings {
     flex-wrap: nowrap;
     gap: var(--tn-space-half) var(--tn-space-2);
     margin-bottom: var(--tn-space-2);
+    padding-inline: var(--tn-space-4);
 }
 
 .tasknotes-plugin .settings-header {
@@ -879,9 +880,15 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
 .tasknotes-plugin .tasknotes-settings__card-chevron {
     display: inline-flex;
     flex: none;
-    margin-inline-start: auto;
-    padding-inline-start: var(--tn-space-2);
+    position: absolute;
+    inset-inline-end: 0;
+    top: 50%;
+    transform: translateY(-50%);
     color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .tasknotes-settings__card--collapsible .tasknotes-settings__card-header {
+    padding-inline-end: var(--tn-space-6);
 }
 
 @media (hover: hover) {
@@ -1228,6 +1235,7 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
 }
 
 .tasknotes-settings__collapsible-section-title {
@@ -1260,6 +1268,8 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
     align-items: center;
     color: var(--text-muted);
     transition: transform 0.2s ease;
+    flex: 0 0 var(--tn-space-4);
+    margin-inline-start: auto;
 }
 
 .tasknotes-settings__collapsible-section-chevron svg {

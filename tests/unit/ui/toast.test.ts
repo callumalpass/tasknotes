@@ -7,6 +7,24 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
+it("measures bottom phone navigation and clears its resize listener when dismissed", () => {
+	document.body.classList.add("is-mobile");
+	const nav = document.body.createDiv("mobile-navbar");
+	let height = 60;
+	jest.spyOn(nav, "getBoundingClientRect").mockImplementation(() => ({ top: innerHeight - height, bottom: innerHeight, height } as DOMRect));
+	const removed = jest.spyOn(window, "removeEventListener");
+	const toast = showToast({ message: "Updated" });
+	const element = document.querySelector<HTMLElement>(".tn-toast")!;
+	expect(element.style.getPropertyValue("--tn-toast-clearance")).toBe("60px");
+	height = 80;
+	window.dispatchEvent(new Event("resize"));
+	expect(element.style.getPropertyValue("--tn-toast-clearance")).toBe("80px");
+	toast.dismiss();
+	expect(removed).toHaveBeenCalledWith("resize", expect.any(Function));
+	removed.mockRestore();
+	document.body.classList.remove("is-mobile");
+});
+
 it("separates result text from actions without leaving an empty action gutter", () => {
 	showToast({ message: "1 task updated: Due date → Tomorrow", action: { label: "Undo", run: jest.fn() } });
 	const toast = document.querySelector(".tn-toast")!;
@@ -98,7 +116,7 @@ it("confirms the undone action without resurfacing an older action", async () =>
 	expect(older).not.toHaveBeenCalled();
 	await undoLatest(scope);
 	expect(older).toHaveBeenCalledTimes(1);
-	expect(document.querySelector(".tn-toast__message")?.textContent).toBe("Undid: Older status change");
+	expect(document.querySelector(".tn-toast__message")?.textContent).toBe("Change undone.");
 });
 
 it("retains twenty entries per vault and serializes rapid keyboard requests", async () => {

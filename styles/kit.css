@@ -621,7 +621,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 /* Toast */
 .tn-toast {
     position: absolute;
-    bottom: var(--tn-space-3);
+    bottom: calc(var(--tn-space-3) + max(env(safe-area-inset-bottom, 0px), var(--tn-toast-clearance, 0px)));
     right: var(--tn-space-3);
     max-width: calc(100vw - var(--tn-space-6));
     z-index: var(--layer-notice, 60);
