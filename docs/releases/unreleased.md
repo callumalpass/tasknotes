@@ -44,7 +44,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
-- Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes. Phone-width months with the selected-day panel show activity dots instead of clipped event labels; day headings, empty days and year calendars have clearer date hierarchy.
+- Calendar events use clearer filled colours and emphasize titles over decorative glyphs. Narrow Month cells retain compact title chips, with the full selected-day task list below and dots reserved for extremely narrow panes.
+- Calendar Month gives more width to the grid beside its selected-day panel. Narrow calendars use one scrolling composition, and agenda rows share a title edge without repeating the same date range above the date strip.
+
+- Calendar agendas use full-width titles with times above them and compact task controls below in narrow panes; day headings, empty days and year calendars have clearer date hierarchy.
 
 - Mobile task titles use their full row, followed by separate 40px actions and compact metadata. Narrow standalone task references wrap without changing references inside sentences, and settings adapt to their actual pane width.
 - Tightened task rows and board cards in narrow panes, keeping titles beside status controls and metadata with the other actions on one supporting line. Empty metadata no longer reserves space, and standalone inline task dates remain whole rather than clipping to fragments.
@@ -88,6 +91,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @UniCode9696 for the suggestion
 
 ## Fixed
+
+- Keep the selected Month date when switching calendar views, and show timed deadlines as an exact time rather than an invented duration.
 
 - Month selected-day rows use the panel width without reserving an empty time column. Narrow agendas share one set of date navigation controls with the date strip.
 - Update Kanban drop highlights and insertion feedback as soon as a dragged task enters an existing card, including in swimlanes.

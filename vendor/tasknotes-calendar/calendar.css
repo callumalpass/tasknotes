@@ -1,7 +1,7 @@
 /*
  * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
  * see LICENSE beside this file; library release 0.1.8 is required for integration).
- * Upstream sha256 90fee78ed2aa28702e79af77ff99c9163f2c29ed3f07f7348983b9a4d7c76460.
+ * Upstream sha256 ef388a9b07206fc84c8132d9edccaaf0ecbee51ed9b5446757ce3b7cfbd8bb16.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -948,6 +948,35 @@
 .tnc-dg--dots .tnc-dg-dots {
 	justify-content: center;
 	align-content: flex-start;
+}
+
+.tnc-dg--chips {
+	--tnc-chip-h: 14px;
+}
+.tnc-dg--chips .tnc-dg-dots {
+	left: 2px;
+	right: 2px;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	justify-content: flex-start;
+}
+.tnc-dg--chips .tnc-dg-dots > .tnc-item--indicator {
+	width: 100%;
+	height: var(--tnc-chip-h);
+	border-radius: var(--tnc-radius);
+	padding: 0 2px;
+	color: var(--tnc-fg, var(--tnc-text));
+	font-size: 10px;
+	line-height: var(--tnc-chip-h);
+}
+.tnc-dg--chips .tnc-item-title {
+	display: block;
+	white-space: nowrap;
+	text-overflow: clip;
+}
+.tnc-dg--chips .tnc-dg-dots-more {
+	line-height: var(--tnc-chip-h);
 }
 
 /* ------------------------------------------------------------------ list */
