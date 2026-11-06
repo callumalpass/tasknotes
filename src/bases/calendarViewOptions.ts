@@ -297,7 +297,7 @@ function buildCalendarViewModeOptions(
 			type: "toggle",
 			key: "showMonthDayPanel",
 			displayName: uiText(msg({ message: "Show selected day panel", context: "calendar composition option" })),
-			default: false,
+			default: true,
 			shouldHide: () => getCalendarView(config, defaultView) !== "dayGridMonth",
 		},
 		{

@@ -270,7 +270,7 @@ export class CalendarView extends BasesViewBase {
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
 			showAgendaStrip: true,
-			showMonthDayPanel: false,
+			showMonthDayPanel: true,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -816,7 +816,7 @@ export class CalendarView extends BasesViewBase {
 				this.viewOptions.listDayCount
 			);
 			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
-			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
+			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", true);
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
