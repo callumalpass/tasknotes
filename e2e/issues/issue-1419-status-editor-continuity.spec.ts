@@ -29,10 +29,10 @@ test('renaming a status keeps its label editable and saves both fields on close'
   const workspace = instance.page;
   const page = await openTaskNotesSettings(workspace, 'Task properties');
   const property = page.locator('[data-card-id="property-status"]');
-  await property.locator(':scope > .tasknotes-settings__card-header').click();
+  if (await property.locator(':scope > .tasknotes-settings__card-header button.tasknotes-settings__card-disclosure').getAttribute('aria-expanded') === 'false') await property.locator(':scope > .tasknotes-settings__card-header').click();
   await property.getByRole('button', { name: 'Add status', exact: true }).click();
   const card = property.locator('.tasknotes-statuses-container > .tasknotes-settings__card').last();
-  await card.locator(':scope > .tasknotes-settings__card-header').click();
+  if (await card.locator(':scope > .tasknotes-settings__card-header button.tasknotes-settings__card-disclosure').getAttribute('aria-expanded') === 'false') await card.locator(':scope > .tasknotes-settings__card-header').click();
   const value = `status-continuity-${Date.now()}`;
   const label = `Saved label ${value}`;
   const valueInput = card.locator('input[type="text"]').first();

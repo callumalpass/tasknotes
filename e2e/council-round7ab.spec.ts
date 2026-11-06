@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { stringify } from 'yaml';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, selectTaskNotesSettingsTab, closeObsidianSettings } from './obsidian';
 
 const phase = process.env.TASKNOTES_R7_PHASE ?? 'after';
 const evidence = `/tmp/tasknotes-r7/ab/${phase}`;
@@ -103,9 +103,9 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
         await expect(first.locator('.task-card__context-menu')).toBeAttached();
         if (width === 400) {
           const bounds = await first.evaluate(card => ({ title: card.querySelector('.task-card__title-text')!.getBoundingClientRect().toJSON(), status: card.querySelector('.task-card__status-dot')!.getBoundingClientRect().toJSON() }));
-          expect(bounds.status.top).toBeGreaterThanOrEqual(bounds.title.bottom);
+          expect(bounds.status.right).toBeLessThanOrEqual(bounds.title.left + 1);
           const priority = await first.locator('.task-card__priority-dot').boundingBox();
-          expect(Math.abs(bounds.status.top - priority!.y)).toBeLessThan(2);
+          expect(bounds.status.right <= priority!.x + 1 || priority!.y >= bounds.status.bottom - 1).toBe(true);
         }
       }
       await capture(`month-${variant}`);
@@ -120,6 +120,9 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
         await expect(calendar.locator('.tnc-toolbar-view-select')).toBeVisible();
         const chrome = await calendar.evaluate(element => ['.tnc-toolbar', '.tnc-strip'].reduce((height, selector) => height + element.querySelector(selector)!.getBoundingClientRect().height, 0));
         expect(chrome).toBeLessThan(190);
+        const strip = calendar.locator('.tnc-strip-title');
+        if (await strip.getAttribute('aria-expanded') !== 'true') await strip.click();
+        await expect(strip).toHaveAttribute('aria-expanded', 'true');
         await calendar.locator('.tnc-strip-nav').last().click();
         await calendar.locator('.tnc-strip-day').first().click();
         await expect(calendar.locator('.tnc-strip-today')).toBeVisible();
@@ -133,11 +136,20 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
       await expect(page.locator('.tn-tasknotesTaskList .task-card:visible').first()).toBeVisible();
       await capture(`list-${variant}`);
       if (width === 400 && phase !== 'before') {
-        const metadata = page.locator('.tn-tasknotesTaskList .task-card:visible').first().locator('.task-card__metadata-values');
-        const chips = await metadata.locator('.context-tag').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().toJSON()));
+        const card = page.locator('.tn-tasknotesTaskList .task-card:visible').first();
+        const metadata = card.locator('.task-card__metadata-values');
+        const chips = await metadata.locator('.context-tag').evaluateAll(elements => elements.map(element => ({ text: element.textContent!, visible: element.getBoundingClientRect().width > 0, ...element.getBoundingClientRect().toJSON() })));
         expect(chips).toHaveLength(2);
-        expect(Math.abs(chips[0].top - chips[1].top)).toBeLessThan(2);
-        expect(chips[1].left).toBeGreaterThan(chips[0].left);
+        const visible = chips.filter(chip => chip.visible);
+        if (visible.length === 2) {
+          expect(Math.abs(visible[0].top - visible[1].top)).toBeLessThan(2);
+          expect(visible[1].left).toBeGreaterThan(visible[0].left);
+        }
+        for (const chip of chips.filter(chip => !chip.visible)) {
+          const overflow = card.locator('.task-card__metadata-overflow');
+          await expect(overflow).toBeVisible();
+          expect(await overflow.getAttribute('aria-label')).toContain(chip.text.replace(/^@/, ''));
+        }
       }
       await open('Board.base');
       await expect(page.locator('.kanban-view__column-nav select')).toBeAttached();
@@ -180,7 +192,7 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
       if (phase !== 'before') {
         const sentence = page.locator('.tasknotes-inline-widget--sentence:visible').first();
         const menu = sentence.locator('.task-card__context-menu');
-        expect(await menu.evaluate(element => !!(element.compareDocumentPosition(element.closest('.task-card')!.querySelector('.task-card__content')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+        expect(await menu.evaluate(element => !!(element.closest('.task-card')!.querySelector('.task-card__content')!.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
         await page.mouse.move(1, 1);
         await menu.focus();
         await page.keyboard.press('Enter');
@@ -209,11 +221,12 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
       if (width === 400 && phase !== 'before') {
         const composition = await page.locator('.pomodoro-view__task-card-container .task-card:visible').evaluate(card => {
           const title = card.querySelector('.task-card__title-text')!;
-          return { title: title.getBoundingClientRect().toJSON(), whiteSpace: getComputedStyle(title).whiteSpace, lineHeight: parseFloat(getComputedStyle(title).lineHeight), metadata: card.querySelector('.task-card__metadata')!.getBoundingClientRect().toJSON() };
+          return { title: title.getBoundingClientRect().toJSON(), row: card.querySelector('.task-card__main-row')!.getBoundingClientRect().toJSON(), status: card.querySelector('.task-card__status-dot')!.getBoundingClientRect().toJSON(), priority: card.querySelector('.task-card__priority-dot')!.getBoundingClientRect().toJSON(), whiteSpace: getComputedStyle(title).whiteSpace, lineHeight: parseFloat(getComputedStyle(title).lineHeight), metadata: card.querySelector('.task-card__metadata')!.getBoundingClientRect().toJSON() };
         });
         expect(composition.whiteSpace).toBe('normal');
-        expect(composition.title.width).toBeGreaterThan(240);
-        expect(composition.title.height).toBeLessThanOrEqual(composition.lineHeight * 2 + 1);
+        expect(composition.title.width).toBeCloseTo(composition.row.width - composition.status.width - composition.priority.width, 0);
+        expect(composition.title.height).toBeLessThanOrEqual(composition.lineHeight * 3 + 1);
+        expect(await page.locator('.pomodoro-view__task-card-container .task-card__title-text:visible').evaluate(element => element.scrollHeight <= element.clientHeight + 1)).toBe(true);
         expect(composition.metadata.top).toBeGreaterThanOrEqual(composition.title.bottom);
       }
       await openView('tasknotes-pomodoro-stats-view');
@@ -227,7 +240,7 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
       await capture(`history-${variant}`);
       const settings = await openTaskNotesSettings(page);
       await appearance(1180, theme, settings);
-      await settings.getByRole('tab', { name: 'Task properties', exact: true }).click();
+      await selectTaskNotesSettingsTab(settings, 'Task properties');
       await appearance(width, theme, settings);
       const disclosure = settings.locator('.tasknotes-settings__card-disclosure').first();
       await disclosure.scrollIntoViewIfNeeded();

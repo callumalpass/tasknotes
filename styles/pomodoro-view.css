@@ -317,6 +317,33 @@
     transition: none;
 }
 
+@container tn-task-card (max-width: 760px) {
+    body .tasknotes-plugin .pomodoro-view__task-card-container .task-card:not(.task-card--layout-inline) .task-card__main-row {
+        grid-template-columns: var(--tn-touch-target) minmax(0, 1fr) auto var(--tn-touch-target);
+    }
+
+    body .tasknotes-plugin .pomodoro-view__task-card-container .task-card:not(.task-card--layout-inline) .task-card__title-text {
+        grid-column: 2 / 4;
+    }
+
+    body .tasknotes-plugin .pomodoro-view__task-card-container .task-card:not(.task-card--layout-inline) .task-card__priority-dot {
+        grid-column: 4;
+        grid-row: 1;
+    }
+
+    body .tasknotes-plugin .pomodoro-view__task-card-container .task-card:not(.task-card--layout-inline) .task-card__metadata {
+        grid-column: 1 / 3;
+    }
+
+    body .tasknotes-plugin .pomodoro-view__task-card-container .task-card:not(.task-card--layout-inline) .task-card__badges {
+        grid-column: 3;
+    }
+
+    body .tasknotes-plugin .pomodoro-view__task-card-container .task-card:not(.task-card--layout-inline) .task-card__context-menu {
+        grid-column: 4;
+    }
+}
+
 @media (hover: hover) {
     .tasknotes-plugin .pomodoro-view__task-card-container .task-card:hover:not(:disabled):not([aria-disabled="true"]) {
         /* No hover effects - keep task card static */

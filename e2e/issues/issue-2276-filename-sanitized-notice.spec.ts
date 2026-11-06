@@ -40,7 +40,7 @@ test("creating a task with / in its title names the sanitized file", async () =>
 
 	const filename = title.replace(/[:/]/g, "");
 	await expect(
-		page.locator(".tn-toast").filter({ hasText: `created as file "${filename}"` })
+		page.locator(".tn-toast").filter({ hasText: `Task created as "${filename}". Unsupported filename characters omitted; full title kept in properties.` })
 	).toBeVisible();
 
 	const saved = await page.evaluate((filename) => {

@@ -106,13 +106,23 @@ export async function setObsidianViewport(
   size: { width: number; height: number }
 ): Promise<void> {
   await page.evaluate(({ width, height }) => {
+    const currentWindow = (window as any).require('electron').remote.getCurrentWindow();
+    currentWindow.setMinimumSize(Math.min(width, 320), Math.min(height, 500));
+    if (currentWindow.isMaximized()) currentWindow.unmaximize();
+  }, size);
+  await expect.poll(() => page.evaluate(() =>
+    (window as any).require('electron').remote.getCurrentWindow().isMaximized()
+  )).toBe(false);
+  await page.evaluate(({ width, height }) => {
     const electron = (window as any).require?.('electron');
     const currentWindow = electron?.remote?.getCurrentWindow?.();
     currentWindow?.setContentSize(width, height);
   }, size);
   await page.setViewportSize(size);
-  await expect.poll(() => page.evaluate(() => [innerWidth, innerHeight]))
-    .toEqual([size.width, size.height]);
+  await expect.poll(() => page.evaluate(() => ({
+    native: (window as any).require('electron').remote.getCurrentWindow().getContentSize(),
+    viewport: [innerWidth, innerHeight],
+  }))).toEqual({ native: [size.width, size.height], viewport: [size.width, size.height] });
 }
 
 /** Obsidian 1.13 uses a separate Settings window; older versions use a modal. */
@@ -141,14 +151,17 @@ export async function openTaskNotesSettings(workspacePage: Page, tabName?: strin
   await expect(pluginTab).toBeVisible();
   await pluginTab.click();
   await expect(page.locator('.tasknotes-settings')).toBeVisible();
-  if (tabName) {
-    const tab = page.getByRole('tab', { name: tabName, exact: true, includeHidden: true });
-    const select = page.locator('.settings-view__tab-select');
-    if (await select.isVisible()) await select.selectOption({ label: tabName });
-    else await tab.click();
-    await expect(tab).toHaveAttribute('aria-selected', 'true');
-  }
+  if (tabName) await selectTaskNotesSettingsTab(page, tabName);
   return page;
+}
+
+export async function selectTaskNotesSettingsTab(page: Page, tabName: string): Promise<void> {
+  const tab = page.getByRole('tab', { name: tabName, exact: true, includeHidden: true });
+  const select = page.locator('.settings-view__tab-select');
+  if (await select.isVisible()) await select.selectOption({ label: tabName });
+  else await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.settings-view__tab-content--active')).toBeVisible();
 }
 
 export async function closeObsidianSettings(workspacePage: Page, settingsPage: Page): Promise<void> {

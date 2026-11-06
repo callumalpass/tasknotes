@@ -3,6 +3,7 @@ import {
 	launchObsidian,
 	closeObsidian,
 	openTaskNotesSettings,
+	selectTaskNotesSettingsTab,
 	type ObsidianApp,
 } from "../obsidian";
 
@@ -49,7 +50,7 @@ test.beforeAll(async () => {
 		return original;
 	}, fixtureFields);
 	settingsPage = await openTaskNotesSettings(obsidian.page);
-	await settingsPage.locator("#tab-button-modal-fields").click();
+	await selectTaskNotesSettingsTab(settingsPage, (await settingsPage.locator('#tab-button-modal-fields').textContent())!);
 });
 
 test.afterAll(async () => {

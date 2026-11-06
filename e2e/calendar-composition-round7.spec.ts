@@ -414,14 +414,14 @@ test('calendar surfaces and real pointer states across themes and widths', async
       const row = page.locator('.workspace-leaf.mod-active .tnc-item--list[data-task-path$="Task 0.md"]').first();
       await states(row, `${prefix}-agenda-row`, !baseline);
       if (!baseline) {
-        await row.locator('.task-card').click({ modifiers: ['Control'] });
+        await row.locator('.task-card__title-text').click({ modifiers: ['Control'] });
         await row.hover();
         await capture(`${prefix}-agenda-selected-hover`);
         await page.keyboard.press('Tab');
         await row.focus();
         await capture(`${prefix}-agenda-selected-focus`);
         const peer = page.locator('.tnc-item--list[data-task-path$="Task 1.md"]').first();
-        await peer.locator('.task-card').click({ modifiers: ['Control'] });
+        await peer.locator('.task-card__title-text').click({ modifiers: ['Control'] });
         await expect(row).toHaveAttribute('data-drag-count', '2');
         await states(row, `${prefix}-agenda-multi`, true);
         await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.taskSelectionService.exitSelectionMode(true));

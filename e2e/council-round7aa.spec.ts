@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { stringify } from 'yaml';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, expectTouchTarget } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, selectTaskNotesSettingsTab, closeObsidianSettings, expectTouchTarget } from './obsidian';
 
 const evidence = '/tmp/tasknotes-r7/aa/regression';
 const folder = `CouncilAA-${Date.now()}`;
@@ -104,15 +104,25 @@ test('council AA: compact task composition, disclosures, search, month counts an
         }
         await capture(`after-${surface.toLowerCase()}-${theme}-${width}`);
         if (surface === 'Calendar') {
-          const more = page.locator('.tnc-dg .tnc-more').filter({ hasText: /^\+/ }).first();
           if (width === 400) {
+            const day = page.locator(`.workspace-leaf.mod-active #bases-calendar > .tnc .tnc-dg-day[data-date="${dates.today}"]`);
+            const more = day.locator('.tnc-dg-dots-more');
             await expect(more).toHaveText(/^\+\d+$/);
-            await expect(more).toHaveAccessibleName(/more/);
+            const hidden = Number((await more.innerText()).slice(1));
+            const total = await day.locator('.tnc-item--indicator').count() + hidden;
+            expect(total).toBeGreaterThanOrEqual(10);
+            await expect(day).toHaveAccessibleName(new RegExp(`\\b${total}\\b`));
             expect(await more.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+            await day.locator('.tnc-dg-num').click();
+            const panel = page.locator('.tn-calendar-day-panel');
+            await expect(panel.locator('.tnc-item')).toHaveCount(total);
+            for (let index = 0; index < 20; index += 2) await expect(panel.locator(`.task-card[data-task-path="${folder}/Task ${index}.md"]`).first()).toBeVisible();
+          } else {
+            const more = page.locator('.tnc-dg .tnc-more').filter({ hasText: /^\+/ }).first();
+            await more.click();
+            await expect(page.locator('.tnc-popover')).toBeVisible();
+            await page.keyboard.press('Escape');
           }
-          await more.click();
-          await expect(page.locator('.tnc-popover')).toBeVisible();
-          await page.keyboard.press('Escape');
           const titleXs = await page.locator('.tn-calendar-day-panel .tn-calendar-list-entry').evaluateAll(entries => entries.map(entry => entry.querySelector('.task-card__title-text')!.getBoundingClientRect().x));
           expect(new Set(titleXs.map(value => Math.round(value))).size).toBeLessThanOrEqual(1);
         }
@@ -146,7 +156,7 @@ test('council AA: compact task composition, disclosures, search, month counts an
         document.body.classList.toggle('is-mobile', width === 400);
       }, {theme, width});
       await setObsidianViewport(settingsPage, {width: 1180, height: 820});
-      await settingsPage.getByRole('tab', { name: 'Task properties', exact: true }).click();
+      await selectTaskNotesSettingsTab(settingsPage, 'Task properties');
       await setObsidianViewport(settingsPage, {width, height: 820});
       await expect.poll(() => settingsPage.evaluate(() => (window as any).require('electron').remote.getCurrentWindow().getContentSize())).toEqual([width, 820]);
       await expect(settingsPage.getByRole('tab', { name: 'Task properties', exact: true, includeHidden: true })).toHaveAttribute('aria-selected', 'true');

@@ -101,7 +101,7 @@ test('sentence references preserve prose flow and grouped controls in reading an
           range.selectNodeContents(title);
           const titleLines = Array.from(range.getClientRects()).filter(bounds => bounds.width > 0);
           const controls = element.querySelector('.task-card__inline-controls')!;
-          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, controlLineGap: Math.min(...titleLines.map(bounds => Math.abs(bounds.top - status.top))), proseLineHeight: Math.max(parseFloat(getComputedStyle(title).lineHeight), controls.getBoundingClientRect().height), controlsAligned: Math.abs(status.top + status.height / 2 - menu.top - menu.height / 2) < 1, controlsBeforeTitle: Boolean(controls.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING), sentence: element.closest('.tasknotes-inline-widget--sentence') !== null, display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
+          return { connected: element.isConnected, width: card.width, parentWidth: element.closest('.cm-line, p, li')!.getBoundingClientRect().width, controlLineGap: Math.min(...titleLines.map(bounds => Math.abs((bounds.top + bounds.bottom) / 2 - (status.top + status.bottom) / 2))), proseLineHeight: Math.max(parseFloat(getComputedStyle(title).lineHeight), controls.getBoundingClientRect().height), controlsSeparated: controls.children.length === 1 && Boolean(title.compareDocumentPosition(element.querySelector(".task-card__context-menu")!) & Node.DOCUMENT_POSITION_FOLLOWING), controlsBeforeTitle: Boolean(controls.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING), sentence: element.closest('.tasknotes-inline-widget--sentence') !== null, display: getComputedStyle(element).display, dateAlignment: getComputedStyle(element.querySelector('.task-card__metadata')!).justifyContent };
         }));
         expect(geometries).toHaveLength(2);
         for (const geometry of geometries) {
@@ -110,7 +110,7 @@ test('sentence references preserve prose flow and grouped controls in reading an
           expect(geometry.display).toBe(geometry.sentence ? 'inline' : 'inline-flex');
           expect(geometry.width).toBeLessThanOrEqual(geometry.parentWidth + 1);
           expect(geometry.controlLineGap).toBeLessThanOrEqual(geometry.proseLineHeight);
-          expect(geometry.controlsAligned).toBe(true);
+          expect(geometry.controlsSeparated).toBe(true);
           expect(geometry.controlsBeforeTitle).toBe(true);
         }
       }).toPass({ timeout: 5000 });
@@ -120,7 +120,7 @@ test('sentence references preserve prose flow and grouped controls in reading an
         await card.hover();
         await expect(card.locator('.task-card__context-menu')).toBeVisible();
         if (mobile) {
-          expect((await card.locator('.task-card__status-dot').boundingBox())!.height).toBeLessThanOrEqual(24);
+          expect((await card.locator('.task-card__status-dot svg').boundingBox())!.height).toBeLessThanOrEqual(24);
           await expectTouchTarget(card.locator('.task-card__status-dot'));
           await expectTouchTarget(card.locator('.task-card__context-menu'));
         }

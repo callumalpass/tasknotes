@@ -108,7 +108,7 @@ test('unset dates open at the top without losing the Clear selection', async () 
   await expect(list.locator('[data-picker-id="clear"]')).toHaveAttribute('aria-selected', 'true');
 });
 
-for (const theme of ['light', 'dark']) test(`${theme}: mobile rows give titles full width above compact non-overlapping actions`, async () => {
+for (const theme of ['light', 'dark']) test(`${theme}: mobile rows keep status beside titles and compact non-overlapping actions`, async () => {
   await addDates();
   await setObsidianViewport(page, { width: 430, height: 800 });
   await page.evaluate(theme => {
@@ -121,20 +121,29 @@ for (const theme of ['light', 'dark']) test(`${theme}: mobile rows give titles f
   await expect(card).toBeVisible();
   await expect(card.locator('.task-card__metadata-date--due')).toBeVisible();
   await expect(card.locator('.task-card__metadata-date--scheduled')).toBeVisible();
-  const status = await card.locator('.task-card__status-dot').boundingBox();
-  const titleBox = await card.locator('.task-card__title-text').boundingBox();
-  const row = (await card.locator('.task-card__main-row').boundingBox())!;
-  expect(titleBox!.x).toBeCloseTo(row.x, 0);
-  expect(titleBox!.width).toBeCloseTo(row.width, 0);
-  expect(status!.y).toBeGreaterThanOrEqual(titleBox!.y + titleBox!.height - 1);
-  const controls = await card.locator('.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date').evaluateAll(elements => elements.map(element => {
-    const bounds = element.getBoundingClientRect();
-    return { left: bounds.left, top: bounds.top, right: bounds.right, bottom: bounds.bottom, width: bounds.width, height: bounds.height };
-  }));
-  expect(controls).toHaveLength(5);
-  expect(controls.every(control => control.width >= 40 && control.height >= 40)).toBe(true);
-  expect(controls.every((control, index) => controls.slice(index + 1).every(peer => control.right <= peer.left + 1 || peer.right <= control.left + 1 || control.bottom <= peer.top + 1 || peer.bottom <= control.top + 1))).toBe(true);
-  expect((await card.boundingBox())!.height).toBeLessThan(110);
+  await expect(async () => {
+    const geometry = await card.evaluate(element => {
+      const selectors = ['.task-card__status-dot', '.task-card__title-text', '.task-card__main-row', '.task-card__priority-dot'];
+      const elements = selectors.map(selector => element.querySelector(selector));
+      if (elements.some(child => !child?.getClientRects().length)) return null;
+      return {
+        bounds: elements.map(child => child!.getBoundingClientRect().toJSON()),
+        height: element.getBoundingClientRect().height,
+        controls: Array.from(element.querySelectorAll('.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date'), child => child.getBoundingClientRect().toJSON()),
+      };
+    });
+    expect(geometry).not.toBeNull();
+    const [status, titleBox, row, priority] = geometry!.bounds;
+    expect(titleBox.x).toBeCloseTo(status.x + status.width, 0);
+    expect(titleBox.width).toBeCloseTo(row.width - status.width - priority.width, 0);
+    expect(status.y).toBeLessThan(titleBox.y + titleBox.height);
+    expect(status.y + status.height).toBeGreaterThan(titleBox.y);
+    const controls = geometry!.controls;
+    expect(controls).toHaveLength(5);
+    expect(controls.every(control => control.width >= 40 && control.height >= 40)).toBe(true);
+    expect(controls.every((control, index) => controls.slice(index + 1).every(peer => control.right <= peer.left + 1 || peer.right <= control.left + 1 || control.bottom <= peer.top + 1 || peer.bottom <= control.top + 1))).toBe(true);
+    expect(geometry!.height).toBeLessThan(110);
+  }).toPass({ timeout: 5000 });
   const toolbar = page.locator('.workspace-leaf.mod-active .bases-toolbar');
   const newButton = toolbar.locator('.tn-bases-new-task-btn');
   const toolbarBox = await toolbar.boundingBox();

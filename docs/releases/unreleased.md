@@ -104,6 +104,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Keep calendar agenda and selected-day titles in the flexible column when status controls are not configured.
+- Keep the empty Details editor visible and steady while typing in the expanded task composer.
+- Give selected Pomodoro tasks enough metadata width to keep their dates visible on narrow screens.
+- Keep long scheduled and due dates visible together in narrow task rows by wrapping their values inside the existing touch targets.
+
 - Keep compact recurring calendar labels readable, with quieter status colours and clear completed tasks in Month view.
 - Show timed calendar ranges whenever they fit, including the changing end time during resizing.
 - Improve collision-summary and Year activity contrast, and keep the default all-day area to two rows with additional events available from its overflow control.

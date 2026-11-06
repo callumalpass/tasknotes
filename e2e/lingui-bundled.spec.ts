@@ -7,7 +7,7 @@ import { it as italianDateLocale, de as germanDateLocale } from "date-fns/locale
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { launchObsidian, closeObsidian, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from "./obsidian";
+import { launchObsidian, closeObsidian, openTaskNotesSettings, closeObsidianSettings, selectTaskNotesSettingsTab, type ObsidianApp } from "./obsidian";
 
 test.use({ trace: "on" });
 const root = path.resolve(__dirname, "..");
@@ -92,14 +92,14 @@ test("Italian and German native dates, persisted pickers and Italian NLP remain 
 			const settings = await openTaskNotesSettings(page, general);
 			await settings.locator('select:has(option[value="system"]):has(option[value="it"])').selectOption(locale);
 			await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
-			await settings.getByRole("tab", { name: cores.get(locale)!._(keyMap["settings.tabs.features"].id), exact: true }).click();
+			await selectTaskNotesSettingsTab(settings, cores.get(locale)!._(keyMap["settings.tabs.features"].id));
 			const nlpName = cores.get(locale)!._(keyMap["settings.features.nlp.language.name"].id);
 			const nlp = settings.getByText(nlpName, { exact: true })
 				.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " setting-item ")][1]')
 				.getByRole("combobox");
 			await expect(nlp.locator('option[value="it"]')).toHaveText("Italiano");
 			await nlp.selectOption("it");
-			await settings.getByRole("tab", { name: cores.get(locale)!._(keyMap["settings.tabs.general"].id), exact: true }).click();
+			await selectTaskNotesSettingsTab(settings, cores.get(locale)!._(keyMap["settings.tabs.general"].id));
 			await closeObsidianSettings(page, settings);
 			await expect.poll(() => {
 				try {

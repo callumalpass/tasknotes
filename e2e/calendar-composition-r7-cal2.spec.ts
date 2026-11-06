@@ -126,13 +126,17 @@ test('calendar composition matrix preserves identity, geometry and interaction',
           top: getComputedStyle(node).top, bottom: getComputedStyle(node).bottom,
         }))), null, 2));
         const day = page.locator(`${root} > .tnc .tnc-dg-day[data-date="2026-11-10"]`);
-        await expect.poll(() => day.locator('.tnc-item--indicator').count()).toBeGreaterThanOrEqual(2);
+        await expect(day.locator('.tnc-dg-dots-more')).toBeVisible();
         const hiddenCount = Number((await day.locator('.tnc-dg-dots-more').innerText()).slice(1));
         expect(await day.locator('.tnc-item--indicator').count() + hiddenCount).toBe(6);
-        const chip = page.locator(`${root} > .tnc .tnc-dg-day[data-date="2026-11-10"] .tnc-item-title`).first();
-        await expect(chip).toBeVisible();
-        expect(await chip.evaluate(element => getComputedStyle(element).textOverflow)).toBe('clip');
-        await expect(page.locator(`${root} > .tnc .tnc-item--indicator.is-completed`).first()).toHaveCSS('opacity', '1');
+        const panel = page.locator(`${root} .tn-calendar-day-panel`);
+        await expect(panel.locator('.task-card')).toHaveCount(6);
+        const title = panel.locator('.task-card__title-text').first();
+        await expect(title).toBeVisible();
+        await expect(title).toHaveCSS('white-space', 'normal');
+        await page.locator(`${root} > .tnc .tnc-dg-day[data-date="2026-11-11"] .tnc-dg-num`).click();
+        await expect(panel.locator('.task-card--completed').first()).toBeVisible();
+        await expect(panel.locator('.task-card--completed').first()).toHaveCSS('opacity', '1');
       }
     }
   }

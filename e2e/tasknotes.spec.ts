@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette, openTaskNotesSettings, closeObsidianSettings } from './obsidian';
+import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette, openTaskNotesSettings, selectTaskNotesSettingsTab, closeObsidianSettings } from './obsidian';
 
 let app: ObsidianApp;
 let isInitialized = false;
@@ -1303,7 +1303,8 @@ test.describe('Task Quick Add', () => {
     const page = getPage();
 
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(500);
+    const calendar = page.locator('.workspace-leaf.mod-active #bases-calendar > .tnc');
+    await expect(calendar).toBeVisible();
 
     const showMonthDayPanel = await page.evaluate(() => {
       const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
@@ -1317,7 +1318,7 @@ test.describe('Task Quick Add', () => {
     )).toBe(false);
 
     try {
-      const dayCell = page.locator('.tnc-dg-day').first();
+      const dayCell = calendar.locator('.tnc-dg-day').first();
       await expect(dayCell).toBeVisible();
       // Items are drawn over the cells; click the empty bottom edge of the day.
       const cellBox = await dayCell.boundingBox();
@@ -1451,8 +1452,12 @@ test.describe('Year View Details', () => {
 
     const activeLeaf = page.locator('.workspace-leaf.mod-active');
     const yearButton = activeLeaf.locator('button.tnc-btn-view-year').first();
-    await expect(yearButton).toBeVisible();
-    await yearButton.click();
+    const viewSelect = activeLeaf.locator('#bases-calendar > .tnc .tnc-toolbar-view-select').first();
+    if (await viewSelect.isVisible()) await viewSelect.selectOption('year');
+    else {
+      await expect(yearButton).toBeVisible();
+      await yearButton.click();
+    }
     await expect(yearButton).toHaveAttribute('aria-pressed', 'true');
     await expect(activeLeaf.locator('.tnc-year').first()).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
@@ -1627,7 +1632,7 @@ test.describe('Settings Panel Details', () => {
       await expect(settingsTabs).toHaveCount(6);
       for (let i = 0; i < await settingsTabs.count(); i++) {
         const tab = settingsTabs.nth(i);
-        await tab.click();
+        await selectTaskNotesSettingsTab(settingsPage, (await tab.textContent())!.trim());
         await expect(tab).toHaveAttribute('aria-selected', 'true');
         await settingsPage.screenshot({ path: `test-results/screenshots/settings-tab-${i}.png` });
       }
@@ -3133,7 +3138,7 @@ test.describe('Priority Color Issues (#1036)', () => {
     }
 
     // Verify the calendar loaded
-    const calendarContainer = page.locator('.tnc');
+    const calendarContainer = page.locator('.workspace-leaf.mod-active #bases-calendar > .tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Screenshot showing priority colors in Bases calendar view
@@ -3737,7 +3742,7 @@ test.describe('Issue #1352 - Preserve time when updating dates', () => {
       const app = (window as any).app;
       return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter?.scheduled;
     }, original.path)).toBe(expected);
-    await expect(page.locator('.tn-toast__message').last()).toHaveText(`1 task updated · Scheduled date → ${expected}`);
+    await expect(page.locator('.tn-toast__message').last()).toHaveText('1 task updated: Scheduled date → Dec 31, 2025 10:00');
     await page.locator('.tn-toast').last().getByRole('button', { name: 'Undo', exact: true }).click();
     await expect.poll(() => page.evaluate(async path => {
       const plugin = (window as any).app.plugins.plugins.tasknotes;

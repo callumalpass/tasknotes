@@ -22,6 +22,7 @@ import {
   setObsidianViewport,
   openObsidianSettings,
   closeObsidianSettings,
+  selectTaskNotesSettingsTab,
 } from './obsidian';
 
 const DOCS_SCREENSHOT_DIR = 'test-results/docs';
@@ -481,9 +482,9 @@ test.describe('Settings', () => {
         await tasknotesTab.click();
         await expect(settingsPage.locator('.tasknotes-settings')).toBeVisible();
 
-        const tab = settingsPage.getByRole('tab', { name: scenario.tab, exact: true });
-        await expect(tab).toBeVisible();
-        await tab.click();
+        const tab = settingsPage.getByRole('tab', { name: scenario.tab, exact: true, includeHidden: true });
+        await selectTaskNotesSettingsTab(settingsPage, scenario.tab);
+        await expect(settingsPage.locator('.settings-view__tab-select')).toBeVisible();
         await expect(tab).toHaveAttribute('aria-selected', 'true');
         await expect(settingsPage.locator('.settings-view__tab-content--active')).toBeVisible();
 

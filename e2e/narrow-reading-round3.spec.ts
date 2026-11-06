@@ -85,7 +85,10 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
       await openSurface(surface);
       const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${taskPath}"]:visible`).first();
       await expect(card).toBeVisible();
-      await card.scrollIntoViewIfNeeded();
+      await expect(async () => {
+        await card.scrollIntoViewIfNeeded();
+        await expect(card).toBeInViewport();
+      }).toPass({ timeout: 5000 });
       await capture(page, `${theme}-${width}-${surface}`);
       await expect(card.locator('.task-card__title-text')).toHaveText(title);
       const geometry = await card.evaluate(element => {
@@ -106,23 +109,24 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
           const title = element.querySelector('.task-card__title-text')!.getBoundingClientRect();
           const actions = ['.task-card__status-dot', '.task-card__priority-dot', '.task-card__metadata-date--due', '.task-card__context-menu']
             .map(selector => element.querySelector(selector)!.getBoundingClientRect());
-          const metadata = element.querySelector('.task-card__metadata-values')!.getBoundingClientRect();
+          const metadata = element.querySelector('.task-card__metadata')!.getBoundingClientRect();
           return { titleInside: title.top >= bounds.top && title.bottom <= bounds.bottom,
-            actionsBelowTitle: actions.every(action => action.top >= title.bottom - 1),
-            actionRowSpread: Math.max(...actions.map(action => action.top)) - Math.min(...actions.map(action => action.top)),
-            metadataBelowActions: metadata.top >= Math.max(...actions.map(action => action.bottom)) - 1 };
+            titleClear: actions.every(action => action.right <= title.left + 1 || action.left >= title.right - 1 || action.top >= title.bottom - 1 || action.bottom <= title.top + 1),
+            controlsDisjoint: actions.every((action, index) => actions.slice(index + 1).every(peer => action.right <= peer.left + 1 || peer.right <= action.left + 1 || action.bottom <= peer.top + 1 || peer.bottom <= action.top + 1)),
+            metadataBelowTitle: metadata.top >= title.bottom - 1 };
         });
         expect(rows.titleInside, surface).toBe(true);
-        expect(rows.actionsBelowTitle, surface).toBe(true);
-        expect(rows.actionRowSpread, surface).toBeLessThanOrEqual(1);
-        expect(rows.metadataBelowActions, surface).toBe(true);
+        expect(rows.titleClear, surface).toBe(true);
+        expect(rows.controlsDisjoint, surface).toBe(true);
+        expect(rows.metadataBelowTitle, surface).toBe(true);
       }
       const drag = card.locator('.task-card__drag-handle');
       if (await drag.count()) {
         const dragBox = await drag.boundingBox();
         const statusBox = await card.locator('.task-card__status-dot').boundingBox();
         expect(dragBox!.x).toBeGreaterThanOrEqual(statusBox!.x + statusBox!.width);
-        expect(Math.abs(dragBox!.y - statusBox!.y)).toBeLessThanOrEqual(1);
+        const menuBox = (await card.locator('.task-card__context-menu').boundingBox())!;
+        expect(Math.abs(dragBox!.y - menuBox.y)).toBeLessThanOrEqual(1);
       }
       await expect(card.locator('.task-card__metadata-date--due')).toBeVisible();
       if (surface === 'agenda') {
@@ -158,6 +162,10 @@ test('narrow calendar shares agenda navigation and retains week selection and se
   await expect(calendar.locator('.tnc-toolbar-nav')).toBeHidden();
   await expect(calendar.locator('.tnc-strip-head')).toBeVisible();
   await expect(calendar.locator('.tnc-strip-today')).toBeHidden();
+  await expect(calendar.locator('.tnc-strip-prev')).toBeHidden();
+  await expect(calendar.locator('.tnc-strip-title')).toHaveAttribute('aria-expanded', 'false');
+  await calendar.locator('.tnc-strip-title').click();
+  await expect(calendar.locator('.tnc-strip-title')).toHaveAttribute('aria-expanded', 'true');
   await expect(calendar.locator('.tnc-strip-prev:visible')).toHaveCount(1);
   await expect(calendar.locator('.tnc-strip-next:visible')).toHaveCount(1);
   await calendar.locator('.tnc-strip-next').click();
@@ -165,9 +173,10 @@ test('narrow calendar shares agenda navigation and retains week selection and se
   await expect(calendar.locator('.tnc-strip-today:visible')).toHaveCount(1);
   await calendar.locator('.tnc-strip-today').click();
   await expect(calendar.locator('.tnc-strip-today')).toBeHidden();
-  const navigation = await calendar.locator('.tnc-strip-head').boundingBox();
+  const navigation = await calendar.locator('.tnc-strip-title').boundingBox();
   const selection = await selector.boundingBox();
-  expect(navigation!.y).toBeGreaterThan(selection!.y);
+  expect(navigation!.y).toBeGreaterThanOrEqual(selection!.y);
+  expect(navigation!.x + navigation!.width <= selection!.x || navigation!.x >= selection!.x + selection!.width || navigation!.y >= selection!.y + selection!.height).toBe(true);
   expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(400);
   expect(selection!.height).toBeGreaterThanOrEqual(40);
   expect(await selector.evaluate(element => getComputedStyle(element).appearance)).toBe('auto');
@@ -213,6 +222,13 @@ test('collisions expand without widening the week, timed lines fit and deadlines
   await expect.poll(() => grid.locator('.tnc-tg-head [data-date]').count()).toBe(1);
   const events = grid.locator('.tnc-item--timed');
   await expect(events).toHaveCount(4);
+  await test.info().attach('timed-geometry', { body: JSON.stringify(await events.evaluateAll(elements => elements.map(element => {
+    const children = ['.tnc-item-title', '.tnc-item-time', '.tn-calendar-event-title'].map(selector => {
+      const child = element.querySelector<HTMLElement>(selector)!;
+      return { selector, box: child.getBoundingClientRect().toJSON(), display: getComputedStyle(child).display, clamp: getComputedStyle(child).webkitLineClamp };
+    });
+    return { cls: element.className, box: element.getBoundingClientRect().toJSON(), children };
+  }))), contentType: 'application/json' });
   await expect.poll(() => events.evaluateAll(elements => elements.length === 4 && elements.every(element => {
     const title = element.querySelector<HTMLElement>('.tnc-item-title');
     const time = element.querySelector<HTMLElement>('.tnc-item-time');
@@ -221,13 +237,15 @@ test('collisions expand without widening the week, timed lines fit and deadlines
     const bounds = element.getBoundingClientRect();
     const style = getComputedStyle(element);
     const height = element.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const width = element.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     const timeBox = time.getBoundingClientRect();
     const titleBox = title.getBoundingClientRect();
     const visibleTime = getComputedStyle(time).display !== 'none' && timeBox.height > 0;
     return bounds.width > 160 && bounds.height > 0 && titleBox.height > 0 &&
       getComputedStyle(styledTitle).webkitLineClamp === (height >= 68 ? '3' : height >= 48 ? '2' : '1') &&
-      visibleTime === (height > 35) &&
-      (!visibleTime || (timeBox.y >= titleBox.bottom - 1 && timeBox.bottom <= bounds.bottom + 1));
+      visibleTime === (width >= 110 || height > 35) &&
+      (!visibleTime || (timeBox.bottom <= bounds.bottom + 1 && timeBox.right <= bounds.right + 1 &&
+        (element.classList.contains('is-short') ? timeBox.left >= titleBox.right : timeBox.y >= titleBox.bottom - 1)));
   }))).toBe(true);
   const deadline = grid.locator('.tnc-item--bar[data-event-type="due"]').first();
   await expect(deadline).toBeVisible();

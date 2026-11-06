@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { generateMessageId } from "@lingui/message-utils/generateMessageId";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { openTaskNotesSettings, closeObsidianSettings } from "../obsidian";
+import { openTaskNotesSettings, closeObsidianSettings, selectTaskNotesSettingsTab } from "../obsidian";
 
 /** Native production artifact only; fixtures and all mutations stay in the verified test vault. */
 export async function runLinguiRereview(page: Page, output: string): Promise<void> {
@@ -51,7 +51,7 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
       if (locale === "de") expect(rendered).toContain("Grundlegende Informationen");
       mkdirSync(output, { recursive: true });
       await settings.screenshot({ path: `${output}/${locale}-modal-fields.png`, fullPage: true });
-      await settings.getByRole("tab", { name: await translate("Task properties", "settings.tabs.taskProperties"), exact: true }).click();
+      await selectTaskNotesSettingsTab(settings, await translate("Task properties", "settings.tabs.taskProperties"));
       for (const english of ["Open", "High"]) {
         const label = await translate(english, "settings/defaults: defaults label");
         await expect.poll(() => settings.locator("input").evaluateAll(inputs => inputs.map(input => input.value))).toContain(label);

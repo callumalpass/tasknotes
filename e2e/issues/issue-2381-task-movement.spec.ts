@@ -431,12 +431,19 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 				type: "touchMove",
 				touchPoints: [
 					{
-						x: x + ((bounds!.x + bounds!.width / 2 - x) * step) / 8,
-						y: y + ((bounds!.y + bounds!.height / 2 - y) * step) / 8,
+						x: destination!.x + destination!.width / 2 + ((bounds!.x + bounds!.width / 2 - destination!.x - destination!.width / 2) * step) / 8,
+						y: destination!.y + destination!.height / 2 + ((bounds!.y + bounds!.height / 2 - destination!.y - destination!.height / 2) * step) / 8,
 						id: 1,
 					},
 				],
 			});
+		await testInfo.attach('parent-target-hit-test', {
+			body: JSON.stringify(await target.evaluate(element => {
+				const bounds = element.getBoundingClientRect();
+				return { bounds: bounds.toJSON(), hits: document.elementsFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2).map(node => node.className) };
+			})), contentType: 'application/json',
+		});
+		await instance.page.screenshot({ path: testInfo.outputPath('touch-parent-hit.png') });
 		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
 			"Add as subtask of Done"
 		);

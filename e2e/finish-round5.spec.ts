@@ -91,9 +91,10 @@ for (const width of [1180, 400]) for (const theme of ['light', 'dark']) test(`se
   const sentence = page.locator('.workspace-leaf.mod-active .tasknotes-inline-widget--sentence:visible').first();
   const menu = sentence.locator('.task-card__context-menu');
   await expect(sentence).toBeVisible();
-  await expect(menu).toHaveCSS('position', width === 400 ? 'relative' : 'static');
+  await expect(menu).toHaveCSS('position', width === 400 ? 'relative' : 'absolute');
   if (width === 400) await expectTouchTarget(menu);
-  await expect(menu).toHaveCSS('opacity', '1');
+  await page.mouse.move(5, 5);
+  await expect(menu).toHaveCSS('opacity', width === 400 ? '1' : '0');
   const before = await sentence.boundingBox();
   await sentence.hover();
   await expect(menu).toHaveCSS('opacity', '1');
@@ -176,18 +177,30 @@ test('long Kanban headings reveal the complete name by keyboard and touch-sized 
   await expect(page.locator('.tn-popover__title')).toHaveText(statusLabel);
 });
 
-test('typing details keeps the editor stable until leaving it', async () => {
-  await appearance(1180);
-  await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
-  const modal = page.locator('.modal.mod-tasknotes');
-  await modal.locator('.tn-task-modal__details-toggle').click();
-  const editor = modal.locator('.tn-task-modal__markdown-editor--details .cm-content');
-  const before = await editor.boundingBox();
-  await editor.fill('Details that deserve their own pane');
-  expect(await editor.boundingBox()).toEqual(before);
-  await modal.locator('.title-input').first().focus();
-  await expect(modal.locator('.modal-split-content')).not.toHaveClass(/modal-split-content--details-empty/);
-  await capture('details-after-blur');
+test('typing details keeps the editor stable until leaving it', async ({}, testInfo) => {
+  for (const theme of ['light', 'dark']) for (const width of [1180, 700, 400]) {
+    await appearance(width, theme);
+    await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
+    const modal = page.locator('.modal.mod-tasknotes');
+    await modal.locator('.tn-task-modal__details-toggle').click();
+    const editor = modal.locator('.tn-task-modal__markdown-editor--details .cm-content');
+    await editor.focus();
+    const before = await editor.boundingBox();
+    await editor.fill('Details that deserve their own pane');
+    await testInfo.attach(`details-${theme}-${width}`, { body: JSON.stringify({ beforeTyping: before, afterTyping: await editor.boundingBox() }), contentType: 'application/json' });
+    expect(await editor.boundingBox()).toEqual(before);
+    expect(await editor.evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      const pane = element.closest('.modal-split-right')!.getBoundingClientRect();
+      return bounds.top >= pane.top && bounds.bottom <= pane.bottom;
+    })).toBe(true);
+    await modal.locator('.title-input').first().focus();
+    await expect(modal.locator('.modal-split-content')).not.toHaveClass(/modal-split-content--details-empty/);
+    await capture(`details-after-blur-${theme}-${width}`);
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Discard changes', exact: true }).click();
+    await expect(modal).toBeHidden();
+  }
 });
 
 test('timeblock title wraps like the task editor on mobile', async () => {
@@ -235,7 +248,7 @@ test('batch Undo confirms the property and count without resurfacing older actio
     await status.focus();
     await page.keyboard.press('p');
     await page.locator(`.tn-picker__row[data-picker-id="${priority}"]`).click();
-    await expect(page.locator('.tn-toast__message')).toHaveText(`3 tasks updated · Priority → Priority ${priority.split('-')[1]}`);
+    await expect(page.locator('.tn-toast__message')).toHaveText(`3 tasks updated: Priority → Priority ${priority.split('-')[1]}`);
   }
   await page.locator('.tn-toast__action').click();
   await expect(page.locator('.tn-toast__message')).toHaveText('Undid Priority change for 3 tasks');
@@ -282,7 +295,7 @@ test('shortcut help and empty statistics keep a compact rhythm', async () => {
   await page.getByRole('button', { name: 'Keyboard shortcuts', exact: true }).click();
   const row = page.locator('.tn-shortcut-row').first();
   await expect(row).toBeVisible();
-  expect((await row.boundingBox())!.height).toBeLessThanOrEqual(32);
+  expect((await row.boundingBox())!.height).toBe(40);
   await capture('help-1180');
   await page.keyboard.press('Escape');
   await page.evaluate(async () => {

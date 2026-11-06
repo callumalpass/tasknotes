@@ -107,8 +107,8 @@ test('council AC: responsive task controls, panel lifecycle, history and held co
           expect(measured.scrollWidth).toBeLessThanOrEqual(measured.clientWidth + 1);
           const status = measured.controls.find(control => control.className.includes('__status-dot'))!;
           const priority = measured.controls.find(control => control.className.includes('__priority-dot'))!;
-          expect(status.rect.top).toBeGreaterThanOrEqual(measured.title.bottom);
-          expect(Math.abs(status.rect.top - priority.rect.top)).toBeLessThan(2);
+          expect(status.rect.right).toBeLessThanOrEqual(measured.title.left + 1);
+          expect(status.rect.right <= priority.rect.left + 1 || priority.rect.top >= status.rect.bottom - 1).toBe(true);
           expect(status.rect.width).toBeGreaterThanOrEqual(40);
           expect(status.rect.height).toBeGreaterThanOrEqual(40);
           expect(status.hit).toContain('__status-dot');
@@ -202,11 +202,12 @@ test('council AC: responsive task controls, panel lifecycle, history and held co
         for (const selector of ['.task-card__status-dot', '.task-card__context-menu']) {
           const control = sentence.locator(selector);
           await expect.poll(() => control.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(0);
-          expect(await control.evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(24);
+          expect(await control.locator('svg').evaluate(element => element.getBoundingClientRect().width)).toBeLessThanOrEqual(24);
+          expect(await control.evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThanOrEqual(40);
           await expect.poll(() => sentence.locator('.task-card__inline-controls').evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThanOrEqual(40);
           await expect.poll(() => control.evaluate(element => {
             const bounds = element.getBoundingClientRect();
-            return element.contains(document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top - 6));
+            return element.contains(document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + 4));
           })).toBe(true);
           await page.mouse.move(1, 1);
           const previousStatus = selector.includes('status-dot')
@@ -219,10 +220,17 @@ test('council AC: responsive task controls, panel lifecycle, history and held co
           await page.keyboard.press('Escape');
         }
         const status = sentence.locator('.task-card__status-dot');
-        const bounds = (await status.boundingBox())!;
-        const touch = await page.context().newCDPSession(page);
         const previous = await page.evaluate(async folder => (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(`${folder}/0.md`)).status, folder);
-        await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: bounds.x + bounds.width / 2, y: bounds.y - 6 }] });
+        await expect(sentence.locator('.task-card')).toHaveAttribute('data-status', previous);
+        await expect(status).not.toHaveAttribute('aria-busy', 'true');
+        await expect(status).toBeVisible();
+        let bounds = await status.boundingBox();
+        await expect.poll(async () => {
+          bounds = await status.boundingBox();
+          return bounds !== null;
+        }).toBe(true);
+        const touch = await page.context().newCDPSession(page);
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: bounds!.x + bounds!.width / 2, y: bounds!.y + 4 }] });
         await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
         await expect.poll(() => page.evaluate(async folder => (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(`${folder}/0.md`)).status, folder)).not.toBe(previous);
         await touch.detach();

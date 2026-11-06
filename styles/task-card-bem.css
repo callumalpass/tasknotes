@@ -1530,7 +1530,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__date-slot {
         flex: none;
         width: max-content;
-        max-width: none;
+        max-width: calc((100% - var(--tn-touch-target) - var(--tn-space-2)) / 2);
         overflow: visible;
     }
 
@@ -1538,12 +1538,13 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
         flex-direction: row;
         gap: var(--tn-space-1);
         padding: 0;
+        max-width: 100%;
         white-space: nowrap;
     }
 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata-date > span:last-child {
-        flex: none;
-        white-space: nowrap;
+        flex: 0 1 auto;
+        white-space: normal;
         overflow: visible;
         font-size: inherit;
     }

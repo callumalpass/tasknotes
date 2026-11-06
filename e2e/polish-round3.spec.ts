@@ -203,17 +203,17 @@ test('mini calendar day drilldown carries the selected civil date', async () => 
   await expect(page.locator('.suggestion-item').filter({ hasText: 'Review the launch plan' })).toHaveCount(1);
 });
 
-test('inline sentence references keep metadata ordered and actions before the title', async () => {
+test('inline sentence references keep metadata ordered and options after the title', async () => {
   await openFile('Prose.md');
   const card = page.locator('.workspace-leaf.mod-active .task-card--layout-inline:visible').first();
   await expect(card).toBeVisible();
   await capture('inline');
   expect(await card.locator('.task-card__metadata').evaluate(element => element.parentElement?.classList.contains('task-card__main-row'))).toBe(true);
   expect(await card.locator('.task-card__inline-controls').evaluate(element => {
-    const menu = element.querySelector('.task-card__context-menu');
+    const menu = element.parentElement!.querySelector('.task-card__context-menu');
     const title = element.parentElement!.querySelector('.task-card__title');
     return element.firstElementChild?.classList.contains('task-card__status-dot') &&
-      element.lastElementChild === menu && Boolean(element.compareDocumentPosition(title!) & Node.DOCUMENT_POSITION_FOLLOWING);
+      element.children.length === 1 && Boolean(element.compareDocumentPosition(title!) & Node.DOCUMENT_POSITION_FOLLOWING) && Boolean(title!.compareDocumentPosition(menu!) & Node.DOCUMENT_POSITION_FOLLOWING);
   })).toBe(true);
   await card.hover();
   await card.locator('.task-card__context-menu').click();

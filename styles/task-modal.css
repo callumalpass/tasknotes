@@ -1081,6 +1081,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     }
 
     .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--details-empty .modal-split-right {
+        flex-shrink: 0;
         min-height: 0;
         max-height: none;
         margin: 0;

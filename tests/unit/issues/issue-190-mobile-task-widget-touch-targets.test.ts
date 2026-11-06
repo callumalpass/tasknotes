@@ -16,7 +16,7 @@ describe("Issue #190: mobile task widget touch targets", () => {
 		expect(narrow).toContain("grid-template-rows: auto var(--tn-touch-target)");
 		expect(narrow).toMatch(/:is\(\.task-card__status-dot, \.task-card__priority-dot, \.task-card__context-menu, \.task-card__drag-handle,[^}]*min-width: var\(--tn-touch-target\);[^}]*min-height: var\(--tn-touch-target\);/s);
 		expect(narrow).toContain('.task-card__badges [role="button"]');
-		expect(narrow).toMatch(/\.task-card__metadata-date > span:last-child\s*\{[^}]*white-space:\s*nowrap;[^}]*overflow:\s*visible;/s);
+		expect(narrow).toMatch(/\.task-card__metadata-date > span:last-child\s*\{[^}]*white-space:\s*normal;[^}]*overflow:\s*visible;/s);
 		expect(narrow).toMatch(/\.task-card__context-menu\s*\{[^}]*opacity:\s*1;/s);
 		expect(narrow).toMatch(/\.task-card__drag-handle\s*\{[^}]*opacity:\s*1;/s);
 		expect(css).toMatch(/\.task-card__details-indicator\s*\{[^}]*width:\s*14px;[^}]*height:\s*14px;/s);

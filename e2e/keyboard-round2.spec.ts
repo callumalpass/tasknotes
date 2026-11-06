@@ -41,7 +41,7 @@ async function openView(type = 'tasknotesTaskList', group = 'status'): Promise<L
   const content = stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("keyboard-round2")'] },
     views: [{ type, name: 'Keyboard', order: ['status', 'priority', 'due'],
       sort: [{ property: 'file.name', direction: 'ASC' }], enableSearch: true,
-      initialDate: '2026-11-13', calendarView: 'timeGridWeek',
+      initialDate: '2026-11-13', calendarView: 'timeGridWeek', dayMaxEvents: 8,
       groupBy: { property: group, direction: 'ASC' } }] });
   await page.evaluate(async ({ path, content }) => {
     const app = (window as any).app;

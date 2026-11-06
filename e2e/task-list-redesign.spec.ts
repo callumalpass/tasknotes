@@ -117,7 +117,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     });
     const longCard = items.locator(`.task-card[data-task-path="${folder}/Task 3.md"]`);
     await longCard.scrollIntoViewIfNeeded();
-    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('font-size', '16.25px');
+    await expect(longCard.locator('.task-card__title-text')).toHaveCSS('font-size', '17.5px');
     const longTagElement = longCard.locator('.tag').filter({ hasText: longTag });
     await expect(longTagElement).toHaveCSS('white-space', 'nowrap');
     await expect(longTagElement).toBeHidden();
@@ -313,12 +313,12 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
   const timerCard = page.locator('.pomodoro-view__task-card-container .task-card');
   await expect(timerCard).toHaveCount(1);
   for (const theme of ['theme-light', 'theme-dark']) {
-    for (const width of [1180, 430]) {
+    for (const width of [1180, 700, 400, 430]) {
       await setObsidianViewport(page, { width, height: 800 });
       await page.evaluate(({ theme, width }) => {
         document.body.classList.remove('theme-light', 'theme-dark');
         document.body.classList.add(theme);
-        document.body.classList.toggle('is-mobile', width === 430);
+        document.body.classList.toggle('is-mobile', width <= 430);
       }, { theme, width });
       for (const field of ['due', 'scheduled']) {
         const date = timerCard.locator(`.task-card__date-slot--${field}`);

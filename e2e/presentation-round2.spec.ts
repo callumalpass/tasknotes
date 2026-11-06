@@ -130,7 +130,7 @@ for (const workflow of ['default', 'custom']) {
             const expectedGroups = await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.settings.customStatuses.slice().sort((left: any, right: any) => left.order - right.order).map((status: any) => status.value));
             await expect.poll(() => root.locator('.task-section[data-level="primary"]').evaluateAll(elements => elements.map(element => (element as HTMLElement).dataset.groupKey))).toEqual(expectedGroups);
           }
-          if (surface === 'calendar') await expect(root.locator('.tnc')).toBeVisible();
+          if (surface === 'calendar') await expect(root.locator('#bases-calendar > .tnc')).toBeVisible();
           else {
             const card = root.locator(`.task-card[data-task-path="${taskPath}"]`).first();
             await expect(card).toBeVisible();

@@ -26,12 +26,11 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
   };
   const card = (index: number) => page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${folder}/${index}.md"]`).first();
   const lift = async (source: Locator, x: number, y: number) => {
-    const bounds = (await source.boundingBox())!;
-    await page.mouse.move(bounds.x + 12, bounds.y + bounds.height / 2);
+    const bounds = (await source.locator('.task-card__title-text').boundingBox())!;
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     await page.mouse.down();
-    await page.mouse.move(bounds.x + 25, bounds.y + bounds.height / 2 + 7, { steps: 6 });
+    await page.mouse.move(bounds.x + bounds.width / 2 + 13, bounds.y + bounds.height / 2 + 7, { steps: 6 });
     await page.mouse.move(x, y, { steps: 12 });
-    await page.waitForTimeout(100);
   };
   const cancelDrag = async () => { await page.keyboard.press('Escape'); await page.mouse.up(); };
   try {
@@ -121,12 +120,12 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
       observations[`board-counts-${variant}`] = counts;
       if (verify) for (const count of counts) expect.soft(count.required).toBeLessThanOrEqual(count.width + 1);
       if (width === 1180) {
-        const target = (await card(0).boundingBox())!;
+        const target = (await card(1).boundingBox())!;
         await lift(card(0), target.x + target.width / 2, target.y + target.height - 3);
         await capture(`board-held-${variant}`);
         const markers = await page.locator('.kanban-view__card-wrapper--drop-marker, .kanban-view__cards--drop-marker-end').count();
         observations[`board-marker-${variant}`] = markers;
-        if (verify) expect.soft(markers).toBeGreaterThan(0);
+        if (verify) await expect.poll(() => page.locator('.kanban-view__card-wrapper--drop-marker, .kanban-view__cards--drop-marker-end').count()).toBeGreaterThan(0);
         await cancelDrag();
       }
       await open('Year');
@@ -139,7 +138,7 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
       observations[`year-entry-${variant}`] = await monthVisible();
       if (verify) expect.soft(await monthVisible()).toBe(true);
       await page.locator('.tnc-year-scroll').evaluate(element => { element.scrollTop = 0; });
-      await page.getByRole('button', { name: 'Today', exact: true }).click();
+      await page.locator('#bases-calendar > .tnc .tnc-btn-today').click();
       await page.waitForTimeout(250);
       observations[`year-today-${variant}`] = await monthVisible();
       await capture(`year-today-${variant}`);

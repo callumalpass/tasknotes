@@ -32,15 +32,21 @@ test.afterAll(async () => {
   } finally { await closeObsidian(instance); }
 });
 
-test('week stays overviewable and overflow remains readable and reachable after resize', async () => {
+async function openCalendar(showMonthDayPanel = true) {
   const page = instance.page;
   await setObsidianViewport(page, { width: 1180, height: 800 });
-  const content = stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] }, views: [{ type: 'tasknotesCalendar', name: 'Overflow', calendarView: 'timeGridWeek', showDue: true, showTimeblocks: false, showTimeEntries: false }] });
+  const content = stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] }, views: [{ type: 'tasknotesCalendar', name: 'Overflow', calendarView: 'timeGridWeek', showMonthDayPanel, showDue: true, showTimeblocks: false, showTimeEntries: false }] });
   await page.evaluate(async ({ folder, content }) => {
     const app = (window as any).app;
-    const file = await app.vault.create(`${folder}/Overflow.base`, content);
+    const file = app.vault.getAbstractFileByPath(`${folder}/Overflow.base`) ?? await app.vault.create(`${folder}/Overflow.base`, content);
+    if (await app.vault.read(file) !== content) await app.vault.modify(file, content);
     await app.workspace.getLeaf(false).openFile(file);
   }, { folder, content });
+}
+
+test('week stays overviewable and overflow remains readable and reachable after resize', async () => {
+  const page = instance.page;
+  await openCalendar();
   const grid = page.locator('.workspace-leaf.mod-active .tnc-tg-scroll');
   await expect(grid).toBeVisible();
   await page.locator('.tnc-btn-view-day').click();
@@ -54,10 +60,14 @@ test('week stays overviewable and overflow remains readable and reachable after 
   await expect(popover).toBeVisible();
   await setObsidianViewport(page, { width: 440, height: 800 });
   await page.evaluate(() => document.body.classList.add('is-mobile'));
+  if (!await popover.count()) {
+    await expect(popover).toBeHidden();
+    await more.click();
+  }
   await expect.poll(() => popover.evaluate(element => {
     const bounds = element.getBoundingClientRect();
-    return bounds.left >= 0 && bounds.right <= innerWidth && bounds.bottom <= innerHeight;
-  })).toBe(true);
+    return { bounds: bounds.toJSON(), viewport: [innerWidth, innerHeight], inside: bounds.left >= 0 && bounds.right <= innerWidth && bounds.bottom <= innerHeight };
+  })).toMatchObject({ inside: true });
   await expect(popover.locator('.tnc-popover-close')).toBeInViewport();
   await expect(popover.locator('.tnc-item').first()).toBeVisible();
   expect((await popover.locator('.tnc-item').first().boundingBox())!.height).toBeGreaterThanOrEqual(40);
@@ -85,7 +95,8 @@ test('week stays overviewable and overflow remains readable and reachable after 
 
 test('month bars use one line and overflow allocates readable title height', async () => {
   const page = instance.page;
-  await setObsidianViewport(page, { width: 1180, height: 800 });
+  await openCalendar(false);
+  await page.evaluate(() => document.body.classList.remove('is-mobile'));
   await page.evaluate(async folder => {
     const app = (window as any).app;
     const today = (window as any).moment().format('YYYY-MM-DD');

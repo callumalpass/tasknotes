@@ -218,7 +218,7 @@ test('typographic reports, release notes and all settings tabs in both themes an
         await expect(tabs).toHaveCount(6);
         const navigation = settingsPage.locator('.settings-view__tab-nav');
         const select = settingsPage.locator('.settings-view__tab-select');
-        expect(await navigation.evaluate(element => getComputedStyle(element).flexWrap)).toBe('wrap');
+        expect(await navigation.evaluate(element => getComputedStyle(element).flexWrap)).toBe('nowrap');
         const chooseTab = async (index: number) => {
           const id = (await tabs.nth(index).getAttribute('id'))!.replace('tab-button-', '');
           if (await select.isVisible()) {

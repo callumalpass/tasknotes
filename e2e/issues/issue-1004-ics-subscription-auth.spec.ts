@@ -24,8 +24,7 @@ test.beforeAll(async () => {
 		});
 		return sub.id as string;
 	});
-	settingsPage = await openTaskNotesSettings(obsidian.page);
-	await settingsPage.locator("#tab-button-integrations").click();
+	settingsPage = await openTaskNotesSettings(obsidian.page, 'Integrations');
 });
 
 test.afterAll(async () => {

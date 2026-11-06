@@ -168,15 +168,25 @@ test('grouped triage keeps queue focus, highlights arrival and emits one Undo re
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.keyboard.press('j');
   const path = `${folder}/Task 000.md`;
+  await root.evaluate((element, path) => {
+    const observations: { connected: boolean; duration: string }[] = [];
+    const observer = new MutationObserver(() => {
+      const card = Array.from(element.querySelectorAll<HTMLElement>('.tn-task-arrived')).find(card => card.dataset.taskPath === path);
+      if (card) observations.push({ connected: card.isConnected, duration: getComputedStyle(card).transitionDuration });
+    });
+    observer.observe(element, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+    (element as any).arrivalEvidence = { observations, observer };
+  }, path);
   await page.keyboard.press('s');
   await page.locator('.tn-picker__row[data-picker-id="done"]').click();
-  const destination = root.locator(`.task-card[data-task-path="${path}"]`);
+  await expect.poll(() => root.evaluate(element => (element as any).arrivalEvidence.observations.some((observation: { connected: boolean; duration: string }) =>
+    observation.connected && observation.duration.split(',').every(value => value.trim() === '0s')
+  ))).toBe(true);
+  await root.evaluate(element => { (element as any).arrivalEvidence.observer.disconnect(); });
   await expect(root.locator('.tn-task-focused')).toHaveAttribute('data-task-path', `${folder}/Task 001.md`);
   await expect(root.locator('.tn-task-focused')).toBeInViewport();
-  await expect(destination).toHaveClass(/tn-task-arrived/);
-  await expect.poll(() => destination.evaluate(element => element.isConnected && getComputedStyle(element).transitionDuration.split(',').every(value => value.trim() === '0s'))).toBe(true);
   await expect(page.locator('.tn-toast')).toHaveCount(1);
-  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated · Status → Done');
+  await expect(page.locator('.tn-toast__message')).toHaveText('1 task updated: Status → Done');
   await expect(page.locator('.notice:visible')).toHaveCount(0);
   await page.locator('.tn-toast__action').click();
   await expect.poll(() => taskValues('status')).toEqual(['open', 'open']);

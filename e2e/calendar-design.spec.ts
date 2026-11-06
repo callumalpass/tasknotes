@@ -158,8 +158,15 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
         await expect(calendar.locator(`.tnc-btn-view-${mode}`)).toHaveAttribute('aria-pressed', 'true');
         await expect(calendar.locator('.tnc-toolbar-views .tnc-btn-view')).toHaveCount(6);
         const narrowAgenda = width === 400 && mode === 'list';
-        const titleSelector = narrowAgenda ? '.tnc-strip-title' : width === 400 ? '.tnc-toolbar-view-select' : '.tnc-title';
-        const navigationSelector = narrowAgenda ? '.tnc-toolbar-view-select' : '.tnc-toolbar-nav';
+        if (mode === 'list') {
+          const strip = calendar.locator('.tnc-strip-title');
+          const expanded = width !== 400;
+          if ((await strip.getAttribute('aria-expanded') === 'true') !== expanded) await strip.click();
+          await expect(calendar.locator('.tnc-toolbar-nav')).toBeHidden();
+          await expect(calendar.locator('.tnc-title')).toBeHidden();
+        }
+        const titleSelector = mode === 'list' ? '.tnc-strip-title' : width === 400 ? '.tnc-toolbar-view-select' : '.tnc-title';
+        const navigationSelector = mode === 'list' ? narrowAgenda ? '.tnc-toolbar-view-select' : '.tnc-strip-prev' : '.tnc-toolbar-nav';
         await expect(calendar.locator(navigationSelector)).toBeVisible();
         if (narrowAgenda) {
           await expect(calendar.locator('.tnc-toolbar-nav')).toBeHidden();
@@ -183,7 +190,7 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
             const css = getComputedStyle(element);
             return { left: css.borderLeftWidth, top: css.borderTopWidth };
           });
-          expect(style).toEqual({ left: '2px', top: '0px' });
+          expect(style).toEqual({ left: '1px', top: '0px' });
           await expect(calendar.locator('.tnc-item[data-event-type="timeblock"]').first()).toBeVisible();
           await expect(calendar.locator('.tnc-item[data-event-type="due"]').first()).toHaveAttribute('aria-label', /^Deadline:/);
           if (width === 1180) {
@@ -255,7 +262,7 @@ test('dense recurring days retain readable titles and every overflow item', asyn
     for (let index = 0; index < 35; index++) {
       await app.vault.create(`${folder}/Dense/Check ${index}.md`, `---\ntitle: Recurring project check ${index + 1}\ntags: [task]\nstatus: open\nscheduled: ${today}\nrecurrence: FREQ=DAILY\n---\n`);
     }
-    const base = await app.vault.create(`${folder}/Dense.base`, `filters:\n  and:\n    - file.inFolder("${folder}/Dense")\nviews:\n  - type: tasknotesCalendar\n    name: Dense calendar\n    calendarView: dayGridMonth\n    showTimeblocks: false\n    showPropertyBasedEvents: false\n`);
+    const base = await app.vault.create(`${folder}/Dense.base`, `filters:\n  and:\n    - file.inFolder("${folder}/Dense")\nviews:\n  - type: tasknotesCalendar\n    name: Dense calendar\n    calendarView: dayGridMonth\n    showMonthDayPanel: false\n    showTimeblocks: false\n    showPropertyBasedEvents: false\n`);
     await app.workspace.getLeaf(true).openFile(base);
   }, folder);
   const calendar = page.locator('.workspace-leaf.mod-active .tnc');
