@@ -46,6 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Expanded task fields share a compact label-and-control grid, settings expose workflow values sooner, and statistics distinguish headline totals from supporting metrics. Narrow Pomodoro timers keep their controls closer together.
 - Pickers use consistent row insets and touch targets. Task-change feedback uses localized counts and dates, with Undo visually separated from the result message.
+- Compact calendar agendas around a single date-strip header in narrow panes, with aligned times beside task titles and quieter day headings. Previous/next buttons remain available when the month strip is expanded; swiping and keyboard date navigation still work in the collapsed strip.
+- Make selected-day task rows title-first, with times and secondary properties together below the title, keeping scheduled and deadline markers distinct and task controls touch-sized. Keep agenda rows steady during background refreshes and dragging.
 
 - Make mini-calendar day choices evenly sized, with quieter paths and full titles available on hover.
 - Keep expanded property settings aligned to the full content width and use a single settings selector in narrow panes.

@@ -2,6 +2,7 @@ import { captureTaskUndo } from "../ui/taskMutationUndo";
 import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
+import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 import TaskNotesPlugin from "../main";
@@ -1409,6 +1410,7 @@ export class CalendarView extends BasesViewBase {
 			...this.buildCalendarOptions(),
 			view: "list", date: this.selectedMonthDay, listDayCount: 1,
 			listAgenda: false, toolbar: false, height: "auto",
+			listItemContent: arg => this.renderListItem(arg, true),
 			onRangeChange: undefined, onViewChange: undefined,
 			onNavLink: arg => this.openDailyNoteFromDateLink(arg.date),
 			listEmptyContent: undefined,
@@ -2170,7 +2172,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	/** List view rows render as the same cards the other TaskNotes views use. */
-	private renderListItem(arg: ItemArg<CalendarEventProps>): Node | null {
+	private renderListItem(arg: ItemArg<CalendarEventProps>, inDayPanel = false): Node | null {
 		const card = createCalendarListEventCard({
 			event: eventApiFromItem(arg.item),
 			plugin: this.plugin,
@@ -2204,11 +2206,18 @@ export class CalendarView extends BasesViewBase {
 			const entry = createElementInDocument(arg.el.ownerDocument, "div");
 			entry.className = "tn-calendar-list-entry";
 			const stamp = entry.createDiv({ cls: "tn-calendar-list-stamp" });
+			stamp.dataset.eventType = arg.item.data?.eventType ?? "";
+			if (arg.item.data?.eventType === "scheduled" && arg.timeText) {
+				const marker = stamp.createSpan({ cls: "tn-calendar-list-scheduled" });
+				marker.setAttribute("aria-hidden", "true");
+				setIcon(marker, "calendar");
+				stamp.setAttribute("aria-label", `${this.plugin.i18n.translate(messageForKey("ui.taskCard.labels.scheduled"))}: ${arg.timeText}`);
+			}
 			if (arg.item.data?.eventType === "due") {
 				const deadline = this.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }));
 				const marker = stamp.createSpan({ cls: "tn-calendar-list-deadline" });
+				marker.setAttribute("aria-hidden", "true");
 				setIcon(marker.createSpan(), "flag-triangle-right");
-				marker.createSpan({ text: deadline });
 				stamp.setAttribute("aria-label", `${deadline}: ${arg.timeText}`);
 			} else if (arg.item.data?.eventType === "timeEntry" && arg.item.end) {
 				const tracked = stamp.createSpan({ cls: "tn-calendar-list-tracked" });
@@ -2222,6 +2231,19 @@ export class CalendarView extends BasesViewBase {
 				time.createSpan({ text: start });
 				if (end) time.createSpan({ text: `– ${end}` });
 			}
+			const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
+			const priority = card.querySelector<HTMLElement>(".task-card__priority-dot");
+			const badges = card.querySelector<HTMLElement>(".task-card__badges");
+			if (metadata) {
+				if (priority) metadata.prepend(priority);
+				if (badges) metadata.append(badges);
+				if (inDayPanel && stamp.childElementCount) metadata.prepend(stamp);
+				if (priority || badges?.childElementCount || (inDayPanel && stamp.childElementCount)) {
+					metadata.hidden = false;
+					card.classList.remove("task-card--metadata-empty");
+				}
+			}
+			if (inDayPanel) entry.classList.add("tn-calendar-list-entry--panel");
 			entry.append(card);
 			return entry;
 		}
