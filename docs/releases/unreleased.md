@@ -44,6 +44,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Compact calendar agendas around a single date-strip header in narrow panes, with aligned times beside task titles and quieter day headings. Previous/next buttons remain available when the month strip is expanded; swiping and keyboard date navigation still work in the collapsed strip.
+- Make selected-day task rows title-first, with times and secondary properties together below the title, keeping scheduled and deadline markers distinct and task controls touch-sized. Keep agenda rows steady during background refreshes and dragging.
+
 - Make mini-calendar day choices evenly sized, with quieter paths and full titles available on hover.
 - Keep expanded property settings aligned to the full content width and use a single settings selector in narrow panes.
 - Compact Pomodoro statistics and show recent sessions before period summaries; keep timer controls together.
