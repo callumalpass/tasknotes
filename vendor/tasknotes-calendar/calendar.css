@@ -1,7 +1,7 @@
 /*
  * Pinned host copy of @tasknotes/calendar 0.1.7 plus local Round 7 changes (MIT,
  * see LICENSE beside this file; library release 0.1.8 is required for integration).
- * Upstream sha256 58e24d04e1767d576039ad073af14b29d27fe83c09762e3441ae1089c1cebe2e.
+ * Upstream sha256 90fee78ed2aa28702e79af77ff99c9163f2c29ed3f07f7348983b9a4d7c76460.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -939,6 +939,15 @@
 	color: var(--tnc-muted);
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
+}
+
+.tnc-dg--dots .tnc-dg-top {
+	justify-content: center;
+}
+
+.tnc-dg--dots .tnc-dg-dots {
+	justify-content: center;
+	align-content: flex-start;
 }
 
 /* ------------------------------------------------------------------ list */

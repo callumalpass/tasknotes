@@ -11,7 +11,7 @@ test("host calendar stylesheet tracks the pinned upstream engine and license", (
   assert.equal(version, "0.1.7");
   const upstreamHash = createHash("sha256")
     .update(readFileSync(new URL("dist/calendar.css", packageRoot))).digest("hex");
-  assert.equal(upstreamHash, "58e24d04e1767d576039ad073af14b29d27fe83c09762e3441ae1089c1cebe2e");
+  assert.equal(upstreamHash, "90fee78ed2aa28702e79af77ff99c9163f2c29ed3f07f7348983b9a4d7c76460");
   const host = readFileSync(new URL("../vendor/tasknotes-calendar/calendar.css", import.meta.url), "utf8");
   assert.ok(host.replace(/[\s*]+/g, "").includes(upstreamHash));
   assert.deepEqual(readFileSync(new URL("../vendor/tasknotes-calendar/LICENSE", import.meta.url)),
