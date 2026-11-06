@@ -124,6 +124,7 @@ type KanbanDataAdapterWithView = {
 };
 
 type KanbanControllerView = {
+	query?: unknown;
 	name?: string;
 	groupBy?: string | { property?: string };
 };
@@ -740,7 +741,10 @@ export class KanbanView extends BasesViewBase {
 				})),
 				propertyIds,
 				cardOptions: this.getCardOptions(),
-				views: this.basesController?.query?.views,
+				// Each Bases view config links back to its query, which is not render data.
+				views: this.basesController?.query?.views?.map(
+					({ query: _query, ...view }) => view
+				),
 				viewName: this.basesController?.viewName,
 				sort: this.config.getSort(),
 				collapsedColumns: this.collapsedColumns,
@@ -4342,6 +4346,8 @@ export class KanbanView extends BasesViewBase {
 			this.debugLog("POST-DROP-TIMER-FIRED: rendering now");
 			this.postDropTimer = null;
 			this.suppressRenderUntil = 0;
+			// A rejected drop leaves the data unchanged, but its optimistic DOM must still go.
+			this.lastRenderSignature = null;
 			this.debouncedRefresh();
 		}, KanbanView.POST_DROP_RENDER_DELAY);
 	}
