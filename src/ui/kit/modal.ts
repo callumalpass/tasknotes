@@ -6,6 +6,11 @@ import { uiText, uiLocale } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { closeActivePopover } from "./popover";
 
+/** Field labels sit in a column, so a catalogue label's trailing colon is dropped. */
+export function fieldLabel(text: string): string {
+	return text.replace(/\s*[:：]\s*$/, "");
+}
+
 export function applyModalShell(modal: Pick<Modal, "modalEl" | "contentEl" | "onOpen" | "onClose">): void {
 	modal.modalEl.addClass("tasknotes-plugin", "tn-modal");
 	modal.contentEl.addClass("tn-modal__content");

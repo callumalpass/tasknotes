@@ -1,4 +1,4 @@
-import { applyModalShell, renderModalSubmitHint } from "../ui/kit/modal";
+import { applyModalShell, fieldLabel, renderModalSubmitHint } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -203,6 +203,14 @@ export class ReminderModal extends Modal {
 	private renderActionButtons(container: HTMLElement): void {
 		const buttonContainer = container.createDiv({ cls: "reminder-modal__actions" });
 
+		const cancelBtn = buttonContainer.createEl("button", {
+			text: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
+			cls: "reminder-modal__cancel-btn",
+		});
+		cancelBtn.onclick = () => {
+			this.cancel();
+		};
+
 		// Save button (initially disabled)
 		this.saveBtn = buttonContainer.createEl("button", {
 			text: this.plugin.i18n.translate(
@@ -214,14 +222,6 @@ export class ReminderModal extends Modal {
 		renderModalSubmitHint(this.saveBtn);
 		this.saveBtn.onclick = async () => {
 			await this.save();
-		};
-
-		const cancelBtn = buttonContainer.createEl("button", {
-			text: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
-			cls: "reminder-modal__cancel-btn",
-		});
-		cancelBtn.onclick = () => {
-			this.cancel();
 		};
 	}
 
@@ -510,10 +510,10 @@ export class ReminderModal extends Modal {
 		const form = section.createDiv({ cls: "reminder-modal__form" });
 
 		// Compact type selector
-		const typeSelector = form.createDiv({ cls: "reminder-modal__type-selector" });
+		const typeSelector = form.createDiv({ cls: "reminder-modal__type-selector tn-segmented" });
 
 		const relativeTab = typeSelector.createEl("button", {
-			cls: "reminder-modal__type-tab reminder-modal__type-tab--active",
+			cls: "reminder-modal__type-tab tn-segmented__item",
 			text: this.plugin.i18n.translate(
 				msg({ message: "Relative", context: "modals.reminder.relative" })
 			),
@@ -521,30 +521,27 @@ export class ReminderModal extends Modal {
 		});
 
 		const absoluteTab = typeSelector.createEl("button", {
-			cls: "reminder-modal__type-tab",
+			cls: "reminder-modal__type-tab tn-segmented__item",
 			text: this.plugin.i18n.translate(
 				msg({ message: "Absolute", context: "modals.reminder.absolute" })
 			),
 			attr: { "data-type": "absolute" },
 		});
 
-		// Set initial state based on instance variables
-		relativeTab.classList.toggle(
-			"reminder-modal__type-tab--active",
-			this.selectedType === "relative"
-		);
-		absoluteTab.classList.toggle(
-			"reminder-modal__type-tab--active",
-			this.selectedType === "absolute"
-		);
+		const showSelectedTab = (type: "relative" | "absolute") => {
+			for (const [tab, tabType] of [
+				[relativeTab, "relative"],
+				[absoluteTab, "absolute"],
+			] as const) {
+				tab.classList.toggle("is-selected", type === tabType);
+				tab.setAttribute("aria-pressed", String(type === tabType));
+			}
+		};
+		showSelectedTab(this.selectedType);
 
-		// Tab switching logic
 		const switchToType = (type: "relative" | "absolute") => {
 			this.selectedType = type;
-
-			// Update tab appearance
-			relativeTab.classList.toggle("reminder-modal__type-tab--active", type === "relative");
-			absoluteTab.classList.toggle("reminder-modal__type-tab--active", type === "absolute");
+			showSelectedTab(type);
 
 			// Update form visibility
 			this.updateFormVisibility(form, this.selectedType);
@@ -558,8 +555,10 @@ export class ReminderModal extends Modal {
 
 		new Setting(relativeContainer)
 			.setName(
-				this.plugin.i18n.translate(
-					msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })
+				fieldLabel(
+					this.plugin.i18n.translate(
+						msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })
+					)
 				)
 			)
 			.addText((text) => {
@@ -606,11 +605,13 @@ export class ReminderModal extends Modal {
 
 		new Setting(relativeContainer)
 			.setName(
-				this.plugin.i18n.translate(
-					msg({
-						message: "Direction:",
-						context: "settings.defaults.reminders.fields.direction",
-					})
+				fieldLabel(
+					this.plugin.i18n.translate(
+						msg({
+							message: "Direction:",
+							context: "settings.defaults.reminders.fields.direction",
+						})
+					)
 				)
 			)
 			.addDropdown((dropdown) => {
@@ -693,8 +694,10 @@ export class ReminderModal extends Modal {
 
 		new Setting(absoluteContainer)
 			.setName(
-				this.plugin.i18n.translate(
-					msg({ message: "Date:", context: "settings.defaults.reminders.fields.date" })
+				fieldLabel(
+					this.plugin.i18n.translate(
+						msg({ message: "Date:", context: "settings.defaults.reminders.fields.date" })
+					)
 				)
 			)
 			.addText((text) => {
@@ -713,8 +716,10 @@ export class ReminderModal extends Modal {
 
 		new Setting(absoluteContainer)
 			.setName(
-				this.plugin.i18n.translate(
-					msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })
+				fieldLabel(
+					this.plugin.i18n.translate(
+						msg({ message: "Time:", context: "settings.defaults.reminders.fields.time" })
+					)
 				)
 			)
 			.addText((text) => {

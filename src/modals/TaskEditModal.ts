@@ -1,3 +1,4 @@
+import { fieldLabel } from "../ui/kit/modal";
 import { captureTaskUndo } from "../ui/taskMutationUndo";
 import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { displayError } from "../i18n/runtime";
@@ -302,8 +303,7 @@ export class TaskEditModal extends TaskModal {
 
 	private createMetadataItem(container: HTMLElement, key: string, value: string): void {
 		const item = container.createDiv("metadata-item");
-		// Labels sit in a column like the field rows, so the catalogue's trailing colon is dropped
-		item.createSpan("metadata-key").textContent = key.replace(/\s*[:：]\s*$/, "");
+		item.createSpan("metadata-key").textContent = fieldLabel(key);
 		item.createSpan("metadata-value").textContent = value;
 	}
 
