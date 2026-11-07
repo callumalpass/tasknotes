@@ -401,7 +401,7 @@ export abstract class TaskModal extends Modal {
 	protected projectsList: HTMLElement = undefined as unknown as HTMLElement;
 	protected subtasksList: HTMLElement = undefined as unknown as HTMLElement;
 	protected actionBar: HTMLElement = undefined as unknown as HTMLElement;
-	private projectChip?: HTMLElement;
+	private projectChip: HTMLElement | undefined = undefined;
 	protected detailsContainer: HTMLElement = undefined as unknown as HTMLElement;
 	protected isExpanded = false;
 
