@@ -32,7 +32,7 @@ export function createCompletionsCalendarSection(
 	}
 
 	const calendarContainer = container.createEl("details", {
-		cls: "completions-calendar-container",
+		cls: "completions-calendar-container tn-modal__disclosure",
 	});
 	const calendarLabel = calendarContainer.createEl("summary", { cls: "detail-label" });
 	calendarLabel.textContent = options.translate(

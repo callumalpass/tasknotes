@@ -7004,11 +7004,6 @@ msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "Nascondi attività completate tra quelle in ritardo"
 
-#: src/modals/TaskModal.ts
-msgctxt "modals.taskCreation.actions.hideDetailedOptions"
-msgid "Hide detailed options"
-msgstr "Nascondi opzioni dettagliate"
-
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide Empty Columns"
@@ -11260,11 +11255,6 @@ msgstr "Mostra pulsante di conversione accanto alle caselle di controllo"
 msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "Mostra indicatore dell’ora corrente"
-
-#: src/modals/TaskModal.ts
-msgctxt "modals.taskCreation.actions.showDetailedOptions"
-msgid "Show detailed options"
-msgstr "Mostra opzioni dettagliate"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.showDetails"

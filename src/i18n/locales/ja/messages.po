@@ -7003,11 +7003,6 @@ msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "期限切れから完了タスクを非表示"
 
-#: src/modals/TaskModal.ts
-msgctxt "modals.taskCreation.actions.hideDetailedOptions"
-msgid "Hide detailed options"
-msgstr "詳細オプションを非表示"
-
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide Empty Columns"
@@ -11259,11 +11254,6 @@ msgstr "チェックボックスの横に変換ボタンを表示"
 msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "現在時刻インジケーターを表示"
-
-#: src/modals/TaskModal.ts
-msgctxt "modals.taskCreation.actions.showDetailedOptions"
-msgid "Show detailed options"
-msgstr "詳細オプションを表示"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.showDetails"

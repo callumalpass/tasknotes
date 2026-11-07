@@ -246,7 +246,9 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private createMetadataSection(container: HTMLElement): void {
-		const metadataContainer = container.createEl("details", { cls: "metadata-container" });
+		const metadataContainer = container.createEl("details", {
+			cls: "metadata-container tn-modal__disclosure",
+		});
 
 		const metadataLabel = metadataContainer.createEl("summary", { cls: "detail-label" });
 		metadataLabel.textContent = this.t(
@@ -300,7 +302,8 @@ export class TaskEditModal extends TaskModal {
 
 	private createMetadataItem(container: HTMLElement, key: string, value: string): void {
 		const item = container.createDiv("metadata-item");
-		item.createSpan("metadata-key").textContent = `${key} `;
+		// Labels sit in a column like the field rows, so the catalogue's trailing colon is dropped
+		item.createSpan("metadata-key").textContent = key.replace(/\s*[:：]\s*$/, "");
 		item.createSpan("metadata-value").textContent = value;
 	}
 

@@ -91,7 +91,7 @@ test.describe("natural language", () => {
 		await openCreate();
 		await nlEditor().click();
 		await page.keyboard.type("Alpha tomorrow");
-		await modal().locator('[aria-label="Show detailed options"]').click();
+		await modal().getByRole('button', { name: 'More fields', exact: true }).click();
 		await expect(modal().locator(".title-input-detailed")).toHaveValue("Alpha");
 		const tomorrowChips = modal().locator(".action-icon__label").filter({ hasText: "Tomorrow" });
 		await expect(tomorrowChips).toHaveCount(1);
@@ -113,7 +113,7 @@ test.describe("natural language", () => {
 		await openCreate();
 		await nlEditor().click();
 		await page.keyboard.type("Typed");
-		await modal().locator('[aria-label="Show detailed options"]').click();
+		await modal().getByRole('button', { name: 'More fields', exact: true }).click();
 		await modal().locator(".title-input-detailed").fill(title);
 		await modal().locator('.tn-task-modal__details-toggle').click();
 		await nlEditor().click();

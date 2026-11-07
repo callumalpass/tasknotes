@@ -880,60 +880,48 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
    METADATA SECTION - FOR EDIT MODAL
    ===================================================================== */
 
-.tasknotes-plugin .metadata-container {
-    margin: var(--tn-space-3) 0 0;
-    padding-top: var(--size-4-3);
-    border-top: 0.5px solid var(--background-modifier-border);
-}
-
-.tasknotes-plugin .metadata-container > .detail-label {
-    margin-bottom: 0;
-    cursor: var(--cursor-link, pointer);
-}
-
+/* Read-only rows share the field rows' label column */
 .tasknotes-plugin .metadata-content {
     display: flex;
     flex-direction: column;
-    gap: var(--size-4-1);
-    margin-top: var(--size-4-2);
+    margin-top: var(--tn-space-1);
 }
 
 .tasknotes-plugin .metadata-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--tn-modal-field-label-width) minmax(0, 1fr);
+    gap: 0 var(--tn-space-2);
     align-items: center;
-    font-size: var(--tn-type-xs);
     min-width: 0;
+    min-height: var(--tn-control-md);
+    font-size: var(--tn-type-sm);
 }
 
 .tasknotes-plugin .metadata-key {
-    color: var(--text-muted);
-    flex: 0 0 auto;
-    font-weight: 500;
-    min-width: 80px;
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .metadata-value {
-    color: var(--text-normal);
-    flex: 1 1 auto;
-    font-family: var(--font-interface);
     min-width: 0;
+    /* Lines up with the text inside the editable fields above */
+    padding-inline-start: var(--tn-space-2);
+    color: var(--tn-text-normal);
     overflow-wrap: anywhere;
-    white-space: normal;
 }
 
 /* =====================================================================
    COMPLETIONS CALENDAR SECTION
    ===================================================================== */
 
-.tasknotes-plugin .completions-calendar-container {
-    margin-top: var(--size-4-3);
-    padding-top: var(--size-4-3);
-    border-top: 0.5px solid var(--background-modifier-border);
-}
-
 .tasknotes-plugin .completions-calendar-content {
     max-width: 200px;
-    margin: 0 auto;
+    margin: var(--tn-space-1) 0 0 calc(var(--tn-modal-field-label-width) + var(--tn-space-2));
+}
+
+@container (max-width: 400px) {
+    .tasknotes-plugin .completions-calendar-content {
+        margin-left: 0;
+    }
 }
 
 /* =====================================================================
@@ -1165,6 +1153,30 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     display: flex;
     flex-wrap: wrap;
     gap: var(--tn-space-1);
+}
+
+/* Project items match the property chips above them: outlined, plain text, a quiet remove button */
+.tasknotes-plugin .task-project-item.tn-chip {
+    height: var(--tn-control-md);
+    padding: 0 var(--tn-space-half) 0 var(--tn-space-2);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    background: transparent;
+    gap: var(--tn-space-1);
+}
+
+.tasknotes-plugin .task-project-item.tn-chip .clickable-project .internal-link {
+    padding: 0;
+    color: var(--tn-text-normal);
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-normal);
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-item.tn-chip .clickable-project .internal-link:hover {
+        background: none;
+        color: var(--tn-text-normal);
+    }
 }
 
 /* Lists in the field column grow with the pane, which already scrolls */
@@ -1413,8 +1425,8 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
 }
 
 .tasknotes-plugin .tn-task-modal__project-icon svg {
-    width: var(--tn-icon-sm);
-    height: var(--tn-icon-sm);
+    width: var(--tn-icon-md);
+    height: var(--tn-icon-md);
 }
 
 /* Make clickable project names in edit modal look and behave like links */

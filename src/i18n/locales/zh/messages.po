@@ -7003,11 +7003,6 @@ msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "在逾期中隐藏已完成的任务"
 
-#: src/modals/TaskModal.ts
-msgctxt "modals.taskCreation.actions.hideDetailedOptions"
-msgid "Hide detailed options"
-msgstr "隐藏详细选项"
-
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide Empty Columns"
@@ -11259,11 +11254,6 @@ msgstr "在复选框旁边显示转换按钮"
 msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "显示当前时间指示器"
-
-#: src/modals/TaskModal.ts
-msgctxt "modals.taskCreation.actions.showDetailedOptions"
-msgid "Show detailed options"
-msgstr "显示详细选项"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.showDetails"

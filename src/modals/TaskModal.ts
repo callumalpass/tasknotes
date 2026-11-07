@@ -742,42 +742,24 @@ export abstract class TaskModal extends Modal {
 			onClick: (icon) => this.showProjectsMenu(icon),
 		});
 		this.updateProjectChip();
+		// The visible label names the button; aria-expanded says whether the fields are shown
+		const label = this.t(msg({ message: "More fields", context: "task modal field disclosure" }));
 		const toggle = createTaskModalActionIcon(this.actionBar, {
 			iconName: this.isExpanded ? "chevron-up" : "chevron-down",
-			tooltip: this.getDetailedFormToggleLabel(),
+			tooltip: label,
 			chip: true,
 			onClick: (icon) => {
 				this.toggleDetailedForm();
 				const glyph = icon.querySelector<HTMLElement>(".icon");
 				if (glyph) setIcon(glyph, this.isExpanded ? "chevron-up" : "chevron-down");
-				setTooltip(icon, this.getDetailedFormToggleLabel(), { placement: "top" });
 				icon.setAttribute("aria-expanded", String(this.isExpanded));
 			},
 		});
 		toggle.addClass("tn-task-modal__details-toggle");
-		const label = toggle.querySelector<HTMLElement>(".action-icon__label");
-		if (label)
-			label.textContent = this.t(
-				msg({ message: "More fields", context: "task modal field disclosure" })
-			);
+		const labelEl = toggle.querySelector<HTMLElement>(".action-icon__label");
+		if (labelEl) labelEl.textContent = label;
 		toggle.setAttribute("aria-expanded", String(this.isExpanded));
 		this.updateIconStates();
-	}
-
-	private getDetailedFormToggleLabel(): string {
-		return this.isExpanded
-			? this.t(
-					msg({
-						message: "Hide detailed options",
-						context: "modals.taskCreation.actions.hideDetailedOptions",
-					})
-				)
-			: this.t(
-					msg({
-						message: "Show detailed options",
-						context: "modals.taskCreation.actions.showDetailedOptions",
-					})
-				);
 	}
 
 	protected toggleDetailedForm(): void {
