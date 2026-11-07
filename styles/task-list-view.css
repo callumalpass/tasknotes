@@ -780,14 +780,6 @@ body.is-mobile .tasknotes-plugin .task-list-view__parent-target {
     container: tn-task-list / inline-size;
 }
 
-.tn-tasknotesTaskList .task-card {
-    border-bottom: 1px solid var(--tn-hairline);
-}
-
-.tn-tasknotesTaskList .task-list-group > .task-card:last-child,
-.tn-tasknotesTaskList .task-list-subgroup > .task-card:last-child {
-    border-bottom: none;
-}
 
 .tn-tasknotesTaskList .virtual-scroller__content > .task-card + .task-group {
     border-top: none;
