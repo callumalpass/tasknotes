@@ -274,10 +274,78 @@
     min-height: var(--tn-control-md);
 }
 
-.tasknotes-plugin.tn-modal .setting-item {
+/* Field rows: Obsidian's modal rule draws a divider above each setting; ours have none */
+.tasknotes-plugin.tn-modal .setting-item:not(.setting-item-heading) {
     gap: var(--tn-space-3);
-    padding-block: var(--tn-space-3);
-    border-color: var(--tn-hairline);
+    padding-block: var(--tn-space-2);
+    border-top: none;
+}
+
+.tasknotes-plugin.tn-modal .setting-item.tn-setting--stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tn-space-2);
+}
+
+.tasknotes-plugin.tn-modal .tn-setting--stacked > .setting-item-control {
+    justify-content: flex-start;
+}
+
+/* Weekday picker: each day is a checkbox drawn as a toggle chip */
+.tasknotes-plugin .tn-day-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tn-space-1);
+}
+
+.tasknotes-plugin .tn-day-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tn-control-md);
+    height: var(--tn-control-md);
+    padding: 0 var(--tn-space-2);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .tn-day-toggle input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: none;
+    border-radius: inherit;
+    background: transparent;
+    appearance: none;
+    cursor: inherit;
+}
+
+.tasknotes-plugin .tn-day-toggle input::after {
+    content: none;
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .tn-day-toggle:hover {
+        background: var(--tn-hover);
+        color: var(--tn-text-normal);
+    }
+}
+
+.tasknotes-plugin .tn-day-toggle.is-checked {
+    border-color: transparent;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .tn-day-toggle input:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: 2px;
 }
 
 .tasknotes-plugin.tn-modal .setting-item-info {

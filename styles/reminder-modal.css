@@ -208,14 +208,6 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn {
     display: none;
 }
 
-/* Obsidian's modal rule draws a divider above each setting; field rows have none */
-.tasknotes-plugin .reminder-modal__form .setting-item:not(.setting-item-heading) {
-    align-items: center;
-    gap: var(--tn-space-2);
-    min-height: var(--tn-control-md);
-    padding: var(--tn-space-half) 0;
-    border: none;
-}
 
 .tasknotes-plugin .reminder-modal__form .setting-item-name {
     color: var(--tn-text-muted);

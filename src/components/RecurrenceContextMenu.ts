@@ -1026,7 +1026,9 @@ export class CustomRecurrenceModal extends Modal {
 				)
 			);
 
-		const daysContainer = byDaySetting.controlEl.createDiv("days-container");
+		// The days need the full row, so they sit under the label
+		byDaySetting.settingEl.addClass("tn-setting--stacked");
+		const daysContainer = byDaySetting.controlEl.createDiv("days-container tn-day-toggles");
 		const days = orderedWeekdays.map((day) => ({
 			key: day.code,
 			label: this.translate(
@@ -1037,24 +1039,13 @@ export class CustomRecurrenceModal extends Modal {
 		}));
 
 		days.forEach((day) => {
-			const dayEl = daysContainer.createEl("label", { cls: "day-checkbox" });
-			dayEl.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			dayEl.classList.add("tn-static-display-inline-block-60e32dcb");
-			dayEl.classList.remove("tn-static-margin-right-4px-c6b76b85");
-			dayEl.classList.add("tn-static-margin-right-8px-539fa9a0");
+			const dayEl = daysContainer.createEl("label", { cls: "day-checkbox tn-day-toggle" });
 
 			const checkbox = dayEl.createEl("input", { type: "checkbox" });
 			checkbox.checked = this.byDay.includes(day.key);
+			dayEl.toggleClass("is-checked", checkbox.checked);
 			checkbox.addEventListener("change", () => {
+				dayEl.toggleClass("is-checked", checkbox.checked);
 				if (checkbox.checked) {
 					if (!this.byDay.includes(day.key)) {
 						this.byDay.push(day.key);
@@ -1064,7 +1055,7 @@ export class CustomRecurrenceModal extends Modal {
 				}
 			});
 
-			dayEl.createSpan({ text: ` ${day.label}` });
+			dayEl.createSpan({ text: day.label });
 		});
 
 		// Monthly options
