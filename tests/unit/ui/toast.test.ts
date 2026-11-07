@@ -11,7 +11,7 @@ it("measures bottom phone navigation and clears its resize listener when dismiss
 	document.body.classList.add("is-mobile");
 	const nav = document.body.createDiv("mobile-navbar");
 	let height = 60;
-	jest.spyOn(nav, "getBoundingClientRect").mockImplementation(() => ({ top: innerHeight - height, bottom: innerHeight, height } as DOMRect));
+	jest.spyOn(nav, "getBoundingClientRect").mockImplementation(() => ({ top: innerHeight - height, bottom: innerHeight, height, width: 390 } as DOMRect));
 	const removed = jest.spyOn(window, "removeEventListener");
 	const toast = showToast({ message: "Updated" });
 	const element = document.querySelector<HTMLElement>(".tn-toast")!;

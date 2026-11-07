@@ -4,6 +4,7 @@ import { TaskListView } from "../../../src/bases/TaskListView";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { DEFAULT_FIELD_MAPPING } from "../../../src/settings/defaults";
 import { TaskFactory } from "../../helpers/mock-factories";
+import * as basesHelpers from "../../../src/bases/helpers";
 
 jest.mock("tasknotes-nlp-core", () => ({
 	NaturalLanguageParserCore: class {},
@@ -39,6 +40,44 @@ describe("TaskListView drag controls", () => {
 		document.body.innerHTML = "";
 	});
 
+	it("moves a row optimistically and restores its exact sibling on failure", () => {
+		const view = createView() as any;
+		view.itemsContainer = document.body.createDiv();
+		const source = view.itemsContainer.createDiv({ cls: "task-list-group" });
+		const sourceHeader = source.createDiv({ cls: "task-group" });
+		const destination = view.itemsContainer.createDiv({ cls: "task-list-group" });
+		const destinationHeader = destination.createDiv({ cls: "task-group" });
+		const card = source.createDiv({ cls: "task-card", attr: { "data-task-path": "a.md" } });
+		const next = source.createDiv({ cls: "task-card", attr: { "data-task-path": "b.md" } });
+		view.elementDestinations.set(sourceHeader, { groupKey: "open" });
+		view.elementDestinations.set(destinationHeader, { groupKey: "done" });
+		view.currentTaskElements.set("a.md", card);
+		view.getVisibleTaskPaths = () => ["a.md", "b.md"];
+		const rollback = view.stageTaskMovement("a.md", { groupKey: "open" }, { groupKey: "done" });
+		expect(card.parentElement).toBe(destination);
+		rollback();
+		expect(card.parentElement).toBe(source);
+		expect(card.nextSibling).toBe(next);
+	});
+
+	it("moves virtual rows and group counts without changing the task's persisted fields", () => {
+		const view = createView() as any;
+		const task = TaskFactory.createTask({ path: "a.md", status: "open" });
+		const before = [
+			{ type: "primary-header", groupKey: "open", taskCount: 1, isCollapsed: false },
+			{ type: "task", groupKey: "open", task },
+			{ type: "primary-header", groupKey: "done", taskCount: 0, isCollapsed: false },
+		];
+		view.lastVirtualItems = before;
+		view.virtualScroller = { updateItems: jest.fn(), invalidateItems: jest.fn() };
+		view.getVisibleTaskPaths = () => ["a.md"];
+		const rollback = view.stageTaskMovement("a.md", { groupKey: "open" }, { groupKey: "done" });
+		expect(view.lastVirtualItems.map((item: any) => item.type === "task" ? item.groupKey : item.taskCount)).toEqual([0, 1, "done"]);
+		expect(task.status).toBe("open");
+		rollback();
+		expect(view.lastVirtualItems).toBe(before);
+	});
+
 	it("does not reuse a drag confirmation for a later menu reorder", async () => {
 		const view = createView() as any;
 		view.reorderConfirmed = true;
@@ -59,6 +98,74 @@ describe("TaskListView drag controls", () => {
 		action!();
 		await Promise.resolve();
 		expect(view.handleSortOrderDrop).toHaveBeenCalledTimes(1);
+	});
+
+	it("stages into the original Bases sort order rather than the grouped DOM order", () => {
+		const view = createView() as any;
+		const items = document.createElement("div");
+		const source = items.createDiv();
+		const destination = items.createDiv();
+		const header = destination.createDiv({ cls: "task-group" });
+		const moving = source.createDiv({ cls: "task-card", attr: { "data-task-path": "b.md" } });
+		for (const path of ["a.md", "c.md"]) destination.createDiv({ cls: "task-card", attr: { "data-task-path": path } });
+		view.itemsContainer = items;
+		view.currentTaskElements.set("b.md", moving);
+		view.elementDestinations.set(header, { groupKey: "done" });
+		view.currentVisibleTaskOrder = new Map([["a.md", 0], ["b.md", 1], ["c.md", 2]]);
+		const rollback = view.stageTaskMovement("b.md", { groupKey: "open" }, { groupKey: "done" });
+		expect([...destination.querySelectorAll(".task-card")].map((card: HTMLElement) => card.dataset.taskPath)).toEqual(["a.md", "b.md", "c.md"]);
+		rollback();
+		expect(moving.parentElement).toBe(source);
+	});
+
+	it("stages a virtual move into an empty destination and refreshes sticky header indices", () => {
+		const view = createView() as any;
+		const task = TaskFactory.createTask({ path: "a.md", status: "open" });
+		const previous = [{ type: "primary-header", groupKey: "open", taskCount: 1 }, { type: "task", groupKey: "open", task }];
+		view.lastVirtualItems = previous;
+		view.virtualScroller = { updateItems: jest.fn(), invalidateItems: jest.fn() };
+		view.movementDestinationLabel = () => "Done";
+		const rollback = view.stageTaskMovement("a.md", { groupKey: "open" }, { groupKey: "done" });
+		expect(view.virtualStickyHeaderIndices).toEqual([0, 1]);
+		expect(view.lastVirtualItems[2]).toMatchObject({ type: "task", groupKey: "done", task });
+		expect(task.status).toBe("open");
+		rollback();
+		expect(view.lastVirtualItems).toBe(previous);
+		expect(view.virtualStickyHeaderIndices).toEqual([0]);
+	});
+
+	it("defers task refreshes for the entire pending movement write", async () => {
+		const view = createView() as any;
+		view.pendingMovementCount = 1;
+		const task = TaskFactory.createTask({ path: "a.md", status: "open" });
+		await view.handleTaskUpdate(task);
+		expect(view.pendingRender).toBe(true);
+		expect(view.taskInfoCache.has(task.path)).toBe(false);
+	});
+
+	it.each(["pending-write", "active-drag"])("defers an already-started grouped refresh during %s", async (state) => {
+		const view = createView() as any;
+		view.data = { data: [] };
+		view.dataAdapter.extractDataItems = jest.fn(() => []);
+		let resolveIdentification!: (tasks: never[]) => void;
+		const identification = new Promise<never[]>(resolve => { resolveIdentification = resolve; });
+		const identify = jest.spyOn(basesHelpers, "identifyTaskNotesFromBasesData").mockReturnValueOnce(identification);
+		const applyFilter = jest.spyOn(view, "applySearchFilter").mockImplementation(() => {
+			throw new Error("Grouped refresh resumed during a movement");
+		});
+		try {
+			const refreshing = view.refreshGroupedView();
+			expect(identify).toHaveBeenCalledTimes(1);
+			if (state === "pending-write") view.pendingMovementCount = 1;
+			else view.draggedTaskPath = "a.md";
+			resolveIdentification([]);
+			await refreshing;
+			expect(view.pendingRender).toBe(true);
+			expect(applyFilter).not.toHaveBeenCalled();
+		} finally {
+			identify.mockRestore();
+			applyFilter.mockRestore();
+		}
 	});
 
 	it("does not start a drag from no-drag task card controls", () => {

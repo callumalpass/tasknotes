@@ -29,7 +29,7 @@ export function prepareInteractiveControl(element: HTMLElement): void {
 	element.dataset.tnNoDrag = "true";
 	element.setAttribute("draggable", "false");
 	element.addEventListener("mousedown", (e) => {
-		e.preventDefault();
+		if (!element.closest(".kanban-view__card-wrapper")) e.preventDefault();
 		e.stopPropagation();
 	});
 	element.addEventListener("keydown", (e) => {

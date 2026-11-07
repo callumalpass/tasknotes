@@ -29,6 +29,7 @@ describe("Kanban queued refresh during drag", () => {
 		jest.advanceTimersByTime(150);
 		await Promise.resolve();
 		expect(view.render).toHaveBeenCalledTimes(1);
-		expect(view.setEphemeralState).toHaveBeenCalledWith({ scrollTop: 25 });
+		expect(view.getEphemeralState).not.toHaveBeenCalled();
+		expect(view.setEphemeralState).not.toHaveBeenCalled();
 	});
 });

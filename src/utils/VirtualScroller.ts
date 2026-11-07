@@ -641,13 +641,14 @@ export class VirtualScroller<T> {
 					? this.items.findIndex((item, index) => this.getItemKey(item, index) === key)
 					: -1;
 				if (pinnedIndex >= 0) {
+					const width = element.ownerDocument.defaultView?.getComputedStyle(element).width;
 					if (!this.pinnedItemStyles.has(key)) {
 						this.pinnedItemStyles.set(key, { position: element.style.position, top: element.style.top, width: element.style.width });
 					}
 					element.setCssProps({
 						position: "absolute",
 						top: `${this.getItemPosition(pinnedIndex) - offsetY}px`,
-						width: "100%",
+						width: width || element.style.width,
 					});
 					continue;
 				}

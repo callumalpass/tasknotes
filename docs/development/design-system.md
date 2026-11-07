@@ -103,12 +103,15 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 
 ### List interaction states
 
+- Board cards hug their content rather than reserving a second title line. Column headers reserve `--tn-board-header-height` for two lines; scrollbar gutters and widths stay constant through hover, lift and post-drop refresh. View refresh restores board axes and individual column scroll positions before painting.
+- Selection counts include a visible clear-selection hint and occupy their own space above the view's rows, never covering tasks or phone navigation. A row uses the normal link cursor; only its drag handle promises dragging. Hovering nested content reveals the nested row's menu, not its parent's menu.
 - A row's highlight is painted behind its main row only, never behind expanded children. The same inset and radius apply to hover, press, selection and drop. Row controls retain their own smaller hover target. Nothing translates, grows or reflows on hover.
 - Fine-pointer hover enters immediately (`--tn-motion-hover-in`) and exits with `--tn-motion-fast`. Hover rules exclude `body.is-mobile`; taps do not leave a sticky highlight. Selection uses `--tn-selected`, selected hover uses `--tn-selected-hover`, and only keyboard navigation paints the row focus ring. Focus entering an inner control removes the competing row ring.
 - Card refresh preserves view-owned selection, drag and keyboard classes while replacing task-data classes. During a list drag, task updates wait until cancellation/drop so targets cannot move beneath the pointer.
-- Dragging a selected row moves the visible selection; dragging an unselected row moves only that row. The source dims in place via `--tn-drag-source-opacity`; a theme-backed pointer preview includes the title and selection count. Drag surfaces, shadows, insertion lines, invalid targets and settle motion come from the shared drag/drop tokens.
+- Dragging a selected row moves the visible selection; dragging an unselected row moves only that row. The source dims in place via `--tn-drag-source-opacity`; list previews retain the row's layout and width, offset from the pointer to expose feedback. Multi-drag retains its stack and count. Drag surfaces, shadows, insertion lines, invalid targets and settle motion come from the shared drag/drop tokens.
 - Manual reorder uses an overlay insertion line rather than shifting neighbouring rows. Group destinations get a quiet fill; invalid/read-only targets show an explanation and cannot write. Escape, touch cancellation and drag end remove every source/target/preview class and stop edge scrolling. Successful reorder and group changes use guarded Undo.
 - A pending status write disables its actual delegated control, not the list container. Failed writes retain a visible status outline and the shared writable-note recovery toast; retrying clears it. Completion and drop settle use short interruptible motion, disabled by reduced-motion preference.
+- Cross-group list drops stage the row at its sorted destination while saving, without changing persisted task fields prematurely. Failed writes restore its original position. Forced grouping highlights the destination rather than inventing an insertion position. New movement waits for pending movement writes; background refreshes cannot undo a pending landing. Mobile edge zones and toasts stop above floating navigation, including its bottom gap.
 
 ### Task presentation contract
 
@@ -143,7 +146,6 @@ Inside a task view, with no text input focused:
 | `Esc` | Clear selection, then focus |
 | `↵` | Open task |
 | `e` | Edit task |
-| `Space` | Hover preview |
 | `s` | Status picker |
 | `p` | Priority picker |
 | `d` | Due date picker |

@@ -73,7 +73,7 @@ function prepareInteractiveControl(element: HTMLElement): void {
 	element.dataset.tnNoDrag = "true";
 	element.setAttribute("draggable", "false");
 	element.addEventListener("mousedown", (event) => {
-		event.preventDefault();
+		if (!element.closest(".kanban-view__card-wrapper")) event.preventDefault();
 		event.stopPropagation();
 	});
 	element.addEventListener("keydown", (event) => {

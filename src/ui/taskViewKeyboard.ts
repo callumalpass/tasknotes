@@ -255,7 +255,6 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			],
 			["Enter", uiText(msg({ message: "Open task", context: "interaction shortcut" }))],
 			["E", uiText(msg({ message: "Edit task", context: "interaction shortcut" }))],
-			["Space", uiText(msg({ message: "Preview", context: "interaction shortcut" }))],
 			...(options.shortcuts && !focusedPath ? [] : Object.entries(propertyKeys)).map(([key, property]) => [
 				property === "scheduled" ? "Shift+H" : key,
 				taskPropertyLabel(property),

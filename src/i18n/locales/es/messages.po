@@ -2953,6 +2953,7 @@ msgctxt "empty state action"
 msgid "Clear search"
 msgstr "Borrar búsqueda"
 
+#: src/bases/basesSelectionUi.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Clear selection"
@@ -4956,6 +4957,7 @@ msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.descripti
 msgid "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 msgstr "Dibuja una línea sobre los títulos de tarjetas de tareas completadas. Desactívalo para que las tareas completadas sean más fáciles de leer"
 
+#: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "task list drop restriction"
 msgid "Drop on a task row or group destination."
@@ -7816,6 +7818,7 @@ msgctxt "contextMenus.task.manageReminders"
 msgid "Manage all reminders…"
 msgstr "Gestionar todos los recordatorios…"
 
+#: src/bases/TaskListView.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.sortOrder.name"
 msgid "Manual order"
@@ -9887,11 +9890,6 @@ msgstr "Posponer tareas programadas vencidas a hoy"
 msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "Posponiendo tareas: {count}…"
-
-#: src/ui/taskViewKeyboard.ts
-msgctxt "interaction shortcut"
-msgid "Preview"
-msgstr "Vista previa"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundPreviewButton"

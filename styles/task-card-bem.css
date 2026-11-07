@@ -531,7 +531,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-card[draggable="true"]:hover .task-
 }
 
 .tasknotes-plugin .task-card[draggable="true"] {
-    cursor: grab;
+    cursor: var(--cursor-link, pointer);
     transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
@@ -1075,7 +1075,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__context-menu:hover {
 }
 
 @media (hover: hover) and (pointer: fine) {
-body:not(.is-mobile) .tasknotes-plugin .task-card:hover .task-card__context-menu {
+body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--nested-interactive-hover):hover > .task-card__main-row .task-card__context-menu {
     opacity: 0.6;
 }
 }
@@ -1637,7 +1637,7 @@ body.is-mobile .tasknotes-plugin .task-card .task-card__metadata-values :is([rol
         opacity: 0;
     }
 
-    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline):is(:hover, :focus-within) .task-card__context-menu {
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--nested-interactive-hover):is(:hover, :focus-within) > .task-card__main-row .task-card__context-menu {
         opacity: 1;
     }
 }
@@ -1933,9 +1933,9 @@ body:not(.is-mobile) .tasknotes-plugin .task-card--selected:hover {
 
 /* Selection indicator floating badge */
 .tasknotes-plugin .tn-selection-indicator {
-    position: fixed;
-    bottom: var(--tn-space-5);
-    right: var(--tn-space-5);
+    position: static;
+    align-self: flex-end;
+    flex-shrink: 0;
     background-color: var(--interactive-accent);
     color: var(--text-on-accent);
     padding: var(--tn-space-2) var(--tn-space-4);

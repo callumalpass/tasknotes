@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { launchObsidian, closeObsidian, setObsidianViewport } from './obsidian';
+import { pointer } from './xtest';
 
 const phase = process.env.TASKNOTES_R7_PHASE ?? 'after';
 const undoConfirmation = process.env.TASKNOTES_R8_BASELINE === '1' ? /^Undid:/ : 'Change undone.';
@@ -393,35 +394,37 @@ test('Escape restores list and board scroll positions after edge scrolling', asy
     })).toBe(true);
     const start = (await (type === 'tasknotesTaskList' ? card.locator('[data-tn-drag-handle]') : card).boundingBox())!;
     const startY = type === 'tasknotesTaskList' ? start.y + start.height / 2 : start.y + 18;
-    await page.mouse.move(start.x + start.width / 2, startY);
-    await page.mouse.down();
-    await page.mouse.move(start.x + start.width / 2 + 18, startY, { steps: 6 });
-    await expect(page.locator(type === 'tasknotesKanban' ? '.kanban-view__floating-drag-preview' : '.task-list-view__touch-ghost')).toBeVisible();
-    const viewport = (await scroll.boundingBox())!;
-    await page.mouse.move(viewport.x + viewport.width / 2, Math.min(viewport.y + viewport.height - 8, 780), { steps: 12 });
-    const initialTop = positions[positions.length - 1].top;
+    const offset = await page.evaluate(() => ({ x: screenX, y: screenY + outerHeight - innerHeight }));
     try {
-      await expect.poll(() => scroll.evaluate(element => element.scrollTop)).toBeGreaterThan(initialTop + 30);
-    } catch (error) {
-      writeFileSync(`${evidence}/${type}-scroll-failure.json`, JSON.stringify(await root.evaluate(root => ({
-        events: (window as any).boardDragEvents,
-        source: root.querySelector('.task-list-view__drag-source')?.getBoundingClientRect().toJSON(),
-        scrolling: [root, ...Array.from(root.querySelectorAll<HTMLElement>('*'))].filter(element => element.scrollHeight > element.clientHeight && getComputedStyle(element).overflowY !== 'visible').map(element => ({ className: element.className, height: element.clientHeight, scrollHeight: element.scrollHeight, scrollTop: element.scrollTop, overflow: getComputedStyle(element).overflowY, rect: element.getBoundingClientRect().toJSON() })),
-      })), null, 2));
-      throw error;
+      pointer(['move', start.x + start.width / 2 + offset.x, startY + offset.y], ['button', 1], ['move', start.x + start.width / 2 + offset.x + 18, startY + offset.y]);
+      await expect(page.locator(type === 'tasknotesKanban' ? '.kanban-view__floating-drag-preview' : '.task-list-view__touch-ghost')).toBeVisible();
+      const viewport = (await scroll.boundingBox())!;
+      pointer(['move', viewport.x + viewport.width / 2 + offset.x, Math.min(viewport.y + viewport.height - 8, 780) + offset.y]);
+      const initialTop = positions[positions.length - 1].top;
+      try {
+        await expect.poll(() => scroll.evaluate(element => element.scrollTop)).toBeGreaterThan(initialTop + 30);
+      } catch (error) {
+        writeFileSync(`${evidence}/${type}-scroll-failure.json`, JSON.stringify(await root.evaluate(root => ({
+          events: (window as any).boardDragEvents,
+          source: root.querySelector('.task-list-view__drag-source')?.getBoundingClientRect().toJSON(),
+          scrolling: [root, ...Array.from(root.querySelectorAll<HTMLElement>('*'))].filter(element => element.scrollHeight > element.clientHeight && getComputedStyle(element).overflowY !== 'visible').map(element => ({ className: element.className, height: element.clientHeight, scrollHeight: element.scrollHeight, scrollTop: element.scrollTop, overflow: getComputedStyle(element).overflowY, rect: element.getBoundingClientRect().toJSON() })),
+        })), null, 2));
+        throw error;
+      }
+      if (type === 'tasknotesKanban') {
+        const bounds = (await root.locator('.kanban-view__board').boundingBox())!;
+        pointer(['move', bounds.x + bounds.width - 5 + offset.x, bounds.y + 80 + offset.y]);
+        await expect.poll(() => root.locator('.kanban-view__board').evaluate(element => element.scrollLeft)).toBeGreaterThan(20);
+      }
+      pointer(['escape', 0], ['button', 0]);
+      await expect.poll(readPositions).toEqual(positions);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(await readPositions()).toEqual(positions);
+      await expect(page.locator('.tn-drag-active')).toHaveCount(0);
+      await page.screenshot({ path: `${evidence}/${type}-cancelled.png` });
+    } finally {
+      pointer(['escape', 0], ['button', 0]);
     }
-    if (type === 'tasknotesKanban') {
-      const bounds = (await root.locator('.kanban-view__board').boundingBox())!;
-      await page.mouse.move(bounds.x + bounds.width - 5, bounds.y + 80, { steps: 12 });
-      await expect.poll(() => root.locator('.kanban-view__board').evaluate(element => element.scrollLeft)).toBeGreaterThan(20);
-    }
-    await page.keyboard.press('Escape');
-    await page.mouse.up();
-    await expect.poll(readPositions).toEqual(positions);
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    expect(await readPositions()).toEqual(positions);
-    await expect(page.locator('.tn-drag-active')).toHaveCount(0);
-    await page.screenshot({ path: `${evidence}/${type}-cancelled.png` });
   }
 });
 
@@ -528,9 +531,17 @@ test('sentence controls stay within their own line and configured priority label
       document.body.classList.toggle('theme-dark', theme === 'dark');
     }, theme);
     await widget.hover();
-    const geometry = await widget.evaluate(widget => ({ line: widget.closest('p')!.getBoundingClientRect().toJSON(), control: widget.querySelector('.task-card__context-menu')!.getBoundingClientRect().toJSON() }));
-    expect(geometry.control.top).toBeGreaterThanOrEqual(geometry.line.top - 1);
-    expect(geometry.control.bottom).toBeLessThanOrEqual(geometry.line.bottom + 1);
+    let geometry: { line: DOMRect; control: DOMRect } | null = null;
+    await expect.poll(async () => {
+      geometry = await widget.evaluate(widget => {
+        const paragraph = widget.closest('p');
+        const control = widget.querySelector('.task-card__context-menu');
+        return widget.isConnected && paragraph && control ? { line: paragraph.getBoundingClientRect().toJSON(), control: control.getBoundingClientRect().toJSON() } : null;
+      });
+      return geometry !== null;
+    }).toBe(true);
+    expect(geometry!.control.top).toBeGreaterThanOrEqual(geometry!.line.top - 1);
+    expect(geometry!.control.bottom).toBeLessThanOrEqual(geometry!.line.bottom + 1);
     await page.screenshot({ path: `${evidence}/sentence-${width}-${theme}.png` });
   }
   await page.evaluate(() => {
