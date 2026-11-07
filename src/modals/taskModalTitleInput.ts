@@ -87,10 +87,12 @@ export function resizeTaskModalTitleTextarea(input: TaskModalTitleInputElement):
 		borderBottom;
 
 	setTaskModalTitleTextareaCssProps(input, { "--tn-task-modal-title-height": "auto" });
-	const nextHeight = Math.min(input.scrollHeight, maxHeight);
+	// scrollHeight leaves out the border, which a border-box height includes.
+	const borders = computed?.boxSizing === "border-box" ? borderTop + borderBottom : 0;
+	const contentHeight = input.scrollHeight + borders;
 	setTaskModalTitleTextareaCssProps(input, {
-		"--tn-task-modal-title-height": `${nextHeight}px`,
-		"--tn-task-modal-title-overflow-y": input.scrollHeight > maxHeight ? "auto" : "hidden",
+		"--tn-task-modal-title-height": `${Math.min(contentHeight, maxHeight)}px`,
+		"--tn-task-modal-title-overflow-y": contentHeight > maxHeight ? "auto" : "hidden",
 	});
 }
 
