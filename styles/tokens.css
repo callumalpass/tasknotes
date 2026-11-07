@@ -65,7 +65,15 @@
     --tn-mini-calendar-day-size: 32px;
     --tn-glyph-size: 14px;
     --tn-modal-composer-width: 720px;
-    --tn-modal-details-min-width: 280px;
+    --tn-modal-split-width: 960px;
+    --tn-modal-split-height: 540px;
+    --tn-modal-details-min-width: 320px;
+    --tn-modal-details-min-height: 96px;
+    --tn-modal-editor-size: calc(var(--font-text-size) - 1px);
+    --tn-modal-field-label-width: 148px;
+    --tn-modal-header-height: 44px;
+    --tn-modal-top-offset: 10vh;
+    --tn-modal-sheet-clearance: 56px;
 
     /* Surfaces and text come from the theme */
     --tn-bg-primary: var(--background-primary);

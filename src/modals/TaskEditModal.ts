@@ -135,6 +135,26 @@ export class TaskEditModal extends TaskModal {
 			.map((item) => item.path!);
 		this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
 		this.unresolvedBlockingEntries = [];
+
+		// Values stay on show: fields start hidden only when there is nothing in them.
+		this.isExpanded = this.hasDisclosedFieldValues();
+	}
+
+	private hasDisclosedFieldValues(): boolean {
+		const { contexts, tags, timeEstimate, userFields } = this.form.values;
+		// The identifying tag is on every tag-based task, so it says nothing about this one.
+		const identifyingTag = this.plugin.settings.taskTag;
+		const hasOwnTags = tags
+			.split(",")
+			.some((tag) => tag.trim() && tag.trim() !== identifyingTag);
+		return (
+			Boolean(contexts || hasOwnTags || timeEstimate) ||
+			Object.values(userFields).some((value) => value !== undefined && value !== null && value !== "") ||
+			this.selectedSubtaskFiles.length > 0 ||
+			this.blockedByItems.length > 0 ||
+			this.blockingItems.length > 0 ||
+			this.attachmentEntries.length > 0
+		);
 	}
 
 	protected showReminderContextMenu(event: MouseEvent): void {
@@ -615,7 +635,7 @@ export class TaskEditModal extends TaskModal {
 	protected getLeadingButtons(): TaskModalLeadingButton[] {
 		return [
 			{
-				className: "tn-task-modal__open-note-button",
+				className: "tn-btn tn-btn--ghost tn-task-modal__open-note-button",
 				text: this.t(
 					msg({ message: "Open note", context: "modals.task.buttons.openNote" })
 				),

@@ -137,44 +137,23 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	protected getTitleErrorAnchor(): HTMLElement | null {
-		return this.nlContainer && !this.nlContainer.hidden
-			? this.nlContainer
-			: super.getTitleErrorAnchor();
+		return this.nlContainer ?? super.getTitleErrorAnchor();
+	}
+
+	protected showsTitleInDetails(): boolean {
+		return this.usesNaturalLanguage();
 	}
 
 	/** Without natural language the title input is the primary field, with everything visible. */
 	protected createPrimaryInput(container: HTMLElement): void {
 		if (this.usesNaturalLanguage()) {
-			this.modalEl.addClass("tn-task-modal--composer");
 			this.createNaturalLanguageInput(container);
-			if (this.usesNaturalLanguage() && this.shouldShowField("title", this.plugin.settings.modalFieldsConfig)) {
-				this.createTitleInput(container);
-				this.titleInput?.addClass("title-input-detailed");
-				this.updateTitleEditorVisibility();
-			}
 		}
 		if (!this.usesNaturalLanguage()) {
 			super.createPrimaryInput(container);
 			this.isExpanded = true;
 			this.containerEl.addClass("expanded");
 		}
-	}
-
-	protected expandModal(): void {
-		super.expandModal();
-		this.updateTitleEditorVisibility();
-	}
-
-	protected toggleDetailedForm(): void {
-		super.toggleDetailedForm();
-		this.updateTitleEditorVisibility();
-	}
-
-	private updateTitleEditorVisibility(): void {
-		if (!this.nlContainer || !this.titleInput) return;
-		this.nlContainer.hidden = false;
-		const titleContainer = this.titleInput.parentElement;
-		if (titleContainer) titleContainer.hidden = true;
 	}
 
 	private createNaturalLanguageInput(container: HTMLElement): void {
@@ -221,20 +200,7 @@ export class TaskCreationModal extends TaskModal {
 					if (shift) {
 						return this.focusPreviousNaturalLanguageField(editorContainer);
 					}
-					// Tab - jump to title input (expand form if needed)
-					if (!this.isExpanded) {
-						this.expandModal();
-					}
-					// Focus title input
-					window.setTimeout(() => {
-						const titleInput = this.modalEl.querySelector(
-							".title-input-detailed"
-						) as HTMLInputElement;
-						if (titleInput) {
-							titleInput.focus();
-						}
-					}, 50);
-					return true; // Prevent default tab behavior
+					return this.focusFieldAfterTitle();
 				},
 				onEnter: (editor, mod, shift) => {
 					if (mod) {
@@ -260,10 +226,12 @@ export class TaskCreationModal extends TaskModal {
 					return true;
 				},
 			});
-			editorContainer.querySelector<HTMLElement>('[role="textbox"]')?.setAttribute(
-				"aria-label",
-				this.t(msg({ message: "Title", context: "utils/fieldConfigDefaults: defaults displayName" }))
-			);
+			// Referenced rather than set with aria-label, which Obsidian shows as a hover tooltip.
+			const label = nlContainer.createDiv({
+				text: this.t(msg({ message: "Title", context: "utils/fieldConfigDefaults: defaults displayName" })),
+				attr: { id: "tn-task-modal-nlp-label", hidden: "" },
+			});
+			this.nlMarkdownEditor.editor.cm.contentDOM.setAttribute("aria-labelledby", label.id);
 			this.nlContainer = nlContainer;
 		} catch (error) {
 			tasknotesLogger.error("Failed to create NLP markdown editor:", {
@@ -300,6 +268,12 @@ export class TaskCreationModal extends TaskModal {
 			}, 50);
 		}
 
+		return true;
+	}
+
+	protected focusPreviousField(): boolean {
+		if (!this.nlMarkdownEditor) return super.focusPreviousField();
+		this.nlMarkdownEditor.editor.cm.focus();
 		return true;
 	}
 
@@ -421,7 +395,7 @@ export class TaskCreationModal extends TaskModal {
 		this.originalDetails = this.form.values.details;
 
 		// A prefilled title has to be visible next to the empty natural language field.
-		this.isExpanded = Boolean(this.form.values.title || this.form.values.details);
+		this.isExpanded = Boolean(this.form.values.title);
 	}
 
 	protected hasUnsavedChanges(): boolean {

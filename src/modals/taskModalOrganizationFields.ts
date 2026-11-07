@@ -29,7 +29,7 @@ export function createTaskModalListField(
 			.setButtonText(options.buttonText)
 			.setTooltip(options.buttonTooltip)
 			.onClick(options.onButtonClick);
-		button.buttonEl.addClasses(["tn-btn", "tn-btn--sm"]);
+		button.buttonEl.addClasses(["tn-btn", "tn-btn--ghost", "tn-task-modal__field-action"]);
 	});
 
 	return options.listElement ?? container.createDiv({ cls: "task-projects-list" });

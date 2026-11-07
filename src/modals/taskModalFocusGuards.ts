@@ -18,7 +18,7 @@ export interface TaskModalMobileKeyboardScrollGuardOptions {
 
 export class TaskModalFocusGuards {
 	private readonly elements: TaskModalFocusGuardElements;
-	private guardedTitleInputs = new WeakSet<TaskModalTitleInputElement>();
+	private guardedTitleInputs = new WeakSet<HTMLElement>();
 	private guardedMobileKeyboardInputs = new WeakSet<HTMLElement>();
 	private pendingTitleFocusScrollPositions: TaskModalScrollPosition[] | null = null;
 	private mobileKeyboardFocusCleanups: Array<() => void> = [];
@@ -31,20 +31,27 @@ export class TaskModalFocusGuards {
 	}
 
 	focusTitleInput(input: TaskModalTitleInputElement, selectAll = true): void {
+		this.focusTitleTarget(input, () => {
+			input.focus({ preventScroll: true });
+			if (selectAll) input.select();
+			else input.setSelectionRange(input.value.length, input.value.length);
+		});
+	}
+
+	/** Initial focus for any title field. An embedded editor places its own selection. */
+	focusTitleTarget(target: HTMLElement, focus: () => void): void {
 		const win = this.getWindow();
 		win.clearTimeout(this.titleFocusTimer);
 		this.titleFocusTimer = win.setTimeout(() => {
 			if (this.elements.containerEl.querySelector(".tn-popover")) return;
 			const focused = this.elements.containerEl.ownerDocument.activeElement;
 			if (
-				focused !== input &&
+				focused !== target &&
 				focused?.matches("input, textarea, select, [contenteditable='true']") &&
 				this.elements.containerEl.contains(focused)
 			) return;
-			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
-			input.focus({ preventScroll: true });
-			if (selectAll) input.select();
-			else input.setSelectionRange(input.value.length, input.value.length);
+			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(target);
+			focus();
 			this.restoreTitleFocusScrollPositions(this.pendingTitleFocusScrollPositions);
 		}, this.getInitialFocusDelay());
 	}
@@ -62,7 +69,7 @@ export class TaskModalFocusGuards {
 		);
 	}
 
-	attachTitleFocusScrollGuard(input: TaskModalTitleInputElement): void {
+	attachTitleFocusScrollGuard(input: HTMLElement): void {
 		if (this.guardedTitleInputs.has(input)) return;
 		this.guardedTitleInputs.add(input);
 
@@ -153,9 +160,7 @@ export class TaskModalFocusGuards {
 		this.pendingTitleFocusScrollPositions = null;
 	}
 
-	captureTitleFocusScrollPositions(
-		input: TaskModalTitleInputElement
-	): TaskModalScrollPosition[] | null {
+	captureTitleFocusScrollPositions(input: HTMLElement): TaskModalScrollPosition[] | null {
 		if (!this.isMobileLikeEnvironment()) {
 			return null;
 		}

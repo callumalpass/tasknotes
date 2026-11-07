@@ -2,7 +2,7 @@ import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { App, Modal, Notice, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Notice, Setting, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -113,6 +113,7 @@ import {
 	createTaskModalTitleTextarea,
 	type TaskModalTitleInputElement,
 } from "./taskModalTitleInput";
+import { createTaskModalTitleEditor } from "./taskModalTitleEditor";
 import { setTaskModalDetailsCollapsed } from "./taskModalLayout";
 import { resizeTaskModalTitleTextarea } from "./taskModalTitleInput";
 import { TaskFormModel, type TaskFormErrorField } from "./taskFormModel";
@@ -390,6 +391,8 @@ export abstract class TaskModal extends Modal {
 
 	// UI elements
 	protected titleInput: TaskModalTitleInputElement | undefined = undefined;
+	protected titleEditor: EmbeddableMarkdownEditor | null = null;
+	protected titleContainer: HTMLElement | null = null;
 	protected detailsMarkdownEditor: EmbeddableMarkdownEditor | null = null;
 	protected contextsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
 	protected projectsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
@@ -565,7 +568,10 @@ export abstract class TaskModal extends Modal {
 		this.pendingClose = false;
 		this.isModalOpen = true;
 		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal");
-		if (this.plugin.settings.enableModalSplitLayout) {
+		if (
+			this.plugin.settings.enableModalSplitLayout &&
+			this.shouldShowField("details", this.plugin.settings.modalFieldsConfig)
+		) {
 			this.containerEl.addClass("split-layout-enabled");
 		}
 		this.modalEl.addClass("mod-tasknotes");
@@ -619,14 +625,15 @@ export abstract class TaskModal extends Modal {
 		// Create main container
 		const container = contentEl.createDiv("minimalist-modal-container");
 
-		// Create split content wrapper at the top level for wide screen layout
+		// Source order is the Tab order in every layout: title, details, properties, footer.
+		// On wide screens the details pane is placed beside the other two.
 		this.splitContentWrapper = container.createDiv("modal-split-content");
-		this.splitLeftColumn = this.splitContentWrapper.createDiv("modal-split-left");
 
 		// Create primary input area (title or NLP) - subclasses can override
-		this.createPrimaryInput(this.splitLeftColumn);
+		this.createPrimaryInput(this.splitContentWrapper.createDiv("modal-split-primary"));
 
-		this.splitRightColumn = this.splitLeftColumn.createDiv("modal-split-right");
+		this.splitRightColumn = this.splitContentWrapper.createDiv("modal-split-right");
+		this.splitLeftColumn = this.splitContentWrapper.createDiv("modal-split-left");
 
 		// Create collapsible details section (fields in left, details editor in right)
 		this.createDetailsSection(container);
@@ -664,14 +671,42 @@ export abstract class TaskModal extends Modal {
 
 	protected createTitleInput(container: HTMLElement): void {
 		const titleContainer = container.createDiv("title-input-container");
-
-		this.titleInput = this.createTitleTextarea(
-			titleContainer,
-			"title-input",
-			this.t(
-				msg({ message: "What needs to be done?", context: "modals.task.titlePlaceholder" })
-			)
+		this.titleContainer = titleContainer;
+		const placeholder = this.t(
+			msg({ message: "What needs to be done?", context: "modals.task.titlePlaceholder" })
 		);
+
+		this.titleEditor = createTaskModalTitleEditor({
+			app: this.app,
+			container: titleContainer,
+			value: this.form.values.title,
+			placeholder,
+			file: this.getModalEditorFile(),
+			onChange: (value) => {
+				if (!this.isSyncingControls) this.form.edit("title", value);
+			},
+			onSubmit: (shift) => {
+				void this.handleSubmitShortcut(shift);
+			},
+			onEscape: () => {
+				this.close();
+			},
+			onEnter: () => {
+				this.focusFieldAfterTitle();
+			},
+			onTab: (shift) => shift || this.focusFieldAfterTitle(),
+			createFallback: () => {
+				this.titleInput = this.createTitleTextarea(
+					titleContainer,
+					"title-input",
+					placeholder
+				);
+			},
+		});
+		if (this.titleEditor) {
+			this.attachTitleFocusScrollGuard(this.titleEditor.editor.cm.contentDOM);
+			this.attachMobileKeyboardScrollGuard(titleContainer, { scrollOnFocus: false });
+		}
 	}
 
 	private createTitleTextarea(
@@ -858,22 +893,16 @@ export abstract class TaskModal extends Modal {
 		const config = this.plugin.settings.modalFieldsConfig;
 		const shouldShowTitle = this.shouldShowField("title", config);
 		const shouldShowDetails = this.shouldShowField("details", config);
-		this.splitContentWrapper.classList.toggle(
-			"modal-split-content--right-empty",
-			!shouldShowDetails
-		);
-		this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !this.form.values.details.trim());
 
 		// With natural language input the primary field holds the raw text, so the
 		// parsed title gets its own field here.
 		if (shouldShowTitle && this.showsTitleInDetails()) {
-			const titleLabel = this.detailsContainer.createDiv("detail-label");
-			titleLabel.textContent = this.t(
-				msg({ message: "Title", context: "modals.task.titleLabel" })
+			const titleRow = new Setting(this.detailsContainer).setName(
+				this.t(msg({ message: "Title", context: "modals.task.titleLabel" }))
 			);
 
 			this.titleInput = this.createTitleTextarea(
-				this.detailsContainer,
+				titleRow.controlEl,
 				"title-input-detailed",
 				this.t(
 					msg({
@@ -887,11 +916,6 @@ export abstract class TaskModal extends Modal {
 		// Details editor goes in the right column
 		if (shouldShowDetails) {
 			const rightColumn = this.splitRightColumn || this.detailsContainer;
-			rightColumn.addEventListener("focusout", () => queueMicrotask(() => {
-				if (!rightColumn.contains(rightColumn.ownerDocument.activeElement)) {
-					this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !this.form.values.details.trim());
-				}
-			}));
 
 			this.detailsMarkdownEditor = createTaskModalDetailsEditor({
 				app: this.app,
@@ -1361,9 +1385,11 @@ export abstract class TaskModal extends Modal {
 				this.titleInput.value = values.title;
 				resizeTaskModalTitleTextarea(this.titleInput);
 			}
+			if (this.titleEditor && this.titleEditor.value !== values.title) {
+				this.titleEditor.setValue(values.title);
+			}
 			if (this.detailsMarkdownEditor && this.detailsMarkdownEditor.value !== values.details) {
 				setTaskModalDetailsEditorValue(this.detailsMarkdownEditor, values.details);
-				this.splitContentWrapper.classList.toggle("modal-split-content--details-empty", !values.details.trim());
 			}
 			if (this.contextsInput && this.contextsInput.value !== values.contexts) {
 				this.contextsInput.value = values.contexts;
@@ -1389,7 +1415,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected getTitleErrorAnchor(): HTMLElement | null {
-		return this.titleInput ?? null;
+		return this.titleContainer ?? this.titleInput ?? null;
 	}
 
 	private getTimeEstimateErrorAnchor(): HTMLElement | null {
@@ -1419,8 +1445,15 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected focusTitleInput(): void {
-		if (this.titleInput)
-			this.focusGuards.focusTitleInput(this.titleInput, this.mode === "create");
+		const selectAll = this.mode === "create";
+		const { titleEditor } = this;
+		if (titleEditor) {
+			this.focusGuards.focusTitleTarget(titleEditor.editor.cm.contentDOM, () => {
+				titleEditor.focusWithSelection(selectAll ? "all" : "end");
+			});
+		} else if (this.titleInput) {
+			this.focusGuards.focusTitleInput(this.titleInput, selectAll);
+		}
 	}
 
 	protected getInitialFocusDelay(): number {
@@ -1431,7 +1464,7 @@ export abstract class TaskModal extends Modal {
 		return this.focusGuards.isMobileLikeEnvironment();
 	}
 
-	private attachTitleFocusScrollGuard(input: TaskModalTitleInputElement): void {
+	private attachTitleFocusScrollGuard(input: HTMLElement): void {
 		this.focusGuards.attachTitleFocusScrollGuard(input);
 	}
 
@@ -1613,27 +1646,35 @@ export abstract class TaskModal extends Modal {
 		return !this.form.hasErrors();
 	}
 
+	/** Enter and Tab from the title land in the details, or the properties without them. */
+	protected focusFieldAfterTitle(): boolean {
+		if (this.detailsMarkdownEditor) {
+			this.detailsMarkdownEditor.editor.cm.focus();
+			return true;
+		}
+		return this.focusNextField();
+	}
+
 	protected focusNextField(): boolean {
-		// Try to focus the contexts input as the next field after details
-		const nextField = this.contextsInput || this.tagsInput || this.timeEstimateInput;
+		const nextField = this.actionBar?.querySelector<HTMLElement>(".action-icon");
 		if (!nextField) {
 			return false;
 		}
 
-		window.setTimeout(() => {
-			nextField.focus();
-		}, 50);
+		nextField.focus();
 		return true;
 	}
 
 	protected focusPreviousField(): boolean {
+		if (this.titleEditor) {
+			this.titleEditor.editor.cm.focus();
+			return true;
+		}
 		if (!this.titleInput) {
 			return false;
 		}
 
-		window.setTimeout(() => {
-			this.titleInput?.focus();
-		}, 50);
+		this.titleInput.focus();
 		return true;
 	}
 
@@ -1651,6 +1692,8 @@ export abstract class TaskModal extends Modal {
 		}
 		this.focusGuards.destroy();
 
+		this.titleEditor?.destroy();
+		this.titleEditor = null;
 		destroyTaskModalDetailsEditor(this.detailsMarkdownEditor);
 		this.detailsMarkdownEditor = null;
 		super.onClose();

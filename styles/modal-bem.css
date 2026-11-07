@@ -82,8 +82,7 @@
     margin: 0;
 }
 
-.tasknotes-plugin.tn-modal--composer :is(button, select, .tn-modal__color > summary),
-.tasknotes-plugin.minimalist-task-modal .modal-button-container button {
+.tasknotes-plugin.tn-modal--composer :is(button, select, .tn-modal__color > summary) {
     min-height: var(--tn-touch-target);
     min-width: var(--tn-touch-target);
 }

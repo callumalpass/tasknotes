@@ -68,7 +68,7 @@ export function createTaskModalActionButtons(
 
 	const submitContainer = buttonContainer.createDiv("tn-task-modal__submit-actions");
 	const cancelButton = submitContainer.createEl("button", {
-		cls: "tn-btn",
+		cls: "tn-btn tn-btn--ghost",
 		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
 	cancelButton.addEventListener("click", options.onCancel);

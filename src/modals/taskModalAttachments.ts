@@ -230,7 +230,12 @@ export class TaskModalAttachmentsField {
 					.onClick(() => {
 						options.pickVaultFile((file) => this.addVaultFile(file));
 					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--sm", "task-attachments-add"]);
+				button.buttonEl.addClasses([
+					"tn-btn",
+					"tn-btn--ghost",
+					"tn-task-modal__field-action",
+					"task-attachments-add",
+				]);
 				this.addButtonEl = button.buttonEl;
 			})
 			.addButton((button) => {
@@ -255,7 +260,12 @@ export class TaskModalAttachmentsField {
 					.onClick(() => {
 						this.fileInput.click();
 					});
-				button.buttonEl.addClasses(["tn-btn", "tn-btn--sm", "task-attachments-import"]);
+				button.buttonEl.addClasses([
+					"tn-btn",
+					"tn-btn--ghost",
+					"tn-task-modal__field-action",
+					"task-attachments-import",
+				]);
 			});
 
 		this.listEl = this.fieldEl.createEl("ul", { cls: "task-attachments-list" });
