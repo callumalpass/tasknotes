@@ -205,6 +205,28 @@ describe("calendarEventMount", () => {
 		expect(buildTaskCardOptions.mock.calls[0][0].occurrenceScheduled).toBe(expected);
 	});
 
+	it("points the card's menu at the row's occurrence", () => {
+		const buildTaskCardOptions = jest.fn((options) => options as any);
+
+		createCalendarListEventCard({
+			event: createEvent({
+				taskInfo: createTask({ scheduled: "2026-11-08", recurrence: "FREQ=WEEKLY" }),
+				eventType: "recurring",
+				instanceDate: "2026-11-15",
+				isPatternInstance: true,
+			}),
+			plugin: createPlugin(),
+			visibleProperties: [],
+			basesEntryByPath: new Map(),
+			buildTaskCardOptions,
+			factories: { createTaskCard: jest.fn(() => document.createElement("div")) as any },
+		});
+
+		expect(buildTaskCardOptions.mock.calls[0][0].occurrenceDate).toEqual(
+			new Date("2026-11-15T00:00:00.000Z")
+		);
+	});
+
 	it("renders provider events as calendar event cards with related-note counts", () => {
 		const icsEvent = { id: "event-1", title: "Event", start: "2026-05-19" };
 		const createICSEventCard = jest.fn(() => document.createElement("div"));
