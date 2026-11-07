@@ -49,6 +49,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Fit task-list titles and metadata on one line in wide panes, with aligned date values and quieter note indicators. Narrow lists retain stacked rows; phone metadata aligns beneath the title, with row-menu and reorder controls revealed on focus or selection. Long-press still opens task actions, and dismissing the menu returns focus to the row. Rows without metadata retain their single-line layout.
 
 - Keep Year calendar activity shading in both themes and at phone widths.
+- In the calendar's Week, three-day and Day views, overlapping timed items sit side by side as separate items that can each be clicked and dragged, including in narrow panes. They are grouped into one stack only when each would be too narrow to read (about 30 pixels). The **Simultaneous events** limit still applies.
+- Calendar items are a soft tint of their status, priority or calendar colour, with text in a deeper (or, in dark themes, paler) shade of the same hue, instead of a coloured left edge. Completed items use a fainter tint and muted text, and recurring previews keep a dashed outline.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 
