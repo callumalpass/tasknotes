@@ -343,10 +343,10 @@ test.describe('Task Modal', () => {
     await page.waitForTimeout(500);
 
     // Fill in some sample content
-    const titleInput = page.locator('.modal input[type="text"]').first();
-    if (await titleInput.isVisible()) {
-      await titleInput.fill('Complete project documentation');
-    }
+    const titleInput = page.locator('.modal .tn-task-modal__markdown-editor--title .cm-content, .modal .tn-task-modal__markdown-editor--nlp .cm-content').first();
+    await expect(titleInput).toBeVisible();
+    await titleInput.fill('Complete project documentation');
+    await expect(titleInput).toHaveText('Complete project documentation');
 
     await page.waitForTimeout(300);
     await docScreenshot(page, 'modal-task-filled');
