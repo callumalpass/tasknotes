@@ -33,6 +33,7 @@ const CSS_FILES = [
     'styles/advanced-calendar-view.css', // AdvancedCalendarView component with proper BEM scoping
     'styles/bases-calendar.css',     // Bases calendar theme mapping and TaskNotes event styles
     'styles/kanban-view.css',        // KanbanView component with proper BEM scoping
+    'styles/task-card-layout.css',   // Card layout shared by Kanban cards and Task List rows
     'styles/agenda-view.css',        // AgendaView component with proper BEM scoping
     'styles/pomodoro-view.css',      // PomodoroView component with proper BEM scoping
     'styles/pomodoro-stats-view.css', // PomodoroStatsView component with proper BEM scoping

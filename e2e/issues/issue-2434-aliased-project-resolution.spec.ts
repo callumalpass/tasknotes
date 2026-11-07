@@ -44,7 +44,7 @@ for (const reference of [
 		await expect(modal.locator(".task-project-item")).toHaveCount(1);
 		await expect(modal.locator(".task-project-item--unresolved")).toHaveCount(0);
 		// Force a real save rather than closing an unchanged form.
-		await modal.locator(".cm-content").fill("Issue 2434 saved details");
+		await modal.getByRole("textbox", { name: "Details" }).fill("Issue 2434 saved details");
 		await modal.getByRole("button", { name: "Save", exact: true }).click();
 		await expect(modal).toHaveCount(0);
 

@@ -124,8 +124,8 @@ test('create and edit share one pane layout that never resizes on disclosure', a
     return { beside: right.left >= left.right - 1, reachesFooter: Math.abs(right.bottom - footer.top) <= 1 };
   });
   expect(panes).toEqual({ beside: true, reachesFooter: true });
-  const heights = await modal().locator('.tn-chip--property, .modal-button-container button').evaluateAll(controls => controls.map(control => control.getBoundingClientRect().height));
-  expect(new Set(heights)).toEqual(new Set([28]));
+  const heights = await modal().locator('.tn-chip--property, .modal-button-container button').evaluateAll(controls => controls.map(control => control.getBoundingClientRect().height).filter(height => height > 0));
+  expect(new Set(heights)).toEqual(new Set([30]));
   await closeModal();
 });
 

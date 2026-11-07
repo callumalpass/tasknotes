@@ -22,10 +22,10 @@ describe("Issue #982: Obsidian text font size inheritance", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(css).toMatch(
-			/@container tn-task-card \(max-width: 560px\)[\s\S]*\.task-card__title-text\s*\{[^}]*font-size:\s*var\(--tn-type-md\);/s
+			/Stacked card layout at every width[\s\S]*\.task-card__title-text\s*\{[^}]*font-size:\s*var\(--tn-type-md\);/s
 		);
 		expect(css).toMatch(
-			/@container tn-task-card \(max-width: 560px\)[\s\S]*\.task-card__metadata\s*\{[^}]*font-size:\s*var\(--tn-type-xs\);/s
+			/Stacked card layout at every width[\s\S]*\.task-card__metadata\s*\{[^}]*font-size:\s*var\(--tn-type-xs\);/s
 		);
 	});
 });

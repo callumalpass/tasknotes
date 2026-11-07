@@ -8117,6 +8117,11 @@ msgctxt "task modal field disclosure"
 msgid "More fields"
 msgstr "Más campos"
 
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.moreOptions"
+msgid "More options"
+msgstr "Más opciones"
+
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
 msgid "Move {name} down"

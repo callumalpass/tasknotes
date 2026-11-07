@@ -108,7 +108,7 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 	expect(paths).toContain(`${folder}/Recurring.md`);
 	await page.locator(".tn-selection-indicator:visible").click();
 	expect(await selected(page)).toEqual([]);
-	await expect(page.getByRole("button", { name: "Select tasks", exact: true })).toHaveAttribute("aria-pressed", "false");
+	await expect(page.locator(".tnc-btn-selectTasks")).toHaveAttribute("aria-pressed", "false");
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await event(page, "Charlie").click({ modifiers: ["Shift"] });
 	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Charlie.md`]));
@@ -119,7 +119,7 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 
 test("calendar list mode keeps selection consistent and includes recurring tasks", async () => {
 	const page = obsidian.page;
-	await page.getByRole("button", { name: "List view", exact: true }).click();
+	await page.locator(".tnc-toolbar-view-select").selectOption("list");
 	// Wait for the existing debounced view preference save, not just the first
 	// list paint: its config refresh can replace a card during a pointer click.
 	await expect.poll(() => page.evaluate(async path => {
@@ -195,7 +195,7 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 		}
 		await app.vault.create(`${folder}/Busy.md`, "---\ntitle: Busy\nstatus: open\npriority: normal\ntags: [task]\nscheduled: 2031-05-07T07:00\n---\n");
 	}, folder);
-	await page.getByRole("button", { name: "Month view", exact: true }).click();
+	await page.locator(".tnc-toolbar-view-select").selectOption("month");
 	await expect.poll(() => page.evaluate(async path => {
 		const app = (window as any).app;
 		return app.vault.read(app.vault.getAbstractFileByPath(path));

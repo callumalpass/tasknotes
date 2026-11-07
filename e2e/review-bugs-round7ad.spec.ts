@@ -160,8 +160,9 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
       await capture(`mini-return-${variant}`);
       if (width === 1180) {
         await open('Invalid');
-        const header = page.locator('.task-group-header').filter({ hasText: 'Open work' }).first();
-        const bounds = (await header.boundingBox())!;
+        // Two-line rows push the done card below the fold; drop it on the last open card instead.
+        await card(8).scrollIntoViewIfNeeded();
+        const bounds = (await card(7).boundingBox())!;
         await lift(card(8), bounds.x + 180, bounds.y + bounds.height / 2);
         const hint = page.locator('.task-list-view__movement-feedback');
         await expect(hint).toBeVisible();

@@ -1244,7 +1244,7 @@ export class CalendarView extends BasesViewBase {
 				extraButtons: [
 					{
 						id: "overflow",
-						text: t(msg({ message: "Task options", context: "ui.taskCard.taskOptions" }), "Task options"),
+						text: t(msg({ message: "More options", context: "views.basesCalendar.moreOptions" }), "More options"),
 						icon: () => {
 							const icon = createElementInDocument(this.containerEl.ownerDocument, "span");
 							setIcon(icon, "ellipsis");

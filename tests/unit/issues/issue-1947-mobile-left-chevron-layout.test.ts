@@ -11,7 +11,7 @@ describe("Issue #1947: mobile left-chevron task cards", () => {
 	it("keeps the left subtask chevron visible and badges on the main row", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
-		const narrow = css.slice(css.indexOf("@container tn-task-card (max-width: 560px)"));
+		const narrow = css.slice(css.indexOf("Stacked card layout at every width"));
 		expect(narrow).toMatch(
 			/\.task-card\.task-card--chevron-left \.task-card__badges \.task-card__chevron\s*\{[^}]*position:\s*static;[^}]*left:\s*auto;[^}]*top:\s*auto;[^}]*transform:\s*none;[^}]*width:\s*var\(--tn-touch-target\);[^}]*height:\s*var\(--tn-touch-target\);/s
 		);

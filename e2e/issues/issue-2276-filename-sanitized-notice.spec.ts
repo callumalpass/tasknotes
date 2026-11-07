@@ -35,7 +35,7 @@ test("creating a task with / in its title names the sanitized file", async () =>
 	const title = `Review https://tasknotes.dev/obsidian/ ${Date.now()}`;
 	await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
 	const modal = page.locator(".modal.mod-tasknotes");
-	await modal.locator("textarea.title-input, textarea.title-input-detailed").fill(title);
+	await modal.getByRole("textbox", { name: "Title" }).fill(title);
 	await modal.getByRole("button", { name: "Create task", exact: true }).click();
 
 	const filename = title.replace(/[:/]/g, "");
