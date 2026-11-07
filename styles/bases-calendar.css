@@ -390,7 +390,7 @@
 }
 
 @container (max-width: 180px) {
-    .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tn-task-glyphs,
+    .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tn-task-glyphs__priority,
     .tasknotes-plugin .tnc-item .tn-calendar-attachment-indicator,
     .tasknotes-plugin .tnc-item:not(.tnc-item--timed) .tnc-item-time {
         display: none;
@@ -411,6 +411,35 @@
 @container (min-height: 60px) {
     .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
         -webkit-line-clamp: 3;
+    }
+}
+
+@container (min-height: 80px) {
+    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+        -webkit-line-clamp: 4;
+    }
+}
+
+@container (min-height: 120px) {
+    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+        -webkit-line-clamp: 6;
+    }
+}
+
+/* Side-by-side slivers spend their width on the title, which breaks anywhere rather than per word. */
+@container (max-width: 72px) {
+    .tasknotes-plugin .tnc-item--timed:not(.tnc-item--list) {
+        padding-inline: var(--tn-space-half);
+    }
+
+    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+        overflow-wrap: anywhere;
+        text-overflow: clip;
+        font-size: var(--tn-type-2xs);
+    }
+
+    .tasknotes-plugin .tnc-item--timed .tnc-item-time {
+        display: none;
     }
 }
 
@@ -457,7 +486,8 @@
 
 .tasknotes-plugin .tnc-tg {
     --tnc-col-min: 128px;
-    --tnc-event-min-width: 128px;
+    /* Overlapping events sit side by side until a column is too narrow to read. */
+    --tnc-event-min-width: 30px;
     --tnc-bar-h: var(--tn-calendar-chip-height);
     --tnc-more-h: var(--tn-calendar-chip-height);
 }
