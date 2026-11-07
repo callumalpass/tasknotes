@@ -100,7 +100,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Failed task-property changes identify the property and affected tasks, with a reminder to check note write access before retrying.
 - Mobile list and agenda rows keep status beside the title and group metadata and actions on a second row. References inside prose stay inline; standalone references retain their metadata.
 - Date pickers open unset dates at the top, precise time inputs use shared focus styling, custom picker labels have room to wrap, and shortcut help retains its keys on phones.
-- Statistics group overview metrics evenly and keep period comparisons together. Expanded task modals avoid reserving a side pane for empty details.
+- Statistics group overview metrics evenly and keep period comparisons together.
 - Kanban cards wrap full titles and status headings use two lines. Empty views distinguish missing tasks from filtered results, unknown values link to settings, and movement feedback names the destination.
 - Task creation uses concise toast feedback with the existing Open action; row focus, hover and selection remain distinct.
 - Mobile task lists, agendas and inline references give task titles a full line, with dates underneath and grouped touch controls. Scheduled agenda entries no longer repeat the schedule beside the time column.
@@ -112,6 +112,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Statistics use compact metric groups, settings distinguish sections and values more clearly, and inline task references and Pomodoro task selection use shared controls. Mini-calendar item pickers show the selected date, calendar resize feedback includes the resulting duration with Undo, and release notes put changes before announcements and notices.
 
 - Reworked the task create and edit modals. Status, priority, dates, recurrence and reminders are now labelled chips that show their current value, replacing the icons with a dot. The edit modal starts with the title, **Task information** is collapsed, and **Archive** and **Delete** moved into a **More actions** (⋯) menu beside **Open note**. Empty field rows are more compact.
+- The task create and edit modals share one layout. On screens 900px and wider, the Markdown details editor fills a side pane from the moment the modal opens, including when it is empty, and the modal keeps one size when **More fields** opens. Property chips and buttons are a compact row of 28px controls, and field rows no longer have boxes around them. Below 900px the form is one column, and phones and narrow windows use a bottom sheet that keeps the view behind it in sight.
+- The task title is now a Markdown editor, with link and tag completion and Obsidian's editor commands. It stays on one line, and Enter or Tab moves to **Details**. With natural language input on, **More fields** shows the parsed title in an editable **Title** field.
+- The edit modal opens with **More fields** showing when any of its fields has a value.
 - Natural language input now updates the form as you type, so the **Fill form** button and the preview under the input were removed. Removing text from the input undoes what it set, and a field you changed by hand is no longer overwritten. See [Task Management](https://tasknotes.dev/features/task-management/).
 - Closing the create modal with an unsaved draft now asks whether to save or discard it, as the edit modal does. **Open note** and **Archive** in the edit modal now ask before leaving unsaved changes, rather than afterwards.
 - A missing title or invalid time estimate is now shown on the field itself instead of in a notice.
@@ -123,6 +126,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Obsidian's editor commands and shortcuts work in the task modal's Markdown editors. Bold, Italic and Insert link did nothing there, and Follow link failed with an error. Plugins that use the active editor, such as Templater, now get the full editor.
+- Pressing Escape on a right-click menu in the task modal's Markdown editors closes only the menu, not the modal.
+- Removed the **Convert to TaskNote** button from the task modal's Markdown editors. It converted the matching line of the note behind the modal, not the line beside it.
 - Keep Kanban scroll positions, column widths and card widths steady while lifting and dropping tasks and during delayed refreshes. Cards now fit their title content, while column headers keep their task lanes aligned.
 - Show list tasks at their destination as soon as they are dropped, retaining pending feedback until the change is saved and returning them to their original position if saving fails. List drag previews now retain the row layout, with space around the pointer for drop feedback.
 - Allow board drags to start from metadata without changing metadata clicks, and accept drops after a drag leaves and re-enters the board. Show configured destination names and explain drops outside the board without exposing ordering-field names.
