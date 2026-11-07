@@ -272,7 +272,6 @@
 
 .tasknotes-plugin.tn-modal button {
     min-height: var(--tn-control-md);
-    box-shadow: none;
 }
 
 .tasknotes-plugin.tn-modal .setting-item {

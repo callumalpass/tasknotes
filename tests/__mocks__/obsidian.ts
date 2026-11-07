@@ -671,6 +671,11 @@ export class Modal extends Component {
     this.containerEl.appendText = this.contentEl.appendText;
   }
 
+  setTitle(title: string): this {
+    this.titleEl.textContent = title;
+    return this;
+  }
+
   open(): void {
     this.onOpen();
   }

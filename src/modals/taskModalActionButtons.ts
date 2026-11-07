@@ -67,8 +67,8 @@ export function createTaskModalActionButtons(
 	}
 
 	const submitContainer = buttonContainer.createDiv("tn-task-modal__submit-actions");
+	// A plain button, like Cancel in Obsidian's own dialogs
 	const cancelButton = submitContainer.createEl("button", {
-		cls: "tn-btn tn-btn--ghost",
 		text: context.translate(msg({ message: "Cancel", context: "common.cancel" })),
 	});
 	cancelButton.addEventListener("click", options.onCancel);

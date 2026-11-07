@@ -1073,6 +1073,17 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     color: var(--text-normal);
 }
 
+/* Project picker rows read like Obsidian's quick switcher: name, then quieter details */
+.tasknotes-plugin.tn-modal .project-suggestion .project-name {
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin.tn-modal .project-suggestion .project-meta {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    overflow-wrap: anywhere;
+}
+
 /* CodeMirror Project Suggestion Styles - Rich Metadata Display */
 .tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion {
     display: flex;
