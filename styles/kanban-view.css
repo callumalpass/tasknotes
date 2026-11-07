@@ -199,6 +199,11 @@
     transition: width var(--tn-transition-fast), min-width var(--tn-transition-fast), max-width var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), background-color var(--tn-transition-fast);
 }
 
+/* Keep the space below empty/short flat columns available as a drop target. */
+.tasknotes-plugin.tn-tasknotesKanban .kanban-view__column:not(.kanban-view__column--collapsed) {
+    height: 100%;
+}
+
 .tasknotes-plugin .kanban-view__column--collapsed {
     min-width: var(--tn-kanban-collapsed-column-width, 48px);
     max-width: var(--tn-kanban-collapsed-column-width, 48px);
