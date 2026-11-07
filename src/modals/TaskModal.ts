@@ -2,7 +2,7 @@ import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { App, Modal, Notice, Setting, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
+import { App, Menu, Modal, Notice, Setting, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -41,7 +41,7 @@ import {
 	createTaskModalSubtasksField,
 	type TaskModalOrganizationFieldContext,
 } from "./taskModalOrganizationFields";
-import { createTaskCard } from "../ui/TaskCard";
+import { createTaskModalTaskRow } from "./taskModalTaskRow";
 import {
 	addDependencyItem,
 	createDependencyItemFromDependency as createDependencyItemFromDependencyHelper,
@@ -401,6 +401,7 @@ export abstract class TaskModal extends Modal {
 	protected projectsList: HTMLElement = undefined as unknown as HTMLElement;
 	protected subtasksList: HTMLElement = undefined as unknown as HTMLElement;
 	protected actionBar: HTMLElement = undefined as unknown as HTMLElement;
+	private projectChip?: HTMLElement;
 	protected detailsContainer: HTMLElement = undefined as unknown as HTMLElement;
 	protected isExpanded = false;
 
@@ -639,7 +640,6 @@ export abstract class TaskModal extends Modal {
 		this.createDetailsSection(container);
 		this.createActionBar(this.splitLeftColumn);
 		this.detailsContainer.before(this.actionBar);
-		if (this.projectsList) this.actionBar.after(this.projectsList);
 
 		// Hook for subclasses to add additional sections to left column
 		this.createAdditionalSections(this.splitLeftColumn);
@@ -732,6 +732,16 @@ export abstract class TaskModal extends Modal {
 	protected createActionBar(container: HTMLElement): void {
 		this.actionBar = container.createDiv("tn-task-modal__action-bar");
 		this.createCoreActionIcons(this.actionBar);
+		this.projectChip = createTaskModalActionIcon(this.actionBar, {
+			iconName: "folder",
+			tooltip: this.t(
+				msg({ message: "Projects", context: "modals.task.organization.projects" })
+			),
+			chip: true,
+			dataType: "projects",
+			onClick: (icon) => this.showProjectsMenu(icon),
+		});
+		this.updateProjectChip();
 		const toggle = createTaskModalActionIcon(this.actionBar, {
 			iconName: this.isExpanded ? "chevron-up" : "chevron-down",
 			tooltip: this.getDetailedFormToggleLabel(),
@@ -1060,16 +1070,69 @@ export abstract class TaskModal extends Modal {
 	protected createProjectsField(container: HTMLElement): void {
 		this.projectsList = createTaskModalProjectsField(this.getOrganizationFieldContext(), {
 			container,
-			onButtonClick: () => {
-				const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-					this.addProject(file);
-				});
-				modal.open();
-			},
+			onButtonClick: () => this.openProjectSelector(),
 			listElement: this.projectsList,
 		});
+		this.projectsList.addClass("tn-task-modal__project-list");
 
 		this.renderOrganizationLists();
+	}
+
+	private openProjectSelector(): void {
+		new ProjectSelectModal(this.app, this.plugin, (file) => {
+			this.addProject(file);
+		}).open();
+	}
+
+	/** The chip lists the projects as checked items; unchecking one removes it. */
+	private showProjectsMenu(anchor: HTMLElement): void {
+		const menu = new Menu();
+		for (const item of this.selectedProjectItems) {
+			menu.addItem((menuItem) =>
+				menuItem
+					.setTitle(item.name)
+					.setIcon("folder")
+					.setChecked(true)
+					.onClick(() => this.removeProject(item))
+			);
+		}
+		menu.addSeparator();
+		menu.addItem((menuItem) =>
+			menuItem
+				.setTitle(
+					this.t(
+						msg({
+							message: "Add to project…",
+							context: "contextMenus.task.organization.addToProject",
+						})
+					)
+				)
+				.setIcon("plus")
+				.onClick(() => this.openProjectSelector())
+		);
+		const rect = anchor.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 }, anchor.ownerDocument);
+	}
+
+	/** Projects get a chip in the property row once the task has any. */
+	private updateProjectChip(): void {
+		const chip = this.projectChip;
+		if (!chip) return;
+		const items = this.selectedProjectItems;
+		chip.hidden = items.length === 0;
+		chip.classList.toggle("has-value", items.length > 0);
+		const label = chip.querySelector<HTMLElement>(".action-icon__label");
+		if (!label || items.length === 0) return;
+		const names = uiData(
+			items.map((item) => item.name).join(", "),
+			"Project note names chosen by the user"
+		);
+		label.textContent = uiData(
+			items.length > 1 ? `${items[0].name} +${items.length - 1}` : items[0].name,
+			"Project note name chosen by the user, with a count of further projects"
+		);
+		chip.setAttribute("aria-label", names);
+		setTooltip(chip, names, { placement: "top" });
 	}
 
 	protected createSubtasksField(container: HTMLElement): void {
@@ -1538,6 +1601,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected renderProjectsList(): void {
+		this.updateProjectChip();
 		renderTaskModalProjectsList({
 			app: this.app,
 			listEl: this.projectsList,
@@ -1610,12 +1674,7 @@ export abstract class TaskModal extends Modal {
 			files: this.selectedSubtaskFiles,
 			sourcePath: this.getCurrentTaskPath() || "",
 			getCachedTaskInfo: (path) => this.plugin.cacheManager.getCachedTaskInfo(path),
-			createTaskCard: (taskInfo) =>
-				createTaskCard(taskInfo, this.plugin, undefined, {
-					layout: "default",
-					showSecondaryBadges: false,
-					enableHoverPreview: false,
-				}),
+			createTaskCard: (taskInfo) => createTaskModalTaskRow(taskInfo, this.plugin),
 			translate: (key, params) => this.t(key, params),
 			onRemove: (file) => this.removeSubtask(file),
 		});
