@@ -1239,6 +1239,7 @@ export class CalendarView extends BasesViewBase {
 			eventOrder: getTaskNotesCalendarEventOrder(this.dataAdapter.getSortConfig()),
 			toolbar: {
 				views: ["year", "month", "week", "days", "day", "list"],
+				viewDisplay: "select",
 				extraPlacement: "start",
 				extraButtons: [
 					{
@@ -1625,7 +1626,11 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendar) return;
 		const activeView = this.narrowWeek ? "week" : this.calendar.view.type;
 		const select = this.calendarEl?.querySelector<HTMLSelectElement>(".tnc-toolbar-view-select");
-		if (select) select.value = activeView;
+		if (select) {
+			select.value = activeView;
+			// Obsidian's own dropdown, not the calendar's button styling.
+			select.classList.replace("tnc-btn", "dropdown");
+		}
 		for (const button of this.calendarEl?.querySelectorAll(".tnc-btn-view") ?? []) {
 			button.setAttribute("aria-pressed", String(button.classList.contains(`tnc-btn-view-${activeView}`)));
 		}

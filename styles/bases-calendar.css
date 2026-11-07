@@ -104,37 +104,10 @@
     order: -1;
 }
 
-.tasknotes-plugin .tnc-btn-overflow {
+/* Select tasks and Refresh live in the overflow menu; Select tasks shows while selecting so it can be turned off. */
+.tasknotes-plugin .tnc-toolbar-start > .tnc-btn-refreshCalendars,
+.tasknotes-plugin .tnc-toolbar-start > .tnc-btn-selectTasks:not([aria-pressed="true"]) {
     display: none;
-}
-
-.tasknotes-plugin .tnc .tnc-toolbar-view-select {
-    appearance: none;
-    border: 1px solid var(--tn-hairline);
-    border-radius: var(--tn-radius-md);
-    padding-inline: var(--tn-space-3) calc(var(--tn-space-6) + var(--tn-space-1));
-    max-width: 100%;
-    background: var(--tn-bg-secondary);
-    color: var(--tn-text-normal);
-    font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
-}
-
-.tasknotes-plugin .tnc-toolbar-end {
-    position: relative;
-}
-
-.tasknotes-plugin .tnc-toolbar-end--compact::after {
-    content: "";
-    position: absolute;
-    inset-inline-end: var(--tn-space-3);
-    top: calc(50% - var(--tn-space-1));
-    width: calc(var(--tn-space-1) + var(--tn-space-half));
-    height: calc(var(--tn-space-1) + var(--tn-space-half));
-    border-right: 1px solid var(--tn-text-muted);
-    border-bottom: 1px solid var(--tn-text-muted);
-    transform: rotate(45deg);
-    pointer-events: none;
 }
 
 @container (max-width: 600px) {

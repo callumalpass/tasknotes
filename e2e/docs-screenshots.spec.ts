@@ -163,9 +163,9 @@ test.describe('Main Views', () => {
     await page.waitForTimeout(1500);
 
     // Ensure we're on month view
-    const monthButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-month').first();
+    const monthButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await monthButton.isVisible()) {
-      await monthButton.click();
+      await monthButton.selectOption('month');
       await page.waitForTimeout(500);
     }
 
@@ -182,9 +182,9 @@ test.describe('Main Views', () => {
   test('calendar-week-view', async () => {
     const page = getPage();
 
-    const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
+    const weekButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await weekButton.isVisible()) {
-      await weekButton.click();
+      await weekButton.selectOption('week');
       await page.waitForTimeout(800);
     }
 
@@ -194,9 +194,9 @@ test.describe('Main Views', () => {
   test('calendar-day-view', async () => {
     const page = getPage();
 
-    const dayButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-day').first();
+    const dayButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await dayButton.isVisible()) {
-      await dayButton.click();
+      await dayButton.selectOption('day');
       await page.waitForTimeout(800);
     }
 
@@ -206,9 +206,9 @@ test.describe('Main Views', () => {
   test('calendar-year-view', async () => {
     const page = getPage();
 
-    const yearButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-year').first();
+    const yearButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await yearButton.isVisible()) {
-      await yearButton.click();
+      await yearButton.selectOption('year');
       await page.waitForTimeout(800);
     }
 
@@ -517,9 +517,9 @@ test.describe('Time Tracking', () => {
     await page.waitForTimeout(1000);
 
     // Other leaves can contain calendars too; operate on the active calendar.
-    const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
+    const weekButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await weekButton.isVisible()) {
-      await weekButton.click();
+      await weekButton.selectOption('week');
       await page.waitForTimeout(800);
     }
 
@@ -530,9 +530,9 @@ test.describe('Time Tracking', () => {
     const page = getPage();
 
     // Switch to day view
-    const dayButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-day').first();
+    const dayButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await dayButton.isVisible()) {
-      await dayButton.click();
+      await dayButton.selectOption('day');
       await page.waitForTimeout(800);
     }
 
@@ -597,9 +597,9 @@ test.describe('Workflows', () => {
     await page.waitForTimeout(1000);
 
     // Ensure month view
-    const monthButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-month').first();
+    const monthButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await monthButton.isVisible()) {
-      await monthButton.click();
+      await monthButton.selectOption('month');
       await page.waitForTimeout(500);
     }
 
@@ -806,9 +806,9 @@ test.describe('Recurring Tasks', () => {
     await page.waitForTimeout(1500);
 
     // Switch to week view to see recurring events across days
-    const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
+    const weekButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
     if (await weekButton.isVisible()) {
-      await weekButton.click();
+      await weekButton.selectOption('week');
       await page.waitForTimeout(800);
     }
 

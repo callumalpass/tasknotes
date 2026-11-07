@@ -132,7 +132,7 @@ test('narrow defaults are temporary and explicit view choices survive resizing',
     await setObsidianViewport(page, { width: 1180, height: 800 });
     await expect(calendar.locator('.tnc-btn-view-week')).toHaveAttribute('aria-pressed', 'true');
   }
-  await calendar.locator('.tnc-btn-view-month').click();
+  await calendar.locator('.tnc-toolbar-view-select').selectOption('month');
   await setObsidianViewport(page, { width: 400, height: 800 });
   await expect(calendar.locator('.tnc-btn-view-month')).toHaveAttribute('aria-pressed', 'true');
 });
@@ -196,7 +196,7 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
             const css = getComputedStyle(element);
             return { left: css.borderLeftWidth, top: css.borderTopWidth };
           });
-          expect(style).toEqual({ left: '2px', top: '0px' });
+          expect(style).toEqual({ left: '0px', top: '0px' });
           await expect(calendar.locator('.tnc-item[data-event-type="timeblock"]').first()).toBeVisible();
           await expect(calendar.locator('.tnc-item[data-event-type="due"]').first()).toHaveAttribute('aria-label', /^Deadline:/);
           if (width === 1180) {
@@ -319,7 +319,7 @@ test('timeblocks retain drag and resize in both themes', async () => {
       document.body.classList.add(theme);
     }, theme);
     if (await calendar.locator('.tnc-toolbar-view-select').isVisible()) await calendar.locator('.tnc-toolbar-view-select').selectOption('days');
-    else await calendar.locator('.tnc-btn-view-days').click();
+    else await calendar.locator('.tnc-toolbar-view-select').selectOption('days');
     await expect.poll(() => page.evaluate(async folder => {
       const app = (window as any).app;
       return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Timeblocks.base`));

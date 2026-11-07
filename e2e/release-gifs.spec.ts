@@ -357,9 +357,9 @@ tags:
 		};
 
 		await openCalendarByPath(page, normalBasePath);
-		const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
+		const weekButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
 		if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await weekButton.click();
+			await weekButton.selectOption('week');
 			await page.waitForTimeout(700);
 		}
 		await recorder.capture(page, 4, { clip: await getCalendarClip() });
