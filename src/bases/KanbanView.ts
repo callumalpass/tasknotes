@@ -1344,6 +1344,11 @@ export class KanbanView extends BasesViewBase {
 		const sortOrderValues = new Map<string, unknown>();
 
 		for (const task of taskNotes) {
+			const current = this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
+			if (current) {
+				if (current.sortOrder != null) sortOrderValues.set(task.path, current.sortOrder);
+				continue;
+			}
 			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 			const frontmatter =
 				file instanceof TFile

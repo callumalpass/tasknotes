@@ -131,7 +131,9 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	const dismiss = () => {
 		win.clearTimeout(timer);
 		win.removeEventListener("resize", updateClearance);
+		const hadFocus = el.contains(doc.activeElement);
 		el.remove();
+		if (hadFocus && returnFocus?.isConnected) returnFocus.focus();
 	};
 	let remaining = options.durationMs ?? DEFAULT_DURATION_MS;
 	let started = Date.now();

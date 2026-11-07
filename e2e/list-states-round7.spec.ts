@@ -316,7 +316,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     const target = (await header.boundingBox())!;
     await startDrag(card(0), { x: target.x + 180, y: target.y + target.height / 2 });
     await expect(root().locator('.task-list-view__move-target--blocked').first()).toBeVisible();
-    await expect(root().locator('.task-list-view__movement-feedback')).toContainText('read-only');
+    await expect(page.locator('.task-list-view__movement-feedback')).toContainText('read-only');
     await capture(`${theme}-1180-invalid`);
     await page.keyboard.press('Escape');
     await page.mouse.up();

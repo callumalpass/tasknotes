@@ -1640,7 +1640,6 @@ body.is-mobile .tasknotes-plugin #bases-calendar .tn-calendar-list-entry .task-c
 .tasknotes-plugin .tnc-ym-day {
     aspect-ratio: auto;
     font-size: var(--tn-type-sm);
-    background: transparent;
 }
 
 .tasknotes-plugin .tnc-ym-dots {

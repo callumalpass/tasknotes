@@ -94,7 +94,7 @@ for (const theme of ['light', 'dark']) test(`${theme}: touch, batch, help, inval
   await expect(page.locator('.tn-toast')).toContainText('1 task updated');
   await expect(page.locator('.modal-container:visible')).toHaveCount(0);
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(page.locator('.tn-toast')).toContainText('Undid Status change');
+  await expect(page.locator('.tn-toast .tn-toast__message')).toHaveText('Change undone.');
   await openSurface('list');
   await page.evaluate(({ folder, taskPath }) => (window as any).app.plugins.plugins.tasknotes.taskSelectionService.selectAll([taskPath, `${folder}/Task-0.md`]), { folder, taskPath });
   await status.focus();
@@ -164,9 +164,10 @@ for (const theme of ['light', 'dark']) test(`${theme}: touch, batch, help, inval
 
 async function openSurface(surface: string) {
   const version = ++surfaceVersion;
+  const type = surface === 'board' ? 'tasknotesKanban' : surface === 'mini' ? 'tasknotesMiniCalendar' : surface === 'list' ? 'tasknotesTaskList' : 'tasknotesCalendar';
   const content = stringify({
     filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] },
-    views: [{ type: surface === 'board' ? 'tasknotesKanban' : surface === 'mini' ? 'tasknotesMiniCalendar' : surface === 'list' ? 'tasknotesTaskList' : 'tasknotesCalendar',
+    views: [{ type,
       name: surface, groupBy: { property: 'status', direction: 'ASC' }, columnWidth: 300,
       calendarView: 'listWeek', dateProperty: 'note.scheduled', showTimeblocks: false, showTimeEntries: false,
       order: ['status', 'priority', 'scheduled', 'due', 'tags'] }],
@@ -177,6 +178,7 @@ async function openSurface(surface: string) {
     const file = app.vault.getAbstractFileByPath(path) || await app.vault.create(path, content);
     await app.workspace.getLeaf(false).openFile(file, surface === 'inline' ? { state: { mode: 'preview' } } : undefined);
   }, { folder, surface, content, version });
+  if (surface !== 'inline') await expect.poll(() => page.evaluate(() => (window as any).app.workspace.activeLeaf?.view.controller?.view?.type)).toBe(type);
   await expect(page.locator(surface === 'mini' ? '.mini-calendar-view__day:visible' : `.workspace-leaf.mod-active .task-card[data-task-path="${taskPath}"]:visible`).first()).toBeVisible();
 }
 

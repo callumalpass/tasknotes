@@ -1,21 +1,30 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { mkdirSync, writeFileSync } from 'fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { launchObsidian, closeObsidian, setObsidianViewport } from './obsidian';
 
 const phase = process.env.TASKNOTES_R7_PHASE ?? 'after';
+const undoConfirmation = process.env.TASKNOTES_R8_BASELINE === '1' ? /^Undid:/ : 'Change undone.';
 const evidence = join(tmpdir(), 'tasknotes-r7', 'board', '653f67e0', phase);
 const folder = `BoardOP1-${Date.now()}`;
 let instance: Awaited<ReturnType<typeof launchObsidian>>;
 let page: Page;
 let settings: any;
+let vaultDirectory: string;
+
+function readFixtureNotes(): Record<string, string> {
+  return Object.fromEntries(readdirSync(join(vaultDirectory, folder)).filter(name => name.endsWith('.md')).map(name => [
+    `${folder}/${name}`, readFileSync(join(vaultDirectory, folder, name), 'utf8'),
+  ]));
+}
 
 test.beforeAll(async () => {
   mkdirSync(evidence, { recursive: true });
   instance = await launchObsidian();
   page = instance.page;
+  vaultDirectory = await page.evaluate(() => (window as any).app.vault.adapter.basePath);
   settings = await page.evaluate(async folder => {
     const app = (window as any).app;
     const plugin = app.plugins.plugins.tasknotes;
@@ -31,6 +40,11 @@ test.beforeAll(async () => {
     }
     return original;
   }, folder);
+  await expect.poll(() => page.evaluate(folder => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    return Array.from({ length: 50 }, (_, index) => `${folder}/Task ${String(index).padStart(2, '0')}.md`)
+      .filter(path => plugin.cacheManager.getCachedTaskInfoSync(path)).length;
+  }, folder)).toBe(50);
   const warning = page.locator('.notice').filter({ hasText: 'Secrets are stored without encryption' });
   if (await warning.isVisible()) await warning.getByText("Don't show again", { exact: true }).click();
 });
@@ -46,15 +60,39 @@ test.afterAll(async () => {
   } finally { if (instance) await closeObsidian(instance); }
 });
 
+test.afterEach(async ({}, testInfo) => {
+  if (!page || page.isClosed() || testInfo.status === testInfo.expectedStatus) return;
+  const state = await page.evaluate(async folder => {
+    const app = (window as any).app;
+    const view = app.workspace.activeLeaf?.view.controller?.view;
+    return {
+      activeFile: app.workspace.getActiveFile()?.path,
+      view: view?.type,
+      scopePaths: view?.sortScopeTaskPaths ? [...view.sortScopeTaskPaths] : [],
+      toast: document.querySelector('.tn-toast')?.textContent,
+      boardOrder: view?.columnScrollers ? [...view.columnScrollers].map(([group, scroller]: any) => ({ group, paths: scroller.getItems().map((task: any) => task.path) })) : [],
+      renderedOrder: [...document.querySelectorAll<HTMLElement>('.workspace-leaf.mod-active .kanban-view__column[data-group="open"] .task-card')].map(card => card.dataset.taskPath),
+    };
+  }, folder);
+  const path = `${evidence}/state-${testInfo.title.replace(/\W+/g, '-')}.json`;
+  writeFileSync(path, JSON.stringify({ ...state, files: readFixtureNotes(), errors: testInfo.errors }, null, 2));
+  await testInfo.attach('board-state', { path, contentType: 'application/json' });
+});
+
 async function openView(type: 'tasknotesTaskList' | 'tasknotesKanban', name: string, direction = 'DESC') {
   await page.evaluate(async ({ folder, name, content }) => {
     const app = (window as any).app;
     const filepath = `${folder}/${name}.base`;
     const file = app.vault.getAbstractFileByPath(filepath) ?? await app.vault.create(filepath, content);
-    await app.workspace.getLeaf(false).openFile(file);
+    const previous = app.workspace.activeLeaf;
+    const leaf = app.workspace.getLeaf(true);
+    await leaf.openFile(file);
+    app.workspace.setActiveLeaf(leaf, { focus: true });
+    if (previous !== leaf && previous?.view.file?.path.startsWith(`${folder}/`)) previous.detach();
   }, { folder, name, content: stringify({ filters: { and: [`file.inFolder("${folder}")`, 'file.hasTag("task")'] }, views: [{ type, name,
     groupBy: { property: 'status', direction: 'ASC' }, order: ['status', 'priority', 'scheduled', 'due', 'contexts', 'projects'],
     sort: [{ property: 'tasknotes_manual_order', direction }], enableSearch: true }] }) });
+  await expect.poll(() => page.evaluate(() => (window as any).app.workspace.activeLeaf?.view.controller?.view?.type)).toBe(type);
   const root = page.locator(`.workspace-leaf.mod-active .tn-${type}`);
   await expect(root.locator('.task-card').first()).toBeVisible();
   return root;
@@ -62,6 +100,19 @@ async function openView(type: 'tasknotesTaskList' | 'tasknotesKanban', name: str
 
 async function paths(root: Locator, group = 'open') {
   return root.locator(`.kanban-view__column[data-group="${group}"] .task-card, .task-list-view__group[data-group-key="${group}"] .task-card`).evaluateAll(cards => cards.map(card => (card as HTMLElement).dataset.taskPath!));
+}
+
+async function completeBoardOrder(root: Locator, group = 'open') {
+  return root.evaluate((element, group) => {
+    const view = (window as any).app.workspace.activeLeaf.view.controller.view;
+    const cards = [...element.querySelectorAll<HTMLElement>(`.kanban-view__column[data-group="${group}"] .task-card`)];
+    const visible = cards.map(card => card.dataset.taskPath!);
+    const scroller = view.columnScrollers.get(group);
+    const order: string[] = scroller ? scroller.getItems().map((task: any) => task.path) : visible;
+    const start = order.indexOf(visible[0]);
+    if (visible.some((path, index) => order[start + index] !== path)) throw new Error(`Rendered cards disagree with the full board order: ${JSON.stringify({ visible, order })}`);
+    return order;
+  }, group);
 }
 
 async function drag(source: Locator, target: Locator, above: boolean) {
@@ -94,12 +145,13 @@ test('one card drop preserves every other rank and list agrees after refresh', a
   expect(before).toHaveLength(7);
   await page.screenshot({ path: `${evidence}/rank-before.png` });
   await drag(column.locator('.task-card').nth(3), column.locator('.task-card').nth(1), true);
+  await page.locator('.tn-toast button').filter({ hasText: 'Undo' }).focus();
+  await expect(page.locator('.tn-toast')).toContainText('Moved 1 task');
   await expect(root.locator('[aria-busy="true"]')).toHaveCount(0);
   const intended = [...before];
   intended.splice(1, 0, intended.splice(3, 1)[0]);
   writeFileSync(`${evidence}/drop-result.json`, JSON.stringify({ before, intended, after: await paths(root, 'in-progress'), toast: await page.locator('.tn-toast').textContent() }, null, 2));
   await page.screenshot({ path: `${evidence}/rank-drop.png` });
-  await expect(page.locator('.tn-toast')).toContainText('Moved 1 task');
   await expect.poll(() => paths(root, 'in-progress')).toEqual(intended);
   await page.screenshot({ path: `${evidence}/rank-after.png` });
   const stored = await page.evaluate(async folder => {
@@ -144,9 +196,11 @@ test('sparse initial reorder limits note writes and subsequent moves write only 
   }
   const root = await openView('tasknotesKanban', 'Sparse');
   const column = root.locator('.kanban-view__column[data-group="open"]');
-  const original = await paths(root);
+  const original = await completeBoardOrder(root);
+  expect(original).toHaveLength(39);
   const source = column.locator('.task-card').nth(0);
   const sourcePath = await source.getAttribute('data-task-path');
+  writeFileSync(`${evidence}/sparse-before.json`, JSON.stringify({ original, sourcePath }, null, 2));
   await drag(source, column.locator('.task-card').nth(2), true);
   if (phase === 'before') {
     await expect(page.locator('.modal')).toBeVisible();
@@ -155,39 +209,67 @@ test('sparse initial reorder limits note writes and subsequent moves write only 
     return;
   }
   await expect(page.locator('.modal')).toHaveCount(0);
-  await expect(page.locator('.tn-toast')).toContainText('Moved 1 task');
   await page.locator('.tn-toast button').filter({ hasText: 'Undo' }).focus();
-  const readWrites = () => page.evaluate(async folder => {
-    const app = (window as any).app;
-    const files = app.vault.getMarkdownFiles().filter((file: any) => file.path.startsWith(folder));
-    const texts = await Promise.all(files.map(async (file: any) => ({ path: file.path, text: await app.vault.read(file) })));
-    return texts.filter((file: any) => /status: open/.test(file.text) && /tasknotes_manual_order:/.test(file.text)).map((file: any) => file.path);
-  }, folder);
+  await expect(page.locator('.tn-toast')).toContainText('Moved 1 task');
+  const readWrites = () => Object.entries(readFixtureNotes())
+    .filter(([, text]) => /status: open/.test(text) && /tasknotes_manual_order:/.test(text)).map(([path]) => path);
   await expect.poll(readWrites).toContain(sourcePath);
   const writes = await readWrites();
   writeFileSync(`${evidence}/sparse-writes.json`, JSON.stringify(writes, null, 2));
   expect(writes.sort()).toEqual([`${folder}/Task 00.md`, `${folder}/Task 01.md`]);
-  const firstOrder = await paths(root);
-  const readRankedNotes = () => page.evaluate(async folder => {
-    const app = (window as any).app;
-    return Object.fromEntries(await Promise.all(['00', '01'].map(async number => {
-      const path = `${folder}/Task ${number}.md`;
-      return [path, await app.vault.read(app.vault.getAbstractFileByPath(path))];
-    })));
-  }, folder);
+  const firstOrder = await completeBoardOrder(root);
+  const readRankedNotes = () => Object.fromEntries(['00', '01'].map(number => {
+    const path = `${folder}/Task ${number}.md`;
+    return [path, readFileSync(join(vaultDirectory, path), 'utf8')];
+  }));
   const beforeNext = await readRankedNotes();
+  const previousToast = await page.locator('.tn-toast').elementHandle();
   await drag(column.locator(`.task-card[data-task-path="${folder}/Task 00.md"]`), column.locator(`.task-card[data-task-path="${folder}/Task 01.md"]`), true);
   await expect(root.locator('[aria-busy="true"]')).toHaveCount(0);
+  await expect.poll(() => previousToast!.evaluate(element => element.isConnected)).toBe(false);
   await page.locator('.tn-toast button').filter({ hasText: 'Undo' }).focus();
   await expect.poll(async () => {
     const notes = await readRankedNotes();
     return Object.keys(beforeNext).filter(path => beforeNext[path] !== notes[path]);
   }).toEqual([sourcePath]);
-  await page.locator('.tn-toast button').filter({ hasText: 'Undo' }).click();
-  await expect.poll(() => paths(root)).toEqual(firstOrder);
-  await root.locator('.task-card').first().focus();
+  await page.evaluate(folder => {
+    const app = (window as any).app;
+    const cache = app.metadataCache;
+    const read = cache.getFileCache;
+    const trigger = cache.trigger;
+    const held: any[][] = [];
+    const path = `${folder}/Task 00.md`;
+    const stale = structuredClone(read.call(cache, app.vault.getAbstractFileByPath(path)));
+    (window as any).r8RestoreMetadataRead = () => {
+      cache.getFileCache = read;
+      cache.trigger = trigger;
+      for (const args of held) trigger.apply(cache, args);
+    };
+    cache.getFileCache = function(file: any) { return file.path === path ? stale : read.call(this, file); };
+    cache.trigger = function(...args: any[]) {
+      if (args[0] === 'changed' && args[1]?.path === path) held.push(args);
+      else trigger.apply(this, args);
+    };
+  }, folder);
+  try {
+    const reorderToast = await page.locator('.tn-toast').elementHandle();
+    await page.locator('.tn-toast button').filter({ hasText: 'Undo' }).click();
+    await expect.poll(() => reorderToast!.evaluate(element => element.isConnected)).toBe(false);
+    await expect(page.locator('.tn-toast .tn-toast__message')).toHaveText(undoConfirmation);
+    await expect.poll(() => completeBoardOrder(root)).toEqual(firstOrder);
+    const ranks = (notes: Record<string, string>) => Object.fromEntries(Object.entries(notes).map(([path, content]) => [path, parse(content.split('---')[1]).tasknotes_manual_order]));
+    await expect.poll(async () => ranks(await readRankedNotes())).toEqual(ranks(beforeNext));
+    await expect(root).toBeFocused();
+  } finally {
+    await page.evaluate(() => { (window as any).r8RestoreMetadataRead(); delete (window as any).r8RestoreMetadataRead; });
+  }
+  await root.focus();
+  const priorConfirmation = await page.locator('.tn-toast').elementHandle();
   await page.keyboard.press('Control+z');
-  await expect.poll(() => paths(root)).toEqual(original);
+  await expect.poll(() => priorConfirmation!.evaluate(element => element.isConnected)).toBe(false);
+  await expect(page.locator('.tn-toast .tn-toast__message')).toHaveText(undoConfirmation);
+  await expect.poll(readWrites).toEqual([]);
+  await expect.poll(() => completeBoardOrder(root)).toEqual(original);
 });
 
 test('narrow dates, hover refresh, keyboard overlays and touch menus retain their contracts', async () => {
@@ -348,11 +430,7 @@ test('large unranked moves ask once before writing and undo all changed notes', 
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
   await setObsidianViewport(page, { width: 1180, height: 800 });
   const root = await openView('tasknotesKanban', 'Large');
-  const readNotes = () => page.evaluate(async folder => {
-    const app = (window as any).app;
-    const files = app.vault.getMarkdownFiles().filter((file: any) => file.path.startsWith(folder) && /Task (0\d|[12]\d|3[0-8])\.md$/.test(file.path));
-    return Object.fromEntries(await Promise.all(files.map(async (file: any) => [file.path, await app.vault.read(file)])));
-  }, folder);
+  const readNotes = () => Object.fromEntries(Object.entries(readFixtureNotes()).filter(([path]) => /Task (0\d|[12]\d|3[0-8])\.md$/.test(path)));
   const before = await readNotes();
   const column = root.locator('.kanban-view__column[data-group="open"]');
   const source = column.locator(`.task-card[data-task-path="${folder}/Task 00.md"]`);
@@ -379,10 +457,10 @@ test('large unranked moves ask once before writing and undo all changed notes', 
   await page.screenshot({ path: `${evidence}/large-write-confirmation.png` });
   await page.keyboard.press('Enter');
   await expect(modal).toHaveCount(0);
-  await expect(root.locator('[aria-busy="true"]')).toHaveCount(0);
   const undo = page.locator('.tn-toast button').filter({ hasText: 'Undo' });
-  await expect(undo).toBeVisible();
   await undo.focus();
+  await expect(undo).toBeFocused();
+  await expect(root.locator('[aria-busy="true"]')).toHaveCount(0);
   const after = await readNotes();
   const changed = Object.keys(before).filter(path => before[path] !== after[path]);
   expect(changed).toHaveLength(38);
@@ -390,11 +468,47 @@ test('large unranked moves ask once before writing and undo all changed notes', 
   await undo.click();
   const noteState = (notes: Record<string, string>) => Object.fromEntries(Object.entries(notes).map(([path, text]) => {
     const [, frontmatter, ...body] = text.split('---');
+    if (frontmatter === undefined || body.length === 0) return [path, { incomplete: text }];
     const properties = parse(frontmatter);
     delete properties.dateModified;
     return [path, { properties, body: body.join('---') }];
   }));
   await expect.poll(async () => noteState(await readNotes()), { timeout: 60000 }).toEqual(noteState(before));
+  await expect(page.locator('.tn-toast .tn-toast__message')).toHaveText(undoConfirmation);
+  await expect(root).toBeFocused();
+});
+
+test('replacing a focused move toast returns focus to the board and preserves both Undo receipts', async () => {
+  const root = await openView('tasknotesKanban', 'Toast replacement');
+  const statuses = () => page.evaluate(async folder => {
+    const app = (window as any).app;
+    return Promise.all(['43', '44'].map(async number => {
+      const file = app.vault.getAbstractFileByPath(`${folder}/Task ${number}.md`);
+      return (await app.vault.read(file)).match(/^status: (.+)$/m)?.[1];
+    }));
+  }, folder);
+  expect(await statuses()).toEqual(['in-progress', 'in-progress']);
+  await root.focus();
+  const move = (number: string) => page.evaluate(async ({ folder, number }) => {
+    const view = (window as any).app.workspace.activeLeaf.view.controller.view;
+    const path = `${folder}/Task ${number}.md`;
+    await view.handleTaskDrop(path, 'done', null, undefined, { draggedPaths: [path] });
+  }, { folder, number });
+  await move('43');
+  const undo = page.locator('.tn-toast button').filter({ hasText: 'Undo' });
+  await undo.focus();
+  await expect(undo).toBeFocused();
+  const previous = await undo.elementHandle();
+  await move('44');
+  expect(await previous!.evaluate(element => element.isConnected)).toBe(false);
+  await expect(root).toBeFocused();
+  const secondToast = await page.locator('.tn-toast').elementHandle();
+  await undo.click();
+  await expect.poll(() => secondToast!.evaluate(element => element.isConnected)).toBe(false);
+  await expect(page.locator('.tn-toast .tn-toast__message')).toHaveText(undoConfirmation);
+  await expect(root).toBeFocused();
+  await page.keyboard.press('Control+z');
+  await expect.poll(statuses).toEqual(['in-progress', 'in-progress']);
 });
 
 test('sentence controls stay within their own line and configured priority labels remain visible', async () => {

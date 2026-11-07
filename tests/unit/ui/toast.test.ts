@@ -212,6 +212,25 @@ it("pauses dismissal while hovered or keyboard-focused", () => {
 	expect(document.querySelector(".tn-toast")).not.toBeNull();
 });
 
+it("returns focus to the task view when a focused toast is replaced", () => {
+	const root = document.body.createDiv({ cls: "tn-tasknotesKanban" });
+	root.tabIndex = -1;
+	root.focus();
+	showToast({ message: "Moved", action: { label: "Undo", run: jest.fn() } });
+	document.querySelector<HTMLButtonElement>(".tn-toast__action")!.focus();
+	showToast({ message: "Change undone." });
+	expect(document.activeElement).toBe(root);
+	expect(document.querySelector(".tn-toast__message")?.textContent).toBe("Change undone.");
+});
+
+it("does not move focus when an unfocused toast is replaced", () => {
+	const input = document.body.createEl("input");
+	showToast({ message: "Moved", action: { label: "Undo", run: jest.fn() } });
+	input.focus();
+	showToast({ message: "Another change" });
+	expect(document.activeElement).toBe(input);
+});
+
 it("leaves native input and editor undo alone and restores mouse focus to the task view", async () => {
 	const scope = {};
 	const root = document.body.createDiv({ cls: "tn-tasknotesTaskList" });

@@ -46,6 +46,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Keep Year calendar activity shading in both themes and at phone widths.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 
@@ -116,6 +117,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Restore the saved Kanban order immediately when Undo runs before metadata indexing catches up, and return keyboard focus to the task view when a focused feedback toast is replaced.
 - Stop list edge scrolling when a drag ends or is cancelled, use a gentler edge ramp, and show one unclipped drop explanation beside the pointer. Preserve the grab offset and show a stack for multi-task list drags.
 - Keep long-press task actions open after lifting a finger, and treat Escape on the unsaved-changes prompt as Keep editing.
 - Consume complete natural-language priority shortcuts without leaving punctuation in task titles, and hide priority controls when no priorities are configured.
