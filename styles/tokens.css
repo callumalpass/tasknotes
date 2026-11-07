@@ -54,9 +54,10 @@
     --tn-segmented-item-radius: var(--tn-radius-sm);
     --tn-segmented-selected-bg: var(--tn-bg-primary);
     --tn-segmented-selected-shadow: 0 1px 2px rgb(0 0 0 / 8%);
-    --tn-calendar-status-line: 2px;
-    --tn-calendar-event-tint: 8%;
-    --tn-calendar-event-saturation: 12%;
+    --tn-calendar-event-tint: 6%;
+    --tn-calendar-event-saturation: 16%;
+    --tn-calendar-ink-lightness: 0.38;
+    --tn-calendar-ink-chroma-max: 0.13;
     --tn-calendar-mark-lightness-min: 0.48;
     --tn-calendar-mark-lightness-max: 0.62;
     --tn-calendar-mark-chroma-max: 0.16;
@@ -220,7 +221,9 @@
 }
 
 body.theme-dark .tasknotes-plugin {
-    --tn-calendar-event-saturation: 18%;
+    --tn-calendar-event-saturation: 26%;
+    --tn-calendar-ink-lightness: 0.9;
+    --tn-calendar-ink-chroma-max: 0.07;
     --tn-calendar-mark-lightness-min: 0.68;
     --tn-calendar-mark-lightness-max: 0.80;
 }

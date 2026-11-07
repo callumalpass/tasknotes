@@ -269,25 +269,26 @@
     letter-spacing: var(--tn-letter-spacing-label);
 }
 
+/* Items are a soft tint of their colour with text in a deep (or, in dark themes, pale) shade of the same hue. */
 .tasknotes-plugin .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator) {
     --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-saturation), var(--tn-bg-primary));
     container-type: inline-size;
     border-width: 0;
-    border-inline-start: var(--tn-calendar-status-line) solid var(--tn-calendar-event-mark);
     border-radius: var(--tn-radius-sm);
     background: var(--tn-calendar-event-fill);
-    color: var(--tn-text-normal);
+    color: var(--tn-calendar-event-ink);
     font-size: var(--tn-type-xs);
 }
 
 .tasknotes-plugin .tnc-item,
 .tasknotes-plugin :is(.tnc-strip-dot, .tnc-ym-dots > i) {
-    --tn-calendar-event-mark: oklch(from var(--tnc-c, var(--tn-calendar-status-color, var(--tnc-accent))) clamp(var(--tn-calendar-mark-lightness-min), l, var(--tn-calendar-mark-lightness-max)) min(c, var(--tn-calendar-mark-chroma-max)) h);
+    --tn-calendar-event-mark: oklch(from var(--tnc-c, var(--tn-calendar-status-color, var(--tnc-accent))) clamp(var(--tn-calendar-mark-lightness-min), l, var(--tn-calendar-mark-lightness-max)) min(c, var(--tn-calendar-mark-chroma-max)) h / 1);
+    --tn-calendar-event-ink: oklch(from var(--tn-calendar-event-mark) var(--tn-calendar-ink-lightness) min(c, var(--tn-calendar-ink-chroma-max)) h);
 }
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list).is-completed {
     --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-tint), var(--tn-bg-primary));
-    border-inline-start-color: color-mix(in oklch, var(--tn-calendar-event-mark) 45%, var(--tn-bg-primary));
+    --tn-calendar-event-ink: var(--tn-text-muted);
     opacity: 1;
 }
 
@@ -297,9 +298,12 @@
     }
 }
 
-.tasknotes-plugin .tnc-item.fc-pattern-instance-event,
-.tasknotes-plugin .tnc-item.fc-recurring-event {
-    border-left-style: dashed;
+.tasknotes-plugin .tnc-item:not(.tnc-item--list):is(.fc-pattern-instance-event, .fc-recurring-event) {
+    border: 1px dashed color-mix(in oklch, var(--tn-calendar-event-mark) 40%, transparent);
+}
+
+.tasknotes-plugin .tnc-item:not(.tnc-item--list).fc-pattern-instance-event {
+    --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-tint), var(--tn-bg-primary));
 }
 
 .tasknotes-plugin .tnc-dg .tnc-item:not(.tnc-item--list) {
@@ -361,6 +365,7 @@
 .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tnc-item-time {
     color: inherit;
     font-size: var(--tn-type-2xs);
+    font-weight: var(--tn-font-weight-normal);
 }
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tn-task-glyphs {
@@ -666,15 +671,18 @@
     min-height: var(--tn-touch-target);
     padding: var(--tn-space-1) var(--tn-space-2);
     border: 0;
-    border-inline-start: var(--tn-space-half) solid var(--tn-calendar-status-color, var(--c));
     border-radius: var(--tn-radius-md);
-    background: transparent;
-    color: var(--tn-text-normal);
+    background: var(--tn-calendar-event-fill);
+    color: var(--tn-calendar-event-ink);
+}
+
+.tasknotes-plugin .tnc-popover-body .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator) + .tnc-item {
+    margin-block-start: var(--tn-space-half);
 }
 
 @media (hover: hover) {
 	.tasknotes-plugin .tnc .tnc-popover-body .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator):not(.is-selected):not(.is-dragging):hover {
-	    background: var(--tn-hover);
+	    background: color-mix(in oklch, var(--tn-calendar-event-mark) calc(var(--tn-calendar-event-saturation) + 8%), var(--tn-bg-primary));
 	}
 
 }
@@ -723,7 +731,7 @@
     display: block;
 }
 
-.tasknotes-plugin .tnc-item .tnc-item-time {
+.tasknotes-plugin .tnc-item--list .tnc-item-time {
     color: var(--tn-text-muted);
 }
 
@@ -1655,8 +1663,7 @@ body.is-mobile .tasknotes-plugin #bases-calendar .tn-calendar-list-entry .task-c
     --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-saturation), var(--tn-bg-primary));
     container-type: inline-size;
     background: var(--tn-calendar-event-fill);
-    color: var(--tn-text-normal);
-    border-inline-start: var(--tn-calendar-status-line) solid var(--tn-calendar-event-mark);
+    color: var(--tn-calendar-event-ink);
     border-radius: var(--tn-radius-sm);
     font-size: var(--tn-type-2xs);
 }
