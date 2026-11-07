@@ -334,7 +334,7 @@
   align-items: center;
   color: var(--interactive-accent);
   padding: 0.5rem;
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
   border-radius: var(--tn-radius-lg);
 }
 
@@ -363,7 +363,7 @@
 .tasknotes-webhook-modal-subsection-header span {
   color: var(--interactive-accent);
   padding: 0.25rem;
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
   border-radius: var(--tn-radius-sm);
 }
 

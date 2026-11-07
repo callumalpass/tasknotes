@@ -9,6 +9,7 @@
 		"build:test": "npm run build && node copy-files.mjs",
 		"check:ci-workflow": "node scripts/check-ci-workflow.mjs",
 		"check:bundle-size": "node scripts/check-bundle-size.mjs",
+		"check:obsidian-tokens": "node scripts/check-obsidian-tokens.mjs",
 		"check:language-pack-builds": "node scripts/check-language-pack-builds.mjs",
 		"copy-files": "node copy-files.mjs",
 		"build-css": "node build-css.mjs",

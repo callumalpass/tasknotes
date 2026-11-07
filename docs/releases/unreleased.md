@@ -129,6 +129,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Obsidian's editor commands and shortcuts work in the task modal's Markdown editors. Bold, Italic and Insert link did nothing there, and Follow link failed with an error. Plugins that use the active editor, such as Templater, now get the full editor.
 - Keep scheduled and due dates visible together in narrow Kanban cards and phone task lists by allowing their text to fit before moving dates into the metadata disclosure.
 - Use compact desktop controls in timeblock and other composer dialogs, matching task dialogs while preserving larger phone touch targets.
+- Restore styling that referred to theme values Obsidian does not provide: reminder dialog text sizes, weights and borders, filter-bar badges and highlights, statistics and webhook focus rings, and the size of phone setting toggles.
 - Distinguish selected-day mini calendar titles from their secondary filenames.
 - Keep keyboard focus on a task's metadata disclosure when its available width is recalculated.
 - Keep narrow Kanban task menus clear of subtask controls, and let phone agenda metadata wrap so due dates remain visible beside scheduled times.

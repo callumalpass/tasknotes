@@ -1516,6 +1516,6 @@ body.is-mobile .tasknotes-plugin .checkbox-container {
     box-sizing: border-box;
     height: var(--tn-touch-target);
     min-height: var(--tn-touch-target);
-    border-block: calc((var(--tn-touch-target) - var(--toggle-height)) / 2) solid transparent;
+    border-block: calc((var(--tn-touch-target) - var(--toggle-thumb-height) - 2 * var(--toggle-border-width)) / 2) solid transparent;
     background-clip: padding-box;
 }

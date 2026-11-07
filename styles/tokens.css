@@ -115,7 +115,7 @@
     --tn-interactive-hover: var(--tn-hover);
     --tn-interactive-accent: var(--interactive-accent);
     --tn-interactive-accent-hover: var(--interactive-accent-hover);
-    --tn-interactive-success: var(--interactive-success);
+    --tn-interactive-success: var(--color-green);
     --tn-drag-source-opacity: 0.4;
     --tn-drag-shadow: var(--tn-shadow-overlay);
     --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 6%, var(--background-secondary));

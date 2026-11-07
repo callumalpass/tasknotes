@@ -445,7 +445,7 @@
 .tasknotes-plugin .stats-view__filter-input:focus {
     outline: none;
     border-color: var(--tn-interactive-accent);
-    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.2);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 }
 
 .tasknotes-plugin .stats-view__header .setting-item {
