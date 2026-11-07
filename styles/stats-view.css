@@ -54,13 +54,6 @@
     padding-bottom: var(--tn-space-2);
 }
 
-.tasknotes-plugin .stats-view__title {
-    font-weight: var(--tn-font-weight-semibold);
-    color: var(--tn-text-normal);
-    margin: 0;
-    font-size: var(--tn-type-lg);
-}
-
 .tasknotes-plugin .stats-view__refresh-button {
     background: transparent;
     color: var(--tn-text-normal);
@@ -229,15 +222,6 @@
     white-space: nowrap;
 }
 
-.tasknotes-plugin .stats-view__more-projects {
-    text-align: center;
-    color: var(--tn-text-muted);
-    font-style: italic;
-    padding: var(--tn-space-1);
-    border-top: 1px solid var(--tn-border-color);
-    margin-top: var(--tn-space-1);
-}
-
 @container (max-width: 768px) {
     .tasknotes-plugin.stats-view {
         padding: var(--tn-space-2);
@@ -272,24 +256,6 @@
     border-radius: var(--tn-radius-none);
     padding: var(--tn-space-4) 0;
     overflow: visible;
-}
-
-.tasknotes-plugin .stats-view__progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    overflow: hidden;
-    margin-top: var(--tn-space-half);
-    position: relative;
-}
-
-.tasknotes-plugin .stats-view__progress-fill {
-    height: 100%;
-    background: var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-sm);
-    transition: width 0.6s ease-out;
-    position: relative;
 }
 
 .tasknotes-plugin .stats-view__overview-card {
@@ -383,25 +349,6 @@
     white-space: nowrap;
     min-width: 60px;
     text-align: right;
-}
-
-.tasknotes-plugin .stats-view__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--tn-space-4);
-    color: var(--tn-text-muted);
-}
-
-.tasknotes-plugin .stats-view__loading::before {
-    content: '';
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--tn-border-color);
-    border-top-color: var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-full);
-    margin-right: var(--tn-space-1);
-    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -542,14 +489,6 @@
     padding: var(--tn-space-1);
     background: var(--background-modifier-border);
     border-radius: var(--tn-radius-sm);
-}
-
-.tasknotes-plugin .stats-view__trend-label {
-    font-size: var(--tn-type-2xs);
-    color: var(--tn-text-muted);
-    margin-bottom: var(--tn-space-half);
-    text-transform: none;
-    letter-spacing: normal;
 }
 
 .tasknotes-plugin .stats-view__sparkline {
@@ -706,40 +645,12 @@
         opacity: 0.7;
     }
 }
-.tasknotes-plugin .stats-view__recent-tasks,
 .tasknotes-plugin .stats-view__task-list {
     display: flex;
     flex-direction: column;
     gap: var(--tn-space-1);
     max-height: 400px;
     overflow-y: auto;
-}
-
-.tasknotes-plugin .stats-view__recent-task {
-    background: var(--background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-sm);
-    padding: var(--tn-space-1);
-    cursor: var(--cursor-link, pointer);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-@media (hover: hover) {
-    .tasknotes-plugin .stats-view__recent-task:hover:not(:disabled):not([aria-disabled="true"]) {
-        border-color: var(--tn-interactive-accent);
-        background: var(--tn-interactive-hover);
-    }
-}
-.tasknotes-plugin .stats-view__task-title {
-    font-size: var(--tn-type-xs);
-    font-weight: var(--tn-font-weight-medium);
-    color: var(--tn-text-normal);
-    margin-bottom: var(--tn-space-half);
-}
-
-.tasknotes-plugin .stats-view__task-meta {
-    font-size: var(--tn-type-2xs);
-    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .stats-view__section-header {

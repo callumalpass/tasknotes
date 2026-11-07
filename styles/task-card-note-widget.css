@@ -51,7 +51,6 @@
     gap: var(--tn-space-1);
 }
 
-.tasknotes-plugin.task-card-note-widget .task-card__tag,
 .tasknotes-plugin.task-card-note-widget .task-card__metadata-property .tag {
     display: inline-flex;
     align-items: center;

@@ -1015,7 +1015,6 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     color: var(--tn-text-normal);
 }
 
-
 @media (hover: hover) {
     .tasknotes-plugin .task-card.task-card--selected:hover:not(:disabled):not([aria-disabled="true"]) {
         background: var(--tn-selected);
@@ -1038,13 +1037,13 @@ body.is-mobile .tasknotes-plugin .tn-btn {
 }
 
 .tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
-.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .filter-bar__action-button) {
+.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item) {
     transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast), border-color var(--tn-transition-fast);
     -webkit-tap-highlight-color: transparent;
 }
 
 .tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select, summary):focus-visible,
-.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action, .filter-bar__action-button):focus-visible {
+.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action):focus-visible {
     outline: var(--tn-space-half) solid var(--tn-focus-ring);
     outline-offset: var(--tn-space-half);
     box-shadow: none;
@@ -1056,7 +1055,7 @@ body.is-mobile .tasknotes-plugin .tn-btn {
 }
 
 .tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"]):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary),
-.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action, .filter-bar__action-button):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary) {
+.tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary) {
     background: var(--tn-active);
     color: var(--tn-text-normal);
     transition: none;

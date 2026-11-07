@@ -240,33 +240,6 @@
     display: none;
 }
 
-.tasknotes-plugin .pomodoro-view__task-display--no-task {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-20px);
-    margin: 0 auto;
-    padding: 0 var(--tn-space-2);
-    min-height: 0;
-}
-
-/* Current Task Content */
-.tasknotes-plugin .pomodoro-view__current-task {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--tn-space-half);
-    text-align: center;
-}
-
-.tasknotes-plugin .pomodoro-view__task-title {
-    font-size: var(--tn-type-xs);
-    color: var(--tn-text-muted);
-    font-weight: var(--tn-font-weight-medium);
-    max-width: 400px;
-    word-wrap: break-word;
-    text-align: center;
-}
-
 /* ================================================
    TASK SELECTOR SECTION
    ================================================ */
@@ -472,7 +445,6 @@
     display: none;
 }
 
-
 /* ================================================
    STATISTICS SECTION
    ================================================ */
@@ -612,9 +584,6 @@
 /* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */
-
-@media (prefers-reduced-motion: reduce) {
-}
 
 /* Focus indicators for keyboard navigation */
 .tasknotes-plugin .pomodoro-view__start-button:focus,

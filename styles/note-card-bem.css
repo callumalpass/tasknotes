@@ -52,7 +52,6 @@
 
 /* Ensure all note card titles match task card titles exactly */
 .tasknotes-plugin .note-card__title,
-.tasknotes-plugin .tn-card__title,
 .tasknotes-plugin .note-card--daily .note-card__title,
 .tasknotes-plugin .note-card--daily-note .note-card__title {
     font-size: var(--tn-type-sm);
@@ -166,19 +165,6 @@
     opacity: 0.8;
 }
 
-.tasknotes-plugin .note-card__preview {
-    font-size: var(--tn-type-2xs);
-    color: var(--tn-text-muted);
-    line-height: 1.3;
-    margin-top: var(--tn-space-half);
-    max-height: 2.6em; /* Approximately 2 lines */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
 .tasknotes-plugin .note-card__badge {
     position: absolute;
     top: var(--tn-space-2);
@@ -215,10 +201,6 @@
     font-size: var(--tn-type-xs);
 }
 
-.tasknotes-plugin .note-card--compact .note-card__preview {
-    display: none; /* Hide preview in compact mode */
-}
-
 /* Daily Note Variant */
 .tasknotes-plugin .note-card--daily-note {
     border-left-color: var(--tn-color-daily-note);
@@ -232,14 +214,6 @@
 
 /* Shadow Variants - Disabled for consistency with task cards */
 .tasknotes-plugin .note-card--shadow-light:hover {
-    box-shadow: none;
-}
-
-.tasknotes-plugin .note-card--shadow-medium:hover {
-    box-shadow: none;
-}
-
-.tasknotes-plugin .note-card--shadow-strong:hover {
     box-shadow: none;
 }
 
@@ -266,47 +240,6 @@
 /* =================================================================
    SHARED BASE CARD STYLES
    ================================================================= */
-
-/* Base card component that can be shared between TaskCard and NoteCard */
-.tasknotes-plugin .tn-card {
-    /* Common card styling */
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-    position: relative;
-    padding: var(--tn-space-2) var(--tn-space-3);
-    margin-bottom: 0;
-    background-color: var(--tn-bg-primary);
-    border: none;
-    border-bottom: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-none);
-    cursor: var(--cursor-link, pointer);
-    transition: background-color var(--tn-transition-fast);
-}
-
-.tasknotes-plugin .tn-card:hover {
-    background-color: var(--tn-interactive-hover);
-}
-
-.tasknotes-plugin .tn-card__content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-space-half);
-    min-width: 0;
-}
-
-.tasknotes-plugin .tn-card__title {
-    font-size: var(--tn-type-sm);
-    font-weight: 400;
-    line-height: 1.3;
-    color: var(--tn-text-normal);
-    margin: 0;
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    transition: color var(--tn-transition-fast);
-}
 
 /* =================================================================
    RESPONSIVE DESIGN

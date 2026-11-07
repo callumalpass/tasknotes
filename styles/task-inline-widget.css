@@ -65,9 +65,6 @@
     height: 12px;
 }
 
-
-
-
 @media (hover: hover) {
     .tasknotes-plugin .task-card--layout-inline:hover:not(:disabled):not([aria-disabled="true"]) {
         background-color: transparent;
@@ -206,10 +203,6 @@
     background: transparent;
     padding: 0;
 }
-.tasknotes-plugin .task-card--layout-inline .task-card__metadata-separator {
-    display: inline;
-    vertical-align: baseline;
-}
 .tasknotes-plugin .task-card--layout-inline svg:not(.tn-glyph) {
     display: inline-block;
     width: 0.85em;
@@ -229,7 +222,6 @@
 .tasknotes-plugin .task-inline-preview--reading-mode { font-family: inherit; font-size: inherit; vertical-align: baseline; }
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata-date--overdue { color: var(--tn-danger-text); }
 .tasknotes-plugin .task-card--layout-inline .task-card__metadata-date--today.task-card__metadata-date--due { color: var(--tn-warning-text); }
-
 
 .tasknotes-plugin .task-card--layout-inline {
     display: inline-flex;

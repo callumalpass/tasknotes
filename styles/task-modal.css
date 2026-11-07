@@ -61,29 +61,6 @@
     padding: var(--tn-space-2) 0;
 }
 
-.tn-task-modal__markdown-editor--details .details-editor-fallback {
-    display: block;
-    flex: 1 1 auto;
-    width: 100%;
-    min-height: var(--tn-modal-details-min-height);
-    box-sizing: border-box;
-    padding: var(--tn-space-2) 0;
-    border: none;
-    border-radius: var(--tn-radius-none);
-    background: transparent;
-    color: var(--text-normal);
-    font-family: var(--font-text);
-    font-size: var(--tn-modal-editor-size);
-    line-height: var(--line-height-normal);
-    resize: none;
-    overflow-y: auto;
-}
-
-.tn-task-modal__markdown-editor--details .details-editor-fallback:focus {
-    outline: none;
-    box-shadow: none;
-}
-
 .tn-task-modal__markdown-editor--details .cm-header,
 .tn-task-modal__markdown-editor--details .cm-formatting-header {
     color: var(--text-normal);
@@ -671,13 +648,13 @@
     font-weight: var(--tn-font-weight-normal);
 }
 
-.tasknotes-plugin.minimalist-task-modal .details-container :is(.task-projects-list, .task-dependency-list, .task-attachments-list) {
+.tasknotes-plugin.minimalist-task-modal .details-container :is(.task-projects-list, .task-attachments-list) {
     margin: 0 0 var(--tn-space-1) calc(var(--tn-modal-field-label-width) + var(--tn-space-2));
 }
 
 /* Phone-width panes give linked items the full width beneath their label */
 @container (max-width: 400px) {
-    .tasknotes-plugin.minimalist-task-modal .details-container :is(.task-projects-list, .task-dependency-list, .task-attachments-list) {
+    .tasknotes-plugin.minimalist-task-modal .details-container :is(.task-projects-list, .task-attachments-list) {
         margin-left: 0;
     }
 }
@@ -865,7 +842,6 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     margin-left: var(--size-4-1);
 }
 
-
 /* =====================================================================
    ACCESSIBILITY ENHANCEMENTS
    ===================================================================== */
@@ -928,11 +904,6 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
    RECURRING CALENDAR COMPONENT - BEM & MINIMALIST
    ===================================================================== */
 
-.tasknotes-plugin .metadata-item--calendar {
-    flex-direction: column;
-    align-items: flex-start;
-}
-
 .tasknotes-plugin .recurring-calendar {
     margin-top: var(--size-4-1);
     font-size: var(--font-ui-small);
@@ -972,7 +943,6 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
 }
-
 
 @media (hover: hover) {
     .tasknotes-plugin .recurring-calendar__nav:hover:not(:disabled):not([aria-disabled="true"]) {
@@ -1109,12 +1079,6 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     flex-direction: column;
     gap: 2px;
     padding: var(--size-4-1) 0;
-}
-
-.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__name {
-    font-weight: var(--font-medium);
-    color: var(--text-normal);
-    font-size: var(--font-ui-small);
 }
 
 .tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__meta {
@@ -1348,15 +1312,6 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     height: var(--tn-icon-sm);
 }
 
-.tasknotes-plugin .task-projects-empty {
-    padding: var(--size-4-3);
-    text-align: center;
-    color: var(--text-muted);
-    font-style: italic;
-    border: none;
-    font-size: var(--font-ui-small);
-}
-
 .tasknotes-plugin .task-project-item {
     max-width: 100%;
 }
@@ -1397,7 +1352,6 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
 .tasknotes-plugin .task-project-item--task-card .task-card {
     margin-bottom: 0;
 }
-
 
 .tasknotes-plugin .task-project-info {
     flex: 1;

@@ -13,97 +13,12 @@
     max-width: 100%;
 }
 
-/* Task List View Header */
-.tasknotes-plugin .task-list-view__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--tn-space-1) 0;
-    border-bottom: none;
-    margin-bottom: var(--tn-space-1);
-}
-
-.tasknotes-plugin .task-list-view__title {
-    font-size: var(--tn-type-sm);
-    font-weight: var(--tn-font-weight-semibold);
-    color: var(--tn-text-normal);
-    margin: 0;
-}
-
-.tasknotes-plugin .task-list-view__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--tn-space-1);
-}
-
-/* Use consistent button system with primary accent background preserved */
-.tasknotes-plugin .task-list-view__add-button {
-    background: var(--tn-interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-    box-shadow: none;
-}
-
-@media (hover: hover) and (pointer: fine) {
-body:not(.is-mobile) .tasknotes-plugin .task-list-view__add-button:hover {
-    background: var(--tn-interactive-accent-hover);
-    box-shadow: none;
-}
-}
-
-/* Filter Bar Container */
-.tasknotes-plugin .task-list-view__filter-container {
-    margin-bottom: var(--tn-space-2);
-}
-
-/* Task List Container */
-.tasknotes-plugin .task-list-view__tasks {
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-space-half);
-    flex: 1;
-    min-height: 0;
-}
-
 .tasknotes-plugin .task-list {
     display: flex;
     flex-direction: column;
     gap: var(--tn-space-half);
     flex: 1;
     min-height: 0;
-}
-
-
-/* Loading Indicator */
-.tasknotes-plugin .task-list-view__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--tn-space-1);
-    padding: var(--tn-space-3);
-    color: var(--tn-text-muted);
-    font-size: var(--tn-type-xs);
-    font-style: italic;
-    font-weight: 400;
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-lg);
-    margin-bottom: var(--tn-space-2);
-}
-
-.tasknotes-plugin .task-list-view__loading.is-hidden {
-    display: none;
-}
-
-.tasknotes-plugin .task-list-view__loading::before {
-    content: '';
-    width: 16px;
-    height: 16px;
-    border: 2px solid color-mix(in srgb, var(--tn-text-muted) 0.3, transparent);
-    border-top: 2px solid var(--tn-text-muted);
-    border-radius: var(--tn-radius-full);
-    animation: spin 1s linear infinite;
-    flex-shrink: 0;
 }
 
 /* Task Group Section */
@@ -190,12 +105,6 @@ body:not(.is-mobile) .tn-tasknotesTaskList .task-group-header:hover .task-group-
     opacity: 1;
 }
 
-
-.tasknotes-plugin .task-group-right { margin-left:auto; display:flex; align-items:center; gap: var(--tn-space-half); }
-
-/* Override count margin when inside right-side container */
-.tasknotes-plugin .task-group-right .agenda-view__item-count { margin-left: 0; margin-right: 0; }
-
 /* Chevron/toggle styles (match preview-all) */
 .tasknotes-plugin .task-group-header { cursor: var(--cursor-link, pointer); }
 .task-group-header { display: flex; align-items: center; justify-content: flex-start; gap: var(--tn-space-half); }
@@ -237,20 +146,6 @@ body:not(.is-mobile) .tasknotes-plugin .task-group-toggle:hover {
 .tasknotes-plugin .task-group-toggle .chevron { transition: transform var(--tn-transition-fast); }
 .tasknotes-plugin .task-group .task-group-toggle .chevron,
 .tasknotes-plugin .task-group .task-group-toggle svg { transform: rotate(90deg); }
-.tasknotes-plugin .task-group.is-collapsed .task-cards { display: none; }
-
-/* Subgroup styles and chevron behavior */
-.tasknotes-plugin .task-subgroups-container { margin-left: var(--tn-space-3); }
-.tasknotes-plugin .task-subgroup-header { display:flex; align-items:center; gap: var(--tn-space-half); cursor: pointer; padding: 2px 0; font-size: var(--tn-type-sm); font-weight: var(--tn-font-weight-medium); }
-.tasknotes-plugin .task-subgroup-header .agenda-view__item-count { margin-left: auto; }
-.tasknotes-plugin .task-subgroup-toggle { display: inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border:none; background:transparent; color: var(--tn-text-normal); font-size: var(--tn-type-xs); line-height: 1; }
-.tasknotes-plugin .task-subgroup-toggle .chevron { transition: transform var(--tn-transition-fast); }
-.tasknotes-plugin .task-subgroup .task-subgroup-toggle .chevron,
-.tasknotes-plugin .task-subgroup .task-subgroup-toggle svg { transform: rotate(90deg); }
-.tasknotes-plugin .task-subgroup.is-collapsed .task-subgroup-toggle .chevron,
-.tasknotes-plugin .task-subgroup.is-collapsed .task-subgroup-toggle svg { transform: rotate(0deg); }
-.tasknotes-plugin .task-subgroup.is-collapsed .task-cards { display: none; }
-.tasknotes-plugin .task-group.is-collapsed .task-subgroups-container { display: none; }
 
 /* Sub-header indentation for data-level attribute */
 .tasknotes-plugin .task-group[data-level="sub"] {
@@ -274,34 +169,6 @@ body:not(.is-mobile) .tasknotes-plugin .task-group-toggle:hover {
     height: 14px;
 }
 
-/* Per-group subgroup actions */
-.tasknotes-plugin .task-subgroup-actions { display:flex; align-items:center; gap: 4px; margin-left: 0; }
-.tasknotes-plugin .task-subgroup-action { border:none; background:transparent; color: var(--tn-text-muted); cursor: var(--cursor-link, pointer); padding: 0; }
-@media (hover: hover) and (pointer: fine) {
-body:not(.is-mobile) .tasknotes-plugin .task-subgroup-action:hover { color: var(--tn-text-normal); }
-}
-
-
-.tasknotes-plugin .task-list-view__project-link {
-    color: var(--tn-text-normal);
-    text-decoration: none;
-    cursor: var(--cursor-link, pointer);
-    transition: color 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-body:not(.is-mobile) .tasknotes-plugin .task-list-view__project-link:hover {
-    color: var(--tn-interactive-accent);
-    text-decoration: underline;
-}
-}
-
-.tasknotes-plugin .task-list-view__group-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-space-half);
-}
-
 /* Empty State */
 .tasknotes-plugin .task-list-view__empty {
     display: flex;
@@ -315,82 +182,6 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__project-link:hover {
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-lg);
     margin: var(--tn-space-3) 0;
-}
-
-.tasknotes-plugin .task-list-view__empty-title {
-    font-size: var(--tn-type-sm);
-    font-weight: var(--tn-font-weight-medium);
-    margin-bottom: var(--tn-space-1);
-    color: var(--tn-text-normal);
-}
-
-.tasknotes-plugin .task-list-view__empty-description {
-    font-size: var(--tn-type-sm);
-    line-height: 1.6;
-    max-width: 400px;
-}
-
-/* Task Item Container (wraps task cards) */
-.tasknotes-plugin .task-list-view__task-item {
-    position: relative;
-    background: var(--tn-bg-primary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), transform var(--tn-transition-fast);
-    overflow: hidden;
-}
-
-@media (hover: hover) and (pointer: fine) {
-body:not(.is-mobile) .tasknotes-plugin .task-list-view__task-item:hover {
-    background: var(--tn-interactive-hover);
-    border-color: var(--tn-border-color-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--tn-shadow-medium);
-}
-}
-
-.tasknotes-plugin .task-list-view__task-item:focus-within {
-    border-color: var(--tn-interactive-accent);
-    box-shadow: none;
-}
-
-/* Task Item States */
-.tasknotes-plugin .task-list-view__task-item--completed {
-    opacity: 0.7;
-    background: var(--tn-bg-secondary);
-}
-
-.tasknotes-plugin .task-list-view__task-item--overdue {
-    border-inline-start: 1px solid var(--tn-color-error);
-    background: color-mix(in srgb, var(--tn-color-error) 0.05, var(--tn-bg-primary));
-}
-
-.tasknotes-plugin .task-list-view__task-item--due-today {
-    border-inline-start: 1px solid var(--tn-interactive-accent);
-    background: color-mix(in srgb, var(--tn-interactive-accent) 0.05, var(--tn-bg-primary));
-}
-
-.tasknotes-plugin .task-list-view__task-item--archived {
-    opacity: 0.5;
-    background: transparent;
-}
-
-/* Task Item Priority Indicators */
-.tasknotes-plugin .task-list-view__task-item--priority-high {
-    border-inline-start: 1px solid var(--tn-color-error);
-}
-
-.tasknotes-plugin .task-list-view__task-item--priority-normal {
-    border-inline-start: 1px solid var(--tn-interactive-accent);
-}
-
-.tasknotes-plugin .task-list-view__task-item--priority-low {
-    border-inline-start: 1px solid var(--tn-text-muted);
-}
-
-/* Task Update Animation */
-.tasknotes-plugin .task-list-view__task-item--updating {
-    animation: task-update 1.5s ease;
 }
 
 @keyframes task-update {
@@ -408,7 +199,6 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__task-item:hover {
     }
 }
 
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .tasknotes-plugin .task-list-view {
@@ -420,21 +210,6 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__task-item:hover {
         padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
         scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
     }
-
-    .tasknotes-plugin .task-list-view__header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--tn-space-1);
-    }
-
-    .tasknotes-plugin .task-list-view__actions {
-        justify-content: center;
-    }
-
-    .tasknotes-plugin .task-list-view__add-button {
-        width: 100%;
-        max-width: 200px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -445,14 +220,6 @@ body:not(.is-mobile) .tasknotes-plugin .task-list-view__task-item:hover {
 
     .tasknotes-plugin .task-list-view__empty {
         padding: var(--tn-space-3);
-    }
-
-    .tasknotes-plugin .task-list-view__empty-title {
-        font-size: var(--tn-type-xs);
-    }
-
-    .tasknotes-plugin .task-list-view__empty-description {
-        font-size: var(--tn-type-xs);
     }
 }
 
@@ -613,7 +380,6 @@ body.is-mobile .tasknotes-plugin .task-list-view__parent-target {
 .tn-tasknotesTaskList {
     container: tn-task-list / inline-size;
 }
-
 
 .tn-tasknotesTaskList .virtual-scroller__content > .task-card + .task-group {
     border-top: none;

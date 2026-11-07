@@ -19,32 +19,6 @@
     min-height: 0;
 }
 
-.advanced-calendar-view__calendar--popout-blocked {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 240px;
-    padding: 24px;
-}
-
-.advanced-calendar-view__popout-blocked {
-    max-width: 420px;
-    color: var(--text-muted);
-    text-align: center;
-}
-
-.advanced-calendar-view__popout-blocked h3 {
-    margin: 0 0 8px;
-    color: var(--text-normal);
-    font-size: var(--tn-type-base);
-    font-weight: 600;
-}
-
-.advanced-calendar-view__popout-blocked p {
-    margin: 0;
-    line-height: 1.5;
-}
-
 /* ICS Event Styles */
 
 .ics-related-note-indicator,
@@ -68,39 +42,6 @@
 
 .tasknotes-plugin .ics-card__related-note-indicator {
     color: var(--tn-text-muted);
-}
-
-/* ICS Event Info Modal */
-.ics-event-description {
-    max-height: 100px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    font-size: var(--tn-type-sm);
-    margin-top: 0.25rem;
-    padding: 0.5rem;
-    background: var(--background-secondary);
-    border-radius: var(--tn-radius-sm);
-}
-
-/* ICS Context Menu */
-.ics-event-context-menu {
-    font-size: var(--tn-type-sm);
-}
-
-.ics-context-menu-item:hover {
-    background-color: var(--background-modifier-hover);
-}
-
-/* Timeblock Help Text */
-.advanced-calendar-view__help-text {
-    font-size: var(--tn-type-sm);
-    color: var(--text-muted);
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    background: var(--background-secondary);
-    border-radius: var(--tn-radius-sm);
-    border: 1px solid var(--background-modifier-border);
-    border-inline-start-color: var(--color-accent);
 }
 
 /* Timeblock Events */
@@ -142,36 +83,11 @@
     max-width: 500px;
 }
 
-.timeblock-date-display {
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    background: var(--background-secondary);
-    border-radius: var(--tn-radius-md);
-    text-align: center;
-}
-
 .timeblock-modal-buttons {
     display: flex;
     gap: 0.5rem;
     justify-content: flex-end;
     margin-top: 1.5rem;
-}
-
-.timeblock-help-text {
-    font-size: var(--tn-type-sm);
-    color: var(--text-muted);
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: var(--background-secondary);
-    border-radius: var(--tn-radius-sm);
-    line-height: 1.4;
-}
-
-.timeblock-help-text code {
-    background: var(--background-primary);
-    padding: 0.2em 0.4em;
-    border-radius: var(--tn-radius-sm);
-    font-size: var(--tn-type-sm);
 }
 
 /* Attachment Selection Styles */
@@ -299,11 +215,6 @@ body.is-mobile .timeblock-attachment-remove {
     height: 32px;
 }
 
-/* Attachment Suggestion Modal Styles */
-.attachment-suggestion {
-    padding: 0.5rem;
-}
-
 .attachment-name {
     font-weight: 500;
     color: var(--text-normal);
@@ -313,18 +224,6 @@ body.is-mobile .timeblock-attachment-remove {
     font-size: var(--tn-type-sm);
     color: var(--text-muted);
     margin-top: 0.2rem;
-}
-
-/* Timeblock Info Modal */
-.timeblock-description {
-    max-height: 100px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    font-size: var(--tn-type-sm);
-    margin-top: 0.25rem;
-    padding: 0.5rem;
-    background: var(--background-secondary);
-    border-radius: var(--tn-radius-sm);
 }
 
 .timeblock-attachments {
@@ -339,281 +238,6 @@ body.is-mobile .timeblock-attachment-remove {
 
 .timeblock-attachment-item .internal-link:hover {
     text-decoration: underline;
-}
-
-/* ICS Subscription Settings */
-.ics-subscription-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    margin-bottom: 0.5rem;
-}
-
-.settings-status-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: var(--tn-radius-full);
-    flex-shrink: 0;
-}
-
-.settings-status-indicator.enabled {
-    background-color: var(--text-success);
-}
-
-.settings-status-indicator.enabled.error {
-    background-color: var(--text-error);
-}
-
-.settings-status-indicator.disabled {
-    background-color: var(--text-muted);
-}
-
-.ics-subscription-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.ics-subscription-name {
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.ics-subscription-url {
-    font-size: var(--tn-type-sm);
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 0.25rem;
-}
-
-.ics-subscription-meta {
-    font-size: var(--tn-type-xs);
-    color: var(--text-muted);
-}
-
-.ics-subscription-error {
-    font-size: var(--tn-type-xs);
-    color: var(--text-error);
-    margin-top: 0.25rem;
-}
-
-.ics-subscription-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-shrink: 0;
-}
-
-.ics-subscription-actions button {
-    background: transparent;
-    color: var(--text-normal);
-    border: none;
-    box-shadow: none;
-    font-size: var(--tn-type-xs);
-}
-
-.ics-subscription-actions button:hover {
-    background: var(--tn-interactive-hover);
-}
-
-.ics-subscription-toggle.enabled {
-    color: var(--text-success);
-    border-color: var(--text-success);
-}
-
-.ics-subscription-toggle.disabled {
-    color: var(--text-muted);
-    border-color: var(--text-muted);
-}
-
-.ics-subscription-delete {
-    color: var(--text-error);
-    border-color: var(--text-error);
-}
-
-.ics-subscription-delete:hover {
-    background: var(--text-error);
-    color: var(--text-on-accent, var(--background-primary));
-}
-
-/* ICS Subscription Forms */
-.ics-add-subscription-form,
-.ics-edit-form {
-    margin: 1rem 0;
-    padding: 1rem;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    background: var(--background-secondary);
-}
-
-.ics-form-row,
-.ics-edit-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-
-.ics-form-row-multi,
-.ics-edit-settings {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.ics-form-group,
-.ics-edit-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    min-width: 120px;
-}
-
-.ics-form-label,
-.ics-edit-label {
-    min-width: 80px;
-    font-weight: 500;
-    flex-shrink: 0;
-}
-
-.ics-form-input,
-.ics-edit-input {
-    flex: 1;
-    padding: 0.5rem;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    background: var(--background-primary);
-    color: var(--text-normal);
-}
-
-.ics-form-color,
-.ics-edit-color {
-    width: 40px;
-    height: 30px;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    cursor: var(--cursor-link, pointer);
-}
-
-.ics-form-number,
-.ics-edit-number {
-    width: 80px;
-    padding: 0.5rem;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    background: var(--background-primary);
-    color: var(--text-normal);
-}
-
-.ics-form-checkbox-label,
-.ics-edit-checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: var(--cursor-link, pointer);
-}
-
-.ics-form-checkbox,
-.ics-edit-checkbox {
-    margin: 0;
-}
-
-.ics-form-button,
-.ics-edit-button {
-    background: transparent;
-    color: var(--text-normal);
-    border: none;
-    box-shadow: none;
-    margin-right: 0.5rem;
-}
-
-.ics-form-button:hover,
-.ics-edit-button:hover {
-    background: var(--tn-interactive-hover);
-}
-
-.ics-form-button.mod-cta,
-.ics-edit-button.mod-cta {
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-    box-shadow: none;
-}
-
-.ics-form-button.mod-cta:hover,
-.ics-edit-button.mod-cta:hover {
-    background: var(--interactive-accent-hover);
-    box-shadow: none;
-}
-
-.ics-edit-buttons {
-    justify-content: flex-start;
-    margin-top: 0.5rem;
-}
-
-.ics-subscription-editing {
-    background: var(--background-secondary);
-    border-color: var(--interactive-accent);
-}
-
-.advanced-calendar-view__container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.advanced-calendar-view__header {
-    padding: 0.5rem 1rem;
-    background: var(--background-primary);
-    flex-shrink: 0;
-}
-
-.advanced-calendar-view__main-row {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.advanced-calendar-view__main-row .filter-bar-container {
-    flex: 1;
-    min-width: 300px;
-}
-
-.advanced-calendar-view__controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-shrink: 0;
-}
-
-.advanced-calendar-view__schedule-tasks-btn {
-    padding: 0.4rem 0.8rem;
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-    border-radius: var(--tn-radius-md);
-    cursor: var(--cursor-link, pointer);
-    font-size: var(--tn-type-sm);
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-}
-
-.advanced-calendar-view__schedule-tasks-btn:hover {
-    background: var(--interactive-accent-hover);
-}
-
-.advanced-calendar-view__calendar-container {
-    flex: 1;
-    overflow: auto;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-lg);
-    min-height: 0;
 }
 
 /* Agenda/list mode can live in narrow sidebars; respond to container width, not viewport width. */
@@ -651,78 +275,9 @@ body.is-mobile .timeblock-attachment-remove {
     flex: 0 0 auto;
 }
 
-/* Mobile collapse toggle - hidden by default */
-.advanced-calendar-view__mobile-toggle {
-    display: none;
-    padding: 0.5rem 1rem;
-}
-
-.advanced-calendar-view__collapse-btn {
-    background: var(--interactive-normal);
-    color: var(--text-normal);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-md);
-    padding: 0.4rem 0.8rem;
-    font-size: var(--tn-type-sm);
-    cursor: var(--cursor-link, pointer);
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.advanced-calendar-view__collapse-btn:hover {
-    background: var(--interactive-hover);
-}
-
 /* Responsive design */
-@media (max-width: 1200px) {
-    .advanced-calendar-view__main-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-    }
-    
-    .advanced-calendar-view__main-row .filter-bar-container {
-        min-width: unset;
-    }
-    
-    .advanced-calendar-view__controls {
-        justify-content: space-between;
-    }
-}
 
 @media (max-width: 768px) {
-    /* Show mobile toggle on small screens */
-    .advanced-calendar-view__mobile-toggle {
-        display: block;
-    }
-    
-    /* Hide main row by default on mobile when collapsed */
-    .advanced-calendar-view__main-row.collapsed {
-        display: none;
-    }
-    
-    .advanced-calendar-view__main-row.expanded {
-        display: flex;
-    }
-    
-    .advanced-calendar-view__controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-    }
-    
-    
-    .advanced-calendar-view__schedule-tasks-btn {
-        align-self: center;
-    }
-    
-    .advanced-calendar-view__calendar-container {
-        padding: 0.5rem;
-    }
-    
-    /* Reduce header padding on mobile */
-    .advanced-calendar-view__header {
-        padding: 0.25rem 0.5rem;
-    }
 
     body.is-mobile .advanced-calendar-view .tn-calendar-event-touch-target {
         -webkit-touch-callout: none;

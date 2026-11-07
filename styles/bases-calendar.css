@@ -539,35 +539,6 @@
     box-shadow: none;
 }
 
-.tasknotes-plugin .tnc-collision-title {
-    grid-column: 1 / -1;
-    flex: none;
-    min-width: 0;
-    display: block;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    color: var(--tn-text-normal);
-    font-weight: var(--tn-font-weight-medium);
-    font-size: var(--tn-type-xs);
-}
-
-.tasknotes-plugin .tnc-more--collision .tnc-collision-count {
-    flex: none;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-    font-size: var(--tn-type-sm);
-    font-weight: var(--tn-font-weight-semibold);
-}
-
-.tasknotes-plugin .tnc-collision-range {
-    min-width: 0;
-    font-size: var(--tn-type-2xs);
-    font-variant-numeric: tabular-nums;
-    color: var(--tn-text-normal);
-    text-align: end;
-}
-
 .tasknotes-plugin .tnc :is(.tnc-ym-day, .tnc-ym-title) {
     background-image: none;
     box-shadow: none;
@@ -912,18 +883,9 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     box-shadow: none;
 }
 
-.tasknotes-plugin .tnc .tnc-item--list .task-card:is(:hover, .is-selected, .task-card--selected, .task-card--keyboard-focused) {
+.tasknotes-plugin .tnc .tnc-item--list .task-card:is(:hover, .is-selected, .task-card--selected) {
     background: none;
     box-shadow: none;
-}
-
-.tasknotes-plugin .tnc .tnc-item.tnc-drag-preview {
-    opacity: 1;
-    border: 1px solid var(--tn-drag-border);
-    border-radius: var(--tn-radius-md);
-    background: var(--tn-drag-surface);
-    box-shadow: var(--tn-drag-shadow);
-    outline: none;
 }
 
 .advanced-calendar-view .tnc-item--list .task-card {
@@ -1044,13 +1006,6 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     flex: none;
     width: var(--tn-space-1);
     height: var(--tn-space-1);
-}
-
-.tasknotes-plugin .tnc-strip-dots {
-    display: flex;
-    justify-content: center;
-    gap: var(--tn-space-half);
-    min-height: var(--tn-space-1);
 }
 
 .tasknotes-plugin .tn-calendar-agenda-strip .tnc-strip-handle {
