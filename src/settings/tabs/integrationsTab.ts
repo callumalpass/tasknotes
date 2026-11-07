@@ -1,4 +1,4 @@
-import { applyModalShell } from "../../ui/kit/modal";
+import { applyModalShell, fieldLabel } from "../../ui/kit/modal";
 import { displayError } from "../../i18n/runtime";
 import { calendarNameLabel } from "../../i18n/dataSeedLabels";
 import { uiData } from "../../i18n/dataText";
@@ -2360,7 +2360,7 @@ function renderICSSubscriptionsList(
 			translate(msg({ message: "Case-insensitive text, not regex; empty shows all events", context: "settings.integrations.subscriptionsList.titleFilter.help" })),
 			subscription.filter ?? ""
 		);
-		filterInput.setAttribute("aria-label", filterLabel);
+		filterInput.setAttribute("aria-label", fieldLabel(filterLabel));
 		filterInput.title = filterInput.placeholder;
 
 		// Authentication inputs (remote feeds only). The password is kept in

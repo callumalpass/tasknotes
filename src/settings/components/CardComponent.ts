@@ -1,4 +1,5 @@
 import { renderEmptyState } from "../../ui/kit/emptyState";
+import { fieldLabel } from "../../ui/kit/modal";
 import { uiText } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /**
@@ -531,7 +532,7 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 				}
 
 				const label = configRow.createSpan("tasknotes-settings__card-config-label");
-				label.textContent = row.label;
+				label.textContent = fieldLabel(row.label);
 
 				configRow.appendChild(row.input);
 			});

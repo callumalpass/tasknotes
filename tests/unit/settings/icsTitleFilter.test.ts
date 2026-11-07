@@ -46,7 +46,7 @@ describe.each(["en", "de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"])(
 			const label = input().getAttribute("aria-label");
 			expect(container.textContent).toContain(label);
 			if (locale !== "en") {
-				expect(label).not.toBe("Title contains:");
+				expect(label).not.toBe("Title contains");
 				expect(input().placeholder).not.toBe("Case-insensitive text, not regex; empty shows all events");
 			}
 			expect(service.updateSubscription).not.toHaveBeenCalled();

@@ -72,9 +72,9 @@ test.afterAll(async () => {
 test("renders translated chrome while preserving saved labels, keys, and type identifiers", async () => {
 	const panel = settingsPage.locator("#settings-tab-modal-fields");
 	await expect(panel).toContainText("任务对话框的字段配置");
-	await expect(panel).toContainText("已启用：");
-	await expect(panel).toContainText("创建任务时显示：");
-	await expect(panel).toContainText("编辑任务时显示：");
+	await expect(panel).toContainText("已启用");
+	await expect(panel).toContainText("创建任务时显示");
+	await expect(panel).toContainText("编辑任务时显示");
 	await expect(panel.locator(".field-manager__tab")).toHaveText("My saved group");
 	for (const [type, label] of Object.entries({
 		core: "核心",

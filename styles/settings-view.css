@@ -8,6 +8,10 @@
 .modal.mod-settings .vertical-tab-content .setting-item.tasknotes-settings {
     box-sizing: border-box;
     display: block;
+    /* One column, as wide as Obsidian's own setting groups */
+    width: 100%;
+    max-width: var(--setting-group-max-width);
+    margin-inline: auto;
     container-type: inline-size;
     min-width: 0;
     padding: 0;
@@ -22,7 +26,17 @@
 }
 
 .modal.mod-settings .vertical-tab-content.tasknotes-settings-host > .setting-group {
+    max-width: none;
     margin-inline: 0;
+}
+
+/* Obsidian wraps the tab root in its own group panel. TaskNotes draws its own
+   native groups inside it, so the outer panel is see-through and each group
+   keeps its own panel. */
+.modal.mod-settings .vertical-tab-content.tasknotes-settings-host > .setting-group > .setting-items {
+    border: 0;
+    border-radius: var(--tn-radius-none);
+    background: transparent;
 }
 
 body:not(.is-mobile) .tasknotes-settings {
@@ -79,10 +93,10 @@ body:not(.is-mobile) .tasknotes-settings {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: nowrap;
-    gap: var(--tn-space-half) var(--tn-space-2);
+    /* The link drops under the tabs rather than hiding the last tab */
+    flex-wrap: wrap;
+    gap: var(--tn-space-2);
     margin-bottom: var(--tn-space-2);
-    padding-inline: var(--tn-space-4);
 }
 
 .tasknotes-plugin .settings-header {
@@ -133,7 +147,7 @@ body:not(.is-mobile) .tasknotes-settings {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     flex-wrap: nowrap;
     gap: var(--tn-space-half);
     min-width: 0;
@@ -155,7 +169,7 @@ body:not(.is-mobile) .tasknotes-settings {
     min-width: 0;
 }
 
-@container (max-width: 700px) {
+@container (max-width: 480px) {
     .tasknotes-plugin .settings-view__tab-nav {
         display: none;
     }
@@ -173,7 +187,7 @@ body:not(.is-mobile) .tasknotes-settings {
     max-width: 100%;
     height: auto;
     min-height: var(--tn-touch-target);
-    padding: 3px 9px;
+    padding: 0 var(--tn-space-3);
     border: 1px solid transparent;
     border-radius: var(--radius-m);
     box-shadow: none;
@@ -204,7 +218,7 @@ body:not(.is-mobile) .tasknotes-settings {
     border-color: var(--tn-hairline);
 }
 
-@container (max-width: 700px) {
+@container (max-width: 480px) {
     .tasknotes-plugin .setting-item {
         flex-direction: column;
         align-items: stretch;
@@ -271,7 +285,6 @@ body:not(.is-mobile) .tasknotes-settings {
     min-width: 0;
     width: 100%;
     box-sizing: border-box;
-    padding-inline: var(--tn-space-4);
 }
 
 .tasknotes-plugin .settings-view__tab-content--active {
@@ -279,7 +292,8 @@ body:not(.is-mobile) .tasknotes-settings {
     animation: tn-settings-fade-in var(--tn-motion-base) var(--tn-ease);
 }
 
-.tasknotes-plugin .settings-view__tab-content button:not(.clickable-icon, .mod-cta, .mod-warning) {
+/* Disclosure headers and icon actions are buttons for keyboard access, but read as text */
+.tasknotes-plugin .settings-view__tab-content :is(.tasknotes-settings__collapsible-section-header, .tasknotes-settings__card-disclosure, .tasknotes-settings__card-header-btn) {
     background: transparent;
     box-shadow: none;
 }
@@ -412,10 +426,9 @@ body:not(.is-mobile) .tasknotes-settings {
 
 .tasknotes-settings__card-config-label {
     min-width: 80px;
-    font-weight: 500;
-    color: var(--text-normal);
+    color: var(--tn-text-muted);
     font-size: var(--tn-type-sm);
-    margin-right: 12px;
+    margin-right: var(--tn-space-3);
 }
 
 /* Card Inputs */

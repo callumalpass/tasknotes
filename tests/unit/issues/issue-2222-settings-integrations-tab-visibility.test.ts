@@ -34,23 +34,18 @@ function extractCssBlock(css: string, selector: string): string {
 describe("Issue #2222: settings integrations tab visibility", () => {
 	it("keeps every tab reachable in one scrollable row or a narrow-pane select", () => {
 		const css = readRepoFile("styles/settings-view.css");
-		const toolbarBlock = extractCssBlock(
-			css,
-			".tasknotes-plugin .settings-view__toolbar"
-		);
 		const tabNavBlock = extractCssBlock(
 			css,
 			".tasknotes-plugin .settings-view__tab-nav"
 		);
 
-		expect(toolbarBlock).toContain("flex-wrap: nowrap;");
 		expect(tabNavBlock).toContain("flex-wrap: nowrap;");
 		expect(tabNavBlock).toContain("overflow-x: auto;");
 		expect(tabNavBlock).toContain("min-width: 0;");
 		expect(tabNavBlock).not.toContain("overflow: hidden;");
 		const tabButtonBlock = extractCssBlock(css, ".tasknotes-plugin .settings-view__tab-button");
 		expect(tabButtonBlock).toContain("flex-shrink: 0;");
-		const narrowBlock = extractCssBlock(css, "@container (max-width: 700px)");
+		const narrowBlock = extractCssBlock(css, "@container (max-width: 480px)");
 		expect(extractCssBlock(narrowBlock, ".settings-view__tab-nav")).toContain("display: none;");
 		expect(extractCssBlock(narrowBlock, ".settings-view__tab-select")).toContain("display: block;");
 	});

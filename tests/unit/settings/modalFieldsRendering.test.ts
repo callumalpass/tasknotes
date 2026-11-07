@@ -66,7 +66,7 @@ describe("Modal fields settings rendering", () => {
 		renderModalFieldsTab(container, plugin, jest.fn());
 
 		expect(container.textContent).toContain("任务对话框的字段配置");
-		for (const label of ["已启用：", "创建任务时显示：", "编辑任务时显示：", "分组："]) {
+		for (const label of ["已启用", "创建任务时显示", "编辑任务时显示", "分组"]) {
 			expect(container.textContent).toContain(label);
 		}
 		expect(container.querySelector(".field-manager__tab")?.textContent).toBe("My saved group");

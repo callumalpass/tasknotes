@@ -44,30 +44,31 @@ export function createFieldManager(
 	}
 
 	// Create tabs for different field groups
-	const tabsContainer = container.createDiv({ cls: "field-manager__tabs" });
+	const tabsContainer = container.createDiv({ cls: "field-manager__tabs tn-segmented" });
 	const contentContainer = container.createDiv({ cls: "field-manager__content" });
 
 	// Sort groups by order
 	const sortedGroups = [...config.groups].sort((a, b) => a.order - b.order);
 
-	// Create tabs
-	sortedGroups.forEach((group, index) => {
-		const tab = tabsContainer.createDiv({ cls: "field-manager__tab" });
-		if (index === 0) {
-			tab.addClass("field-manager__tab--active");
-		}
-		tab.setText(fieldGroupLabel(group));
-		tab.onclick = () => {
-			// Update active tab
-			tabsContainer.querySelectorAll(".field-manager__tab").forEach((t) => {
-				t.removeClass("field-manager__tab--active");
-			});
-			tab.addClass("field-manager__tab--active");
-
-			// Render fields for this group
+	const tabs = sortedGroups.map((group) => {
+		const tab = tabsContainer.createEl("button", {
+			cls: "field-manager__tab tn-segmented__item",
+			text: fieldGroupLabel(group),
+			attr: { type: "button" },
+		});
+		tab.addEventListener("click", () => {
+			showSelectedTab(tab);
 			renderFieldGroup(contentContainer, group.id, config, plugin, onUpdate, app);
-		};
+		});
+		return tab;
 	});
+	const showSelectedTab = (selected: HTMLElement | undefined) => {
+		for (const tab of tabs) {
+			tab.toggleClass("is-selected", tab === selected);
+			tab.setAttribute("aria-pressed", String(tab === selected));
+		}
+	};
+	showSelectedTab(tabs[0]);
 
 	// Render first group by default
 	if (sortedGroups.length > 0) {
@@ -142,7 +143,7 @@ function createFieldCard(
 			onUpdate(config);
 			// Re-render to update visibility
 			const activeTab = activeDocument.querySelector(
-				".field-manager__tab--active"
+				".field-manager__tab.is-selected"
 			) as HTMLElement;
 			if (activeTab) {
 				const tabParent = activeTab.parentElement;
@@ -195,7 +196,7 @@ function createFieldCard(
 			onUpdate(config);
 			// Re-render to show field in new group
 			const activeTab = activeDocument.querySelector(
-				".field-manager__tab--active"
+				".field-manager__tab.is-selected"
 			) as HTMLElement;
 			if (activeTab) {
 				activeTab.click();
