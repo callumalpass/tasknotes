@@ -226,9 +226,8 @@ test('phone calendar geometry preserves chrome, month content and week titles', 
         await expect(page.locator('.tnc-tg-head .tnc-dh')).toHaveCount(3);
         const todayBackground = await page.locator('.tnc-col.is-today').evaluate(element => ({
           day: getComputedStyle(element).backgroundColor,
-          surface: getComputedStyle(element.closest('.tnc')!).backgroundColor,
         }));
-        expect(todayBackground.day).toBe(todayBackground.surface);
+        expect(todayBackground.day).toBe('rgba(0, 0, 0, 0)');
         await page.locator('.tnc-btn-prev').focus();
         for (const control of ['today', 'next', 'overflow']) {
           await page.keyboard.press('Tab');

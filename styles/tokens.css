@@ -56,10 +56,11 @@
     --tn-segmented-selected-shadow: 0 1px 2px rgb(0 0 0 / 8%);
     --tn-calendar-status-line: 2px;
     --tn-calendar-event-tint: 8%;
-    --tn-calendar-event-saturation: 88%;
+    --tn-calendar-event-saturation: 12%;
+    --tn-calendar-mark-lightness-min: 0.48;
+    --tn-calendar-mark-lightness-max: 0.62;
+    --tn-calendar-mark-chroma-max: 0.16;
     --tn-calendar-chip-height: 22px;
-    --tn-calendar-ink-light: #ffffff;
-    --tn-calendar-ink-dark: #000000;
     --tn-calendar-date-lane: 64px;
     --tn-mini-calendar-day-size: 32px;
     --tn-glyph-size: 14px;
@@ -204,6 +205,12 @@
     --tn-nested-task-padding: 15px;
 
     font-variant-numeric: tabular-nums;
+}
+
+body.theme-dark .tasknotes-plugin {
+    --tn-calendar-event-saturation: 18%;
+    --tn-calendar-mark-lightness-min: 0.68;
+    --tn-calendar-mark-lightness-max: 0.80;
 }
 
 body.is-mobile .tasknotes-plugin {

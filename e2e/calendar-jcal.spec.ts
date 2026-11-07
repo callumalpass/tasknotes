@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 const baseline = process.env.TASKNOTES_JCAL_BASELINE === '1';
-const output = `/tmp/tasknotes-r7/jcal/${baseline ? 'before' : 'after'}`;
+const output = `${process.env.TASKNOTES_E2E_EVIDENCE_DIR ?? '/tmp/tasknotes-r7'}/jcal/${baseline ? 'before' : 'after'}`;
 const folder = 'CalendarJcal';
 const root = '.workspace-leaf.mod-active #bases-calendar';
 let instance: ObsidianApp;
@@ -71,7 +71,8 @@ async function mode(view: string) {
     const view = (window as any).jcalLeaf.view.controller.view;
     return Boolean(view._saveViewTypeTimer || view._isRendering || view._pendingRender || view._configChangedNeedsRecreate);
   })).toBe(false);
-  await expect(instance.page.locator(`${root} > .tnc--${view}`)).toBeVisible();
+  const effective = view === 'week' && await instance.page.locator('.advanced-calendar-view').first().evaluate(element => element.clientWidth < 640) ? 'days' : view;
+  await expect(instance.page.locator(`${root} > .tnc--${effective}`)).toBeVisible();
   await instance.page.locator(root).evaluate(async element => {
     await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation instanceof CSSAnimation && animation.animationName === 'tn-calendar-view-enter').map(animation => animation.finished.catch(() => undefined)));
   });
@@ -177,8 +178,6 @@ test('mini-calendar titles lead while file identity and direct note access remai
     const entry = page.locator(`.mini-calendar-view__entry[data-entry-path="${folder}/Scheduled.md"]`);
     if (!await entry.isVisible()) {
       await page.locator('.workspace-leaf.mod-active .mini-calendar-view__day[aria-current="date"]').click();
-      await expect(page.locator('.modal-container')).toBeVisible();
-      await page.keyboard.press('Escape');
       await expect(page.locator('.modal-container')).toHaveCount(0);
     }
     await expect(entry).toBeVisible();

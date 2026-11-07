@@ -25,7 +25,7 @@ function composition(width: number, showMonthDayPanel = true) {
 test("narrow month summaries follow available pane width without rebuilding on every resize", () => {
 	const { rootElement, calendar, view } = composition(400);
 	view.onResize();
-	expect(calendar.setOptions).toHaveBeenLastCalledWith({ monthDisplay: "chips", dayMaxEventRows: 0 });
+	expect(calendar.setOptions).toHaveBeenLastCalledWith({ monthDisplay: "dots", dayMaxEventRows: 0 });
 	view.onResize();
 	expect(calendar.setOptions).toHaveBeenCalledTimes(1);
 	rootElement.clientWidth = 1180;
@@ -35,10 +35,12 @@ test("narrow month summaries follow available pane width without rebuilding on e
 	expect(calendar.setOptions).toHaveBeenCalledTimes(2);
 });
 
-test.each([240, 400, 700, 850])("a month without a selected-day panel retains readable chips at %ipx", (width) => {
+test.each([240, 400, 700, 850])("a month without a selected-day panel uses compact disclosure below chip width at %ipx", (width) => {
 	const { calendar, view } = composition(width, false);
 	view.onResize();
-	expect(calendar.setOptions).toHaveBeenLastCalledWith({ monthDisplay: "chips", dayMaxEventRows: 0 });
+	expect(view.getMonthDisplay()).toBe(width < 560 ? "full" : "chips");
+	if (width < 560) expect(calendar.setOptions).not.toHaveBeenCalled();
+	else expect(calendar.setOptions).toHaveBeenLastCalledWith({ monthDisplay: "chips", dayMaxEventRows: 0 });
 });
 
 test("a hidden pane does not switch to summary mode at zero width", () => {

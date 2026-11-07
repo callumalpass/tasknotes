@@ -51,8 +51,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 
 - Centre the mini calendar in wider panes, make activity dots clearer, and show the selected day's notes and calendar events beneath the grid. Escape clears the date selection without losing the displayed month.
-- Calendar events use their configured priority or calendar colours as filled surfaces with contrasting text. All-day chips are compact in both themes, and today's column is no longer tinted.
-- Day view groups three or more overlapping appointments into a collision stack rather than drawing obscured, stair-stepped blocks. Turning off event overlap still shows appointments side by side.
+- Calendar events derive quiet surfaces and small hue marks from configured priority or calendar colours, with separate light and dark tuning and theme text. Selected events have an accent outline and checkmark; completed events remain readable. All-day chips are compact, and today's column is no longer tinted.
+- Day view groups three or more overlapping appointments into a collision stack and lays smaller overlaps in clean columns. Other time-grid views retain the configured overlap preference.
+- Calendar shortcuts remain available after toolbar actions. Mini-calendar clicks and Enter select the day without a chooser; its panel sorts appointments by time and opens entries only when their rows are activated.
+- Keep dragged Month items dimmed at their original positions with a target placeholder, preserve phone drag widths over collisions, and keep date-strip swipes inside the calendar.
+- Compact agenda controls into the date-strip header, reveal row menus on hover or keyboard focus, separate metadata values, and remove repeated empty-day add buttons. New tasks remain available through Bases New and the calendar's C shortcut.
+- Show times in short appointments, keep the current Year month below sticky headers, suppress stationary post-drop tooltips, align event Details text, and use activity dots with full-day popovers instead of truncated phone Month chips.
 - Agenda rows put times and metadata beneath the title instead of reserving a time gutter. The optional selected-day panel uses the same compact rows and shows a distinct item count.
 - Mini-calendar dates use circular markers, quieter week numbers and clearer activity dots. The selected day's notes and calendar events appear beside the grid in wider panes and beneath it in narrow panes. Escape clears the date selection without losing the displayed month.
 - Reuse the completion calendar's month grid in precise date pickers, keep picker highlighting compact, align task modal controls, and give settings and Pomodoro metrics consistent spacing and hierarchy.

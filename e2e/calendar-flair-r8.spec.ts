@@ -71,6 +71,11 @@ async function appearance(width: number, theme: string) {
 }
 
 async function mode(view: string) {
+  if (view === 'days') {
+    const select = instance.page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select');
+    if (await select.isVisible()) await select.selectOption('days');
+    else await instance.page.locator('.workspace-leaf.mod-active .tnc-btn-view-days').click();
+  }
   await instance.page.evaluate(({ view, today }) => (window as any).flairLeaf.view.controller.view.calendar.changeView(view, today), { view, today });
   const persisted = ({ month: 'dayGridMonth', week: 'timeGridWeek', days: 'timeGridCustom', day: 'timeGridDay', list: 'listWeek' } as Record<string, string>)[view];
   await expect.poll(() => instance.page.evaluate(async folder => {
@@ -81,7 +86,8 @@ async function mode(view: string) {
     const current = (window as any).flairLeaf.view.controller.view;
     return Boolean(current._saveViewTypeTimer || current._isRendering || current._pendingRender || current._configChangedNeedsRecreate);
   })).toBe(false);
-  await expect(instance.page.locator(`.workspace-leaf.mod-active #bases-calendar > .tnc--${view}`)).toBeVisible();
+  const effective = view === 'week' && await instance.page.locator('.advanced-calendar-view').first().evaluate(element => element.clientWidth < 640) ? 'days' : view;
+  await expect(instance.page.locator(`.workspace-leaf.mod-active #bases-calendar > .tnc--${effective}`)).toBeVisible();
   await instance.page.locator('.workspace-leaf.mod-active #bases-calendar').evaluate(async element => {
     await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
   });
@@ -145,7 +151,7 @@ test('agenda, filled events, compact all-day band, day panel and mini calendar m
         for (const stamp of metrics.stamps) expect(stamp.height).toBeLessThanOrEqual(24);
         if (view === 'month') await expect(page.locator('.tn-calendar-day-count')).toHaveText('10 items');
         for (const flag of metrics.flags) if (flag.width < 110) expect(flag.display).toBe('none');
-        if (view === 'week') expect(await page.locator('.tnc-col.is-today').evaluate(element => getComputedStyle(element).backgroundColor)).toBe(await page.locator('.tnc-col:not(.is-today)').first().evaluate(element => getComputedStyle(element).backgroundColor));
+        if (view === 'week') await expect(page.locator('.tnc-col.is-today')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
       }
     }
     await page.evaluate(async folder => {
@@ -163,7 +169,7 @@ test('agenda, filled events, compact all-day band, day panel and mini calendar m
     await page.screenshot({ path: `${output}/mini-${width}-${theme}.png` });
     if (!baseline && width === 1180 && theme === 'light') {
       await page.locator('.mini-calendar-view__day--outside-month').first().click();
-      await expect(page.locator('.mini-calendar-view__selected-day .tn-picker__empty')).toHaveText('Nothing scheduled for the selected dates.');
+      await expect(page.locator('.mini-calendar-view__selected-day .tn-picker__empty')).toHaveText('Nothing scheduled for this day.');
       await expect(page.locator('.mini-calendar-view__day--today .mini-calendar-view__number')).toHaveCSS('border-radius', '999px');
       await page.screenshot({ path: `${output}/mini-empty.png` });
     }

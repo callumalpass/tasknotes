@@ -1,6 +1,6 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.10-r8.1 (MIT, see LICENSE beside this file).
- * Upstream sha256 7fd57fadb04d872569df6fc817a0c356ff9c549e73d345e4a61e982264ec1dbd.
+ * Pinned host copy of @tasknotes/calendar 0.1.10-r9.0 (MIT, see LICENSE beside this file).
+ * Upstream sha256 652876bf3041281974a22ab92f9d8950f95de2cbb3df033b120980d633e9ef38.
  * build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
@@ -1956,6 +1956,22 @@
 	box-shadow: var(--tnc-theme-drag-lift, var(--tnc-shadow));
 	outline: 1px solid var(--tnc-focus);
 	outline-offset: -1px;
+}
+.tnc .tnc-item--timed.is-dragging {
+	min-width: var(--tnc-drag-width);
+	max-width: var(--tnc-drag-width);
+}
+.tnc .tnc-dg .tnc-item.is-dragging:not(.is-mirror) {
+	opacity: var(--tnc-drag-opacity);
+	box-shadow: none;
+	outline: none;
+}
+.tnc .tnc-month-preview {
+	position: absolute;
+	pointer-events: none;
+	outline: 2px dashed var(--tnc-accent);
+	outline-offset: -2px;
+	z-index: 10;
 }
 .tnc .tnc-item--list.is-dragging:not(.tnc-drag-preview) {
 	opacity: var(--tnc-drag-opacity);

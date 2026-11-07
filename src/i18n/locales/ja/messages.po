@@ -8948,6 +8948,11 @@ msgctxt "mini calendar empty selection"
 msgid "Nothing scheduled for the selected dates."
 msgstr "選択した日付に予定はありません。"
 
+#: src/bases/MiniCalendarView.ts
+msgctxt "mini calendar empty day"
+msgid "Nothing scheduled for this day."
+msgstr "この日の予定はありません。"
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundEnabledName"
 msgid "Notification sound"

@@ -161,7 +161,7 @@
 
 .tasknotes-plugin .mini-calendar-view__entry .mini-calendar-view__entry-content {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) fit-content(30%);
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--tn-space-2);
     width: 100%;
@@ -171,12 +171,31 @@
 }
 
 .tasknotes-plugin .mini-calendar-view__entry .tn-picker__label {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-2);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+.tasknotes-plugin .mini-calendar-view__entry-time {
+    grid-column: 2;
+    grid-row: 1;
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    font-variant-numeric: tabular-nums;
+}
+
+@container (min-width: 700px) {
+    .tasknotes-plugin .mini-calendar-view__selected-day {
+        border-top: 0;
+        padding-block-start: 0;
+    }
+}
+
 .tasknotes-plugin .mini-calendar-view__entry .tn-picker__detail {
+    grid-column: 1 / -1;
     max-width: 100%;
     margin-inline-start: 0;
     color: var(--tn-text-muted);
