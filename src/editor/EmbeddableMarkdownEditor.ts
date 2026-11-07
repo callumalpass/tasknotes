@@ -1,24 +1,14 @@
-import {
-	App,
-	Constructor,
-	Scope,
-	TFile,
-	type Editor,
-	type EditorPosition,
-	type EditorSelection,
-	type EditorSelectionOrCaret,
-	type EditorTransaction,
-} from "obsidian";
+import { App, Constructor, Scope, TFile, type Editor, type EventRef } from "obsidian";
 import { EditorSelection as CMEditorSelection, Extension, Prec } from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { acceptCompletion, selectedCompletion } from "@codemirror/autocomplete";
 import { around } from "monkey-around";
+import { EMBEDDED_MARKDOWN_EDITOR_CLASS } from "./MarkdownWidgetContext";
 import { resolveMarkdownEditorPrototype } from "./resolveMarkdownEditorPrototype";
 
 declare const app: App;
 
 type Nullable<T> = T | null;
-type OneOf<T, U> = T | U;
 
 // Internal Obsidian type - not exported in official API
 interface ScrollableMarkdownEditor {
@@ -182,293 +172,6 @@ export function getMarkdownEditorTooltipParent(container: HTMLElement): HTMLElem
 	return container.ownerDocument?.body ?? activeDocument.body;
 }
 
-class CodeMirrorEditorAdapter {
-	constructor(private readonly view: EditorView) {}
-
-	getDoc(): CodeMirrorEditorAdapter {
-		return this;
-	}
-
-	getValue(): string {
-		return this.view.state.doc.toString();
-	}
-
-	setValue(content: string): void {
-		this.view.dispatch({
-			changes: {
-				from: 0,
-				to: this.view.state.doc.length,
-				insert: content,
-			},
-		});
-	}
-
-	getLine(line: number): string {
-		return this.view.state.doc.line(line + 1).text;
-	}
-
-	lineCount(): number {
-		return this.view.state.doc.lines;
-	}
-
-	lastLine(): number {
-		return this.lineCount() - 1;
-	}
-
-	getSelection(): string {
-		const range = this.view.state.selection.main;
-		return this.view.state.doc.sliceString(range.from, range.to);
-	}
-
-	somethingSelected(): boolean {
-		return !this.view.state.selection.main.empty;
-	}
-
-	setHeading(level: number): void {
-		const normalizedLevel = Math.max(0, Math.min(6, Number(level) || 0));
-		const marker = normalizedLevel > 0 ? `${"#".repeat(normalizedLevel)} ` : "";
-
-		this.updateSelectedLines((line) => {
-			const withoutHeading = line.replace(/^ {0,3}#{1,6}\s+/, "");
-			return `${marker}${withoutHeading}`;
-		});
-	}
-
-	toggleBulletList(): void {
-		const lines = this.getSelectedLines();
-		const shouldRemove = lines.some((line) => /^\s*[-*+]\s+/.test(line.text));
-
-		this.updateSelectedLines((line) => {
-			if (shouldRemove) {
-				return line.replace(/^(\s*)[-*+]\s+/, "$1");
-			}
-			const [, indent = "", content = ""] = line.match(/^(\s*)(.*)$/) ?? [];
-			return `${indent}- ${content}`;
-		});
-	}
-
-	toggleNumberedList(): void {
-		const lines = this.getSelectedLines();
-		const shouldRemove = lines.some((line) => /^\s*\d+[.)]\s+/.test(line.text));
-
-		this.updateSelectedLines((line, index) => {
-			if (shouldRemove) {
-				return line.replace(/^(\s*)\d+[.)]\s+/, "$1");
-			}
-			const [, indent = "", content = ""] = line.match(/^(\s*)(.*)$/) ?? [];
-			return `${indent}${index + 1}. ${content}`;
-		});
-	}
-
-	toggleNumberList(): void {
-		this.toggleNumberedList();
-	}
-
-	toggleCheckListStatus(): void {
-		this.updateSelectedLines((line) => {
-			if (/^(\s*[-*+]\s+\[[ xX]\]\s*)/.test(line)) {
-				return line.replace(/^(\s*[-*+]\s+\[)([ xX])(\]\s*)/, (_match, prefix, state, suffix) =>
-					`${prefix}${state.toLowerCase() === "x" ? " " : "x"}${suffix}`
-				);
-			}
-			if (/^\s*[-*+]\s+/.test(line)) {
-				return line.replace(/^(\s*[-*+]\s+)/, "$1[ ] ");
-			}
-			const [, indent = "", content = ""] = line.match(/^(\s*)(.*)$/) ?? [];
-			return `${indent}- [ ] ${content}`;
-		});
-	}
-
-	toggleCheckList(): void {
-		this.toggleCheckListStatus();
-	}
-
-	getRange(from: EditorPosition, to: EditorPosition): string {
-		return this.view.state.doc.sliceString(this.posToOffset(from), this.posToOffset(to));
-	}
-
-	replaceSelection(replacement: string): void {
-		const transaction = this.view.state.changeByRange((range) => ({
-			changes: {
-				from: range.from,
-				to: range.to,
-				insert: replacement,
-			},
-			range: CMEditorSelection.cursor(range.from + replacement.length),
-		}));
-
-		this.view.dispatch(transaction);
-	}
-
-	replaceRange(replacement: string, from: EditorPosition, to?: EditorPosition): void {
-		this.view.dispatch({
-			changes: {
-				from: this.posToOffset(from),
-				to: this.posToOffset(to ?? from),
-				insert: replacement,
-			},
-		});
-	}
-
-	getCursor(side: "from" | "to" | "head" | "anchor" = "head"): EditorPosition {
-		const range = this.view.state.selection.main;
-		switch (side) {
-			case "from":
-				return this.offsetToPos(range.from);
-			case "to":
-				return this.offsetToPos(range.to);
-			case "anchor":
-				return this.offsetToPos(range.anchor);
-			case "head":
-			default:
-				return this.offsetToPos(range.head);
-		}
-	}
-
-	listSelections(): EditorSelection[] {
-		return this.view.state.selection.ranges.map((range) => ({
-			anchor: this.offsetToPos(range.anchor),
-			head: this.offsetToPos(range.head),
-		}));
-	}
-
-	setCursor(pos: OneOf<EditorPosition, number>, ch?: number): void {
-		if (typeof pos === "number") {
-			this.setSelection({ line: pos, ch: ch ?? 0 });
-			return;
-		}
-
-		this.setSelection(pos);
-	}
-
-	setSelection(anchor: EditorPosition, head?: EditorPosition): void {
-		this.view.dispatch({
-			selection: CMEditorSelection.range(
-				this.posToOffset(anchor),
-				this.posToOffset(head ?? anchor)
-			),
-		});
-	}
-
-	setSelections(ranges: EditorSelectionOrCaret[], main = 0): void {
-		if (ranges.length === 0) return;
-
-		this.view.dispatch({
-			selection: CMEditorSelection.create(
-				ranges.map((range) =>
-					CMEditorSelection.range(
-						this.posToOffset(range.anchor),
-						this.posToOffset(range.head ?? range.anchor)
-					)
-				),
-				main
-			),
-		});
-	}
-
-	focus(): void {
-		this.view.focus();
-	}
-
-	blur(): void {
-		this.view.contentDOM.blur();
-	}
-
-	hasFocus(): boolean {
-		return this.view.hasFocus;
-	}
-
-	transaction(tx: EditorTransaction): void {
-		if (tx.replaceSelection !== undefined) {
-			this.replaceSelection(tx.replaceSelection);
-			return;
-		}
-
-		const changes = tx.changes?.map((change) => ({
-			from: this.posToOffset(change.from),
-			to: this.posToOffset(change.to ?? change.from),
-			insert: change.text,
-		}));
-
-		const selections = tx.selections ?? (tx.selection ? [tx.selection] : undefined);
-		this.view.dispatch({
-			...(changes ? { changes } : {}),
-			...(selections && selections.length > 0
-				? {
-						selection: CMEditorSelection.create(
-							selections.map((selection) =>
-								CMEditorSelection.range(
-									this.posToOffset(selection.from),
-									this.posToOffset(selection.to ?? selection.from)
-								)
-							)
-						),
-					}
-				: {}),
-		});
-	}
-
-	posToOffset(pos: EditorPosition): number {
-		const lineNumber = Math.max(1, Math.min(pos.line + 1, this.view.state.doc.lines));
-		const line = this.view.state.doc.line(lineNumber);
-		return Math.max(line.from, Math.min(line.from + pos.ch, line.to));
-	}
-
-	offsetToPos(offset: number): EditorPosition {
-		const clampedOffset = Math.max(0, Math.min(offset, this.view.state.doc.length));
-		const line = this.view.state.doc.lineAt(clampedOffset);
-		return {
-			line: line.number - 1,
-			ch: clampedOffset - line.from,
-		};
-	}
-
-	private getSelectedLines(): Array<{ number: number; text: string }> {
-		const doc = this.view.state.doc;
-		const lineNumbers = new Set<number>();
-
-		for (const range of this.view.state.selection.ranges) {
-			const from = Math.min(range.from, range.to);
-			const to = Math.max(range.from, range.to);
-			const fromLine = doc.lineAt(from).number;
-			let toLine = doc.lineAt(to).number;
-
-			if (toLine > fromLine && to === doc.line(toLine).from) {
-				toLine -= 1;
-			}
-
-			for (let lineNumber = fromLine; lineNumber <= toLine; lineNumber += 1) {
-				lineNumbers.add(lineNumber);
-			}
-		}
-
-		return Array.from(lineNumbers)
-			.sort((a, b) => a - b)
-			.map((lineNumber) => {
-				const line = doc.line(lineNumber);
-				return { number: lineNumber, text: line.text };
-			});
-	}
-
-	private updateSelectedLines(
-		transformLine: (line: string, selectedLineIndex: number) => string
-	): void {
-		const doc = this.view.state.doc;
-		const changes = this.getSelectedLines().map((line, index) => {
-			const docLine = doc.line(line.number);
-			return {
-				from: docLine.from,
-				to: docLine.to,
-				insert: transformLine(line.text, index),
-			};
-		});
-
-		if (changes.length === 0) return;
-
-		this.view.dispatch({ changes });
-	}
-}
-
 /**
  * An embeddable markdown editor that provides full CodeMirror editing capabilities
  * within any container element. Based on Fevol's implementation.
@@ -492,6 +195,8 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	private uninstaller?: () => void;
 	private hasEnteredVimInsertMode = false;
 	private activeEditorOwner: ActiveMarkdownEditorOwner;
+	private menuHiddenByCurrentEvent = false;
+	private editorMenuRef?: EventRef;
 
 	constructor(app: App, container: HTMLElement, options: Partial<MarkdownEditorProps> = {}) {
 		super(app, container, {
@@ -512,10 +217,15 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		this.owner.editor = this.editor;
 		this.activeEditorOwner = {
 			editMode: this,
-			editor: new CodeMirrorEditorAdapter(this.editor.cm as unknown as EditorView) as unknown as Editor,
+			// The real editor, not a stand-in: Obsidian's commands and plugins such as
+			// Templater act on this object and rely on its whole API.
+			editor: this.editor as unknown as Editor,
 			file: this.getActiveEditorFile(),
 			getMode: () => "source",
 		};
+
+		// Set before the value, so note widgets never build in an editor that has no note.
+		this.editorEl.classList.add(EMBEDDED_MARKDOWN_EDITOR_CLASS);
 
 		// IMPORTANT: From Obsidian 1.5.8+, must explicitly set value
 		this.set(options.value || "");
@@ -550,6 +260,14 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 				this.hasEnteredVimInsertMode = true;
 				this.enterVimInsertMode();
 			}
+		});
+
+		this.editorMenuRef = this.app.workspace.on?.("editor-menu", (menu, editor) => {
+			if ((editor as unknown) !== this.editor) return;
+			menu.onHide(() => {
+				this.menuHiddenByCurrentEvent = true;
+				window.setTimeout(() => (this.menuHiddenByCurrentEvent = false));
+			});
 		});
 
 		// Add custom CSS class if provided
@@ -604,6 +322,17 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 */
 	setValue(value: string): void {
 		this.set(value);
+	}
+
+	/**
+	 * Focus the editor with its text selected, or with the cursor at the end.
+	 */
+	focusWithSelection(selection: "all" | "end"): void {
+		const length = this.editor.cm.state.doc.toString().length;
+		this.editor.cm.focus();
+		this.editor.cm.dispatch({
+			selection: { anchor: selection === "all" ? 0 : length, head: length },
+		});
 	}
 
 	/**
@@ -698,6 +427,8 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 					{
 						key: "Escape",
 						run: (cm) => {
+							// Obsidian hides a menu on Escape, then lets the same key reach the editor.
+							if (this.menuHiddenByCurrentEvent) return true;
 							this.options.onEscape(this);
 							return true;
 						},
@@ -738,6 +469,11 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 		const workspace = this.app.workspace as unknown as WorkspaceWithActiveEditor;
 		if (workspace.activeEditor === this.activeEditorOwner) {
 			workspace.activeEditor = null;
+		}
+
+		if (this.editorMenuRef) {
+			this.app.workspace.offref(this.editorMenuRef);
+			this.editorMenuRef = undefined;
 		}
 
 		// Call uninstaller to remove monkey-patching
