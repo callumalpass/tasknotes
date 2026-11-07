@@ -15,31 +15,31 @@
     --tn-type-lg: calc(var(--tn-type-base) * 1.125);
     --tn-type-xl: calc(var(--tn-type-base) * 1.5);
 
-    --tn-font-weight-normal: 400;
-    --tn-font-weight-medium: 500;
-    --tn-font-weight-semibold: 600;
-    --tn-font-weight-bold: 600;
+    --tn-font-weight-normal: var(--font-normal, 400);
+    --tn-font-weight-medium: var(--font-medium, 500);
+    --tn-font-weight-semibold: var(--font-semibold, 600);
+    --tn-font-weight-bold: var(--font-semibold, 600);
     --tn-letter-spacing-label: 0.08em;
 
     /* Space */
-    --tn-space-half: 2px;
+    --tn-space-half: var(--size-2-1, 2px);
     --tn-drag-stack-shadow: 0 4px 0 -1px var(--background-primary), 0 5px 0 0 var(--tn-border-color), 0 8px 0 -1px var(--background-primary), 0 9px 0 0 var(--tn-border-color);
     --tn-board-header-height: calc(var(--tn-type-sm) * 2.8 + var(--tn-space-4));
-    --tn-space-1: 4px;
-    --tn-space-2: 8px;
-    --tn-space-3: 12px;
-    --tn-space-4: 16px;
-    --tn-space-5: 20px;
-    --tn-space-6: 24px;
-    --tn-space-8: 32px;
+    --tn-space-1: var(--size-4-1, 4px);
+    --tn-space-2: var(--size-4-2, 8px);
+    --tn-space-3: var(--size-4-3, 12px);
+    --tn-space-4: var(--size-4-4, 16px);
+    --tn-space-5: var(--size-4-5, 20px);
+    --tn-space-6: var(--size-4-6, 24px);
+    --tn-space-8: var(--size-4-8, 32px);
 
     /* Radius */
     --tn-radius-none: 0;
     --tn-radius-xs: 2px;
-    --tn-radius-sm: 4px;
-    --tn-radius-md: 6px;
-    --tn-radius-lg: 8px;
-    --tn-radius-xl: 12px;
+    --tn-radius-sm: var(--radius-s, 4px);
+    --tn-radius-md: var(--input-radius, 6px);
+    --tn-radius-lg: var(--radius-m, 8px);
+    --tn-radius-xl: var(--radius-l, 12px);
     --tn-radius-full: 999px;
     --tn-menu-radius: var(--menu-radius, var(--tn-radius-lg));
     --tn-menu-shadow: var(--shadow-s);
@@ -138,9 +138,9 @@
 
     /* Depth */
     --tn-shadow-color: black;
-    --tn-shadow-raised: 0 2px 8px rgba(0, 0, 0, 0.12);
-    --tn-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.08);
-    --tn-shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08);
+    --tn-shadow-raised: var(--shadow-s, 0 2px 8px rgba(0, 0, 0, 0.12));
+    --tn-shadow-overlay: var(--shadow-l, 0 8px 24px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.08));
+    --tn-shadow-modal: var(--shadow-l, 0 16px 48px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08));
 
     --tn-shadow-light: var(--tn-shadow-raised);
     --tn-shadow-medium: var(--tn-shadow-raised);
@@ -149,7 +149,7 @@
 
     /* Motion */
     --tn-motion-fast: 80ms;
-    --tn-motion-base: 140ms;
+    --tn-motion-base: var(--anim-duration-fast, 140ms);
     --tn-motion-slow: 220ms;
     --tn-ease: cubic-bezier(0.16, 1, 0.3, 1);
     --tn-motion-hover-in: 0ms;
@@ -162,12 +162,12 @@
 
     /* Controls */
     --tn-control-sm: 24px;
-    --tn-control-md: 28px;
+    --tn-control-md: var(--input-height, 30px);
     --tn-touch-target: 40px;
     --tn-row-height: 34px;
     --tn-row-height-compact: 28px;
-    --tn-glyph: 16px;
-    --tn-glyph-sm: 14px;
+    --tn-glyph: var(--icon-s, 16px);
+    --tn-glyph-sm: var(--icon-xs, 14px);
     --tn-task-row-height: 58px;
     --tn-task-row-height-wide: 40px;
     --tn-task-row-height-phone: 72px;
@@ -186,7 +186,7 @@
     --tn-touch-target: 40px;
     --tn-icon-sm: var(--tn-glyph-sm);
     --tn-icon-md: var(--tn-glyph);
-    --tn-icon-lg: 20px;
+    --tn-icon-lg: var(--icon-l, 18px);
 
     /* Layers */
     --tn-z-base: 0;
