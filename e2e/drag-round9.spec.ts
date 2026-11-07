@@ -196,12 +196,16 @@ test('content-height cards, metadata clicks and phone navigation clearance', asy
     await page.screenshot({ path: join(evidence, 'phone-toast.png') });
     await open('tasknotesTaskList');
     const source = root.locator('.task-card').first();
+    await source.locator('[data-tn-drag-handle]').focus();
     const dragOffset = await start(source.locator('[data-tn-drag-handle]'));
+    await expect(page.locator('.task-list-view--moving')).toBeVisible();
     const nav = await page.locator('#r9-navigation').boundingBox();
     const scroller = root.locator('.tn-bases-items-container');
     const before = await scroller.evaluate(element => element.scrollTop);
-    pointer(['move', 190 + dragOffset.x, nav!.y - 8 + dragOffset.y]);
-    await page.evaluate(() => new Promise<void>(resolve => { const started = performance.now(); const frame = () => performance.now() - started >= 400 ? resolve() : requestAnimationFrame(frame); requestAnimationFrame(frame); }));
+    await expect.poll(async () => {
+      pointer(['move', 190 + dragOffset.x, nav!.y - 8 + dragOffset.y]);
+      return scroller.evaluate(element => element.scrollTop);
+    }).toBeGreaterThan(before);
     const after = await scroller.evaluate(element => element.scrollTop);
     pointer(['escape', 0], ['button', 0]);
     await expect(page.locator('.task-list-view--moving')).toHaveCount(0);

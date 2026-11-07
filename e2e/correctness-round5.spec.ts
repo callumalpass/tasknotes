@@ -133,7 +133,8 @@ test('mobile time values never clip or paint over another date', async () => {
 });
 
 test('unknown priority recovery expands and focuses its settings section', async () => {
-  await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__priority-dot`).click();
+  await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__status-dot`).focus();
+  await page.keyboard.press('p');
   await page.getByRole('option', { name: 'Task settings', exact: true }).click();
   const settingsPage = await recoverySettings();
   const section = settingsPage.locator('[data-card-id="property-priority"]');
@@ -154,9 +155,9 @@ test('mini calendar resolves task titles before filenames', async () => {
     await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(`${folder}/Mini.base`));
   }, folder);
   await page.locator('.mini-calendar-view__day[aria-current="date"]').click();
-  await expect(page.locator('.suggestion-item').filter({ hasText: 'Review the supplier onboarding plan' })).toBeVisible();
-  await expect(page.locator('.suggestion-item').filter({ hasText: 'General note' })).toBeVisible();
-  await expect(page.locator('.suggestion-item').filter({ hasText: 'This is not a task title' })).toHaveCount(0);
+  await expect(page.locator('.mini-calendar-view__entry').filter({ hasText: 'Review the supplier onboarding plan' })).toBeVisible();
+  await expect(page.locator('.mini-calendar-view__entry').filter({ hasText: 'General note' })).toBeVisible();
+  await expect(page.locator('.mini-calendar-view__entry').filter({ hasText: 'This is not a task title' })).toHaveCount(0);
   await page.keyboard.press('Escape');
 });
 
@@ -191,7 +192,7 @@ test('collision drilldown contains only that group and first entry reveals today
     await app.vault.create(`${folder}/Calendar.base`, `filters:\n  and:\n    - file.inFolder("${folder}")\n    - file.hasTag("task")\nviews:\n  - type: tasknotesCalendar\n    name: Calendar\n    calendarView: timeGridWeek\n    showDue: true\n    showTimeblocks: false\n    showTimeEntries: false\n`);
     await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(`${folder}/Calendar.base`));
   }, folder);
-  await expect(page.locator('.tnc-item').filter({ hasText: 'Collision appointment 1' }).first()).toBeVisible();
+  await expect(page.locator('.tnc-more--collision').first()).toBeVisible();
   await page.locator('.tnc-toolbar-view-select').selectOption('week');
   await expect(page.locator('.tnc-dh.is-today')).toBeInViewport();
   const stack = page.locator('.tnc-more--collision').filter({ hasText: '8' }).first();

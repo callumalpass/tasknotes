@@ -278,13 +278,14 @@ test('first Kanban reorder and cross-column position restore every rewritten not
     await view.handleTaskDrop(`${folder}/Task 4.md`, group, null, { taskPath: `${folder}/${target}.md`, above: true });
   }, { folder, group, target });
   await drop('open', 'Task 0');
-  await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`).properties[sortField]).filter(Boolean).length).toBe(5);
-  await expect(page.locator('.tn-toast__message')).toHaveText('Moved 5 tasks to Open');
-  const rank = disk('Task 0').properties[sortField];
+  await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`).properties[sortField]).filter(Boolean).length).toBe(1);
+  expect(Array.from({ length: 4 }, (_, index) => disk(`Task ${index}`))).toEqual(snapshots.slice(0, 4));
+  await expect(page.locator('.tn-toast__message')).toHaveText('Moved 1 task to Open');
+  const rank = disk('Task 4').properties[sortField];
   await page.evaluate(async ({ path, sortField, rank }) => {
     const app = (window as any).app;
     await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter[sortField] = rank; });
-  }, { path: `${folder}/Task 0.md`, sortField, rank: 'outside-rank' });
+  }, { path: `${folder}/Task 4.md`, sortField, rank: 'outside-rank' });
   const concurrent = Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`));
   await page.locator('.tn-toast__action').click();
   await expect(page.locator('.tn-toast__message')).toContainText('Cannot undo');
@@ -292,7 +293,7 @@ test('first Kanban reorder and cross-column position restore every rewritten not
   await page.evaluate(async ({ path, sortField, rank }) => {
     const app = (window as any).app;
     await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter[sortField] = rank; });
-  }, { path: `${folder}/Task 0.md`, sortField, rank });
+  }, { path: `${folder}/Task 4.md`, sortField, rank });
   await root.focus();
   await page.keyboard.press('Control+z');
   await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`))).toEqual(snapshots);

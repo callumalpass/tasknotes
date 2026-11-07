@@ -159,6 +159,7 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
       if (width === 400) {
         const select = page.locator('.kanban-view__column-nav select');
         if (phase !== 'before') {
+          await select.selectOption('open');
           await expect(select).toHaveValue('open');
           const bounds = await page.locator('.kanban-view__column[data-group="open"]:visible').evaluate(column => ({ column: column.getBoundingClientRect().toJSON(), board: column.closest('.kanban-view__board')?.getBoundingClientRect().toJSON() }));
           expect(bounds.column.right).toBeLessThanOrEqual(width);
@@ -271,7 +272,7 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
         const snapshot = () => {
           const toast = document.querySelector('.tn-toast');
           if (toast?.querySelector('button[aria-busy="true"]:disabled')) pendingSeen = true;
-          if (!toast?.textContent?.startsWith('Undid:')) return;
+          if (toast?.textContent !== 'Change undone.') return;
           const card = Array.from(document.querySelectorAll<HTMLElement>('.task-card')).find(card => card.dataset.taskPath === `${folder}/1.md` && card.offsetWidth > 0)!;
           const section = surface === 'List' ? card.closest('.task-list-group') : card.closest('[data-group]');
           const group = surface === 'List' ? section?.querySelector<HTMLElement>('[data-group-key]')?.dataset.groupKey : (section as HTMLElement)?.dataset.group;
@@ -284,7 +285,7 @@ test('council AB: responsive composition, stable navigation and reconciled drag 
       }, { folder, surface });
       await page.locator('.tn-toast').getByRole('button', { name: 'Undo', exact: true }).click();
       await expect(card).toHaveAttribute('data-status', 'open');
-      await expect(page.locator('.tn-toast')).toContainText('Undid:');
+      await expect(page.locator('.tn-toast')).toHaveText('Change undone.');
       const confirmation = await page.evaluate(() => { (window as any).abUndoObserver.disconnect(); return (window as any).abUndoConfirmation; });
       observations[`undo-confirmation-${surface}`] = confirmation;
       if (phase !== 'before') {

@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
-import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, openTaskNotesSettings, closeObsidianSettings, dismissObsidianModals, type ObsidianApp } from './obsidian';
 
 let instance: ObsidianApp;
 let page: Page;
@@ -41,6 +41,7 @@ test.beforeAll(async () => {
 
 test.afterEach(async () => {
   for (let index = 0; index < 4; index++) await page.keyboard.press('Escape');
+  await dismissObsidianModals(page);
 });
 
 test.afterAll(async () => {

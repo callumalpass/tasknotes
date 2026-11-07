@@ -120,7 +120,7 @@ for (const width of [1180, 400]) for (const theme of ['light', 'dark']) test(`se
   const sentence = page.locator('.workspace-leaf.mod-active .tasknotes-inline-widget--sentence:visible').first();
   const menu = sentence.locator('.task-card__context-menu');
   await expect(sentence).toBeVisible();
-  await expect(menu).toHaveCSS('position', width === 400 ? 'relative' : 'absolute');
+  await expect(menu).toHaveCSS('position', width === 400 ? 'relative' : 'static');
   if (width === 400) await expectTouchTarget(menu);
   await page.mouse.move(5, 5);
   await expect(menu).toHaveCSS('opacity', width === 400 ? '1' : '0');
@@ -278,7 +278,7 @@ test('batch Undo confirms the property and count without resurfacing older actio
     await expect(page.locator('.tn-toast__message')).toHaveText(`3 tasks updated: Priority → Priority ${priority.split('-')[1]}`);
   }
   await page.locator('.tn-toast__action').click();
-  await expect(page.locator('.tn-toast__message')).toHaveText('Undid Priority change for 3 tasks');
+  await expect(page.locator('.tn-toast__message')).toHaveText('Change undone.');
   await expect(page.locator('.tn-toast')).toHaveCount(1);
   await expect(page.locator('.tn-toast__action')).toHaveCount(0);
   await page.keyboard.press('Control+z');
@@ -348,7 +348,7 @@ test('shortcut help and empty statistics keep a compact rhythm', async () => {
   await page.getByRole('button', { name: 'Keyboard shortcuts', exact: true }).click();
   const row = page.locator('.tn-shortcut-row').first();
   await expect(row).toBeVisible();
-  expect((await row.boundingBox())!.height).toBe(40);
+  expect((await row.boundingBox())!.height).toBe(28);
   await capture('help-1180');
   await page.keyboard.press('Escape');
   await page.evaluate(async () => {

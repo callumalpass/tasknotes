@@ -80,7 +80,7 @@ test('board reserves both configured date slots before chips', async () => {
   for (const role of ['due', 'scheduled']) {
     const date = card.locator(`.task-card__metadata-date--${role}`);
     await expect(date).toBeVisible();
-    await expect(date.locator('.task-card__date-value')).toBeVisible();
+    await expect(date.locator('.task-card__date-value:visible')).toBeVisible();
     expect(await date.evaluate(element => {
       const rect = element.querySelector('.task-card__date-value')!.getBoundingClientRect();
       return [element, element.closest('.task-card__date-slot')!, element.closest('.task-card__metadata')!].every(parent => {
@@ -134,7 +134,10 @@ for (const workflow of ['default', 'custom']) {
           else {
             const card = root.locator(`.task-card[data-task-path="${taskPath}"]`).first();
             await expect(card).toBeVisible();
-            await card.scrollIntoViewIfNeeded();
+            await expect(async () => {
+              await card.scrollIntoViewIfNeeded();
+              await expect(card).toBeInViewport();
+            }).toPass({ timeout: 5000 });
             await expect(card.locator('.task-card__title-text')).toHaveText(title);
             if (surface === 'board') {
               expect(await card.locator('.task-card__title-text').evaluate(element => {
@@ -196,9 +199,11 @@ test('no configured priorities omit empty values but preserve unknown values and
     await openSurface('list');
     const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${taskPath}"]`).first();
     await expect(card).toBeVisible();
-    await expect(card.locator('.task-card__priority-dot')).toHaveCount(priority === 'low' ? 1 : 0);
+    await expect(card.locator('.task-card__priority-dot')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(taskPath => (window as any).app.metadataCache.getFileCache((window as any).app.vault.getAbstractFileByPath(taskPath))?.frontmatter?.priority, taskPath)).toBe(priority);
     if (priority === 'low') {
-      await card.locator('.task-card__priority-dot').click();
+      await card.locator('.task-card__status-dot').focus();
+      await page.keyboard.press('p');
       const label = page.locator('.tn-picker__label').filter({ hasText: 'low (not configured)' });
       await expect(label).toBeVisible();
       expect(await label.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);

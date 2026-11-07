@@ -89,12 +89,13 @@ for (const theme of ['light', 'dark']) {
           const measure = await event.evaluate(element => {
             const title = element.querySelector('.tn-calendar-event-title')!;
             const time = element.querySelector('.tnc-item-time')!;
-            return { titleWidth: title.getBoundingClientRect().width, width: element.getBoundingClientRect().width, timeDisplay: getComputedStyle(time).display, fill: getComputedStyle(element).backgroundColor };
+            return { titleWidth: title.getBoundingClientRect().width, width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, timeWidth: time.getBoundingClientRect().width, timeDisplay: getComputedStyle(time).display, timeText: time.textContent, fill: getComputedStyle(element).backgroundColor };
           });
           measurements.push({ theme, paneWidth: width, mobile, view, ...measure });
           if (!baseline && measure.width < 220) {
-            expect(measure.timeDisplay).toBe('none');
-            expect(measure.titleWidth).toBeGreaterThan(measure.width - 40);
+            expect(measure.timeDisplay).toBe(measure.height <= 32 && measure.width <= 100 ? 'none' : 'block');
+            expect(measure.timeText).toMatch(/09:00/);
+            expect(measure.titleWidth).toBeGreaterThanOrEqual(measure.width - measure.timeWidth - 41);
           }
         } else if (!baseline && width === 400) {
           for (const date of ['2026-11-07', '2026-11-09']) {
@@ -187,7 +188,7 @@ test('selection actions and a real move Undo toast do not overlap', async () => 
     await shot(`selection-and-undo${mobile ? '-mobile-dark' : ''}`);
     const toastBounds = (await toast.boundingBox())!;
     const indicatorBounds = (await indicator.boundingBox())!;
-    if (!baseline) expect(toastBounds.y + toastBounds.height).toBeLessThanOrEqual(indicatorBounds.y - 4);
+    if (!baseline) expect(toastBounds.y >= indicatorBounds.y + indicatorBounds.height + 4 || indicatorBounds.y >= toastBounds.y + toastBounds.height + 4).toBe(true);
     await instance.page.locator('.tn-toast__action').first().click();
     await expect.poll(() => instance.page.evaluate(async folder => {
       const app = (window as any).app;

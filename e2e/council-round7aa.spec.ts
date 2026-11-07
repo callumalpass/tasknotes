@@ -94,7 +94,7 @@ test('council AA: compact task composition, disclosures, search, month counts an
           for (const row of geometry) for (const date of row.dates) expect(date.scrollWidth).toBeLessThanOrEqual(date.width + 1);
           const card = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${folder}/Task 0.md"]`).first();
           await card.scrollIntoViewIfNeeded();
-          const targets = await card.locator('[role=button]:visible').evaluateAll(elements => elements.map(element => ({ label: element.getAttribute('aria-label'), bounds: element.getBoundingClientRect().toJSON() })));
+          const targets = await card.locator('[role=button]:visible').evaluateAll(elements => elements.filter(element => getComputedStyle(element).pointerEvents !== 'none' && getComputedStyle(element).opacity !== '0').map(element => ({ label: element.getAttribute('aria-label'), bounds: element.getBoundingClientRect().toJSON() })));
           for (const target of targets) { expect(target.bounds.width).toBeGreaterThanOrEqual(40); expect(target.bounds.height).toBeGreaterThanOrEqual(40); }
           for (let first = 0; first < targets.length; first++) for (let second = first + 1; second < targets.length; second++) {
             const left = targets[first].bounds;
@@ -137,7 +137,7 @@ test('council AA: compact task composition, disclosures, search, month counts an
       const menuBox = (await menu.boundingBox())!;
       const paragraphBottom = await sentence.evaluate(element => element.closest('p')!.getBoundingClientRect().bottom);
       expect(menuBox.y + menuBox.height).toBeLessThanOrEqual(paragraphBottom + 1);
-      expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe(width === 400 ? 'relative' : 'absolute');
+      expect(await menu.evaluate(element => getComputedStyle(element).position)).toBe(width === 400 ? 'relative' : 'static');
       if (width === 400) await expectTouchTarget(menu);
       await menu.focus();
       await page.keyboard.press('Enter');
@@ -216,6 +216,8 @@ test('council AA: compact task composition, disclosures, search, month counts an
       await page.keyboard.press('Escape');
       await page.mouse.up();
       await expect(page.locator('.tnc-dragging')).toHaveCount(0);
+      await expect(page.locator('.tooltip:visible')).toHaveCount(0);
+      await page.mouse.move(5, 5);
       await expect(page.locator('body')).not.toHaveClass(/tn-calendar-gesture/);
       await capture(`after-calendar-cancel-${action}`);
     }

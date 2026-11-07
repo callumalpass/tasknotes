@@ -113,7 +113,7 @@ test('month bars use one line and overflow allocates readable title height', asy
   expect(await title.evaluate(element => element.scrollHeight - element.clientHeight)).toBeLessThanOrEqual(1);
   for (const width of [1180, 440]) {
     await setObsidianViewport(page, { width, height: 800 });
-    const more = page.locator(width < 520 ? '.tnc-dg--chips .tnc-dg-day.is-today .tnc-dg-dots-more' : '.tnc-dg .tnc-more').first();
+    const more = page.locator(width < 520 ? '.tnc-dg--compact .tnc-dg-day.is-today' : '.tnc-dg .tnc-more').first();
     await expect(more).toBeVisible();
     await more.click();
     const popover = page.locator('.tnc-popover');

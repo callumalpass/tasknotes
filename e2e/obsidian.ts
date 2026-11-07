@@ -125,6 +125,17 @@ export async function setObsidianViewport(
   }))).toEqual({ native: [size.width, size.height], viewport: [size.width, size.height] });
 }
 
+export async function dismissObsidianModals(page: Page): Promise<void> {
+  for (let attempt = 0; attempt < 10 && await page.locator('.modal-container').count(); attempt++) {
+    const discard = page.getByRole('button', { name: 'Discard changes', exact: true });
+    const cancel = page.locator('.modal-container').last().getByRole('button', { name: 'Cancel', exact: true });
+    if (await discard.isVisible()) await discard.click();
+    else if (await cancel.isVisible()) await cancel.click();
+    else await page.keyboard.press('Escape');
+  }
+  await expect(page.locator('.modal-container')).toHaveCount(0);
+}
+
 /** Obsidian 1.13 uses a separate Settings window; older versions use a modal. */
 export async function openObsidianSettings(page: Page): Promise<Page> {
   await page.bringToFront();

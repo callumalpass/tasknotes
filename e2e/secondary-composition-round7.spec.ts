@@ -73,27 +73,28 @@ test('secondary composition: chooser, settings, reports and editor anatomy', asy
       await appearance(page, width, theme);
       await open('Mini');
       await page.locator('.mini-calendar-view__day--today').click();
-      await expect(page.locator('.note-selector-modal__suggestion')).toHaveCount(2);
-      measurements[`chooser-${variant}`] = await page.locator('.note-selector-modal__suggestion').evaluateAll(elements => elements.map(element => ({ height: element.getBoundingClientRect().height, width: element.getBoundingClientRect().width, pathColor: getComputedStyle(element.querySelector('.note-selector-modal__path')!).color })));
+      await expect(page.locator('.mini-calendar-view__entry')).toHaveCount(2);
+      await expect(page.locator('.note-selector-modal')).toHaveCount(0);
+      measurements[`chooser-${variant}`] = await page.locator('.mini-calendar-view__entry').evaluateAll(elements => elements.map(element => ({ height: element.getBoundingClientRect().height, width: element.getBoundingClientRect().width, pathColor: getComputedStyle(element.querySelector('.note-selector-modal__path')!).color })));
       await capture(page, `chooser-${variant}`);
       if (phase !== 'before') {
-        const rows = page.locator('.note-selector-modal__suggestion');
+        const rows = page.locator('.mini-calendar-view__entry');
         const sizes = await rows.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().height));
         expect(Math.abs(sizes[0] - sizes[1])).toBeLessThan(2);
         expect(sizes[0]).toBeGreaterThanOrEqual(40);
         expect(await rows.first().locator('.tn-picker__detail').evaluate(element => getComputedStyle(element).color)).not.toBe(await rows.first().locator('.tn-picker__label').evaluate(element => getComputedStyle(element).color));
         await expect(rows.last().locator('.tn-picker__label')).toHaveAttribute('title', /Review the accessibility/);
       }
-      await page.keyboard.press('ArrowDown');
+      await page.locator('.mini-calendar-view__entry').last().focus();
       await capture(page, `chooser-keyboard-${variant}`);
       await page.keyboard.press('Escape');
       await expect(page.locator('.mini-calendar-view__grid')).toBeFocused();
       if (phase !== 'before') {
         for (const method of ['pointer', 'keyboard']) {
           await page.locator('.mini-calendar-view__day--today').click();
-          const last = page.locator('.note-selector-modal__suggestion').last();
+          const last = page.locator('.mini-calendar-view__entry').last();
           if (method === 'keyboard') {
-            await page.keyboard.press('ArrowDown');
+            await last.focus();
             await capture(page, `chooser-open-keyboard-${variant}`);
             await page.keyboard.press('Enter');
           } else {
@@ -145,6 +146,7 @@ test('secondary composition: chooser, settings, reports and editor anatomy', asy
       await page.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Time tracking$/ }) }).hover();
       await page.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Create timeblock$/ }) }).click();
       await expect(page.locator('.timeblock-creation-modal')).toBeVisible();
+      expect(await page.locator('.timeblock-creation-modal select').first().evaluate(element => parseFloat(getComputedStyle(element).minHeight))).toBe(width === 400 ? 40 : 28);
       await capture(page, `timeblock-editor-${variant}`);
       measurements[`timeblock-title-${variant}`] = await page.locator('.tn-modal__title').evaluate(element => ({ size: getComputedStyle(element).fontSize, height: element.getBoundingClientRect().height }));
       if (phase !== 'before') {
@@ -181,7 +183,7 @@ test('secondary composition: chooser, settings, reports and editor anatomy', asy
           return writtenDaily;
         }).not.toBe('');
         await page.locator('.tn-toast__action').click();
-        await expect(page.locator('.tn-toast__message')).toHaveText('Undid: Timeblock created');
+        await expect(page.locator('.tn-toast__message')).toHaveText('Change undone.');
         await expect.poll(async () => {
           const content = await page.evaluate(async path => (window as any).app.vault.adapter.read(path), writtenDaily);
           expect(content).toContain('Daily notes stay intact.');

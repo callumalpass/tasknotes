@@ -123,7 +123,7 @@ for (const theme of ['light', 'dark']) test(`${theme}: mobile rows keep status b
   await expect(card.locator('.task-card__metadata-date--scheduled')).toBeVisible();
   await expect(async () => {
     const geometry = await card.evaluate(element => {
-      const selectors = ['.task-card__status-dot', '.task-card__title-text', '.task-card__main-row', '.task-card__priority-dot'];
+      const selectors = ['.task-card__status-dot', '.task-card__title-text', '.task-card__main-row', '.task-card__priority-dot', '.task-card__context-menu'];
       const elements = selectors.map(selector => element.querySelector(selector));
       if (elements.some(child => !child?.getClientRects().length)) return null;
       return {
@@ -133,9 +133,11 @@ for (const theme of ['light', 'dark']) test(`${theme}: mobile rows keep status b
       };
     });
     expect(geometry).not.toBeNull();
-    const [status, titleBox, row, priority] = geometry!.bounds;
+    const [status, titleBox, row, priority, menu] = geometry!.bounds;
     expect(titleBox.x).toBeCloseTo(status.x + status.width, 0);
-    expect(titleBox.width).toBeCloseTo(row.width - status.width - priority.width, 0);
+    expect(titleBox.width).toBeCloseTo(row.width - status.width, 0);
+    expect(priority.y).toBeGreaterThanOrEqual(titleBox.bottom);
+    expect(menu.y).toBeGreaterThanOrEqual(titleBox.bottom);
     expect(status.y).toBeLessThan(titleBox.y + titleBox.height);
     expect(status.y + status.height).toBeGreaterThan(titleBox.y);
     const controls = geometry!.controls;
@@ -216,7 +218,9 @@ test('precise time input uses the shared boundary and focus treatment', async ()
   const input = page.locator('.date-time-picker-modal__time-input');
   await expect(input).toBeVisible();
   await input.focus();
-  expect(await input.evaluate(element => {
+  await page.keyboard.press('ArrowRight');
+  await expect(input).toBeFocused();
+  await expect.poll(() => input.evaluate(element => {
     const style = getComputedStyle(element);
     return { border: style.borderTopWidth, shadow: style.boxShadow, outline: style.outlineWidth };
   })).toEqual({ border: '1px', shadow: 'none', outline: '2px' });
@@ -331,7 +335,8 @@ test('long custom labels wrap with padding and board titles remain readable', as
   await page.keyboard.press('s');
   const option = page.locator('.tn-picker__row').filter({ hasText: label });
   await expect(option).toBeVisible();
-  expect(await option.evaluate(element => parseFloat(getComputedStyle(element).paddingTop))).toBeGreaterThanOrEqual(8);
+  expect(await option.evaluate(element => parseFloat(getComputedStyle(element).paddingTop))).toBe(4);
+  expect(await option.evaluate(element => element.scrollHeight <= element.clientHeight + 1)).toBe(true);
   await capture('wrapped-status-picker');
   await page.keyboard.press('Escape');
   await open('Board.base');

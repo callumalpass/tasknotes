@@ -31,10 +31,13 @@ async function moveNative(pointerX: number, pointerY: number) {
     document.addEventListener('dragover', state.r8DragObserver, { capture: true });
   }, { pointerX, pointerY });
   try {
+    let direction = -1;
     await expect.poll(async () => {
-      pointer(['move', pointerX + offset.x - 8, pointerY + offset.y - 4], ['move', pointerX + offset.x + 8, pointerY + offset.y - 2], ['move', pointerX + offset.x, pointerY + offset.y]);
+      pointer(['move', pointerX + offset.x + direction * 8, pointerY + offset.y + direction * 3]);
+      direction *= -1;
       return page.evaluate(() => (window as any).r8DragArrivals);
     }).toBeGreaterThanOrEqual(2);
+    pointer(['move', pointerX + offset.x, pointerY + offset.y]);
   } finally {
     await page.evaluate(() => document.removeEventListener('dragover', (window as any).r8DragObserver, true));
   }
@@ -124,7 +127,7 @@ test('native XTest list edge scroll ends on Escape and loses its tooltip', async
   observations.multiPreview = await page.locator('.task-list-view__touch-ghost').evaluate(element => ({ bounds: element.getBoundingClientRect().toJSON(), stack: getComputedStyle(element).boxShadow }));
   expect((observations.multiPreview as { stack: string }).stack).not.toBe('none');
   await page.screenshot({ path: `${evidence}/list-multi-preview.png` });
-  await moveNative(bounds.x + bounds.width / 2, Math.min(780, bounds.y + bounds.height - 12));
+  await moveNative(bounds.x + bounds.width / 2, Math.min(772, bounds.y + bounds.height - 12));
   await expect.poll(scroll).toBeGreaterThan(original + 10);
   expect(await scroll()).toBeLessThan(1000);
   observations.heldTooltip = await page.locator('.tooltip').allTextContents();
@@ -151,7 +154,7 @@ test('native XTest list edge scroll ends on Escape and loses its tooltip', async
     await expect(page.locator('.task-list-view--moving')).toBeVisible();
     pointer(['move', 300, 300], ['move', 500, 500]);
     await page.waitForFunction(() => (window as any).r8NativeReady);
-    await moveNative(bounds.x + bounds.width / 2, Math.min(780, bounds.y + bounds.height - 12));
+    await moveNative(bounds.x + bounds.width / 2, Math.min(772, bounds.y + bounds.height - 12));
     await expect.poll(scroll).toBeGreaterThan(5);
     const scroller = await page.locator('.workspace-leaf.mod-active .tn-bases-items-container').elementHandle();
     if (end === 'blur') await page.evaluate(() => window.dispatchEvent(new Event('blur')));
@@ -184,8 +187,10 @@ test('native XTest list edge scroll ends on Escape and loses its tooltip', async
   await expect(rows).toHaveCount(2);
   const appendSource = rows.first();
   const appendPath = await appendSource.getAttribute('data-task-path');
-  const appendStart = (await appendSource.boundingBox())!;
-  pointer(['move', appendStart.x + 80, appendStart.y + 15], ['button', 1], ['move', appendStart.x + 110, appendStart.y + 20]);
+  const appendHandle = appendSource.locator('[data-tn-drag-handle]');
+  await appendHandle.focus();
+  const appendStart = (await appendHandle.boundingBox())!;
+  pointer(['move', appendStart.x + offset.x + appendStart.width / 2, appendStart.y + offset.y + appendStart.height / 2], ['button', 1], ['move', appendStart.x + offset.x + appendStart.width / 2 + 25, appendStart.y + offset.y + appendStart.height / 2 + 5]);
   await expect(page.locator('.task-list-view--moving')).toBeVisible();
   pointer(['move', 300, 300], ['move', 500, 500]);
   await moveNative(600, 700);

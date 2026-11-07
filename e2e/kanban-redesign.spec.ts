@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type CDPSession } from '@playwright/test';
 import { parse, stringify } from 'yaml';
+import { pointer } from './xtest';
 import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 const folder = `KanbanRedesign-${Date.now()}`;
@@ -517,17 +518,34 @@ test('horizontal keyboard navigation, help and real auto-scroll drops preserve t
   await source.scrollIntoViewIfNeeded();
   const bounds = (await source.boundingBox())!;
   const board = page.locator('.kanban-view__board');
-  const boardBounds = (await board.boundingBox())!;
-  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 18);
-  await page.mouse.down();
-  await page.mouse.move(bounds.x + bounds.width / 2 + 16, bounds.y + 18, { steps: 6 });
+  const boardBounds = await board.evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    return { x: bounds.x + element.clientLeft, width: element.clientWidth };
+  });
+  const maximumScrollLeft = await board.evaluate(element => element.scrollWidth - element.clientWidth);
+  expect(maximumScrollLeft).toBeGreaterThan(0);
+  const offset = await page.evaluate(() => ({ x: screenX, y: screenY + outerHeight - innerHeight }));
+  pointer(['move', bounds.x + offset.x + bounds.width / 2, bounds.y + offset.y + 18], ['button', 1], ['move', bounds.x + offset.x + bounds.width / 2 + 16, bounds.y + offset.y + 18]);
   await expect(board).toHaveClass(/--task-dragging/);
-  await page.mouse.move(boardBounds.x + boardBounds.width - 12, bounds.y + 20, { steps: 30 });
-  await expect.poll(() => board.evaluate(element => element.scrollWidth - element.clientWidth - element.scrollLeft), { timeout: 10000 }).toBeLessThan(2);
+  pointer(['move', boardBounds.x + offset.x + boardBounds.width - 30, bounds.y + offset.y + 20]);
+  let edgeDirection = 0;
+  await expect.poll(async () => {
+    pointer(['move', boardBounds.x + offset.x + boardBounds.width - 30 - edgeDirection, bounds.y + offset.y + 20]);
+    edgeDirection = 1 - edgeDirection;
+    const gap = maximumScrollLeft - await board.evaluate(element => element.scrollLeft);
+    return gap;
+  }, { timeout: 10000 }).toBeLessThan(2);
   const target = page.locator('.kanban-view__column[data-group="workflow-7"]');
-  await target.hover({ position: { x: 80, y: 55 } });
-  await page.mouse.move((await target.boundingBox())!.x + 82, bounds.y + 20, { steps: 3 });
-  await page.mouse.up();
+  await expect(target).toBeInViewport();
+  const containment = await target.evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    const board = element.closest('.kanban-view__board')!;
+    const viewport = board.getBoundingClientRect();
+    return { left: bounds.left, right: bounds.right, viewportLeft: viewport.left + board.clientLeft, viewportRight: viewport.left + board.clientLeft + board.clientWidth, scrollLeft: board.scrollLeft, scrollWidth: board.scrollWidth, clientWidth: board.clientWidth };
+  });
+  expect(containment.left, JSON.stringify(containment)).toBeGreaterThanOrEqual(containment.viewportLeft);
+  expect(containment.right, JSON.stringify(containment)).toBeLessThanOrEqual(containment.viewportRight);
+  pointer(['move', (await target.boundingBox())!.x + offset.x + 82, bounds.y + offset.y + 20], ['button', 0]);
   await expect.poll(async () => {
     return page.evaluate(async path => {
       const app = (window as any).app;

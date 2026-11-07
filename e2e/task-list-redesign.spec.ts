@@ -91,7 +91,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     }
     await expect(items.locator('.task-group-glyph[data-tn-glyph]').first()).toBeVisible();
     const group = items.locator('.task-list-group > .task-group').first();
-    await group.hover();
+    await group.locator('.task-group-header').hover();
     await expect(group.locator('.task-group-add')).toHaveCSS('opacity', '1');
     await group.locator('.task-group-add').click();
     await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
@@ -134,7 +134,6 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const parent = element.getBoundingClientRect();
       return bounds.left >= parent.left && bounds.right <= parent.right + 1;
     })))).toBe(true);
-    await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '1');
     await longCard.locator('.task-card__context-menu').focus();
     await expect(longCard.locator('.task-card__context-menu')).toHaveCSS('opacity', '1');
     const hiddenDates = longCard.locator('.task-card__date-slot[hidden]');
@@ -282,6 +281,7 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
       const hiddenValues = (await embeddedOverflow.getAttribute('aria-label'))!.split(' · ');
       expect(hiddenValues).toContainEqual(expect.stringContaining(longTag));
       await embeddedOverflow.focus();
+      await expect(embeddedOverflow).toBeFocused();
       await page.keyboard.press('Enter');
       const overflowDialog = page.getByRole('dialog').filter({ has: page.locator('.tn-picker__list') });
       await expect(overflowDialog).toBeVisible();

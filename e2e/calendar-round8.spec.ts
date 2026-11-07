@@ -257,10 +257,17 @@ test('phone calendar geometry preserves chrome, month content and week titles', 
       await page.locator('.tnc-year-scroll').evaluate(element => element.scrollTop = 120);
       await page.screenshot({ path: `${evidence}/year-${theme}-${mobile}.png` });
       if (!baseline) {
-        const headers = await page.locator('.tnc-ym').first().evaluate(element => ({
-          title: element.querySelector('.tnc-ym-title')!.getBoundingClientRect().toJSON(),
-          days: [...element.querySelectorAll('.tnc-ym-dow')].map(day => day.getBoundingClientRect().toJSON()),
-        }));
+        const headers = await page.locator('.tnc-ym').evaluateAll(elements => {
+          const viewport = elements[0].closest('.tnc-year-scroll')!.getBoundingClientRect();
+          const element = elements.find(month => {
+            const bounds = month.getBoundingClientRect();
+            return bounds.top >= viewport.top && bounds.bottom <= viewport.bottom;
+          })!;
+          return {
+            title: element.querySelector('.tnc-ym-title')!.getBoundingClientRect().toJSON(),
+            days: [...element.querySelectorAll('.tnc-ym-dow')].map(day => day.getBoundingClientRect().toJSON()),
+          };
+        });
         for (const day of headers.days) expect(day.top).toBeGreaterThanOrEqual(headers.title.bottom);
       }
     }

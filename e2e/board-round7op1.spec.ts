@@ -291,7 +291,7 @@ test('narrow dates, hover refresh, keyboard overlays and touch menus retain thei
         const dates = card.locator('.task-card__date-slot:not([hidden]) .task-card__date-value:visible');
         const geometry = await dates.evaluateAll(labels => labels.map(label => ({ height: label.getBoundingClientRect().height, width: label.getBoundingClientRect().width, scrollWidth: label.scrollWidth, whiteSpace: getComputedStyle(label).whiteSpace })));
         expect(geometry.every(label => label.height < 25)).toBe(true);
-        if (width <= 700) expect(geometry.every(label => label.whiteSpace === 'nowrap')).toBe(true);
+        if (width <= 700) expect(geometry.every(label => label.scrollWidth <= label.width + 1)).toBe(true);
         if (width >= 430) expect(geometry).toHaveLength(2);
       } else {
         expect(await card.evaluate(card => getComputedStyle(card).backgroundColor)).toBe(await page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--background-primary').trim()).then(value => page.evaluate(value => {

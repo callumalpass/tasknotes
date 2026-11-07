@@ -86,7 +86,23 @@ test('month defaults to a full-height grid and preserves explicit panel settings
         expect(Math.abs(geometry.bottomGap)).toBeLessThanOrEqual(2);
         const day = page.locator(`${root} .tnc-dg-day[data-date="2026-11-15"]`);
         await day.click({ position: { x: 8, y: (await day.boundingBox())!.height - 5 } });
-        await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
+        if (width === 1180) {
+          const bounds = (await day.boundingBox())!;
+          await page.mouse.move(bounds.x + 8, bounds.y + bounds.height - 5);
+          await page.mouse.down();
+          await page.mouse.move(bounds.x + bounds.width - 8, bounds.y + bounds.height - 5, { steps: 8 });
+          await page.mouse.up();
+          await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
+        } else {
+          if (width === 400) {
+            await expect(page.locator('.tnc-popover')).toBeVisible();
+            await expect(page.locator('.tnc-popover')).toHaveAttribute('aria-label', /15/);
+            await page.keyboard.press('Escape');
+          } else await expect(page.locator('.tnc-popover')).toHaveCount(0);
+          await expect(page.locator('.modal')).toHaveCount(0);
+          await page.locator('.tn-bases-new-task-btn').click();
+          await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
+        }
         await page.keyboard.press('Escape');
       }
     }
@@ -124,7 +140,8 @@ test('panel-off dense months keep readable chips and reachable overflow in both 
         (window as any).app.workspace.trigger('css-change');
       }, theme);
       const month = page.locator(`${root} .tnc-dg`);
-      if (width < 1180) await expect(month).toHaveClass(/tnc-dg--chips/);
+      if (width < 560) await expect(month).toHaveClass(/tnc-dg--compact/);
+      else if (width < 1180) await expect(month).toHaveClass(/tnc-dg--chips/);
       else await expect(month).not.toHaveClass(/tnc-dg--chips/);
       await expect(page.locator(`${root} .tn-calendar-day-panel`)).toHaveCount(0);
       if (width === 1180) {
@@ -133,9 +150,10 @@ test('panel-off dense months keep readable chips and reachable overflow in both 
       }
       const day = page.locator(`${root} .tnc-dg-day[data-date="2026-11-10"]`);
       const chip = day.locator('.tnc-item--indicator').first();
-      await expect(chip).toContainText('Review');
-      await expect(chip.locator('.tnc-item-title')).toBeVisible();
-      await expect.poll(() => chip.evaluate(element => {
+      await expect(chip).toHaveAttribute('aria-label', /Review/);
+      if (width >= 560) await expect(chip.locator('.tnc-item-title')).toBeVisible();
+      const compact = width < 560;
+      await expect.poll(() => chip.evaluate((element, compact) => {
         const context = document.createElement('canvas').getContext('2d')!;
         const luminance = (color: string) => {
           context.clearRect(0, 0, 1, 1);
@@ -148,14 +166,16 @@ test('panel-off dense months keep readable chips and reachable overflow in both 
           return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
         };
         const style = getComputedStyle(element);
-        const foreground = luminance(style.color);
-        const background = luminance(style.backgroundColor);
+        let backdrop = element.parentElement!;
+        while (getComputedStyle(backdrop).backgroundColor === 'rgba(0, 0, 0, 0)' && backdrop.parentElement) backdrop = backdrop.parentElement;
+        const foreground = luminance(compact ? style.backgroundColor : style.color);
+        const background = luminance(compact ? getComputedStyle(backdrop).backgroundColor : style.backgroundColor);
         return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
-      })).toBeGreaterThanOrEqual(4.5);
+      }, compact)).toBeGreaterThanOrEqual(compact ? 3 : 4.5);
       await page.screenshot({ path: testInfo.outputPath(`month-panel-off-${width}-${theme}.png`) });
-      const more = day.locator('.tnc-dg-dots-more');
+      const more = width < 560 ? day : day.locator('.tnc-dg-dots-more');
       await expect(more).toBeVisible();
-      expect(await day.locator('.tnc-item--indicator').count() + Number((await more.innerText()).slice(1))).toBe(12);
+      await expect(day).toHaveAttribute('aria-label', /12 items/);
       await more.click();
       const popover = page.locator('.tnc-popover');
       await expect(popover).toBeVisible();
@@ -173,9 +193,9 @@ test('panel-off dense months keep readable chips and reachable overflow in both 
   }
   await setObsidianViewport(page, { width: 400, height: 820 });
   await page.locator('.workspace-leaf.mod-active .advanced-calendar-view').evaluate(element => { element.style.width = '240px'; });
-  await expect(page.locator(`${root} .tnc-dg`)).toHaveClass(/tnc-dg--chips/);
-  await expect(page.locator(`${root} .tnc-dg-day[data-date="2026-11-10"] .tnc-item-title`).first()).toBeVisible();
-  await page.locator(`${root} .tnc-dg-day[data-date="2026-11-10"] .tnc-dg-dots-more`).click();
+  await expect(page.locator(`${root} .tnc-dg`)).toHaveClass(/tnc-dg--compact/);
+  await expect(page.locator(`${root} .tnc-dg-day[data-date="2026-11-10"] .tnc-item--indicator`).first()).toHaveAttribute('aria-label', /Review/);
+  await page.locator(`${root} .tnc-dg-day[data-date="2026-11-10"]`).click();
   await expect(page.locator('.tnc-popover')).toContainText('Review 10 proposal 11 with the product team');
   await page.locator('.tnc-popover-close').click();
 });

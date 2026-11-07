@@ -523,7 +523,8 @@ test('agenda option, day-panel actions and localised move feedback', async () =>
     shadow: getComputedStyle(element).boxShadow,
   }))).toEqual({ background: 'rgba(0, 0, 0, 0)', shadow: 'none' });
   await expect(page.locator('.tnc-strip-day.has-items').first()).toBeVisible();
-  await expect(page.locator('.tnc-list-add').first()).toBeVisible();
+  await expect(page.locator('.tnc-list-add')).toHaveCount(0);
+  await expect(page.locator('.tn-bases-new-task-btn')).toBeVisible();
   await page.evaluate(() => {
     const view = (window as any).r7Leaf.view.controller.view;
     view.viewOptions.showAgendaStrip = false;
@@ -642,8 +643,7 @@ test('mini calendar uses the selected-day skin in both themes and widths', async
       const label = await page.evaluate(tomorrow => new Intl.DateTimeFormat((window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale(), { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${tomorrow}T12:00Z`)), tomorrow);
       const other = page.getByRole('gridcell', { name: label, exact: true });
       await other.click();
-      await expect(page.locator('.modal-container')).toBeVisible();
-      await page.keyboard.press('Escape');
+      await expect(page.locator('.mini-calendar-view__selected-day')).toBeVisible();
       await expect(page.locator('.modal-container')).toHaveCount(0);
       await page.mouse.move(5, 5);
       await expect(other).toHaveClass(/mini-calendar-view__day--selected/);

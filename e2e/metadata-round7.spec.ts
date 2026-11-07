@@ -130,11 +130,13 @@ test('metadata atoms, board titles, source states, sticky reveal and inline targ
         const header = root.locator('.task-group-header').first();
         const bounds = (await header.boundingBox())!;
         await page.mouse.move(bounds.x + 20, bounds.y + bounds.height / 2, { steps: 6 });
-        const feedback = root.locator('.task-list-view__movement-feedback');
+        const feedback = page.locator('body > .task-list-view__movement-feedback');
         await expect(feedback).toContainText('Already in this group');
         const hint = (await feedback.boundingBox())!;
         measurements.push({ sameGroupFeedback: { header: bounds, hint } });
-        expect.soft(hint.x).toBeLessThan(bounds.x + 40);
+        const pointer = await page.evaluate(() => (window as any).app.workspace.getMostRecentLeaf().view.controller.view.movementPointer);
+        const margin = await feedback.evaluate(element => parseFloat(getComputedStyle(element).marginLeft));
+        expect.soft(hint.x).toBeCloseTo(Math.max(8, Math.min(pointer.x + 16, page.viewportSize()!.width - hint.width - 8)) + margin, 0);
         expect.soft(hint.y + hint.height).toBeLessThanOrEqual(bounds.y + bounds.height);
       }
       const toolbar = page.locator('.bases-toolbar').first();

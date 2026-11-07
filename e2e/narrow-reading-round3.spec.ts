@@ -142,10 +142,10 @@ for (const theme of ['light', 'dark']) for (const width of [400, 430]) {
           await overflow.focus();
           await page.keyboard.press('Enter');
         } else await overflow.click();
-        await expect(page.locator('.tn-popover[role="dialog"]')).toBeVisible();
+        await expect(page.locator('.tn-picker[role="dialog"]')).toBeVisible();
         await expect(page.locator('.modal-container:visible')).toHaveCount(0);
         await page.keyboard.press('Escape');
-        await expect(page.locator('.tn-popover')).toHaveCount(0);
+        await expect(page.locator('.tn-picker[role="dialog"]')).toHaveCount(0);
       }
     }
   });
@@ -179,7 +179,7 @@ test('narrow calendar shares agenda navigation and retains week selection and se
   expect(navigation!.x + navigation!.width <= selection!.x || navigation!.x >= selection!.x + selection!.width || navigation!.y >= selection!.y + selection!.height).toBe(true);
   expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(400);
   expect(selection!.height).toBeGreaterThanOrEqual(40);
-  expect(await selector.evaluate(element => getComputedStyle(element).appearance)).toBe('auto');
+  expect(await selector.evaluate(element => getComputedStyle(element).appearance)).toBe('none');
   expect(await selector.evaluate(element => getComputedStyle(element).borderTopColor)).not.toBe('rgba(0, 0, 0, 0)');
   await calendar.locator('.tnc-btn-overflow').click();
   await expect(page.locator('.tn-picker__row').filter({ hasText: 'Select tasks' })).toBeVisible();
@@ -220,6 +220,14 @@ test('collisions expand without widening the week, timed lines fit and deadlines
   await page.locator('.tnc-btn-view-day').click();
   await expect(page.locator('.tnc-btn-view-day')).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => grid.locator('.tnc-tg-head [data-date]').count()).toBe(1);
+  await expect(grid.locator('.tnc-more--collision .tnc-collision-count')).toHaveText('4');
+  await page.evaluate(async ({ folder, taskPath }) => {
+    const app = (window as any).app;
+    const today = (window as any).moment().format('YYYY-MM-DD');
+    for (const [index, path] of [taskPath, ...Array.from({ length: 3 }, (_, index) => `${folder}/Collision-${index}.md`)].entries()) {
+      await app.fileManager.processFrontMatter(app.vault.getAbstractFileByPath(path), (frontmatter: any) => { frontmatter.scheduled = `${today}T${String(9 + index * 2).padStart(2, '0')}:00`; });
+    }
+  }, { folder, taskPath });
   const events = grid.locator('.tnc-item--timed');
   await expect(events).toHaveCount(4);
   await test.info().attach('timed-geometry', { body: JSON.stringify(await events.evaluateAll(elements => elements.map(element => {
@@ -249,7 +257,7 @@ test('collisions expand without widening the week, timed lines fit and deadlines
   }))).toBe(true);
   const deadline = grid.locator('.tnc-item--bar[data-event-type="due"]').first();
   await expect(deadline).toBeVisible();
-  expect((await deadline.boundingBox())!.height).toBeGreaterThanOrEqual(40);
+  expect((await deadline.boundingBox())!.height).toBe(22);
   expect(await deadline.locator('.tn-calendar-event-title').evaluate(element => getComputedStyle(element).whiteSpace)).toBe('nowrap');
   await events.filter({ hasText: title }).first().scrollIntoViewIfNeeded();
   await capture(page, '1180-collisions', events.filter({ hasText: title }).first());

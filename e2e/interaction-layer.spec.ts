@@ -360,7 +360,8 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await root.focus();
     await page.keyboard.press('?');
-    await expect(page.locator('.tn-shortcut-row')).toHaveCount(type === 'tasknotesKanban' ? 17 : 16);
+    await expect(page.locator('.tn-shortcut-row')).toHaveCount(type === 'tasknotesKanban' ? 16 : 15);
+    await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Space' })).toHaveCount(0);
     await expect(page.locator('.tn-shortcut-row').filter({ hasText: /^Undo/ }).locator('.tn-key-hint')).toContainText('Z');
     await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Scheduled date' }).locator('.tn-key-hint')).toContainText('Shift');
     if (type === 'tasknotesKanban') await expect(page.locator('.tn-shortcut-row').filter({ hasText: 'Move between columns' })).toBeVisible();

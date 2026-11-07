@@ -99,7 +99,9 @@ test('tools: mini selection, date grid, compact pickers, settings and metrics', 
         await expect(page.locator('.mini-calendar-view__entry')).toHaveCount(2);
       }
       await page.locator('.mini-calendar-view__day--today').click();
-      await expect(page.locator('.note-selector-modal__suggestion')).toHaveCount(2);
+      await expect(page.locator('.mini-calendar-view__entry')).toHaveCount(2);
+      await expect(page.locator('.note-selector-modal')).toHaveCount(0);
+      await page.locator('.mini-calendar-view__entry').first().focus();
       await page.keyboard.press('Escape');
       await expect(grid).toBeFocused();
       await page.evaluate(async folder => {
@@ -114,7 +116,9 @@ test('tools: mini selection, date grid, compact pickers, settings and metrics', 
         expect(Math.abs(cancelBounds!.y - saveBounds!.y)).toBeLessThan(2);
         const actionBar = await modal.locator('.tn-task-modal__action-bar').boundingBox();
         const disclosure = await modal.locator('.tn-task-modal__details-toggle').boundingBox();
-        expect(disclosure!.width).toBeGreaterThanOrEqual(actionBar!.width - 2);
+        expect(disclosure!.x).toBeGreaterThanOrEqual(actionBar!.x);
+        expect(disclosure!.x + disclosure!.width).toBeLessThanOrEqual(actionBar!.x + actionBar!.width);
+        expect(disclosure!.height).toBeGreaterThanOrEqual(28);
       }
       await modal.locator('[data-type="priority"]').click();
       await page.locator('.tn-picker__input').press('Home');
@@ -165,7 +169,13 @@ test('tools: mini selection, date grid, compact pickers, settings and metrics', 
       if (phase !== 'before') {
         const overview = await page.locator('.pomodoro-stats-view__overview-value').evaluateAll(elements => elements.map(element => ({ font: getComputedStyle(element).fontSize, top: element.getBoundingClientRect().top })));
         expect(new Set(overview.map(value => value.font)).size).toBe(1);
-        expect(Math.max(...overview.map(value => value.top)) - Math.min(...overview.map(value => value.top))).toBeLessThan(2);
+        const columns = width > 768 ? 4 : 2;
+        expect(overview).toHaveLength(4);
+        for (let index = 0; index < overview.length; index += columns) {
+          const row = overview.slice(index, index + columns);
+          expect(Math.max(...row.map(value => value.top)) - Math.min(...row.map(value => value.top))).toBeLessThan(2);
+        }
+        if (columns === 2) expect(overview[2].top).toBeGreaterThan(overview[0].top);
       }
     }
   } finally {
@@ -215,6 +225,7 @@ test('tools: calendar move clock preference, one toast and persisted Undo', asyn
         const path = `${folder}/Review.md`;
         const text = await app.vault.read(app.vault.getAbstractFileByPath(path));
         const view = (window as any).toolsClockLeaf.view.controller.view;
+        view.viewOptions.timeFormat = timeFormat;
         await view.refetchEvents();
         const item = view.calendarItems.find((item: any) => item.data?.taskInfo?.path === path);
         const oldEvent = { id: item.id, title: item.title, start: new Date(item.start), end: new Date(item.end), allDay: false, extendedProps: item.data };

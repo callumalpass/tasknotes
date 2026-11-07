@@ -282,7 +282,7 @@ test('empty agenda offers task creation and narrow views use full names', async 
       await expect(page.locator('.tnc-list-empty .tn-empty')).toBeVisible();
       await expect(page.locator('.tnc-list-empty .tn-empty__message')).toHaveText('No tasks match this view. Review its filters.');
     }
-    if (width === 400 && !publishedFallback) {
+    if (await page.locator('.tnc-toolbar-view-select').isVisible() && !publishedFallback) {
       const select = page.locator('.tnc-toolbar-view-select');
       await expect(select).toBeVisible();
       await expect(page.locator('.tnc-toolbar-views')).toBeHidden();

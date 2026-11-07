@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { parse } from 'yaml';
-import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, dismissObsidianModals, type ObsidianApp } from './obsidian';
 
 test.use({ trace: 'on' });
 
@@ -44,6 +44,7 @@ test.beforeAll(async () => {
 
 test.afterEach(async () => {
   for (let count = 0; count < 3; count++) await page.keyboard.press('Escape');
+  await dismissObsidianModals(page);
 });
 
 test.afterAll(async () => {
@@ -197,10 +198,11 @@ test('mini calendar day drilldown carries the selected civil date', async () => 
   const day = page.locator('.workspace-leaf.mod-active .mini-calendar-view__day[aria-current="date"]');
   await expect(day).toHaveAttribute('aria-description', /Review the launch plan/);
   await day.click();
-  await expect(page.locator('.prompt')).toBeVisible();
+  await expect(page.locator('.mini-calendar-view__selected-day')).toBeVisible();
   await capture('mini-drilldown');
-  await expect(page.locator('.prompt .modal-title')).toContainText(String(new Date(`${today}T12:00`).getFullYear()));
-  await expect(page.locator('.suggestion-item').filter({ hasText: 'Review the launch plan' })).toHaveCount(1);
+  await expect(page.locator('.mini-calendar-view__selected-heading')).toContainText(String(new Date(`${today}T12:00`).getFullYear()));
+  await expect(page.locator('.mini-calendar-view__entry').filter({ hasText: 'Review the launch plan' })).toHaveCount(1);
+  await expect(page.locator('.note-selector-modal')).toHaveCount(0);
 });
 
 test('inline sentence references keep metadata ordered and options after the title', async () => {

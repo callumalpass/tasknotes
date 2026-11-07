@@ -56,7 +56,7 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
       Invalid: { filters, formulas: { bucket: 'if(status == "open", "Open work", "Other work")' }, views: [{ type: 'tasknotesTaskList', name: 'List', groupBy: { property: 'formula.bucket', direction: 'ASC' }, order }] },
       Board: { filters, views: [{ type: 'tasknotesKanban', name: 'Board', groupBy: { property: 'status', direction: 'ASC' }, order, sort: [{ column: fields.sort, direction: 'ASC' }] }] },
       Year: { filters, views: [{ type: 'tasknotesCalendar', name: 'Year', calendarView: 'multiMonthYear', order }] },
-      Mini: { filters, views: [{ type: 'tasknotesMiniCalendar', name: 'Mini' }] },
+      Mini: { filters, views: [{ type: 'tasknotesMiniCalendar', name: 'Mini', dateProperty: 'note.scheduled' }] },
     };
     await page.evaluate(async ({ folder, files }) => {
       const app = (window as any).app;
@@ -147,8 +147,10 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
       const day = page.locator('.mini-calendar-view__day--today');
       await expect(day).toBeVisible();
       await day.click();
-      await expect(page.locator('.modal-container')).toBeVisible();
+      await expect(page.locator('.mini-calendar-view__entry')).toHaveCount(3);
+      await expect(page.locator('.modal-container')).toHaveCount(0);
       await capture(`mini-chooser-${variant}`);
+      await page.locator('.mini-calendar-view__entry').first().focus();
       await page.keyboard.press('Escape');
       await page.waitForTimeout(100);
       const gridFocused = await page.evaluate(() => document.activeElement?.classList.contains('mini-calendar-view__grid'));
@@ -165,7 +167,7 @@ test('AD: modal isolation, Year reveal, aligned metadata, drop feedback and mini
         await expect(hint).toBeVisible();
         const visible = await hint.evaluate(element => {
           const rect = element.getBoundingClientRect();
-          return { top: rect.top, hit: element.ownerDocument.elementFromPoint(rect.left + 5, rect.top + 5)?.className, rootTop: element.closest('.tn-tasknotesTaskList')!.getBoundingClientRect().top };
+          return { top: rect.top, hit: element.ownerDocument.elementFromPoint(rect.left + 5, rect.top + 5)?.className, rootTop: element.ownerDocument.querySelector('.workspace-leaf.mod-active .tn-tasknotesTaskList')!.getBoundingClientRect().top };
         });
         observations[`invalid-${variant}`] = visible;
         await capture(`list-invalid-${variant}`);

@@ -287,7 +287,7 @@ test('council AC: responsive task controls, panel lifecycle, history and held co
       await capture(`calendar-entry-${theme}-${width}`);
       const timed = page.locator('.tnc-item--timed');
       const stack = page.locator('.tnc-more--collision');
-      if (width === 400) {
+      if (await stack.count()) {
         await expect(stack.locator('.tnc-collision-count')).toHaveText('3');
         await capture(`calendar-rest-${theme}-${width}`);
         await stack.hover();

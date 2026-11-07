@@ -399,6 +399,7 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 	let touchActive = false;
 	try {
 		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+		await card("Source").getByRole("button", { name: "Move task" }).focus();
 		const handle = await card("Source")
 			.getByRole("button", { name: "Move task" })
 			.boundingBox();
@@ -474,8 +475,7 @@ test("due-sorted movement previews both properties and preserves manual rank", a
 	await openView();
 	await beginMouseDrag(card("Done"));
 	const feedback = instance.page.locator(".task-list-view__movement-feedback");
-	await expect(feedback).toContainText("status → Done");
-	await expect(feedback).toContainText("priority → Low");
+	await expect(feedback).toHaveText("Done · Low");
 	await expect(
 		instance.page.locator(".task-list-view__drop-slot-before, .task-list-view__drop-slot-after")
 	).toHaveCount(0);
@@ -499,7 +499,7 @@ test("movement feedback stays readable in the native dark theme", async ({}, tes
 		await openView();
 		await beginMouseDrag(card("Done"));
 		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
-			"status → Done"
+			"Done · Low"
 		);
 		await instance.page.screenshot({ path: testInfo.outputPath("dark-move-preview.png") });
 		await instance.page.keyboard.press("Escape");
@@ -543,7 +543,7 @@ test("configured empty subgroups have explicit drop destinations", async () => {
 		source!.y + source!.height / 2,
 		{ steps: 3 }
 	);
-	const destination = instance.page.getByText("Open / Normal", { exact: true });
+	const destination = instance.page.getByText("status → Open / Normal", { exact: true });
 	await expect(destination).toBeVisible();
 	const target = await destination.boundingBox();
 	await instance.page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, {
@@ -760,7 +760,7 @@ test("clearing a priority deletes its value without putting null into the task c
 	await beginMouseDrag(card("Source"));
 	const destination = instance.page
 		.locator(".task-list-view__destination")
-		.filter({ hasText: /^Open \/ No value$/ });
+		.filter({ hasText: /^status → Open \/ No value$/ });
 	await expect(destination).toBeVisible();
 	const rect = await destination.boundingBox();
 	await instance.page.mouse.move(rect!.x + rect!.width / 2, rect!.y + rect!.height / 2, {
@@ -856,6 +856,7 @@ test("handle-only touch movement works at a narrow viewport and cleans up its gh
 	const cdp = await instance.page.context().newCDPSession(instance.page);
 	try {
 		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+		await card("Source").getByRole("button", { name: "Move task" }).focus();
 		await card("Source").getByRole("button", { name: "Move task" }).hover();
 		const start = await card("Source").getByRole("button", { name: "Move task" }).boundingBox();
 		const target = await card("Low").boundingBox();
@@ -876,15 +877,19 @@ test("handle-only touch movement works at a narrow viewport and cleans up its gh
 			});
 		}
 		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
-			"priority → Low"
+			"Low"
 		);
 		expect(await frontmatter()).toEqual(before);
 		await expect(instance.page.locator(".task-list-view__touch-ghost")).toBeVisible();
 		const ghostBounds = await instance.page
 			.locator(".task-list-view__touch-ghost")
 			.boundingBox();
-		expect(Math.abs(ghostBounds!.x - (targetX + 12))).toBeLessThan(20);
-		expect(Math.abs(ghostBounds!.y - (targetY + 12))).toBeLessThan(20);
+		const previewPosition = (pointer: number, size: number, viewport: number) => {
+			const preferred = pointer + 14 + size > viewport - 8 ? pointer - size - 14 : pointer + 14;
+			return Math.max(8, Math.min(preferred, Math.max(8, viewport - size - 8)));
+		};
+		expect(Math.abs(ghostBounds!.x - previewPosition(targetX, ghostBounds!.width, 480))).toBeLessThan(2);
+		expect(Math.abs(ghostBounds!.y - previewPosition(targetY, ghostBounds!.height, 800))).toBeLessThan(2);
 		expect(ghostBounds!.x).toBeGreaterThanOrEqual(0);
 		expect(ghostBounds!.x + ghostBounds!.width).toBeLessThanOrEqual(480);
 		expect(ghostBounds!.y + ghostBounds!.height).toBeLessThanOrEqual(800);
@@ -899,6 +904,7 @@ test("handle-only touch movement works at a narrow viewport and cleans up its gh
 		await expect(instance.page.locator(".menu")).toHaveCount(0);
 		await expect(card("Source")).toHaveAttribute("data-priority", "low");
 		const afterMove = await frontmatter();
+		await card("Source").getByRole("button", { name: "Move task" }).focus();
 		const handle = await card("Source")
 			.getByRole("button", { name: "Move task" })
 			.boundingBox();

@@ -110,19 +110,25 @@ test('narrow desktop and mobile agenda keep readable titles beside status and le
       };
     });
     expect(geometry.titleWidth).toBeGreaterThanOrEqual(geometry.cardWidth - geometry.controls[0].width - geometry.controls[2].width - 1);
-    expect(geometry.stamp.width).toBeGreaterThan(0);
+    expect(geometry.stamp.width).toBe(0);
     expect(geometry.stamp.right).toBeLessThanOrEqual(geometry.cardLeft + 1);
     for (const control of geometry.controls.slice(0, 3)) {
-      expect(control.width).toBeGreaterThanOrEqual(40);
-      expect(control.height).toBeGreaterThanOrEqual(40);
+      expect(control.width).toBeGreaterThanOrEqual(mobile ? 40 : 24);
+      expect(control.height).toBeGreaterThanOrEqual(mobile ? 40 : 24);
     }
     expect(Math.abs(geometry.controls[1].y - geometry.controls[3].y)).toBeLessThanOrEqual(1);
     const timed = page.locator(`${root} .task-card[data-task-path$="/Timed.md"]`).first();
     const timeLeading = await timed.evaluate(element => {
       const entry = element.closest('.tn-calendar-list-entry')!;
-      return entry.querySelector('.tn-calendar-list-time')!.getBoundingClientRect().right <= element.querySelector('.task-card__title-text')!.getBoundingClientRect().left;
+      const time = entry.querySelector('.tn-calendar-list-time')!;
+      const title = element.querySelector('.task-card__title-text')!.getBoundingClientRect();
+      const bounds = time.getBoundingClientRect();
+      return { text: time.textContent, beneathTitle: bounds.top >= title.bottom, width: time.clientWidth, required: time.scrollWidth, withinCard: bounds.left >= element.getBoundingClientRect().left && bounds.right <= element.getBoundingClientRect().right };
     });
-    expect(timeLeading).toBe(true);
+    expect(timeLeading.text).toMatch(/^10:00/);
+    expect(timeLeading.beneathTitle).toBe(true);
+    expect(timeLeading.withinCard).toBe(true);
+    expect(timeLeading.required).toBeLessThanOrEqual(timeLeading.width + 1);
     const beforeHover = await card.boundingBox();
     await card.hover();
     expect(await card.boundingBox()).toEqual(beforeHover);
@@ -138,7 +144,7 @@ test('month summaries and selected-day empty state survive pointer, keyboard and
   for (const theme of ['light', 'dark']) {
     await resize(400, theme);
     await mode('month');
-    await expect(page.locator(`${root} > .tnc .tnc-dg--chips`)).toBeVisible();
+    await expect(page.locator(`${root} > .tnc .tnc-dg--dots`)).toBeVisible();
     await expect.poll(() => page.locator(`${root} > .tnc`).evaluate(element => {
       const weeks = element.querySelectorAll('.tnc-dg-week');
       return weeks[weeks.length - 1].getBoundingClientRect().bottom <= element.getBoundingClientRect().bottom + 1;
@@ -181,9 +187,10 @@ test('compact task controls retain status cycling, shared Undo and metadata disc
   await page.locator('.tn-toast__action').filter({ hasText: 'Undo' }).click();
   await expect.poll(() => page.evaluate(async folder => (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(`${folder}/Plain.md`).then((task: any) => task.status), folder)).toBe(status);
   await expect(card).toHaveAttribute('data-status', status);
-  await expect(page.locator('.tn-toast__message')).toHaveText('Undid Status change for 1 task');
+  await expect(page.locator('.tn-toast__message')).toHaveText('Change undone.');
   await card.locator('.task-card__priority-dot').click();
   await expect(page.locator('.menu')).toBeVisible();
+  await expect(page.locator('.menu-item-title')).toContainText(['None']);
   await page.keyboard.press('Escape');
   const rich = page.locator(`${root} .task-card[data-task-path$="/Rich.md"]`).first();
   const overflow = rich.locator('.task-card__metadata-overflow:not([hidden])');

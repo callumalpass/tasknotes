@@ -39,10 +39,10 @@ async function expectOwnHitTargets(card: Locator, mobile: boolean) {
   const targets = await card.locator('[role=button]:visible').evaluateAll(elements => elements.filter(element => getComputedStyle(element).opacity !== '0').map(element => {
     const bounds = element.getBoundingClientRect();
     const hit = document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-    return { label: element.getAttribute('aria-label'), own: hit === element || element.contains(hit), bounds: bounds.toJSON() };
+    return { label: element.getAttribute('aria-label'), control: element.className, hit: hit?.className, own: hit === element || element.contains(hit), bounds: bounds.toJSON() };
   }));
   for (const target of targets) {
-    expect(target.own, `${target.label} must hit its own control`).toBe(true);
+    expect(target.own, `${JSON.stringify(target)} must hit its own control`).toBe(true);
     if (mobile) {
       expect(target.bounds.width, target.label || '').toBeGreaterThanOrEqual(40);
       expect(target.bounds.height, target.label || '').toBeGreaterThanOrEqual(40);
@@ -91,7 +91,17 @@ test.beforeAll(async () => {
   }, { folder, bases: Object.fromEntries(Object.entries(bases).map(([name, value]) => [name, stringify(value)])) });
 });
 
-test.afterAll(async () => { if (instance) await closeObsidian(instance); });
+test.afterAll(async () => {
+  try {
+    if (page && !page.isClosed()) await page.evaluate(async folder => {
+      const app = (window as any).app;
+      const fixture = app.vault.getAbstractFileByPath(folder);
+      if (fixture) await app.vault.delete(fixture, true);
+    }, folder);
+  } finally {
+    if (instance) await closeObsidian(instance);
+  }
+});
 
 test('board control lanes hit themselves at rest, on hover and focus without moving metadata', async () => {
   test.setTimeout(180000);
@@ -145,7 +155,7 @@ test('list date identities align, selection can be cleared and group commands ar
       await expect(controls).toHaveCount(field === 'scheduled' ? 3 : 2);
       const positions = await controls.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().x));
       expect(Math.max(...positions) - Math.min(...positions)).toBeLessThan(1);
-      for (const label of await controls.locator('.task-card__date-label').all()) await expect(label).toBeVisible();
+      for (const control of await controls.all()) await expect(control).toHaveAttribute('aria-label', new RegExp(field === 'scheduled' ? '^Scheduled:' : '^Due:'));
     }
     const header = root.locator('.task-group-header').first();
     const title = await header.locator('.task-group-title').boundingBox();
@@ -164,7 +174,7 @@ test('list date identities align, selection can be cleared and group commands ar
       await short.locator('.task-card__title-text').click({ modifiers: ['Control'] });
       const indicator = page.locator('.workspace-leaf.mod-active .tn-selection-indicator');
       await expect(indicator).toBeVisible();
-      await expect(indicator).toHaveText('2 selected');
+      await expect(indicator).toHaveText('2 selected · Clear selection');
       await capture(`selection-${theme}-${action}`);
       if (action === 'click') await indicator.click();
       else { await indicator.focus(); await page.keyboard.press(action); }

@@ -31,12 +31,13 @@ test('legacy calendar keys keep their rendering when opening the grouped setting
     await page.screenshot({ path: 'test-results/calendar-settings-legacy-width.png' });
     await expect(cal.locator('.tnc-item:visible')).toHaveCount(2);
     await expect(cal.locator('.tnc-more:visible')).toHaveCount(2);
-    await expect(cal.locator('.tnc-tg')).toContainText(/\d(am|pm)/);
+    await expect(cal.locator('.tnc-tg')).toContainText(/\d(?::\d{2})?\s*(am|pm)/i);
     const widths = await cal.locator('.tnc-tg-head .tnc-dh').evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
     expect(widths[0]).toBeGreaterThan(widths[1] * 1.5);
     const timedStack = cal.locator('.tnc-more--stack');
     await timedStack.click();
-    await expect(cal.locator('.tnc-popover .tnc-item')).toHaveCount(3);
+    await expect(cal.locator('.tnc-popover .tnc-item')).toHaveCount(6);
+    await expect(cal.locator('.tnc-popover .tn-calendar-event-title')).toHaveText(Array.from({ length: 6 }, (_, index) => `Settings event ${index}`));
     await page.keyboard.press('Escape');
     await expect(timedStack).toBeFocused();
     const rendering = async () => cal.evaluate(el => Array.from(el.querySelectorAll('.tnc-item, .tnc-more')).filter(node => (node as HTMLElement).offsetHeight > 0).map(node => {
