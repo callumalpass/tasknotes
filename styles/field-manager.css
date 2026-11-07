@@ -13,7 +13,7 @@
 
 .tasknotes-plugin .field-manager__tab {
 	padding: 0.5rem 1rem;
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 	border-radius: var(--tn-radius-sm);
 	transition: background-color 0.2s;
 }

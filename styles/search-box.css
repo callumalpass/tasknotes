@@ -60,7 +60,7 @@
 	background: transparent;
 	border: none;
 	color: var(--text-muted);
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 	padding: 0;
 	font-size: var(--tn-type-lg);
 	line-height: 1;

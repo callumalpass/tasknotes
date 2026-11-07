@@ -98,13 +98,13 @@
 }
 
 .tn-static-cursor-pointer-2723efcc {
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 	color: var(--text-muted);
 	font-weight: bold;
 }
 
 .tn-static-cursor-pointer-3b6a3a65 {
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 }
 
 .tn-static-display-block-2a1b75c9 {

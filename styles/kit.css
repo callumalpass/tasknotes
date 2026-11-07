@@ -28,7 +28,7 @@
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
     white-space: nowrap;
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     transition: background-color var(--tn-transition-fast), border-color var(--tn-transition-fast);
 }
 
@@ -143,7 +143,7 @@
     color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 @media (hover: hover) {
@@ -375,7 +375,7 @@
     margin-inline-end: auto;
     color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin.tn-modal .tn-modal__create-more input {
@@ -563,7 +563,7 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     box-sizing: border-box;
     padding: var(--tn-space-1) var(--tn-space-2);
     border-radius: var(--tn-radius-sm);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tn-shortcut-row {
@@ -704,7 +704,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     color: var(--tn-text-accent);
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tn-toast__action[aria-busy="true"] {
@@ -771,7 +771,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     color: var(--tn-text-normal);
     background: var(--background-secondary);
     font-size: var(--tn-type-sm);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .tn-select:focus-visible {
@@ -883,7 +883,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
 }
 
 .tasknotes-plugin .tn-modal__color > summary {
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     display: inline-flex;
     align-items: center;
     gap: var(--tn-space-2);

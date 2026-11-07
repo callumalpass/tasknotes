@@ -171,7 +171,7 @@
     color: var(--tn-text-muted);
     font-variant-numeric: tabular-nums;
     padding-inline: var(--tn-space-1);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .task-card__metadata :is(.task-card__date-slot, .task-card__metadata-values, .task-card__metadata-overflow)[hidden] {

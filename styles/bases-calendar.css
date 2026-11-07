@@ -857,7 +857,7 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 }
 
 .advanced-calendar-view.tn-selection-mode .tnc-item[data-batch-selectable="true"] {
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .tnc-item.is-dragging[data-drag-count]::after {
@@ -1447,7 +1447,7 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 
 .tasknotes-plugin #bases-calendar:not(.tn-calendar-composition) .tnc-dg--chips .tnc-dg-dots-more {
     pointer-events: auto;
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin #bases-calendar:not(.tn-calendar-composition) .tnc-dg-dots-more:focus-visible {

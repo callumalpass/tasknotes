@@ -708,7 +708,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     border-radius: var(--tn-radius-full);
     background: transparent;
     color: var(--text-muted);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     transition: background-color 0.15s ease, color 0.15s ease;
     flex-shrink: 0;
 }
@@ -856,7 +856,7 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
     font: inherit;
     text-align: start;
     box-shadow: none;
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .tasknotes-settings__card-header > .tasknotes-settings__card-disclosure:focus-visible {
@@ -952,7 +952,7 @@ body.is-mobile .tasknotes-settings__card-drag-handle {
 }
 
 .tasknotes-settings__field-help summary {
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     width: fit-content;
     border-radius: var(--tn-radius-sm);
 }

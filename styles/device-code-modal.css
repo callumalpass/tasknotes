@@ -88,7 +88,7 @@
 	justify-content: center;
 	padding: 8px;
 	color: var(--text-on-accent);
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 	background: var(--interactive-accent);
 	border: none;
 	border-radius: var(--tn-radius-sm);
@@ -168,7 +168,7 @@
 	gap: 6px;
 	padding: 8px 16px;
 	font-weight: 500;
-	cursor: pointer;
+	cursor: var(--cursor-link, pointer);
 	border-radius: var(--tn-radius-sm);
 }
 

@@ -415,7 +415,7 @@
     box-shadow: none;
     font-size: var(--tn-type-2xs);
     font-weight: 600;
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 

@@ -136,6 +136,7 @@
     background: transparent;
     box-shadow: none;
     color: var(--tn-text-muted);
+    cursor: var(--cursor-link, pointer);
 }
 
 @media (hover: hover) {
@@ -173,6 +174,7 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn {
     box-shadow: none;
     color: var(--tn-text-normal);
     font-size: var(--tn-type-xs);
+    cursor: var(--cursor-link, pointer);
 }
 
 @media (hover: hover) {
@@ -257,6 +259,6 @@ body.is-mobile .tasknotes-plugin .reminder-modal__action-btn {
 }
 
 .tasknotes-missed-reminders__task {
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     text-decoration: underline;
 }

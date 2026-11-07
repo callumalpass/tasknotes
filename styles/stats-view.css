@@ -82,7 +82,7 @@
 
 .tasknotes-plugin .stats-view__filter-disclosure > summary {
     color: var(--text-muted);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
     font-size: var(--tn-type-sm);
     width: fit-content;
 }

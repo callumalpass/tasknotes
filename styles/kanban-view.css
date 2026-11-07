@@ -337,7 +337,7 @@
     line-height: 1.2;
     margin: 0;
     min-width: 0;
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .kanban-view__column-title:focus-visible {

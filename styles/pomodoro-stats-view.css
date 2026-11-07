@@ -295,7 +295,7 @@
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--tn-radius-md);
-    cursor: pointer;
+    cursor: var(--cursor-link, pointer);
 }
 
 .tasknotes-plugin .pomodoro-stats-view__session-delete-button:focus-visible {
