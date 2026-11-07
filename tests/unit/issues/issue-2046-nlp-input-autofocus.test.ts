@@ -20,10 +20,13 @@ function makeNLPEnabledPlugin(): TaskNotesPlugin {
 
 describe("Issue #2046: DateTimePickerModal focuses natural language input first when enabled", () => {
 	beforeEach(() => {
+		document.body.replaceChildren();
 		jest.useFakeTimers();
 	});
 
 	afterEach(() => {
+		document.body.replaceChildren();
+		jest.clearAllTimers();
 		jest.useRealTimers();
 	});
 
@@ -37,7 +40,8 @@ describe("Issue #2046: DateTimePickerModal focuses natural language input first 
 			plugin,
 		});
 
-		modal.open();
+		document.body.appendChild(modal.modalEl);
+		modal.onOpen();
 
 		const nlpInput = modal.contentEl.querySelector<HTMLInputElement>(
 			"input.date-time-picker-modal__nlp-input"
@@ -69,7 +73,8 @@ describe("Issue #2046: DateTimePickerModal focuses natural language input first 
 			plugin,
 		});
 
-		modal.open();
+		document.body.appendChild(modal.modalEl);
+		modal.onOpen();
 
 		const nlpInput = modal.contentEl.querySelector<HTMLInputElement>(
 			"input.date-time-picker-modal__nlp-input"
@@ -100,7 +105,8 @@ describe("Issue #2046: DateTimePickerModal focuses natural language input first 
 			plugin,
 		});
 
-		modal.open();
+		document.body.appendChild(modal.modalEl);
+		modal.onOpen();
 
 		(
 			modal as unknown as { naturalLanguageInput: HTMLInputElement | null }

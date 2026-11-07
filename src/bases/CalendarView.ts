@@ -1625,11 +1625,13 @@ export class CalendarView extends BasesViewBase {
 	private syncCalendarToolbar(): void {
 		const nav = this.calendarEl?.querySelector<HTMLElement>(".tnc-toolbar-nav");
 		if (nav?.parentElement && nav.parentElement.firstElementChild !== nav) nav.parentElement.prepend(nav);
-		if (!this.narrowWeek) return;
+		if (!this.calendar) return;
+		const activeView = this.narrowWeek ? "week" : this.calendar.view.type;
 		const select = this.calendarEl?.querySelector<HTMLSelectElement>(".tnc-toolbar-view-select");
-		if (select) select.value = "week";
-		this.calendarEl?.querySelector(".tnc-btn-view-week")?.setAttribute("aria-pressed", "true");
-		this.calendarEl?.querySelector(".tnc-btn-view-days")?.setAttribute("aria-pressed", "false");
+		if (select) select.value = activeView;
+		for (const button of this.calendarEl?.querySelectorAll(".tnc-btn-view") ?? []) {
+			button.setAttribute("aria-pressed", String(button.classList.contains(`tnc-btn-view-${activeView}`)));
+		}
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {

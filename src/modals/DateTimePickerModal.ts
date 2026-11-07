@@ -143,7 +143,9 @@ export class DateTimePickerModal extends Modal {
 		this.renderActions(contentEl);
 		this.updateSelectButtonState();
 
+		const focusAtOpen = this.modalEl.ownerDocument.activeElement;
 		window.setTimeout(() => {
+			if (!this.modalEl.isConnected || this.modalEl.ownerDocument.activeElement !== focusAtOpen) return;
 			// Prefer the natural language input when it is enabled and rendered,
 			// so keyboard users land on the NLP box first (matches user expectation
 			// from Quick Actions). Fall back to the date input otherwise.

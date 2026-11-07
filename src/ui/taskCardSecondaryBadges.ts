@@ -105,10 +105,10 @@ export function isTaskCardSubtasksExpanded(task: TaskInfo, plugin: TaskNotesPlug
 
 function syncBadgeInteractionLayout(card: HTMLElement): void {
 	const badges = card.querySelector<HTMLElement>(".task-card__badges");
-	badges?.classList.toggle(
-		"task-card__badges--interactive",
-		Boolean(badges.querySelector('[role="button"]'))
-	);
+	const interactive = Boolean(badges?.querySelector('[role="button"]'));
+	badges?.classList.toggle("task-card__badges--interactive", interactive);
+	card.classList.toggle("task-card--has-interactive-badges", interactive);
+	card.classList.toggle("task-card--has-decorative-badges", Boolean(badges?.childElementCount) && !interactive);
 }
 
 function removeSecondaryBadges(card: HTMLElement): void {

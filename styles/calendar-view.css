@@ -172,6 +172,7 @@
 
 .tasknotes-plugin .mini-calendar-view__entry .tn-picker__label {
     display: flex;
+    color: var(--tn-text-normal);
     align-items: center;
     gap: var(--tn-space-2);
     white-space: nowrap;

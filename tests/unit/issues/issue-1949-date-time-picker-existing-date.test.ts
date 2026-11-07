@@ -1,6 +1,28 @@
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 
 describe("Issue #1949: date picker keeps existing-date edits open", () => {
+	it("does not steal focus from an already selected time field after opening", () => {
+		jest.useFakeTimers();
+		const modal = new DateTimePickerModal({} as any, {
+			currentDate: "2026-11-07",
+			currentTime: "09:30",
+			onSelect: jest.fn(),
+		});
+		try {
+			document.body.appendChild(modal.modalEl);
+			modal.onOpen();
+			const time = modal.contentEl.querySelector<HTMLInputElement>('input[type="time"]')!;
+			time.focus();
+			expect(document.activeElement).toBe(time);
+			jest.advanceTimersByTime(100);
+			expect(document.activeElement).toBe(time);
+		} finally {
+			modal.close();
+			modal.modalEl.remove();
+			jest.useRealTimers();
+		}
+	});
+
 	it("reuses the month grid without committing until Select and retains the current time", () => {
 		const onSelect = jest.fn();
 		const modal = new DateTimePickerModal({} as any, {

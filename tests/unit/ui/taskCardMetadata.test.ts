@@ -155,6 +155,40 @@ describe("taskCardMetadata", () => {
 			window.ResizeObserver = original;
 		}
 	});
+	it("retains disclosure focus while measuring a resized metadata line", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		const { metadataLine } = createMetadataHost();
+		try {
+			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
+			const values = metadataLine.createSpan();
+			const chip = values.createSpan({ text: "Long metadata" });
+			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			chip.getBoundingClientRect = () => {
+				const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow");
+				if (overflow?.hidden && document.activeElement === overflow) overflow.blur();
+				return { right: 300 } as DOMRect;
+			};
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			overflow.focus();
+			expect(document.activeElement).toBe(overflow);
+			resize();
+			expect(overflow.hidden).toBe(false);
+			expect(document.activeElement).toBe(overflow);
+		} finally {
+			cleanupTaskCardMetadata(metadataLine);
+			window.ResizeObserver = original;
+		}
+	});
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();

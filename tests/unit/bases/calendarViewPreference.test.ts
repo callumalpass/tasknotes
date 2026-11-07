@@ -1,5 +1,22 @@
 import { CalendarView } from "../../../src/bases/CalendarView";
 
+it("restores the custom-day control after a narrow Week selection uses the same day count", () => {
+	const calendarEl = document.createElement("div");
+	calendarEl.innerHTML = '<select class="tnc-toolbar-view-select"><option value="week">Week</option><option value="days">3 days</option></select><button class="tnc-btn-view tnc-btn-view-week" aria-pressed="true"></button><button class="tnc-btn-view tnc-btn-view-days" aria-pressed="false"></button>';
+	const view = Object.assign(Object.create(CalendarView.prototype), {
+		calendarEl,
+		calendar: { view: { type: "days" } },
+		narrowWeek: true,
+	});
+	view.syncCalendarToolbar();
+	expect(calendarEl.querySelector("select")?.value).toBe("week");
+	view.narrowWeek = false;
+	view.syncCalendarToolbar();
+	expect(calendarEl.querySelector("select")?.value).toBe("days");
+	expect(calendarEl.querySelector(".tnc-btn-view-week")?.getAttribute("aria-pressed")).toBe("false");
+	expect(calendarEl.querySelector(".tnc-btn-view-days")?.getAttribute("aria-pressed")).toBe("true");
+});
+
 it("does not rebuild the current date when restoring state after a task refresh", () => {
 	const calendar = {
 		getDate: () => new Date("2026-11-05T00:00:00Z"),

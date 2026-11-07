@@ -8,16 +8,19 @@ function readRepoFile(relativePath: string): string {
 }
 
 describe("Issue #190: mobile task widget touch targets", () => {
-	it("keeps narrow controls touchable in a single supporting line without clipping metadata", () => {
+	it("keeps narrow controls touchable while allowing metadata to fit without clipping", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 		const tokens = readRepoFile("styles/tokens.css");
 		expect(tokens).toContain("--tn-touch-target: 40px");
 		const narrow = css.slice(css.indexOf("@container tn-task-card (max-width: 560px)"));
-		expect(narrow).toContain("grid-template-rows: auto var(--tn-touch-target)");
+		expect(narrow).toContain("grid-template-rows: auto minmax(var(--tn-touch-target), auto)");
 		expect(narrow).toMatch(/:is\(\.task-card__status-dot, \.task-card__priority-dot, \.task-card__context-menu, \.task-card__drag-handle,[^}]*min-width: var\(--tn-touch-target\);[^}]*min-height: var\(--tn-touch-target\);/s);
 		expect(narrow).toContain('.task-card__badges [role="button"]');
 		expect(narrow).toMatch(/\.task-card__metadata-date > \.task-card__date-value\s*\{[^}]*white-space:\s*normal;[^}]*overflow:\s*visible;/s);
 		expect(readRepoFile("styles/task-list-view.css")).toMatch(/\.task-card__metadata-date > \.task-card__date-value\s*\{[^}]*white-space:\s*nowrap;/s);
+		const narrowList = readRepoFile("styles/task-list-view.css").slice(readRepoFile("styles/task-list-view.css").indexOf("@container tn-task-card (max-width: 560px)"));
+		expect(narrowList).toMatch(/\.task-card__metadata-date > \.task-card__date-value\s*\{[^}]*white-space:\s*normal;[^}]*flex:\s*0 1 auto;/s);
+		expect(narrow).toContain("max-width: calc((100% - var(--tn-touch-target) - 2 * var(--tn-space-2)) / 2)");
 		expect(narrow).toMatch(/\.task-card__context-menu\s*\{[^}]*opacity:\s*1;/s);
 		expect(narrow).toMatch(/\.task-card__drag-handle\s*\{[^}]*opacity:\s*1;/s);
 		expect(css).toMatch(/\.task-card__details-indicator\s*\{[^}]*width:\s*14px;[^}]*height:\s*14px;/s);

@@ -127,6 +127,15 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Obsidian's editor commands and shortcuts work in the task modal's Markdown editors. Bold, Italic and Insert link did nothing there, and Follow link failed with an error. Plugins that use the active editor, such as Templater, now get the full editor.
+- Keep scheduled and due dates visible together in narrow Kanban cards and phone task lists by allowing their text to fit before moving dates into the metadata disclosure.
+- Use compact desktop controls in timeblock and other composer dialogs, matching task dialogs while preserving larger phone touch targets.
+- Distinguish selected-day mini calendar titles from their secondary filenames.
+- Keep keyboard focus on a task's metadata disclosure when its available width is recalculated.
+- Keep narrow Kanban task menus clear of subtask controls, and let phone agenda metadata wrap so due dates remain visible beside scheduled times.
+- Let Pomodoro overview metrics switch to two columns in narrow panes.
+- Keep the selected calendar view accurate when switching from narrow Week to a custom three-day view.
+- Let a held Kanban drag scroll fully to the last column without clipping its right edge.
+- Keep focus in a date picker's time field when it is selected immediately after opening the dialog.
 - Pressing Escape on a right-click menu in the task modal's Markdown editors closes only the menu, not the modal.
 - Removed the **Convert to TaskNote** button from the task modal's Markdown editors. It converted the matching line of the note behind the modal, not the line beside it.
 - Keep Kanban scroll positions, column widths and card widths steady while lifting and dropping tasks and during delayed refreshes. Cards now fit their title content, while column headers keep their task lanes aligned.

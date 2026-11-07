@@ -366,7 +366,7 @@
         align-self: flex-end;
     }
     
-    .tasknotes-plugin .pomodoro-stats-view__overview-grid {
+    .tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics.tn-metrics {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     

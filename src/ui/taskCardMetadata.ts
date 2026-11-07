@@ -96,6 +96,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			return;
 		}
 		if (metadataLine.clientWidth === 0) return;
+		const overflowFocused = metadataLine.ownerDocument.activeElement === summary;
 		values.hidden = false;
 		for (const atom of atoms) atom.hidden = false;
 		for (const group of groups) group.property.hidden = false;
@@ -138,6 +139,9 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		hiddenLabels = hidden;
 		summary.setAttribute("aria-label", label);
 		setTooltip(summary, label, { placement: "top" });
+		if (overflowFocused && !summary.hidden && metadataLine.ownerDocument.activeElement === metadataLine.ownerDocument.body) {
+			summary.focus({ preventScroll: true });
+		}
 	};
 	const Observer = metadataLine.ownerDocument.defaultView?.ResizeObserver;
 	if (Observer) {

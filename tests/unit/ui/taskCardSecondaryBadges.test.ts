@@ -104,6 +104,8 @@ describe("taskCardSecondaryBadges", () => {
 
 		expect(card.querySelector(".task-card__recurring-indicator")).not.toBeNull();
 		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(true);
+		expect(card.classList.contains("task-card--has-interactive-badges")).toBe(true);
+		expect(card.classList.contains("task-card--has-decorative-badges")).toBe(false);
 		expect(card.querySelector(".task-card__reminder-indicator")).not.toBeNull();
 		expect(card.querySelector(".task-card__details-indicator")).not.toBeNull();
 		expect(card.querySelector(".task-card__project-indicator")).not.toBeNull();
@@ -174,6 +176,8 @@ describe("taskCardSecondaryBadges", () => {
 		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
 		expect(folder).not.toBeNull();
 		expect(folder?.getAttribute("role")).toBeNull();
+		expect(card.classList.contains("task-card--has-interactive-badges")).toBe(false);
+		expect(card.classList.contains("task-card--has-decorative-badges")).toBe(true);
 		expect(folder?.getAttribute("aria-label")).toBe("This task is used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
 		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
@@ -300,6 +304,8 @@ describe("taskCardSecondaryBadges", () => {
 		});
 
 		expect(badgesContainer.childElementCount).toBe(0);
+		expect(card.classList.contains("task-card--has-interactive-badges")).toBe(false);
+		expect(card.classList.contains("task-card--has-decorative-badges")).toBe(false);
 	});
 
 	it("updates, creates, refreshes, and removes secondary badge controls", async () => {

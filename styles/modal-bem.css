@@ -83,8 +83,8 @@
 }
 
 .tasknotes-plugin.tn-modal--composer :is(button, select, .tn-modal__color > summary) {
-    min-height: var(--tn-touch-target);
-    min-width: var(--tn-touch-target);
+    min-height: var(--tn-control-md);
+    min-width: var(--tn-control-md);
 }
 
 @container (max-width: 480px) {

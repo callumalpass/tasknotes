@@ -1409,7 +1409,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__main-row {
         display: grid;
         grid-template-columns: var(--tn-touch-target) var(--tn-touch-target) minmax(0, 1fr) auto var(--tn-touch-target);
-        grid-template-rows: auto var(--tn-touch-target);
+        grid-template-rows: auto minmax(var(--tn-touch-target), auto);
         align-items: center;
         gap: 0;
         padding-left: 0;
@@ -1438,17 +1438,17 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__status-dot {
         grid-column: 1;
-        grid-row: 1 / span 2;
+        grid-row: 1;
         align-self: start;
     }
 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__priority-dot {
-        grid-column: 2;
+        grid-column: 1;
         grid-row: 2;
     }
 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata {
-        grid-column: 3;
+        grid-column: 2 / 4;
         grid-row: 2;
         display: flex;
         align-items: center;
@@ -1534,7 +1534,8 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
     body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__date-slot {
         flex: none;
         width: max-content;
-        max-width: calc((100% - var(--tn-touch-target) - var(--tn-space-2)) / 2);
+        min-width: 0;
+        max-width: calc((100% - var(--tn-touch-target) - 2 * var(--tn-space-2)) / 2);
         overflow: visible;
     }
 
