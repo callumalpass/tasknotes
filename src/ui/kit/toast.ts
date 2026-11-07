@@ -1,5 +1,6 @@
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../../i18n/runtime";
+import { getContentBottomAboveMobileNavigation } from "../../utils/mobileNavigation";
 export interface ToastAction {
 	label: string;
 	run: () => void | Promise<unknown>;
@@ -115,13 +116,7 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 		attr: { role: options.intent === "error" ? "alert" : "status", "aria-live": options.intent === "error" ? "assertive" : "polite" },
 	});
 	const updateClearance = () => {
-		let clearance = 0;
-		if (doc.body.classList.contains("is-mobile")) {
-			for (const nav of doc.querySelectorAll<HTMLElement>(".mobile-navbar, .mobile-toolbar")) {
-				const rect = nav.getBoundingClientRect();
-				if (rect.height > 0 && rect.bottom >= win.innerHeight - 1) clearance = Math.max(clearance, win.innerHeight - rect.top);
-			}
-		}
+		const clearance = win.innerHeight - getContentBottomAboveMobileNavigation(doc, win.innerHeight);
 		el.style.setProperty("--tn-toast-clearance", `${clearance}px`);
 	};
 	updateClearance();

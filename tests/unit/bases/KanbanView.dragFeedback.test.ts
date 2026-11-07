@@ -12,6 +12,19 @@ function makeView() {
 
 describe("Kanban drag feedback", () => {
 	afterEach(() => jest.restoreAllMocks());
+	it("restores both board axes synchronously without snapping the column navigator", () => {
+		const view = makeView();
+		view.rootElement = document.body.createDiv();
+		view.boardEl = view.rootElement.createDiv();
+		view.boardEl.scrollLeft = 2164;
+		view.boardEl.scrollTop = 76;
+		const saved = view.getEphemeralState();
+		view.boardEl.scrollLeft = 0;
+		view.boardEl.scrollTop = 0;
+		view.setEphemeralState(saved);
+		expect(view.boardEl.scrollLeft).toBe(2164);
+		expect(view.boardEl.scrollTop).toBe(76);
+	});
 
 	it.each(["draggedTaskPath", "structureDragActive", "touchDragActive"])("defers direct renders during %s", async state => {
 		const view = makeView();
@@ -38,6 +51,7 @@ describe("Kanban drag feedback", () => {
 
 	it("clears stale target and insertion feedback on leaving a cell", () => {
 		const view = makeView();
+		const preview = jest.spyOn(view.dragPreview, "setInvalid");
 		view.boardEl = document.createElement("div");
 		const column = document.createElement("div");
 		column.className = "kanban-view__column kanban-view__column--dragover";
@@ -52,6 +66,7 @@ describe("Kanban drag feedback", () => {
 		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(false);
 		expect(view.dragContainer).toBeNull();
 		expect(view.boardEl.classList.contains("kanban-view__board--invalid-drop")).toBe(true);
+		expect(preview).toHaveBeenCalledWith("Drop on a task row or group destination.");
 	});
 
 	it.each(["kanban-view__column", "kanban-view__swimlane-column"])("updates %s feedback on nested dragenter without waiting for dragover", columnClass => {
@@ -74,8 +89,13 @@ describe("Kanban drag feedback", () => {
 		card.addEventListener("dragenter", event => event.stopPropagation());
 		view.registerBoardListeners();
 
-		content.dispatchEvent(new MouseEvent("dragenter", { bubbles: true, clientX: 100, clientY: 120 }));
+		const event = new MouseEvent("dragenter", { bubbles: true, cancelable: true, clientX: 100, clientY: 120 });
+		const dataTransfer = { dropEffect: "none" };
+		Object.defineProperty(event, "dataTransfer", { value: dataTransfer });
+		content.dispatchEvent(event);
 
+		expect(event.defaultPrevented).toBe(true);
+		expect(dataTransfer.dropEffect).toBe("move");
 		expect(previous.classList.contains(`${columnClass}--dragover`)).toBe(false);
 		expect(destination.classList.contains(`${columnClass}--dragover`)).toBe(true);
 		view.unload();
@@ -96,5 +116,27 @@ describe("Kanban drag feedback", () => {
 		expect(ghost.querySelector("[data-task-path], .kanban-view__touch-drag-source, .tn-task-focused, .task-card--selected")).toBeNull();
 		expect(ghost.getAttribute("aria-hidden")).toBe("true");
 		ghost.remove();
+	});
+
+	it("does not restore a stale snapshot over scroll input received during a delayed refresh", async () => {
+		jest.useFakeTimers();
+		const view = makeView();
+		view.rootElement = document.createElement("div");
+		view.boardEl = document.createElement("div");
+		let finish!: () => void;
+		view.render = jest.fn(() => new Promise<void>(resolve => { finish = resolve; }));
+		const restore = jest.spyOn(view, "setEphemeralState");
+		try {
+			view.debouncedRefresh();
+			jest.advanceTimersByTime(150);
+			view.boardEl.scrollLeft = 90;
+			finish();
+			await Promise.resolve();
+			expect(view.boardEl.scrollLeft).toBe(90);
+			expect(restore).not.toHaveBeenCalled();
+		} finally {
+			view.unload();
+			jest.useRealTimers();
+		}
 	});
 });

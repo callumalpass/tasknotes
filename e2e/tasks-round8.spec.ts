@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { execFileSync } from 'node:child_process';
+import { pointer } from './xtest';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { stringify } from 'yaml';
 import { tmpdir } from 'node:os';
@@ -15,28 +15,9 @@ const observations: Record<string, unknown> = {};
 
 test.use({ trace: 'on' });
 
-function pointer(...actions: Array<[string, number, number?]>) {
-  execFileSync('python3', ['-c', `
-import ctypes, json, os, time
-xlib = ctypes.CDLL('libX11.so.6'); xtest = ctypes.CDLL('libXtst.so.6')
-xlib.XOpenDisplay.restype = ctypes.c_void_p
-display = xlib.XOpenDisplay(os.environ['DISPLAY'].encode())
-xlib.XFlush.argtypes = [ctypes.c_void_p]
-xlib.XKeysymToKeycode.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
-xtest.XTestFakeMotionEvent.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_ulong]
-xtest.XTestFakeButtonEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
-xtest.XTestFakeKeyEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
-for action in json.loads(${JSON.stringify(JSON.stringify(actions))}):
- if action[0] == 'move': xtest.XTestFakeMotionEvent(display, -1, int(action[1]), int(action[2]), 0)
- elif action[0] == 'button': xtest.XTestFakeButtonEvent(display, 1, int(action[1]), 0)
- elif action[0] == 'escape':
-  key = xlib.XKeysymToKeycode(display, 0xff1b)
-  xtest.XTestFakeKeyEvent(display, key, 1, 0); xtest.XTestFakeKeyEvent(display, key, 0, 0)
- xlib.XFlush(display); time.sleep(0.08)
-`]);
-}
 
 async function moveNative(pointerX: number, pointerY: number) {
+  const offset = await page.evaluate(() => ({ x: screenX, y: screenY + outerHeight - innerHeight }));
   await page.evaluate(({ pointerX, pointerY }) => {
     const state = window as any;
     state.r8DragPoint = null;
@@ -51,7 +32,7 @@ async function moveNative(pointerX: number, pointerY: number) {
   }, { pointerX, pointerY });
   try {
     await expect.poll(async () => {
-      pointer(['move', pointerX - 8, pointerY - 4], ['move', pointerX + 8, pointerY - 2], ['move', pointerX, pointerY]);
+      pointer(['move', pointerX + offset.x - 8, pointerY + offset.y - 4], ['move', pointerX + offset.x + 8, pointerY + offset.y - 2], ['move', pointerX + offset.x, pointerY + offset.y]);
       return page.evaluate(() => (window as any).r8DragArrivals);
     }).toBeGreaterThanOrEqual(2);
   } finally {
@@ -120,7 +101,13 @@ test('native XTest list edge scroll ends on Escape and loses its tooltip', async
   const handle = source.locator('[data-tn-drag-handle]');
   const start = (await handle.boundingBox())!;
   const offset = await page.evaluate(() => ({ x: window.screenX, y: window.screenY + window.outerHeight - window.innerHeight }));
-  await expect.poll(async () => (await page.locator('.workspace-leaf.mod-active .tn-bases-items-container').boundingBox())!.height).toBeGreaterThan(650);
+  const selectionPill = page.locator('.workspace-leaf.mod-active .tn-selection-indicator');
+  await expect(selectionPill).toContainText('Clear selection');
+  await expect.poll(async () => {
+    const items = (await page.locator('.workspace-leaf.mod-active .tn-bases-items-container').boundingBox())!;
+    const pill = (await selectionPill.boundingBox())!;
+    return pill.y + pill.height <= items.y && pill.y >= 0;
+  }).toBe(true);
   const bounds = (await page.locator('.workspace-leaf.mod-active .tn-bases-items-container').boundingBox())!;
   const scroll = () => page.locator('.workspace-leaf.mod-active .tn-bases-items-container').evaluate(element => {
     let scroller = element as HTMLElement; while (scroller.scrollHeight <= scroller.clientHeight && scroller.parentElement) scroller = scroller.parentElement; return scroller.scrollTop;
@@ -164,7 +151,7 @@ test('native XTest list edge scroll ends on Escape and loses its tooltip', async
     await expect(page.locator('.task-list-view--moving')).toBeVisible();
     pointer(['move', 300, 300], ['move', 500, 500]);
     await page.waitForFunction(() => (window as any).r8NativeReady);
-    await moveNative(bounds.x + bounds.width / 2, 775);
+    await moveNative(bounds.x + bounds.width / 2, Math.min(780, bounds.y + bounds.height - 12));
     await expect.poll(scroll).toBeGreaterThan(5);
     const scroller = await page.locator('.workspace-leaf.mod-active .tn-bases-items-container').elementHandle();
     if (end === 'blur') await page.evaluate(() => window.dispatchEvent(new Event('blur')));
@@ -179,7 +166,7 @@ test('native XTest list edge scroll ends on Escape and loses its tooltip', async
     if (end === 'leaf-switch') await page.evaluate(async () => { await (window as any).app.workspace.getLeaf('tab').setViewState({ type: 'empty', active: true }); });
     await expect(page.locator('.task-list-view--moving')).toHaveCount(0);
     const cancelled = await scroller!.evaluate(element => element.scrollTop);
-    pointer(['move', bounds.x + bounds.width / 2 + 1, 775]);
+    pointer(['move', bounds.x + bounds.width / 2 + 1, Math.min(780, bounds.y + bounds.height - 12)]);
     await page.waitForTimeout(450);
     const settled = await scroller!.evaluate(element => element.scrollTop);
     cancellations.push({ end, before: cancelled, after: settled });

@@ -2952,6 +2952,7 @@ msgctxt "empty state action"
 msgid "Clear search"
 msgstr "清除搜索"
 
+#: src/bases/basesSelectionUi.ts
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
 msgid "Clear selection"
@@ -4955,6 +4956,7 @@ msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.descripti
 msgid "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 msgstr "在已完成任务卡片标题上画一条线。关闭后已完成任务会更易阅读"
 
+#: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "task list drop restriction"
 msgid "Drop on a task row or group destination."
@@ -7815,6 +7817,7 @@ msgctxt "contextMenus.task.manageReminders"
 msgid "Manage all reminders…"
 msgstr "管理所有提醒..."
 
+#: src/bases/TaskListView.ts
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.taskProperties.properties.sortOrder.name"
 msgid "Manual order"
@@ -9881,11 +9884,6 @@ msgstr "将逾期的计划任务推迟到今天"
 msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "正在推迟任务：{count} 个…"
-
-#: src/ui/taskViewKeyboard.ts
-msgctxt "interaction shortcut"
-msgid "Preview"
-msgstr "预览"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundPreviewButton"

@@ -10,7 +10,6 @@ export class KanbanDragPreview {
 	private floatingDragPreviewPendingX = 0;
 	private floatingDragPreviewPendingY = 0;
 	private invalidReason: string | null = null;
-	private grabOffset: { x: number; y: number } | null = null;
 	show(
 		sourceElement: HTMLElement,
 		event: Pick<DragEvent, "clientX" | "clientY">,
@@ -38,7 +37,7 @@ export class KanbanDragPreview {
 			? sourceElement
 			: sourceElement.querySelector(".task-card");
 		if (sourceCard) {
-			const wrapper = preview.createDiv({ cls: "kanban-view__card-wrapper" });
+			const wrapper = preview.createDiv({ cls: className === "task-list-view__touch-ghost" ? "tn-tasknotesTaskList task-list-view__drag-row" : "kanban-view__card-wrapper" });
 			const card = sourceCard.cloneNode(true) as HTMLElement;
 			card.classList.remove(
 				"task-card--selected", "task-card--selected-primary", "tn-task-focused", "tn-task-arrived",
@@ -64,11 +63,9 @@ export class KanbanDragPreview {
 		if (count > 1) {
 			preview.dataset.dragCount = `${count}`;
 		}
-		this.floatingDragPreviewWidth = Math.min(Math.max(rect.width, 180), 320);
-		this.grabOffset = className === "task-list-view__touch-ghost" ? {
-			x: Math.max(0, Math.min(rect.width, event.clientX - rect.left)) * this.floatingDragPreviewWidth / rect.width,
-			y: Math.max(0, Math.min(rect.height, event.clientY - rect.top)),
-		} : null;
+		this.floatingDragPreviewWidth = className === "task-list-view__touch-ghost"
+			? Math.min(rect.width, (doc.defaultView?.innerWidth ?? rect.width) - 16)
+			: Math.min(Math.max(rect.width, 180), 320);
 		preview.setCssProps({
 			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
 			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
@@ -113,13 +110,13 @@ export class KanbanDragPreview {
 		const offset = 14;
 		const width = this.floatingDragPreviewWidth;
 		const height = this.floatingDragPreviewHeight;
-		let x = clientX - (this.grabOffset?.x ?? -offset);
-		let y = clientY - (this.grabOffset?.y ?? -offset);
+		let x = clientX + offset;
+		let y = clientY + offset;
 
-		if (!this.grabOffset && x + width > win.innerWidth - margin) {
+		if (x + width > win.innerWidth - margin) {
 			x = clientX - width - offset;
 		}
-		if (!this.grabOffset && y + height > win.innerHeight - margin) {
+		if (y + height > win.innerHeight - margin) {
 			y = clientY - height - offset;
 		}
 

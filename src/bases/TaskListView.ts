@@ -243,6 +243,7 @@ export class TaskListView extends BasesViewBase {
 	private currentDropSlotPosition: "before" | "after" | null = null;
 	private dragBaselineCards: TaskListDropBaselineCard[] = [];
 	private dropQueue = new DropOperationQueue();
+	private pendingMovementCount = 0;
 	private dragSourceDestination: TaskListDestination | null = null;
 	private dropDestination: TaskListDestination | null = null;
 	private dropIsHeader = false;
@@ -647,7 +648,7 @@ export class TaskListView extends BasesViewBase {
 		// Defer re-render while a drag is in progress — re-rendering
 		// destroys card elements and their event listeners, which
 		// causes the drop event to never fire.
-		if (this.draggedTaskPath) {
+		if (this.draggedTaskPath || this.pendingMovementCount > 0) {
 			this.pendingRender = true;
 			return;
 		}
@@ -676,6 +677,10 @@ export class TaskListView extends BasesViewBase {
 			computeBasesFormulas(this.data, dataItems);
 
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			if (this.draggedTaskPath || this.pendingMovementCount > 0) {
+				this.pendingRender = true;
+				return;
+			}
 
 			if (taskNotes.length === 0) {
 				this.clearAllTaskElements();
@@ -1121,7 +1126,7 @@ export class TaskListView extends BasesViewBase {
 		cardEl.addEventListener("click", restoreCardDraggable, { capture: true });
 
 		cardEl.addEventListener("dragstart", (e: DragEvent) => {
-			if (this.shouldSuppressCardDrag(dragOriginTarget ?? e.target, cardEl)) {
+			if (this.pendingMovementCount > 0 || this.shouldSuppressCardDrag(dragOriginTarget ?? e.target, cardEl)) {
 				e.preventDefault();
 				e.stopPropagation();
 				restoreCardDraggable();
@@ -1658,7 +1663,7 @@ export class TaskListView extends BasesViewBase {
 				: plan.kind === "move"
 					? plan.changes.map((change) => this.describeMovementChange(change)).join(" · ")
 					: !this.shouldEnableManualReordering() && !this.dropIsHeader
-						? this.plugin.i18n.translate(msg({ message: "To reorder tasks, sort this view by {property}.", context: "task list sorted drop restriction" }), { property: this.plugin.settings.fieldMapping.sortOrder })
+						? this.plugin.i18n.translate(msg({ message: "To reorder tasks, sort this view by {property}.", context: "task list sorted drop restriction" }), { property: uiText(msg({ message: "Manual order", context: "settings.taskProperties.properties.sortOrder.name" })) })
 						: this.plugin.i18n.translate(
 							msg({
 								message: "Already in this group.",
@@ -1688,12 +1693,11 @@ export class TaskListView extends BasesViewBase {
 
 	/** Lists are replaced as a whole, so show what the task holds before and after. */
 	private describeMovementChange(change: TaskListGroupDropPlan): string {
-		const name = this.dataAdapter.getPropertyDisplayName(change.groupByPropertyId!);
 		const noValue = this.plugin.i18n.translate(
 			msg({ message: "No value", context: "views.taskList.movement.noValue" })
 		);
 		if (!change.isListGrouping || !change.frontmatterKey || !this.draggedTaskPath)
-			return `${name} → ${change.normalizedTargetGroupKey === null ? noValue : this.groupDisplayLabel(change.normalizedTargetGroupKey ?? "", change.groupByPropertyId)}`;
+			return change.normalizedTargetGroupKey === null ? noValue : this.groupDisplayLabel(change.normalizedTargetGroupKey ?? "", change.groupByPropertyId);
 		const current = this.movementProperties.get(this.draggedTaskPath)?.[change.frontmatterKey];
 		const before = getListMembers(current);
 		const after = moveGroupListValue(
@@ -1705,7 +1709,7 @@ export class TaskListView extends BasesViewBase {
 		);
 		const format = (values: unknown[]) =>
 			values.length > 0 ? values.map((value) => String(value)).join(", ") : noValue;
-		return `${name}: ${format(before)} → ${format(after)}`;
+		return `${format(before)} → ${format(after)}`;
 	}
 
 	private setMovementFeedback(text: string, _target?: HTMLElement): void {
@@ -1920,6 +1924,8 @@ export class TaskListView extends BasesViewBase {
 	): Promise<void> {
 		const plan = this.planMovement(source, destination, isHeader);
 		if (plan.kind === "none" || plan.kind === "blocked") return;
+		this.pendingMovementCount++;
+		const rollback = plan.kind === "move" ? this.stageTaskMovement(path, source, destination) : null;
 		// The members the user saw when acting. Values added by another edit before the
 		// queued write lands are not part of the move and must survive it.
 		const shown = this.movementProperties.get(path);
@@ -1930,6 +1936,14 @@ export class TaskListView extends BasesViewBase {
 		card?.classList.remove("task-card--write-failed", "task-card--drop-settled");
 		card?.classList.add("task-card--pending");
 		card?.setAttribute("aria-busy", "true");
+		if (rollback) {
+			this.taskGroupKeys.set(path, destination.groupKey ?? NONE_GROUP_KEY);
+			if (destination.subGroupKey === undefined) this.movementSubGroupKeys.delete(path);
+			else this.movementSubGroupKeys.set(path, destination.subGroupKey ?? NONE_GROUP_KEY);
+			if (card) this.elementDestinations.set(card, destination);
+			card?.classList.add("task-card--drop-settled");
+			card?.addEventListener("animationend", () => card.classList.remove("task-card--drop-settled"), { once: true });
+		}
 		try {
 			if (plan.kind === "reorder" && insertion) {
 				await this.handleSortOrderDrop(
@@ -2043,6 +2057,13 @@ export class TaskListView extends BasesViewBase {
 				});
 			}
 		} catch (error) {
+			rollback?.();
+			if (rollback) {
+				this.taskGroupKeys.set(path, source.groupKey ?? NONE_GROUP_KEY);
+				if (source.subGroupKey === undefined) this.movementSubGroupKeys.delete(path);
+				else this.movementSubGroupKeys.set(path, source.subGroupKey ?? NONE_GROUP_KEY);
+				if (card) this.elementDestinations.set(card, source);
+			}
 			card?.classList.add("task-card--write-failed");
 			tasknotesLogger.error("Task movement failed", {
 				category: "persistence",
@@ -2067,6 +2088,7 @@ export class TaskListView extends BasesViewBase {
 				},
 			});
 		} finally {
+			this.pendingMovementCount--;
 			card?.classList.remove("task-card--pending");
 			card?.removeAttribute("aria-busy");
 			if (!card?.classList.contains("task-card--write-failed")) {
@@ -2075,6 +2097,109 @@ export class TaskListView extends BasesViewBase {
 			}
 			this.debouncedRefresh();
 		}
+	}
+
+	private stageTaskMovement(path: string, source: TaskListDestination, destination: TaskListDestination): (() => void) | null {
+		const order = this.currentVisibleTaskOrder.size ? this.currentVisibleTaskOrder :
+			new Map(this.getVisibleTaskPaths().map((candidate, index) => [candidate, index]));
+		const matches = (groupKey: string | null, subGroupKey?: string | null) =>
+			groupKey === destination.groupKey && subGroupKey === destination.subGroupKey;
+		if (this.virtualScroller && this.lastVirtualItems.length) {
+			const previous = this.lastVirtualItems;
+			const moving = previous.find(item => this.getVirtualItemPath(item) === path);
+			if (!moving || !("type" in moving) || moving.type !== "task") return null;
+			const items = previous.filter(item => item !== moving).map(item => {
+				if (!("type" in item) || item.type === "task") return item;
+				const wasMember = item.groupKey === source.groupKey && (item.type === "primary-header" || item.subGroupKey === source.subGroupKey);
+				const isMember = item.groupKey === destination.groupKey && (item.type === "primary-header" || item.subGroupKey === destination.subGroupKey);
+				return { ...item, taskCount: item.taskCount + Number(isMember) - Number(wasMember) };
+			});
+			let headerIndex = items.findIndex(item => "type" in item &&
+				(destination.subGroupKey === undefined ? item.type === "primary-header" && item.groupKey === destination.groupKey :
+					item.type === "sub-header" && matches(item.groupKey, item.subGroupKey)));
+			if (headerIndex < 0 && destination.subGroupKey === undefined) {
+				headerIndex = items.findIndex(item => "type" in item && item.type === "primary-header" &&
+					this.comparePresentationGroupKeys(this.getGroupByPropertyId() ?? "", destination.groupKey ?? NONE_GROUP_KEY, item.groupKey) < 0);
+				if (headerIndex < 0) headerIndex = items.length;
+				items.splice(headerIndex, 0, { type: "primary-header", groupKey: destination.groupKey ?? NONE_GROUP_KEY,
+					groupTitle: this.movementDestinationLabel(destination), taskCount: 1, groupEntries: [], isCollapsed: false });
+			} else if (headerIndex < 0 && destination.subGroupKey !== undefined) {
+				const primaryIndex = items.findIndex(item => "type" in item && item.type === "primary-header" && item.groupKey === destination.groupKey);
+				if (primaryIndex >= 0) {
+					const primary = items[primaryIndex];
+					if ("type" in primary && primary.type === "primary-header" && primary.isCollapsed) headerIndex = primaryIndex;
+					else {
+						headerIndex = items.findIndex((item, index) => index > primaryIndex && "type" in item && item.type === "primary-header");
+						if (headerIndex < 0) headerIndex = items.length;
+						items.splice(headerIndex, 0, { type: "sub-header", groupKey: destination.groupKey ?? NONE_GROUP_KEY,
+							subGroupKey: destination.subGroupKey ?? NONE_GROUP_KEY, parentKey: destination.groupKey ?? NONE_GROUP_KEY,
+							subGroupTitle: this.movementValueLabel(destination.subGroupKey ?? null, this.subGroupPropertyId), taskCount: 1, isCollapsed: false });
+					}
+				}
+			}
+			if (headerIndex < 0) return null;
+			const header = items[headerIndex];
+			if ("type" in header && header.type !== "task" && !header.isCollapsed) {
+				let insertAt = headerIndex + 1;
+				while (insertAt < items.length) {
+					const item = items[insertAt];
+					if (!("type" in item) || item.type !== "task" || !matches(item.groupKey, item.subGroupKey) ||
+						(order.get(item.task.path) ?? Infinity) > (order.get(path) ?? Infinity)) break;
+					insertAt++;
+				}
+				items.splice(insertAt, 0, { ...moving, groupKey: destination.groupKey ?? NONE_GROUP_KEY, subGroupKey: destination.subGroupKey ?? undefined });
+			}
+			const update = (next: TaskListVirtualItem[]) => {
+				this.lastVirtualItems = next;
+				this.virtualStickyHeaderIndices = next.flatMap((item, index) => "type" in item && item.type !== "task" ? [index] : []);
+				this.virtualScroller?.updateItems(next);
+				this.virtualScroller?.invalidateItems([path, ...next.flatMap(item => "type" in item && item.type !== "task"
+					? [item.type === "primary-header" ? `primary-${item.groupKey}` : `sub-${item.groupKey}:${item.subGroupKey}`] : [])]);
+				this.updateVirtualStickyHeader();
+			};
+			update(items);
+			return () => update(previous);
+		}
+		const card = this.currentTaskElements.get(path);
+		const previousParent = card?.parentElement;
+		if (!card || !previousParent || !this.itemsContainer) return null;
+		const previousNext = card.nextSibling;
+		let header = Array.from(this.itemsContainer.querySelectorAll<HTMLElement>(".task-group")).find(element => {
+			const target = this.elementDestinations.get(element);
+			return target && matches(target.groupKey, target.subGroupKey);
+		});
+		let createdSection: HTMLElement | null = null;
+		if (!header && destination.subGroupKey === undefined) {
+			createdSection = this.itemsContainer.createDiv({ cls: "task-list-group" });
+			header = this.createGroupHeader({ type: "primary-header", groupKey: destination.groupKey ?? NONE_GROUP_KEY,
+				groupTitle: this.movementDestinationLabel(destination), taskCount: 1, groupEntries: [], isCollapsed: false });
+			createdSection.appendChild(header);
+			const nextGroup = Array.from(this.itemsContainer.children).find(element => {
+				const existingHeader = element.querySelector<HTMLElement>(".task-group");
+				const target = existingHeader && this.elementDestinations.get(existingHeader);
+				return target && this.comparePresentationGroupKeys(this.getGroupByPropertyId() ?? "", destination.groupKey ?? NONE_GROUP_KEY, target.groupKey ?? NONE_GROUP_KEY) < 0;
+			});
+			if (nextGroup) this.itemsContainer.insertBefore(createdSection, nextGroup);
+		} else if (!header && destination.subGroupKey !== undefined) {
+			const primary = Array.from(this.itemsContainer.querySelectorAll<HTMLElement>(".task-group")).find(element => {
+				const target = this.elementDestinations.get(element);
+				return target?.groupKey === destination.groupKey && target.subGroupKey === undefined;
+			});
+			if (primary?.parentElement) {
+				createdSection = primary.parentElement.createDiv({ cls: "task-list-subgroup" });
+				header = this.createGroupHeader({ type: "sub-header", groupKey: destination.groupKey ?? NONE_GROUP_KEY,
+					subGroupKey: destination.subGroupKey ?? NONE_GROUP_KEY, parentKey: destination.groupKey ?? NONE_GROUP_KEY,
+					subGroupTitle: this.movementValueLabel(destination.subGroupKey ?? null, this.subGroupPropertyId), taskCount: 1, isCollapsed: false });
+				createdSection.appendChild(header);
+			}
+		}
+		const section = header?.parentElement;
+		if (!section) return null;
+		const next = Array.from(section.children).find(element => element.instanceOf(HTMLElement) && element.matches(".task-card") &&
+			(order.get(element.dataset.taskPath ?? "") ?? Infinity) > (order.get(path) ?? Infinity));
+		if (header?.classList.contains("is-collapsed") || section.closest(".task-list-group")?.querySelector(":scope > .task-group.is-collapsed")) card.remove();
+		else section.insertBefore(card, next ?? null);
+		return () => { previousParent.insertBefore(card, previousNext?.parentNode === previousParent ? previousNext : null); createdSection?.remove(); };
 	}
 
 	private showTaskMovementUndo(
@@ -2542,7 +2667,7 @@ export class TaskListView extends BasesViewBase {
 				const task = card?.dataset.taskPath
 					? this.taskInfoCache.get(card.dataset.taskPath)
 					: null;
-				if (!card || !task) return false;
+				if (!card || !task || this.pendingMovementCount > 0) return false;
 				this.beginTaskMovement(
 					card,
 					task,
@@ -3473,7 +3598,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
-		if (this.draggedTaskPath) {
+		if (this.draggedTaskPath || this.pendingMovementCount > 0) {
 			this.pendingRender = true;
 			return;
 		}
@@ -3895,6 +4020,10 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private async refreshGroupedView(): Promise<void> {
+		if (this.draggedTaskPath || this.pendingMovementCount > 0) {
+			this.pendingRender = true;
+			return;
+		}
 		if (!this.data?.data) return;
 		const focused = this.containerEl.ownerDocument.activeElement;
 		const focusedGroup = focused?.matches(".task-group-toggle")
@@ -3903,6 +4032,10 @@ export class TaskListView extends BasesViewBase {
 		const dataItems = this.dataAdapter.extractDataItems();
 		computeBasesFormulas(this.data, dataItems);
 		const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+		if (this.draggedTaskPath || this.pendingMovementCount > 0) {
+			this.pendingRender = true;
+			return;
+		}
 		const filteredTasks = this.applySearchFilter(taskNotes);
 		this.setExpandedRelationshipTaskScope(filteredTasks);
 		const renderTasks = this.getTopLevelRenderTasks(filteredTasks);

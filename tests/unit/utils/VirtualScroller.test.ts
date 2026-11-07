@@ -75,11 +75,13 @@ describe("VirtualScroller", () => {
 			Array.from({ length: 30 }, (_, index) => ({ id: String(index), label: `Item ${index}` })));
 		const source = container.querySelector<HTMLElement>('[data-key="0"]')!;
 		source.style.position = "relative";
+		source.style.width = "295px";
 		scroller.setPinnedItemKeys(["0"]);
 		container.scrollTop = 240;
 		scroller.recalculate();
 		expect(source.isConnected).toBe(true);
 		expect(source.style.position).toBe("absolute");
+		expect(source.style.width).toBe("295px");
 		expect(parseFloat(source.style.top) + scroller.getState().offsetY).toBe(0);
 		expect(renderedKeys(container)).toContain("12");
 		container.scrollTop = 0;
@@ -87,6 +89,7 @@ describe("VirtualScroller", () => {
 		expect(container.querySelector('[data-key="0"]')).toBe(source);
 		expect(source.style.position).toBe("relative");
 		expect(source.style.top).toBe("");
+		expect(source.style.width).toBe("295px");
 		container.scrollTop = 240;
 		scroller.recalculate();
 		scroller.setPinnedItemKeys([]);

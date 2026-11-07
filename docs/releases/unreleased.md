@@ -117,8 +117,13 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Keep Kanban scroll positions, column widths and card widths steady while lifting and dropping tasks and during delayed refreshes. Cards now fit their title content, while column headers keep their task lanes aligned.
+- Show list tasks at their destination as soon as they are dropped, retaining pending feedback until the change is saved and returning them to their original position if saving fails. List drag previews now retain the row layout, with space around the pointer for drop feedback.
+- Allow board drags to start from metadata without changing metadata clicks, and accept drops after a drag leaves and re-enters the board. Show configured destination names and explain drops outside the board without exposing ordering-field names.
+- Keep edge scrolling and task feedback above floating phone navigation. The selection count now includes a clear-selection hint and has its own space outside task rows; hovering a subtask no longer reveals its parent's task menu.
+- Remove the unreliable Space-preview promise from task-view shortcut help; existing hover-preview integrations remain available.
 - Restore the saved Kanban order immediately when Undo runs before metadata indexing catches up, and return keyboard focus to the task view when a focused feedback toast is replaced.
-- Stop list edge scrolling when a drag ends or is cancelled, use a gentler edge ramp, and show one unclipped drop explanation beside the pointer. Preserve the grab offset and show a stack for multi-task list drags.
+- Stop list edge scrolling when a drag ends or is cancelled, use a gentler edge ramp, and show one unclipped drop explanation beside the pointer. Show a stack for multi-task list drags.
 - Keep long-press task actions open after lifting a finger, and treat Escape on the unsaved-changes prompt as Keep editing.
 - Consume complete natural-language priority shortcuts without leaving punctuation in task titles, and hide priority controls when no priorities are configured.
 - Accept drops throughout Kanban columns, restore spacing in virtualized lanes, and keep card titles and metadata on predictable rows.
@@ -133,7 +138,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Keep weekday labels, dates and today's marker inside narrow Week headers. Calendar moves now retain a dim copy at the original position while previewing the destination.
 - Compact the phone month overview to reveal selected-day tasks sooner when the panel is enabled, and show quieter inline file identities beside mini-calendar task titles while keeping direct note access.
 
-- Keep reading-mode task widgets alongside Markdown checkboxes, fit recurrence and reminder controls in narrow task forms, and use the same lifted task-card preview when dragging in lists and boards.
+- Keep reading-mode task widgets alongside Markdown checkboxes and fit recurrence and reminder controls in narrow task forms.
 
 - Keep calendar agenda and selected-day titles in the flexible column when status controls are not configured.
 - Keep open task metadata disclosures visible during background row updates in lists, boards, agendas and selected-day panels.

@@ -1,3 +1,5 @@
+import { getContentBottomAboveMobileNavigation } from "../utils/mobileNavigation";
+
 /** Edge scrolling shared by mouse and handle-only touch movement. */
 export class TaskMovementAutoScroll {
 	private frame = 0;
@@ -39,7 +41,7 @@ export class TaskMovementAutoScroll {
 		if (!scroller) return;
 		const rect = scroller.getBoundingClientRect();
 		const top = Math.max(0, rect.top);
-		const bottom = Math.min(this.win.innerHeight, rect.bottom);
+		const bottom = getContentBottomAboveMobileNavigation(this.container.ownerDocument, Math.min(this.win.innerHeight, rect.bottom));
 		if (this.x < rect.left || this.x > rect.right || this.y < top || this.y > bottom) return;
 		const edge = Math.min(40, (bottom - top) / 4);
 		const proximity =
