@@ -913,11 +913,33 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     flex-wrap: nowrap;
 }
 
+/* Composer chips are outlined, like the task modal's property row */
+.tasknotes-plugin .tn-modal__properties .tn-chip {
+    height: var(--tn-control-md);
+    padding: 0 var(--tn-space-2);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    background: transparent;
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .tn-modal__properties .tn-chip .tn-modal__property-icon {
+    color: var(--tn-text-muted);
+}
+
+/* The title is an inline field, like the task title: the caret shows focus */
+.tasknotes-plugin.tn-modal--composer textarea.tn-modal__title:focus {
+    border-color: transparent;
+    outline: none;
+    box-shadow: none;
+}
+
 .tasknotes-plugin .tn-modal__time .tn-select {
     min-width: 0;
     padding: 0 var(--tn-space-half);
     border: none;
     background: transparent;
+    box-shadow: none;
 }
 
 .tasknotes-plugin .tn-modal__property-icon svg {

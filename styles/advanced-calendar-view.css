@@ -97,28 +97,23 @@
 }
 
 .timeblock-attachments-empty {
-    color: var(--text-muted);
-    font-style: italic;
+    color: var(--tn-text-faint);
     font-size: var(--tn-type-sm);
-    padding: 0.5rem;
-    text-align: center;
-    background: var(--background-secondary);
-    border-radius: var(--tn-radius-sm);
 }
 
 .timeblock-attachment-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem;
-    margin-bottom: 0.25rem;
-    background: var(--background-secondary);
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-1);
     border-radius: var(--tn-radius-sm);
-    border: 1px solid var(--background-modifier-border);
 }
 
-.timeblock-attachment-item:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .timeblock-attachment-item:hover {
+        background: var(--tn-hover);
+    }
 }
 
 .timeblock-attachment-info {
@@ -127,15 +122,14 @@
 }
 
 .timeblock-attachment-name {
-    font-weight: 500;
     color: var(--text-normal);
+    font-size: var(--tn-type-sm);
     display: block;
 }
 
 .timeblock-attachment-path {
-    font-size: var(--tn-type-sm);
+    font-size: var(--tn-type-xs);
     color: var(--text-muted);
-    margin-top: 0.2rem;
     word-break: break-all;
 }
 
