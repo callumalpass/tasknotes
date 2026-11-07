@@ -20,7 +20,7 @@ describe('calendar gesture tooltip guard', () => {
     document.body.classList.remove('tn-calendar-gesture', 'tn-calendar-has-selection');
   });
 
-  it('dismisses an open tooltip and suppresses new tooltips until the gesture ends', async () => {
+  it('suppresses tooltips through the drop until the pointer moves or keyboard resumes', async () => {
     const root = document.createElement('div');
     const calendar = root.appendChild(document.createElement('div'));
     document.body.append(root);
@@ -40,8 +40,18 @@ describe('calendar gesture tooltip guard', () => {
     calendar.classList.remove('tnc-dragging');
     await Promise.resolve();
     expect(dateTooltip.isConnected).toBe(false);
-    expect(document.body.classList.contains('tn-calendar-gesture')).toBe(false);
+    expect(document.body.classList.contains('tn-calendar-gesture')).toBe(true);
     expect(occurrence.className).toBe('');
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 1, clientY: 1 }));
+    expect(document.body.classList.contains('tn-calendar-gesture')).toBe(true);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 8, clientY: 1 }));
+    expect(document.body.classList.contains('tn-calendar-gesture')).toBe(false);
+    calendar.classList.add('tnc-dragging');
+    await Promise.resolve();
+    calendar.classList.remove('tnc-dragging');
+    await Promise.resolve();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
+    expect(document.body.classList.contains('tn-calendar-gesture')).toBe(false);
     dispose();
   });
 

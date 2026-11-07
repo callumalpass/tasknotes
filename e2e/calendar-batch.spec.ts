@@ -130,7 +130,8 @@ test("calendar list mode keeps selection consistent and includes recurring tasks
 	await event(page, "Bravo").locator(".task-card").click({ modifiers: ["Control"] });
 	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Control"] });
 	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
-	await page.locator(".tnc-btn-selectedTasks:visible").click();
+	await page.locator(".tnc-btn-overflow:visible").click();
+	await page.locator('.tn-picker__row[data-picker-id="selected"]').click();
 	await expect(page.getByText("3 tasks selected", { exact: true })).toBeVisible();
 	await page.keyboard.press("Escape");
 });
@@ -208,13 +209,19 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 		calendar.setOptions({ dayMaxEvents: 1 }); calendar.flush();
 	});
 	expect(await selected(page)).toHaveLength(2);
+	await page.locator('.advanced-calendar-view').evaluate(async element => {
+		await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
+	});
 	const box = (await event(page, "Alpha").boundingBox())!;
+	const peerBox = await event(page, "Bravo").boundingBox();
 	const target = (await page.locator('.tnc-dg-day[data-date="2031-05-06"]').boundingBox())!;
 	await page.mouse.move(box.x + 20, box.y + 8); await page.mouse.down();
 	await page.mouse.move(target.x + target.width / 2, target.y + 55, { steps: 20 });
-	await expect(event(page, "Bravo")).toHaveClass(/tn-calendar-batch-preview/);
-	await expect(event(page, "Bravo")).toBeVisible();
-	await expect(event(page, "Bravo")).toHaveClass(/is-mirror/);
+	const preview = page.locator(`.tnc-month-preview.tn-calendar-batch-preview[data-task-path="${folder}/Bravo.md"]`);
+	await expect(preview).toBeVisible();
+	await expect(preview).toHaveClass(/is-mirror/);
+	expect(await event(page, "Alpha").boundingBox()).toEqual(box);
+	expect(await event(page, "Bravo").boundingBox()).toEqual(peerBox);
 	expect((await taskDates(page, "Bravo")).scheduled).toBe("2031-05-06T11:30");
 	await page.keyboard.press("Escape"); await page.mouse.up();
 	await expect(page.locator(".tn-calendar-batch-preview")).toHaveCount(0);

@@ -27,6 +27,7 @@ import {
 	convertUTCToLocalCalendarDate,
 	createSafeUTCDate,
 	getDatePart,
+	formatTime,
 } from "../utils/dateUtils";
 import { stringifyUnknown } from "../utils/stringUtils";
 import { isSameDay } from "../utils/helpers";
@@ -55,6 +56,7 @@ interface NoteEntry {
 	title: string;
 	path: string;
 	dateValue: string; // The date string from the property
+	minute?: number;
 	basesEntry?: BasesEntry; // Reference to Bases entry for additional data
 	externalEvent?: ICSEvent;
 	sourceName?: string;
@@ -397,6 +399,10 @@ export class MiniCalendarView extends BasesViewBase {
 					}
 				}
 
+				const nativeDate = this.dataAdapter.getPropertyValue(item, this.dateProperty);
+				const sourceDate = this.dateProperty.startsWith("note.")
+					? this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.[this.dateProperty.slice(5)] ?? nativeDate
+					: nativeDate;
 				// Create note entry
 				const noteEntry: NoteEntry = {
 					kind: "note",
@@ -404,6 +410,7 @@ export class MiniCalendarView extends BasesViewBase {
 					title: title,
 					path: file.path,
 					dateValue: dateValue,
+					minute: calendarMinute(sourceDate),
 					basesEntry: item,
 				};
 
@@ -984,7 +991,6 @@ export class MiniCalendarView extends BasesViewBase {
 			this.renderExternalEventIndicators(dayEl, notesForDay);
 		}
 
-		// Click handler - select date or show fuzzy selector
 		dayEl.addEventListener("click", (e: MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
@@ -1019,30 +1025,6 @@ export class MiniCalendarView extends BasesViewBase {
 			await this.openDailyNoteForDate(date);
 			return;
 		}
-
-		// Check if date has notes
-		const dateKey = formatDateForStorage(date);
-		const notesForDay = this.notesByDate.get(dateKey);
-
-		if (notesForDay && notesForDay.length > 0) {
-			// Show fuzzy selector with notes
-			const modal = new NoteSelectionModal(
-				this.plugin.app,
-				this.plugin,
-				notesForDay,
-				(selectedNote) => {
-					if (selectedNote) {
-						this.openCalendarEntry(selectedNote);
-					}
-				},
-				new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), {
-					dateStyle: "full",
-					timeZone: "UTC",
-				}).format(date),
-				() => this.containerEl.querySelector<HTMLElement>(".mini-calendar-view__grid")?.focus({ preventScroll: true })
-			);
-			modal.open();
-		}
 	}
 
 	private renderSelectedEntries(): void {
@@ -1058,10 +1040,10 @@ export class MiniCalendarView extends BasesViewBase {
 		const heading = new Intl.DateTimeFormat(this.plugin.i18n.getCurrentLocale(), { dateStyle: "full", timeZone: "UTC" }).format(this.selectedDate);
 		section.createEl("h3", { cls: "mini-calendar-view__selected-heading", text: heading });
 		if (!entries.length) {
-			section.createDiv({ cls: "tn-picker__empty", text: this.plugin.i18n.translate(msg({ message: "Nothing scheduled for the selected dates.", context: "mini calendar empty selection" })) });
+			section.createDiv({ cls: "tn-picker__empty", text: this.plugin.i18n.translate(msg({ message: "Nothing scheduled for this day.", context: "mini calendar empty day" })) });
 			return;
 		}
-		for (const entry of [...entries].sort((first, second) => first.title.localeCompare(second.title))) {
+		for (const entry of [...entries].sort((first, second) => calendarEntryMinute(first) - calendarEntryMinute(second) || first.title.localeCompare(second.title))) {
 			const button = section.createEl("button", { cls: "mini-calendar-view__entry tn-btn tn-btn--ghost", attr: { type: "button", title: `${entry.title}\n${entry.path}` } });
 			button.dataset.entryPath = entry.path;
 			renderCalendarEntry(button, entry, this.plugin, "mini-calendar-view__entry-content");
@@ -1365,7 +1347,6 @@ export class MiniCalendarView extends BasesViewBase {
 					return;
 				}
 
-				// Enter/Space - select date or open fuzzy selector
 				if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault();
 					if (e.ctrlKey || e.metaKey) {
@@ -1768,6 +1749,9 @@ function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNot
 	const title = container.createDiv({ cls: "note-selector-modal__title tn-picker__label", text: note.title, attr: { title: note.title } });
 	const task = note.kind === "note" ? plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
 	if (task) title.prepend(createTaskGlyphs(host.ownerDocument, task, plugin));
+	if (className === "mini-calendar-view__entry-content" && calendarEntryMinute(note) >= 0) {
+		container.createSpan({ cls: "mini-calendar-view__entry-time", text: formatTime(new Date(2000, 0, 1, 0, calendarEntryMinute(note)), plugin.settings.calendarViewSettings.timeFormat === "12" ? "12" : "24") });
+	}
 	const subtitle = note.kind === "external" ? note.sourceName || note.path : note.path;
 	if (subtitle !== note.title) {
 		const identity = className === "mini-calendar-view__entry-content" && note.kind === "note"
@@ -1775,6 +1759,17 @@ function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNot
 			: subtitle;
 		if (identity !== note.title) container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: identity, attr: { title: subtitle } });
 	}
+}
+
+function calendarEntryMinute(entry: NoteEntry): number {
+	if (entry.externalEvent?.allDay) return -1;
+	return entry.minute ?? calendarMinute(entry.dateValue);
+}
+
+function calendarMinute(value: unknown): number {
+	if (!(value instanceof Date) && typeof value !== "number" && !(typeof value === "string" && /[T ]\d\d:\d\d/.test(value))) return -1;
+	const date = value instanceof Date ? value : new Date(value);
+	return Number.isNaN(date.getTime()) ? -1 : date.getHours() * 60 + date.getMinutes();
 }
 
 // Factory function

@@ -61,6 +61,10 @@ test.afterAll(async () => {
 
 async function mode(view: string, date?: string) {
   await instance.page.evaluate(({ view, date }) => (window as any).cal2Leaf.view.controller.view.calendar.changeView(view, date), { view, date });
+  await expect.poll(() => instance.page.evaluate(() => {
+    const current = (window as any).cal2Leaf.view.controller.view;
+    return Boolean(current._saveViewTypeTimer || current._isRendering || current._pendingRender || current._configChangedNeedsRecreate);
+  })).toBe(false);
   await instance.page.locator(root).evaluate(async element => {
     await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').map(animation => animation.finished.catch(() => undefined)));
   });

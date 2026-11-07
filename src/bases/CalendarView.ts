@@ -323,9 +323,6 @@ export class CalendarView extends BasesViewBase {
 		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
-		this.registerEvent(this.plugin.app.workspace.on("css-change", () => {
-			for (const element of this.rootElement?.querySelectorAll<HTMLElement>(".tnc-item:not(.tnc-item--list)") ?? []) this.refreshEventInk(element);
-		}));
 		if (this.rootElement) {
 			this.keyboard = installCalendarKeyboard({
 				plugin: this.plugin,
@@ -373,9 +370,13 @@ export class CalendarView extends BasesViewBase {
 			this.registerDomEvent(this.rootElement, "change", (event: Event) => {
 				const target = event.target as HTMLSelectElement;
 				if (target.matches(".tnc-toolbar-view-select") && target.value === "days") chooseCustomDays();
+				if (target.matches(".tnc-toolbar-view-select")) queueMicrotask(() => this.rootElement?.focus({ preventScroll: true }));
 			}, { capture: true });
 			this.registerDomEvent(this.rootElement, "click", (event: MouseEvent) => {
 				const target = event.target as HTMLElement;
+				if (target.closest(".tnc-btn-view, .tnc-toolbar-nav button, .tnc-btn-refreshCalendars")) {
+					queueMicrotask(() => this.rootElement?.focus({ preventScroll: true }));
+				}
 				if (target.closest(".tnc-btn-view-days")) chooseCustomDays();
 				this.openMonthChipOverflow(event);
 			}, { capture: true });
@@ -465,7 +466,7 @@ export class CalendarView extends BasesViewBase {
 	private getMonthDisplay(): CalendarOptions<CalendarEventProps>["monthDisplay"] {
 		const width = this.rootElement?.clientWidth ?? 0;
 		return width > 0 && width <= 850
-			? width < 280 && this.viewOptions.showMonthDayPanel ? "dots" : "chips"
+			? width < 560 ? this.viewOptions.showMonthDayPanel ? "dots" : "full" : "chips"
 			: basesLayoutOptions<CalendarEventProps>(this.viewOptions).monthDisplay ?? "full";
 	}
 
@@ -1210,9 +1211,10 @@ export class CalendarView extends BasesViewBase {
 			dayMaxEventRows: this.getAllDayRowLimit(),
 			eventMinHeight: layout.eventMinHeight,
 			overlapStackThreshold: layout.view === "day" ? 3 : 0,
+			slotEventOverlap: layout.view === "day" ? false : layout.slotEventOverlap,
 			formatTime: minute => formatTime(new Date(2000, 0, 1, 0, minute), options.timeFormat === "12" ? "12" : "24"),
 			listAgenda: options.showAgendaStrip,
-			listAddText: t(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" }), "Add task"),
+			listAddText: null,
 			onListAdd: ({ dateStr }) => this.addTaskOnDay(dateStr),
 			dayClassNames: ({ dateStr }) => dateStr === this.selectedMonthDay ? ["tn-calendar-day-selected"] : [],
 			dayHeaderContent: arg => {
@@ -1378,6 +1380,12 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private handleViewChange(view: ViewInfo): void {
+		const slotEventOverlap = view.type === "day" ? false : this.viewOptions.slotEventOverlap;
+		const overlapStackThreshold = view.type === "day" ? 3 : 0;
+		if (this.calendar && (this.calendar.getOptions().slotEventOverlap !== slotEventOverlap ||
+			this.calendar.getOptions().overlapStackThreshold !== overlapStackThreshold)) {
+			this.calendar.setOptions({ slotEventOverlap, overlapStackThreshold });
+		}
 		if (view.type === "week" && this.isNarrowCalendar() && this.calendar) {
 			this.narrowWeek = true;
 			this.calendar.setOptions({ dayCount: 3 });
@@ -2218,36 +2226,6 @@ export class CalendarView extends BasesViewBase {
 			}
 			arg.el.style.removeProperty("opacity");
 		}
-		if (arg.variant !== "list") this.refreshEventInk(arg.el);
-	}
-
-	private refreshEventInk(element: HTMLElement): void {
-		(element.ownerDocument.defaultView ?? window).requestAnimationFrame(() => {
-			if (!element.isConnected) return;
-			const style = getComputedStyle(element);
-			const canvas = createElementInDocument(element.ownerDocument, "canvas");
-			canvas.width = canvas.height = 1;
-			const context = canvas.getContext("2d");
-			if (!context) return;
-			const luminance = (color: string): number => {
-				context.clearRect(0, 0, 1, 1);
-				context.fillStyle = color;
-				context.fillRect(0, 0, 1, 1);
-				const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map(value => {
-					const channel = value / 255;
-					return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-				});
-				return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
-			};
-			const background = luminance(style.backgroundColor);
-			const candidates = ["--text-normal", "--background-primary", "--text-on-accent", "--tn-calendar-ink-light", "--tn-calendar-ink-dark"].map(token => style.getPropertyValue(token).trim()).filter(Boolean);
-			const contrast = (color: string): number => {
-				const foreground = luminance(color);
-				return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05);
-			};
-			const ink = candidates.sort((first, second) => contrast(second) - contrast(first))[0];
-			if (ink) element.style.setProperty("--tn-calendar-event-ink", ink);
-		});
 	}
 
 	/** Right-click, the context-menu key or Shift+F10 on an event. */

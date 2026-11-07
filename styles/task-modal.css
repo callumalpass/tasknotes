@@ -70,7 +70,7 @@
     height: 100%;
     max-height: 400px;
     box-sizing: border-box;
-    padding: var(--size-4-2);
+    padding: var(--tn-space-2) 0;
     border: none;
     border-radius: var(--tn-radius-none);
     background: transparent;
@@ -89,8 +89,8 @@
 
 /* Style the editor content */
 .tn-task-modal__markdown-editor--details .cm-content {
-    padding-left: var(--size-4-2);
-    padding-right: var(--size-4-2);
+    padding-left: 0;
+    padding-right: 0;
     padding-top: var(--size-4-2);
     padding-bottom: var(--size-4-2);
     font-family: var(--font-interface);
@@ -100,7 +100,7 @@
 }
 
 .tn-task-modal__markdown-editor--details .markdown-source-view.mod-cm6 .cm-content {
-    padding: var(--size-4-2);
+    padding: var(--tn-space-2) 0;
 }
 
 .tn-task-modal__markdown-editor--details .cm-header,
@@ -399,7 +399,7 @@
 
 .tasknotes-plugin .title-input {
     width: 100%;
-    padding: var(--tn-space-2) 0;
+    padding: var(--tn-space-2);
     font-family: inherit;
     font-size: var(--tn-type-lg);
     font-weight: var(--tn-font-weight-medium);
@@ -550,7 +550,7 @@
 
 .tasknotes-plugin .title-input-detailed {
     width: 100%;
-    padding: var(--tn-space-2) 0;
+    padding: var(--tn-space-2);
     font-family: inherit;
     font-size: var(--tn-type-lg);
     font-weight: var(--tn-font-weight-medium);

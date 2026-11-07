@@ -4,7 +4,7 @@ import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } 
 
 const baseline = process.env.TASKNOTES_PHONE_BASELINE === '1';
 const mobileSession = process.env.TASKNOTES_PHONE_MOBILE === '1';
-const evidence = `/tmp/tasknotes-r7/phone/${baseline ? 'before' : 'after'}/${mobileSession ? 'mobile' : 'pane'}`;
+const evidence = `${process.env.TASKNOTES_E2E_EVIDENCE_DIR ?? '/tmp/tasknotes-r7'}/phone/${baseline ? 'before' : 'after'}/${mobileSession ? 'mobile' : 'pane'}`;
 const folder = `PhoneOP1-${Date.now()}`;
 let instance: ObsidianApp;
 let today: string;
@@ -68,7 +68,8 @@ test.afterAll(async () => {
 async function mode(view: string) {
   await instance.page.evaluate(({ view, today }) => (window as any).phoneLeaf.view.controller.view.calendar.changeView(view, today), { view, today });
   await settleView();
-  await expect(instance.page.locator(`.workspace-leaf.mod-active #bases-calendar > .tnc--${view}`)).toBeVisible();
+  const effective = view === 'week' && await instance.page.locator('.advanced-calendar-view').first().evaluate(element => element.clientWidth < 640) ? 'days' : view;
+  await expect(instance.page.locator(`.workspace-leaf.mod-active #bases-calendar > .tnc--${effective}`)).toBeVisible();
   await instance.page.locator('#bases-calendar').evaluate(async element => {
     await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running' && animation instanceof CSSAnimation && animation.animationName === 'tn-calendar-view-enter').map(animation => animation.finished.catch(() => undefined)));
   });
@@ -131,14 +132,14 @@ test('agenda toolbar and compact rows fit desktop, narrow and mobile panes', asy
             const select = root.locator('.tnc-toolbar-view-select');
             await select.focus();
             await page.keyboard.press('ArrowUp');
-            await page.keyboard.press('Enter');
             await expect(page.locator('#bases-calendar > .tnc--day')).toBeVisible();
             await settleView();
+            await expect(page.locator('.advanced-calendar-view').first()).toBeFocused();
             await select.focus();
             await page.keyboard.press('ArrowDown');
-            await page.keyboard.press('Enter');
             await expect(page.locator('#bases-calendar > .tnc--list')).toBeVisible();
             await settleView();
+            await expect(page.locator('.advanced-calendar-view').first()).toBeFocused();
           }
         }
       }
@@ -162,13 +163,15 @@ test('phone week and three-day views fit once and start at the configured time',
         const body = element.querySelector('.tnc-tg-body')!;
         const heads = [...element.querySelectorAll('.tnc-dh')].map(head => head.getBoundingClientRect().toJSON());
         const calendar = (window as any).phoneLeaf.view.controller.view.calendar;
-        return { width: scroller.clientWidth, scrollWidth: scroller.scrollWidth, navVisible: !!element.querySelector<HTMLElement>('.tnc-tg-day-navigation')?.offsetHeight, heads, minute: calendar.slot.min + scroller.scrollTop / (body.getBoundingClientRect().height / (calendar.slot.max - calendar.slot.min)) };
+        const label = element.querySelector('.tnc-slot-label')!;
+        const labelInset = Math.ceil(label.getBoundingClientRect().height / 2) + 2;
+        return { width: scroller.clientWidth, scrollWidth: scroller.scrollWidth, navVisible: !!element.querySelector<HTMLElement>('.tnc-tg-day-navigation')?.offsetHeight, heads, labelInset, minute: calendar.slot.min + (scroller.scrollTop + labelInset) / (body.getBoundingClientRect().height / (calendar.slot.max - calendar.slot.min)) };
       });
       measurements.push({ theme, view, geometry });
       writeFileSync(`${evidence}/timegrid.json`, JSON.stringify(measurements, null, 2));
       await page.screenshot({ path: `${evidence}/${view}-${theme}-400-mobile.png` });
       if (baseline) continue;
-      expect(geometry.heads).toHaveLength(view === 'week' ? 7 : 3);
+      expect(geometry.heads).toHaveLength(3);
       expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.width + 1);
       expect(geometry.navVisible).toBe(false);
       expect(Math.abs(geometry.minute - 480)).toBeLessThan(2);
