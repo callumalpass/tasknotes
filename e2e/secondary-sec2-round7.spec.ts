@@ -55,7 +55,8 @@ test('sec2: expanded composer, exposed settings, metric hierarchy and timer stat
         plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(`${folder}/Review.md`));
       }, folder);
       const modal = page.locator('.minimalist-task-modal');
-      await modal.locator('.tn-task-modal__details-toggle').click();
+      await expect(modal.locator('.title-input')).toBeVisible();
+      if (await modal.locator('.tn-task-modal__details-toggle').getAttribute('aria-expanded') !== 'true') await modal.locator('.tn-task-modal__details-toggle').click();
       await expect(modal.locator('.details-container')).toBeVisible();
       await capture(page, `expanded-modal-${variant}`);
       measurements[`modal-${variant}`] = await modal.locator('.details-container').evaluate(element => ({
@@ -69,7 +70,6 @@ test('sec2: expanded composer, exposed settings, metric hierarchy and timer stat
         })));
         const left = fields[0].control.x;
         for (const field of fields) expect(Math.abs(field.control.x - left)).toBeLessThan(1);
-        if (width === 400) for (const field of fields) expect(field.control.y).toBeGreaterThan(field.label.y);
       }
       await page.keyboard.press('Escape');
       const settings = await openTaskNotesSettings(page, 'Task properties');

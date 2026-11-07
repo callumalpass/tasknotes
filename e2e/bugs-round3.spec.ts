@@ -297,7 +297,7 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
     await first.locator('.task-card__status-dot').focus();
     await page.keyboard.press('e');
-    await expect(page.locator('.minimalist-task-modal').getByRole('textbox', { name: 'Title', exact: true })).toHaveValue('Bugs task 0');
+    await expect(page.locator('.minimalist-task-modal').getByRole('textbox', { name: 'Title', exact: true })).toHaveText('Bugs task 0');
     await page.keyboard.press('Escape');
   });
 }

@@ -317,7 +317,7 @@ test('edit modal save restores changed fields and title-driven rename on disk', 
   await page.keyboard.press('e');
   const modal = page.locator('.minimalist-task-modal');
   await expect(modal).toBeVisible();
-  await modal.locator('textarea').first().fill('Task 0 renamed');
+  await modal.locator('.title-input').fill('Task 0 renamed');
   await modal.locator('.details-editor .cm-content').fill('Edited details for guarded Undo.');
   await modal.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(modal).not.toBeVisible();

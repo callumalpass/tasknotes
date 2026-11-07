@@ -1,9 +1,8 @@
 /**
  * Issue #1609: task edit popups could stop scrolling in the wide split layout.
  *
- * The base expanded modal makes `.modal-split-content` the scroll container,
- * but the wide split-layout override changed it back to `overflow: visible`,
- * leaving oversized left-column content clipped by the outer modal.
+ * The split layout has a fixed height, so its left pane is the scroll container
+ * and oversized fields must scroll there rather than be clipped by the modal.
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1609
  */
@@ -16,14 +15,13 @@ const cssFilePath = path.resolve(__dirname, "../../../styles/task-modal.css");
 describe("Issue #1609: wide task modal scrolling", () => {
 	it("keeps wide split-layout modal content vertically scrollable", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
-		const splitContentBlock = extractCssBlock(
+		const leftPaneBlock = extractCssBlock(
 			cssContent,
-			".tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content"
+			".tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-left"
 		);
 
-		expect(splitContentBlock).toContain("overflow-y: auto");
-		expect(splitContentBlock).toContain("overflow-x: hidden");
-		expect(splitContentBlock).not.toContain("overflow: visible");
+		expect(leftPaneBlock).toContain("min-height: 0");
+		expect(leftPaneBlock).toContain("overflow-y: auto");
 	});
 });
 

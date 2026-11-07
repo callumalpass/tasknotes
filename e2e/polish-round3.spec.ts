@@ -84,14 +84,14 @@ async function openFile(name: string) {
   }, `${folder}/${name}`);
 }
 
-test('one title editor preserves raw parsing, explicit overrides and draft-only changes', async () => {
+test('raw input and Title field preserve parsing, explicit overrides and draft-only changes', async () => {
   await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
   const modal = page.locator('.modal.mod-tasknotes');
   const raw = modal.locator('.tn-task-modal__markdown-editor--nlp .cm-content');
   await raw.fill(`${folder} draft tomorrow`);
   await modal.locator('.tn-task-modal__details-toggle').click();
   await capture('title-expanded');
-  await expect(modal.locator('.tn-task-modal__markdown-editor--nlp:visible, textarea.title-input:visible, textarea.title-input-detailed:visible')).toHaveCount(1);
+  await expect(modal.locator('.tn-task-modal__markdown-editor--nlp:visible, textarea.title-input:visible, textarea.title-input-detailed:visible')).toHaveCount(2);
   const title = modal.locator('textarea.title-input-detailed');
   await expect(title).toHaveValue(`${folder} draft`);
   await title.fill(`${folder} explicit title`);

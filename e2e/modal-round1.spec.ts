@@ -118,8 +118,8 @@ for (const mobile of [false, true]) {
         const plugin = (window as any).app.plugins.plugins.tasknotes;
         await plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
       }, taskPath);
-      await expect(composer.locator('.title-input')).toHaveValue('Review the launch plan');
-      await expect.poll(() => composer.locator('.title-input').evaluate((input: HTMLTextAreaElement) => [input.selectionStart, input.selectionEnd])).toEqual([22, 22]);
+      await expect(composer.locator('.title-input')).toHaveText('Review the launch plan');
+      if (!mobile) await expect.poll(() => page.evaluate(() => (window as any).app.workspace.activeEditor?.editor?.getCursor().ch)).toBe(22);
       const dimensions = await composer.evaluate(element => ({ width: element.clientWidth, scroll: element.scrollWidth }));
       expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width + 1);
       if (mobile) {

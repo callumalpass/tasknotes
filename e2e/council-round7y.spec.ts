@@ -178,7 +178,7 @@ test('council findings retain task controls, focus and coherent secondary surfac
         }
         await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
         await expect(page.locator('.nl-input-container')).toBeVisible();
-        observations[`title-${variant}`] = await page.locator('.nl-input-container').evaluate(element => [...element.querySelectorAll('[role="textbox"]')].map(item => ({ label: item.getAttribute('aria-label'), className: item.className })));
+        observations[`title-${variant}`] = await page.locator('.nl-input-container').evaluate(element => [...element.querySelectorAll('[role="textbox"]')].map(item => ({ label: document.getElementById(item.getAttribute('aria-labelledby')!)?.textContent, className: item.className })));
         if (phase !== 'before') expect(observations[`title-${variant}`]).toEqual([{ label: 'Title', className: 'cm-content cm-lineWrapping' }]);
         await capture(`create-${variant}-compact`);
         const modalWidth = await page.locator('.modal.mod-tasknotes').evaluate(element => element.getBoundingClientRect().width);

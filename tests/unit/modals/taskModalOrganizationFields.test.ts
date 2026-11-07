@@ -39,7 +39,7 @@ describe("taskModalOrganizationFields", () => {
 		expect(button?.textContent).toBe("Add project");
 		expect(button?.title).toBe("Choose a project");
 		expect(button?.classList.contains("tn-btn")).toBe(true);
-		expect(button?.classList.contains("tn-btn--sm")).toBe(true);
+		expect(button?.classList.contains("tn-btn--ghost")).toBe(true);
 
 		button?.click();
 		expect(onButtonClick).toHaveBeenCalledTimes(1);

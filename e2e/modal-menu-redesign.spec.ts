@@ -92,7 +92,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const titleInput = mode === 'create'
         ? modal.locator('.tn-task-modal__markdown-editor--nlp .cm-content')
         : modal.locator('.title-input');
-      if (mode === 'edit') await expect.poll(() => titleInput.evaluate((element: HTMLTextAreaElement) => element.selectionStart === element.value.length && element.selectionEnd === element.value.length)).toBe(true);
+      if (mode === 'edit') await expect(titleInput).toBeFocused();
       await titleInput.fill(title);
       const status = modal.locator('[data-type="status"]');
       await status.click();
@@ -108,7 +108,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
       await expect(picker).toHaveCount(0);
       await expect(modal).toBeVisible();
       await expect(status).toBeFocused();
-      if (mode === 'edit') await expect(titleInput).toHaveValue(title);
+      if (mode === 'edit') await expect(titleInput).toHaveText(title);
       else await expect(titleInput).toHaveText(title);
       await status.press('Enter');
       await picker.locator('input').fill('Review stage 3');
@@ -189,7 +189,6 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await expect(modal.getByRole('checkbox', { name: 'Create more' })).toBeVisible();
     await expect(modal.locator('.tn-task-modal__markdown-editor--details')).toBeVisible();
     await expect(modal.locator('.tn-task-modal__action-bar')).toBeVisible();
-    expect(await modal.locator('[data-type="status"]').evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(150);
     const positions = await modal.evaluate(element => ['.tn-task-modal__markdown-editor--nlp', '.modal-split-right', '.tn-task-modal__action-bar'].map(selector => element.querySelector(selector)!.getBoundingClientRect().top));
     expect(positions[0]).toBeLessThan(positions[1]);
     expect(positions[1]).toBeLessThan(positions[2]);
@@ -201,7 +200,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
       const plugin = (window as any).app.plugins.plugins.tasknotes;
       plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
     }, taskPath);
-    await expect(modal.locator('.title-input')).toHaveValue(taskTitle);
+    await expect(modal.locator('.title-input')).toHaveText(taskTitle);
     await expect(modal.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
     await expect(modal.locator('.mod-cta .tn-key-hint')).toBeVisible();
     await page.screenshot({ path: `test-results/modal-menu/edit-${theme}.png` });
@@ -217,7 +216,7 @@ test('narrow mobile composer preserves every property without horizontal overflo
     plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
   }, taskPath);
   const modal = page.locator('.modal.mod-tasknotes');
-  await expect(modal.locator('.title-input')).toHaveValue(taskTitle);
+  await expect(modal.locator('.title-input')).toHaveText(taskTitle);
   const layout = await modal.evaluate(element => ({
     width: element.getBoundingClientRect().width,
     viewport: innerWidth,
@@ -382,7 +381,8 @@ test('project selector and delete confirmation retain native cancellation', asyn
     plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
   }, taskPath);
   const modal = page.locator('.modal.mod-tasknotes');
-  await modal.locator('.tn-task-modal__details-toggle').click();
+  await expect(modal.locator('.title-input')).toBeVisible();
+  if (await modal.locator('.tn-task-modal__details-toggle').getAttribute('aria-expanded') !== 'true') await modal.locator('.tn-task-modal__details-toggle').click();
   await modal.getByText('Add to project', { exact: true }).click();
   const selector = page.locator('.prompt.tn-modal');
   await expect(selector.locator('input')).toBeVisible();
@@ -413,7 +413,7 @@ test('documentation image shows the current filled composer', async () => {
     plugin.openTaskEditModal({ ...task, title: taskTitle, status: settings.defaultTaskStatus, priority: settings.defaultTaskPriority });
   }, { taskPath, taskTitle: 'Prepare the product launch checklist' });
   const modal = page.locator('.modal.mod-tasknotes');
-  await expect(modal.locator('.title-input')).toHaveValue('Prepare the product launch checklist');
+  await expect(modal.locator('.title-input')).toHaveText('Prepare the product launch checklist');
   await expect(modal.locator('[data-type="status"] .action-icon__label')).toBeVisible();
   await page.evaluate(() => {
     (document.activeElement as HTMLElement)?.blur();

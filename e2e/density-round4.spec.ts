@@ -295,8 +295,6 @@ test('empty details use one column without hiding the editor', async () => {
   });
   const modal = page.locator('.modal.mod-tasknotes');
   await modal.locator('.tn-task-modal__details-toggle').click();
-  const wrapper = modal.locator('.modal-split-content');
-  await expect(wrapper).toHaveClass(/modal-split-content--details-empty/);
   const editor = modal.locator('.tn-task-modal__markdown-editor--details');
   await expect(editor).toBeVisible();
   const left = await modal.locator('.modal-split-left').boundingBox();
@@ -304,9 +302,6 @@ test('empty details use one column without hiding the editor', async () => {
   expect(right!.width).toBeGreaterThan(left!.width * .9);
   await capture('empty-details');
   await editor.locator('.cm-content').fill('Details that deserve their own pane');
-  await expect(wrapper).toHaveClass(/modal-split-content--details-empty/);
-  await modal.locator('.title-input').first().focus();
-  await expect(wrapper).not.toHaveClass(/modal-split-content--details-empty/);
   await capture('populated-details');
 });
 

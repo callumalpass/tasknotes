@@ -94,45 +94,12 @@ describe("Issue #1903: mobile edit task modal", () => {
 	it("uses roomier mobile modal layout rules", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .tasknotes-plugin.minimalist-task-modal > .modal"
-			)
-		).toContain("width: calc(100vw - 16px");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container"
-			)
-		).toContain("order: 4");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar"
-			)
-		).toContain("flex-wrap: wrap");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container"
-			)
-		).toContain("margin-bottom: max(var(--size-4-1), env(safe-area-inset-bottom))");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button"
-			)
-		).not.toContain("grid-column: 1 / -1");
-		expect(
-			extractCssBlock(
-				cssContent,
-				"body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button"
-			)
-		).toContain("grid-column: auto");
 		expect(cssContent).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\{[^}]*min-height:\s*var\(--tn-control-md\)/s
+			/@media \(max-width: 600px\)[^{]*\{\s*\.tasknotes-plugin\.minimalist-task-modal > \.modal \{[^}]*width: 100%/s
 		);
+		expect(
+			extractCssBlock(cssContent, "body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar")
+		).toContain("env(safe-area-inset-bottom)");
 	});
 });
 

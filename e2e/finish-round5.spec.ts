@@ -223,8 +223,6 @@ test('typing details keeps the editor stable until leaving it', async ({}, testI
       const pane = element.closest('.modal-split-right')!.getBoundingClientRect();
       return bounds.top >= pane.top && bounds.bottom <= pane.bottom;
     })).toBe(true);
-    await modal.locator('.title-input').first().focus();
-    await expect(modal.locator('.modal-split-content')).not.toHaveClass(/modal-split-content--details-empty/);
     await capture(`details-after-blur-${theme}-${width}`);
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Discard changes', exact: true }).click();

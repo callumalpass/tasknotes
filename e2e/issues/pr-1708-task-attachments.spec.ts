@@ -141,7 +141,6 @@ test("saving imports the file, writes a canonical link, and unlinking keeps the 
 		await plugin.openTaskEditModal(task);
 	}, taskPath);
 	modal = page.locator(".modal.mod-tasknotes");
-	await modal.locator(".tn-task-modal__details-toggle").click();
 	const remove = modal.getByRole("button", { name: `Remove ${SCAN_NAME} from this task` });
 	await remove.click();
 	await expect(modal.locator(".task-attachment-item")).toHaveCount(0);

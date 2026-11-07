@@ -35,12 +35,17 @@ for (const mode of ["creation", "edit"] as const) {
 					}
 				}, mode);
 				const modal = page.locator(".modal.mod-tasknotes");
-				const title = modal.locator("textarea.title-input, textarea.title-input-detailed");
+				const title = modal.locator(".title-input, textarea.title-input-detailed");
+				const details = modal.locator(".tn-task-modal__markdown-editor--details .cm-content");
+				const titleValue = () =>
+					title.evaluate(
+						(element: HTMLTextAreaElement) => element.value ?? element.textContent
+					);
 				await expect(title).toBeVisible();
-				await modal.locator(".cm-content").fill("Preserve these details");
+				await details.fill("Preserve these details");
 				await title.click();
 				await title.fill(failure === "validation" ? "   " : "Unsaved title");
-				await expect(title).toHaveValue(failure === "validation" ? "   " : "Unsaved title");
+				expect(await titleValue()).toBe(failure === "validation" ? "   " : "Unsaved title");
 				if (failure === "write") {
 					await page.evaluate((mode) => {
 						const service = (window as any).app.plugins.plugins.tasknotes.taskService;
@@ -74,12 +79,10 @@ for (const mode of ["creation", "edit"] as const) {
 									.last()
 					).toBeVisible();
 					await expect(modal).toBeVisible();
-					await expect(title).toHaveValue(
+					expect(await titleValue()).toBe(
 						failure === "validation" ? "   " : "Unsaved title"
 					);
-					await expect(modal.locator(".cm-content")).toContainText(
-						"Preserve these details"
-					);
+					await expect(details).toContainText("Preserve these details");
 					await expect(save).toBeEnabled();
 				} finally {
 					await page.evaluate(() => {

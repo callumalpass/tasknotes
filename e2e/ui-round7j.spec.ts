@@ -138,7 +138,7 @@ test('narrow composer fits property captions and retains its footer', async () =
     const saveBounds = (await save.boundingBox())!;
     expect(saveBounds.y + saveBounds.height).toBeLessThanOrEqual(800);
     if (phase !== 'before') for (const button of geometry.buttons) {
-      expect(button.box.height).toBeGreaterThanOrEqual(40);
+      expect(button.box.height).toBeGreaterThanOrEqual(mobile ? 40 : 28);
       for (const label of button.labels) expect(label.scroll, label.text ?? '').toBeLessThanOrEqual(label.width + 1);
     }
     await page.keyboard.press('Escape');

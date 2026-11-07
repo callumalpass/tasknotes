@@ -21,17 +21,17 @@ describe("Issue #1939: mobile details editor fallback width", () => {
 
 		expect(fallbackBlock).toContain("display: block");
 		expect(fallbackBlock).toContain("width: 100%");
-		expect(fallbackBlock).toContain("height: 100%");
+		expect(fallbackBlock).toContain("flex: 1 1 auto");
 		expect(fallbackBlock).toContain("box-sizing: border-box");
 		expect(fallbackBlock).toContain("border: none");
 		expect(fallbackBlock).toContain("resize: none");
 	});
 
-	it("uses the same mobile height cap as the CodeMirror details editor", () => {
+	it("shares the mobile height cap of the details editor wrapper", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 
 		expect(cssContent).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.tn-task-modal__markdown-editor--details,[^{]*\.details-editor-fallback\s*\{[^}]*min-height:\s*var\(--tn-control-md\);[^}]*max-height:\s*32vh;/s
+			/body\.is-mobile [^{]*\.tn-task-modal__markdown-editor--details\s*\{[^}]*max-height:\s*32vh;/s
 		);
 	});
 });

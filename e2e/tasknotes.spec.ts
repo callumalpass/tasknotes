@@ -1840,8 +1840,8 @@ test.describe('Task Edit Modal', () => {
         (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(path))?.title,
       `${folder}/${title}.md`)).toBe(title);
       await runCommand(page, 'Edit current task');
-      const titleInput = page.locator('.modal textarea.title-input');
-      await expect(titleInput).toHaveValue(title);
+      const titleInput = page.locator('.modal .title-input');
+      await expect(titleInput).toHaveText(title);
       await titleInput.fill(updatedTitle);
       await page.screenshot({ path: 'test-results/screenshots/edit-task-command.png' });
       await page.locator('.modal button.mod-cta').click();

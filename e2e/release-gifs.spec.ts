@@ -631,8 +631,8 @@ tags:
 		await expect(event).toBeVisible({ timeout: 10000 });
 		await event.click();
 		await page.waitForTimeout(800);
-		const titleInput = page.locator('.modal textarea.title-input');
-		await expect(titleInput).toHaveValue('Future calendar edit');
+		const titleInput = page.locator('.modal .title-input');
+		await expect(titleInput).toHaveText('Future calendar edit');
 		await titleInput.fill("Future calendar edit updated");
 		await page.waitForTimeout(400);
 		const saveButton = page.locator('.modal').getByRole('button', { name: /^Save(?: task)?$/i });

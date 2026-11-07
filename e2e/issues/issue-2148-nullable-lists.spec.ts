@@ -21,8 +21,8 @@ async function open(name: string) {
     const plugin = (window as any).app.plugins.plugins.tasknotes;
     await plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(path));
   }, `${folder}/${name}.md`);
-  await expect(page.locator('.modal textarea.title-input')).toBeVisible();
-  await page.locator('.modal .tn-task-modal__details-toggle').click();
+  await expect(page.locator('.modal .title-input')).toBeVisible();
+  if (await page.locator('.modal .tn-task-modal__details-toggle').getAttribute('aria-expanded') !== 'true') await page.locator('.modal .tn-task-modal__details-toggle').click();
 }
 
 test.beforeAll(async () => {

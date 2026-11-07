@@ -37,7 +37,7 @@ async function openEdit(title: string, fields: Record<string, unknown> = {}): Pr
 		},
 		{ title, fields }
 	);
-	await expect(modal().locator("textarea.title-input")).toHaveValue(title);
+	await expect(modal().locator(".title-input")).toHaveText(title);
 }
 
 async function tasksTitled(title: string): Promise<number> {
@@ -167,7 +167,7 @@ test.describe("fields", () => {
 	test("time estimates accept durations and reject anything else inline", async () => {
 		const title = `Estimate ${Date.now()}`;
 		await openCreate();
-		await modal().locator("textarea.title-input").fill(title);
+		await modal().locator(".title-input").fill(title);
 		await modal().locator('.tn-task-modal__details-toggle').click();
 		const estimate = modal().locator(".setting-item").filter({ hasText: "Time estimate" }).locator("input");
 		await expect(estimate).toHaveValue("");
@@ -189,7 +189,7 @@ test.describe("fields", () => {
 
 		await expect(chip("due-date")).toContainText("Jun 26, 2030");
 		await expect(chip("due-date")).toHaveAttribute("aria-label", /Due: Jun 26, 2030/);
-		await expect(modal().locator("textarea.title-input")).toBeFocused();
+		await expect(modal().locator(".title-input")).toBeFocused();
 		await expect(modal().locator("details.metadata-container")).not.toHaveAttribute("open");
 
 		await expect(modal().getByRole("button", { name: "Delete", exact: true })).toHaveCount(0);
