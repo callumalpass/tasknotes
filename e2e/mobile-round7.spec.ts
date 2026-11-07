@@ -7,7 +7,7 @@ let instance: ObsidianApp;
 let page: Page;
 const folder = `MobileR7-${Date.now()}`;
 const taskPath = `${folder}/Review.md`;
-const output = `/tmp/tasknotes-r7/mobile/${process.env.TASKNOTES_R7_PHASE ?? 'after'}`;
+const output = process.env.TASKNOTES_R7_MOBILE_EVIDENCE ?? `/tmp/tasknotes-r7/mobile/${process.env.TASKNOTES_R7_PHASE ?? 'after'}`;
 const baseline = process.env.TASKNOTES_R7_PHASE === 'before';
 let surfaceVersion = 0;
 
@@ -103,6 +103,7 @@ for (const theme of ['light', 'dark']) test(`${theme}: touch, batch, help, inval
   await captureState(page, `${output}/${theme}-400-batch-focus.png`);
   await page.keyboard.press('Escape');
   await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.taskSelectionService.clearSelection());
+  await card.locator('.task-card__context-menu').focus();
   await card.locator('.task-card__context-menu').click();
   await page.getByText('Keyboard shortcuts', { exact: true }).last().click();
   await expect(page.locator('.tn-popover')).toContainText('Undo');
@@ -198,6 +199,7 @@ test('compact modal retains long labels and cancelling a picker preserves its dr
     await setObsidianViewport(page, { width: 400, height: 900 });
     await page.evaluate(() => document.body.classList.add('is-mobile'));
     await openSurface('list');
+    await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__context-menu`).first().focus();
     await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__context-menu`).first().click();
     await page.getByText('Edit task', { exact: true }).last().click();
     const modal = page.locator('.modal.mod-tasknotes');
@@ -292,7 +294,7 @@ for (const theme of ['light', 'dark']) for (const width of [1180, 400]) {
       }
       if (!baseline && width === 400 && surface !== 'mini') {
         const overlap = await page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${taskPath}"]:visible`).first().evaluate(card => {
-          const controls = [...card.querySelectorAll<HTMLElement>('.task-card__status-dot, .task-card__priority-dot, .task-card__metadata-date, .task-card__context-menu')].filter(element => element.checkVisibility());
+          const controls = [...card.querySelectorAll<HTMLElement>('.task-card__status-dot, .task-card__priority-dot, .task-card__metadata-date, .task-card__context-menu')].filter(element => element.checkVisibility() && getComputedStyle(element).opacity !== '0' && getComputedStyle(element).pointerEvents !== 'none');
           return controls.flatMap((first, index) => controls.slice(index + 1).filter(second => {
             const firstBox = first.getBoundingClientRect();
             const secondBox = second.getBoundingClientRect();
@@ -313,6 +315,7 @@ for (const theme of ['light', 'dark']) for (const width of [1180, 400]) {
     }
     writeFileSync(`${output}/${theme}-${width}-geometry.json`, JSON.stringify(measurements, null, 2));
     await openSurface('list');
+    await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__context-menu`).first().focus();
     await page.locator(`.task-card[data-task-path="${taskPath}"] .task-card__context-menu`).first().click();
     await page.getByText('Edit task', { exact: true }).last().click();
     await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();

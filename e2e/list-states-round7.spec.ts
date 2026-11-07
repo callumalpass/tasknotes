@@ -143,7 +143,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await page.keyboard.press('Escape');
     for (let index = 0; index < 5; index++) {
       await card(index).hover();
-      expect((await card(index).boundingBox())!.height).toBe(58);
+      expect((await card(index).boundingBox())!.height).toBe(40);
     }
     for (const [index, state] of [[6, 'unknown-no-metadata'], [4, 'completed'], [5, 'archived'], [2, 'blocked']] as const) {
       await select([index]);

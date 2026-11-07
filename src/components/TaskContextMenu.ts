@@ -1096,12 +1096,12 @@ export class TaskContextMenu {
 		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
 			this.targetDoc = (event.target as HTMLElement).ownerDocument;
 		}
-		showCoordinatedMenu(this.menu, event);
+		showCoordinatedMenu(this.menu, event, this.options.onHide);
 	}
 
 	public showAtElement(element: HTMLElement): void {
 		// Store the document reference from the element to support pop-out windows
 		this.targetDoc = element.ownerDocument;
-		showCoordinatedMenuAtElement(this.menu, element);
+		showCoordinatedMenuAtElement(this.menu, element, this.options.onHide);
 	}
 }

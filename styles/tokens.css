@@ -159,6 +159,10 @@
     --tn-glyph: 16px;
     --tn-glyph-sm: 14px;
     --tn-task-row-height: 58px;
+    --tn-task-row-height-wide: 40px;
+    --tn-task-row-height-phone: 72px;
+    --tn-task-date-width-wide: 18ch;
+    --tn-task-details-opacity: 0.35;
     --tn-task-row-height-compact: 46px;
     --tn-status-glyph: 18px;
     --tn-drag-preview-width: 320px;

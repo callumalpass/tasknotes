@@ -8,5 +8,6 @@ export interface TaskContextMenuOptions {
 	/** The clicked occurrence (Calendar); omit to let the service's anchor-aware default resolve the date. */
 	occurrenceDate?: Date;
 	onUpdate?: () => void;
+	onHide?: () => void;
 	promoteOccurrenceControls?: boolean;
 }

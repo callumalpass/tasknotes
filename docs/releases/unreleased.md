@@ -46,6 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Fit task-list titles and metadata on one line in wide panes, with aligned date values and quieter note indicators. Narrow lists retain stacked rows; phone metadata aligns beneath the title, with row-menu and reorder controls revealed on focus or selection. Long-press still opens task actions, and dismissing the menu returns focus to the row. Rows without metadata retain their single-line layout.
+
 - Keep Year calendar activity shading in both themes and at phone widths.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.

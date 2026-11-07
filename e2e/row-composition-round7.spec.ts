@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { stringify } from 'yaml';
 import { launchObsidian, closeObsidian, setObsidianViewport } from './obsidian';
 
-const evidence = '/tmp/tasknotes-r7/row/acceptance';
+const evidence = process.env.TASKNOTES_R7_ROW_EVIDENCE ?? '/tmp/tasknotes-r7/row/acceptance';
 const folder = `RowComposition-${Date.now()}`;
 
 test.use({ trace: 'on' });
@@ -105,6 +105,11 @@ test('task rows, board cards and standalone links compose by available width', a
             } else if (width <= 430) {
               expect(geometry[0].title.x).toBeGreaterThanOrEqual(geometry[0].status.right);
               expect(geometry.every(row => row.dateFragments === 0)).toBe(true);
+            }
+            if (surface === 'List.base' && width <= 430) {
+              const empty = cards.filter({ hasText: 'No metadata task' });
+              await expect(empty.locator('.task-card__context-menu')).toHaveCSS('opacity', '0');
+              await expect(empty.locator('.task-card__drag-handle')).toHaveCSS('opacity', '0');
             }
             await page.screenshot({ path: `${evidence}/${surface.split('.')[0]}-${width}-${theme}${mobile ? '-mobile' : ''}.png` });
           }

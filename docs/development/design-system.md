@@ -62,7 +62,7 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 - Radius: `--tn-radius-sm` 4 (chips, keys), `--tn-radius-md` 6 (buttons, inputs, rows), `--tn-radius-lg` 8 (cards, menus), `--tn-radius-xl` 12 (modals), `--tn-radius-full`.
 - Depth: flat at rest. `--tn-shadow-raised` for cards on drag. `--tn-shadow-overlay` for popovers and menus. `--tn-shadow-modal` for modals. Overlays add a hairline border.
 - Motion: `--tn-motion-fast` 80ms (hover), `--tn-motion-base` 140ms (pickers, reveals), `--tn-motion-slow` 220ms (panels). Ease out with `--tn-ease`. Spatial motion uses transform and opacity; state fills may cross-fade without changing geometry. No bounce. `prefers-reduced-motion` removes all of it.
-- Controls: 28px default height, 24px small. Task rows use `--tn-task-row-height` (58px) and `--tn-task-row-height-compact` (46px); the older 34px/28px row tokens remain for non-task controls. On mobile, touch targets are 40px minimum.
+- Controls: 28px default height, 24px small. Task rows use `--tn-task-row-height` (58px), `--tn-task-row-height-wide` (40px), `--tn-task-row-height-phone` (72px) and `--tn-task-row-height-compact` (46px); the older 34px/28px row tokens remain for non-task controls. On mobile, touch targets are 40px minimum.
 
 ## Kit
 
@@ -84,11 +84,11 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 
 `[expand][status][priority] Title ·indicators· [⋯]`
 
-`                          values        Scheduled value    Due value`
+`                          values        calendar value    flag value`
 
 - Left cluster is fixed-width so titles align across rows.
-- Desktop titles truncate with an ellipsis. Hover or focus can reveal the full title via tooltip. Mobile list, agenda and inline titles wrap on their own full-width line, with metadata beneath and primary actions grouped on a separate line with 40px targets.
-- Metadata occupies a quiet second line: plain tags, contexts and projects at the start, then aligned scheduled/due columns on wide lists. There are no chip borders. Narrow layouts retain the compact date icons; desktop dates use muted field labels and stronger values. Overdue deadlines include the word **Overdue**, not colour alone.
+- Desktop titles truncate with an ellipsis. Hover or focus can reveal the full title via tooltip. Mobile list titles wrap, with metadata aligned to the title beneath and 40px action targets. Agenda and inline lists retain their own stacked composition.
+- Lists use one line in panes at least 860px wide, with a 40px minimum row height and equally allocated title/metadata lanes. The breakpoint belongs to the view, not the individual row or title length. Narrower panes retain stacked rows. Phone rows have a 72px minimum, growing for wrapped titles. There are no chip borders. Wide dates show calendar/flag icons and values; full field names and overdue meaning remain in accessible names and tooltips.
 - Metadata values are atomic: overflow becomes a focusable `+N` with all hidden values in its tooltip and a read-only kit popover on activation. No chip truncation, masks or word-breaking. Explicit file-name columns retain the name without `.md`.
 - Scheduled dates use a calendar, deadlines a flag. `taskDateLabel` in `src/ui/kit/dateLabel.ts` is the shared relative-date formatter: Yesterday/Today/Tomorrow, otherwise `MMM d` (with year outside this year), plus the configured time.
 - Workflow glyphs follow configured order. The seeded unassigned status (stable ID `none`, not its editable value) is dashed and excluded from progress ranking; the first active status is an empty ring. Custom icons always win. Unknown status/priority values use a neutral question glyph, never the None glyph, with their raw value and unconfigured state in the accessible label.
@@ -96,8 +96,8 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 - Indicators (recurring, reminder, subtasks progress, details, blocked, blocking) are 14px glyphs in `--text-faint`, hidden when absent. Blocked is the only one with colour.
 - `⋯` appears on hover and focus only.
 - Completed tasks: muted title, no strikethrough animation, filled check.
-- Titles and metadata stack at every list width. Below a container width of 760px, date icons replace the field labels and metadata overflow preserves complete values. Kanban cards retain their own host layout.
-- Desktop list titles stay on one line; board titles have up to two lines with an indicator/menu gutter that does not change on hover. Board columns retain a useful minimum width and scroll with snap instead of crushing their contents. Mobile columns leave a neighbouring lane visible and retain a horizontal scroll track. Below 260px desktop list metadata yields completely to the title. Selection is a quiet tint; only the keyboard-focused row has a focus ring. Mobile actions remain visible; long-press retains the context menu.
+- Metadata overflow preserves complete values; empty wide date slots retain column alignment. Note indicators are quiet at rest and strengthen on hover/focus. Phone rows omit the redundant note glyph and reveal menu/reorder controls on focus or selection; metadata rows place those controls at the trailing edge. Long-press retains the context menu without persistent chrome; dismissal returns focus to the row unless another control has acquired focus. Rows without metadata retain their smaller, single-line layout. Kanban and agenda retain their own host layout.
+- Desktop list titles stay on one line; board titles have up to two lines with an indicator/menu gutter that does not change on hover. Board columns retain a useful minimum width and scroll with snap instead of crushing their contents. Mobile columns leave a neighbouring lane visible and retain a horizontal scroll track. Below 260px desktop list metadata yields completely to the title. Selection is a quiet tint; only the keyboard-focused row has a focus ring.
 
 ### List interaction states
 

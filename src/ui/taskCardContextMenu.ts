@@ -88,7 +88,7 @@ export async function showTaskContextMenu(
 			return;
 		}
 
-		const contextMenu = new TaskContextMenu({
+		const contextOptions = {
 			task,
 			plugin,
 			targetDate,
@@ -97,7 +97,28 @@ export async function showTaskContextMenu(
 			onUpdate: () => {
 				plugin.app.workspace.trigger("tasknotes:refresh-views");
 			},
-		});
+		};
+		const target = event.target as HTMLElement | null;
+		const row = target && typeof target.closest === "function"
+			? target.closest<HTMLElement>(".tn-tasknotesTaskList .task-card")
+			: null;
+		let onHide: (() => void) | undefined;
+		if (row?.ownerDocument.body.classList.contains("is-mobile")) {
+			const list = row.closest(".tn-tasknotesTaskList");
+			onHide = () => {
+				const document = row.ownerDocument;
+				document.defaultView?.requestAnimationFrame(() => {
+					if (
+						!row.isConnected ||
+						(document.activeElement !== document.body && document.activeElement !== list) ||
+						document.querySelector(".menu")
+					) return;
+					if (!row.hasAttribute("tabindex")) row.tabIndex = -1;
+					row.focus({ preventScroll: true });
+				});
+			};
+		}
+		const contextMenu = new TaskContextMenu({ ...contextOptions, onHide });
 
 		contextMenu.show(event);
 	} catch (error) {
