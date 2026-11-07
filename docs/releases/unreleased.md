@@ -49,6 +49,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Fit task-list titles and metadata on one line in wide panes, with aligned date values and quieter note indicators. Narrow lists retain stacked rows; phone metadata aligns beneath the title, with row-menu and reorder controls revealed on focus or selection. Long-press still opens task actions, and dismissing the menu returns focus to the row. Rows without metadata retain their single-line layout.
 
 - Keep Year calendar activity shading in both themes and at phone widths.
+- In the calendar's Week, three-day and Day views, overlapping timed items sit side by side as separate items that can each be clicked and dragged, including in narrow panes. They are grouped into one stack only when each would be too narrow to read (about 30 pixels). The **Simultaneous events** limit still applies.
+- Calendar items are a soft tint of their status, priority or calendar colour, with text in a deeper (or, in dark themes, paler) shade of the same hue, instead of a coloured left edge. Completed items use a fainter tint and muted text, and recurring previews keep a dashed outline.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 
@@ -115,6 +117,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - The task create and edit modals share one layout. On screens 900px and wider, the Markdown details editor fills a side pane from the moment the modal opens, including when it is empty, and the modal keeps one size when **More fields** opens. Property chips and buttons are a compact row of 28px controls, and field rows no longer have boxes around them. Below 900px the form is one column, and phones and narrow windows use a bottom sheet that keeps the view behind it in sight.
 - The task title is now a Markdown editor, with link and tag completion and Obsidian's editor commands. It stays on one line, and Enter or Tab moves to **Details**. With natural language input on, **More fields** shows the parsed title in an editable **Title** field.
 - The edit modal opens with **More fields** showing when any of its fields has a value.
+- In the task modals, a task's projects appear as a chip in the property row, which lists them and adds or removes them, and under **Projects** in **More fields**. Subtasks and **Blocked by** / **Blocking** tasks are single-line rows with short dates, matching narrow task lists; on narrow screens they use the full width of the form.
 - Natural language input now updates the form as you type, so the **Fill form** button and the preview under the input were removed. Removing text from the input undoes what it set, and a field you changed by hand is no longer overwritten. See [Task Management](https://tasknotes.dev/features/task-management/).
 - Closing the create modal with an unsaved draft now asks whether to save or discard it, as the edit modal does. **Open note** and **Archive** in the edit modal now ask before leaving unsaved changes, rather than afterwards.
 - A missing title or invalid time estimate is now shown on the field itself instead of in a notice.
@@ -138,6 +141,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Let a held Kanban drag scroll fully to the last column without clipping its right edge.
 - Keep focus in a date picker's time field when it is selected immediately after opening the dialog.
 - Pressing Escape on a right-click menu in the task modal's Markdown editors closes only the menu, not the modal.
+- Fixed project links in the task modal drawing over the property chips when the form scrolled, and the **Title** field in **More fields** cutting off its second line.
 - Removed the **Convert to TaskNote** button from the task modal's Markdown editors. It converted the matching line of the note behind the modal, not the line beside it.
 - Keep Kanban scroll positions, column widths and card widths steady while lifting and dropping tasks and during delayed refreshes. Cards now fit their title content, while column headers keep their task lanes aligned.
 - Show list tasks at their destination as soon as they are dropped, retaining pending feedback until the change is saved and returning them to their original position if saving fails. List drag previews now retain the row layout, with space around the pointer for drop feedback.

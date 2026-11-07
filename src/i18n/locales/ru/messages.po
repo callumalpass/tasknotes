@@ -1655,6 +1655,7 @@ msgid "Add to project"
 msgstr "Добавить в проект"
 
 #: src/components/task-context-menu/relationships.ts
+#: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "Добавить в проект…"
@@ -10011,6 +10012,7 @@ msgctxt "interaction property"
 msgid "Projects"
 msgstr "Проекты"
 
+#: src/modals/TaskModal.ts
 #: src/modals/taskModalOrganizationFields.ts
 msgctxt "modals.task.organization.projects"
 msgid "Projects"

@@ -200,3 +200,82 @@ test.describe("fields", () => {
 		await expect(modal()).toHaveCount(0);
 	});
 });
+
+test.describe("linked items", () => {
+	test.beforeEach(() => setNaturalLanguage(false));
+
+	async function expand(): Promise<void> {
+		const toggle = modal().locator(".tn-task-modal__details-toggle");
+		if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+	}
+
+	test("projects sit in the property row and scroll beneath it", async () => {
+		await openEdit(`Project home ${Date.now()}`, { projects: ["[[Welcome]]"] });
+		await expect(chip("projects")).toContainText("Welcome");
+		await expand();
+		const projects = modal().locator(".details-container .tn-task-modal__project-list .task-project-item");
+		await expect(projects).toHaveCount(1);
+
+		const covered = await page.evaluate(() => {
+			const root = document.querySelector(".modal.mod-tasknotes")!;
+			const pane = root.querySelector<HTMLElement>(".modal-split-left")!;
+			const bar = root.querySelector<HTMLElement>(".tn-task-modal__action-bar")!;
+			const link = root.querySelector<HTMLElement>(".tn-task-modal__project-list .internal-link")!;
+			// A short pane forces scrolling; park the link halfway under the sticky row.
+			pane.style.height = "160px";
+			pane.scrollTop += link.getBoundingClientRect().top - bar.getBoundingClientRect().bottom + 4;
+			const rect = link.getBoundingClientRect();
+			const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + 1);
+			return rect.top < bar.getBoundingClientRect().bottom && bar.contains(hit);
+		});
+		expect(covered).toBe(true);
+		await page.keyboard.press("Escape");
+		await expect(modal()).toHaveCount(0);
+	});
+
+	test("dependency rows keep the title and short dates on one line", async () => {
+		const blocker = await page.evaluate(async () => {
+			const plugin = (window as any).app.plugins.plugins.tasknotes;
+			const { taskInfo } = await plugin.taskService.createTask({
+				title: `A blocker with a long title that has to truncate before its dates ${Date.now()}`,
+				due: "2025-12-31T17:00",
+				scheduled: "2025-12-30T09:00",
+			});
+			return taskInfo.path.replace(/\.md$/, "");
+		});
+		await openEdit(`Blocked ${Date.now()}`, {
+			blockedBy: [{ uid: `[[${blocker}]]`, reltype: "FINISHTOSTART" }],
+		});
+		await expand();
+		const row = modal().locator(".tn-task-modal__task-row").first();
+		await expect(row).toBeVisible();
+		const due = row.locator(".task-card__date-slot--due .task-card__date-value--compact");
+		await expect(due).toHaveText("Dec 31 17:00");
+
+		const layout = await row.evaluate((card) => {
+			const title = card.querySelector(".task-card__title-text")!.getBoundingClientRect();
+			const date = card.querySelector(".task-card__date-slot--due")!.getBoundingClientRect();
+			const remove = card.closest(".task-project-item")!.querySelector(".task-project-remove")!.getBoundingClientRect();
+			return { height: card.getBoundingClientRect().height, dateHeight: date.height, titleEnd: title.right, dateStart: date.left, dateEnd: date.right, removeStart: remove.left };
+		});
+		expect(layout.height).toBeLessThanOrEqual(32);
+		expect(layout.dateHeight).toBeLessThan(24);
+		expect(layout.titleEnd).toBeLessThanOrEqual(layout.dateStart);
+		expect(layout.dateEnd).toBeLessThanOrEqual(layout.removeStart);
+		await page.keyboard.press("Escape");
+		await expect(modal()).toHaveCount(0);
+	});
+
+	test("the disclosed title shows every wrapped line", async () => {
+		await setNaturalLanguage(true);
+		await openCreate({ title: "A title long enough to wrap onto a second line in the disclosed field row" });
+		await expand();
+		const title = modal().locator(".title-input-detailed");
+		const fits = await title.evaluate((input) => input.scrollHeight <= input.clientHeight + 1);
+		expect(fits).toBe(true);
+		await modal().getByRole("button", { name: "Cancel", exact: true }).click();
+		const discard = prompt().getByRole("button", { name: "Discard changes" });
+		if (await discard.count()) await discard.click();
+		await expect(modal()).toHaveCount(0);
+	});
+});

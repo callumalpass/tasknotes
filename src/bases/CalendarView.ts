@@ -1210,7 +1210,6 @@ export class CalendarView extends BasesViewBase {
 			monthDisplay: this.getMonthDisplay(),
 			dayMaxEventRows: this.getAllDayRowLimit(),
 			eventMinHeight: layout.eventMinHeight,
-			overlapStackThreshold: layout.view === "day" ? 3 : 0,
 			slotEventOverlap: layout.view === "day" ? false : layout.slotEventOverlap,
 			formatTime: minute => formatTime(new Date(2000, 0, 1, 0, minute), options.timeFormat === "12" ? "12" : "24"),
 			listAgenda: options.showAgendaStrip,
@@ -1381,10 +1380,8 @@ export class CalendarView extends BasesViewBase {
 
 	private handleViewChange(view: ViewInfo): void {
 		const slotEventOverlap = view.type === "day" ? false : this.viewOptions.slotEventOverlap;
-		const overlapStackThreshold = view.type === "day" ? 3 : 0;
-		if (this.calendar && (this.calendar.getOptions().slotEventOverlap !== slotEventOverlap ||
-			this.calendar.getOptions().overlapStackThreshold !== overlapStackThreshold)) {
-			this.calendar.setOptions({ slotEventOverlap, overlapStackThreshold });
+		if (this.calendar && this.calendar.getOptions().slotEventOverlap !== slotEventOverlap) {
+			this.calendar.setOptions({ slotEventOverlap });
 		}
 		if (view.type === "week" && this.isNarrowCalendar() && this.calendar) {
 			this.narrowWeek = true;
