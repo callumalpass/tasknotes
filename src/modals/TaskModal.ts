@@ -622,6 +622,7 @@ export abstract class TaskModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		this.containerEl.classList.toggle("expanded", this.isExpanded);
+		this.syncCompactLayout();
 
 		// Create main container
 		const container = contentEl.createDiv("minimalist-modal-container");
@@ -773,6 +774,16 @@ export abstract class TaskModal extends Modal {
 			true
 		);
 		this.containerEl.removeClass("expanded");
+		this.syncCompactLayout();
+	}
+
+	/** A compact modal is the title and property row alone, until More fields opens the rest. */
+	protected usesCompactLayout(): boolean {
+		return false;
+	}
+
+	private syncCompactLayout(): void {
+		this.containerEl.classList.toggle("tn-task-modal--compact", this.usesCompactLayout());
 	}
 
 	protected createCoreActionIcons(container: HTMLElement): HTMLElement[] {
@@ -1317,6 +1328,7 @@ export abstract class TaskModal extends Modal {
 
 		this.isExpanded = true;
 		this.containerEl.classList.add("expanded");
+		this.syncCompactLayout();
 		setTaskModalDetailsCollapsed(
 			{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
 			false
@@ -1689,7 +1701,7 @@ export abstract class TaskModal extends Modal {
 
 	/** Enter and Tab from the title land in the details, or the properties without them. */
 	protected focusFieldAfterTitle(): boolean {
-		if (this.detailsMarkdownEditor) {
+		if (this.detailsMarkdownEditor && !this.usesCompactLayout()) {
 			this.detailsMarkdownEditor.editor.cm.focus();
 			return true;
 		}

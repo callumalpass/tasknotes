@@ -106,13 +106,17 @@ test('the title is one line of a real editor, and Enter finishes a completion be
   await closeModal();
 });
 
-test('create and edit share one pane layout that never resizes on disclosure', async () => {
+test('create opens compact, and More fields opens the pane layout edit uses', async () => {
   await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
-  await expect(details()).toBeVisible();
-  const created = await modal().boundingBox();
+  await expect(modal().locator('.tn-task-modal__action-bar')).toBeVisible();
+  await expect(details()).toBeHidden();
+  const compact = (await modal().boundingBox())!;
   await modal().locator('.tn-task-modal__details-toggle').click();
   await expect(modal().locator('.title-input-detailed')).toBeVisible();
-  expect(await modal().boundingBox()).toEqual(created);
+  await expect(details()).toBeVisible();
+  const created = (await modal().boundingBox())!;
+  expect(compact.width).toBeLessThan(created.width);
+  expect(compact.height).toBeLessThan(created.height);
   await closeModal();
 
   await openEdit();

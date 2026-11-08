@@ -140,6 +140,11 @@ export class TaskCreationModal extends TaskModal {
 		return this.nlContainer ?? super.getTitleErrorAnchor();
 	}
 
+	/** With natural language on, Create opens compact, as the parsed line covers most fields. */
+	protected usesCompactLayout(): boolean {
+		return this.usesNaturalLanguage() && !this.isExpanded;
+	}
+
 	protected showsTitleInDetails(): boolean {
 		return this.usesNaturalLanguage();
 	}

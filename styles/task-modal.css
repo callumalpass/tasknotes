@@ -419,6 +419,21 @@
     }
 }
 
+/* Compact Create: the title and property row only, sized to its content.
+   More fields opens the full layout, details pane included. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--compact > .modal {
+    width: var(--tn-modal-compact-width);
+    height: auto;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--compact .modal-split-content {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--compact .modal-split-right {
+    display: none;
+}
+
 /* =====================================================================
    TITLE
    ===================================================================== */

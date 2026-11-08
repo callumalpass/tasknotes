@@ -187,11 +187,11 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await expect(modal.locator('[data-type="status"]')).toHaveAttribute('data-value-state', 'default');
     await expect(modal.locator('[data-type="priority"]')).toHaveAttribute('data-value-state', 'default');
     await expect(modal.getByRole('checkbox', { name: 'Create more' })).toBeVisible();
-    await expect(modal.locator('.tn-task-modal__markdown-editor--details')).toBeVisible();
+    // Natural language Create opens compact: the details editor waits behind More fields
+    await expect(modal.locator('.tn-task-modal__markdown-editor--details')).toBeHidden();
     await expect(modal.locator('.tn-task-modal__action-bar')).toBeVisible();
-    const positions = await modal.evaluate(element => ['.tn-task-modal__markdown-editor--nlp', '.modal-split-right', '.tn-task-modal__action-bar'].map(selector => element.querySelector(selector)!.getBoundingClientRect().top));
+    const positions = await modal.evaluate(element => ['.tn-task-modal__markdown-editor--nlp', '.tn-task-modal__action-bar'].map(selector => element.querySelector(selector)!.getBoundingClientRect().top));
     expect(positions[0]).toBeLessThan(positions[1]);
-    expect(positions[1]).toBeLessThan(positions[2]);
     expect(await modal.locator('[data-type="status"] .icon svg').getAttribute('class')).toContain('orbit');
     expect(await modal.locator('[data-type="priority"] .icon svg').getAttribute('class')).toContain('flame');
     await page.screenshot({ path: `test-results/modal-menu/create-${theme}.png` });
