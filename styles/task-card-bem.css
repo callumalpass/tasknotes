@@ -1456,7 +1456,7 @@ body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__con
     opacity: 1;
 }
 
-body .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__drag-handle, .task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges [role="button"]) {
+body .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__drag-handle, .task-card__metadata-date, .task-card__metadata-overflow:not([hidden]), .task-card__badges [role="button"]) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1513,7 +1513,7 @@ body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layo
     grid-row: 1;
 }
 
-body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges [role="button"]) {
+body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow:not([hidden]), .task-card__badges [role="button"]) {
     min-width: var(--tn-touch-target);
     min-height: var(--tn-touch-target);
 }

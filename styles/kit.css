@@ -585,7 +585,8 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     font-size: var(--tn-type-sm);
 }
 
-.tn-picker__input.tn-picker__input:focus {
+.tn-picker__input.tn-picker__input:is(:hover, :focus) {
+    border-bottom-color: var(--tn-hairline);
     box-shadow: none;
 }
 
@@ -598,11 +599,10 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
 }
 
 .tn-picker__group {
-    padding: var(--tn-space-2) var(--tn-space-3) var(--tn-space-1);
+    padding: var(--tn-space-3) var(--tn-space-2) var(--tn-space-1);
     color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
-    border-top: 1px solid var(--tn-hairline);
 }
 
 .tn-picker__footer {
@@ -612,7 +612,7 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     gap: var(--tn-space-2);
     padding: var(--tn-space-2) var(--tn-space-3);
     border-top: 1px solid var(--tn-hairline);
-    color: var(--tn-text-muted);
+    color: var(--tn-text-faint);
     font-size: var(--tn-type-2xs);
 }
 
@@ -1160,7 +1160,7 @@ body.is-mobile .tasknotes-plugin .tn-btn {
 }
 
 .tn-picker[data-input-mode="keyboard"] .tn-picker__row.is-active:not([aria-disabled="true"]) {
-    background: var(--tn-selected);
+    background: var(--tn-hover);
     outline: none;
 }
 

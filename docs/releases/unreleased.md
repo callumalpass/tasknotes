@@ -56,6 +56,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Integration and property cards in settings are quieter. Connection status is muted text with a small dot instead of a red or green pill, and card actions are plain Obsidian buttons without a shaded band.
 - The project picker reads like Obsidian's quick switcher: each row shows the note name and one muted line of details, and details that only repeat the name are left out.
 - The "Left side" subtask chevron setting works again: the chevron sits to the left of the status circle instead of among the icons on the right. In the task card at the top of a task note, the chevron and other icons use the same small buttons as list rows.
+- Task rows no longer show an empty button where the "+N" overflow count sits when nothing is hidden.
+- Pickers are quieter: the search field keeps a light underline when focused, the highlighted row uses the same grey as Obsidian's suggestions, group labels have no divider line, and the keyboard hints are fainter.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 
