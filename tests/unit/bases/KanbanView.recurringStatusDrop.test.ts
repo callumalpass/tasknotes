@@ -156,6 +156,24 @@ describe("KanbanView recurring status drops", () => {
 		}
 	);
 
+	it("does not schedule a deferred refresh when unloading an active touch drag", () => {
+		jest.useFakeTimers();
+		try {
+			const { internals } = makeView(() => createTask());
+			internals.pendingRender = true;
+			internals.draggedTaskPath = "tasks/review.md";
+			internals.touchDragActive = true;
+			const refresh = jest.spyOn(internals, "debouncedRefresh");
+
+			internals.onunload();
+
+			expect(refresh).not.toHaveBeenCalled();
+			expect(jest.getTimerCount()).toBe(0);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
 	it("still refreshes the board after a stale drop, so an optimistic card moves back", async () => {
 		const shown = createTask();
 		const { internals } = makeView(() => createTask({ complete_instances: ["2026-10-19"] }));

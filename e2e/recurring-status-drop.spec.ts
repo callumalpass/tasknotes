@@ -77,6 +77,7 @@ async function pickUp(source: Locator): Promise<{ x: number; y: number }> {
 	await page.mouse.move(start.x, start.y);
 	await page.mouse.down();
 	await page.mouse.move(start.x + 12, start.y, { steps: 4 });
+	await expect(source).toHaveClass(/kanban-view__card--dragging/);
 	return start;
 }
 
@@ -215,6 +216,45 @@ test("a cancelled drag applies the task update deferred during the drag", async 
 	expect((await yaml("Weekly")).complete_instances).toEqual([today]);
 });
 
+test("a cancelled touch drag applies the deferred task update", async () => {
+	const session: CDPSession = await page.context().newCDPSession(page);
+	await session.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 10 });
+	let touching = false;
+	try {
+		await openBase(board);
+		await expect(card("Weekly")).toBeVisible();
+		const from = (await card("Weekly").boundingBox())!;
+		await session.send("Input.dispatchTouchEvent", {
+			type: "touchStart",
+			touchPoints: [{ x: from.x + from.width / 2, y: from.y + 20 }],
+		});
+		touching = true;
+		await expect(card("Weekly")).toHaveClass(/kanban-view__touch-drag-source/);
+		await page.evaluate(async (path) => {
+			const plugin = (window as any).app.plugins.plugins.tasknotes;
+			await plugin.taskService.toggleRecurringTaskComplete(
+				await plugin.cacheManager.getTaskInfo(path)
+			);
+		}, taskPath("Weekly"));
+		await expect.poll(async () => (await yaml("Weekly")).scheduled).toBe(nextWeek);
+		await page.waitForTimeout(500);
+		await expect(card("Weekly")).toHaveClass(/kanban-view__touch-drag-source/);
+
+		await session.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
+		touching = false;
+		await expect.poll(() => page.evaluate((path) => {
+			const view = (window as any).app.workspace.activeLeaf.view.controller.view;
+			return view.taskInfoCache.get(path)?.scheduled;
+		}, taskPath("Weekly"))).toBe(nextWeek);
+		await expect(card("Weekly")).not.toHaveClass(/kanban-view__touch-drag-source/);
+		expect((await yaml("Weekly")).complete_instances).toEqual([today]);
+	} finally {
+		if (touching) await session.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
+		await session.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+		await session.detach();
+	}
+});
+
 test("a completion landing after the drop's check cannot reopen the occurrence", async () => {
 	await openBase(board);
 	await expect(card("Weekly")).toBeVisible();
@@ -315,6 +355,13 @@ test("ordinary tasks and moves between open statuses write status as before", as
 	await dragToDone("Ordinary");
 	await expect.poll(async () => (await yaml("Ordinary")).status).toBe("done");
 	expect((await yaml("Ordinary")).completedDate).toBe(today);
+	// The write can settle before the first drop's redraw. Finish that
+	// interaction before measuring the next card for a separate drag.
+	await expect.poll(() => page.evaluate(() => {
+		const view = (window as any).app.workspace.activeLeaf.view.controller.view;
+		return view.activeDropCount === 0 && view.postDropTimer === null &&
+			view.updateDebounceTimer === null && Date.now() >= view.suppressRenderUntil;
+	})).toBe(true);
 
 	await pickUp(card("Weekly"));
 	await dropOn(column("in-progress"));
