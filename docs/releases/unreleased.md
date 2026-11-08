@@ -46,6 +46,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed dropping a recurring task onto a completed Kanban status also completing the next occurrence when the task was completed elsewhere during the drag. Board refreshes now wait until the drag ends. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
 - Fixed dragging a card reversing the other cards in a Kanban column when manual order is sorted descending. Kanban now follows the configured sort direction, matching Task List. Columns already reordered under a descending sort will show their intended order once after updating; stored ranks are not rewritten when the view opens.
 - (#2503) Fixed calendar list and Agenda cards for recurring occurrences other than the next one showing the task's current dates, with date controls that changed the task. Every row could look overdue, and selecting the date on the card for a later occurrence moved the task's next occurrence instead. These cards now show their own occurrence's scheduled date as read-only text, without the task's due date, and are only marked as past when that occurrence is past and neither completed nor skipped. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#calendar-drag-and-drop).
   - Thanks to @martin-forge for reporting this, and @14790897 for the report on timed series
