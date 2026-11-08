@@ -278,6 +278,8 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
         document.body.classList.toggle('is-mobile', width === 430);
       }, { theme, width });
       await expect(embeddedOverflow).toBeVisible();
+      // The row re-measures in a ResizeObserver after the width and is-mobile change; let it settle.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const hiddenValues = (await embeddedOverflow.getAttribute('aria-label'))!.split(' · ');
       expect(hiddenValues).toContainEqual(expect.stringContaining(longTag));
       await embeddedOverflow.focus();
