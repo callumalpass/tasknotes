@@ -58,6 +58,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - The "Left side" subtask chevron setting works again: the chevron sits to the left of the status circle instead of among the icons on the right. In the task card at the top of a task note, the chevron and other icons use the same small buttons as list rows.
 - Task rows no longer show an empty button where the "+N" overflow count sits when nothing is hidden.
 - Pickers are quieter: the search field keeps a light underline when focused, the highlighted row uses the same grey as Obsidian's suggestions, group labels have no divider line, and the keyboard hints are fainter.
+- The Start Here note no longer repeats its title as a heading under the note name.
+- In the agenda, each date number lines up with its weekday.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 

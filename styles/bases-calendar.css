@@ -1294,6 +1294,12 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
         align-items: flex-start;
     }
 
+    /* Stacked over the weekday, the number lines up with it instead of centring in a circle's box. */
+    .tasknotes-plugin .tn-calendar-agenda-strip .tnc-list-day .tn-calendar-day-number {
+        width: auto;
+        justify-content: flex-start;
+    }
+
     .tasknotes-plugin .tn-calendar-agenda-strip .tnc-list-section > :is(.tnc-list-rows, .tnc-list-add) {
         grid-column: 2;
     }
