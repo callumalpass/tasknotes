@@ -94,7 +94,7 @@ import {
 	ensureDefaultBasesViewFiles,
 	type DefaultBasesFileResult,
 } from "./bootstrap/defaultBasesFiles";
-import { ensureStarterNote as ensureStarterNoteFile } from "./bootstrap/starterNote";
+import { openStarterNote as openStarterNoteFile } from "./bootstrap/starterNote";
 import {
 	getAvailableTaskNotesReleaseVersion,
 	shouldNotifyForRelease,
@@ -253,7 +253,6 @@ export default class TaskNotesPlugin extends Plugin {
 	// Migration state management
 	private migrationComplete = false;
 	private migrationPromise: Promise<void> | null = null;
-	private shouldCreateStarterNoteOnStartup = false;
 
 	// Bases registration state management
 	basesRegistered = false;
@@ -828,7 +827,6 @@ export default class TaskNotesPlugin extends Plugin {
 
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(loadedData);
 		this.settings = settings;
-		this.shouldCreateStarterNoteOnStartup = !settings.lastSeenVersion;
 
 		if (shouldPersistMigratedSettings) {
 			// Save the migrated settings to include new field mappings (non-blocking)
@@ -1022,30 +1020,20 @@ export default class TaskNotesPlugin extends Plugin {
 		);
 	}
 
-	async ensureStarterNote(): Promise<void> {
-		const shouldCreateStarterNote = this.shouldCreateStarterNoteOnStartup;
-		this.shouldCreateStarterNoteOnStartup = false;
-		await ensureStarterNoteFile({
+	/** Opens the Start Here guide, creating it if needed. */
+	async openStarterNote(): Promise<void> {
+		await openStarterNoteFile({
 			app: this.app,
-			settings: this.settings,
-			shouldCreateStarterNote,
-			saveSettings: () => this.saveSettingsDataOnly(),
 			warn: (message, error) => {
-				if (error === undefined) {
-					tasknotesLogger.warn(message, {
-						category: "configuration",
-						operation: "ensure-starter-note",
-					});
-				} else {
-					tasknotesLogger.warn(message, {
-						category: "configuration",
-						operation: "ensure-starter-note",
-						error,
-					});
-				}
+				tasknotesLogger.warn(message, {
+					category: "configuration",
+					operation: "open-starter-note",
+					...(error === undefined ? {} : { error }),
+				});
 			},
 		});
 	}
+
 
 	/**
 	 * Open and activate the search pane with a tag query

@@ -59,6 +59,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Task rows no longer show an empty button where the "+N" overflow count sits when nothing is hidden.
 - Pickers are quieter: the search field keeps a light underline when focused, the highlighted row uses the same grey as Obsidian's suggestions, group labels have no divider line, and the keyboard hints are fainter.
 - The Start Here note no longer repeats its title as a heading under the note name.
+- TaskNotes no longer creates and opens a Start Here note on first install. Open it any time with the **Open the Start Here guide** command, or from the **Start Here guide** button in an empty task view.
 - In the agenda, each date number lines up with its weekday.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.

@@ -364,7 +364,6 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		if (plugin.settings.autoCreateDefaultBasesFiles) {
 			await plugin.ensureBasesViewFiles();
 		}
-		await plugin.ensureStarterNote();
 
 		plugin.injectCustomStyles();
 		registerActiveViews(plugin);

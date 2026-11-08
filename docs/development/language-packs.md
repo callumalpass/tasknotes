@@ -179,7 +179,7 @@ adb -s "$SERIAL" shell am start -W -n md.obsidian/.MainActivity
 npm run e2e:android:language-packs
 ```
 
-Repeat runs must begin with the fixture's English settings and no previously downloaded German pack. Reset only this disposable vault's generated `language-packs/` cache while Obsidian is stopped. Never use these reset commands against a personal vault. The fixture suppresses the starter-note walkthrough so it cannot dismiss the settings screen mid-test.
+Repeat runs must begin with the fixture's English settings and no previously downloaded German pack. Reset only this disposable vault's generated `language-packs/` cache while Obsidian is stopped. Never use these reset commands against a personal vault.
 
 Evidence is written to `.tmp/android-language-packs/`: a structured report and native screenshots. The test verifies real mobile storage and WebCrypto, French picker download from public R2, offline full app force-stop/relaunch and translated commands, an uncached German failure preserving French, recovery through the retry button, every remaining target locale, and rejection/repair of a same-length corrupted French cache. Reconnection waits for real connectivity and tolerates native DNS negative-cache expiry; no transport or platform flag is mocked.
 

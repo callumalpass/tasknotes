@@ -9152,6 +9152,11 @@ msgctxt "modals.actionPalette.openParentDesc"
 msgid "Open the recurring task that generated this occurrence"
 msgstr "Open the recurring task that generated this occurrence"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStartHereGuide"
+msgid "Open the Start Here guide"
+msgstr "Open the Start Here guide"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
@@ -11322,6 +11327,11 @@ msgstr "Start date property"
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
 msgstr "Start focus"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection guide"
+msgid "Start Here guide"
+msgstr "Start Here guide"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.enable.description"

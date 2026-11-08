@@ -937,8 +937,17 @@ export abstract class BasesViewBase extends Component {
 			actionLabel: reviewFilters ? filtersLabel : newLabel,
 			actionKey: reviewFilters ? undefined : "C",
 			onAction: reviewFilters ? () => filterButton.click() : create,
-			secondaryActionLabel: reviewFilters ? newLabel : undefined,
-			onSecondaryAction: reviewFilters ? create : undefined,
+			// With no tasks at all, the Start Here guide is the next step after New.
+			secondaryActionLabel: reviewFilters
+				? newLabel
+				: hasTasks
+					? undefined
+					: uiText(msg({ message: "Start Here guide", context: "empty task collection guide" })),
+			onSecondaryAction: reviewFilters
+				? create
+				: hasTasks
+					? undefined
+					: () => { void this.plugin.openStarterNote(); },
 		});
 	}
 

@@ -9151,6 +9151,11 @@ msgctxt "modals.actionPalette.openParentDesc"
 msgid "Open the recurring task that generated this occurrence"
 msgstr "이 회차를 생성한 반복 작업 열기"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStartHereGuide"
+msgid "Open the Start Here guide"
+msgstr "'Start Here' 가이드 열기"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
@@ -11321,6 +11326,11 @@ msgstr "시작일 속성"
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
 msgstr "집중 시작"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection guide"
+msgid "Start Here guide"
+msgstr "'Start Here' 가이드"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.enable.description"

@@ -9151,6 +9151,11 @@ msgctxt "modals.actionPalette.openParentDesc"
 msgid "Open the recurring task that generated this occurrence"
 msgstr "打开生成此次重复的重复任务"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStartHereGuide"
+msgid "Open the Start Here guide"
+msgstr "打开“Start Here”指南"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
@@ -11321,6 +11326,11 @@ msgstr "开始日期属性"
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
 msgstr "开始专注"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection guide"
+msgid "Start Here guide"
+msgstr "“Start Here”指南"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.enable.description"

@@ -99,6 +99,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "open-start-here-guide",
+			nameKey: msg({ message: "Open the Start Here guide", context: "commands.openStartHereGuide" }),
+			callback: async (ctx) => {
+				await ctx.openStarterNote();
+			},
+		},
+		{
 			id: "convert-current-note-to-task",
 			nameKey: msg({ message: "Convert current note to task", context: "commands.convertCurrentNoteToTask.name" }),
 			callback: async (ctx) => {
