@@ -550,38 +550,24 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     width: 100%;
 }
 
-/* Card Actions */
+/* Card actions: a plain row of Obsidian buttons, no shaded band. */
 .tasknotes-settings__card-actions {
-    padding: 12px 16px;
-    background: var(--background-modifier-form-field);
-    border-top: 1px solid var(--background-modifier-border);
     display: flex;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-2) 0 var(--tn-space-3);
 }
 
 .tasknotes-settings__card-action-btn {
-    padding: 8px 16px;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--tn-radius-sm);
-    background: var(--background-primary);
-    color: var(--text-normal);
-    font-size: var(--tn-type-sm);
-    font-weight: 500;
-    cursor: var(--cursor-link, pointer);
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--tn-space-1);
+    cursor: var(--cursor-link, pointer);
 }
 
-@media (hover: hover) {
-    .tasknotes-settings__card-action-btn:hover:not(:disabled):not([aria-disabled="true"]) {
-        background: var(--background-modifier-hover);
-    }
-}
 .tasknotes-settings__card-action-btn--primary {
-    background: none;
+    background: var(--interactive-accent);
     color: var(--text-on-accent);
-    border-color: var(--interactive-accent);
 }
 
 @media (hover: hover) {
@@ -589,10 +575,9 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
         background: var(--interactive-accent-hover);
     }
 }
+
 .tasknotes-settings__card-action-btn--delete {
-    background: var(--color-red);
-    color: var(--text-on-accent);
-    border-color: var(--color-red);
+    color: var(--text-error);
 }
 
 /* Header Actions */
@@ -646,24 +631,26 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
         color: var(--color-red);
     }
 }
-/* Status Badges */
+/* Status badges: quiet text; active and inactive states add a small dot. */
 .tasknotes-settings__card-status-badge {
-    padding: 4px 8px;
-    border-radius: var(--tn-radius-xl);
-    font-size: var(--tn-type-2xs);
-    font-weight: 500;
-    background: var(--background-modifier-border);
-    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    white-space: nowrap;
 }
 
-.tasknotes-settings__card-status-badge--active {
+:is(.tasknotes-settings__card-status-badge--active, .tasknotes-settings__card-status-badge--inactive)::before {
+    content: "";
+    width: var(--size-2-3, 6px);
+    height: var(--size-2-3, 6px);
+    border-radius: var(--tn-radius-full);
+    background: var(--tn-text-faint);
+}
+
+.tasknotes-settings__card-status-badge--active::before {
     background: var(--color-green);
-    color: var(--text-on-accent);
-}
-
-.tasknotes-settings__card-status-badge--inactive {
-    background: var(--color-red);
-    color: var(--text-on-accent);
 }
 
 .tasknotes-settings__card-info-badge {
