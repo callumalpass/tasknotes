@@ -31,3 +31,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed dropping a recurring task onto a completed Kanban status also completing the next occurrence when the task was completed elsewhere during the drag. Board refreshes now wait until the drag ends. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
+- Fixed dragging a card reversing the other cards in a Kanban column when manual order is sorted descending. Kanban now follows the configured sort direction, matching Task List. Columns already reordered under a descending sort will show their intended order once after updating; stored ranks are not rewritten when the view opens.
+- (#2513) Fixed **Skip instance** in the menu on calendar list and Agenda cards skipping the task's next occurrence instead of the one on that row, from both the ⋮ button and right-clicking the card.

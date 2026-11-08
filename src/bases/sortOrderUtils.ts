@@ -143,6 +143,16 @@ function compareRankStringsForBases(left: string, right: string): number {
 	return collated !== 0 ? collated : left.localeCompare(right);
 }
 
+export function compareManualOrderValues(
+	left: unknown,
+	right: unknown,
+	direction: SortDirection = "asc"
+): number {
+	if (left == null || left === "") return right == null || right === "" ? 0 : 1;
+	if (right == null || right === "") return -1;
+	return compareDisplaySortStrings(stringifyUnknown(left), stringifyUnknown(right), direction);
+}
+
 function compareDisplaySortStrings(
 	left: string,
 	right: string,

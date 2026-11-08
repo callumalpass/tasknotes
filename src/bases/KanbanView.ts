@@ -1368,6 +1368,7 @@ export class KanbanView extends BasesViewBase {
 			sortOrderValues: isSortOrderInSortConfig(this.dataAdapter, sortOrderField)
 				? this.getSortOrderValues(taskNotes, sortOrderField)
 				: undefined,
+			sortOrderDirection: getSortOrderDirection(this.dataAdapter, sortOrderField),
 			statusConfigs: this.plugin.settings.customStatuses || [],
 			priorityConfigs:
 				this.plugin.priorityManager?.getAllPriorities?.() ||
@@ -3028,6 +3029,10 @@ export class KanbanView extends BasesViewBase {
 		this.draggedSourceSwimlanes.clear();
 		this.touchDragType = null;
 		this.draggedColumnKey = null;
+		if (this.pendingRender) {
+			this.pendingRender = false;
+			this.debouncedRefresh();
+		}
 	}
 
 	private handleAutoScroll(touchX: number): void {
@@ -4300,6 +4305,13 @@ export class KanbanView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
 			void (async () => {
+				// Match onDataUpdated: keep the dragged card and its occurrence cache
+				// intact, even if this timer was scheduled before the drag began.
+				if (this.draggedTaskPath) {
+					this.pendingRender = true;
+					this.updateDebounceTimer = null;
+					return;
+				}
 				// Respect render suppression — a drop is still in-flight.
 				// The post-drop render (schedulePostDropRender) will fire the
 				// guaranteed render once the writes have settled.
@@ -4779,6 +4791,7 @@ export class KanbanView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
+		this.pendingRender = false;
 		this.clearTouchDragState();
 		if (this.postDropTimer) {
 			window.clearTimeout(this.postDropTimer);

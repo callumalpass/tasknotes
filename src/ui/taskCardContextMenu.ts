@@ -18,6 +18,7 @@ export interface TaskCardContextMenuButtonOptions {
 	plugin: TaskNotesPlugin;
 	targetDate: Date;
 	promoteOccurrenceControls?: boolean;
+	occurrenceDate?: Date;
 }
 
 function tTaskCard(
@@ -38,7 +39,7 @@ function getTaskCardContextMenuLogger(plugin: TaskNotesPlugin) {
 export function createTaskCardContextMenuButton(
 	options: TaskCardContextMenuButtonOptions
 ): HTMLElement {
-	const { mainRow, taskPath, plugin, targetDate, promoteOccurrenceControls } = options;
+	const { mainRow, taskPath, plugin, targetDate, promoteOccurrenceControls, occurrenceDate } = options;
 	const taskOptionsLabel = tTaskCard(plugin, "taskOptions");
 	const contextIcon = mainRow.createDiv({
 		cls: "task-card__context-menu",
@@ -54,11 +55,10 @@ export function createTaskCardContextMenuButton(
 	contextIcon.addEventListener("click", (e) => {
 		e.stopPropagation();
 		e.preventDefault();
-		if (promoteOccurrenceControls === undefined) {
-			void showTaskContextMenu(e, taskPath, plugin, targetDate);
-			return;
-		}
-		void showTaskContextMenu(e, taskPath, plugin, targetDate, { promoteOccurrenceControls });
+		void showTaskContextMenu(e, taskPath, plugin, targetDate, {
+			promoteOccurrenceControls,
+			occurrenceDate,
+		});
 	});
 
 	return contextIcon;

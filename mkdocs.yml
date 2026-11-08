@@ -97,6 +97,7 @@ nav:
           - Release notes: releases.md
           - Troubleshooting: troubleshooting.md
           - Privacy policy: privacy.md
+          - TaskNotes Calendar terms: terms.md
 
 redirects:
     /views/default-base-templates/: /reference/default-base-templates/
