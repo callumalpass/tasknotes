@@ -85,6 +85,10 @@ export function createTaskModalTagsField(
 
 		inputEl = text.inputEl;
 		context.attachMobileKeyboardScrollGuard(text.inputEl);
+		// Show what will be saved once the field is left.
+		text.inputEl.addEventListener("blur", () => {
+			text.inputEl.value = sanitizeTags(text.inputEl.value);
+		});
 		new TagSuggest(context.app, text.inputEl, context.plugin);
 	});
 

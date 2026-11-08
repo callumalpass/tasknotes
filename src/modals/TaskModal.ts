@@ -1192,12 +1192,10 @@ export abstract class TaskModal extends Modal {
 			if (this.detailsMarkdownEditor && this.detailsMarkdownEditor.value !== values.details) {
 				setTaskModalDetailsEditorValue(this.detailsMarkdownEditor, values.details);
 			}
-			if (this.contextsInput && this.contextsInput.value !== values.contexts) {
-				this.contextsInput.value = values.contexts;
-			}
-			if (this.tagsInput && this.tagsInput.value !== values.tags) {
-				this.tagsInput.value = values.tags;
-			}
+			// Leave a focused list field alone: the stored value drops a trailing
+			// separator, so writing it back mid-typing would erase the comma.
+			syncUnfocusedInput(this.contextsInput, values.contexts);
+			syncUnfocusedInput(this.tagsInput, values.tags);
 			// The field may hold text being typed ("1h") or text that failed to parse.
 			if (
 				this.timeEstimateInput &&
@@ -1467,5 +1465,11 @@ export abstract class TaskModal extends Modal {
 		destroyTaskModalDetailsEditor(this.detailsMarkdownEditor);
 		this.detailsMarkdownEditor = null;
 		super.onClose();
+	}
+}
+
+function syncUnfocusedInput(input: HTMLInputElement | undefined, value: string): void {
+	if (input && input !== input.ownerDocument.activeElement && input.value !== value) {
+		input.value = value;
 	}
 }
