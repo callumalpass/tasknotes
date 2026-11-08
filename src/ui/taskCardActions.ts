@@ -44,7 +44,12 @@ function getRecurringCycleStatus(
 	reverse: boolean
 ): string | undefined {
 	const { statusManager } = plugin;
-	if (!statusManager.getConfiguredStatusAfterCompletion()) return undefined;
+	if (
+		!plugin.settings.resetRecurringStatusAfterOccurrence ||
+		!statusManager.getConfiguredStatusAfterCompletion()
+	) {
+		return undefined;
+	}
 	const completedStatus = statusManager.getCompletedStatuses()[0];
 	if (statusManager.isCompletedStatus(getEffectiveTaskStatus(task, targetDate, completedStatus))) {
 		return undefined;

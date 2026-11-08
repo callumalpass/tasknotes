@@ -10506,6 +10506,11 @@ msgctxt "views.stats.resetFiltersButton"
 msgid "Reset filters"
 msgstr "Redefinir Filtros"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusName"
+msgid "Reset status after each occurrence"
+msgstr "Redefinir o status após cada ocorrência"
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.resetTooltip"
 msgid "Reset to default path"
@@ -14087,6 +14092,11 @@ msgstr "O que há de novo no TaskNotes {version}"
 msgctxt "views.releaseNotes.title"
 msgid "What''s new in TaskNotes {version}"
 msgstr "O que há de novo no TaskNotes {version}"
+
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusDesc"
+msgid "When an occurrence is completed or skipped, move the task to the Next status of the first completed status. Turn off to keep the task's status."
+msgstr "Quando uma ocorrência é concluída ou pulada, a tarefa passa para o próximo status do primeiro status concluído. Desative para manter o status da tarefa."
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.excludeArchived.description"

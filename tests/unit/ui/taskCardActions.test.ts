@@ -154,6 +154,7 @@ describe("taskCardActions", () => {
 			} as Partial<TaskNotesPlugin>);
 			const statusManager = plugin.statusManager as unknown as Record<string, jest.Mock>;
 			statusManager.getConfiguredStatusAfterCompletion.mockReturnValue("open");
+			plugin.settings.resetRecurringStatusAfterOccurrence = true;
 			if (statuses.next) statusManager.getNextStatus.mockReturnValue(statuses.next);
 			if (statuses.previous) statusManager.getPreviousStatus.mockReturnValue(statuses.previous);
 			return plugin;
@@ -172,6 +173,16 @@ describe("taskCardActions", () => {
 		it("completes the occurrence in one click while a finished series has no status to return to", async () => {
 			const plugin = cyclingPlugin(recurring, { next: "in-progress" });
 			(plugin.statusManager.getConfiguredStatusAfterCompletion as jest.Mock).mockReturnValue(undefined);
+
+			await click(plugin, recurring);
+
+			expect(plugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(recurring, targetDate);
+			expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
+		});
+
+		it("completes the occurrence in one click when the status reset is off (#2521)", async () => {
+			const plugin = cyclingPlugin(recurring, { next: "in-progress" });
+			plugin.settings.resetRecurringStatusAfterOccurrence = false;
 
 			await click(plugin, recurring);
 

@@ -43,6 +43,16 @@ describe("settings persistence helpers", () => {
 		jest.restoreAllMocks();
 	});
 
+	it("keeps recurring statuses in saved setups and resets them in new ones (#2521)", () => {
+		expect(
+			buildSettingsFromLoadedData({ defaultTaskStatus: "inbox" }).settings
+				.resetRecurringStatusAfterOccurrence
+		).toBe(false);
+		expect(buildSettingsFromLoadedData(null).settings.resetRecurringStatusAfterOccurrence).toBe(
+			true
+		);
+	});
+
 	it("builds the plugin data path from manifest dir first", () => {
 		const host = createHost({
 			dir: ".obsidian/plugins/tasknotes",

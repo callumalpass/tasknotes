@@ -136,6 +136,21 @@ describe('TaskService Completion (Issue #160)', () => {
 
     beforeEach(() => {
       taskService['plugin'].statusManager.getConfiguredStatusAfterCompletion.mockReturnValue('open');
+      taskService['plugin'].settings.resetRecurringStatusAfterOccurrence = true;
+    });
+
+    it('keeps the status when the reset is off, even with a Next status on Done (#2521)', async () => {
+      taskService['plugin'].settings.resetRecurringStatusAfterOccurrence = false;
+      const frontmatter = written();
+
+      const updated = await taskService.toggleRecurringTaskComplete(
+        taskWithStatus('calendar'),
+        new Date('2024-01-12T12:00:00.000Z')
+      );
+
+      expect(updated.complete_instances).toContain('2024-01-12');
+      expect(updated.status).toBe('calendar');
+      expect(frontmatter.status).toBeUndefined();
     });
 
     it('moves an in-progress series to the status configured after completion', async () => {

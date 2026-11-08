@@ -112,6 +112,13 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 	// Migration: Remove old useNativeMetadataCache setting if it exists.
 	delete migratedData.useNativeMetadataCache;
 
+	// Migration: a completed status's Next status used to be only where reopening
+	// a task goes. Existing setups keep their recurring series' status unless the
+	// reset is turned on explicitly (#2521).
+	if (typeof migratedData.resetRecurringStatusAfterOccurrence === "undefined") {
+		migratedData.resetRecurringStatusAfterOccurrence = false;
+	}
+
 	// Migration: Add API settings defaults if they don't exist.
 	if (typeof migratedData.enableAPI === "undefined") {
 		migratedData.enableAPI = false;

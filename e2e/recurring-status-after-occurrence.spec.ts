@@ -6,7 +6,7 @@ const root = `Recurring next status ${Date.now()}`;
 let folder = root;
 let instance: ObsidianApp;
 let page: Page;
-let original: { customStatuses: unknown; defaultTaskStatus: string };
+let original: Record<string, unknown>;
 
 function localDate(offsetDays = 0): string {
 	const date = new Date();
@@ -45,6 +45,7 @@ async function setStatuses(statuses: Record<string, unknown>[], defaultTaskStatu
 			}));
 			plugin.statusManager.updateStatuses(plugin.settings.customStatuses);
 			plugin.settings.defaultTaskStatus = defaultTaskStatus;
+			plugin.settings.resetRecurringStatusAfterOccurrence = true;
 		},
 		{ statuses, defaultTaskStatus }
 	);
@@ -77,8 +78,9 @@ test.beforeAll(async () => {
 	original = await page.evaluate(async (root) => {
 		const app = (window as any).app;
 		await app.vault.createFolder(root);
-		const { customStatuses, defaultTaskStatus } = app.plugins.plugins.tasknotes.settings;
-		return { customStatuses, defaultTaskStatus };
+		const { customStatuses, defaultTaskStatus, resetRecurringStatusAfterOccurrence } =
+			app.plugins.plugins.tasknotes.settings;
+		return { customStatuses, defaultTaskStatus, resetRecurringStatusAfterOccurrence };
 	}, root);
 });
 
