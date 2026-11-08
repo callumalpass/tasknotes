@@ -406,6 +406,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,
 	resetCheckboxesOnRecurrence: false, // Off by default - user opts in
+	// On for new setups; settings saved before it existed load with it off (#2521).
+	resetRecurringStatusAfterOccurrence: true,
 	// Frontmatter link format defaults
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
 	// OAuth Calendar Integration defaults

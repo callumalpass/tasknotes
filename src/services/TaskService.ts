@@ -2083,8 +2083,9 @@ export class TaskService {
 	}
 
 	private getStatusAfterOccurrence(task: TaskInfo): string | undefined {
-		const { statusManager } = this.plugin;
-		return statusManager.isCompletedStatus(task.status)
+		const { statusManager, settings } = this.plugin;
+		return !settings.resetRecurringStatusAfterOccurrence ||
+			statusManager.isCompletedStatus(task.status)
 			? undefined
 			: statusManager.getConfiguredStatusAfterCompletion();
 	}

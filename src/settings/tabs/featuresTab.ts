@@ -888,6 +888,18 @@ export function renderFeaturesTab(
 						},
 					})
 			);
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(msg({ message: "Reset status after each occurrence", context: "settings.features.recurring.resetStatusName" })),
+						desc: translate(msg({ message: "When an occurrence is completed or skipped, move the task to the Next status of the first completed status. Turn off to keep the task's status.", context: "settings.features.recurring.resetStatusDesc" })),
+						getValue: () => plugin.settings.resetRecurringStatusAfterOccurrence,
+						setValue: async (value: boolean) => {
+							plugin.settings.resetRecurringStatusAfterOccurrence = value;
+							save();
+						},
+					})
+			);
 		}
 	);
 
