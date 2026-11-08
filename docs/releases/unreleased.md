@@ -35,6 +35,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2483) Task pickers list a recurring task once, even when it has occurrence notes. Press Tab or click the occurrence count to list its notes, newest first; press Backspace in the empty search box to go back. Searching for a month or day, such as `2026-06`, also finds them. See [Materialized Occurrence Notes](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes).
+  - Thanks to @ac8318740 for requesting and implementing this
+
 ## Changed
 
 - Reworked the task create and edit modals. Status, priority, dates, recurrence and reminders are now labelled chips that show their current value, replacing the icons with a dot. The edit modal starts with the title, **Task information** is collapsed, and **Archive** and **Delete** moved into a **More actions** (⋯) menu beside **Open note**. Empty field rows are more compact.
