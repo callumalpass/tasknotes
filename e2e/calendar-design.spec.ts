@@ -196,7 +196,7 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
             const css = getComputedStyle(element);
             return { left: css.borderLeftWidth, top: css.borderTopWidth };
           });
-          expect(style).toEqual({ left: '0px', top: '0px' });
+          expect(style).toEqual({ left: '3px', top: '1px' });
           await expect(calendar.locator('.tnc-item[data-event-type="timeblock"]').first()).toBeVisible();
           await expect(calendar.locator('.tnc-item[data-event-type="due"]').first()).toHaveAttribute('aria-label', /^Deadline:/);
           if (width === 1180) {

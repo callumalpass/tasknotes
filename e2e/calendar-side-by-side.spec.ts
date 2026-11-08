@@ -56,7 +56,7 @@ test.afterAll(async () => {
   } finally { await closeObsidian(instance); }
 });
 
-test('overlapping events sit side by side as separate tinted items', async () => {
+test('overlapping events sit side by side as separate items', async () => {
   for (const [name, width] of [['day', 1280], ['week', 1280], ['week', 390]] as const) {
     await view(name, width);
     const items = instance.page.locator(`${root} .tnc-item--timed`).filter({ hasText: 'Overlapping review' });
@@ -66,7 +66,7 @@ test('overlapping events sit side by side as separate tinted items', async () =>
     expect(new Set(lefts).size).toBe(3);
   }
 
-  // A soft fill with same-hue text replaces the coloured edge, and stays readable.
+  // A neutral card carries the colour only as its leading edge, and stays readable.
   const look = await instance.page.locator(`${root} .tnc-item--timed`).first().evaluate(element => {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d', { willReadFrequently: true })!;
@@ -77,7 +77,7 @@ test('overlapping events sit side by side as separate tinted items', async () =>
     const fill = luminance(rgb(style.backgroundColor));
     return { edge: style.borderLeftWidth, contrast: (Math.max(text, fill) + 0.05) / (Math.min(text, fill) + 0.05) };
   });
-  expect(look.edge).toBe('0px');
+  expect(look.edge).toBe('3px');
   expect(look.contrast).toBeGreaterThanOrEqual(4.5);
 });
 

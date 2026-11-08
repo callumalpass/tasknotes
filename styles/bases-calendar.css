@@ -51,6 +51,8 @@
     --tnc-shadow: var(--tn-shadow-raised);
     --tnc-font-size: var(--tn-type-sm);
     --tnc-small: var(--tn-type-xs);
+    /* Weekends and other months read from the date numbers, not shaded cells. */
+    --tnc-off: transparent;
     font-family: var(--font-interface);
     flex: 1 1 auto;
     min-height: 0;
@@ -224,17 +226,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-.tasknotes-plugin .tnc-dh.is-today .tnc-dh-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: var(--tn-space-6);
-    min-height: var(--tn-space-6);
-    border-radius: var(--tn-radius-full);
-    background: var(--tnc-accent);
-    color: var(--text-on-accent);
-}
-
 .tasknotes-plugin .tnc-dh-dow,
 .tasknotes-plugin .tnc-ym-dow {
     font-size: var(--tn-type-2xs);
@@ -242,11 +233,12 @@
     letter-spacing: var(--tn-letter-spacing-label);
 }
 
-/* Items are a soft tint of their colour with text in a deep (or, in dark themes, pale) shade of the same hue. */
+/* Items are neutral cards with a hairline edge; their colour (status, calendar or timeblock) is only the leading stripe. */
 .tasknotes-plugin .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator) {
-    --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-saturation), var(--tn-bg-primary));
+    --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-tint), var(--tn-bg-secondary));
     container-type: inline-size;
-    border-width: 0;
+    border: 1px solid var(--tn-hairline);
+    border-inline-start: 3px solid var(--tn-calendar-event-mark);
     border-radius: var(--tn-radius-sm);
     background: var(--tn-calendar-event-fill);
     color: var(--tn-calendar-event-ink);
@@ -256,11 +248,11 @@
 .tasknotes-plugin .tnc-item,
 .tasknotes-plugin :is(.tnc-strip-dot, .tnc-ym-dots > i) {
     --tn-calendar-event-mark: oklch(from var(--tnc-c, var(--tn-calendar-status-color, var(--tnc-accent))) clamp(var(--tn-calendar-mark-lightness-min), l, var(--tn-calendar-mark-lightness-max)) min(c, var(--tn-calendar-mark-chroma-max)) h / 1);
-    --tn-calendar-event-ink: oklch(from var(--tn-calendar-event-mark) var(--tn-calendar-ink-lightness) min(c, var(--tn-calendar-ink-chroma-max)) h);
+    --tn-calendar-event-ink: var(--tn-text-normal);
 }
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list).is-completed {
-    --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-tint), var(--tn-bg-primary));
+    --tn-calendar-event-fill: var(--tn-bg-primary);
     --tn-calendar-event-ink: var(--tn-text-muted);
     opacity: 1;
 }
@@ -271,12 +263,13 @@
     }
 }
 
-.tasknotes-plugin .tnc-item:not(.tnc-item--list):is(.fc-pattern-instance-event, .fc-recurring-event) {
-    border: 1px dashed color-mix(in oklch, var(--tn-calendar-event-mark) 40%, transparent);
+.tasknotes-plugin .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator):is(.fc-pattern-instance-event, .fc-recurring-event) {
+    border-style: dashed;
+    border-inline-start-style: solid;
 }
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list).fc-pattern-instance-event {
-    --tn-calendar-event-fill: color-mix(in oklch, var(--tn-calendar-event-mark) var(--tn-calendar-event-tint), var(--tn-bg-primary));
+    --tn-calendar-event-fill: var(--tn-bg-primary);
 }
 
 .tasknotes-plugin .tnc-dg .tnc-item:not(.tnc-item--list) {
@@ -313,11 +306,16 @@
 }
 
 .tasknotes-plugin .tnc-dg-day.is-other-month {
-    background: var(--tn-bg-secondary);
+    background: transparent;
+}
+
+.tasknotes-plugin .tnc-dg-num {
+    color: var(--tn-text-muted);
+    font-weight: var(--tn-font-weight-medium);
 }
 
 .tasknotes-plugin .tnc-dg-day.is-other-month .tnc-dg-num {
-    color: var(--tn-text-faint);
+    color: color-mix(in srgb, var(--tn-text-faint), transparent 40%);
 }
 
 .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
@@ -336,7 +334,7 @@
 }
 
 .tasknotes-plugin .tnc-item:not(.tnc-item--list) .tnc-item-time {
-    color: inherit;
+    color: var(--tn-text-muted);
     font-size: var(--tn-type-2xs);
     font-weight: var(--tn-font-weight-normal);
 }
@@ -626,7 +624,7 @@
 
 @media (hover: hover) {
 	.tasknotes-plugin .tnc .tnc-popover-body .tnc-item:not(.tnc-item--list):not(.tnc-item--indicator):not(.is-selected):not(.is-dragging):hover {
-	    background: color-mix(in oklch, var(--tn-calendar-event-mark) calc(var(--tn-calendar-event-saturation) + 8%), var(--tn-bg-primary));
+	    background: var(--tn-hover);
 	}
 
 }
