@@ -768,13 +768,49 @@ export abstract class TaskModal extends Modal {
 			this.expandModal();
 			return;
 		}
-		this.isExpanded = false;
-		setTaskModalDetailsCollapsed(
-			{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
-			true
+		this.animateModalResize(() => {
+			this.isExpanded = false;
+			setTaskModalDetailsCollapsed(
+				{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
+				true
+			);
+			this.containerEl.removeClass("expanded");
+			this.syncCompactLayout();
+		});
+	}
+
+	/**
+	 * Applies a layout change, then eases the modal from its old size to its new one.
+	 * A details pane that appears fades in once the modal has made room for it.
+	 */
+	private animateModalResize(change: () => void): void {
+		const modal = this.modalEl;
+		const reduceMotion = modal.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+		if (reduceMotion || typeof modal.animate !== "function") {
+			change();
+			return;
+		}
+		const before = modal.getBoundingClientRect();
+		const paneWasShown = this.splitRightColumn?.offsetParent != null;
+		change();
+		const after = modal.getBoundingClientRect();
+		if (Math.abs(before.width - after.width) < 1 && Math.abs(before.height - after.height) < 1) return;
+		const easing = "cubic-bezier(0.2, 0, 0, 1)";
+		modal.animate(
+			[
+				{ width: `${before.width}px`, height: `${before.height}px` },
+				{ width: `${after.width}px`, height: `${after.height}px` },
+			],
+			{ duration: 220, easing }
 		);
-		this.containerEl.removeClass("expanded");
-		this.syncCompactLayout();
+		if (!paneWasShown && this.splitRightColumn?.offsetParent != null) {
+			this.splitRightColumn.animate([{ opacity: 0 }, { opacity: 1 }], {
+				duration: 160,
+				delay: 120,
+				easing,
+				fill: "backwards",
+			});
+		}
 	}
 
 	/** A compact modal is the title and property row alone, until More fields opens the rest. */
@@ -1326,13 +1362,15 @@ export abstract class TaskModal extends Modal {
 	protected expandModal(): void {
 		if (this.isExpanded) return;
 
-		this.isExpanded = true;
-		this.containerEl.classList.add("expanded");
-		this.syncCompactLayout();
-		setTaskModalDetailsCollapsed(
-			{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
-			false
-		);
+		this.animateModalResize(() => {
+			this.isExpanded = true;
+			this.containerEl.classList.add("expanded");
+			this.syncCompactLayout();
+			setTaskModalDetailsCollapsed(
+				{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
+				false
+			);
+		});
 		// Measured while hidden, the title has no height.
 		if (this.titleInput) resizeTaskModalTitleTextarea(this.titleInput);
 	}
