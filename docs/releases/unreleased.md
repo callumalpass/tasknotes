@@ -254,7 +254,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Details editors keep their layout while typing and switch to the content-sensitive split after focus leaves the editor. Timeblock titles now wrap using the task editor's title control.
 - Long board headings reveal their complete names with keyboard or touch. Settings, shortcut help and statistics use tighter spacing, with compact accessible empty-period indicators.
 - Task keyboard actions now follow the card containing keyboard focus, including after closing a property picker and tabbing to another task.
-- Busy calendar days use expandable collision stacks instead of widening every day in the week. Today reveals its day, and narrow weeks offer persistent day navigation. Calendar overflow stays inside the visible pane when resized, with reachable Close controls, touch-sized rows and readable all-day titles.
+- Busy calendar days use expandable collision stacks instead of widening every day in the week. Today reveals its day. Week view fits the pane down to the width where it switches to three days, so it no longer scrolls sideways under a second row of day names. Calendar overflow stays inside the visible pane when resized, with reachable Close controls, touch-sized rows and readable all-day titles.
 - Editing a moved or resized timeblock now reads its current daily-note values, so saving its title does not restore old times.
 - Inline task status changes now support Undo, including reverse cycling with Shift-click. Current-task status and priority commands, legacy status toggles, and fallback priority and date edits also use the shared Undo path.
 - Selecting an adjacent-month day in the mini calendar now updates its displayed month and day grid together.

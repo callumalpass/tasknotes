@@ -461,7 +461,8 @@
 }
 
 .tasknotes-plugin .tnc-tg {
-    --tnc-col-min: 128px;
+    /* Narrow enough that a week fits wherever Week is shown; below 640px it becomes three days. */
+    --tnc-col-min: 80px;
     /* Overlapping events sit side by side until a column is too narrow to read. */
     --tnc-event-min-width: 30px;
     --tnc-bar-h: var(--tn-calendar-chip-height);
