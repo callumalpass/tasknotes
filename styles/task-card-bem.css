@@ -1429,13 +1429,23 @@ body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__bad
     display: none;
 }
 
-body .tasknotes-plugin .task-card.task-card--chevron-left .task-card__badges .task-card__chevron {
-    position: static;
-    left: auto;
-    top: auto;
+/* Left mode: the chevron leaves the badges and sits in the card's left gutter, level with the status. */
+body .tasknotes-plugin .task-card.task-card--chevron-left:not(.task-card--layout-inline) .task-card__badges .task-card__chevron {
+    position: absolute;
+    left: calc(-1 * (var(--tn-control-sm) + var(--tn-space-half)));
+    top: 0;
     transform: none;
-    width: var(--tn-touch-target);
-    height: var(--tn-touch-target);
+    width: var(--tn-control-sm);
+    min-width: var(--tn-control-sm);
+    height: var(--tn-board-control-size, var(--tn-touch-target));
+    min-height: 0;
+}
+
+/* The drag handle shares that gutter, so it drops below the chevron. */
+body:not(.is-mobile) .tn-tasknotesTaskList .task-card--reorderable.task-card--chevron-left:not(.task-card--layout-inline) > .task-card__main-row > .task-card__drag-handle {
+    top: auto;
+    bottom: 0;
+    transform: none;
 }
 
 body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__context-menu {

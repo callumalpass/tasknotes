@@ -60,3 +60,10 @@
     font-size: var(--tn-type-xs);
     padding: var(--tn-space-half) var(--tn-space-1);
 }
+
+/* With a fine pointer the widget's controls are as small as a list row's. */
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin.task-card-note-widget .task-card__main-row {
+        --tn-board-control-size: var(--tn-control-sm);
+    }
+}

@@ -271,7 +271,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
         --tn-board-control-size: var(--tn-control-sm);
     }
 
-    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges [role="button"]) {
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card, .tasknotes-plugin.task-card-note-widget) .task-card :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges [role="button"]) {
         min-width: var(--tn-control-sm);
         min-height: var(--tn-control-sm);
         width: auto;
