@@ -13,7 +13,8 @@ describe("Issue #1947: mobile left-chevron task cards", () => {
 
 		const narrow = css.slice(css.indexOf("Stacked card layout at every width"));
 		expect(narrow).toMatch(
-			/\.task-card\.task-card--chevron-left \.task-card__badges \.task-card__chevron\s*\{[^}]*position:\s*static;[^}]*left:\s*auto;[^}]*top:\s*auto;[^}]*transform:\s*none;[^}]*width:\s*var\(--tn-touch-target\);[^}]*height:\s*var\(--tn-touch-target\);/s
+			// Out of the badge row and into the reserved left gutter, level with the status
+			/\.task-card\.task-card--chevron-left:not\(\.task-card--layout-inline\) \.task-card__badges \.task-card__chevron\s*\{[^}]*position:\s*absolute;[^}]*left:\s*calc\(-1 \*[^}]*top:\s*0;[^}]*transform:\s*none;/s
 		);
 		expect(narrow).toMatch(/\.task-card__badges\s*\{[^}]*grid-column:\s*4;[^}]*grid-row:\s*2;[^}]*flex-wrap:\s*nowrap;/s);
 		expect(narrow).toMatch(/\.task-card__status-dot\s*\{[^}]*grid-column:\s*1;/s);
