@@ -275,6 +275,16 @@ msgctxt "recurrence occurrence limit"
 msgid "{count, plural, one {{recurrence} (# time)} other {{recurrence} (# times)}}"
 msgstr "{count, plural, other {{recurrence} (#회)}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence EXDATE exceptions"
+msgid "{count, plural, one {{recurrence}, except # date} other {{recurrence}, except # dates}}"
+msgstr "{count, plural, other {{recurrence}, 날짜 #개 제외}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence extra RDATE dates"
+msgid "{count, plural, one {{recurrence}, plus # extra date} other {{recurrence}, plus # extra dates}}"
+msgstr "{count, plural, other {{recurrence}, 추가 날짜 #개}}"
+
 #: src/ui/TimeBlockCard.ts
 msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
@@ -326,6 +336,11 @@ msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
 msgstr "{count, plural, other {✅ 작업 {count, number}개를 TaskNotes로 변환했습니다!}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail minutes past the hour"
+msgid "{count, plural, one {at minute {minutes}} other {at minutes {minutes}}}"
+msgstr "{count, plural, other {{minutes}분}}"
+
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
@@ -335,6 +350,26 @@ msgstr "{count, plural, other {작업 {count, number}개 변환 중...}}"
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, other {{count, number}개 작업을 포함한 파일 다운로드 완료: {filename}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weeks of year"
+msgid "{count, plural, one {in the {weeks} week of the year} other {in the {weeks} weeks of the year}}"
+msgstr "{count, plural, other {연중 주: {weeks}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of month"
+msgid "{count, plural, one {on the {days} day of the month} other {on the {days} days of the month}}"
+msgstr "{count, plural, other {월중 일: {days}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of year"
+msgid "{count, plural, one {on the {days} day of the year} other {on the {days} days of the year}}"
+msgstr "{count, plural, other {연중 일: {days}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail set positions"
+msgid "{count, plural, one {only the {positions} match in each period} other {only the {positions} matches in each period}}"
+msgstr "{count, plural, other {기간별 순서: {positions}}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -495,6 +530,21 @@ msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {1�
 msgctxt "recurrence daily interval"
 msgid "{interval, plural, =1 {Daily} other {Every # days}}"
 msgstr "{interval, plural, =1 {1일마다} other {#일마다}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence minutely interval"
+msgid "{interval, plural, =1 {Every minute} other {Every # minutes}}"
+msgstr "{interval, plural, =1 {매분} other {#분마다}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence secondly interval"
+msgid "{interval, plural, =1 {Every second} other {Every # seconds}}"
+msgstr "{interval, plural, =1 {매초} other {#초마다}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence hourly interval"
+msgid "{interval, plural, =1 {Hourly} other {Every # hours}}"
+msgstr "{interval, plural, =1 {매시간} other {#시간마다}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
@@ -715,6 +765,11 @@ msgstr "{provider} 새로고침 완료"
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
 msgstr "{recurrence} ({date}까지)"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence followed by one detail clause"
+msgid "{recurrence}, {detail}"
+msgstr "{recurrence}, {detail}"
 
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "default reminder timing summary"
@@ -1755,6 +1810,11 @@ msgstr "{date}에"
 msgctxt "services.notification.missed.whenTodayAt"
 msgid "at {time}"
 msgstr "{time}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail times"
+msgid "at {times}"
+msgstr "{times}에"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.atDue"
@@ -6904,6 +6964,11 @@ msgctxt "settings.defaults.basicDefaults.defaultTags.placeholder"
 msgid "important, urgent"
 msgstr "중요, 긴급"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail months"
+msgid "in {months}"
+msgstr "{months}에"
+
 #: src/settings/tabs/taskProperties/statusPropertyCard.ts
 msgctxt "settings.taskProperties.taskStatuses.placeholders.label"
 msgid "In progress"
@@ -7253,6 +7318,11 @@ msgstr "자연어 처리 패턴 및 날짜 파싱을 위한 언어"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
+msgid "last"
+msgstr "마지막"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence position last"
 msgid "last"
 msgstr "마지막"
 
@@ -8911,6 +8981,11 @@ msgstr "{day}"
 msgctxt "services.notification.missed.whenOnDayAt"
 msgid "on {day} at {time}"
 msgstr "{day} {time}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weekdays"
+msgid "on {days}"
+msgstr "{days}에"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
@@ -12386,6 +12461,11 @@ msgstr "텍스트"
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
 msgstr "이 반복 회차는 이미 완료, 건너뛰기 또는 일정 변경되었습니다."
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
+msgid "the {position} {weekday}"
+msgstr "{position} {weekday}"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.description"

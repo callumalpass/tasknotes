@@ -275,6 +275,16 @@ msgctxt "recurrence occurrence limit"
 msgid "{count, plural, one {{recurrence} (# time)} other {{recurrence} (# times)}}"
 msgstr "{count, plural, one {{recurrence} (# Mal)} other {{recurrence} (# Mal)}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence EXDATE exceptions"
+msgid "{count, plural, one {{recurrence}, except # date} other {{recurrence}, except # dates}}"
+msgstr "{count, plural, one {{recurrence}, ohne # Datum} other {{recurrence}, ohne # Daten}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence extra RDATE dates"
+msgid "{count, plural, one {{recurrence}, plus # extra date} other {{recurrence}, plus # extra dates}}"
+msgstr "{count, plural, one {{recurrence}, plus # weiteres Datum} other {{recurrence}, plus # weitere Daten}}"
+
 #: src/ui/TimeBlockCard.ts
 msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
@@ -326,6 +336,11 @@ msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
 msgstr "{count, plural, one {✅ {count, number} Aufgabe erfolgreich zu TaskNotes konvertiert!} other {✅ {count, number} Aufgaben erfolgreich zu TaskNotes konvertiert!}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail minutes past the hour"
+msgid "{count, plural, one {at minute {minutes}} other {at minutes {minutes}}}"
+msgstr "{count, plural, one {Minute: {minutes}} other {Minuten: {minutes}}}"
+
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
@@ -335,6 +350,26 @@ msgstr "{count, plural, one {{count, number} Aufgabe wird konvertiert...} other 
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, one {{filename} mit {count, number} Aufgabe heruntergeladen} other {{filename} mit {count, number} Aufgaben heruntergeladen}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weeks of year"
+msgid "{count, plural, one {in the {weeks} week of the year} other {in the {weeks} weeks of the year}}"
+msgstr "{count, plural, one {Kalenderwoche: {weeks}} other {Kalenderwochen: {weeks}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of month"
+msgid "{count, plural, one {on the {days} day of the month} other {on the {days} days of the month}}"
+msgstr "{count, plural, one {Tag des Monats: {days}} other {Tage des Monats: {days}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of year"
+msgid "{count, plural, one {on the {days} day of the year} other {on the {days} days of the year}}"
+msgstr "{count, plural, one {Tag des Jahres: {days}} other {Tage des Jahres: {days}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail set positions"
+msgid "{count, plural, one {only the {positions} match in each period} other {only the {positions} matches in each period}}"
+msgstr "{count, plural, one {Treffer je Zeitraum: {positions}} other {Treffer je Zeitraum: {positions}}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
@@ -495,6 +530,21 @@ msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Mo
 msgctxt "recurrence daily interval"
 msgid "{interval, plural, =1 {Daily} other {Every # days}}"
 msgstr "{interval, plural, =1 {Täglich} other {Alle # Tage}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence minutely interval"
+msgid "{interval, plural, =1 {Every minute} other {Every # minutes}}"
+msgstr "{interval, plural, =1 {Jede Minute} other {Alle # Minuten}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence secondly interval"
+msgid "{interval, plural, =1 {Every second} other {Every # seconds}}"
+msgstr "{interval, plural, =1 {Jede Sekunde} other {Alle # Sekunden}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence hourly interval"
+msgid "{interval, plural, =1 {Hourly} other {Every # hours}}"
+msgstr "{interval, plural, =1 {Stündlich} other {Alle # Stunden}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
@@ -715,6 +765,11 @@ msgstr "{provider} erfolgreich aktualisiert"
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
 msgstr "{recurrence} (bis {date})"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence followed by one detail clause"
+msgid "{recurrence}, {detail}"
+msgstr "{recurrence}; {detail}"
 
 #: src/settings/tabs/taskProperties/remindersPropertyCard.ts
 msgctxt "default reminder timing summary"
@@ -1756,6 +1811,11 @@ msgstr "Am {date}"
 msgctxt "services.notification.missed.whenTodayAt"
 msgid "at {time}"
 msgstr "um {time}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail times"
+msgid "at {times}"
+msgstr "um {times}"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.atDue"
@@ -6905,6 +6965,11 @@ msgctxt "settings.defaults.basicDefaults.defaultTags.placeholder"
 msgid "important, urgent"
 msgstr "wichtig, dringend"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail months"
+msgid "in {months}"
+msgstr "Monate: {months}"
+
 #: src/settings/tabs/taskProperties/statusPropertyCard.ts
 msgctxt "settings.taskProperties.taskStatuses.placeholders.label"
 msgid "In progress"
@@ -7256,6 +7321,11 @@ msgstr "Sprache für natürliche Sprachverarbeitungsmuster und Datumsanalyse"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
 msgid "last"
 msgstr "letzten"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence position last"
+msgid "last"
+msgstr "letzter"
 
 #: src/views/StatsView.ts
 msgctxt "views.stats.timeRanges.last30Days"
@@ -8912,6 +8982,11 @@ msgstr "am {day}"
 msgctxt "services.notification.missed.whenOnDayAt"
 msgid "on {day} at {time}"
 msgstr "am {day} um {time}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weekdays"
+msgid "on {days}"
+msgstr "Wochentage: {days}"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
@@ -12387,6 +12462,11 @@ msgstr "Text"
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
 msgstr "Dieses Vorkommen wurde bereits erledigt, übersprungen oder verschoben."
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
+msgid "the {position} {weekday}"
+msgstr "{position} {weekday}"
 
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.calendarView.defaultView.description"

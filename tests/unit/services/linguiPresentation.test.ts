@@ -54,6 +54,13 @@ describe("Lingui plugin presentation adapters", () => {
 		["FREQ=MONTHLY;BYDAY=MO", "Monthly on every Monday"],
 		["FREQ=MONTHLY;BYDAY=FR;BYSETPOS=2;INTERVAL=3", "Every 3 months on the 2nd Friday"],
 		["FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=29;INTERVAL=2", "Every 2 years on February 29"],
+		["DTSTART:20251230T090000Z;FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR", "Weekdays"],
+		["FREQ=DAILY;BYDAY=MO,WE", "Weekly on Monday and Wednesday"],
+		["FREQ=MONTHLY;BYMONTHDAY=1,15", "Monthly, on the 1st and 15th days of the month"],
+		["FREQ=YEARLY;BYMONTH=11;BYDAY=4TH", "Yearly, in November, on the 4th Thursday"],
+		["FREQ=DAILY;BYHOUR=9", "Daily, at 9:00 AM"],
+		["FREQ=HOURLY;COUNT=4", "Hourly (4 times)"],
+		["FREQ=DAILY\nEXDATE:20260101T090000Z,20260102T090000Z", "Daily, except 2 dates"],
 	])("renders a whole English recurrence phrase for %s", (rule, expected) => {
 		createI18nService();
 		expect(recurrenceDisplayText(rule)).toBe(expected);
@@ -64,7 +71,7 @@ describe("Lingui plugin presentation adapters", () => {
 		expect(recurrenceDisplayText("FREQ=DAILY;COUNT=" + count)).toBe("Daily (" + count + (count === 1 ? " time)" : " times)"));
 	});
 
-	it.each(["not a rule", "FREQ=DAILY;BYHOUR=9", "FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=30", "FREQ=DAILY;UNTIL=20261301", "FREQ=MONTHLY;BYDAY=MO;BYSETPOS=1.5", "FREQ=DAILY\nEXDATE:20260101T090000Z"])("preserves unsupported/malformed recurrence data: %s", rule => {
+	it.each(["not a rule", "FREQ=WEEKLY;BYDAY=XX", "FREQ=DAILY;UNTIL=20261301", "FREQ=MONTHLY;BYDAY=MO;BYSETPOS=1.5", "FREQ=DAILY;BYHOUR=25", "FREQ=DAILY\nEXRULE:FREQ=WEEKLY"])("shows unreadable recurrence data as stored: %s", rule => {
 		createI18nService();
 		expect(recurrenceDisplayText(rule)).toBe("Custom recurrence: " + rule);
 	});

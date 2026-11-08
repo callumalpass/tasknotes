@@ -59,6 +59,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Task rows no longer show an empty button where the "+N" overflow count sits when nothing is hidden.
 - Pickers are quieter: the search field keeps a light underline when focused, the highlighted row uses the same grey as Obsidian's suggestions, group labels have no divider line, and the keyboard hints are fainter.
 - The Start Here note no longer repeats its title as a heading under the note name.
+- Every valid recurrence rule now reads as words, such as **Weekdays**, **Yearly, in November, on the 4th Thursday** or **Daily, except 2 dates**, instead of showing the raw rule. Daily rules limited to certain weekdays, several days of the month, hours, minutes, week or day numbers, and excluded or extra dates are all described. Only a rule TaskNotes cannot read is shown as written.
 - TaskNotes no longer creates and opens a Start Here note on first install. Open it any time with the **Open the Start Here guide** command, or from the **Start Here guide** button in an empty task view.
 - In the agenda, each date number lines up with its weekday.
 - Match Create and Edit title styling.
