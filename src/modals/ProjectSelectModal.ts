@@ -249,9 +249,12 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 				fileData,
 				parseDisplayFieldsRow
 			);
-			for (const line of metadataRows) {
-				const metaEl = container.createDiv({ cls: "project-meta" });
-				metaEl.textContent = line;
+			// One quiet line of details, like the quick switcher; skip rows that only repeat the name.
+			const details = metadataRows.filter(
+				(line) => line !== file.basename && !line.endsWith(`: ${file.basename}`)
+			);
+			if (details.length > 0) {
+				container.createDiv({ cls: "project-meta", text: details.join(" · ") });
 			}
 		} catch (error) {
 			tasknotesLogger.error("Error rendering project suggestion:", {

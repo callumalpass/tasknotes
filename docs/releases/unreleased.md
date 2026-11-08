@@ -54,6 +54,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - In the calendar's Week, three-day and Day views, overlapping timed items sit side by side as separate items that can each be clicked and dragged, including in narrow panes. They are grouped into one stack only when each would be too narrow to read (about 30 pixels). The **Simultaneous events** limit still applies.
 - The calendar is calmer. Items are neutral cards with a thin border, and their status, priority or calendar colour shows only as a stripe on the leading edge. Weekends and days outside the month are no longer shaded, today is marked by its accent-coloured date number, and day numbers are quieter. Completed items lose their fill and use muted text, and recurring previews keep a dashed outline.
 - Integration and property cards in settings are quieter. Connection status is muted text with a small dot instead of a red or green pill, and card actions are plain Obsidian buttons without a shaded band.
+- The project picker reads like Obsidian's quick switcher: each row shows the note name and one muted line of details, and details that only repeat the name are left out.
 - Match Create and Edit title styling.
 - Use a single Undo confirmation, clear space above phone navigation for feedback, and quiet desktop task-note and Pomodoro-history delete controls until hover or keyboard focus.
 

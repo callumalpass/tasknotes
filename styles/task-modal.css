@@ -1079,9 +1079,11 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
 }
 
 .tasknotes-plugin.tn-modal .project-suggestion .project-meta {
+    overflow: hidden;
     color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
-    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* CodeMirror Project Suggestion Styles - Rich Metadata Display */
@@ -1471,31 +1473,10 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
    PROJECT SELECT MODAL
    ===================================================================== */
 
-/* Use consistent button system for project suggestions */
-.tasknotes-plugin .project-suggestion {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: var(--size-4-2);
-    border-radius: var(--radius-s);
-}
-
-@media (hover: hover) {
-    .tasknotes-plugin .project-suggestion:hover:not(:disabled):not([aria-disabled="true"]) {
-        background: var(--tn-interactive-hover);
-        border: none;
-        box-shadow: none;
-    }
-}
+/* Rows take their padding and hover from the suggestion item. */
 .tasknotes-plugin .project-name {
     font-weight: var(--font-medium);
     color: var(--text-normal);
-}
-
-.tasknotes-plugin .project-path {
-    font-size: var(--font-ui-smaller);
-    color: var(--text-muted);
-    margin-top: 2px;
 }
 
 /* Parts of the NLP input the parser recognised */
