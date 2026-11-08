@@ -109,6 +109,53 @@ describe("KanbanView recurring status drops", () => {
 		expect(mockProcessVaultFrontMatter).not.toHaveBeenCalled();
 	});
 
+	it.each([false, true])(
+		"keeps the dragged occurrence when a refresh timer fires (drag already active: %s)",
+		async (dragAlreadyActive) => {
+			jest.useFakeTimers();
+			try {
+				const shown = createTask();
+				let stored = shown;
+				const { internals, toggleRecurringTaskComplete } = makeView(() => stored);
+				internals.taskInfoCache.set(shown.path, shown);
+				internals.render = jest.fn(async () => {
+					internals.taskInfoCache.set(stored.path, stored);
+				});
+				internals.getEphemeralState = jest.fn(() => ({}));
+				internals.setEphemeralState = jest.fn();
+				internals.schedulePostDropRender = jest.fn(
+					Object.getPrototypeOf(internals).schedulePostDropRender.bind(internals)
+				);
+				internals.draggedTaskPath = dragAlreadyActive ? shown.path : null;
+
+				await internals.handleTaskUpdate(shown);
+				internals.draggedTaskPath = shown.path;
+				stored = createTask({
+					scheduled: "2026-10-26",
+					complete_instances: ["2026-10-19"],
+				});
+				await jest.advanceTimersByTimeAsync(150);
+
+				expect(internals.render).not.toHaveBeenCalled();
+				expect(internals.pendingRender).toBe(true);
+				expect(internals.updateDebounceTimer).toBeNull();
+				expect(internals.taskInfoCache.get(shown.path)).toBe(shown);
+				await internals.handleTaskDrop(shown.path, "done", null);
+				expect(toggleRecurringTaskComplete).not.toHaveBeenCalled();
+				expect(mockProcessVaultFrontMatter).not.toHaveBeenCalled();
+				expect(internals.schedulePostDropRender).toHaveBeenCalledTimes(1);
+
+				// Once the drag has ended, the ordinary refresh can catch up.
+				internals.draggedTaskPath = null;
+				await jest.advanceTimersByTimeAsync(650);
+				expect(internals.render).toHaveBeenCalledTimes(1);
+				expect(internals.taskInfoCache.get(shown.path)).toBe(stored);
+			} finally {
+				jest.useRealTimers();
+			}
+		}
+	);
+
 	it("still refreshes the board after a stale drop, so an optimistic card moves back", async () => {
 		const shown = createTask();
 		const { internals } = makeView(() => createTask({ complete_instances: ["2026-10-19"] }));

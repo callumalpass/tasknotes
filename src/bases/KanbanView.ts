@@ -4283,6 +4283,13 @@ export class KanbanView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
 			void (async () => {
+				// Match onDataUpdated: keep the dragged card and its occurrence cache
+				// intact, even if this timer was scheduled before the drag began.
+				if (this.draggedTaskPath) {
+					this.pendingRender = true;
+					this.updateDebounceTimer = null;
+					return;
+				}
 				// Respect render suppression — a drop is still in-flight.
 				// The post-drop render (schedulePostDropRender) will fire the
 				// guaranteed render once the writes have settled.

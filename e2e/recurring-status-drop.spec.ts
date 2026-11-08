@@ -169,6 +169,7 @@ test("a drop acting on an occurrence finished mid-drag changes nothing", async (
 	await expect(card("Weekly")).toBeVisible();
 
 	await pickUp(card("Weekly"));
+	await expect(card("Weekly")).toHaveClass(/kanban-view__card--dragging/);
 	await page.evaluate(async (path) => {
 		const plugin = (window as any).app.plugins.plugins.tasknotes;
 		await plugin.taskService.toggleRecurringTaskComplete(
@@ -176,6 +177,9 @@ test("a drop acting on an occurrence finished mid-drag changes nothing", async (
 		);
 	}, taskPath("Weekly"));
 	await expect.poll(async () => (await yaml("Weekly")).scheduled).toBe(nextWeek);
+	// Keep dragging beyond the task-update refresh debounce (150ms). A redraw
+	// here must not replace the dragged occurrence with the newly pending one.
+	await page.waitForTimeout(500);
 	await dropOn(column("done"));
 
 	await page.waitForTimeout(1500);
@@ -184,6 +188,31 @@ test("a drop acting on an occurrence finished mid-drag changes nothing", async (
 	expect(settled.scheduled).toBe(nextWeek);
 	expect(settled.status).toBe("open");
 	await expect(column("done").locator(`[data-task-path="${taskPath("Weekly")}"]`)).toHaveCount(0);
+});
+
+test("a cancelled drag applies the task update deferred during the drag", async () => {
+	await openBase(board);
+	await expect(card("Weekly")).toBeVisible();
+	await pickUp(card("Weekly"));
+	await expect(card("Weekly")).toHaveClass(/kanban-view__card--dragging/);
+	await page.evaluate(async (path) => {
+		const plugin = (window as any).app.plugins.plugins.tasknotes;
+		await plugin.taskService.toggleRecurringTaskComplete(
+			await plugin.cacheManager.getTaskInfo(path)
+		);
+	}, taskPath("Weekly"));
+	await expect.poll(async () => (await yaml("Weekly")).scheduled).toBe(nextWeek);
+	await page.waitForTimeout(500);
+	await expect(card("Weekly")).toHaveClass(/kanban-view__card--dragging/);
+
+	await page.keyboard.press("Escape");
+	await page.mouse.up();
+	await expect.poll(() => page.evaluate((path) => {
+		const view = (window as any).app.workspace.activeLeaf.view.controller.view;
+		return view.taskInfoCache.get(path)?.scheduled;
+	}, taskPath("Weekly"))).toBe(nextWeek);
+	await expect(card("Weekly")).not.toHaveClass(/kanban-view__card--dragging/);
+	expect((await yaml("Weekly")).complete_instances).toEqual([today]);
 });
 
 test("a completion landing after the drop's check cannot reopen the occurrence", async () => {
