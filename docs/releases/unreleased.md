@@ -36,3 +36,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2527) Fixed timeblock titles being invisible in light themes in the calendar's "+N more" popover for overlapping events, in month view and in list view. These places draw the timeblock without its colour fill, but the text stayed white. It now uses the theme's text colour there. Property-based calendar events had the same problem and are fixed too.
   - Thanks to @RumiaKitinari for reporting this
+- (#2531) Fixed Kanban boards jumping back to the left after a card was edited and saved while the board was scrolled sideways. Refreshing the board now keeps its horizontal and vertical scroll position along with each column's scroll position.
+  - Thanks to @petrabuchinger2025-code for reporting this
