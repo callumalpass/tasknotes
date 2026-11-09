@@ -486,7 +486,9 @@ test.describe('Settings', () => {
 
         const tab = settingsPage.getByRole('tab', { name: scenario.tab, exact: true, includeHidden: true });
         await selectTaskNotesSettingsTab(settingsPage, scenario.tab);
-        await expect(settingsPage.locator('.settings-view__tab-select')).toBeVisible();
+        // The redesign shows tabs at desktop width and a select in narrow panes.
+        const select = settingsPage.locator('.settings-view__tab-select');
+        await expect(await select.isVisible() ? select : tab).toBeVisible();
         await expect(tab).toHaveAttribute('aria-selected', 'true');
         await expect(settingsPage.locator('.settings-view__tab-content--active')).toBeVisible();
 
