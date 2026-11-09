@@ -129,7 +129,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Statistics use compact metric groups, settings distinguish sections and values more clearly, and inline task references and Pomodoro task selection use shared controls. Mini-calendar item pickers show the selected date, calendar resize feedback includes the resulting duration with Undo, and release notes put changes before announcements and notices.
 
 - Reworked the task create and edit modals. Status, priority, dates, recurrence and reminders are now labelled chips that show their current value, replacing the icons with a dot. The edit modal starts with the title, **Task information** is collapsed, and **Archive** and **Delete** moved into a **More actions** (⋯) menu beside **Open note**. Empty field rows are more compact.
-- The task create and edit modals share one layout. On screens 900px and wider, the Markdown details editor fills a side pane, including when it is empty. With natural language input on, the create modal opens compact, with only the input, the property chips and the buttons, and **More fields** eases it open to the full layout. Property chips and buttons are a compact row of controls the same height as Obsidian's buttons, and field rows no longer have boxes around them. Below 900px the form is one column, and phones and narrow windows use a bottom sheet that keeps the view behind it in sight.
+- The task create and edit modals share one layout. On screens 900px and wider, the Markdown details editor fills a side pane, including when it is empty. With natural language input on, the create modal opens compact, with only the input, the property chips and the buttons, and **More fields** eases it open to the full layout (on phones it switches without animating). Property chips and buttons are a compact row of controls the same height as Obsidian's buttons, and field rows no longer have boxes around them. Below 900px the form is one column, and phones and narrow windows use a bottom sheet that keeps the view behind it in sight.
 - The task title is now a Markdown editor, with link and tag completion and Obsidian's editor commands. It stays on one line, and Enter or Tab moves to **Details**. With natural language input on, **More fields** shows the parsed title in an editable **Title** field.
 - The edit modal opens with **More fields** showing when any of its fields has a value.
 - In the task modals, a task's projects appear as a chip in the property row, which lists them and adds or removes them, and under **Projects** in **More fields**. Subtasks and **Blocked by** / **Blocking** tasks are single-line rows with short dates, matching narrow task lists; on narrow screens they use the full width of the form.
@@ -149,10 +149,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Keep project selectors focused when opened immediately after a task form, so Escape cancels the selector without closing the form.
-- Skip task-modal resize animations on mobile while preserving compact Create, More fields and collapse.
-
-- Keep subtask expand controls separate from the task options button on rows without metadata, while preserving metadata space in narrow stacked rows.
-  - Thanks to @iantierney for the subtask sorting report in #2394.
 
 - Obsidian's editor commands and shortcuts work in the task modal's Markdown editors. Bold, Italic and Insert link did nothing there, and Follow link failed with an error. Plugins that use the active editor, such as Templater, now get the full editor.
 - Keep scheduled and due dates visible together in narrow Kanban cards and phone task lists by allowing their text to fit before moving dates into the metadata disclosure.
