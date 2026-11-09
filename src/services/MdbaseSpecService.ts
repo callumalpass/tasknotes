@@ -6,7 +6,12 @@ import { Modal, normalizePath, type TAbstractFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
 import { FieldMapper } from "./FieldMapper";
-import { hasLegacyFieldsSchema, isKnownLegacySupport, recognizeLegacyTaskType } from "./mdbase/legacyRecognition";
+import {
+	hasLegacyFieldsSchema,
+	isKnownLegacySupport,
+	legacyRecognitionSettings,
+	recognizeLegacyTaskType,
+} from "./mdbase/legacyRecognition";
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
@@ -487,7 +492,8 @@ export class MdbaseSpecService {
 		if (exclusive && unrelatedTypes.length > 0) return null;
 
 		const content = await adapter.read(typePath);
-		if (!recognizeLegacyTaskType(content, this.plugin.settings)) return null;
+		const candidates = legacyRecognitionSettings(this.plugin.settings, this.plugin.savedSettingsSnapshot);
+		if (!recognizeLegacyTaskType(content, candidates)) return null;
 		// All shipped v4 writers name this type task; exact writer bytes can be invalid YAML.
 		return { path: typePath, content, typeName: "task" };
 	}

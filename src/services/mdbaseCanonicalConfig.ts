@@ -252,10 +252,13 @@ export function applyCanonicalTaskTypeToSettings(
 	}
 
 	const filenameFormat = title?.filename_format;
-	if (isTaskFilenameFormat(filenameFormat)) {
+	// Title filenames ignore the format, and the writer records "title" for them.
+	// Keep the saved format so turning off title filenames restores it.
+	if (
+		isTaskFilenameFormat(filenameFormat) &&
+		!(modelConfig.storeTitleInFilename && filenameFormat === "title")
+	) {
 		settings.taskFilenameFormat = filenameFormat;
-	} else if (modelConfig.storeTitleInFilename) {
-		settings.taskFilenameFormat = "title";
 	}
 	settings.customFilenameTemplate =
 		typeof title?.custom_filename_template === "string"
@@ -582,7 +585,8 @@ function mergeResolvedUserFields(
 	}>
 ): UserMappedField[] {
 	return resolved.map((field) => {
-		const previous = existing.find((candidate) => candidate.key === field.key);
+		// Saved keys may carry whitespace that settings load trims (or the type kept).
+		const previous = existing.find((candidate) => candidate.key.trim() === field.key.trim());
 		return {
 			...field,
 			id: previous?.id ?? field.id,

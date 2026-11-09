@@ -122,6 +122,7 @@ class HistoricalTaskTypeRenderer {
 			type: "date",
 			description: "Target recurrence date for a materialized occurrence note.",
 		});
+		this.addRecurrenceOriginalDateField(lines);
 		this.addField(lines, "tags", { type: "list", items: { type: "string" }, tn_role: "tags" });
 
 		// Complex nested fields
@@ -251,6 +252,9 @@ class HistoricalTaskTypeRenderer {
 		lines.push(`${pad}${name}:`);
 		this.writeFieldProps(lines, def, indent + 2);
 	}
+
+	/** Absent from the 4.12.0 writer; 4.15.0 added it (#2396). */
+	addRecurrenceOriginalDateField(_lines: string[]): void {}
 
 	addRoleField(
 		lines: string[],
@@ -1973,6 +1977,14 @@ interface FieldDef {
 	};
 }
 
+/** 4.15.0 through 4.18.0: the 4.12.0 writer plus the moved-occurrence original date. */
+function historical16(this: HistoricalTaskTypeRenderer, lines: string[]): void {
+	this.addRoleField(lines, "recurrenceOriginalDate", {
+		type: "date",
+		description: "Original rule date of a pending moved virtual recurring occurrence.",
+	});
+}
+
 function yamlQuote(value: string): string {
 	const escaped = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 	return `"${escaped}"`;
@@ -2033,6 +2045,7 @@ const writers = [
 	{ version: "4.9.1", methods: { buildTaskTypeDef: historical14 } },
 	{ version: "4.10.0", methods: { buildTaskTypeDef: historical15 } },
 	{ version: "4.12.0", methods: {} },
+	{ version: "4.15.0", methods: { addRecurrenceOriginalDateField: historical16 } },
 ];
 
 export function* renderHistoricalTaskTypes(

@@ -8,6 +8,7 @@ import YAML from "yaml";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import {
 	applyCanonicalTaskTypeToSettings,
+	buildTaskNotesModelConfig,
 	mergeCanonicalTaskTypeDocument,
 	parseMdbaseTaskTypeDocument,
 	validateCanonicalTaskType,
@@ -252,6 +253,28 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		expect(merged).toContain("name: task # keep this comment");
 		expect(merged).toContain("User-maintained notes.");
 	});
+	it("round-trips the saved filename format and user field identity on import", () => {
+		const settings = clone(DEFAULT_SETTINGS);
+		settings.storeTitleInFilename = true;
+		settings.taskFilenameFormat = "zettel";
+		// v4 saved keys with surrounding whitespace; the type stores them trimmed.
+		settings.userFields = [{ id: "effort-id", displayName: "Effort level", key: " effort ", type: "number" }];
+		const modelConfig = buildTaskNotesModelConfig(settings);
+		modelConfig.userFields = modelConfig.userFields.map((field) => ({ ...field, key: field.key.trim() }));
+		const resources = buildTaskNotesMdbaseResources({
+			tasksFolder: settings.tasksFolder,
+			modelConfig,
+			title: { filenameFormat: "title" },
+		});
+
+		applyCanonicalTaskTypeToSettings(settings, resources.type);
+
+		expect(settings.taskFilenameFormat).toBe("zettel");
+		expect(settings.userFields).toEqual([
+			expect.objectContaining({ id: "effort-id", displayName: "Effort level", key: "effort" }),
+		]);
+	});
+
 });
 
 function initialDocumentYaml(value: Record<string, unknown>): string {

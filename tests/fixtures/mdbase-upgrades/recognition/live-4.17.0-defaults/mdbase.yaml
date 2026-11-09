@@ -1,0 +1,8 @@
+spec_version: "0.2.0"
+name: "TaskNotes"
+description: "Task collection managed by TaskNotes for Obsidian"
+settings:
+  types_folder: "_types"
+  default_strict: false
+  exclude:
+    - "_types"

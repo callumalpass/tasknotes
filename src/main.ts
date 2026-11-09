@@ -117,6 +117,7 @@ import { TaskContextMenu } from "./components/TaskContextMenu";
 import {
 	LoadedSettingsData,
 	buildSettingsDataForSave,
+	buildSavedSettingsSnapshot,
 	buildSettingsFromLoadedData,
 	loadPluginSettingsDataWithRetry,
 	pluginDataFileExists,
@@ -148,6 +149,8 @@ function getSubmenu(item: unknown): Menu {
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
+	/** Settings as saved before this session's load-time migrations (mdbase legacy recognition only). */
+	savedSettingsSnapshot: TaskNotesSettings | null = null;
 	i18n: I18nService;
 	private languagePackController?: LanguagePackController;
 	private settingsLoadCompromised = false;
@@ -844,6 +847,7 @@ export default class TaskNotesPlugin extends Plugin {
 			this.deviceLocalStorageReady = true;
 		}
 
+		this.savedSettingsSnapshot = buildSavedSettingsSnapshot(loadedData);
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(loadedData);
 		if (deviceLocal) Object.assign(settings, deviceLocal);
 		this.settings = settings;

@@ -39,7 +39,7 @@ export function resolveRetainedUserFields(
 	const fields = new Map(resolved.map((field) => [field.key, field]));
 	for (const [key, schema] of Object.entries(properties)) {
 		if (reserved.has(key) || fields.has(key)) continue;
-		const previous = existing.find((field) => field.key === key);
+		const previous = existing.find((field) => field.key.trim() === key.trim());
 		if (legacyTextSchema(schema) && (previous?.type === "text" || (!previous && generator.legacy_compatibility === true))) {
 			const defaultValue = schemaDefault(schema);
 			fields.set(key, {

@@ -17,7 +17,7 @@ new ones instead.
   (pack rc.17), then loaded again by beta.3, which did not recognize the updated
   type and wrote a second, rc.3 `tasknotes-task` type and rc.3 support files.
 
-- `recognition/`: independent historical writer captures and native Obsidian before-upgrade collections from the migration audit. Each directory records its source and contains exact metadata bytes; live captures also retain saved settings and unchanged task records. Used by `mdbaseLegacyRecognition.test.ts`.
+- `recognition/`: independent historical writer captures and native Obsidian before-upgrade collections from the migration audit. Each directory records its source and contains exact metadata bytes; live captures also retain saved settings and unchanged task records. Used by `mdbaseLegacyRecognition.test.ts`. `writer-4.15.0` was rendered from tag 4.15.0 source; `live-4.17.0-defaults`, `live-4.13.7-legacy-userfield` and `live-4.9.2-padded-userfield` were captured by the upgrade fuzzer (`scripts/upgrade-fuzz/`) from shipped builds in an isolated Obsidian instance.
 
 `-default` fixtures use each build's default settings; `-custom` fixtures map
 `due` to `deadline`, add a number property and a skipped `cancelled` status.

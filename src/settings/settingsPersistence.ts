@@ -301,6 +301,23 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 	};
 }
 
+/**
+ * Settings exactly as an earlier version saved them, merged over defaults but
+ * without this version's load-time migrations. Used only to recognize metadata
+ * that version generated; never use it as the plugin's settings.
+ */
+export function buildSavedSettingsSnapshot(data: LoadedSettingsData | null): TaskNotesSettings | null {
+	if (!data) return null;
+	return {
+		...DEFAULT_SETTINGS,
+		...data,
+		fieldMapping: { ...DEFAULT_SETTINGS.fieldMapping, ...(data.fieldMapping || {}) },
+		customStatuses: data.customStatuses || DEFAULT_SETTINGS.customStatuses,
+		customPriorities: data.customPriorities || DEFAULT_SETTINGS.customPriorities,
+		userFields: data.userFields || DEFAULT_SETTINGS.userFields,
+	};
+}
+
 export function buildSettingsDataForSave(
 	loadedData: Record<string, unknown> | null | undefined,
 	settings: TaskNotesSettings
