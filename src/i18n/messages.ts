@@ -88,6 +88,7 @@ export const messages = {
 "views.basesCalendar.settings.layout.initialScrollTimePlaceholder": msg({ message: "HH:mm:ss (e.g., 08:00:00)", context: "views.basesCalendar.settings.layout.initialScrollTimePlaceholder" }),
 "views.basesCalendar.settings.layout.minimumEventHeight": msg({ message: "Minimum event height (px)", context: "views.basesCalendar.settings.layout.minimumEventHeight" }),
 "views.basesCalendar.settings.layout.slotHeight": msg({ message: "Time slot height (px)", context: "views.basesCalendar.settings.layout.slotHeight" }),
+"views.basesCalendar.settings.layout.pinchZoom": msg({ message: "Pinch to resize time slots", context: "views.basesCalendar.settings.layout.pinchZoom" }),
 "views.basesCalendar.settings.layout.slotEventOverlap": msg({ message: "Allow events to overlap", context: "views.basesCalendar.settings.layout.slotEventOverlap" }),
 "views.basesCalendar.settings.layout.enableSearch": msg({ message: "Enable search box", context: "views.basesCalendar.settings.layout.enableSearch" }),
 "views.basesCalendar.settings.layout.eventMaxStack": msg({ message: "Simultaneous events (0 = no limit)", context: "views.basesCalendar.settings.layout.eventMaxStack" }),

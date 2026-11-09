@@ -2,7 +2,7 @@ export const CALENDAR_END_TIME_MAX_HOUR = 48;
 
 /** Bounds for the height of one time slot in the time grid, in pixels. */
 export const CALENDAR_SLOT_HEIGHT_MIN = 5;
-export const CALENDAR_SLOT_HEIGHT_MAX = 60;
+export const CALENDAR_SLOT_HEIGHT_MAX = 96;
 
 export type CalendarTimeValidationOptions = {
 	maxHour?: number;

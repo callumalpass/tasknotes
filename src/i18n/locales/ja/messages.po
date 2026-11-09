@@ -9567,6 +9567,11 @@ msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "日時を選択…"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.pinchZoom"
+msgid "Pinch to resize time slots"
+msgstr "ピンチで時間枠の高さを変更"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Pinned Columns"

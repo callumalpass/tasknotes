@@ -134,6 +134,8 @@ const CALENDAR_DATA_UPDATE_DEBOUNCE_MS = 5000;
 const CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS = 250;
 const CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS = 2000;
 const DEFAULT_CALENDAR_EVENT_ORDER = "start,-duration,allDay,title";
+/** Device-local slot heights set by pinching, by the configured height they replace. */
+const PINCHED_SLOT_HEIGHTS_KEY = "tasknotes-calendar-pinched-slot-heights";
 export const TASKNOTES_CALENDAR_SORT_INDEX = "tasknotesSortIndex";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -326,6 +328,7 @@ export class CalendarView extends BasesViewBase {
 		slotMaxTime: string;
 		slotDuration: string;
 		slotHeight: number;
+		pinchZoom: boolean;
 		snapDuration: string;
 		firstDay: number;
 		weekNumbers: boolean;
@@ -400,6 +403,7 @@ export class CalendarView extends BasesViewBase {
 			),
 			slotDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00"),
 			slotHeight: this.clampSlotHeight(calendarSettings.slotHeight),
+			pinchZoom: true,
 			snapDuration: this.validateTimeValue(calendarSettings.slotDuration, "00:30:00"),
 			scrollTime: this.validateTimeValue(calendarSettings.scrollTime, "08:00:00"),
 			firstDay: calendarSettings.firstDay,
@@ -757,6 +761,22 @@ export class CalendarView extends BasesViewBase {
 		return Math.min(CALENDAR_SLOT_HEIGHT_MAX, Math.max(CALENDAR_SLOT_HEIGHT_MIN, Math.round(parsed)));
 	}
 
+	/** The height last pinched on this device from `configured`, which a new configured height replaces. */
+	private pinchedSlotHeight(configured: number): number {
+		const stored: unknown = this.plugin.app?.loadLocalStorage(PINCHED_SLOT_HEIGHTS_KEY);
+		return isRecord(stored) && Object.prototype.hasOwnProperty.call(stored, configured)
+			? this.clampSlotHeight(stored[configured])
+			: configured;
+	}
+
+	private storePinchedSlotHeight(height: number): void {
+		const stored: unknown = this.plugin.app?.loadLocalStorage(PINCHED_SLOT_HEIGHTS_KEY);
+		this.plugin.app?.saveLocalStorage(PINCHED_SLOT_HEIGHTS_KEY, {
+			...(isRecord(stored) ? stored : {}),
+			[this.viewOptions.slotHeight]: height,
+		});
+	}
+
 	/**
 	 * Read event toggle options from config.
 	 * These should be re-read on every render to respond to toggle changes.
@@ -916,6 +936,7 @@ export class CalendarView extends BasesViewBase {
 					this.viewOptions.slotHeight
 				)
 			);
+			this.viewOptions.pinchZoom = this.getConfigOption("pinchZoom", this.viewOptions.pinchZoom);
 			this.viewOptions.snapDuration = this.validateTimeValue(
 				this.getConfigOption<string | undefined>("snapDuration", undefined),
 				this.viewOptions.slotDuration
@@ -1220,7 +1241,8 @@ export class CalendarView extends BasesViewBase {
 			...basesLayoutOptions<CalendarEventProps>(options, {
 				embedded: this.getEffectiveHeightMode() === "auto",
 			}),
-			slotHeight: options.slotHeight,
+			slotHeight: this.pinchedSlotHeight(options.slotHeight),
+			onSlotHeightChange: (height) => this.storePinchedSlotHeight(height),
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,

@@ -24,7 +24,21 @@ describe("Calendar time slot height", () => {
 
 	it("clamps a slot height outside the supported range", () => {
 		expect(calendarOptionsFor({ slotHeight: 1 }).slotHeight).toBe(5);
-		expect(calendarOptionsFor({ slotHeight: 500 }).slotHeight).toBe(60);
+		expect(calendarOptionsFor({ slotHeight: 500 }).slotHeight).toBe(96);
+	});
+
+	it("offers pinching unless the view turns it off", () => {
+		expect(calendarOptionsFor({}).pinchZoom).toBe(true);
+		expect(calendarOptionsFor({ pinchZoom: false }).pinchZoom).toBe(false);
+	});
+
+	it("keeps a pinched height on the device until the configured height changes", () => {
+		const localStorage = new Map<string, unknown>();
+		const options = calendarOptionsFor({ slotHeight: 30 }, { localStorage });
+		options.onSlotHeightChange?.(48);
+
+		expect(calendarOptionsFor({ slotHeight: 30 }, { localStorage }).slotHeight).toBe(48);
+		expect(calendarOptionsFor({ slotHeight: 20 }, { localStorage }).slotHeight).toBe(20);
 	});
 
 	it("falls back to the saved height when the value is not a number", () => {

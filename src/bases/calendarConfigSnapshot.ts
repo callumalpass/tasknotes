@@ -23,6 +23,7 @@ const CALENDAR_CONFIG_SNAPSHOT_KEYS = [
 	"slotMaxTime",
 	"slotDuration",
 	"slotHeight",
+	"pinchZoom",
 	"snapDuration",
 	"firstDay",
 	"weekNumbers",

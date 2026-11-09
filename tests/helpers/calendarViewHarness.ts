@@ -13,7 +13,7 @@ type CalendarViewInternals = {
 /** A CalendarView with the given Bases view config, mounted in a plain or embedded container. */
 export function createConfiguredCalendarView(
 	values: Record<string, unknown>,
-	{ embedded = false, sort = [] as unknown[] } = {}
+	{ embedded = false, sort = [] as unknown[], localStorage = new Map<string, unknown>() } = {}
 ): CalendarView {
 	const host = document.createElement("div");
 	if (embedded) host.className = "internal-embed markdown-embed";
@@ -25,6 +25,10 @@ export function createConfiguredCalendarView(
 		settings: { calendarViewSettings: { ...DEFAULT_CALENDAR_VIEW_SETTINGS }, uiLanguage: "en" },
 		fieldMapper: {},
 		i18n: { translate: (key: string) => key },
+		app: {
+			loadLocalStorage: (key: string) => localStorage.get(key),
+			saveLocalStorage: (key: string, value: unknown) => localStorage.set(key, value),
+		},
 	} as unknown as TaskNotesPlugin;
 
 	const view = new CalendarView({}, container, plugin);
@@ -41,7 +45,7 @@ export function createConfiguredCalendarView(
 /** The options CalendarView passes to the calendar for the given Bases view config. */
 export function calendarOptionsFor(
 	values: Record<string, unknown>,
-	context: { embedded?: boolean; sort?: unknown[] } = {}
+	context: { embedded?: boolean; sort?: unknown[]; localStorage?: Map<string, unknown> } = {}
 ): Partial<CalendarOptions<CalendarEventProps>> {
 	const view = createConfiguredCalendarView(values, context);
 	return (view as unknown as CalendarViewInternals).buildCalendarOptions();

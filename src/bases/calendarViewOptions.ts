@@ -395,6 +395,12 @@ function buildCalendarTimeGridOptions(plugin: TaskNotesPlugin, t: Translate): Ba
 			step: 1,
 		},
 		{
+			type: "toggle",
+			key: "pinchZoom",
+			displayName: t("layout.pinchZoom"),
+			default: true,
+		},
+		{
 			type: "text",
 			key: "scrollTime",
 			displayName: t("layout.initialScrollTime"),
