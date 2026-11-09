@@ -1,7 +1,7 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.6 dist/calendar.css (MIT, see
- * LICENSE beside this file; upstream sha256 725742e962757e54a56f7e67b823f017
- * 993bb705f17e181233173d1f3e9ddfe1). build-css.mjs bundles this file in place
+ * Pinned host copy of @tasknotes/calendar 0.1.10 dist/calendar.css (MIT, see
+ * LICENSE beside this file; upstream sha256 652876bf3041281974a22ab92f9d8950
+ * f95de2cbb3df033b120980d633e9ef38). build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
  * short hex colours expanded; !important replaced by specificity, source order
@@ -31,6 +31,12 @@
 	--tnc-ok: var(--tnc-theme-ok, #16a34a);
 	--tnc-amber: var(--tnc-theme-amber, #d97706);
 	--tnc-off: color-mix(in srgb, var(--tnc-text) 3.5%, transparent);
+	--tnc-hover: var(--tnc-theme-hover, var(--tnc-surface-2));
+	--tnc-active: var(--tnc-theme-active, var(--tnc-surface-3));
+	--tnc-selected: var(--tnc-theme-selected, var(--tnc-accent-soft));
+	--tnc-focus: var(--tnc-theme-focus, var(--tnc-accent));
+	--tnc-motion: var(--tnc-theme-motion, 100ms);
+	--tnc-drag-opacity: var(--tnc-theme-drag-opacity, 0.4);
 	--tnc-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 	--tnc-radius: 6px;
 	/* Time-grid share for tracked ("actual") items where they overlap planned ones. */
@@ -118,8 +124,11 @@
 	font-size: var(--tnc-font-size);
 	line-height: 1.2;
 }
-.tnc-btn:hover {
-	background: var(--tnc-surface-3);
+@media (hover: hover) {
+	.tnc-btn:hover {
+		background: var(--tnc-surface-3);
+	}
+
 }
 .tnc-btn[aria-pressed="true"] {
 	background: var(--tnc-accent-soft);
@@ -172,10 +181,12 @@
 	cursor: pointer;
 	text-align: inherit;
 }
-.tnc-navlink:hover {
-	text-decoration: underline;
-}
+@media (hover: hover) {
+	.tnc-navlink:hover {
+		text-decoration: underline;
+	}
 
+}
 /* ---------------------------------------------------------------- items */
 .tnc-item {
 	--c: var(--tnc-c, var(--tnc-item-c));
@@ -266,6 +277,7 @@
 
 /* timed (time grid) */
 .tnc-item--timed {
+	container-type: size;
 	padding: 2px 5px 2px 6px;
 	background: var(--tnc-bg, color-mix(in srgb, var(--c) 14%, var(--tnc-surface)));
 	border: 1px solid var(--tnc-border, color-mix(in srgb, var(--c) 34%, transparent));
@@ -281,7 +293,7 @@
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 6;
 	white-space: normal;
-	overflow-wrap: anywhere;
+	overflow-wrap: normal;
 }
 .tnc-item--timed.is-short {
 	padding-top: 0;
@@ -301,8 +313,18 @@
 .tnc-item--timed.is-short .tnc-item-time {
 	flex: none;
 }
-.tnc-item--timed.is-short .tnc-item-time-end {
-	display: none;
+@container (max-height: 50px) and (max-width: 239px) {
+	.tnc-item--timed .tnc-item-time {
+		display: none;
+	}
+}
+@container (max-width: 109px) {
+	.tnc-item--timed .tnc-item-time-end {
+		display: none;
+	}
+}
+.tnc:is(.tnc-dragging-resize-start, .tnc-dragging-resize-end) .tnc-item--timed.is-dragging .tnc-item-time-end {
+	display: inline;
 }
 .tnc-item--timed.is-cont-start {
 	border-top-left-radius: 0;
@@ -368,9 +390,15 @@
 	align-items: center;
 	white-space: nowrap;
 }
-.tnc-item--dot:hover,
 .tnc-item--dot.is-hover {
 	background: var(--tnc-surface-3);
+}
+
+@media (hover: hover) {
+	.tnc-item--dot:hover {
+		background: var(--tnc-surface-3);
+	}
+
 }
 .tnc-item--dot .tnc-item-main {
 	gap: 4px;
@@ -462,9 +490,12 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.tnc-more:hover {
-	background: var(--tnc-surface-3);
-	color: var(--tnc-text);
+@media (hover: hover) {
+	.tnc-more:hover {
+		background: var(--tnc-surface-3);
+		color: var(--tnc-text);
+	}
+
 }
 .tnc-more--stack {
 	height: auto;
@@ -472,6 +503,45 @@
 	text-align: center;
 	background: var(--tnc-surface-3);
 	z-index: 30;
+}
+.tnc-more.tnc-more--collision {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-content: center;
+	align-items: stretch;
+	justify-content: center;
+	gap: 2px 4px;
+	padding: 2px 4px;
+	border: 1px solid var(--tnc-line-strong);
+	border-radius: var(--tnc-radius);
+	background: var(--tnc-surface-2);
+	text-align: start;
+	white-space: normal;
+}
+.tnc-collision-count {
+	color: var(--tnc-text);
+	font-weight: 650;
+	white-space: nowrap;
+	flex: none;
+	line-height: 1.3;
+}
+.tnc-collision-range {
+	min-width: 0;
+	text-align: end;
+	color: var(--tnc-text);
+	font-size: var(--tnc-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.tnc-item--indicator .tnc-item-title {
+	white-space: nowrap;
+	overflow-wrap: normal;
+	text-overflow: ellipsis;
+	display: block;
+}
+.tnc-item--indicator .tnc-item-main {
+	min-width: 0;
 }
 
 /* ------------------------------------------------------------ time grid */
@@ -486,6 +556,43 @@
 	min-height: 0;
 	overflow: auto;
 	overscroll-behavior: contain;
+}
+.tnc-tg-day-navigation {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	flex: none;
+}
+.tnc-tg-day-navigation[hidden] {
+	display: none;
+}
+.tnc-tg-day-navigation .is-offscreen {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.tnc-more--collision {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-content: center;
+	align-items: center;
+	gap: 2px 4px;
+	padding: 2px 4px;
+	min-height: 40px;
+	white-space: normal;
+	text-align: start;
+}
+.tnc-collision-title {
+	grid-column: 1 / -1;
+	flex: 1;
+	min-width: 0;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--tnc-text);
+	font-weight: 500;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	overflow: hidden;
 }
 .tnc--height-auto .tnc-tg-scroll {
 	overflow: visible;
@@ -522,6 +629,7 @@
 	font-size: 10px;
 }
 .tnc-dh {
+	container-type: inline-size;
 	min-width: 0;
 	padding: 5px 6px 5px 7px;
 	border-left: 1px solid var(--tnc-line);
@@ -549,6 +657,18 @@
 	color: var(--tnc-accent-text);
 	border-radius: 999px;
 	padding: 0 7px;
+}
+@container (max-width: 64px) {
+	.tnc-dh-label {
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		width: 100%;
+	}
+	.tnc-dh-link {
+		display: block;
+		width: 100%;
+	}
 }
 .tnc-cap {
 	position: relative;
@@ -607,6 +727,10 @@
 }
 .tnc-tg-body {
 	position: relative;
+}
+.tnc-tg--pinch .tnc-tg-body {
+	/* Pinches rescale the grid rather than zoom the page. */
+	touch-action: pan-x pan-y;
 }
 .tnc-gutter {
 	border-right: 1px solid var(--tnc-line);
@@ -826,6 +950,9 @@
 	overflow: hidden;
 	pointer-events: none;
 }
+.tnc-dg-dots[hidden] {
+	display: none;
+}
 .tnc-dg-dots.is-unlimited {
 	position: static;
 	padding: 0 6px 4px;
@@ -849,6 +976,45 @@
 	color: var(--tnc-muted);
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
+}
+
+.tnc-dg--dots .tnc-dg-top {
+	justify-content: center;
+}
+
+.tnc-dg--dots .tnc-dg-dots {
+	justify-content: center;
+	align-content: flex-start;
+}
+
+.tnc-dg--chips {
+	--tnc-chip-h: 20px;
+}
+.tnc-dg--chips .tnc-dg-dots {
+	left: 2px;
+	right: 2px;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	justify-content: flex-start;
+}
+.tnc-dg--chips .tnc-dg-dots > .tnc-item--indicator {
+	width: 100%;
+	height: var(--tnc-chip-h);
+	border: 0;
+	border-radius: var(--tnc-radius);
+	padding: 0 2px;
+	color: var(--tnc-fg, var(--tnc-text));
+	font-size: 10px;
+	line-height: var(--tnc-chip-h);
+}
+.tnc-dg--chips .tnc-item-title {
+	display: block;
+	white-space: nowrap;
+	text-overflow: clip;
+}
+.tnc-dg--chips .tnc-dg-dots-more {
+	line-height: var(--tnc-chip-h);
 }
 
 /* ------------------------------------------------------------------ list */
@@ -888,8 +1054,11 @@
 	border-radius: 0;
 	font-size: var(--tnc-font-size);
 }
-.tnc-item--list:hover {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-item--list:hover {
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-item--list .tnc-item-main {
 	gap: 10px;
@@ -987,8 +1156,11 @@
 .tnc-strip-today[hidden] {
 	display: none;
 }
-.tnc-strip-today:hover {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-strip-today:hover {
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-strip-slot {
 	display: flex;
@@ -1008,9 +1180,12 @@
 	line-height: 1;
 	cursor: pointer;
 }
-.tnc-strip-title:hover,
-.tnc-strip-nav:hover {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-strip-title:hover,
+	.tnc-strip-nav:hover {
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-strip-dows,
 .tnc-strip-grid {
@@ -1056,6 +1231,12 @@
 	font-weight: 650;
 	line-height: 1;
 }
+.tnc-strip-dots {
+	display: flex;
+	justify-content: center;
+	gap: 2px;
+	min-height: 5px;
+}
 .tnc-strip-dot {
 	width: 5px;
 	height: 5px;
@@ -1083,11 +1264,17 @@
 .tnc-strip-day.is-in-range .tnc-strip-num {
 	background: var(--tnc-accent-soft);
 }
-.tnc-strip-day:hover .tnc-strip-num {
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-strip-day:hover .tnc-strip-num {
+		background: var(--tnc-surface-2);
+	}
+
 }
-.tnc-strip-day.is-focus:hover .tnc-strip-num {
-	background: var(--tnc-accent);
+@media (hover: hover) {
+	.tnc-strip-day.is-focus:hover .tnc-strip-num {
+		background: var(--tnc-accent);
+	}
+
 }
 .tnc-strip-day.is-drop-target .tnc-strip-num {
 	box-shadow: 0 0 0 2px var(--tnc-accent);
@@ -1165,9 +1352,12 @@
 	font-weight: 700;
 	text-align: center;
 }
-.tnc-list-add:hover {
-	color: var(--tnc-accent);
-	background: var(--tnc-surface-2);
+@media (hover: hover) {
+	.tnc-list-add:hover {
+		color: var(--tnc-accent);
+		background: var(--tnc-surface-2);
+	}
+
 }
 .tnc-list-add:focus-visible {
 	outline: 2px solid var(--tnc-accent);
@@ -1192,9 +1382,21 @@
 	padding: 12px;
 }
 .tnc-year-grid {
+	--tnc-year-day-min: var(--tnc-theme-date-target, 40px);
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(7 * var(--tnc-year-day-min) + 12px)), 1fr));
 	gap: 18px 16px;
+}
+.tnc-ym {
+	min-width: 0;
+}
+.tnc .tnc-ym-title,
+.tnc .tnc-ym-day {
+	appearance: none;
+	box-shadow: none;
+	background-image: none;
+	font-family: inherit;
+	color: var(--tnc-text);
 }
 .tnc-ym-title {
 	display: block;
@@ -1217,21 +1419,28 @@
 }
 .tnc-ym-day {
 	position: relative;
+	min-width: var(--tnc-year-day-min);
+	min-height: var(--tnc-year-day-min);
+	width: 100%;
+	height: auto;
 	aspect-ratio: 1;
 	border: 0;
 	border-radius: 5px;
 	padding: 0;
 	cursor: pointer;
 	font-size: 11px;
-	background: color-mix(in srgb, var(--tnc-accent) calc(var(--tnc-heat, 0) * 38%), transparent);
+	background: color-mix(in srgb, var(--tnc-accent) calc(var(--tnc-heat, 0) * 14%), transparent);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	gap: 1px;
 }
-.tnc-ym-day:hover {
-	outline: 1px solid var(--tnc-line-strong);
+@media (hover: hover) {
+	.tnc-ym-day:hover {
+		outline: 1px solid var(--tnc-line-strong);
+	}
+
 }
 .tnc-ym-day.is-weekend .tnc-ym-num {
 	color: var(--tnc-muted);
@@ -1251,16 +1460,14 @@
 	width: 4px;
 	height: 4px;
 	border-radius: 50%;
-	background: var(--tnc-c, var(--tnc-accent));
+	background: color-mix(in srgb, var(--tnc-c, var(--tnc-accent)) 65%, var(--tnc-text));
 }
 
-/* Two months a row: each day is a shaded square, and its count is in its label. */
 @container (max-width: 520px) {
 	.tnc-year-scroll {
 		padding: 8px 4px;
 	}
 	.tnc-year-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 14px 12px;
 	}
 	.tnc-ym-title {
@@ -1276,7 +1483,7 @@
 	}
 	/* Without dots, one item must still read as busy. */
 	.tnc-ym-day.has-items {
-		background: color-mix(in srgb, var(--tnc-accent) calc((0.3 + var(--tnc-heat) * 0.7) * 50%), transparent);
+		background: color-mix(in srgb, var(--tnc-accent) calc((0.3 + var(--tnc-heat) * 0.7) * 20%), transparent);
 	}
 	.tnc-ym-dots {
 		display: none;
@@ -1545,12 +1752,18 @@
 .tnc-item--timeline.is-link-invalid > .tnc-item-main {
 	box-shadow: 0 0 0 2px var(--tnc-warn);
 }
-.tnc-item--timeline:hover .tnc-port,
 .tnc-item--timeline.is-hover .tnc-port,
 .tnc-item--timeline.is-selected .tnc-port,
 .tnc-item--timeline:focus-visible .tnc-port,
 .tnc-tl.is-linking .tnc-item--timeline .tnc-port {
 	opacity: 1;
+}
+
+@media (hover: hover) {
+	.tnc-item--timeline:hover .tnc-port {
+		opacity: 1;
+	}
+
 }
 @media (pointer: coarse) {
 	.tnc-port {
@@ -1652,6 +1865,7 @@
 	outline: none;
 }
 .tnc-popover-head {
+	flex: none;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -1661,6 +1875,7 @@
 	font-weight: 650;
 }
 .tnc-popover-close {
+	flex: none;
 	min-width: 28px;
 	min-height: 28px;
 	border: 0;
@@ -1670,10 +1885,14 @@
 	font-size: 16px;
 	line-height: 1;
 }
-.tnc-popover-close:hover {
-	background: var(--tnc-surface-3);
+@media (hover: hover) {
+	.tnc-popover-close:hover {
+		background: var(--tnc-surface-3);
+	}
+
 }
 .tnc-popover-body {
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
@@ -1683,6 +1902,164 @@
 .tnc-popover-body .tnc-item {
 	position: relative;
 	flex: none;
+	height: auto;
+	min-height: 40px;
+}
+.tnc-popover-title {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.tnc-popover-body .tnc-item-main {
+	min-height: 40px;
+}
+.tnc-popover-body .tnc-item-title {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+.tnc-popover-close:focus-visible {
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+
+.tnc .tnc-col-actual .tnc-item-title {
+	white-space: nowrap;
+	overflow-wrap: normal;
+	display: block;
+	text-overflow: ellipsis;
+}
+.tnc .tnc-col-actual .tnc-item-main {
+	min-width: 0;
+}
+.tnc .tnc-col-actual .tnc-item--timed {
+	border-top: 1px solid var(--tnc-surface);
+	border-bottom: 1px solid var(--tnc-surface);
+}
+.tnc .tnc-item--timed {
+	box-shadow: inset 0 -1px 0 var(--tnc-surface);
+}
+.tnc .tnc-item.is-draggable {
+	cursor: grab;
+}
+.tnc .tnc-item.is-dragging {
+	opacity: 0.96;
+	box-shadow: var(--tnc-theme-drag-lift, var(--tnc-shadow));
+	outline: 1px solid var(--tnc-focus);
+	outline-offset: -1px;
+}
+.tnc .tnc-item--timed.is-dragging {
+	min-width: var(--tnc-drag-width);
+	max-width: var(--tnc-drag-width);
+}
+.tnc .tnc-dg .tnc-item.is-dragging:not(.is-mirror) {
+	opacity: var(--tnc-drag-opacity);
+	box-shadow: none;
+	outline: none;
+}
+.tnc .tnc-month-preview {
+	position: absolute;
+	pointer-events: none;
+	outline: 2px dashed var(--tnc-accent);
+	outline-offset: -2px;
+	z-index: 10;
+}
+.tnc .tnc-item--list.is-dragging:not(.tnc-drag-preview) {
+	opacity: var(--tnc-drag-opacity);
+	box-shadow: none;
+}
+.tnc .tnc-item.tnc-drag-source {
+	opacity: var(--tnc-drag-opacity);
+	pointer-events: none;
+	box-shadow: none;
+	outline: none;
+}
+.tnc .tnc-item.tnc-drag-preview {
+	position: absolute;
+	z-index: var(--tnc-theme-drag-z, 1000);
+	pointer-events: none;
+	opacity: 1;
+	background: var(--tnc-theme-drag-surface, var(--tnc-surface));
+	border: 1px solid var(--tnc-theme-drag-border, var(--tnc-line-strong));
+	box-shadow: var(--tnc-theme-drag-shadow, var(--tnc-shadow));
+	outline: none;
+}
+.tnc .tnc-item.is-write-pending {
+	opacity: 0.65;
+	cursor: progress;
+}
+.tnc .tnc-item.is-write-failed {
+	outline: 2px dashed var(--tnc-warn);
+	outline-offset: -2px;
+}
+.tnc.tnc-drop-denied .tnc-item.is-dragging {
+	outline: 2px dashed var(--tnc-warn);
+	outline-offset: -2px;
+}
+.tnc.tnc-drop-denied,
+.tnc.tnc-drop-denied .tnc-item.is-dragging {
+	cursor: not-allowed;
+}
+.tnc .tnc-item.is-selected {
+	background-color: var(--tnc-selected);
+	outline: 2px solid var(--tnc-accent);
+	outline-offset: -2px;
+}
+.tnc :is(.tnc-item, .tnc-more, .tnc-strip-day, .tnc-btn, .tnc-list-add):focus-visible {
+	outline: 2px solid var(--tnc-focus);
+	outline-offset: -2px;
+}
+.tnc :is(.tnc-more, .tnc-btn, .tnc-list-add):disabled {
+	opacity: var(--tnc-drag-opacity);
+	cursor: not-allowed;
+}
+.tnc :is(.tnc-more, .tnc-btn, .tnc-list-add):active {
+	background: var(--tnc-active);
+}
+.tnc .tnc-strip-day:active .tnc-strip-num {
+	background: var(--tnc-active);
+}
+.tnc .tnc-strip-day.is-focus:active .tnc-strip-num {
+	background: var(--tnc-accent);
+}
+.tnc .tnc-popover {
+	background: var(--tnc-surface);
+}
+@media (hover: hover) {
+	.tnc .tnc-item:not(.is-selected):not(.is-dragging):hover {
+		filter: none;
+		background-color: var(--tnc-hover);
+		transition: background-color var(--tnc-motion);
+	}
+	.tnc .tnc-item--list:hover {
+		box-shadow: none;
+	}
+	.tnc .tnc-item.is-selected:hover {
+		background-color: var(--tnc-theme-selected-hover, var(--tnc-selected));
+	}
+	.tnc .tnc-more:hover {
+		background: var(--tnc-hover);
+	}
+}
+@media (hover: none) {
+	.tnc .tnc-item:hover {
+		filter: none;
+	}
+	.tnc .tnc-item--list:not(.is-selected):hover {
+		background: none;
+	}
+	.tnc .tnc-strip-day:not(.is-focus):hover .tnc-strip-num {
+		background: none;
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	.tnc-item.is-write-changed {
+		animation: tnc-write-settle calc(var(--tnc-motion) * 2) ease-out;
+	}
+}
+@keyframes tnc-write-settle {
+	from { opacity: var(--tnc-drag-opacity); }
+	to { opacity: 1; }
 }
 
 /* Host: .tnc-cap i is listed because its own transition rule is (0,1,1). The raise animations above are (0,2,0) and stay on. */
