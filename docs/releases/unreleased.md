@@ -149,7 +149,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Keep project selectors focused when opened immediately after a task form, so Escape cancels the selector without closing the form.
 - Skip task-modal resize animations on mobile while preserving compact Create, More fields and collapse.
 
-- Keep subtask expand controls separate from the task options button, including rows without metadata.
+- Keep subtask expand controls separate from the task options button on rows without metadata, while preserving metadata space in narrow stacked rows.
   - Thanks to @iantierney for the subtask sorting report in #2394.
 
 - Obsidian's editor commands and shortcuts work in the task modal's Markdown editors. Bold, Italic and Insert link did nothing there, and Follow link failed with an error. Plugins that use the active editor, such as Templater, now get the full editor.
