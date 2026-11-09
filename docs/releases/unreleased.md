@@ -31,3 +31,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- Added a time slot height setting for the calendar time grid, in Settings → Appearance → Time settings and in each calendar view's time grid options. Short slots such as 15 minutes no longer force a taller day: lower the height and the whole time range fits without scrolling.
+  - Thanks to @AIDockerCloud for contributing this setting
+- Added pinch to resize on calendar time grids. Two fingers on the grid change the slot height around the time beneath them, and the height is kept on that device. Turn it off with **Pinch to resize time slots** in the view's time grid options. See [Calendar Views](https://tasknotes.dev/views/calendar-views/)
+

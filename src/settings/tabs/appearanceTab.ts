@@ -12,7 +12,7 @@ import {
 import { PropertySelectorModal } from "../../modals/PropertySelectorModal";
 import { getAvailableProperties, getPropertyLabels } from "../../utils/propertyHelpers";
 import type { CalendarViewSettings } from "../../types/settings";
-import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../../utils/calendarTime";
+import { CALENDAR_END_TIME_MAX_HOUR, CALENDAR_SLOT_HEIGHT_MAX, CALENDAR_SLOT_HEIGHT_MIN, normalizeCalendarTimeValue } from "../../utils/calendarTime";
 
 type CalendarDefaultView = CalendarViewSettings["defaultView"];
 type CalendarFirstDay = CalendarViewSettings["firstDay"];
@@ -554,6 +554,27 @@ export function renderAppearanceTab(
 								return;
 							}
 							plugin.settings.calendarViewSettings.slotDuration = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureNumberSetting(setting, {
+						name: translate(msg({ message: "Time slot height", context: "settings.appearance.timeSettings.slotHeight.name" })),
+						desc: translate(
+							msg({ message: "Height of each time slot in timeline views (pixels). Lower it to keep a long time range, or short slots such as 15 minutes, from needing a scrollbar.", context: "settings.appearance.timeSettings.slotHeight.description" })
+						),
+						min: CALENDAR_SLOT_HEIGHT_MIN,
+						max: CALENDAR_SLOT_HEIGHT_MAX,
+						debounceMs: 300,
+						getValue: () => plugin.settings.calendarViewSettings.slotHeight,
+						setValue: async (value: number) => {
+							plugin.settings.calendarViewSettings.slotHeight = Math.min(
+								CALENDAR_SLOT_HEIGHT_MAX,
+								Math.max(CALENDAR_SLOT_HEIGHT_MIN, Math.round(value))
+							);
 							save();
 						},
 					})

@@ -141,7 +141,7 @@ Open a Calendar Base, then open its view settings from the Bases toolbar. These 
 
 - **What to show**: scheduled and due tasks, recurring tasks, time entries, timeblocks, and events from note properties. Scheduled-to-due spans appear when both scheduled and due tasks are enabled.
 - **Layout**: calendar mode, custom/list day count, height, week start, clock format, week numbers, weekends, today's highlight, and search.
-- **Time grid**: all-day area, day start/end, time between grid lines, initial scroll time, current-time marker, and hourly breakdown. Available for Week, Day, and Custom days.
+- **Time grid**: all-day area, day start/end, time between grid lines, time slot height, pinch to resize, initial scroll time, current-time marker, and hourly breakdown. Available for Week, Day, and Custom days.
 - **Day cells**: events shown before a “+ more” link, for Month, Year, and the all-day area of time-grid views. `0` chooses the automatic limit.
 - **Property-based events**: start, end, and title properties. Hidden when property-based events are off.
 - **Advanced**: opening date (fixed or taken from a property), daily-note creation, completed/skipped recurring instances, today column width, drag/resize step, selection preview, overlapping events, minimum event height, simultaneous-event limit, and the row-limit override.
@@ -165,6 +165,7 @@ The Calendar View provides several display options that control what types of ev
 - **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.
 - **Events before “+ more”** (Day cells): Limit events in Month and Year day cells and the all-day area of Week, Day, and Custom views. `0` uses the automatic limit. **Row limit override** (Advanced) takes precedence when positive, counts the “+ more” row, and is disabled at `0`.
 - **Create daily notes from date links**: Let date header links create a missing daily note before opening it. Turn this off if date links should only open existing daily notes.
+- **Pinch to resize** (touch): Spread or pinch two fingers on the time grid to change the slot height, between 16 and 96 pixels. The time under your fingers stays in place. The new height is kept on that device only, and applies until the configured **Time slot height** changes. Turn the option off to let the pinch reach the page instead.
 - **Drag and resize step** (Advanced): Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
 Multiple saved calendar views can store different option sets (for example planning vs focus), avoiding repeated manual toggles.

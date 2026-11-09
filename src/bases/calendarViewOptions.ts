@@ -7,6 +7,7 @@ import type TaskNotesPlugin from "../main";
 import { DEFAULT_MINI_CALENDAR_HEAT_MAP_MAX_COUNT } from "./MiniCalendarView";
 import { isNoteFileOrFormulaProperty } from "./propertyFilters";
 import { readBasesViewConfigValue } from "./basesViewConfig";
+import { CALENDAR_SLOT_HEIGHT_MAX, CALENDAR_SLOT_HEIGHT_MIN } from "../utils/calendarTime";
 
 type CalendarOptionGroup = BasesOptionGroup<BasesOptions>;
 type CalendarOptionsConfig = Pick<BasesViewConfig, "get">;
@@ -383,6 +384,21 @@ function buildCalendarTimeGridOptions(plugin: TaskNotesPlugin, t: Translate): Ba
 			displayName: t("layout.timeSlotDuration"),
 			default: calendarSettings.slotDuration,
 			placeholder: t("layout.timeSlotDurationPlaceholder"),
+		},
+		{
+			type: "slider",
+			key: "slotHeight",
+			displayName: t("layout.slotHeight"),
+			default: calendarSettings.slotHeight,
+			min: CALENDAR_SLOT_HEIGHT_MIN,
+			max: CALENDAR_SLOT_HEIGHT_MAX,
+			step: 1,
+		},
+		{
+			type: "toggle",
+			key: "pinchZoom",
+			displayName: t("layout.pinchZoom"),
+			default: true,
 		},
 		{
 			type: "text",
