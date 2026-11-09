@@ -326,10 +326,11 @@ test('timeblocks retain drag and resize in both themes', async () => {
     }, folder)).toMatch(/calendarView: ["']?timeGridCustom/);
     const block = calendar.locator('.tnc-item[data-event-type="timeblock"]');
     await expect(block).toBeVisible();
+    await block.hover();
     let box = (await block.boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + 10);
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2, box.y + 10 + box.height, { steps: 10 });
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + box.height, { steps: 10 });
     await page.mouse.up();
     await expect.poll(async () => (await readBlock())?.startTime).toBe('14:00');
     await expect(block).toContainText('14:00 – 15:00');

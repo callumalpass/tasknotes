@@ -114,10 +114,17 @@ test('native timeblock drag and resize keep event payload and writable editor fr
   const root = await openView('tasknotesCalendar');
   const block = root.locator('.tnc-item[data-event-type="timeblock"]');
   await expect(block).toBeVisible();
+  // Let the view finish positioning the event before using raw pointer coordinates.
+  await block.hover();
   const box = (await block.boundingBox())!;
-  await page.mouse.move(box.x + box.width / 2, box.y + 10);
+  const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  await expect.poll(() => page.evaluate(point => {
+    const hit = document.elementFromPoint(point.x, point.y);
+    return Boolean(hit?.closest('.tnc-item[data-event-type="timeblock"]')) && !hit?.closest('.tnc-resize-start, .tnc-resize-end');
+  }, start)).toBe(true);
+  await page.mouse.move(start.x, start.y);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2, box.y + 10 + box.height, { steps: 12 });
+  await page.mouse.move(start.x, start.y + box.height, { steps: 12 });
   await page.mouse.up();
   const payload = () => page.evaluate(() => (window as any).app.workspace.activeLeaf.view.controller.view.calendarItems.find((item: any) => item.data?.timeblock?.id === 'bugs-block')?.data.timeblock);
   await expect.poll(payload).toMatchObject({ startTime: '14:00', endTime: '15:00' });
