@@ -882,6 +882,11 @@ msgctxt "filtered task count"
 msgid "{visible} of {total} tasks"
 msgstr "{visible} tâches sur {total}"
 
+#: src/i18n/recurrence.ts
+msgctxt "monthly first weekday recurrence"
+msgid "{weekday, select, MO {Monthly on the first Monday} TU {Monthly on the first Tuesday} WE {Monthly on the first Wednesday} TH {Monthly on the first Thursday} FR {Monthly on the first Friday} SA {Monthly on the first Saturday} SU {Monthly on the first Sunday} other {Monthly}}"
+msgstr "{weekday, select, MO {Chaque mois le premier lundi} TU {Chaque mois le premier mardi} WE {Chaque mois le premier mercredi} TH {Chaque mois le premier jeudi} FR {Chaque mois le premier vendredi} SA {Chaque mois le premier samedi} SU {Chaque mois le premier dimanche} other {Chaque mois}}"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.basicDefaults.defaultContexts.placeholder"
 msgid "@home, @work"
@@ -6501,6 +6506,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.strategies.first"
 msgid "First result"
 msgstr "Premier résultat"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence first weekday of month"
+msgid "First weekday of the month"
+msgstr "Premier jour de semaine du mois"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display"
 msgid "Focus"
@@ -7352,6 +7362,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "Dernier jour"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last day of month"
+msgid "Last day of the month"
+msgstr "Dernier jour du mois"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.status.lastExport"
 msgid "Last export: {time}"
@@ -7361,6 +7376,11 @@ msgstr "Dernier export : {time}"
 msgctxt "settings.integrations.oauth.refreshedAt"
 msgid "Last refreshed {time}"
 msgstr "Dernière actualisation {time}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last weekday of month"
+msgid "Last weekday of the month"
+msgstr "Dernier jour de semaine du mois"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -14240,6 +14260,11 @@ msgstr "En semaine"
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "Jours ouvrés seulement"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence weekends"
+msgid "Weekends"
+msgstr "Le week-end"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"

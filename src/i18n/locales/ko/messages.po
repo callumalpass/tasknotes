@@ -881,6 +881,11 @@ msgctxt "filtered task count"
 msgid "{visible} of {total} tasks"
 msgstr "전체 {total}개 중 {visible}개 작업"
 
+#: src/i18n/recurrence.ts
+msgctxt "monthly first weekday recurrence"
+msgid "{weekday, select, MO {Monthly on the first Monday} TU {Monthly on the first Tuesday} WE {Monthly on the first Wednesday} TH {Monthly on the first Thursday} FR {Monthly on the first Friday} SA {Monthly on the first Saturday} SU {Monthly on the first Sunday} other {Monthly}}"
+msgstr "{weekday, select, MO {매월 첫 번째 월요일} TU {매월 첫 번째 화요일} WE {매월 첫 번째 수요일} TH {매월 첫 번째 목요일} FR {매월 첫 번째 금요일} SA {매월 첫 번째 토요일} SU {매월 첫 번째 일요일} other {매월}}"
+
 #: src/settings/tabs/taskPropertiesTab.ts
 msgctxt "settings.defaults.basicDefaults.defaultContexts.placeholder"
 msgid "@home, @work"
@@ -6500,6 +6505,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.strategies.first"
 msgid "First result"
 msgstr "첫 번째 결과"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence first weekday of month"
+msgid "First weekday of the month"
+msgstr "매월 첫 번째 평일(월~금)"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display"
 msgid "Focus"
@@ -7351,6 +7361,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "말일"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last day of month"
+msgid "Last day of the month"
+msgstr "매월 마지막 날"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.status.lastExport"
 msgid "Last export: {time}"
@@ -7360,6 +7375,11 @@ msgstr "마지막 내보내기: {time}"
 msgctxt "settings.integrations.oauth.refreshedAt"
 msgid "Last refreshed {time}"
 msgstr "마지막 새로고침: {time}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last weekday of month"
+msgid "Last weekday of the month"
+msgstr "매월 마지막 평일(월~금)"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -14239,6 +14259,11 @@ msgstr "평일"
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "평일만"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence weekends"
+msgid "Weekends"
+msgstr "주말마다"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"

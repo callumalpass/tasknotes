@@ -46,6 +46,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Describe common recurrence patterns with whole phrases, including first and last weekdays of the month, the last day of the month, weekends and the first named weekday.
+
 - The calendar toolbar is quieter. Views are chosen from one dropdown instead of a row of six buttons, and Select tasks and Refresh are in the toolbar's "…" menu. Select tasks stays in the toolbar while you are selecting.
 - TaskNotes takes its spacing, corner radii, font weights, shadows, icon sizes and control heights from Obsidian, so it matches the rest of the app and follows themes that change them. Buttons and inputs are 30px tall, the same as Obsidian's.
 - Task List rows and calendar list rows use the same layout as Kanban cards at every width: the status sits beside the title, and priority, dates and properties sit on a second line beneath it. Rows without properties stay on one line. Long-press still opens task actions, and dismissing the menu returns focus to the row. In the Task List, the reorder handle appears in the left margin on hover.
