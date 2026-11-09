@@ -385,9 +385,11 @@ test('project selector and delete confirmation retain native cancellation', asyn
   if (await modal.locator('.tn-task-modal__details-toggle').getAttribute('aria-expanded') !== 'true') await modal.locator('.tn-task-modal__details-toggle').click();
   await modal.getByText('Add to project', { exact: true }).click();
   const selector = page.locator('.prompt.tn-modal');
-  await expect(selector.locator('input')).toBeVisible();
+  await expect(selector.locator('input')).toBeFocused();
   await page.screenshot({ path: 'test-results/modal-menu/project-selector.png', clip: (await selector.boundingBox())! });
   await page.keyboard.press('Escape');
+  await expect(selector).toHaveCount(0);
+  await expect(modal).toBeVisible();
   await modal.locator('.tn-task-modal__overflow-button').click();
   await page.locator('.menu').last().getByText('Delete', { exact: true }).click();
   const confirmation = page.locator('.modal.tn-modal').last();
@@ -422,3 +424,36 @@ test('documentation image shows the current filled composer', async () => {
   await page.screenshot({ path: 'test-results/modal-menu/feature-task-modal-filled.png', clip: (await modal.boundingBox())! });
   await page.keyboard.press('Escape');
 });
+
+for (const mode of ['create', 'edit']) {
+  test(`${mode}: a project selector opened before delayed title focus keeps keyboard ownership`, async () => {
+    await page.evaluate(async ({ taskPath, mode }) => {
+      const plugin = (window as any).app.plugins.plugins.tasknotes;
+      const task = await plugin.cacheManager.getTaskInfo(taskPath);
+      // Exercise the fast path in the same frame that the form becomes usable,
+      // before the composer's 100ms initial-focus timer can run.
+      const observer = new MutationObserver(() => {
+        const modal = document.querySelector('.modal.mod-tasknotes');
+        const toggle = modal?.querySelector<HTMLButtonElement>('.tn-task-modal__details-toggle');
+        const add = [...(modal?.querySelectorAll<HTMLButtonElement>('button') ?? [])]
+          .find(button => button.textContent?.trim() === 'Add to project');
+        if (!toggle || !add) return;
+        observer.disconnect();
+        if (toggle.getAttribute('aria-expanded') !== 'true') toggle.click();
+        add.click();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      if (mode === 'create') plugin.openTaskCreationModal();
+      else plugin.openTaskEditModal(task);
+    }, { taskPath, mode });
+    const selector = page.locator('.prompt.tn-modal');
+    await expect(selector.locator('input')).toBeVisible();
+    // Deliberately hold the selector beyond the initial-focus deadline.
+    await page.waitForTimeout(200);
+    await expect(selector.locator('input')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(selector).toHaveCount(0);
+    await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
+    await page.keyboard.press('Escape');
+  });
+}

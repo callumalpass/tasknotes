@@ -114,6 +114,8 @@ test('create opens compact, and More fields opens the pane layout edit uses', as
   await modal().locator('.tn-task-modal__details-toggle').click();
   await expect(modal().locator('.title-input-detailed')).toBeVisible();
   await expect(details()).toBeVisible();
+  // Visibility changes immediately; compare the layout after its native resize settles.
+  await modal().evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
   const created = (await modal().boundingBox())!;
   expect(compact.width).toBeLessThan(created.width);
   expect(compact.height).toBeLessThan(created.height);
@@ -142,4 +144,57 @@ test('a narrow window gets a sheet that keeps the view above it', async () => {
   expect(box.y).toBeGreaterThan(100);
   await closeModal();
   await setObsidianViewport(page, { width: 1180, height: 800 });
+});
+
+test('mobile compact Create keeps its shell and draft through disclosure', async () => {
+  await setObsidianViewport(page, { width: 420, height: 780 });
+  const notice = page.locator('.notice').getByText("Don't show again", { exact: true });
+  if (await notice.isVisible()) await notice.click();
+  try {
+    for (const theme of ['theme-light', 'theme-dark']) {
+      for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+        await page.emulateMedia({ reducedMotion });
+        await page.evaluate(theme => {
+          document.body.classList.remove('theme-light', 'theme-dark');
+          document.body.classList.add(theme, 'is-mobile');
+          const plugin = (window as any).app.plugins.plugins.tasknotes;
+          plugin.settings.enableNaturalLanguageInput = true;
+          plugin.openTaskCreationModal();
+        }, theme);
+        const nlp = modal().locator('.tn-task-modal__markdown-editor--nlp .cm-content');
+        await expect(nlp).toBeVisible();
+        await nlp.fill('Prepare mobile review');
+        await expect(details()).toBeHidden();
+        const compact = (await modal().boundingBox())!;
+        const name = `${theme}-${reducedMotion}`;
+        await page.screenshot({ path: `test-results/mobile-create/${name}-compact.png` });
+        const toggle = modal().locator('.tn-task-modal__details-toggle');
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+        expect(await modal().evaluate(element => element.getAnimations().length)).toBe(0);
+        await modal().evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
+        await expect(details()).toBeVisible();
+        await expect(modal().locator('.title-input-detailed')).toHaveValue('Prepare mobile review');
+        const layout = await modal().evaluate(element => ({
+          width: element.getBoundingClientRect().width,
+          overflow: element.querySelector('.modal-content')!.scrollWidth - element.querySelector('.modal-content')!.clientWidth,
+        }));
+        expect(layout.width).toBeLessThanOrEqual(420);
+        expect(layout.overflow).toBeLessThanOrEqual(1);
+        await expect(modal().getByRole('button', { name: 'Create task', exact: true })).toBeVisible();
+        await page.screenshot({ path: `test-results/mobile-create/${name}-expanded.png` });
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        await modal().evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
+        await expect(details()).toBeHidden();
+        await expect(nlp).toHaveText('Prepare mobile review');
+        await page.screenshot({ path: `test-results/mobile-create/${name}-collapsed.png` });
+        await closeModal();
+      }
+    }
+  } finally {
+    await page.evaluate(() => document.body.classList.remove('is-mobile'));
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await setObsidianViewport(page, { width: 1180, height: 800 });
+  }
 });

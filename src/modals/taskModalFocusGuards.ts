@@ -44,7 +44,10 @@ export class TaskModalFocusGuards {
 		win.clearTimeout(this.titleFocusTimer);
 		this.titleFocusTimer = win.setTimeout(() => {
 			if (this.elements.containerEl.querySelector(".tn-popover")) return;
-			const focused = this.elements.containerEl.ownerDocument.activeElement;
+			const doc = this.elements.containerEl.ownerDocument;
+			const focused = doc.activeElement;
+			// A selector opened above this form owns focus, including its modal shell.
+			if (focused && focused !== doc.body && !this.elements.containerEl.contains(focused)) return;
 			if (
 				focused !== target &&
 				focused?.matches("input, textarea, select, [contenteditable='true']") &&

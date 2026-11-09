@@ -288,14 +288,11 @@ export class TaskCreationModal extends TaskModal {
 			return;
 		}
 
-		window.setTimeout(() => {
-			if (this.containerEl.querySelector(".tn-popover")) return;
-			const cm = this.nlMarkdownEditor?.editor?.cm;
-			if (cm) {
-				cm.focus();
-				cm.scrollDOM.scrollTop = 0;
-			}
-		}, this.getInitialFocusDelay());
+		const cm = this.nlMarkdownEditor?.editor?.cm;
+		if (cm) this.focusInitialTarget(cm.contentDOM, () => {
+			cm.focus();
+			cm.scrollDOM.scrollTop = 0;
+		});
 	}
 
 	private getNLPInputValue(): string {

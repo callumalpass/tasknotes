@@ -100,6 +100,18 @@ describe("taskModalFocusGuards", () => {
 		expect(document.activeElement).toBe(tags);
 	});
 
+	it.each(["input", "button"])("does not steal focus from a selector's %s above the form", (kind) => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const title = elements.contentEl.createEl("textarea");
+		const selector = document.body.createDiv();
+		const target = selector.createEl(kind === "input" ? "input" : "button");
+		guards.focusTitleInput(title);
+		target.focus();
+		jest.runOnlyPendingTimers();
+		expect(document.activeElement).toBe(target);
+	});
+
 	it("places the edit caret at the end without selecting the title", () => {
 		const elements = createElements();
 		const guards = new TaskModalFocusGuards(elements);

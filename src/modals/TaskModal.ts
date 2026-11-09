@@ -786,7 +786,7 @@ export abstract class TaskModal extends Modal {
 	private animateModalResize(change: () => void): void {
 		const modal = this.modalEl;
 		const reduceMotion = modal.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-		if (reduceMotion || typeof modal.animate !== "function") {
+		if (reduceMotion || this.isMobileLikeEnvironment() || typeof modal.animate !== "function") {
 			change();
 			return;
 		}
@@ -1549,6 +1549,10 @@ export abstract class TaskModal extends Modal {
 		} else if (this.titleInput) {
 			this.focusGuards.focusTitleInput(this.titleInput, selectAll);
 		}
+	}
+
+	protected focusInitialTarget(target: HTMLElement, focus: () => void): void {
+		this.focusGuards.focusTitleTarget(target, focus);
 	}
 
 	protected getInitialFocusDelay(): number {

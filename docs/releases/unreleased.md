@@ -144,6 +144,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Keep project selectors focused when opened immediately after a task form, so Escape cancels the selector without closing the form.
+- Skip task-modal resize animations on mobile while preserving compact Create, More fields and collapse.
+
 - Keep subtask expand controls separate from the task options button, including rows without metadata.
   - Thanks to @iantierney for the subtask sorting report in #2394.
 
