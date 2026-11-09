@@ -521,6 +521,10 @@ export class CalendarView extends BasesViewBase {
 		// First data update after load should be immediate (initial data population)
 		if (this._isFirstDataUpdate) {
 			this._isFirstDataUpdate = false;
+			// onload can run before Bases supplies config. Record the loaded
+			// settings now so a later unchanged notification cannot rebuild the
+			// grid (and cancel an in-progress first pinch) as a false config change.
+			this._previousConfigSnapshot = this.getConfigSnapshot();
 			void this.render();
 			return;
 		}
@@ -2507,7 +2511,12 @@ export class CalendarView extends BasesViewBase {
 		if (this.calendar) {
 			if (typeof state.calendarDate === "string") {
 				try {
-					this.calendar.gotoDate(new Date(state.calendarDate));
+					const date = new Date(state.calendarDate);
+					// gotoDate rebuilds the time grid even for the current date,
+					// detaching touch targets during an otherwise incremental refresh.
+					if (date.getTime() !== this.calendar.getDate().getTime()) {
+						this.calendar.gotoDate(date);
+					}
 				} catch (e) {
 					tasknotesLogger.debug("[CalendarView] Failed to restore calendar date:", {
 						category: "provider",

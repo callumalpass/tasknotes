@@ -73,7 +73,8 @@ test.beforeAll(async () => {
     views: [{
       type: 'tasknotesKanban', name: 'Issue 2414',
       groupBy: { property: 'status', direction: 'ASC' },
-      sort: [{ column: sortField, direction: 'ASC' }],
+      // Use the native Bases key, avoiding an asynchronous column→property rewrite at pickup.
+      sort: [{ property: sortField, direction: 'ASC' }],
       columnWidth: 280, hideEmptyColumns: true,
     }],
   });

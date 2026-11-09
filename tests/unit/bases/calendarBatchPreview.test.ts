@@ -24,7 +24,7 @@ function harness() {
 }
 afterEach(() => { document.body.replaceChildren(); });
 
-it("paints peer proposals once per position and restores canonical values before a drop", () => {
+it("paints peer proposals once per position and restores canonical values after release validation", async () => {
 	const h = harness();
 	try {
 		pointer(h.el, "pointerdown");
@@ -33,6 +33,7 @@ it("paints peer proposals once per position and restores canonical values before
 		expect(h.build).toHaveBeenCalledTimes(1);
 		expect(h.upsert).toHaveBeenNthCalledWith(1, [h.preview]);
 		pointer(document, "pointerup");
+		await new Promise(resolve => setTimeout(resolve, 0));
 		expect(h.upsert).toHaveBeenLastCalledWith([h.original]);
 		expect(h.invalid).not.toHaveBeenCalled();
 	} finally { h.controller.dispose(); }
@@ -50,7 +51,7 @@ it.each(["Escape", "pointercancel", "blur"])("cleans all preview items on %s", r
 	} finally { h.controller.dispose(); }
 });
 
-it("restores the last valid preview and reports an invalid final drop only once", () => {
+it("restores the last valid preview and reports an invalid final drop only once", async () => {
 	const h = harness();
 	try {
 		pointer(h.el, "pointerdown"); h.controller.allow(h.proposal);
@@ -60,7 +61,55 @@ it("restores the last valid preview and reports an invalid final drop only once"
 		expect(h.controller.allow(bad)).toBe(false);
 		expect(h.upsert).toHaveBeenLastCalledWith([h.original]);
 		pointer(document, "pointerup"); pointer(document, "pointerup");
+		await new Promise(resolve => setTimeout(resolve, 0));
 		expect(h.invalid).toHaveBeenCalledTimes(1);
+	} finally { h.controller.dispose(); }
+});
+
+it("keeps rejection active for the engine's final pointerup validation", async () => {
+	const h = harness();
+	const drop = jest.fn();
+	const finish = () => { if (h.controller.allow(h.proposal)) drop(); };
+	document.addEventListener("pointerup", finish);
+	try {
+		pointer(h.el, "pointerdown");
+		h.build.mockImplementation(() => { throw new Error("Incompatible selection"); });
+		expect(h.controller.allow(h.proposal)).toBe(false);
+		pointer(h.el, "pointerup");
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(drop).not.toHaveBeenCalled();
+		expect(h.invalid).toHaveBeenCalledTimes(1);
+	} finally { document.removeEventListener("pointerup", finish); h.controller.dispose(); }
+});
+
+it("uses the final release position rather than an earlier rejected position", async () => {
+	const h = harness();
+	const finish = () => h.controller.allow({ ...h.proposal, allDay: false });
+	document.addEventListener("pointerup", finish);
+	try {
+		pointer(h.el, "pointerdown");
+		h.build.mockImplementationOnce(() => { throw new Error("Wrong area"); });
+		expect(h.controller.allow({ ...h.proposal, allDay: true })).toBe(false);
+		pointer(h.el, "pointerup");
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(h.build).toHaveBeenCalledTimes(2);
+		expect(h.invalid).not.toHaveBeenCalled();
+	} finally { document.removeEventListener("pointerup", finish); h.controller.dispose(); }
+});
+
+it("does not let deferred release cleanup clear a new gesture or notify after disposal", async () => {
+	const h = harness();
+	try {
+		pointer(h.el, "pointerdown"); h.controller.allow(h.proposal);
+		pointer(h.el, "pointerup");
+		pointer(h.el, "pointerdown");
+		h.build.mockImplementation(() => { throw new Error("New rejected gesture"); });
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(h.controller.allow(h.proposal)).toBe(false);
+		pointer(h.el, "pointerup");
+		h.controller.dispose();
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(h.invalid).not.toHaveBeenCalled();
 	} finally { h.controller.dispose(); }
 });
 
@@ -84,13 +133,14 @@ it("does not repaint stale peers after a full source refresh", () => {
 	} finally { h.controller.dispose(); }
 });
 
-it("follows the owner document when the calendar is moved to a popout", () => {
+it("follows the owner document when the calendar is moved to a popout", async () => {
 	const h = harness();
 	try {
 		const popout = document.implementation.createHTMLDocument("Popout");
 		popout.body.append(popout.adoptNode(h.root));
 		pointer(h.el, "pointerdown"); h.controller.allow(h.proposal);
 		pointer(popout, "pointerup");
+		await new Promise(resolve => setTimeout(resolve, 0));
 		expect(h.upsert).toHaveBeenLastCalledWith([h.original]);
 	} finally { h.controller.dispose(); }
 });

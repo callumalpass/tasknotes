@@ -6,6 +6,7 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 
 ### Version 4.x (Current)
 
+- [4.18.0](releases/4.18.0.md)
 - [4.17.0](releases/4.17.0.md)
 - [4.16.1](releases/4.16.1.md)
 - [4.16.0](releases/4.16.0.md)

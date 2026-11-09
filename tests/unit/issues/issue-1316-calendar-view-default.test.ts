@@ -45,8 +45,28 @@ describe("Issue #1316 - Calendar view defaults vs workspace state", () => {
 		expect(state.calendarView).toBeUndefined();
 	});
 
+	it("does not navigate to the same date and rebuild an active gesture's grid", () => {
+		const calendar = {
+			getDate: () => new Date("2026-01-20T00:00:00.000Z"),
+			gotoDate: jest.fn(),
+			flush: jest.fn(),
+			setScroll: jest.fn(),
+		};
+		const view = createCalendarView(calendar);
+
+		view.setEphemeralState({
+			calendarDate: "2026-01-20T00:00:00.000Z",
+			calendarScroll: { top: 320, left: 0 },
+		});
+
+		expect(calendar.gotoDate).not.toHaveBeenCalled();
+		expect(calendar.flush).toHaveBeenCalledTimes(1);
+		expect(calendar.setScroll).toHaveBeenCalledWith({ top: 320, left: 0 });
+	});
+
 	it("restores date and scroll, ignoring a stale calendarView", () => {
 		const calendar = {
+			getDate: () => new Date("2026-01-15T00:00:00.000Z"),
 			gotoDate: jest.fn(),
 			changeView: jest.fn(),
 			flush: jest.fn(),

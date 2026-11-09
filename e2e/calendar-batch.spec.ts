@@ -208,9 +208,14 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 	const target = (await page.locator('.tnc-dg-day[data-date="2031-05-06"]').boundingBox())!;
 	await page.mouse.move(box.x + 20, box.y + 8); await page.mouse.down();
 	await page.mouse.move(target.x + target.width / 2, target.y + 55, { steps: 20 });
-	await expect(event(page, "Bravo")).toHaveClass(/tn-calendar-batch-preview/);
-	await expect(event(page, "Bravo")).toBeVisible();
-	await expect(event(page, "Bravo")).toHaveClass(/is-mirror/);
+	// Month now freezes the source layout and draws separate target previews.
+	// The first Bravo element is the retained original, not the moving preview.
+	const preview = page.locator(`.tnc:visible .tn-calendar-batch-preview[data-task-path="${folder}/Bravo.md"]`);
+	await expect(preview).toHaveCount(1);
+	await expect(preview).toBeVisible();
+	await expect(preview).toHaveClass(/is-mirror/);
+	await expect(preview).toContainText("Bravo");
+	await expect(preview).toHaveAttribute("aria-hidden", "true");
 	expect((await taskDates(page, "Bravo")).scheduled).toBe("2031-05-06T11:30");
 	await page.keyboard.press("Escape"); await page.mouse.up();
 	await expect(page.locator(".tn-calendar-batch-preview")).toHaveCount(0);
