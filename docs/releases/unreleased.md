@@ -144,6 +144,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Keep subtask expand controls separate from the task options button, including rows without metadata.
+  - Thanks to @iantierney for the subtask sorting report in #2394.
+
 - Obsidian's editor commands and shortcuts work in the task modal's Markdown editors. Bold, Italic and Insert link did nothing there, and Follow link failed with an error. Plugins that use the active editor, such as Templater, now get the full editor.
 - Keep scheduled and due dates visible together in narrow Kanban cards and phone task lists by allowing their text to fit before moving dates into the metadata disclosure.
 - Use compact desktop controls in timeblock and other composer dialogs, matching task dialogs while preserving larger phone touch targets.

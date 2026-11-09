@@ -211,7 +211,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 }
 
 body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__badges.task-card__badges--interactive {
-    grid-column: 4 / -1;
+    grid-column: 4;
     grid-row: 2;
     flex-wrap: nowrap;
     min-width: 0;
