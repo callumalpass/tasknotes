@@ -69,8 +69,9 @@ body:not(.is-mobile) .tasknotes-settings {
 }
 
 .tasknotes-plugin .settings-view__tab-content .setting-item-description {
-    margin-top: var(--tn-space-1);
+    color: var(--tn-text-muted);
     font-size: var(--tn-type-xs);
+    margin-top: var(--tn-space-1);
     line-height: 1.4;
 }
 

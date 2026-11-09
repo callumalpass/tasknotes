@@ -21,6 +21,7 @@
 }
 
 .tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child {
+    grid-column: 1 / -1;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--tn-space-1);
