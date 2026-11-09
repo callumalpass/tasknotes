@@ -40,3 +40,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @RumiaKitinari for reporting this
 - (#2529) Fixed back-to-back events and timeblocks being grouped as overlapping in calendar time grids. When an event was drawn shorter than the minimum event height, for example with 15-minute events or a compact time slot height, an event starting exactly at its end was laid out beside it or collapsed into a group. Events that only touch now stay in one column.
   - Thanks to @RumiaKitinari for reporting this
+- (#2531) Fixed Kanban boards jumping back to the left after a card was edited and saved while the board was scrolled sideways. Refreshing the board now keeps its horizontal and vertical scroll position along with each column's scroll position.
+  - Thanks to @petrabuchinger2025-code for reporting this
