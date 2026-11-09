@@ -349,6 +349,9 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 	const scheduledIsEmpty = `${scheduledProperty}.isEmpty()`;
 	const dueHasValue = `(${dueIsEmpty} == false)`;
 	const scheduledHasValue = `(${scheduledIsEmpty} == false)`;
+	// Bases evaluates `!prop` to null (not true) when the property is missing, so
+	// emptiness checks must use isEmpty() rather than negation (#2524).
+	const timeEstimateMissing = `${timeEstimateProperty}.isEmpty() || ${timeEstimateProperty} == 0`;
 	const safeDaysUntilNext = "if(formula.daysUntilNext, formula.daysUntilNext, 0)";
 	const todayDay = getBasesTodayDayExpression();
 	const weekEndDay = getBasesWeekEndDayExpression();
@@ -432,7 +435,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		dueDateCategory: `if(${dueIsEmpty}, ${JSON.stringify(uiText(msg({ message: "No due date", context: "generated Bases grouping label" })))}, if(date(${dueProperty}) < today(), ${JSON.stringify(uiText(msg({ message: "Overdue", context: "generated Bases grouping label" })))}, if(${dueDay} == ${todayDay}, ${JSON.stringify(uiText(msg({ message: "Today", context: "generated Bases grouping label" })))}, if(${dueDay} == ${tomorrowDay}, ${JSON.stringify(uiText(msg({ message: "Tomorrow", context: "generated Bases grouping label" })))}, if(${dueDay} <= ${weekEndDay}, ${JSON.stringify(uiText(msg({ message: "This week", context: "generated Bases grouping label" })))}, ${JSON.stringify(uiText(msg({ message: "Later", context: "generated Bases grouping label" })))})))))`,
 
 		// Time estimate category for grouping
-		timeEstimateCategory: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0 || ${timeEstimateProperty} == null, ${JSON.stringify(uiText(msg({ message: "No estimate", context: "generated Bases grouping label" })))}, if(${timeEstimateProperty} < 30, ${JSON.stringify(uiText(msg({ message: "Quick (<30m)", context: "generated Bases grouping label" })))}, if(${timeEstimateProperty} <= 120, ${JSON.stringify(uiText(msg({ message: "Medium (30m-2h)", context: "generated Bases grouping label" })))}, ${JSON.stringify(uiText(msg({ message: "Long (>2h)", context: "generated Bases grouping label" })))})))`,
+		timeEstimateCategory: `if(${timeEstimateMissing}, ${JSON.stringify(uiText(msg({ message: "No estimate", context: "generated Bases grouping label" })))}, if(${timeEstimateProperty} < 30, ${JSON.stringify(uiText(msg({ message: "Quick (<30m)", context: "generated Bases grouping label" })))}, if(${timeEstimateProperty} <= 120, ${JSON.stringify(uiText(msg({ message: "Medium (30m-2h)", context: "generated Bases grouping label" })))}, ${JSON.stringify(uiText(msg({ message: "Long (>2h)", context: "generated Bases grouping label" })))})))`,
 
 		// Age category based on creation date
 		ageCategory: `if(((number(now()) - number(file.ctime)) / 86400000) < 1, ${JSON.stringify(uiText(msg({ message: "Today", context: "generated Bases grouping label" })))}, if(((number(now()) - number(file.ctime)) / 86400000) < 7, ${JSON.stringify(uiText(msg({ message: "This week", context: "generated Bases grouping label" })))}, if(((number(now()) - number(file.ctime)) / 86400000) < 30, ${JSON.stringify(uiText(msg({ message: "This month", context: "generated Bases grouping label" })))}, ${JSON.stringify(uiText(msg({ message: "Older", context: "generated Bases grouping label" })))})))`,
@@ -467,7 +470,7 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		),
 
 		// Tracking vs estimate status for grouping
-		trackingStatus: `if(!${timeEstimateProperty} || ${timeEstimateProperty} == 0 || ${timeEstimateProperty} == null, ${JSON.stringify(uiText(msg({ message: "No estimate", context: "generated Bases grouping label" })))}, if(!${timeEntriesProperty} || list(${timeEntriesProperty}).length == 0, ${JSON.stringify(uiText(msg({ message: "Not started", context: "generated Bases grouping label" })))}, if(formula.efficiencyRatio < 100, ${JSON.stringify(uiText(msg({ message: "Under estimate", context: "generated Bases grouping label" })))}, ${JSON.stringify(uiText(msg({ message: "Over estimate", context: "generated Bases grouping label" })))})))`,
+		trackingStatus: `if(${timeEstimateMissing}, ${JSON.stringify(uiText(msg({ message: "No estimate", context: "generated Bases grouping label" })))}, if(${timeEntriesProperty}.isEmpty(), ${JSON.stringify(uiText(msg({ message: "Not started", context: "generated Bases grouping label" })))}, if(formula.efficiencyRatio < 100, ${JSON.stringify(uiText(msg({ message: "Under estimate", context: "generated Bases grouping label" })))}, ${JSON.stringify(uiText(msg({ message: "Over estimate", context: "generated Bases grouping label" })))})))`,
 
 		// === COMBINED DUE/SCHEDULED FORMULAS ===
 
