@@ -86,11 +86,22 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
         await modal.locator(".modal-button-container .mod-cta").click();
       }
       await expect(modal).toBeVisible();
-      await expect(page.locator(".notice").filter({ hasText: await translate("Please enter a task title", "modals.taskCreation.notices.titleRequired") })).toBeVisible();
+      await expect(modal.locator('.tn-task-modal__field-error[role="alert"]')).toHaveText(
+        await translate("Please enter a task title", "modals.taskCreation.notices.titleRequired")
+      );
       const generated = await page.evaluate(prefix => (window as any).app.vault.getMarkdownFiles().filter(file => file.path.startsWith(prefix + "/")).map(file => file.basename), prefix);
       expect(generated).not.toContain("Untitled Task");
       await page.screenshot({ path: `${output}/${locale}-missing-title-modal.png` });
-      await page.keyboard.press("Escape");
+      await modal.getByRole("button", { name: await translate("Cancel", "common.cancel"), exact: true }).click();
+      const confirmation = page.locator(".modal").filter({
+        hasText: await translate("Unsaved changes", "modals.task.unsavedChanges.title"),
+      });
+      await expect(confirmation).toBeVisible();
+      await confirmation.getByRole("button", {
+        name: await translate("Discard changes", "modals.task.unsavedChanges.discard"), exact: true,
+      }).click();
+      await expect(confirmation).toHaveCount(0);
+      await expect(modal).toHaveCount(0);
       report[locale] = { fieldAndGroupLabels: rendered, settingsUnchangedByRendering: true, completedDateGroups: groups, programmaticFallback: fallback.title, interactiveMissingTitleRejected: true };
       writeFileSync(`${output}/report.json`, JSON.stringify(report, null, 2) + "\n");
     }

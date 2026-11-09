@@ -1247,8 +1247,8 @@ export abstract class TaskModal extends Modal {
 		if (this.titleInput) this.focusGuards.focusTitleInput(this.titleInput);
 	}
 
-	protected getInitialFocusDelay(): number {
-		return this.focusGuards.getInitialFocusDelay();
+	protected scheduleInitialFocus(applyFocus: () => void): void {
+		this.focusGuards.scheduleInitialFocus(applyFocus);
 	}
 
 	protected isMobileLikeEnvironment(): boolean {

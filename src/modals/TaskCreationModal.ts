@@ -281,13 +281,13 @@ export class TaskCreationModal extends TaskModal {
 			return;
 		}
 
-		window.setTimeout(() => {
+		this.scheduleInitialFocus(() => {
 			const cm = this.nlMarkdownEditor?.editor?.cm;
 			if (cm) {
 				cm.focus();
 				cm.scrollDOM.scrollTop = 0;
 			}
-		}, this.getInitialFocusDelay());
+		});
 	}
 
 	private getNLPInputValue(): string {

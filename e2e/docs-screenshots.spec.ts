@@ -314,21 +314,29 @@ test.describe('Task Modal', () => {
     const page = getPage();
     await ensureCleanState(page);
 
-    // Open calendar view and click on a task event to open edit modal
-    await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(1500);
-
-    // Click on a task event in the calendar
-    const taskEvent = page.locator('.tnc-item').first();
-    if (await taskEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await taskEvent.click();
-      await page.waitForTimeout(800);
-
-      const modal = page.locator('.modal');
-      if (await modal.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await docScreenshot(page, 'modal-task-edit');
-        await page.keyboard.press('Escape');
-      }
+    const taskPath = await page.evaluate(async () => {
+      const plugin = (window as any).app.plugins.plugins.tasknotes;
+      const { file, taskInfo } = await plugin.taskService.createTask({
+        title: 'Review project documentation', status: 'open', priority: 'high',
+        timeEstimate: 30, details: 'Check the examples and share the updated draft.',
+      });
+      await plugin.openTaskEditModal(taskInfo);
+      return file.path;
+    });
+    try {
+      const modal = page.locator('.modal.mod-tasknotes');
+      await expect(modal.locator('textarea.title-input')).toHaveValue('Review project documentation');
+      await expect(modal.locator('.details-container')).toHaveCSS('opacity', '1');
+      await modal.locator('.modal-title').click();
+      await docScreenshot(page, 'modal-task-edit');
+      await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(modal).toHaveCount(0);
+    } finally {
+      await page.evaluate(async taskPath => {
+        const app = (window as any).app;
+        const file = app.vault.getAbstractFileByPath(taskPath);
+        if (file) await app.vault.delete(file);
+      }, taskPath);
     }
   });
 
@@ -339,16 +347,22 @@ test.describe('Task Modal', () => {
     await runCommand(page, 'Create new task');
     await page.waitForTimeout(500);
 
-    // Fill in some sample content
-    const titleInput = page.locator('.modal input[type="text"]').first();
-    if (await titleInput.isVisible()) {
-      await titleInput.fill('Complete project documentation');
+    const modal = page.locator('.modal.mod-tasknotes');
+    const editor = modal.locator('.tn-task-modal__markdown-editor--nlp .cm-content').first();
+    if (await editor.isVisible()) {
+      await editor.click();
+      await editor.pressSequentially('Complete project documentation');
+      await expect(editor).toHaveText('Complete project documentation');
+    } else {
+      await modal.locator('textarea.title-input').fill('Complete project documentation');
+      await expect(modal.locator('textarea.title-input')).toHaveValue('Complete project documentation');
     }
-
-    await page.waitForTimeout(300);
     await docScreenshot(page, 'modal-task-filled');
-
-    await page.keyboard.press('Escape');
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    const confirmation = page.locator('.modal').filter({ hasText: 'Unsaved changes' });
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Discard changes', exact: true }).click();
+    await expect(modal).toHaveCount(0);
   });
 });
 

@@ -14,6 +14,8 @@ async function openBoard() {
   await page.waitForFunction(() => (window as any).app?.plugins?.plugins?.tasknotes?.statusManager);
   await page.evaluate(async path => {
     const app = (window as any).app;
+    // Services can be ready before Obsidian has restored its workspace after reload.
+    await new Promise<void>(resolve => app.workspace.onLayoutReady(resolve));
     await app.workspace.getLeaf(false).openFile(app.vault.getAbstractFileByPath(path));
   }, basePath);
   await expect(page.locator('.kanban-view__card-wrapper')).toHaveCount(2);

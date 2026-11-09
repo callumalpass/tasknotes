@@ -24,18 +24,34 @@ export class TaskModalFocusGuards {
 	private mobileKeyboardFocusCleanups: Array<() => void> = [];
 	private mobileKeyboardScrollTimers: number[] = [];
 	private activeMobileKeyboardInput: HTMLElement | null = null;
+	private initialFocusTimer: number | null = null;
 
 	constructor(elements: TaskModalFocusGuardElements) {
 		this.elements = elements;
 	}
 
 	focusTitleInput(input: TaskModalTitleInputElement): void {
-		const win = this.getWindow();
-		win.setTimeout(() => {
+		this.scheduleInitialFocus(() => {
 			this.pendingTitleFocusScrollPositions = this.captureTitleFocusScrollPositions(input);
 			input.focus({ preventScroll: true });
 			input.select();
 			this.restoreTitleFocusScrollPositions(this.pendingTitleFocusScrollPositions);
+		});
+	}
+
+	scheduleInitialFocus(applyFocus: () => void): void {
+		const win = this.getWindow();
+		if (this.initialFocusTimer !== null) win.clearTimeout(this.initialFocusTimer);
+		this.initialFocusTimer = win.setTimeout(() => {
+			this.initialFocusTimer = null;
+			const active = this.elements.modalEl.ownerDocument.activeElement;
+			// Initial autofocus must not override a field, caret or control the
+			// person has already chosen while the modal was opening.
+			if (
+				active && this.elements.modalEl.contains(active) &&
+				active !== this.elements.modalEl && active !== this.elements.contentEl
+			) return;
+			applyFocus();
 		}, this.getInitialFocusDelay());
 	}
 
@@ -129,6 +145,10 @@ export class TaskModalFocusGuards {
 		this.mobileKeyboardFocusCleanups = [];
 
 		const win = this.getWindow();
+		if (this.initialFocusTimer !== null) {
+			win.clearTimeout(this.initialFocusTimer);
+			this.initialFocusTimer = null;
+		}
 		for (const timer of this.mobileKeyboardScrollTimers) {
 			win.clearTimeout(timer);
 		}

@@ -51,12 +51,18 @@ async function openView(
 }
 
 async function beginMouseDrag(target: Locator): Promise<void> {
-	await target.hover();
-	await card("Source").hover();
-	const source = await card("Source").boundingBox();
-	const destination = await target.boundingBox();
-	expect(source).not.toBeNull();
-	expect(destination).not.toBeNull();
+	let source: Awaited<ReturnType<Locator["boundingBox"]>> = null;
+	let destination: Awaited<ReturnType<Locator["boundingBox"]>> = null;
+	// A relationship write can settle before Task List finishes replacing its
+	// cards. Resolve live geometry before starting the next drag, not mid-render.
+	await expect(async () => {
+		await target.hover();
+		await card("Source").hover();
+		source = await card("Source").boundingBox();
+		destination = await target.boundingBox();
+		expect(source).not.toBeNull();
+		expect(destination).not.toBeNull();
+	}).toPass({ timeout: 5000 });
 	await instance.page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2);
 	await instance.page.mouse.down();
 	await instance.page.mouse.move(
