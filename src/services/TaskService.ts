@@ -880,6 +880,7 @@ export class TaskService {
 				property,
 				oldValue,
 				newValue,
+				cacheAlreadyUpdated: restoringReceipt,
 			}
 		);
 

@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- Keep rapid status changes after Undo from reverting to the restored status while Obsidian updates its metadata cache.
+
 - Keep the phone agenda view selector clear of the date heading, fit week and three-day columns to narrow panes, and align agenda and selected-day rows with compact time gutters, clear deadline markers, and visible task dots throughout the date strip.
 
 - Prevent calendar collision-popover rows from showing redundant tooltips over neighbouring tasks, while preserving their accessible labels and regular calendar-event tooltips.
