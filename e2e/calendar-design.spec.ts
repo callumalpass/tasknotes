@@ -318,16 +318,24 @@ test('timeblocks retain drag and resize in both themes', async () => {
       document.body.classList.remove('theme-light', 'theme-dark');
       document.body.classList.add(theme);
     }, theme);
-    if (await calendar.locator('.tnc-toolbar-view-select').isVisible()) await calendar.locator('.tnc-toolbar-view-select').selectOption('days');
-    else await calendar.locator('.tnc-toolbar-view-select').selectOption('days');
+    const viewSelect = calendar.locator('.tnc-toolbar-view-select');
+    if (await viewSelect.inputValue() !== 'days') await viewSelect.selectOption('days');
     await expect.poll(() => page.evaluate(async folder => {
       const app = (window as any).app;
       return app.vault.read(app.vault.getAbstractFileByPath(`${folder}/Timeblocks.base`));
     }, folder)).toMatch(/calendarView: ["']?timeGridCustom/);
     const block = calendar.locator('.tnc-item[data-event-type="timeblock"]');
     await expect(block).toBeVisible();
-    await block.hover();
+    // Prev/next can reset the time-grid scroll position. Leave room below the
+    // event so both native gestures finish inside the emulated viewport.
     let box = (await block.boundingBox())!;
+    await expect(async () => {
+      await block.evaluate(element => element.scrollIntoView({ block: 'center', inline: 'nearest' }));
+      await block.hover();
+      box = (await block.boundingBox())!;
+      expect(box).not.toBeNull();
+      expect(box.y + box.height * 1.5).toBeLessThan(page.viewportSize()!.height);
+    }).toPass({ timeout: 5000 });
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + box.height, { steps: 10 });
@@ -339,6 +347,7 @@ test('timeblocks retain drag and resize in both themes', async () => {
     const handle = block.locator('.tnc-resize-end');
     await handle.hover();
     const resize = (await handle.boundingBox())!;
+    expect(resize.y + resize.height / 2 + box.height).toBeLessThan(page.viewportSize()!.height);
     await page.mouse.move(resize.x + resize.width / 2, resize.y + resize.height / 2);
     await page.mouse.down();
     await page.mouse.move(resize.x + resize.width / 2, resize.y + resize.height / 2 + box.height, { steps: 10 });
