@@ -1,7 +1,7 @@
 /*
- * Pinned host copy of @tasknotes/calendar 0.1.10 dist/calendar.css (MIT, see
- * LICENSE beside this file; upstream sha256 652876bf3041281974a22ab92f9d8950
- * f95de2cbb3df033b120980d633e9ef38). build-css.mjs bundles this file in place
+ * Pinned host copy of @tasknotes/calendar 0.1.11 dist/calendar.css (MIT, see
+ * LICENSE beside this file; upstream sha256 831186441ed7759c15b70967863f0fa4
+ * 6adbbef10c30397bd4099e48b0c1f77b). build-css.mjs bundles this file in place
  * of the package stylesheet so styles.css passes the plugin's stylelint rules.
  * Changes from upstream are marked "Host:" and keep the upstream behaviour:
  * short hex colours expanded; !important replaced by specificity, source order
@@ -313,8 +313,42 @@
 .tnc-item--timed.is-short .tnc-item-time {
 	flex: none;
 }
-@container (max-height: 50px) and (max-width: 239px) {
-	.tnc-item--timed .tnc-item-time {
+/* Stacked layout: the time keeps its line and the title gets the lines left over
+   (11px text: n title lines need 13.75 * (n + 1) + 1px). Single-row short items drop the time when narrow. */
+.tnc-item--timed:not(.is-short) .tnc-item-title {
+	flex: 0 1 auto;
+	min-height: 0;
+}
+.tnc-item--timed:not(.is-short) .tnc-item-time {
+	flex: none;
+}
+@container (max-height: 97.2px) {
+	.tnc-item--timed:not(.is-short) .tnc-item-title {
+		-webkit-line-clamp: 5;
+	}
+}
+@container (max-height: 83.4px) {
+	.tnc-item--timed:not(.is-short) .tnc-item-title {
+		-webkit-line-clamp: 4;
+	}
+}
+@container (max-height: 69.7px) {
+	.tnc-item--timed:not(.is-short) .tnc-item-title {
+		-webkit-line-clamp: 3;
+	}
+}
+@container (max-height: 55.9px) {
+	.tnc-item--timed:not(.is-short) .tnc-item-title {
+		-webkit-line-clamp: 2;
+	}
+}
+@container (max-height: 42.2px) {
+	.tnc-item--timed:not(.is-short) .tnc-item-title {
+		-webkit-line-clamp: 1;
+	}
+}
+@container (max-width: 239px) {
+	.tnc-item--timed.is-short .tnc-item-time {
 		display: none;
 	}
 }

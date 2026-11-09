@@ -36,3 +36,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2527) Fixed timeblock titles being invisible in light themes in the calendar's "+N more" popover for overlapping events, in month view and in list view. These places draw the timeblock without its colour fill, but the text stayed white. It now uses the theme's text colour there. Property-based calendar events had the same problem and are fixed too.
   - Thanks to @RumiaKitinari for reporting this
+- (#2528) Fixed calendar time grids hiding the time range on some timed events and timeblocks. Events about an hour long or shorter lost their time in narrow columns, such as a week view, while longer ones kept it. Long titles could also push the time out of view. The time now stays visible whenever the event has room for two lines, and the title is shortened instead.
+  - Thanks to @RumiaKitinari for reporting this
+- (#2529) Fixed back-to-back events and timeblocks being grouped as overlapping in calendar time grids. When an event was drawn shorter than the minimum event height, for example with 15-minute events or a compact time slot height, an event starting exactly at its end was laid out beside it or collapsed into a group. Events that only touch now stay in one column.
+  - Thanks to @RumiaKitinari for reporting this
