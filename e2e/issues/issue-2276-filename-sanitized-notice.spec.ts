@@ -43,10 +43,11 @@ test("creating a task with / in its title names the sanitized file", async () =>
 		page.locator(".tn-toast").filter({ hasText: `Task created as "${filename}". Unsupported filename characters omitted; full title kept in properties.` })
 	).toBeVisible();
 
-	const saved = await page.evaluate((filename) => {
+	// The creation toast follows the file write; Obsidian indexes frontmatter
+	// asynchronously, so wait for the cache before checking the preserved title.
+	await expect.poll(() => page.evaluate((filename) => {
 		const app = (window as any).app;
 		const file = app.vault.getMarkdownFiles().find((f: any) => f.basename === filename);
 		return file ? app.metadataCache.getFileCache(file)?.frontmatter?.title : null;
-	}, filename);
-	expect(saved).toBe(title);
+	}, filename)).toBe(title);
 });
