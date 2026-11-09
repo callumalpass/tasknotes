@@ -149,7 +149,7 @@ export class SettingsLifecycleService {
 	}
 
 	async onExternalSettingsChange(): Promise<void> {
-		await this.plugin.loadSettings();
+		await this.plugin.loadSettings(true);
 		await this.plugin.mdbaseSpecService?.reloadCanonicalSettingsFromDisk();
 		this.applyEffectiveSettings();
 	}

@@ -827,7 +827,13 @@ export default class TaskNotesPlugin extends Plugin {
 		return result.data;
 	}
 
-	async loadSettings() {
+	/**
+	 * @param fromExternalChange data.json changed on disk, usually through sync. It is
+	 * migrated in memory but not written back: a device still on v4 adds the stripped
+	 * keys again on its next load, so writing would never settle. The next save on this
+	 * device stores the migrated settings.
+	 */
+	async loadSettings(fromExternalChange = false) {
 		let loadedData = await this.loadSettingsData();
 		this.oauthSecretStore ??= new OAuthSecretStore(this.app.secretStorage);
 		this.oauthSecretStorageReady = false;
@@ -839,7 +845,7 @@ export default class TaskNotesPlugin extends Plugin {
 			// Copy values from earlier versions to device storage before data.json drops them.
 			deviceLocal = loadDeviceLocalSettings(this.app, migration.data);
 			const sanitized = migration.data && stripDeviceLocalSettings(migration.data);
-			if ((migration.changed || sanitized !== migration.data) && sanitized) {
+			if (!fromExternalChange && (migration.changed || sanitized !== migration.data) && sanitized) {
 				await super.saveData(sanitized);
 			}
 			loadedData = sanitized;
@@ -853,7 +859,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.settings = settings;
 		this.newInstall = !loadedData && !settings.lastSeenVersion;
 
-		if (shouldPersistMigratedSettings) {
+		if (shouldPersistMigratedSettings && !fromExternalChange) {
 			// Save the migrated settings to include new field mappings (non-blocking)
 			window.setTimeout(() => {
 				void (async () => {

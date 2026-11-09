@@ -37,11 +37,11 @@ function createPlugin(stored: Record<string, unknown>) {
 	jest.spyOn(Plugin.prototype, "loadData").mockImplementation(async () =>
 		disk ? JSON.parse(JSON.stringify(disk)) : null
 	);
-	jest.spyOn(Plugin.prototype, "saveData").mockImplementation(async (data: unknown) => {
+	const saveData = jest.spyOn(Plugin.prototype, "saveData").mockImplementation(async (data: unknown) => {
 		disk = JSON.parse(JSON.stringify(data));
 	});
 
-	return { plugin, secrets, local, readDisk: () => disk };
+	return { plugin, secrets, local, readDisk: () => disk, saveData };
 }
 
 describe("issue #2345 device-local values stay out of data.json", () => {
@@ -63,7 +63,8 @@ describe("issue #2345 device-local values stay out of data.json", () => {
 		expect(plugin.settings.lastSeenVersion).toBe("4.13.6");
 		expect(secrets.get(API_AUTH_TOKEN_SECRET_ID)).toBe("legacy-token");
 		expect(local.get("tasknotes-last-seen-version")).toBe("4.13.6");
-		expect(readDisk()).toEqual({ taskTag: "task" });
+		// 4.x devices sharing this data.json would otherwise see a new install.
+		expect(readDisk()).toEqual({ taskTag: "task", starterNoteCreated: true });
 	});
 
 	it("keeps later settings saves free of device-local values", async () => {
@@ -80,6 +81,21 @@ describe("issue #2345 device-local values stay out of data.json", () => {
 		expect(disk.taskTag).toBe("task");
 		expect(secrets.get(API_AUTH_TOKEN_SECRET_ID)).toBe("generated-token");
 		expect(local.get("tasknotes-last-seen-version")).toBe("5.0.0");
+	});
+
+	it("does not rewrite data.json synced from a v4 device", async () => {
+		// v4 adds these back whenever it reloads settings; writing them away again on
+		// every synced change kept two devices rewriting data.json indefinitely.
+		const synced = { apiAuthToken: "", lastSeenVersion: "4.5.0", googleOAuthClientId: "", taskTag: "task" };
+		const { plugin, secrets, saveData } = createPlugin(synced);
+		secrets.set(API_AUTH_TOKEN_SECRET_ID, "this-device-token");
+
+		await plugin.loadSettings(true);
+		await new Promise((resolve) => setTimeout(resolve, 150));
+
+		expect(saveData.mock.contexts).not.toContain(plugin);
+		expect(plugin.settings.apiAuthToken).toBe("this-device-token");
+		expect(plugin.settings.taskTag).toBe("task");
 	});
 
 	it("does not treat a synced vault on a new device as a new install", async () => {
