@@ -60,6 +60,13 @@
     }
 }
 
+/* Timeblock and property event text is --text-on-accent, for their colour fill. Dots (month
+   view, "+N more" popovers) and list rows have no fill, so use the theme text colour there. */
+.advanced-calendar-view .tnc-item:is(.tnc-item--dot, .tnc-item--list):is([data-event-type="timeblock"], [data-event-type="property-based"]) > .tnc-item-main {
+    --tnc-fg: var(--text-normal);
+    color: var(--tnc-fg);
+}
+
 /* External calendar events */
 .advanced-calendar-view .tnc-item[data-ics-event="true"] {
     opacity: 0.9;
