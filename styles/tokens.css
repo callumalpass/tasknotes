@@ -1,0 +1,248 @@
+/* TaskNotes design tokens. See docs/development/design-system.md.
+   This is the only file that may hold raw font sizes, radii and shadows. */
+
+.tasknotes-plugin {
+    /* Type */
+    /* Scales with Obsidian's font size setting. Absolute units so pop-out roots can't shrink it. */
+    --tn-type-hidden: 0;
+    --tn-task-date-width: 21ch;
+    --tn-type-timer: clamp(var(--tn-type-xl), calc(var(--tn-type-base) * 4 * var(--pomodoro-scale, 1)), calc(var(--tn-type-base) * 4));
+    --tn-type-base: var(--font-text-size, 16px);
+    --tn-type-2xs: calc(var(--tn-type-base) * 0.6875);
+    --tn-type-xs: calc(var(--tn-type-base) * 0.75);
+    --tn-type-sm: calc(var(--tn-type-base) * 0.8125);
+    --tn-type-md: calc(var(--tn-type-base) * 0.875);
+    --tn-type-lg: calc(var(--tn-type-base) * 1.125);
+    --tn-type-xl: calc(var(--tn-type-base) * 1.5);
+
+    --tn-font-weight-normal: var(--font-normal, 400);
+    --tn-font-weight-medium: var(--font-medium, 500);
+    --tn-font-weight-semibold: var(--font-semibold, 600);
+    --tn-font-weight-bold: var(--font-semibold, 600);
+    --tn-letter-spacing-label: 0.08em;
+
+    /* Space */
+    --tn-space-half: var(--size-2-1, 2px);
+    --tn-drag-stack-shadow: 0 4px 0 -1px var(--background-primary), 0 5px 0 0 var(--tn-border-color), 0 8px 0 -1px var(--background-primary), 0 9px 0 0 var(--tn-border-color);
+    --tn-board-header-height: calc(var(--tn-type-sm) * 2.8 + var(--tn-space-4));
+    --tn-space-1: var(--size-4-1, 4px);
+    --tn-space-2: var(--size-4-2, 8px);
+    --tn-space-3: var(--size-4-3, 12px);
+    --tn-space-4: var(--size-4-4, 16px);
+    --tn-space-5: var(--size-4-5, 20px);
+    --tn-space-6: var(--size-4-6, 24px);
+    --tn-space-8: var(--size-4-8, 32px);
+
+    /* Radius */
+    --tn-radius-none: 0;
+    --tn-radius-xs: 2px;
+    --tn-radius-sm: var(--radius-s, 4px);
+    --tn-radius-md: var(--input-radius, 6px);
+    --tn-radius-lg: var(--radius-m, 8px);
+    --tn-radius-xl: var(--radius-l, 12px);
+    --tn-radius-full: 999px;
+    --tn-menu-radius: var(--menu-radius, var(--tn-radius-lg));
+    --tn-menu-shadow: var(--shadow-s);
+    --tn-menu-padding: var(--size-2-3, var(--tn-space-1));
+    --tn-picker-width: 320px;
+
+    --tn-segmented-gap: var(--tn-space-half);
+    --tn-segmented-padding: var(--tn-space-half);
+    --tn-segmented-radius: var(--tn-radius-md);
+    --tn-segmented-bg: var(--tn-bg-secondary);
+    --tn-segmented-item-height: var(--tn-control-sm);
+    --tn-segmented-item-radius: var(--tn-radius-sm);
+    --tn-segmented-selected-bg: var(--tn-bg-primary);
+    --tn-segmented-selected-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+    --tn-calendar-event-tint: 6%;
+    --tn-calendar-event-saturation: 16%;
+    --tn-calendar-mark-lightness-min: 0.48;
+    --tn-calendar-mark-lightness-max: 0.62;
+    --tn-calendar-mark-chroma-max: 0.16;
+    --tn-calendar-chip-height: 22px;
+    --tn-calendar-date-lane: 64px;
+    --tn-mini-calendar-day-size: 32px;
+    --tn-glyph-size: 14px;
+    --tn-modal-composer-width: 720px;
+    --tn-modal-compact-width: 600px;
+    --tn-modal-split-width: 960px;
+    --tn-modal-split-height: 540px;
+    --tn-modal-details-min-width: 320px;
+    --tn-modal-details-min-height: 96px;
+    --tn-modal-editor-size: calc(var(--font-text-size) - 1px);
+    --tn-modal-field-label-width: 148px;
+    --tn-modal-header-height: 44px;
+    --tn-modal-top-offset: 10vh;
+    --tn-modal-sheet-clearance: 56px;
+
+    /* Surfaces and text come from the theme */
+    --tn-bg-primary: var(--background-primary);
+    --tn-bg-secondary: var(--background-secondary);
+    --tn-bg-primary-alt: var(--background-primary-alt, var(--background-primary));
+    --tn-bg-secondary-alt: var(--background-secondary-alt, var(--background-secondary));
+    --tn-text-normal: var(--text-normal);
+    --tn-text-muted: var(--text-muted);
+    --tn-text-metadata: color-mix(in srgb, var(--text-normal) 80%, var(--background-primary));
+    --tn-text-faint: var(--text-faint);
+    --tn-text-placeholder: var(--tn-text-metadata);
+    --tn-text-accent: var(--text-accent, var(--interactive-accent));
+
+    /* Lines */
+    --tn-hairline: color-mix(in srgb, var(--background-modifier-border) 70%, transparent);
+    --tn-border-color: var(--background-modifier-border);
+    --tn-border-color-hover: var(--background-modifier-border-hover);
+    --tn-border-color-focus: var(--background-modifier-border-focus);
+    --tn-border-color-interactive: var(--interactive-accent);
+
+    /* Interaction states */
+    --tn-hover: var(--background-modifier-hover);
+    --tn-active: var(--background-modifier-active-hover, var(--background-modifier-hover));
+    --tn-selected: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+    --tn-selected-hover: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+    --tn-focus-ring: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
+    --tn-drag-source-opacity: 0.38;
+    --tn-disabled-opacity: 0.5;
+    --tn-drag-surface: var(--background-primary);
+    --tn-drag-border: var(--background-modifier-border-hover);
+    --tn-drag-shadow: 0 6px 20px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.08);
+    --tn-drop-indicator: var(--interactive-accent);
+    --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
+    --tn-drop-invalid: var(--text-error);
+    --tn-drag-lift: var(--tn-shadow-raised);
+    --tn-drop-target: var(--tn-selected);
+
+    --tn-interactive-normal: var(--interactive-normal);
+    --tn-interactive-hover: var(--tn-hover);
+    --tn-interactive-accent: var(--interactive-accent);
+    --tn-interactive-accent-hover: var(--interactive-accent-hover);
+    --tn-interactive-success: var(--color-green);
+    --tn-drag-source-opacity: 0.4;
+    --tn-drag-shadow: var(--tn-shadow-overlay);
+    --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 6%, var(--background-secondary));
+    --tn-drop-indicator: var(--interactive-accent);
+
+    /* Semantic colour */
+    --tn-danger: var(--color-red, var(--text-error));
+    --tn-warning: var(--color-orange, var(--text-warning));
+    --tn-danger-text: color-mix(in srgb, var(--tn-danger) 75%, var(--tn-text-normal));
+    --tn-warning-text: color-mix(in srgb, var(--tn-warning) 60%, var(--tn-text-normal));
+    --tn-success: var(--color-green, var(--text-success));
+    --tn-info: var(--color-blue, var(--text-accent));
+
+    --tn-color-success: var(--tn-success);
+    --tn-color-warning: var(--tn-warning);
+    --tn-color-error: var(--tn-danger);
+    --tn-color-info: var(--tn-info);
+    --tn-color-overdue: var(--tn-danger-text);
+
+    /* Depth */
+    --tn-shadow-color: black;
+    --tn-shadow-raised: var(--shadow-s, 0 2px 8px rgba(0, 0, 0, 0.12));
+    --tn-shadow-overlay: var(--shadow-l, 0 8px 24px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.08));
+    --tn-shadow-modal: var(--shadow-l, 0 16px 48px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08));
+
+    --tn-shadow-light: var(--tn-shadow-raised);
+    --tn-shadow-medium: var(--tn-shadow-raised);
+    --tn-shadow-strong: var(--tn-shadow-overlay);
+    --tn-shadow-hover: var(--tn-shadow-raised);
+
+    /* Motion */
+    --tn-motion-fast: 80ms;
+    --tn-motion-base: var(--anim-duration-fast, 140ms);
+    --tn-motion-slow: 220ms;
+    --tn-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --tn-motion-hover-in: 0ms;
+    --tn-motion-settle: 320ms;
+
+    --tn-transition-instant: var(--tn-motion-fast) var(--tn-ease);
+    --tn-transition-fast: var(--tn-motion-fast) var(--tn-ease);
+    --tn-transition-normal: var(--tn-motion-base) var(--tn-ease);
+    --tn-transition-slow: var(--tn-motion-slow) var(--tn-ease);
+
+    /* Controls */
+    --tn-control-sm: 24px;
+    --tn-control-md: var(--input-height, 30px);
+    --tn-touch-target: 40px;
+    --tn-row-height: 34px;
+    --tn-row-height-compact: 28px;
+    --tn-glyph: var(--icon-s, 16px);
+    --tn-glyph-sm: var(--icon-xs, 14px);
+    --tn-task-row-height: 58px;
+    --tn-task-row-height-wide: 40px;
+    --tn-task-row-height-phone: 72px;
+    --tn-task-date-width-wide: 18ch;
+    --tn-task-details-opacity: 0.35;
+    --tn-task-row-height-compact: 46px;
+    --tn-status-glyph: 18px;
+    --tn-drag-preview-width: 320px;
+
+    --tn-button-height-sm: var(--tn-control-sm);
+    --tn-button-height-md: var(--tn-control-md);
+    --tn-button-height-lg: 32px;
+    --tn-input-height-sm: var(--tn-control-sm);
+    --tn-input-height-md: var(--tn-control-md);
+    --tn-input-height-lg: 32px;
+    --tn-touch-target: 40px;
+    --tn-icon-sm: var(--tn-glyph-sm);
+    --tn-icon-md: var(--tn-glyph);
+    --tn-icon-lg: var(--icon-l, 18px);
+
+    /* Layers */
+    --tn-z-base: 0;
+    --tn-z-sticky: 100;
+    --tn-z-dropdown: 1000;
+    --tn-z-modal: 2000;
+    --tn-z-tooltip: 3000;
+    --tn-z-notification: 4000;
+
+    /* Status and priority colours are injected by StatusManager and PriorityManager */
+    --tn-color-status-fallback: var(--tn-text-muted);
+    --tn-color-priority-fallback: var(--tn-text-muted);
+
+    /* Meaningful non-status colours */
+    --tn-color-archived: var(--text-muted);
+    --tn-color-daily-note: var(--color-purple, var(--text-accent));
+    --tn-color-recurring: var(--color-purple, var(--text-accent));
+    --tn-color-notes-light: var(--color-blue, var(--text-accent));
+    --tn-color-notes-medium: var(--color-blue, var(--text-accent));
+    --tn-color-notes-heavy: var(--color-blue, var(--text-accent));
+    --tn-color-google-calendar: var(--color-blue, #4285f4);
+    --tn-color-microsoft-calendar: var(--color-blue, #0078d4);
+    --tn-color-time-entry: var(--tn-success);
+    --tn-color-time-entry-text: var(--tn-success);
+    --tn-color-time-entry-bg-soft: color-mix(in srgb, var(--tn-success) 8%, transparent);
+    --tn-color-time-entry-bg-medium: color-mix(in srgb, var(--tn-success) 15%, transparent);
+
+    --tn-nested-task-indent: 24px;
+    --tn-nested-task-padding: 15px;
+
+    font-variant-numeric: tabular-nums;
+}
+
+body.theme-dark .tasknotes-plugin {
+    --tn-calendar-event-saturation: 26%;
+    --tn-calendar-mark-lightness-min: 0.68;
+    --tn-calendar-mark-lightness-max: 0.80;
+}
+
+body.is-mobile .tasknotes-plugin {
+    --tn-row-height: 44px;
+    --tn-row-height-compact: 40px;
+    --tn-control-md: var(--tn-touch-target);
+    --tn-nested-task-indent: 12px;
+    --tn-nested-task-padding: 10px;
+    --tn-mobile-task-card-indicator-size: 24px;
+    --tn-mobile-task-card-menu-size: 32px;
+    --tn-mobile-task-card-dot-padding: 6px;
+    --tn-mobile-inline-indicator-size: 20px;
+    --tn-mobile-inline-menu-size: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin {
+        --tn-motion-fast: 0ms;
+        --tn-motion-base: 0ms;
+        --tn-motion-slow: 0ms;
+        --tn-motion-settle: 0ms;
+    }
+}

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator } from "@playwright/test";
 import { launchObsidian, closeObsidian, type ObsidianApp } from "../obsidian";
 
 // Reporter: exactly two alpha-ranked tasks per actual scheduled date, not a
@@ -85,13 +85,15 @@ for (const direction of ["ASC", "DESC"]) {
 				.toBe(first);
 		};
 		const drag = async (day: string, above: boolean) => {
-			await card(day, "Alpha").hover();
-			const source = await card(day, "Alpha")
-				.locator(".task-card__drag-handle")
-				.boundingBox();
-			const target = await card(day, "Beta").boundingBox();
-			expect(source).not.toBeNull();
-			expect(target).not.toBeNull();
+			let source: Awaited<ReturnType<Locator["boundingBox"]>>;
+			let target: Awaited<ReturnType<Locator["boundingBox"]>>;
+			await expect(async () => {
+				await card(day, "Alpha").hover();
+				source = await card(day, "Alpha").locator(".task-card__drag-handle").boundingBox();
+				target = await card(day, "Beta").boundingBox();
+				expect(source).not.toBeNull();
+				expect(target).not.toBeNull();
+			}).toPass({ timeout: 5000 });
 			await instance.page.mouse.move(
 				source!.x + source!.width / 2,
 				source!.y + source!.height / 2

@@ -133,7 +133,7 @@ describe("basesSelectionUi", () => {
 		expect(indicator?.className).toContain("tn-selection-indicator");
 		expect(indicator?.getAttribute("role")).toBe("button");
 		expect(indicator?.tabIndex).toBe(0);
-		expect(indicator?.textContent).toBe("2 selected");
+		expect(indicator?.textContent).toBe("2 selected · Clear selection");
 		expect(indicator?.getAttribute("aria-label")).toBe(
 			"2 selected. Activate to clear selection."
 		);

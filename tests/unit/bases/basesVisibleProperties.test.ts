@@ -15,6 +15,14 @@ function createMapper(
 }
 
 describe("Bases visible properties", () => {
+	it("uses localized field labels for raw identifiers while preserving configured names", () => {
+		const labels = buildBasesVisiblePropertyLabels({
+			basesPropertyIds: ["note.scheduled", "note.due", "formula.days"],
+			propertyMapper: createMapper([], { "note.scheduled": "scheduled", "note.due": "due", "formula.days": "formula.days" }),
+			getDisplayName: (propertyId) => propertyId === "note.scheduled" ? "scheduled" : propertyId === "note.due" ? "My deadline" : "Days remaining",
+		});
+		expect(labels).toEqual({ due: "My deadline", "formula.days": "Days remaining" });
+	});
 	it("uses mapped Bases properties when the mapper returns visible TaskCard ids", () => {
 		const mapper = createMapper(["status", "priority"]);
 		const toUserProperties = jest.fn((properties: readonly string[]) => [...properties]);

@@ -164,7 +164,7 @@ views:
   await expect.poll(async () => (await nativeState()).complete_instances).toEqual(['2026-10-18']);
   expect((await nativeState()).scheduled).toBe('2027-10-18');
   expect((await nativeState()).recurrence_original_date).toBeUndefined();
-  const notice = page.locator('.notice').filter({ hasText: `${prefix} native` });
+  const notice = page.locator('.tn-toast').filter({ hasText: `${prefix} native` });
   await expect(notice).toContainText('Completed occurrence: 18 Oct 2026');
   await expect(notice).toContainText('Next: 18 Oct 2027');
   await notice.getByRole('button', { name: 'Undo', exact: true }).click();
@@ -219,7 +219,7 @@ recurrence: DTSTART:20261018T090000Z;FREQ=YEARLY
     return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path)).frontmatter;
   }, path);
   expect(persisted.recurrence_original_date).toBeUndefined();
-  const notice = page.locator('.notice').filter({ hasText: `${prefix} timed` });
+  const notice = page.locator('.tn-toast').filter({ hasText: `${prefix} timed` });
   await expect(notice).toContainText('Completed occurrence: 18 Oct 2026');
   await notice.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect.poll(async () => (await state(path)).scheduled).toBe('2026-10-12T09:00');
@@ -228,7 +228,7 @@ recurrence: DTSTART:20261018T090000Z;FREQ=YEARLY
   expect((await state(childPath)).status).toBe('open');
 });
 
-test('the ordinary list checkbox completes the pending move before its shared landing-date occurrence', async () => {
+test('the list action palette completes the pending move before its shared landing-date occurrence', async () => {
   const page = instance.page;
   const path = `${folder}/${prefix} weekly.md`;
   const listPath = `${folder}/Identity.base`;
@@ -266,8 +266,6 @@ views:
   const card = page.locator(`.task-card[data-task-path="${path}"]`);
   await expect(card).toBeVisible();
   expect((await state()).recurrence_original_date).toBe('2027-10-11');
-  // Activate the real accessible control with Enter: the existing reorder
-  // handle overlaps its pointer hit area in this test vault's narrow list.
   await card.locator('.task-card__status-dot').press('Enter');
   await expect.poll(async () => (await state()).complete_instances).toEqual(['2027-10-11']);
   expect((await state()).scheduled).toBe('2027-10-18');

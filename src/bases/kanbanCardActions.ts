@@ -1,4 +1,6 @@
 import { App } from "obsidian";
+import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
+import { createStatusCycleHandler } from "../ui/taskCardActions";
 import TaskNotesPlugin from "../main";
 import { Reminder, TaskInfo } from "../types";
 import {
@@ -35,6 +37,36 @@ export async function handleKanbanCardAction({
 	plugin,
 	app,
 }: KanbanCardActionContext): Promise<void> {
+	const property =
+		action === "toggle-status"
+			? "status"
+			: action === "priority-menu"
+				? "priority"
+				: action === "edit-date"
+					? target.dataset.tnDateType
+					: undefined;
+	const taskView = target.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban");
+	if (taskView && property === "status") {
+		createStatusCycleHandler({
+			task,
+			plugin,
+			targetDate: getKanbanTaskActionDate(task),
+			updateStatusVisuals: () => {},
+		})(event);
+		return;
+	}
+	if (
+		taskView &&
+		(property === "priority" || property === "due" || property === "scheduled")
+	) {
+		await openTaskPropertyPicker(
+			plugin,
+			property,
+			await tasksForPropertyAction(plugin, task),
+			target
+		);
+		return;
+	}
 	const [
 		{ DateContextMenu },
 		{ PriorityContextMenu },
@@ -105,7 +137,8 @@ async function handleToggleStatus(
 }
 
 export function getKanbanTaskActionDate(task: TaskInfo): Date {
-	const dateStr = getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
+	const dateStr =
+		getRecurringMoveOriginalDate(task) || getDatePart(task.scheduled || task.due || "");
 	if (dateStr) {
 		return parseDateToUTC(dateStr);
 	}
@@ -124,7 +157,7 @@ function showPriorityMenu(
 		onSelect: (newPriority: string) => {
 			void (async () => {
 				try {
-					await plugin.updateTaskProperty(task, "priority", newPriority);
+					await changeTaskProperty(plugin, [task], "priority", newPriority);
 				} catch (error) {
 					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update priority", {
 						category: "validation",
@@ -223,7 +256,7 @@ async function openDateContextMenu(
 					} else {
 						finalValue = dateValue;
 					}
-					await plugin.updateTaskProperty(task, dateType, finalValue);
+					await changeTaskProperty(plugin, [task], dateType, finalValue);
 				} catch (error) {
 					tasknotesLogger.error("[TaskNotes][KanbanView] Failed to update date", {
 						category: "validation",

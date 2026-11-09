@@ -1,10 +1,19 @@
 import { configLabel } from "../i18n/configLabels";
+import { keyLabel } from "./kit/keyHint";
 import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { PriorityConfig, TaskInfo } from "../types";
 import { isPropertyForField } from "../utils/propertyMapping";
 import { prepareInteractiveControl } from "./taskCardIndicators";
+import {
+	priorityGlyphState,
+	renderPriorityGlyph,
+	renderStatusGlyph,
+	statusGlyphState,
+	unconfiguredValueLabel,
+	hasVisiblePriority,
+} from "./kit/glyphs";
 
 type StatusConfig = ReturnType<TaskNotesPlugin["statusManager"]["getStatusConfig"]>;
 
@@ -88,24 +97,24 @@ export function applyTaskCardPriorityColor(
 
 export function configureStatusIndicator(
 	statusDot: HTMLElement,
-	statusConfig: StatusConfig | null | undefined
+	statusConfig: StatusConfig | null | undefined,
+	plugin: TaskNotesPlugin,
+	statusValue = statusConfig?.value ?? ""
 ): void {
-	if (statusConfig?.color) {
-		statusDot.style.borderColor = statusConfig.color;
-	} else {
-		statusDot.style.removeProperty("border-color");
-	}
-
+	statusDot.addClass("task-card__status-dot--icon");
+	const label = statusConfig ? configLabel(statusConfig) : unconfiguredValueLabel(statusValue);
+	statusDot.setAttribute("aria-label", label);
+	statusDot.setAttribute("title", `${label} · ${keyLabel("S")}`);
+	statusDot.empty();
 	if (statusConfig?.icon) {
-		statusDot.addClass("task-card__status-dot--icon");
-		statusDot.empty();
+		delete statusDot.dataset.tnGlyph;
 		setIcon(statusDot, statusConfig.icon);
-	} else {
-		statusDot.removeClass("task-card__status-dot--icon");
-		statusDot.empty();
-		statusDot.removeAttribute("data-icon");
-		statusDot.classList.remove("has-icon");
+		return;
 	}
+	renderStatusGlyph(
+		statusDot,
+		statusGlyphState(statusValue, plugin.statusManager.getAllStatuses())
+	);
 }
 
 export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElement | null {
@@ -128,7 +137,12 @@ export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	const statusDot = mainRow.createSpan({ cls: "task-card__status-dot" });
-	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+	configureStatusIndicator(
+		statusDot,
+		plugin.statusManager.getStatusConfig(effectiveStatus),
+		plugin,
+		effectiveStatus
+	);
 	prepareInteractiveControl(statusDot);
 	statusDot.addEventListener("click", onClick);
 	statusDot.dataset.taskPath = task.path;
@@ -169,7 +183,12 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	if (statusDot) {
-		configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+		configureStatusIndicator(
+			statusDot,
+			plugin.statusManager.getStatusConfig(effectiveStatus),
+			plugin,
+			effectiveStatus
+		);
 		return statusDot;
 	}
 	if (!mainRow) {
@@ -185,25 +204,39 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 
 export function configurePriorityIndicator(
 	priorityDot: HTMLElement,
-	priorityConfig: PriorityConfig,
-	plugin: TaskNotesPlugin
+	priorityConfig: PriorityConfig | undefined,
+	plugin: TaskNotesPlugin,
+	priorityValue = priorityConfig?.value
 ): void {
-	priorityDot.style.borderColor = priorityConfig.color;
+	const label = priorityConfig
+		? configLabel(priorityConfig)
+		: (priorityValue ? unconfiguredValueLabel(priorityValue) : "") ||
+			plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
 	priorityDot.setAttribute(
 		"aria-label",
-		plugin.i18n.translate(msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }), {
-			label: configLabel(priorityConfig),
-		})
+		plugin.i18n.translate(
+			msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }),
+			{
+				label,
+			}
+		)
 	);
 	priorityDot.replaceChildren();
-	priorityDot.classList.toggle("task-card__priority-dot--icon", !!priorityConfig.icon);
+	priorityDot.setAttribute(
+		"title",
+		`${priorityDot.getAttribute("aria-label")} · ${keyLabel("P")}`
+	);
+	priorityDot.classList.add("task-card__priority-dot--icon");
 
-	if (priorityConfig.icon) {
+	if (priorityConfig?.icon) {
+		delete priorityDot.dataset.tnGlyph;
 		setIcon(priorityDot, priorityConfig.icon);
-	} else {
-		priorityDot.removeAttribute("data-icon");
-		priorityDot.classList.remove("has-icon");
+		return;
 	}
+	renderPriorityGlyph(
+		priorityDot,
+		priorityGlyphState(priorityValue, plugin.priorityManager.getAllPriorities())
+	);
 }
 
 export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLElement | null {
@@ -211,10 +244,9 @@ export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
 	if (
-		!task.priority ||
-		!priorityConfig ||
 		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
-		!mainRow
+		!mainRow ||
+		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
 	) {
 		return null;
 	}
@@ -222,7 +254,7 @@ export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const priorityDot = mainRow.createSpan({
 		cls: "task-card__priority-dot",
 	});
-	configurePriorityIndicator(priorityDot, priorityConfig, plugin);
+	configurePriorityIndicator(priorityDot, priorityConfig, plugin, task.priority);
 	prepareInteractiveControl(priorityDot);
 	priorityDot.addEventListener("click", onClick);
 	return priorityDot;
@@ -240,9 +272,8 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
 	if (
-		!task.priority ||
-		!priorityConfig ||
-		!shouldShowPriorityIndicator(visibleProperties, plugin)
+		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
+		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
 	) {
 		existingPriorityDot?.remove();
 		return null;
@@ -259,7 +290,7 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 		return priorityDot;
 	}
 
-	configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin);
+	configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin, task.priority);
 	const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
 	prepareInteractiveControl(newPriorityDot);
 	newPriorityDot.addEventListener("click", config.onClick);

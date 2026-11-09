@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { generateMessageId } from "@lingui/message-utils/generateMessageId";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { openTaskNotesSettings, closeObsidianSettings } from "../obsidian";
+import { openTaskNotesSettings, closeObsidianSettings, selectTaskNotesSettingsTab } from "../obsidian";
 
 /** Native production artifact only; fixtures and all mutations stay in the verified test vault. */
 export async function runLinguiRereview(page: Page, output: string): Promise<void> {
@@ -23,7 +23,7 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
   const translate = (message: string, context: string) => page.evaluate(id => (window as any).app.plugins.plugins.tasknotes.i18n.translate({ id }), id(message, context));
   try {
     for (const locale of ["en", "it", "de"] as const) {
-      let settings = await openTaskNotesSettings(page, await translate("General", "settings.tabs.general"));
+      let settings = await openTaskNotesSettings(page);
       await settings.locator('select:has(option[value="system"]):has(option[value="fr"])').selectOption(locale, { timeout: 10000 });
       await expect.poll(() => page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.i18n.getCurrentLocale())).toBe(locale);
       await closeObsidianSettings(page, settings);
@@ -31,18 +31,20 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
         const plugin = (window as any).app.plugins.plugins.tasknotes;
         return JSON.stringify({ fields: plugin.settings.modalFieldsConfig, statuses: plugin.settings.customStatuses, priorities: plugin.settings.customPriorities });
       });
-      settings = await openTaskNotesSettings(page, await translate("Modal fields", "settings.tabs.modalFields"));
+      const formPath = await translate("Task creation", "settings.features.taskCreation.header") + "/" + await translate("Form fields", "settings.native.formFields");
+      settings = await openTaskNotesSettings(page, formPath);
       const config = JSON.parse(before).fields;
       const rendered: string[] = [];
       for (const group of [...config.groups].sort((a, b) => a.order - b.order)) {
+        await selectTaskNotesSettingsTab(settings, formPath);
         const label = await translate(group.displayName, "utils/fieldConfigDefaults: defaults displayName");
-        const tab = settings.locator(".field-manager__tab").filter({ hasText: label });
+        const tab = settings.locator('.setting-item.mod-navigable:visible').filter({ has: settings.locator('.setting-item-name').getByText(label, { exact: true }) });
         await expect(tab).toHaveCount(1);
         await tab.click();
         rendered.push(label);
         for (const field of config.fields.filter(field => field.group === group.id && field.fieldType !== "user")) {
           const fieldLabel = await translate(field.displayName, "utils/fieldConfigDefaults: defaults displayName");
-          await expect(settings.locator(".field-manager__cards").getByText(fieldLabel, { exact: true })).toHaveCount(1);
+          await expect(settings.locator('.setting-item-name:visible').getByText(fieldLabel, { exact: true })).toHaveCount(1);
           rendered.push(fieldLabel);
         }
       }
@@ -51,10 +53,12 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
       if (locale === "de") expect(rendered).toContain("Grundlegende Informationen");
       mkdirSync(output, { recursive: true });
       await settings.screenshot({ path: `${output}/${locale}-modal-fields.png`, fullPage: true });
-      await settings.getByRole("tab", { name: await translate("Task properties", "settings.tabs.taskProperties"), exact: true }).click();
-      for (const english of ["Open", "High"]) {
+      await selectTaskNotesSettingsTab(settings, await translate("Properties", "ui.filterBar.properties"));
+      for (const [property, english] of [["status", "Open"], ["priority", "High"]]) {
+        const propertyLabel = await translate(property === "status" ? "Status" : "Priority", `settings.taskProperties.properties.${property}.name`);
+        await selectTaskNotesSettingsTab(settings, await translate("Properties", "ui.filterBar.properties") + "/" + propertyLabel);
         const label = await translate(english, "settings/defaults: defaults label");
-        await expect.poll(() => settings.locator("input").evaluateAll(inputs => inputs.map(input => input.value))).toContain(label);
+        await expect(settings.locator('.setting-item.mod-navigable:visible .setting-item-name').getByText(label, { exact: true })).toHaveCount(1);
       }
       const after = await page.evaluate(() => {
         const plugin = (window as any).app.plugins.plugins.tasknotes;
@@ -86,11 +90,13 @@ export async function runLinguiRereview(page: Page, output: string): Promise<voi
         await modal.locator(".modal-button-container .mod-cta").click();
       }
       await expect(modal).toBeVisible();
-      await expect(page.locator(".notice").filter({ hasText: await translate("Please enter a task title", "modals.taskCreation.notices.titleRequired") })).toBeVisible();
+      await expect(modal.locator(".tn-task-modal__field-error").filter({ hasText: await translate("Please enter a task title", "modals.taskCreation.notices.titleRequired") })).toBeVisible();
       const generated = await page.evaluate(prefix => (window as any).app.vault.getMarkdownFiles().filter(file => file.path.startsWith(prefix + "/")).map(file => file.basename), prefix);
       expect(generated).not.toContain("Untitled Task");
       await page.screenshot({ path: `${output}/${locale}-missing-title-modal.png` });
       await page.keyboard.press("Escape");
+      await page.getByRole("button", { name: await translate("Discard changes", "modals.task.unsavedChanges.discard"), exact: true }).click();
+      await expect(modal).toHaveCount(0);
       report[locale] = { fieldAndGroupLabels: rendered, settingsUnchangedByRendering: true, completedDateGroups: groups, programmaticFallback: fallback.title, interactiveMissingTitleRejected: true };
       writeFileSync(`${output}/report.json`, JSON.stringify(report, null, 2) + "\n");
     }

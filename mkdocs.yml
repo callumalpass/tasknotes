@@ -114,6 +114,8 @@ redirects:
 drafts:
     - development/styling.md
 
+    - development/design-system.md
+    - development/undo-verification.md
     - development/i18n-migration/README.md
     - development/i18n-translation-handoff.md
     - development/local-credentials-and-runtime-state.md

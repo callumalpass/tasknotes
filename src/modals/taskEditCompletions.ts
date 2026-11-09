@@ -1,21 +1,19 @@
 import { uiNumber } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Menu, setIcon } from "obsidian";
+import { Menu } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import {
 	formatDateForStorage,
-	generateUTCCalendarDates,
 	getTodayLocal,
 	getUTCEndOfMonth,
-	getUTCEndOfWeek,
 	getUTCStartOfMonth,
-	getUTCStartOfWeek,
 	parseDateAsLocal,
 } from "../utils/dateUtils";
 import { generateRecurringInstances } from "../utils/helpers";
 import { openOrCreateOccurrenceNote } from "../ui/occurrenceNoteActions";
+import { renderMonthCalendar } from "../ui/kit/monthCalendar";
 
 interface TaskEditCompletionsOptions {
 	task: TaskInfo;
@@ -33,9 +31,13 @@ export function createCompletionsCalendarSection(
 		return;
 	}
 
-	const calendarContainer = container.createDiv("completions-calendar-container");
-	const calendarLabel = calendarContainer.createDiv("detail-label");
-	calendarLabel.textContent = options.translate(msg({ message: "Completions", context: "modals.taskEdit.sections.completions" }));
+	const calendarContainer = container.createEl("details", {
+		cls: "completions-calendar-container tn-modal__disclosure",
+	});
+	const calendarLabel = calendarContainer.createEl("summary", { cls: "detail-label" });
+	calendarLabel.textContent = options.translate(
+		msg({ message: "Completions", context: "modals.taskEdit.sections.completions" })
+	);
 
 	const calendarContent = calendarContainer.createDiv("completions-calendar-content");
 	createRecurringCalendar(calendarContent, options);
@@ -76,43 +78,8 @@ function renderCalendarMonth(
 	displayDate: Date,
 	options: TaskEditCompletionsOptions
 ): void {
-	container.empty();
-
-	const header = container.createDiv("recurring-calendar__header");
-	const prevButton = header.createEl("button", {
-		cls: "recurring-calendar__nav",
-		attr: {
-			type: "button",
-			"aria-label": options.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
-		},
-	});
-	setIcon(prevButton, "chevron-left");
-	const monthLabel = header.createSpan("recurring-calendar__month");
 	const locale = options.plugin.i18n.getCurrentLocale() || "en";
-	const monthFormatter = new Intl.DateTimeFormat(locale, {
-		month: "short",
-		year: "numeric",
-		timeZone: "UTC",
-	});
-	monthLabel.textContent = options.plugin.settings.dateDisplayFormat === "iso"
-		? formatDateForStorage(displayDate).slice(0, 7)
-		: monthFormatter.format(displayDate);
-	const nextButton = header.createEl("button", {
-		cls: "recurring-calendar__nav",
-		attr: {
-			type: "button",
-			"aria-label": options.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
-		},
-	});
-	setIcon(nextButton, "chevron-right");
-
-	const grid = container.createDiv("recurring-calendar__grid");
-	const monthStart = getUTCStartOfMonth(displayDate);
-	const monthEnd = getUTCEndOfMonth(displayDate);
 	const firstDaySetting = options.plugin.settings.calendarViewSettings.firstDay || 0;
-	const calendarStart = getUTCStartOfWeek(monthStart, firstDaySetting);
-	const calendarEnd = getUTCEndOfWeek(monthEnd, firstDaySetting);
-	const allDays = generateUTCCalendarDates(calendarStart, calendarEnd);
 
 	const bufferStart = getUTCStartOfMonth(displayDate);
 	bufferStart.setUTCMonth(bufferStart.getUTCMonth() - 1);
@@ -124,56 +91,57 @@ function renderCalendarMonth(
 	const completedInstances = getCurrentCompletedInstances(options);
 	const skippedInstances = getCurrentSkippedInstances(options);
 
-	allDays.forEach((day) => {
-		const dayStr = formatDateForStorage(day);
-		const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
-		const isOccurrenceDate = recurringDateStrings.has(dayStr);
-		const occurrenceDate = new Date(day);
-		const dayElement = grid.createDiv("recurring-calendar__day");
-		dayElement.textContent = uiNumber(day.getUTCDate());
-		dayElement.addClass("recurring-calendar__day--clickable");
-		dayElement.setAttribute("data-occurrence-date", dayStr);
+	renderMonthCalendar(container, {
+		month: displayDate,
+		dateDisplayFormat: options.plugin.settings.dateDisplayFormat,
+		locale,
+		firstDay: firstDaySetting,
+		onNavigate: (month) => renderCalendarMonth(container, month, options),
+		renderDay: (grid, day) => {
+			const dayStr = formatDateForStorage(day);
+			const isCurrentMonth = day.getUTCMonth() === displayDate.getUTCMonth();
+			const isOccurrenceDate = recurringDateStrings.has(dayStr);
+			const occurrenceDate = new Date(day);
+			const dayElement = grid.createDiv("recurring-calendar__day");
+			dayElement.textContent = uiNumber(day.getUTCDate());
+			dayElement.addClass("recurring-calendar__day--clickable");
+			dayElement.setAttribute("data-occurrence-date", dayStr);
 
-		if (!isCurrentMonth) {
-			dayElement.addClass("recurring-calendar__day--faded");
-		}
-		if (isOccurrenceDate) {
-			dayElement.addClass("recurring-calendar__day--recurring");
-			dayElement.addClass("recurring-calendar__day--contextable");
-			dayElement.setAttribute(
-				"aria-label",
-				options.translate(msg({ message: "Occurrence {date}", context: "modals.taskEdit.occurrenceDate" }), { date: dayStr })
-			);
-		}
-		if (completedInstances.has(dayStr)) {
-			dayElement.addClass("recurring-calendar__day--completed");
-		}
-		if (skippedInstances.has(dayStr)) {
-			dayElement.addClass("recurring-calendar__day--skipped");
-		}
+			if (!isCurrentMonth) {
+				dayElement.addClass("recurring-calendar__day--faded");
+			}
+			if (isOccurrenceDate) {
+				dayElement.addClass("recurring-calendar__day--recurring");
+				dayElement.addClass("recurring-calendar__day--contextable");
+				dayElement.setAttribute(
+					"aria-label",
+					options.translate(
+						msg({
+							message: "Occurrence {date}",
+							context: "modals.taskEdit.occurrenceDate",
+						}),
+						{ date: dayStr }
+					)
+				);
+			}
+			if (completedInstances.has(dayStr)) {
+				dayElement.addClass("recurring-calendar__day--completed");
+			}
+			if (skippedInstances.has(dayStr)) {
+				dayElement.addClass("recurring-calendar__day--skipped");
+			}
 
-		dayElement.addEventListener("click", () => {
-			syncInstanceChangeState(options, dayStr, "complete");
-			renderCalendarMonth(container, displayDate, options);
-		});
-
-		if (isOccurrenceDate) {
-			dayElement.addEventListener("contextmenu", (event) => {
-				showOccurrenceContextMenu(event, container, displayDate, occurrenceDate, options);
+			dayElement.addEventListener("click", () => {
+				syncInstanceChangeState(options, dayStr, "complete");
+				renderCalendarMonth(container, displayDate, options);
 			});
-		}
-	});
 
-	prevButton.addEventListener("click", () => {
-		const prevMonth = new Date(displayDate);
-		prevMonth.setUTCMonth(prevMonth.getUTCMonth() - 1);
-		renderCalendarMonth(container, prevMonth, options);
-	});
-
-	nextButton.addEventListener("click", () => {
-		const nextMonth = new Date(displayDate);
-		nextMonth.setUTCMonth(nextMonth.getUTCMonth() + 1);
-		renderCalendarMonth(container, nextMonth, options);
+			if (isOccurrenceDate) {
+				dayElement.addEventListener("contextmenu", (event) => {
+					showOccurrenceContextMenu(event, container, displayDate, occurrenceDate, options);
+				});
+			}
+		},
 	});
 }
 
@@ -193,7 +161,14 @@ function showOccurrenceContextMenu(
 	const menu = new Menu();
 
 	menu.addItem((item) => {
-		item.setTitle(options.translate(msg({ message: "Open or create occurrence note", context: "modals.actionPalette.openOccurrence" })));
+		item.setTitle(
+			options.translate(
+				msg({
+					message: "Open or create occurrence note",
+					context: "modals.actionPalette.openOccurrence",
+				})
+			)
+		);
 		item.setIcon("file-plus");
 		item.onClick(async () => {
 			await openOrCreateOccurrenceNote({
@@ -210,7 +185,15 @@ function showOccurrenceContextMenu(
 	menu.addItem((item) => {
 		item.setTitle(
 			options.translate(
-				isCompleted ? msg({ message: "Mark incomplete for this date", context: "contextMenus.task.markIncomplete" }) : msg({ message: "Mark complete for this date", context: "contextMenus.task.markComplete" })
+				isCompleted
+					? msg({
+							message: "Mark incomplete for this date",
+							context: "contextMenus.task.markIncomplete",
+						})
+					: msg({
+							message: "Mark complete for this date",
+							context: "contextMenus.task.markComplete",
+						})
 			)
 		);
 		item.setIcon(isCompleted ? "x" : "check");
@@ -226,7 +209,12 @@ function showOccurrenceContextMenu(
 	menu.addItem((item) => {
 		item.setTitle(
 			options.translate(
-				isSkipped ? msg({ message: "Unskip instance", context: "contextMenus.task.unskipInstance" }) : msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" })
+				isSkipped
+					? msg({
+							message: "Unskip instance",
+							context: "contextMenus.task.unskipInstance",
+						})
+					: msg({ message: "Skip instance", context: "contextMenus.task.skipInstance" })
 			)
 		);
 		item.setIcon(isSkipped ? "undo" : "x-circle");

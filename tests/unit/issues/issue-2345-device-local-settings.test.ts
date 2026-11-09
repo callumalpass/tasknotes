@@ -88,6 +88,6 @@ describe("issue #2345 device-local values stay out of data.json", () => {
 		await plugin.loadSettings();
 
 		expect(plugin.settings.lastSeenVersion).toBeUndefined();
-		expect((plugin as any).shouldCreateStarterNoteOnStartup).toBe(false);
+		expect(plugin.isNewInstall).toBe(false);
 	});
 });

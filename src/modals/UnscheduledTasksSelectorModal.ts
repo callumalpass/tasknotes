@@ -1,3 +1,5 @@
+import { applyModalShell } from "../ui/kit/modal";
+import { configLabel } from "../i18n/configLabels";
 import { uiData } from "../i18n/dataText";
 import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
@@ -40,6 +42,7 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 		defaultScheduleOptions?: ScheduleTaskOptions
 	) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.onScheduleTask = onScheduleTask;
 		this.defaultScheduleOptions = defaultScheduleOptions;
@@ -117,10 +120,9 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 			}
 
 			// Then by priority (high -> normal -> low)
-			const priorityOrder: Record<string, number> = { high: 0, normal: 1, low: 2 };
-			const aPriority = priorityOrder[a.priority] ?? 1;
-			const bPriority = priorityOrder[b.priority] ?? 1;
-			if (aPriority !== bPriority) return aPriority - bPriority;
+			const aPriority = this.plugin.priorityManager.getPriorityConfig(a.priority)?.weight ?? 0;
+			const bPriority = this.plugin.priorityManager.getPriorityConfig(b.priority)?.weight ?? 0;
+			if (aPriority !== bPriority) return bPriority - aPriority;
 
 			// Finally by title
 			return a.title.localeCompare(b.title);
@@ -152,10 +154,12 @@ export class UnscheduledTasksSelectorModal extends FuzzySuggestModal<TaskInfo> {
 
 		// Priority indicator
 		if (task.priority) {
-			metaEl.createSpan({
-				text: task.priority.toUpperCase(),
-				cls: `unscheduled-tasks-selector__priority priority-${(task.priority || "normal").toLowerCase()}`,
-			});
+			const config = this.plugin.priorityManager.getPriorityConfig(task.priority);
+			const priority = metaEl.createSpan({ cls: "unscheduled-tasks-selector__priority tn-chip" });
+			const glyph = priority.createSpan({ cls: "tn-task-glyphs__priority" });
+			setIcon(glyph, config?.icon || "signal");
+			if (config?.color) glyph.style.color = config.color;
+			priority.createSpan({ text: config ? configLabel(config) : task.priority });
 		}
 
 		// Due date if exists

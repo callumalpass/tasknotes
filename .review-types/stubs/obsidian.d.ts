@@ -1,3 +1,4 @@
+export type { SettingDefinitionItem, SettingDefinitionPage } from "../../node_modules/obsidian";
 export const AbstractInputSuggest: any;
 export const App: any;
 export const BasesAllOptions: any;

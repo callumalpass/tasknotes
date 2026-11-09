@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #: src/bases/calendar-core.ts
 msgctxt "calendar task estimate tooltip"
@@ -174,8 +180,8 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[Formula Error]"
 
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
 msgstr "{action} — successful: {count}; failed: {failed}."
@@ -245,6 +251,16 @@ msgctxt "recurrence occurrence limit"
 msgid "{count, plural, one {{recurrence} (# time)} other {{recurrence} (# times)}}"
 msgstr "{count, plural, one {{recurrence} (# time)} other {{recurrence} (# times)}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence EXDATE exceptions"
+msgid "{count, plural, one {{recurrence}, except # date} other {{recurrence}, except # dates}}"
+msgstr "{count, plural, one {{recurrence}, except # date} other {{recurrence}, except # dates}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence extra RDATE dates"
+msgid "{count, plural, one {{recurrence}, plus # extra date} other {{recurrence}, plus # extra dates}}"
+msgstr "{count, plural, one {{recurrence}, plus # extra date} other {{recurrence}, plus # extra dates}}"
+
 #: src/ui/TimeBlockCard.ts
 msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
@@ -254,6 +270,11 @@ msgstr "{count, plural, one {# attachment} other {# attachments}}"
 msgctxt "ui.taskCard.relativeDaysAgo"
 msgid "{count, plural, one {# day ago} other {# days ago}}"
 msgstr "{count, plural, one {# day ago} other {# days ago}}"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar selected day count"
+msgid "{count, plural, one {# item} other {# items}}"
+msgstr "{count, plural, one {# item} other {# items}}"
 
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
@@ -265,15 +286,41 @@ msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr "{count, plural, one {# reminder set} other {# reminders set}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback archive"
+msgid "{count, plural, one {# task archived} other {# tasks archived}}"
+msgstr "{count, plural, one {# task archived} other {# tasks archived}}"
+
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, one {# task selected} other {# tasks selected}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback unarchive"
+msgid "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+msgstr "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}"
+msgstr "{count, plural, one {# task updated} other {# tasks updated}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
+msgstr "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
 msgstr "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail minutes past the hour"
+msgid "{count, plural, one {at minute {minutes}} other {at minutes {minutes}}}"
+msgstr "{count, plural, one {at minute {minutes}} other {at minutes {minutes}}}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.convertingTasks"
@@ -285,35 +332,70 @@ msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weeks of year"
+msgid "{count, plural, one {in the {weeks} week of the year} other {in the {weeks} weeks of the year}}"
+msgstr "{count, plural, one {in the {weeks} week of the year} other {in the {weeks} weeks of the year}}"
+
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.oauth.lastSynced"
 msgid "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
 msgstr "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of month"
+msgid "{count, plural, one {on the {days} day of the month} other {on the {days} days of the month}}"
+msgstr "{count, plural, one {on the {days} day of the month} other {on the {days} days of the month}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of year"
+msgid "{count, plural, one {on the {days} day of the year} other {on the {days} days of the year}}"
+msgstr "{count, plural, one {on the {days} day of the year} other {on the {days} days of the year}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail set positions"
+msgid "{count, plural, one {only the {positions} match in each period} other {only the {positions} matches in each period}}"
+msgstr "{count, plural, one {only the {positions} match in each period} other {only the {positions} matches in each period}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
-msgid "{count} dependency added"
-msgstr "{count} dependency added"
+#: src/bases/CalendarView.ts
+msgctxt "calendar collision count"
+msgid "{count} appointments"
+msgstr "{count} appointments"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingAdded"
-msgid "{count} dependent task added"
-msgstr "{count} dependent task added"
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "{count} days"
+msgstr "{count} days"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
+msgid "{count} fewer than yesterday"
+msgstr "{count} fewer than yesterday"
 
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.summaryTitle"
 msgid "{count} missed TaskNotes reminders"
 msgstr "{count} missed TaskNotes reminders"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.more"
+msgid "{count} more than yesterday"
+msgstr "{count} more than yesterday"
+
 #: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.customDays"
-msgid "{count}D"
-msgstr "{count}D"
+msgctxt "calendar view hint"
+msgid "{count}-day view"
+msgstr "{count}-day view"
+
+#: src/views/stats/charts.ts
+msgctxt "statistics daily time tooltip"
+msgid "{date}: {duration}"
+msgstr "{date}: {duration}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence ordinal number"
@@ -364,6 +446,16 @@ msgstr "{displayName}: "
 msgctxt "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text"
 msgid "{displayName}: {displayValue}"
 msgstr "{displayName}: {displayValue}"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.less"
+msgid "{duration} less than yesterday"
+msgstr "{duration} less than yesterday"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.more"
+msgid "{duration} more than yesterday"
+msgstr "{duration} more than yesterday"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
@@ -424,6 +516,21 @@ msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {Mo
 msgctxt "recurrence daily interval"
 msgid "{interval, plural, =1 {Daily} other {Every # days}}"
 msgstr "{interval, plural, =1 {Daily} other {Every # days}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence minutely interval"
+msgid "{interval, plural, =1 {Every minute} other {Every # minutes}}"
+msgstr "{interval, plural, =1 {Every minute} other {Every # minutes}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence secondly interval"
+msgid "{interval, plural, =1 {Every second} other {Every # seconds}}"
+msgstr "{interval, plural, =1 {Every second} other {Every # seconds}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence hourly interval"
+msgid "{interval, plural, =1 {Hourly} other {Every # hours}}"
+msgstr "{interval, plural, =1 {Hourly} other {Every # hours}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
@@ -535,6 +642,11 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
+msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
+msgstr "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro break notification"
 msgid "{length, select, long {Time for a long break 💤} other {Time for a short break ☕}}"
@@ -549,6 +661,11 @@ msgstr "{minutes, number}m"
 msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.duration"
+msgid "{minutes} min"
+msgstr "{minutes} min"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
@@ -605,6 +722,11 @@ msgctxt "services.notification.missed.message"
 msgid "{prefix}: {text}"
 msgstr "{prefix}: {text}"
 
+#: src/views/StatsView.ts
+msgctxt "views/StatsView: StatsView.openProjectDrilldown display"
+msgid "{projectName} - Detailed View"
+msgstr "{projectName} - Detailed View"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: renderPropertyMetadata display"
 msgid "{propertyId}: (error)"
@@ -634,6 +756,11 @@ msgstr "{provider} OAuth is not configured. Please provide OAuth credentials in 
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
 msgstr "{recurrence} (until {date})"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence followed by one detail clause"
+msgid "{recurrence}, {detail}"
+msgstr "{recurrence}, {detail}"
 
 #: src/settings/native/creation.ts
 msgctxt "default reminder timing summary"
@@ -675,16 +802,6 @@ msgctxt "services.instantTaskConvert.notices.partialConversion"
 msgid "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
 msgstr "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.running"
-msgid "{time} left · Ends at {endTime}"
-msgstr "{time} left · Ends at {endTime}"
-
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.ready"
-msgid "{time} planned · {count} completed today"
-msgstr "{time} planned · {count} completed today"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -710,15 +827,15 @@ msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles} and {count} more"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.paused"
-msgid "{type} paused · {time} left"
-msgstr "{type} paused · {time} left"
+#: src/views/stats/charts.ts
+msgctxt "views/StatsView: StatsView.renderProgressCircle display"
+msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
+msgstr "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
-msgid "{type} ready · {time} planned"
-msgstr "{type} ready · {time} planned"
+msgid "{type} ready"
+msgstr "{type} ready"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.andTaskNotessettingsbothchangedsincetheywerelastsynchronized"
@@ -730,6 +847,11 @@ msgctxt "integration.isnotavalidTaskNotescontractTaskNoteskeptitslast"
 msgid "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
 msgstr "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
 
+#: src/ui/kit/glyphs.ts
+msgctxt "ui.kit.unconfiguredValue"
+msgid "{value} (not configured)"
+msgstr "{value} (not configured)"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
@@ -740,11 +862,8 @@ msgctxt "ui/taskCardProperties: timeEstimate display"
 msgid "{value1} estimated"
 msgstr "{value1} estimated"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.onOpen display"
-msgid "{value1} from {startTime} to {endTime}"
-msgstr "{value1} from {startTime} to {endTime}"
-
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
@@ -763,6 +882,16 @@ msgid "{value2, plural, one {{taskTitles}\n"
 msgstr "{value2, plural, one {{taskTitles}\n"
 "... and {value2, number} more} other {{taskTitles}\n"
 "... and {value2, number} more}}"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "filtered task count"
+msgid "{visible} of {total} tasks"
+msgstr "{visible} of {total} tasks"
+
+#: src/i18n/recurrence.ts
+msgctxt "monthly first weekday recurrence"
+msgid "{weekday, select, MO {Monthly on the first Monday} TU {Monthly on the first Tuesday} WE {Monthly on the first Wednesday} TH {Monthly on the first Thursday} FR {Monthly on the first Friday} SA {Monthly on the first Saturday} SU {Monthly on the first Sunday} other {Monthly}}"
+msgstr "{weekday, select, MO {Monthly on the first Monday} TU {Monthly on the first Tuesday} WE {Monthly on the first Wednesday} TH {Monthly on the first Thursday} FR {Monthly on the first Friday} SA {Monthly on the first Saturday} SU {Monthly on the first Sunday} other {Monthly}}"
 
 #: src/services/ICSNoteService.ts
 msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
@@ -821,16 +950,6 @@ msgctxt "contextMenus.ics.markdown.descriptionHeading"
 msgid "### Description"
 msgstr "### Description"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
 #: src/views/PomodoroView.ts
 msgctxt "timer add duration button"
 msgid "+{duration}"
@@ -875,7 +994,7 @@ msgctxt "modals.storageLocation.finalNote.migrate"
 msgid "⚠️ Make sure you have backups if needed. This change cannot be automatically undone."
 msgstr "⚠️ Make sure you have backups if needed. This change cannot be automatically undone."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contextSelected"
 msgid "✓ {context}"
 msgstr "✓ {context}"
@@ -891,18 +1010,8 @@ msgid "✓ {count, number}/{total, number} completed ({completionRate, number}%)
 msgstr "✓ {count, number}/{total, number} completed ({completionRate, number}%)"
 
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 msgctxt "contextMenus.date.selected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.prioritySelected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.statusSelected"
 msgid "✓ {label}"
 msgstr "✓ {label}"
 
@@ -921,11 +1030,6 @@ msgctxt "settings.appearance.timeSettings.startTime.placeholder"
 msgid "06:00"
 msgstr "06:00"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimePlaceholder"
-msgid "09:00"
-msgstr "09:00"
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
@@ -936,7 +1040,7 @@ msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "1 day before"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.oneDay"
 msgid "1 day before"
 msgstr "1 day before"
@@ -946,15 +1050,10 @@ msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1 hour before"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.oneHour"
 msgid "1 hour before"
 msgstr "1 hour before"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimePlaceholder"
-msgid "11:00"
-msgstr "11:00"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twelveHour"
@@ -981,7 +1080,7 @@ msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15 minutes before"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.fifteenMinutes"
 msgid "15 minutes before"
 msgstr "15 minutes before"
@@ -1021,7 +1120,7 @@ msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
 msgid "5 minutes before"
 msgstr "5 minutes before"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.fiveMinutes"
 msgid "5 minutes before"
 msgstr "5 minutes before"
@@ -1101,8 +1200,12 @@ msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
 msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Accent"
+msgstr "Accent"
+
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1118,6 +1221,11 @@ msgctxt "settings.general.taskInteraction.singleClick.description"
 msgid "Action performed when single-clicking a task card"
 msgstr "Action performed when single-clicking a task card"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Actions"
+msgstr "Actions"
+
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
@@ -1127,6 +1235,16 @@ msgstr "Actions"
 msgctxt "settings.integrations.webhooks.statusLabels.active"
 msgid "Active"
 msgstr "Active"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.filters.activeOnly"
+msgid "Active only"
+msgstr "Active only"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.activeProjects"
+msgid "Active projects"
+msgstr "Active projects"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
@@ -1138,12 +1256,17 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "Active:"
 
-#: src/components/TaskContextMenu.ts
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.activity"
+msgid "Activity over time (last 30 days)"
+msgstr "Activity over time (last 30 days)"
+
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
 msgid "Add “blocked by”…"
 msgstr "Add “blocked by”…"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "Add “blocking”…"
@@ -1185,7 +1308,7 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "Add calendar subscription"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.addContext"
 msgid "Add context…"
 msgstr "Add context…"
@@ -1267,17 +1390,18 @@ msgctxt "commands.addSubtaskToCurrentNote"
 msgid "Add subtask to current note"
 msgstr "Add subtask to current note"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "Add subtasks…"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.addTag"
 msgid "Add tag…"
 msgstr "Add tag…"
 
+#: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
@@ -1315,7 +1439,8 @@ msgctxt "modals.task.organization.addToProjectButton"
 msgid "Add to project"
 msgstr "Add to project"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
+#: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "Add to project…"
@@ -1413,15 +1538,35 @@ msgctxt "settings.native.allNotes"
 msgid "All notes"
 msgstr "All notes"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.allTasks"
+msgid "All project tasks"
+msgstr "All project tasks"
+
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "All task links removed"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.filters.allTasks"
+msgid "All tasks"
+msgstr "All tasks"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "All Tasks"
 msgstr "All Tasks"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.allTime"
+msgid "All time"
+msgstr "All time"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.allTime"
+msgid "All time"
+msgstr "All time"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.description"
@@ -1448,6 +1593,11 @@ msgstr "Already a subtask of {parent}."
 msgctxt "views.taskList.movement.noChange"
 msgid "Already in this group."
 msgstr "Already in this group."
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Alt"
+msgstr "Alt"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.anIcsFileInThisVault"
@@ -1499,7 +1649,6 @@ msgctxt "api/loadAPIEndpoints: loadAPIEndpoints display"
 msgid "API unavailable ({status})"
 msgstr "API unavailable ({status})"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.appearanceInteraction"
 msgid "Appearance & interaction"
@@ -1541,6 +1690,11 @@ msgctxt "contextMenus.task.archive"
 msgid "Archive"
 msgstr "Archive"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction archive"
+msgid "Archive"
+msgstr "Archive"
+
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.buttons.archive"
 msgid "Archive"
@@ -1560,11 +1714,6 @@ msgstr "Archive task"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "Archive this task"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.archived"
-msgid "archived"
-msgstr "archived"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
@@ -1592,6 +1741,11 @@ msgctxt "services.notification.missed.whenTodayAt"
 msgid "at {time}"
 msgstr "at {time}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail times"
+msgid "at {times}"
+msgstr "at {times}"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.atDue"
 msgid "At the due date"
@@ -1607,7 +1761,7 @@ msgctxt "components.reminderContextMenu.quickReminders.atTime"
 msgid "At time of event"
 msgstr "At time of event"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "At time of event"
@@ -1797,6 +1951,26 @@ msgctxt "modals.icsNoteCreation.variables"
 msgid "Available template variables"
 msgstr "Available template variables"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.average"
+msgid "Avg length"
+msgstr "Avg length"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.average"
+msgid "Avg per task"
+msgstr "Avg per task"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.avgTimePerTask"
+msgid "Avg time per task"
+msgstr "Avg time per task"
+
+#: src/views/StatsView.ts
+msgctxt "views/StatsView: StatsView.renderProjectStats display"
+msgid "Avg: {value1}/task"
+msgstr "Avg: {value1}/task"
+
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fix"
 msgid "Back up and fix"
@@ -1926,6 +2100,11 @@ msgstr "Blocking {count} tasks"
 msgctxt "ui/taskCardProperties: blockingTasks text"
 msgid "Blocking: "
 msgstr "Blocking: "
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Blue"
+msgstr "Blue"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.header.bodyTemplate"
@@ -2153,6 +2332,7 @@ msgstr "Calendars & integrations"
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/components/TaskContextMenu.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
@@ -2168,6 +2348,7 @@ msgstr "Calendars & integrations"
 #: src/modals/TimeEntryEditorModal.ts
 #: src/ui/TaskActionCoordinator.ts
 #: src/ui/taskCardDeletion.ts
+#: src/views/PomodoroStatsView.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "Cancel"
@@ -2314,10 +2495,10 @@ msgctxt "collectionCheck.unresolvedUserField"
 msgid "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved."
 msgstr "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved."
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.conflict"
-msgid "Cannot undo: this occurrence or its schedule has changed."
-msgstr "Cannot undo: this occurrence or its schedule has changed."
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo conflict"
+msgid "Cannot undo: the note has changed."
+msgstr "Cannot undo: the note has changed."
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoConflict"
@@ -2348,6 +2529,11 @@ msgstr "Change task priority to {label}"
 msgctxt "views.pomodoro.buttons.changeTask"
 msgid "Change task..."
 msgstr "Change task..."
+
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo confirmation"
+msgid "Change undone."
+msgstr "Change undone."
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.changingTheseValuesDoesNotUpdateExistingTaskNotes"
@@ -2500,6 +2686,11 @@ msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUsingTaskNotessettin
 msgid "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
 msgstr "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction clear"
+msgid "Clear"
+msgstr "Clear"
+
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
@@ -2510,14 +2701,14 @@ msgctxt "contextMenus.task.clearReminders"
 msgid "Clear all reminders"
 msgstr "Clear all reminders"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.clearContexts"
 msgid "Clear contexts"
 msgstr "Clear contexts"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.clearDate"
 msgid "Clear date"
@@ -2543,7 +2734,7 @@ msgctxt "components.recurrenceContextMenu.clearRecurrence"
 msgid "Clear recurrence"
 msgstr "Clear recurrence"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.clearRecurrence"
 msgid "Clear recurrence"
 msgstr "Clear recurrence"
@@ -2558,13 +2749,24 @@ msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Clear search"
 msgstr "Clear search"
 
+#: src/bases/basesSearchUi.ts
+msgctxt "empty state action"
+msgid "Clear search"
+msgstr "Clear search"
+
+#: src/bases/basesSelectionUi.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Clear selection"
+msgstr "Clear selection"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.clearSelection"
 msgid "Clear selection"
 msgstr "Clear selection"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.clearTags"
 msgid "Clear tags"
 msgstr "Clear tags"
@@ -2573,11 +2775,6 @@ msgstr "Clear tags"
 msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "Clear task"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.complete"
-msgid "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault."
-msgstr "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault."
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
@@ -2624,12 +2821,17 @@ msgctxt "settings/components/CardComponent: createCard display"
 msgid "Collapse card"
 msgstr "Collapse card"
 
+#: src/settings/components/CardComponent.ts
+msgctxt "settings/components/CardComponent: setCardCollapsed display"
+msgid "Collapse card"
+msgstr "Collapse card"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
 msgstr "Collapse subgroups"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Collapse subtasks"
 msgstr "Collapse subtasks"
@@ -2730,7 +2932,7 @@ msgctxt "settings.taskProperties.fieldMapping.fields.completeInstances"
 msgid "Complete instances"
 msgstr "Complete instances"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.pickDateTitle"
 msgid "Complete on date"
 msgstr "Complete on date"
@@ -2742,6 +2944,16 @@ msgstr "Complete this occurrence"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.completed"
+msgid "Completed"
+msgstr "Completed"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.status.completed"
+msgid "Completed"
+msgstr "Completed"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "Completed"
 
@@ -2765,45 +2977,65 @@ msgctxt "notices.recurringCompletion.completed"
 msgid "Completed occurrence: {date}"
 msgstr "Completed occurrence: {date}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeOnPicked"
 msgid "Completed on (pick date)"
 msgstr "Completed on (pick date)"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeOnDue"
 msgid "Completed on due date"
 msgstr "Completed on due date"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "Completed on schedule"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.filters.completedOnly"
+msgid "Completed only"
+msgstr "Completed only"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.statsLabel"
 msgid "completed today"
 msgstr "completed today"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "Completed today"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
+msgid "Completed: "
+msgstr "Completed: "
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.completion"
+msgid "Completion"
+msgstr "Completion"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
 msgstr "Completion date"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.completionOnly"
 msgid "Completion only"
 msgstr "Completion only"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "Completion or skip"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.completionRate"
+msgid "Completion rate"
+msgstr "Completion rate"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.sections.completions"
@@ -2826,7 +3058,7 @@ msgid "Configure where Pomodoro session data is stored and how it''s managed."
 msgstr "Configure where Pomodoro session data is stored and how it''s managed."
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "common.confirm"
 msgid "Confirm"
 msgstr "Confirm"
@@ -2840,12 +3072,6 @@ msgstr "Confirm"
 msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "Confirm"
-
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeTitle"
-msgid "Confirm large reorder"
-msgstr "Confirm large reorder"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connect"
@@ -2892,7 +3118,7 @@ msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display"
 msgid "Content too long to process safely"
 msgstr "Content too long to process safely"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contextPlaceholder"
 msgid "context"
 msgstr "context"
@@ -2917,8 +3143,13 @@ msgctxt "components.propertyVisibilityDropdown.properties.contexts"
 msgid "Contexts"
 msgstr "Contexts"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
+msgid "Contexts"
+msgstr "Contexts"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Contexts"
 msgstr "Contexts"
 
@@ -3171,6 +3402,11 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "Could not resolve: {entries}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction save failure recovery"
+msgid "Could not save task changes. Check that the notes are writable, then try again."
+msgstr "Could not save task changes. Check that the notes are writable, then try again."
+
 #: src/settings/native/SettingsContext.ts
 msgctxt "settings.native.saveError"
 msgid "Could not save TaskNotes settings: {error}"
@@ -3185,6 +3421,12 @@ msgstr "Could not undo the recurring task change."
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "Could not undo this move."
+
+#: src/components/BatchContextMenu.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction failure"
+msgid "Could not update tasks"
+msgstr "Could not update tasks"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.countsAsCompleted"
@@ -3205,11 +3447,6 @@ msgstr "Create"
 msgctxt "modals.icsEventInfo.createFromEventDesc"
 msgid "Create a new note or task from this calendar event"
 msgstr "Create a new note or task from this calendar event"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.create"
-msgid "Create a real task and schedule it for today."
-msgstr "Create a real task and schedule it for today."
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
@@ -3241,7 +3478,7 @@ msgctxt "modals.calendarEventCreation.createButton"
 msgid "Create event"
 msgstr "Create event"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 msgctxt "ui.audit.createExternal"
 msgid "Create external calendar event"
 msgstr "Create external calendar event"
@@ -3261,10 +3498,15 @@ msgctxt "modals.icsNoteCreation.heading"
 msgid "Create from ICS event"
 msgstr "Create from ICS event"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.manual"
 msgid "Create manually"
 msgstr "Create manually"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "task modal repeat creation"
+msgid "Create more"
+msgstr "Create more"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.createInlineTask"
@@ -3272,13 +3514,12 @@ msgid "Create new inline task"
 msgstr "Create new inline task"
 
 #: src/bootstrap/pluginBootstrap.ts
-#: src/bootstrap/starterNote.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.createNewTask"
 msgid "Create new task"
 msgstr "Create new task"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.afterCompletion"
 msgid "Create next after completion"
 msgstr "Create next after completion"
@@ -3313,7 +3554,13 @@ msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "Create subtask"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarKeyboard.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Create task"
+msgstr "Create task"
+
+#: src/bases/calendarCreationMenu.ts
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
@@ -3330,7 +3577,7 @@ msgctxt "settings.integrations.basesIntegration.createDefaultFiles.description"
 msgid "Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten."
 msgstr "Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten."
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 msgctxt "ui.audit.createEntry"
 msgid "Create time entry"
 msgstr "Create time entry"
@@ -3340,9 +3587,8 @@ msgctxt "modals.timeblockCreation.createButton"
 msgid "Create timeblock"
 msgstr "Create timeblock"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 #: src/components/TaskContextMenu.ts
-#: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.heading"
 msgid "Create timeblock"
 msgstr "Create timeblock"
@@ -3414,6 +3660,11 @@ msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "Created: {date}"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Ctrl"
+msgstr "Ctrl"
+
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.current"
 msgid "Current"
@@ -3449,7 +3700,7 @@ msgctxt "modals.reminder.current"
 msgid "Current reminders"
 msgstr "Current reminders"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "Current task file not found"
@@ -3473,7 +3724,7 @@ msgid "Currently tracking: {title}\n"
 msgstr "Currently tracking: {title}\n"
 "Elapsed: {elapsed}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 msgctxt "contextMenus.task.customDates"
 msgid "Custom dates"
 msgstr "Custom dates"
@@ -3513,6 +3764,11 @@ msgctxt "components.propertyVisibilityDropdown.customProperties"
 msgid "Custom properties"
 msgstr "Custom properties"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.customRange"
+msgid "Custom range"
+msgstr "Custom range"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
@@ -3528,7 +3784,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "Custom recurrence..."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "Custom recurrence..."
@@ -3568,6 +3824,11 @@ msgctxt "settings.taskProperties.projectsCard.customizeDisplay"
 msgid "Customize display"
 msgstr "Customize display"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Cyan"
+msgstr "Cyan"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.cycleCurrentTaskPriority"
 msgid "Cycle current task priority"
@@ -3577,11 +3838,6 @@ msgstr "Cycle current task priority"
 msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "Cycle current task status"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.day"
-msgid "D"
-msgstr "D"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
@@ -3593,7 +3849,7 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "Daily"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.daily"
 msgid "Daily"
 msgstr "Daily"
@@ -3685,11 +3941,6 @@ msgctxt "modals.calendarEventCreation.dateTimeLabel"
 msgid "Date & time: "
 msgstr "Date & time: "
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.dateTimeLabel"
-msgid "Date & time: "
-msgstr "Date & time: "
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.name"
 msgid "Date format"
@@ -3705,21 +3956,27 @@ msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName"
 msgid "Date Property"
 msgstr "Date Property"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.dateRange"
+msgid "Date range"
+msgstr "Date range"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.reminders.fields.date"
 msgid "Date:"
 msgstr "Date:"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.dateLabel"
-msgid "Date: "
-msgstr "Date: "
-
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "Dates"
+
+#: src/bases/calendarKeyboard.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Day"
+msgstr "Day"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.dayCells"
@@ -3757,6 +4014,12 @@ msgstr "days"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "Days of week"
+
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar event marker"
+msgid "Deadline"
+msgstr "Deadline"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.debugLogging.header"
@@ -3965,6 +4228,11 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
+msgid "Delete"
+msgstr "Delete"
+
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteEntry"
@@ -3986,6 +4254,16 @@ msgctxt "contextMenus.task.deleteTitle"
 msgid "Delete file"
 msgstr "Delete file"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteAria"
+msgid "Delete Pomodoro session"
+msgstr "Delete Pomodoro session"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteConfirmTitle"
+msgid "Delete Pomodoro session?"
+msgstr "Delete Pomodoro session?"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -3995,6 +4273,11 @@ msgstr "Delete property"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "Delete reminder"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.delete"
+msgid "Delete session"
+msgstr "Delete session"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -4058,25 +4341,10 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Dependencies"
 msgstr "Dependencies"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
-msgid "Dependencies updated"
-msgstr "Dependencies updated"
-
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
 msgid "Dependency"
 msgstr "Dependency"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByRemoved"
-msgid "Dependency removed"
-msgstr "Dependency removed"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
-msgid "Dependent task removed"
-msgstr "Dependent task removed"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
@@ -4340,6 +4608,12 @@ msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.descripti
 msgid "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 msgstr "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "task list drop restriction"
+msgid "Drop on a task row or group destination."
+msgstr "Drop on a task row or group destination."
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Due"
@@ -4359,6 +4633,12 @@ msgstr "Due date"
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
+msgid "Due date"
+msgstr "Due date"
+
+#: src/modals/DateTimePickerModal.ts
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Due date"
 msgstr "Due date"
 
@@ -4383,20 +4663,10 @@ msgctxt "ui.filterBar.group.dueDate"
 msgid "Due date"
 msgstr "Due date"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueCleared"
-msgid "Due date cleared"
-msgstr "Due date cleared"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueSet"
-msgid "Due date set"
-msgstr "Due date set"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
@@ -4418,6 +4688,11 @@ msgstr "Due: {date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "Due: {value}"
+
+#: src/bases/calendarResizeFeedback.ts
+msgctxt "calendar resize feedback"
+msgid "Duration → {duration}"
+msgstr "Duration → {duration}"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
@@ -4489,6 +4764,11 @@ msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "Edit reminder"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Edit task"
+msgstr "Edit task"
+
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
 #: src/modals/TaskEditModal.ts
@@ -4516,11 +4796,6 @@ msgstr "Edit time entries"
 msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "Edit time entries (select task)"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.editHeading"
-msgid "Edit timeblock"
-msgstr "Edit timeblock"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
@@ -4645,6 +4920,7 @@ msgid "End on {date}"
 msgstr "End on {date}"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.endTimeLabel"
 msgid "End time"
 msgstr "End time"
@@ -4668,6 +4944,11 @@ msgstr "End time must be after start time"
 msgctxt "modals.icsNoteCreation.endLabel"
 msgid "End: "
 msgstr "End: "
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.meta.running"
+msgid "Ends at {endTime}"
+msgstr "Ends at {endTime}"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.textPlaceholder"
@@ -4718,6 +4999,11 @@ msgstr "Enter a time from 00:00 to 23:59."
 msgctxt "modals.task.timeEstimateInvalid"
 msgid "Enter a time such as 45 or 1h 30m"
 msgstr "Enter a time such as 45 or 1h 30m"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction date"
+msgid "Enter a valid date"
+msgstr "Enter a valid date"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validDate"
@@ -4784,6 +5070,11 @@ msgctxt "bases/MiniCalendarView: MiniCalendarView.renderError display"
 msgid "Error loading mini calendar: {message}"
 msgstr "Error loading mini calendar: {message}"
 
+#: src/views/StatsView.ts
+msgctxt "notices.statsLoadingFailed"
+msgid "Error loading project details."
+msgstr "Error loading project details."
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.renderError display"
 msgid "Error loading tasks: {message}"
@@ -4808,6 +5099,11 @@ msgstr "Error reading occurrence note template: {template}"
 msgctxt "services.task.notices.templateReadError"
 msgid "Error reading task body template: {template}"
 msgstr "Error reading task body template: {template}"
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Esc"
+msgstr "Esc"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
@@ -4864,7 +5160,7 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "Events will no longer be sent to this endpoint."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.everyTwoWeeks"
 msgid "Every 2 weeks"
 msgstr "Every 2 weeks"
@@ -4879,7 +5175,7 @@ msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "Every 3 days (after completion)"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.everyThreeMonths"
 msgid "Every 3 months"
 msgstr "Every 3 months"
@@ -4984,12 +5280,17 @@ msgctxt "settings/components/CardComponent: createCard display"
 msgid "Expand card"
 msgstr "Expand card"
 
+#: src/settings/components/CardComponent.ts
+msgctxt "settings/components/CardComponent: setCardCollapsed display"
+msgid "Expand card"
+msgstr "Expand card"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Expand subgroups"
 msgstr "Expand subgroups"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Expand subtasks"
 msgstr "Expand subtasks"
@@ -5094,7 +5395,12 @@ msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 
-#: src/components/TaskContextMenu.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Extend selection"
+msgstr "Extend selection"
+
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
 msgid "Failed to add reminder"
 msgstr "Failed to add reminder"
@@ -5104,23 +5410,18 @@ msgctxt "modals.reminder.addFailed"
 msgid "Failed to add reminder. Please check your inputs."
 msgstr "Failed to add reminder. Please check your inputs."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 msgctxt "contextMenus.task.organization.notices.addAsSubtaskFailed"
 msgid "Failed to add task as subtask"
 msgstr "Failed to add task as subtask"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.organization.notices.addToProjectFailed"
 msgid "Failed to add task to project"
 msgstr "Failed to add task to project"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveFailure"
-msgid "Failed to archive task"
-msgstr "Failed to archive task"
 
 #: src/main.ts
 msgctxt "notices.commands.batchConversionFailed"
@@ -5421,7 +5722,7 @@ msgctxt "notices.commands.taskLoadFailed"
 msgid "Failed to load current task"
 msgstr "Failed to load current task"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/i18n/messages.ts
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "ui.taskCard.blockingLoadError"
@@ -5457,11 +5758,6 @@ msgstr "Failed to load tasks"
 msgctxt "services.pomodoro.notices.migrationFailure"
 msgid "Failed to migrate Pomodoro data. Please try again or check the console for details."
 msgstr "Failed to migrate Pomodoro data. Please try again or check the console for details."
-
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockMoveFailed"
-msgid "Failed to move timeblock: {message}"
-msgstr "Failed to move timeblock: {message}"
 
 #: src/bases/calendar-core.ts
 #: src/main.ts
@@ -5500,7 +5796,7 @@ msgctxt "notices.interface.occurrenceOpenFailed"
 msgid "Failed to open occurrence note: {message}"
 msgstr "Failed to open occurrence note: {message}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.organization.notices.projectSelectFailed"
@@ -5522,7 +5818,7 @@ msgctxt "notices.commands.tagSearchFailed"
 msgid "Failed to open search pane for tag: {tag}"
 msgstr "Failed to open search pane for tag: {tag}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 msgctxt "contextMenus.task.organization.notices.subtaskSelectFailed"
 msgid "Failed to open subtask selector"
@@ -5620,11 +5916,6 @@ msgctxt "services.instantTaskConvert.notices.replaceLineFailed"
 msgid "Failed to replace task line."
 msgstr "Failed to replace task line."
 
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockResizeFailed"
-msgid "Failed to resize timeblock: {message}"
-msgstr "Failed to resize timeblock: {message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "Failed to resolve moved task file: {newPath}"
@@ -5639,11 +5930,6 @@ msgstr "Failed to save reminders. Please try again."
 msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "Failed to save the calendar password"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeEntryEditor.saveFailed"
-msgid "Failed to save time entries"
-msgstr "Failed to save time entries"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.failed"
@@ -5660,11 +5946,6 @@ msgctxt "modals.timeTracking.startFailed"
 msgid "Failed to start time tracking"
 msgstr "Failed to start time tracking"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.trackingStopFailed"
-msgid "Failed to stop time tracking"
-msgstr "Failed to stop time tracking"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogleFailed"
 msgid "Failed to sync task to Google Calendar"
@@ -5675,12 +5956,12 @@ msgctxt "settings.integrations.googleCalendarExport.notices.syncFailed"
 msgid "Failed to sync task to Google Calendar: {message}"
 msgstr "Failed to sync task to Google Calendar: {message}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.notices.toggleSkipFailure"
 msgid "Failed to toggle recurring task skip: {message}"
 msgstr "Failed to toggle recurring task skip: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.subtasksFailed"
 msgid "Failed to toggle subtasks"
@@ -5696,17 +5977,17 @@ msgctxt "services/TaskService: TaskService.toggleStatus display"
 msgid "Failed to toggle task status: {errorMessage}"
 msgstr "Failed to toggle task status: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 msgctxt "contextMenus.task.notices.updateCustomDateFailure"
 msgid "Failed to update {field}: {message}"
 msgstr "Failed to update {field}: {message}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.notices.updateContextsFailed"
 msgid "Failed to update contexts"
 msgstr "Failed to update contexts"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.updateFailed"
 msgid "Failed to update dependencies"
@@ -5722,13 +6003,13 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "Failed to update event: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.priorityFailed"
 msgid "Failed to update priority"
 msgstr "Failed to update priority"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.recurrenceFailed"
 msgid "Failed to update recurrence"
@@ -5739,15 +6020,14 @@ msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
 msgstr "Failed to update recurring task"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
 msgid "Failed to update reminders"
 msgstr "Failed to update reminders"
 
-#: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.notices.updateTagsFailed"
 msgid "Failed to update tags"
 msgstr "Failed to update tags"
@@ -5757,17 +6037,12 @@ msgctxt "notices.commands.taskUpdateFailed"
 msgid "Failed to update task"
 msgstr "Failed to update task"
 
-#: src/main.ts
-msgctxt "notices.commands.archiveFailed"
-msgid "Failed to update task archive status"
-msgstr "Failed to update task archive status"
-
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "Failed to update task completion: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
@@ -5784,7 +6059,7 @@ msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
 msgid "Failed to update task recurrence: {message}"
 msgstr "Failed to update task recurrence: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
@@ -5796,8 +6071,8 @@ msgctxt "notices.commands.statusFailed"
 msgid "Failed to update task status"
 msgstr "Failed to update task status"
 
-#: src/bases/TaskListView.ts
-#: src/components/TaskContextMenu.ts
+#: src/bases/taskListCardActions.ts
+#: src/components/task-context-menu/properties.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
 msgid "Failed to update task status: {message}"
@@ -5808,7 +6083,9 @@ msgctxt "services/task-service/TaskUpdateService: TaskUpdateService.updateTask d
 msgid "Failed to update task: {errorMessage}"
 msgstr "Failed to update task: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
+#: src/components/task-context-menu/properties.ts
+#: src/components/task-context-menu/recurrence.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.updateFailure"
 msgid "Failed to update task: {message}"
@@ -5919,15 +6196,16 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Fill container"
 
+#: src/bases/BasesViewBase.ts
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.filters"
+msgid "Filters"
+msgstr "Filters"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
 msgstr "Filters on"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.review"
-msgid "Find your task in `Today`."
-msgstr "Find your task in `Today`."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
@@ -5954,6 +6232,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.strategies.first"
 msgid "First result"
 msgstr "First result"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence first weekday of month"
+msgid "First weekday of the month"
+msgstr "First weekday of the month"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display"
 msgid "Focus"
@@ -5963,16 +6246,6 @@ msgstr "Focus"
 msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "Focus"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "Focus on new features, no interruptions"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "Focus on new features, no interruptions"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderLabel"
@@ -6009,11 +6282,6 @@ msgctxt "modals.icsNoteCreation.folderPlaceholder"
 msgid "folder/subfolder"
 msgstr "folder/subfolder"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.inbox"
-msgid "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date."
-msgstr "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date."
-
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetCredentials"
 msgid "Forget credentials"
@@ -6029,7 +6297,6 @@ msgctxt "settings.native.forgetSavedCredentials"
 msgid "Forget saved credentials"
 msgstr "Forget saved credentials"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.formFields"
 msgid "Form fields"
@@ -6061,6 +6328,11 @@ msgstr "Friday"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.friday"
 msgid "Friday"
 msgstr "Friday"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.dateRangeFrom"
+msgid "From"
+msgstr "From"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.header"
@@ -6182,6 +6454,11 @@ msgctxt "views.pomodoro.status.breakPrompt"
 msgid "Great work! Time for a {length} break"
 msgstr "Great work! Time for a {length} break"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Green"
+msgstr "Green"
+
 #: src/settings/native/creation.ts
 msgctxt "ui.filterBar.groupMenuHeader"
 msgid "Group"
@@ -6246,11 +6523,6 @@ msgstr "Hidden tag scope"
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "Hide completed tasks from overdue"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.hideDetailedOptions"
-msgid "Hide detailed options"
-msgstr "Hide detailed options"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -6347,6 +6619,11 @@ msgstr "Identify tasks by"
 msgctxt "modals.task.attachments.importButton"
 msgid "Import file"
 msgstr "Import file"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail months"
+msgid "in {months}"
+msgstr "in {months}"
 
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
@@ -6462,6 +6739,11 @@ msgstr "Insert tasknote link"
 msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "Interface language"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.status.interrupted"
+msgid "Interrupted"
+msgstr "Interrupted"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
@@ -6639,10 +6921,11 @@ msgctxt "settings.features.recurring.maintainOffsetDesc"
 msgid "Keep the offset between due date and scheduled date when recurring tasks are completed"
 msgstr "Keep the offset between due date and scheduled date when recurring tasks are completed"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.list"
-msgid "L"
-msgstr "L"
+#: src/components/TaskContextMenu.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction help"
+msgid "Keyboard shortcuts"
+msgstr "Keyboard shortcuts"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.label"
@@ -6664,10 +6947,40 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.la
 msgid "last"
 msgstr "last"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence position last"
+msgid "last"
+msgstr "last"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.last30Days"
+msgid "Last 30 days"
+msgstr "Last 30 days"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.last7Days"
+msgid "Last 7 days"
+msgstr "Last 7 days"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.last90Days"
+msgid "Last 90 days"
+msgstr "Last 90 days"
+
+#: src/views/StatsView.ts
+msgctxt "views/StatsView: StatsView.renderProjectStats display"
+msgid "Last activity: {value1}"
+msgstr "Last activity: {value1}"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "Last day"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last day of month"
+msgid "Last day of the month"
+msgstr "Last day of the month"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.status.lastExport"
@@ -6678,6 +6991,11 @@ msgstr "Last export: {time}"
 msgctxt "settings.native.lastSync"
 msgid "Last sync"
 msgstr "Last sync"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last weekday of month"
+msgid "Last weekday of the month"
+msgstr "Last weekday of the month"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -6799,6 +7117,11 @@ msgctxt "services.icsNote.notices.linkedToEvent"
 msgid "Linked note to ICS event: {title}"
 msgstr "Linked note to ICS event: {title}"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "List"
+msgstr "List"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.types.list"
 msgid "List"
@@ -6835,6 +7158,11 @@ msgstr "Loading reminders..."
 msgctxt "contextMenus.task.subtasks.loading"
 msgid "Loading subtasks..."
 msgstr "Loading subtasks..."
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.loading"
+msgid "Loading..."
+msgstr "Loading..."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.typeOptions.local"
@@ -6926,11 +7254,6 @@ msgctxt "settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator"
 msgid "Lucide icon name. Leave empty for the default indicator."
 msgstr "Lucide icon name. Leave empty for the default indicator."
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.month"
-msgid "M"
-msgstr "M"
-
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
@@ -6946,7 +7269,12 @@ msgctxt "contextMenus.task.manageReminders"
 msgid "Manage all reminders…"
 msgstr "Manage all reminders…"
 
-#: src/components/TaskContextMenu.ts
+#: src/bases/TaskListView.ts
+msgctxt "settings.taskProperties.properties.sortOrder.name"
+msgid "Manual order"
+msgstr "Manual order"
+
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
 msgid "Mark complete"
 msgstr "Mark complete"
@@ -6956,7 +7284,7 @@ msgctxt "contextMenus.task.markComplete"
 msgid "Mark complete for this date"
 msgstr "Mark complete for this date"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.submenu"
 msgid "Mark complete or skip"
 msgstr "Mark complete or skip"
@@ -6966,7 +7294,7 @@ msgctxt "views.basesCalendar.settings.layout.showNowIndicator"
 msgid "Mark current time"
 msgstr "Mark current time"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.markIncomplete"
 msgid "Mark incomplete"
 msgstr "Mark incomplete"
@@ -7051,6 +7379,11 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "Migrate Pomodoro data?"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.filters.minTime"
+msgid "Min time (minutes)"
+msgstr "Min time (minutes)"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7072,6 +7405,7 @@ msgid "minutes"
 msgstr "minutes"
 
 #: src/modals/ReminderModal.ts
+#: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.stats.minutes"
 msgid "Minutes"
 msgstr "Minutes"
@@ -7143,6 +7477,12 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "Monday"
 
+#: src/bases/calendarKeyboard.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Month"
+msgstr "Month"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
 msgid "Month grid"
@@ -7174,15 +7514,22 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenc
 msgid "Monthly recurrence"
 msgstr "Monthly recurrence"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.more"
-msgid "More"
-msgstr "More"
-
+#: src/bases/basesToolbar.ts
 #: src/modals/taskModalActionButtons.ts
 msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "More actions"
+
+#: src/components/RecurrenceContextMenu.ts
+#: src/modals/TaskModal.ts
+msgctxt "task modal field disclosure"
+msgid "More fields"
+msgstr "More fields"
+
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.moreOptions"
+msgid "More options"
+msgstr "More options"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -7204,11 +7551,23 @@ msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
 msgstr "Move archived tasks to folder"
 
+#: src/bases/KanbanView.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move between columns"
+msgstr "Move between columns"
+
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "Move down"
+
+#: src/bases/calendarKeyboard.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move focus"
+msgstr "Move focus"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -7233,6 +7592,11 @@ msgctxt "views.taskList.movement.moveUp"
 msgid "Move up"
 msgstr "Move up"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction move feedback"
+msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
+msgstr "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -7252,6 +7616,11 @@ msgstr "Multiple tasks matched query \"{query}\": {value2}"
 msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Multiple tasks matched title \"{title}\": {value2}"
 msgstr "Multiple tasks matched title \"{title}\": {value2}"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.notAvailable"
+msgid "N/A"
+msgstr "N/A"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameAToZ"
@@ -7300,6 +7669,9 @@ msgid "Never ends"
 msgstr "Never ends"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/taskListGroupHeader.ts
+#: src/views/stats/drilldown.ts
+#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "New"
@@ -7339,6 +7711,7 @@ msgctxt "settings.native.newTasksHaveNoDefaultReminders"
 msgid "New tasks have no default reminders."
 msgstr "New tasks have no default reminders."
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
@@ -7355,7 +7728,7 @@ msgid "Next in order"
 msgstr "Next in order"
 
 #: src/bases/MiniCalendarView.ts
-#: src/modals/taskEditCompletions.ts
+#: src/ui/kit/monthCalendar.ts
 msgctxt "components.dateContextMenu.nextMonth"
 msgid "Next month"
 msgstr "Next month"
@@ -7472,6 +7845,12 @@ msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "No active time tracking session found"
 
+#: src/views/PomodoroStatsView.ts
+#: src/views/stats/summary.ts
+msgctxt "statistics empty period"
+msgid "No activity in this period."
+msgstr "No activity in this period."
+
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
 msgid "No API endpoints found in specification."
@@ -7512,7 +7891,7 @@ msgctxt "services.instantTaskConvert.notices.noCheckboxTasks"
 msgid "No checkbox tasks found in the current note."
 msgstr "No checkbox tasks found in the current note."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.noCompletedStatus"
 msgid "No completed status configured"
 msgstr "No completed status configured"
@@ -7583,7 +7962,7 @@ msgctxt "contextMenus.task.completion.noDueDate"
 msgid "No due date on this task"
 msgstr "No due date on this task"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 msgctxt "contextMenus.task.organization.notices.noEligibleSubtasks"
 msgid "No eligible tasks available to assign as subtasks"
@@ -7624,7 +8003,22 @@ msgctxt "settings.native.noKeySet"
 msgid "No key set"
 msgstr "No key set"
 
-#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "interaction picker"
+msgid "No matching actions"
+msgstr "No matching actions"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching priorities"
+msgstr "No matching priorities"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching statuses"
+msgstr "No matching statuses"
+
+#: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.noEligibleTasks"
 msgid "No matching tasks available"
@@ -7634,11 +8028,6 @@ msgstr "No matching tasks available"
 msgctxt "notices.recurringCompletion.noNext"
 msgid "No next occurrence"
 msgstr "No next occurrence"
-
-#: src/bases/MiniCalendarView.ts
-msgctxt "notices.audit.noNotes"
-msgid "No notes found for selected dates"
-msgstr "No notes found for selected dates"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.noOverdue"
@@ -7650,10 +8039,25 @@ msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "No pending authorization matches this callback."
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No priorities configured"
+msgstr "No priorities configured"
+
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "No project"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.noProject"
+msgid "No project"
+msgstr "No project"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.noProjectData"
+msgid "No project data available"
+msgstr "No project data available"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
@@ -7685,6 +8089,16 @@ msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "No scheduled date on this task"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.empty"
+msgid "No sessions recorded yet"
+msgstr "No sessions recorded yet"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No statuses configured"
+msgstr "No statuses configured"
+
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
 msgid "No subtasks found"
@@ -7704,16 +8118,6 @@ msgstr "No task data was extracted"
 msgctxt "notices.commands.noTaskLink"
 msgid "No task link found"
 msgstr "No task link found"
-
-#: src/bases/KanbanView.ts
-msgctxt "bases/KanbanView: KanbanView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "No tasknotes tasks found for this base."
-
-#: src/bases/TaskListView.ts
-msgctxt "bases/TaskListView: TaskListView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "No tasknotes tasks found for this base."
 
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.noTasks"
@@ -7736,6 +8140,11 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "No tasks available to track time for"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.noTasks"
+msgid "No tasks found"
+msgstr "No tasks found"
+
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.noTasksToExport"
 msgid "No tasks found to export"
@@ -7752,14 +8161,29 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "No tasks match \"{searchTerm}\""
 
 #: src/bases/BasesViewBase.ts
+msgctxt "empty task view recovery"
+msgid "No tasks match this view. Review its filters."
+msgstr "No tasks match this view. Review its filters."
+
+#: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
 msgid "No tasks to copy"
 msgstr "No tasks to copy"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection"
+msgid "No tasks yet."
+msgstr "No tasks yet."
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "No time entries yet"
+
+#: src/views/stats/charts.ts
+msgctxt "views.stats.project.noTracking"
+msgid "No time tracking data"
+msgstr "No time tracking data"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockTimes display"
@@ -7815,6 +8239,11 @@ msgstr "None"
 
 #: src/components/SubgroupMenuBuilder.ts
 msgctxt "ui.filterBar.group.none"
+msgid "None"
+msgstr "None"
+
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "ui.taskCard.noPriority"
 msgid "None"
 msgstr "None"
 
@@ -7893,6 +8322,16 @@ msgstr "Note panel"
 msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
 msgstr "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
+
+#: src/bases/MiniCalendarView.ts
+msgctxt "mini calendar empty selection"
+msgid "Nothing scheduled for the selected dates."
+msgstr "Nothing scheduled for the selected dates."
+
+#: src/bases/MiniCalendarView.ts
+msgctxt "mini calendar empty day"
+msgid "Nothing scheduled for this day."
+msgstr "Nothing scheduled for this day."
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundEnabledName"
@@ -7999,12 +8438,12 @@ msgctxt "services.task.notices.occurrenceTemplateNotFound"
 msgid "Occurrence note template not found: {path}"
 msgstr "Occurrence note template not found: {path}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.occurrenceNotes"
 msgid "Occurrence notes"
 msgstr "Occurrence notes"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "notices.audit.occurrencePolicy"
 msgid "Occurrence notes: {mode}"
 msgstr "Occurrence notes: {mode}"
@@ -8064,6 +8503,11 @@ msgctxt "services.notification.missed.whenOnDayAt"
 msgid "on {day} at {time}"
 msgstr "on {day} at {time}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weekdays"
+msgid "on {days}"
+msgstr "on {days}"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
 msgid "On {month} {day} each year"
@@ -8083,6 +8527,16 @@ msgstr "On the {week} {day} of {month} each year"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth"
 msgid "On the {week} {day} of each month"
 msgstr "On the {week} {day} of each month"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Open"
+msgstr "Open"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "interaction created open"
+msgid "Open"
+msgstr "Open"
 
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
@@ -8164,7 +8618,6 @@ msgctxt "settings.features.taskCreation.openAfterCreate.options.sameTab"
 msgid "Open in the same tab"
 msgstr "Open in the same tab"
 
-#: src/bootstrap/starterNote.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openInbox"
 msgid "Open inbox"
@@ -8224,12 +8677,17 @@ msgctxt "contextMenus.task.openNoteInNewTab"
 msgid "Open note in new tab"
 msgstr "Open note in new tab"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "Open or create occurrence note"
+
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openPomodoroStats"
+msgid "Open Pomodoro statistics"
+msgstr "Open Pomodoro statistics"
 
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
@@ -8237,7 +8695,7 @@ msgctxt "commands.openPomodoroView"
 msgid "Open Pomodoro timer"
 msgstr "Open Pomodoro timer"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openParent"
 msgid "Open recurring parent"
@@ -8247,6 +8705,19 @@ msgstr "Open recurring parent"
 msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "Open recurring parent for occurrence on {occurrence_date}"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Open task"
+msgstr "Open task"
+
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStatisticsView"
+msgid "Open task & project statistics"
+msgstr "Open task & project statistics"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.name"
@@ -8285,12 +8756,16 @@ msgctxt "modals.actionPalette.openParentDesc"
 msgid "Open the recurring task that generated this occurrence"
 msgstr "Open the recurring task that generated this occurrence"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStartHereGuide"
+msgid "Open the Start Here guide"
+msgstr "Open the Start Here guide"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "Open the task file in the editor"
 
-#: src/bootstrap/starterNote.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
 msgid "Open today"
@@ -8315,16 +8790,6 @@ msgstr "Opening browser for {provider} authorization..."
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
 msgid "Operation failed"
 msgstr "Operation failed"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "Optional color for the timeblock"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "Optional color for the timeblock"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionDesc"
@@ -8356,6 +8821,11 @@ msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
 msgstr "Optional work-session duration override for action=start"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Orange"
+msgstr "Orange"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.organization.title"
 msgid "Organization"
@@ -8386,7 +8856,6 @@ msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
 msgstr "Other"
 
-#: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.otherDestinations"
 msgid "Other destinations"
@@ -8418,6 +8887,7 @@ msgid "Overdue"
 msgstr "Overdue"
 
 #: src/services/filter-service/filterTaskGrouping.ts
+#: src/ui/taskCardProperties.ts
 msgctxt "services.filter.groupLabels.due.overdue"
 msgid "Overdue"
 msgstr "Overdue"
@@ -8542,7 +9012,7 @@ msgctxt "modals.actionPalette.deleteDesc"
 msgid "Permanently delete this task"
 msgstr "Permanently delete this task"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
@@ -8550,10 +9020,16 @@ msgstr "Pick {field} date"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "Pick date & time…"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Pink"
+msgstr "Pink"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -8616,6 +9092,7 @@ msgid "Plugin data"
 msgstr "Plugin data"
 
 #: src/views/PomodoroView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "Pomodoro"
@@ -8624,6 +9101,11 @@ msgstr "Pomodoro"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Pomodoro action to perform (default: status)"
 msgstr "Pomodoro action to perform (default: status)"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.basesMigration.description"
+msgid "Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes."
+msgstr "Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes."
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.pomodoroCompleted.label"
@@ -8660,6 +9142,16 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteSuccess"
+msgid "Pomodoro session deleted"
+msgstr "Pomodoro session deleted"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteNotFound"
+msgid "Pomodoro session was not found"
+msgstr "Pomodoro session was not found"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -8675,10 +9167,20 @@ msgctxt "pomodoro start notification"
 msgid "Pomodoro started for {title}"
 msgstr "Pomodoro started for {title}"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.heading"
+msgid "Pomodoro statistics"
+msgstr "Pomodoro statistics"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "Pomodoro statistics base"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.title"
+msgid "Pomodoro stats"
+msgstr "Pomodoro stats"
 
 #: src/services/PomodoroService.ts
 msgctxt "services.pomodoro.notices.stoppedAndReset"
@@ -8694,6 +9196,11 @@ msgstr "Pomodoro storage location changed to {location}"
 msgctxt "settings.features.pomodoro.header"
 msgid "Pomodoro timer"
 msgstr "Pomodoro timer"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.pomodoros"
+msgid "Pomodoros"
+msgstr "Pomodoros"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.description"
@@ -8740,18 +9247,20 @@ msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
 msgid "Preview selected time range"
 msgstr "Preview selected time range"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
 msgstr "Previous"
 
 #: src/bases/MiniCalendarView.ts
-#: src/modals/taskEditCompletions.ts
+#: src/ui/kit/monthCalendar.ts
 msgctxt "modals.taskEdit.previousMonth"
 msgid "Previous month"
 msgstr "Previous month"
 
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.priorities"
 msgid "Priorities"
 msgstr "Priorities"
@@ -8765,6 +9274,11 @@ msgstr "Priority"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info"
+msgid "Priority"
+msgstr "Priority"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Priority"
 msgstr "Priority"
 
@@ -8782,11 +9296,6 @@ msgstr "Priority"
 msgctxt "ui.filterBar.group.priority"
 msgid "Priority"
 msgstr "Priority"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.priorityChanged"
-msgid "Priority changed to {label}"
-msgstr "Priority changed to {label}"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.priorityDot"
@@ -8819,6 +9328,11 @@ msgctxt "ui.filterBar.group.project"
 msgid "Project"
 msgstr "Project"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.projectBreakdown"
+msgid "Project breakdown"
+msgstr "Project breakdown"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredTags.placeholder"
 msgid "project, active, important"
@@ -8834,6 +9348,12 @@ msgctxt "generated Bases view name"
 msgid "Projects"
 msgstr "Projects"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Projects"
+msgstr "Projects"
+
+#: src/modals/TaskModal.ts
 #: src/modals/taskModalOrganizationFields.ts
 #: src/settings/native/creation.ts
 #: src/settings/native/properties.ts
@@ -8851,12 +9371,16 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "Projects"
 
+#: src/views/stats/summary.ts
+msgctxt "views.stats.labels.projects"
+msgid "Projects"
+msgstr "Projects"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
 msgstr "Projects/, Work/Active, Personal"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "ui.filterBar.properties"
 msgid "Properties"
@@ -8907,6 +9431,11 @@ msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "Property-based events"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Purple"
+msgstr "Purple"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Quick (<30m)"
@@ -8921,11 +9450,6 @@ msgstr "Quick actions for current task"
 msgctxt "commands.quickActionsTaskUnderCursor"
 msgid "Quick actions for task under cursor"
 msgstr "Quick actions for task under cursor"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.title"
-msgid "Quick actions: {title}"
-msgstr "Quick actions: {title}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/errors: RateLimitError display"
@@ -8946,6 +9470,11 @@ msgstr "Ready for the next pomodoro?"
 msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "Ready to start"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.recent"
+msgid "Recent sessions"
+msgstr "Recent sessions"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
@@ -9003,11 +9532,6 @@ msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
 msgstr "Recurring task change undone."
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.occurrenceCompleted"
-msgid "Recurring task instance completed"
-msgstr "Recurring task instance completed"
-
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
@@ -9018,6 +9542,11 @@ msgctxt "notices.commands.repeatRecurring"
 msgid "Recurring tasks already track each occurrence"
 msgstr "Recurring tasks already track each occurrence"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Red"
+msgstr "Red"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
 msgid "Refresh"
@@ -9025,6 +9554,16 @@ msgstr "Refresh"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "views.notes.refreshButton"
+msgid "Refresh"
+msgstr "Refresh"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.refresh"
+msgid "Refresh"
+msgstr "Refresh"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.refreshButton"
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -9209,7 +9748,7 @@ msgctxt "modals.task.attachments.removeAriaLabel"
 msgid "Remove {name} from this task"
 msgstr "Remove {name} from this task"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
 msgstr "Remove {tag}"
@@ -9229,12 +9768,12 @@ msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList dis
 msgid "Remove attachment"
 msgstr "Remove attachment"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.removeBlockedBy"
 msgid "Remove blocked-by…"
 msgstr "Remove blocked-by…"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.removeBlocking"
 msgid "Remove blocking…"
 msgstr "Remove blocking…"
@@ -9255,7 +9794,7 @@ msgid "Remove subtask"
 msgstr "Remove subtask"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.removeTagInput"
 msgid "Remove tag…"
 msgstr "Remove tag…"
@@ -9306,12 +9845,6 @@ msgstr "Reopen this task, save its completion date and unarchive it? Body checkb
 msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "Reorder notes"
-
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeMessage"
-msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
-msgstr "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
@@ -9385,6 +9918,11 @@ msgctxt "settings.native.resetFileMapping"
 msgid "Reset file mapping"
 msgstr "Reset file mapping"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.resetFiltersButton"
+msgid "Reset filters"
+msgstr "Reset filters"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields"
 msgid "Reset form fields"
@@ -9435,7 +9973,7 @@ msgctxt "settings.features.pomodoro.mobileSidebar.right"
 msgid "Right sidebar"
 msgstr "Right sidebar"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.rolling"
 msgid "Rolling window (not automated yet)"
 msgstr "Rolling window (not automated yet)"
@@ -9504,6 +10042,12 @@ msgctxt "modals.timeblockInfo.saveButton"
 msgid "Save changes"
 msgstr "Save changes"
 
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeTitle"
+msgid "Save this order?"
+msgstr "Save this order?"
+
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
 msgid "Saved. Enter a new password to replace it"
@@ -9546,6 +10090,12 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Scheduled date"
 
+#: src/modals/DateTimePickerModal.ts
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Scheduled date"
+msgstr "Scheduled date"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
 msgid "Scheduled date"
@@ -9567,20 +10117,10 @@ msgctxt "ui.filterBar.group.scheduledDate"
 msgid "Scheduled date"
 msgstr "Scheduled date"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledCleared"
-msgid "Scheduled date cleared"
-msgstr "Scheduled date cleared"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledSet"
-msgid "Scheduled date set"
-msgstr "Scheduled date set"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -9591,6 +10131,11 @@ msgstr "Scheduled: {date}"
 msgctxt "modals.task.tooltips.scheduledValue"
 msgid "Scheduled: {value}"
 msgstr "Scheduled: {value}"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Search"
+msgstr "Search"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/TimeblockCreationModal.ts
@@ -9646,6 +10191,7 @@ msgid "See what''s new in the latest version of TaskNotes"
 msgstr "See what''s new in the latest version of TaskNotes"
 
 #: src/modals/DateTimePickerModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "contextMenus.date.modal.select"
 msgid "Select"
 msgstr "Select"
@@ -9831,7 +10377,7 @@ msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesM
 msgid "Series-wide"
 msgstr "Series-wide"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
@@ -9844,6 +10390,7 @@ msgstr "Service not initialized - please restart Obsidian"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
+#: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
 msgstr "Set date & time"
@@ -9852,11 +10399,6 @@ msgstr "Set date & time"
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.actions.due"
-msgid "Set due date"
-msgstr "Set due date"
-
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.dueTitle"
 msgid "Set due date"
 msgstr "Set due date"
 
@@ -9895,11 +10437,6 @@ msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Set scheduled date"
 
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.scheduledTitle"
-msgid "Set scheduled date"
-msgstr "Set scheduled date"
-
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.actions.status"
@@ -9931,15 +10468,10 @@ msgctxt "modals.scheduledDate.descriptions.dateTime"
 msgid "Set when you plan to work on this task"
 msgstr "Set when you plan to work on this task"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "common.settings"
-msgid "Settings"
-msgstr "Settings"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.settings"
-msgid "Settings, when you need them"
-msgstr "Settings, when you need them"
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Shift"
+msgstr "Shift"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
@@ -9976,6 +10508,11 @@ msgctxt "cli/commands/timeStatusCommand: defaults description"
 msgid "Show active time-tracking sessions, or detailed status for a specific task"
 msgstr "Show active time-tracking sessions, or detailed status for a specific task"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show agenda date strip"
+msgstr "Show agenda date strip"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
@@ -10005,11 +10542,6 @@ msgstr "Show convert button next to checkboxes"
 msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "Show current time indicator"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.showDetailedOptions"
-msgid "Show detailed options"
-msgstr "Show detailed options"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.showDetails"
@@ -10120,6 +10652,11 @@ msgstr "Show scheduled tasks"
 msgctxt "views.basesCalendar.settings.events.showScheduledTasks"
 msgid "Show scheduled tasks"
 msgstr "Show scheduled tasks"
+
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show selected day panel"
+msgstr "Show selected day panel"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showSkippedRecurringInstances"
@@ -10246,7 +10783,7 @@ msgctxt "settings.integrations.mobileCalendar.disable.description"
 msgid "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged."
 msgstr "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.skipInstance"
 msgid "Skip instance"
@@ -10282,6 +10819,11 @@ msgctxt "settings.native.source"
 msgid "Source"
 msgstr "Source"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Space"
+msgstr "Space"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -10307,15 +10849,16 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "Start date property"
 
+#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
 msgstr "Start focus"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.title"
-msgid "Start here with TaskNotes"
-msgstr "Start here with TaskNotes"
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection guide"
+msgid "Start Here guide"
+msgstr "Start Here guide"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.enable.description"
@@ -10343,6 +10886,7 @@ msgid "Start time"
 msgstr "Start time"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.startTimeLabel"
 msgid "Start time"
 msgstr "Start time"
@@ -10393,10 +10937,10 @@ msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "Start: "
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeTracking.started"
-msgid "Started tracking time for: {taskTitle}"
-msgstr "Started tracking time for: {taskTitle}"
+#: src/views/StatsView.ts
+msgctxt "views.stats.title"
+msgid "Statistics"
+msgstr "Statistics"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -10407,6 +10951,11 @@ msgstr "Status"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info"
+msgid "Status"
+msgstr "Status"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Status"
 msgstr "Status"
 
@@ -10424,11 +10973,6 @@ msgstr "Status"
 msgctxt "ui.filterBar.group.status"
 msgid "Status"
 msgstr "Status"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.statusChanged"
-msgid "Status changed to {label}"
-msgstr "Status changed to {label}"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
@@ -10451,6 +10995,7 @@ msgid "Status: {value}"
 msgstr "Status: {value}"
 
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.statuses"
 msgid "Statuses"
 msgstr "Statuses"
@@ -10507,6 +11052,11 @@ msgstr "Stored in Obsidian secret storage, not TaskNotes settings."
 msgctxt "settings.native.storedInTaskNotesChangingThisDoesNotRename"
 msgid "Stored in task notes. Changing this does not rename values in existing notes."
 msgstr "Stored in task notes. Changing this does not rename values in existing notes."
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.streak"
+msgid "Streak"
+msgstr "Streak"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
@@ -10767,7 +11317,7 @@ msgid "Tag"
 msgstr "Tag"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.tagPlaceholder"
 msgid "Tag or #tag"
 msgstr "Tag or #tag"
@@ -10790,6 +11340,11 @@ msgstr "Tags"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.tags"
+msgid "Tags"
+msgstr "Tags"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Tags"
 msgstr "Tags"
 
@@ -10833,39 +11388,12 @@ msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "Task"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successFilenameSanitized"
-msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-msgstr "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-
-#: src/modals/TaskCreationModal.ts
-#: src/modals/TaskSelectorWithCreateModal.ts
-msgctxt "modals.taskCreation.notices.success"
-msgid "Task \"{title}\" created successfully"
-msgstr "Task \"{title}\" created successfully"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successShortened"
-msgid "Task \"{title}\" created successfully (filename shortened due to length)"
-msgstr "Task \"{title}\" created successfully (filename shortened due to length)"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task \"{title}\" deleted successfully"
-msgstr "Task \"{title}\" deleted successfully"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.updateSuccess"
-msgid "Task \"{title}\" updated successfully"
-msgstr "Task \"{title}\" updated successfully"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveSuccess"
-msgid "Task {action} successfully"
-msgstr "Task {action} successfully"
+#: src/views/StatsView.ts
+msgctxt "views.stats.taskProjectStats"
+msgid "Task & project statistics"
+msgstr "Task & project statistics"
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.archived"
 msgid "Task archived"
 msgstr "Task archived"
@@ -10926,9 +11454,30 @@ msgid "Task created"
 msgstr "Task created"
 
 #: src/modals/TaskCreationModal.ts
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task creation feedback"
+msgid "Task created"
+msgstr "Task created"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successShortened"
+msgid "Task created (filename shortened)"
+msgstr "Task created (filename shortened)"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+msgstr "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "Task created, but a follow-up step failed: {message}"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Task created, but hidden by this view"
+msgstr "Task created, but hidden by this view"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
@@ -10950,12 +11499,16 @@ msgctxt "notices.icsTaskCreatedSuccess"
 msgid "Task created: {title}"
 msgstr "Task created: {title}"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/native/features.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "Task creation"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.deleteSuccess"
+msgid "Task deleted"
+msgstr "Task deleted"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
@@ -10972,7 +11525,6 @@ msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Task details/body; overrides NLP-derived details"
 msgstr "Task details/body; overrides NLP-derived details"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskFiles"
 msgid "Task files"
@@ -11115,10 +11667,21 @@ msgctxt "modals.reminder.title"
 msgid "Task reminders"
 msgstr "Task reminders"
 
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.updateSuccess"
+msgid "Task saved"
+msgstr "Task saved"
+
 #: src/services/TaskService.ts
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
 msgid "Task saved, but its first occurrence could not be created. Use Create occurrence to retry."
 msgstr "Task saved, but its first occurrence could not be created. Use Create occurrence to retry."
+
+#: src/bases/KanbanView.ts
+#: src/ui/taskPropertyPickers.ts
+msgctxt "picker recovery action"
+msgid "Task settings"
+msgstr "Task settings"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.header"
@@ -11172,7 +11735,6 @@ msgid "Task title..."
 msgstr "Task title..."
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.unarchived"
 msgid "Task unarchived"
 msgstr "Task unarchived"
@@ -11342,10 +11904,10 @@ msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
 msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 msgstr "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.intro"
-msgid "Tasks are Markdown notes in your vault. Use the command palette for these three steps."
-msgstr "Tasks are Markdown notes in your vault. Use the command palette for these three steps."
+#: src/views/stats/summary.ts
+msgctxt "views.stats.labels.tasks"
+msgid "Tasks"
+msgstr "Tasks"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -11357,11 +11919,6 @@ msgstr "Tasks copied: {count}"
 msgctxt "settings.integrations.autoExport.notices.exportSuccess"
 msgid "Tasks exported successfully"
 msgstr "Tasks exported successfully"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponed"
-msgid "Tasks postponed: {count}. Failed: {failed}."
-msgstr "Tasks postponed: {count}. Failed: {failed}."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -11412,6 +11969,11 @@ msgstr "Text"
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
 msgstr "That occurrence was already completed, skipped or rescheduled."
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
+msgid "the {position} {weekday}"
+msgstr "the {position} {weekday}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11473,10 +12035,251 @@ msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotificatio
 msgid "This is a test reminder from TaskNotes."
 msgstr "This is a test reminder from TaskNotes."
 
+#: src/bases/TaskListView.ts
+msgctxt "task list drop restriction"
+msgid "This is the dragged task."
+msgstr "This is the dragged task."
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "This month"
 msgstr "This month"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.thisMonth"
+msgid "This month"
+msgstr "This month"
+
+#: src/bootstrap/starterNote.ts
+msgctxt "starter note Markdown"
+msgid "This note is a small tour of TaskNotes inside your own vault. Work through it in place, then keep it as a reference or delete it when you no longer need it.\n"
+"\n"
+"TaskNotes works best when three things feel connected:\n"
+"\n"
+"1. Capture a task quickly.\n"
+"2. Store the task as a normal Markdown note.\n"
+"3. Review tasks through Bases views.\n"
+"\n"
+"## Before you start\n"
+"\n"
+"- [ ] Enable the Obsidian **Bases** core plugin.\n"
+"- [ ] Confirm TaskNotes has created the default {token1} files in {token2}.\n"
+"- [ ] Open the command palette and run **TaskNotes: Open tasks view**.\n"
+"\n"
+"TaskNotes creates missing default {token3} files automatically on startup when **Auto-create default files** is enabled. If the files are missing, use **Settings -> TaskNotes -> Appearance & interaction -> Views & base files -> Create files**.\n"
+"\n"
+"## 1. Create a task from the command palette\n"
+"\n"
+"Run **TaskNotes: Create new task** and create a real task you intend to do soon.\n"
+"\n"
+"Try a title like:\n"
+"\n"
+"```text\n"
+"Review my TaskNotes setup tomorrow #admin\n"
+"```\n"
+"\n"
+"After saving, TaskNotes creates a Markdown note for that task. Open the task note and look at the YAML properties at the top. Those properties are what Bases reads for filtering, sorting, grouping, and calendar placement.\n"
+"\n"
+"## 2. Convert inline tasks into TaskNotes\n"
+"\n"
+"The checkboxes below are ordinary Markdown tasks. Convert each one into a TaskNote from the line''s inline action or the command palette.\n"
+"\n"
+"- [ ] Create a TaskNotes inbox task due tomorrow #admin\n"
+"- [ ] Schedule a 20 minute planning task for next Monday #planning\n"
+"- [ ] Make a task linked to an active project note\n"
+"\n"
+"After conversion, notice a few things:\n"
+"\n"
+"- The source line can stay in this note as context.\n"
+"- The actual task now lives as its own Markdown note, so it can appear in TaskNotes views.\n"
+"- The converted line links to the TaskNote. Right-click that TaskNote link to open the task menu, then try changing a property such as status, priority, due date, scheduled date, or project.\n"
+"\n"
+"## 3. Review your tasks\n"
+"\n"
+"The embedded views below use the default TaskNotes Bases files.\n"
+"\n"
+"### Task list\n"
+"\n"
+"{token4}\n"
+"\n"
+"Use this when you want a straightforward list of everything open.\n"
+"\n"
+"### Agenda\n"
+"\n"
+"{token5}\n"
+"\n"
+"Use this when you care about due dates, scheduled dates, and what needs attention soon.\n"
+"\n"
+"### Mini calendar\n"
+"\n"
+"{token6}\n"
+"\n"
+"Use this when you want a compact calendar alongside your notes.\n"
+"\n"
+"### Calendar\n"
+"\n"
+"{token7}\n"
+"\n"
+"Use this when you want a larger calendar for scheduled work, due dates, timeblocks, and calendar events.\n"
+"\n"
+"### Kanban\n"
+"\n"
+"{token8}\n"
+"\n"
+"Use this when you want to move work through statuses like open, in progress, and done.\n"
+"\n"
+"## 4. Adjust only what gets in your way\n"
+"\n"
+"The defaults are enough to start. Visit settings later when you know what you want to change:\n"
+"\n"
+"- If task files are going to the wrong place, check **Settings -> TaskNotes -> Task files**.\n"
+"- If converted inline tasks should be created somewhere else, check **Settings -> TaskNotes -> Task creation -> Inline tasks**.\n"
+"- If the task modal shows too much or too little, check **Settings -> TaskNotes -> Task creation -> Form fields**.\n"
+"- If your vault uses different property names, statuses, priorities, or custom fields, check **Settings -> TaskNotes -> Properties**.\n"
+"\n"
+"## 5. Make it yours\n"
+"\n"
+"Try adding one custom property to a task, such as {token9}, {token10}, or {token11}. Because tasks are Markdown notes, custom properties can be used in Bases without locking you into a separate task database.\n"
+"\n"
+"## 6. Contextual views\n"
+"\n"
+"You can embed Bases views inside daily notes, project notes, meeting notes, or task notes. Advanced Bases filters can use the current note as context, so one view can show tasks related to whatever note it is embedded in.\n"
+"\n"
+"TaskNotes uses this pattern for the Relationships widget in task notes. When you are ready to customize views, see the TaskNotes documentation for examples.\n"
+"\n"
+"Useful next experiments:\n"
+"\n"
+"- Duplicate {token12} and make a view for one project.\n"
+"- Add a group to a Base view, such as status or priority.\n"
+"- Add a filter for tasks due this week.\n"
+"- Link a task to a project note and use backlinks to see where it is mentioned.\n"
+"\n"
+"## More help and extensions\n"
+"\n"
+"- Documentation: [tasknotes.dev]({token13})\n"
+"- Problems or bugs: [open an issue on GitHub]({token14})\n"
+"- Companion plugins:\n"
+"  - [Canvas Bases]({token15}) adds canvas-style boards and JSON Canvas snapshots for Bases views, with optional TaskNotes badges, actions, and relationship edges.\n"
+"  - [TaskNotes Workflows]({token16}) adds Markdown-defined automation for TaskNotes events, schedules, manual commands, and task actions.\n"
+"\n"
+"## Finished\n"
+"\n"
+"Now you know the core idea: tasks are notes, properties make them queryable, and Bases turns them into views.\n"
+""
+msgstr "This note is a small tour of TaskNotes inside your own vault. Work through it in place, then keep it as a reference or delete it when you no longer need it.\n"
+"\n"
+"TaskNotes works best when three things feel connected:\n"
+"\n"
+"1. Capture a task quickly.\n"
+"2. Store the task as a normal Markdown note.\n"
+"3. Review tasks through Bases views.\n"
+"\n"
+"## Before you start\n"
+"\n"
+"- [ ] Enable the Obsidian **Bases** core plugin.\n"
+"- [ ] Confirm TaskNotes has created the default {token1} files in {token2}.\n"
+"- [ ] Open the command palette and run **TaskNotes: Open tasks view**.\n"
+"\n"
+"TaskNotes creates missing default {token3} files automatically on startup when **Auto-create default files** is enabled. If the files are missing, use **Settings -> TaskNotes -> Appearance & interaction -> Views & base files -> Create files**.\n"
+"\n"
+"## 1. Create a task from the command palette\n"
+"\n"
+"Run **TaskNotes: Create new task** and create a real task you intend to do soon.\n"
+"\n"
+"Try a title like:\n"
+"\n"
+"```text\n"
+"Review my TaskNotes setup tomorrow #admin\n"
+"```\n"
+"\n"
+"After saving, TaskNotes creates a Markdown note for that task. Open the task note and look at the YAML properties at the top. Those properties are what Bases reads for filtering, sorting, grouping, and calendar placement.\n"
+"\n"
+"## 2. Convert inline tasks into TaskNotes\n"
+"\n"
+"The checkboxes below are ordinary Markdown tasks. Convert each one into a TaskNote from the line''s inline action or the command palette.\n"
+"\n"
+"- [ ] Create a TaskNotes inbox task due tomorrow #admin\n"
+"- [ ] Schedule a 20 minute planning task for next Monday #planning\n"
+"- [ ] Make a task linked to an active project note\n"
+"\n"
+"After conversion, notice a few things:\n"
+"\n"
+"- The source line can stay in this note as context.\n"
+"- The actual task now lives as its own Markdown note, so it can appear in TaskNotes views.\n"
+"- The converted line links to the TaskNote. Right-click that TaskNote link to open the task menu, then try changing a property such as status, priority, due date, scheduled date, or project.\n"
+"\n"
+"## 3. Review your tasks\n"
+"\n"
+"The embedded views below use the default TaskNotes Bases files.\n"
+"\n"
+"### Task list\n"
+"\n"
+"{token4}\n"
+"\n"
+"Use this when you want a straightforward list of everything open.\n"
+"\n"
+"### Agenda\n"
+"\n"
+"{token5}\n"
+"\n"
+"Use this when you care about due dates, scheduled dates, and what needs attention soon.\n"
+"\n"
+"### Mini calendar\n"
+"\n"
+"{token6}\n"
+"\n"
+"Use this when you want a compact calendar alongside your notes.\n"
+"\n"
+"### Calendar\n"
+"\n"
+"{token7}\n"
+"\n"
+"Use this when you want a larger calendar for scheduled work, due dates, timeblocks, and calendar events.\n"
+"\n"
+"### Kanban\n"
+"\n"
+"{token8}\n"
+"\n"
+"Use this when you want to move work through statuses like open, in progress, and done.\n"
+"\n"
+"## 4. Adjust only what gets in your way\n"
+"\n"
+"The defaults are enough to start. Visit settings later when you know what you want to change:\n"
+"\n"
+"- If task files are going to the wrong place, check **Settings -> TaskNotes -> Task files**.\n"
+"- If converted inline tasks should be created somewhere else, check **Settings -> TaskNotes -> Task creation -> Inline tasks**.\n"
+"- If the task modal shows too much or too little, check **Settings -> TaskNotes -> Task creation -> Form fields**.\n"
+"- If your vault uses different property names, statuses, priorities, or custom fields, check **Settings -> TaskNotes -> Properties**.\n"
+"\n"
+"## 5. Make it yours\n"
+"\n"
+"Try adding one custom property to a task, such as {token9}, {token10}, or {token11}. Because tasks are Markdown notes, custom properties can be used in Bases without locking you into a separate task database.\n"
+"\n"
+"## 6. Contextual views\n"
+"\n"
+"You can embed Bases views inside daily notes, project notes, meeting notes, or task notes. Advanced Bases filters can use the current note as context, so one view can show tasks related to whatever note it is embedded in.\n"
+"\n"
+"TaskNotes uses this pattern for the Relationships widget in task notes. When you are ready to customize views, see the TaskNotes documentation for examples.\n"
+"\n"
+"Useful next experiments:\n"
+"\n"
+"- Duplicate {token12} and make a view for one project.\n"
+"- Add a group to a Base view, such as status or priority.\n"
+"- Add a filter for tasks due this week.\n"
+"- Link a task to a project note and use backlinks to see where it is mentioned.\n"
+"\n"
+"## More help and extensions\n"
+"\n"
+"- Documentation: [tasknotes.dev]({token13})\n"
+"- Problems or bugs: [open an issue on GitHub]({token14})\n"
+"- Companion plugins:\n"
+"  - [Canvas Bases]({token15}) adds canvas-style boards and JSON Canvas snapshots for Bases views, with optional TaskNotes badges, actions, and relationship edges.\n"
+"  - [TaskNotes Workflows]({token16}) adds Markdown-defined automation for TaskNotes events, schedules, manual commands, and task actions.\n"
+"\n"
+"## Finished\n"
+"\n"
+"Now you know the core idea: tasks are notes, properties make them queryable, and Bases turns them into views.\n"
+""
 
 #: src/main.ts
 msgctxt "commands.convertCurrentNoteToTask.alreadyTask"
@@ -11497,6 +12300,11 @@ msgstr "This removes the property from TaskNotes forms, not from existing notes.
 msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "This removes the saved client ID and client secret from Obsidian secret storage."
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
+msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
+msgstr "This removes the session from Pomodoro history. Existing task time entries are not changed."
 
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
@@ -11537,6 +12345,16 @@ msgstr "This value already exists."
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "This week"
+msgstr "This week"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.week"
+msgid "This week"
+msgstr "This week"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.thisWeek"
 msgid "This week"
 msgstr "This week"
 
@@ -11693,8 +12511,19 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "Time to scroll to when opening timeline views (HH:MM format)"
 
+#: src/views/stats/summary.ts
+#: src/views/StatsView.ts
+msgctxt "views.stats.cards.timeTrackedEstimated"
+msgid "Time tracked / estimated"
+msgstr "Time tracked / estimated"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeTrackingSection.header"
+msgid "Time tracking"
+msgstr "Time tracking"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "task menu time tracking group"
 msgid "Time tracking"
 msgstr "Time tracking"
 
@@ -11708,7 +12537,6 @@ msgctxt "services/TaskService: TaskService.startTimeTrackingLocked display"
 msgid "Time tracking is already active for this task"
 msgstr "Time tracking is already active for this task"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStarted"
 msgid "Time tracking started"
@@ -11719,7 +12547,6 @@ msgctxt "settings.features.timeTracking.stopNotificationName"
 msgid "Time tracking stop notification"
 msgstr "Time tracking stop notification"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
@@ -11741,21 +12568,6 @@ msgctxt "unnamed timeblock tooltip"
 msgid "Timeblock"
 msgstr "Timeblock"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.created"
-msgid "Timeblock \"{title}\" created successfully"
-msgstr "Timeblock \"{title}\" created successfully"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockDeletedSuccess"
-msgid "Timeblock \"{title}\" deleted successfully"
-msgstr "Timeblock \"{title}\" deleted successfully"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockUpdatedSuccess"
-msgid "Timeblock \"{title}\" updated successfully"
-msgstr "Timeblock \"{title}\" updated successfully"
-
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
 msgid "Timeblock {timeblockId} not found"
@@ -11771,15 +12583,20 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name
 msgid "Timeblock calendar"
 msgstr "Timeblock calendar"
 
+#: src/modals/TimeblockCreationModal.ts
+msgctxt "modals.timeblockCreation.created"
+msgid "Timeblock created"
+msgstr "Timeblock created"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockDeletedSuccess"
+msgid "Timeblock deleted"
+msgstr "Timeblock deleted"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
 msgstr "Timeblock duplicated successfully"
-
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.timeblockResized"
-msgid "Timeblock duration updated"
-msgstr "Timeblock duration updated"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
@@ -11790,6 +12607,11 @@ msgstr "Timeblock event title template"
 msgctxt "notices.audit.timeblockMoved"
 msgid "Timeblock moved successfully"
 msgstr "Timeblock moved successfully"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockUpdatedSuccess"
+msgid "Timeblock saved"
+msgstr "Timeblock saved"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.header"
@@ -11852,6 +12674,7 @@ msgid "Title"
 msgstr "Title"
 
 #: src/i18n/fieldLabels.ts
+#: src/modals/TaskCreationModal.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "Title"
@@ -11870,16 +12693,6 @@ msgstr "Title for the calendar event"
 msgctxt "modals.icsNoteCreation.titleDesc"
 msgid "Title for the new content"
 msgstr "Title for the new content"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.titleDesc"
-msgid "Title for your timeblock"
-msgstr "Title for your timeblock"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.titleDesc"
-msgid "Title for your timeblock"
-msgstr "Title for your timeblock"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.titleRequired"
@@ -11906,6 +12719,11 @@ msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "title: {title}"
 msgstr "title: {title}"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.dateRangeTo"
+msgid "To"
+msgstr "To"
+
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
@@ -11924,16 +12742,17 @@ msgctxt "modals.taskSelectorWithCreate.instructions.create"
 msgid "to create new task"
 msgstr "to create new task"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "to dismiss"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.execute"
-msgid "To execute"
-msgstr "To execute"
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeMessage"
+msgid "To keep this order, {count} notes in {scope} need to be updated. You can undo this change."
+msgstr "To keep this order, {count} notes in {scope} need to be updated. You can undo this change."
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"
@@ -11942,11 +12761,15 @@ msgstr "to navigate"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.navigate"
 msgid "to navigate"
 msgstr "to navigate"
+
+#: src/bases/TaskListView.ts
+msgctxt "task list sorted drop restriction"
+msgid "To reorder tasks, sort this view by {property}."
+msgstr "To reorder tasks, sort this view by {property}."
 
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.schedule"
@@ -11997,14 +12820,30 @@ msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "Today"
 
+#: src/ui/kit/dateLabel.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Today"
+msgstr "Today"
+
 #: src/modals/DateTimePickerModal.ts
 msgctxt "views.agenda.today"
 msgid "Today"
 msgstr "Today"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.today"
+msgid "Today"
+msgstr "Today"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.today"
+msgid "Today"
+msgstr "Today"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.today"
 msgid "Today"
 msgstr "Today"
 
@@ -12013,15 +12852,30 @@ msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
 msgid "Today column width (×)"
 msgstr "Today column width (×)"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayFocus.label"
+msgid "Today''s focus"
+msgstr "Today''s focus"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
+msgid "Today''s pomos"
+msgstr "Today''s pomos"
+
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "Toggle {column} column"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "Toggle group"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Toggle selection"
+msgstr "Toggle selection"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.exchangeCodeForTokens display"
@@ -12071,6 +12925,11 @@ msgctxt "settings.defaults.options.tomorrow"
 msgid "Tomorrow"
 msgstr "Tomorrow"
 
+#: src/ui/kit/dateLabel.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Tomorrow"
+msgstr "Tomorrow"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui.taskCard.relativeTomorrow"
 msgid "Tomorrow"
@@ -12080,6 +12939,31 @@ msgstr "Tomorrow"
 msgctxt "settings.appearance.uiElements.relationshipsPosition.options.top"
 msgid "Top of note"
 msgstr "Top of note"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.totalFocus.label"
+msgid "Total focus duration"
+msgstr "Total focus duration"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
+msgid "Total pomos"
+msgstr "Total pomos"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.totalTasks"
+msgid "Total tasks"
+msgstr "Total tasks"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.totalTasks"
+msgid "Total tasks"
+msgstr "Total tasks"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.totalTime"
+msgid "Total time"
+msgstr "Total time"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.totalTrackedTime"
@@ -12135,11 +13019,6 @@ msgstr "Trigger is too long (max 10 characters)"
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "True"
 msgstr "True"
-
-#: src/bases/basesSearchUi.ts
-msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
-msgid "Try a different search term or clear the search"
-msgstr "Try a different search term or clear the search"
 
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.tue"
@@ -12225,19 +13104,21 @@ msgid "Unarchive"
 msgstr "Unarchive"
 
 #: src/modals/TaskActionPaletteModal.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList title"
 msgid "Unarchive task"
 msgstr "Unarchive task"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.unarchived"
-msgid "unarchived"
-msgstr "unarchived"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "Under estimate"
+
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction undo"
+msgid "Undo"
+msgstr "Undo"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undo"
@@ -12254,7 +13135,7 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "Unit:"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.unknownDependency"
 msgid "Unknown"
 msgstr "Unknown"
@@ -12349,7 +13230,7 @@ msgctxt "modals.unscheduledTasksSelector.title"
 msgid "Unscheduled tasks"
 msgstr "Unscheduled tasks"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.unskipInstance"
 msgid "Unskip instance"
@@ -12437,12 +13318,6 @@ msgstr "Update interval (between 5 and 1440 minutes)"
 msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "Update reminder"
-
-#: src/bases/CalendarView.ts
-#: src/components/BatchContextMenu.ts
-msgctxt "notices.audit.update"
-msgid "Update tasks"
-msgstr "Update tasks"
 
 #: src/main.ts
 msgctxt "notices.commands.basesUpdated"
@@ -12621,7 +13496,6 @@ msgctxt "modals.actionPalette.editTimeDesc"
 msgid "View, edit, or add time entries for this task"
 msgstr "View, edit, or add time entries for this task"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.header"
 msgid "Views & base files"
@@ -12637,15 +13511,15 @@ msgctxt "settings.features.notifications.soundVolumeDesc"
 msgid "Volume for task reminder sounds (0-100)"
 msgstr "Volume for task reminder sounds (0-100)"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.week"
-msgid "W"
-msgstr "W"
-
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
 msgstr "Waiting for authorization..."
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.basesMigration.title"
+msgid "Want a base view?"
+msgstr "Want a base view?"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.starMessage"
@@ -12680,6 +13554,12 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "Wednesday"
 
+#: src/bases/calendarKeyboard.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Week"
+msgstr "Week"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.weekStartsOn"
 msgid "Week starts on"
@@ -12697,12 +13577,13 @@ msgid "Week view"
 msgstr "Week view"
 
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "Weekdays"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.weekdays"
 msgid "Weekdays"
 msgstr "Weekdays"
@@ -12716,6 +13597,11 @@ msgstr "Weekdays"
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "Weekdays only"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence weekends"
+msgid "Weekends"
+msgstr "Weekends"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
@@ -12742,7 +13628,7 @@ msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "Weekly on {day}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.weeklyOn"
 msgid "Weekly on {days}"
 msgstr "Weekly on {days}"
@@ -12770,8 +13656,8 @@ msgstr "What to show"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
-msgid "What''s new in TaskNotes {version}"
-msgstr "What''s new in TaskNotes {version}"
+msgid "What''s new in TaskNotes"
+msgstr "What''s new in TaskNotes"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.title"
@@ -12893,16 +13779,6 @@ msgctxt "settings.integrations.webhooks.events.taskUnarchived.description"
 msgid "When tasks are unarchived"
 msgstr "When tasks are unarchived"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimeDesc"
-msgid "When the timeblock ends"
-msgstr "When the timeblock ends"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimeDesc"
-msgid "When the timeblock starts"
-msgstr "When the timeblock starts"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.description"
 msgid "When time tracking starts"
@@ -12943,15 +13819,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Work duration"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.year"
-msgid "Y"
-msgstr "Y"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
 msgstr "Yahoo Calendar"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Year"
+msgstr "Year"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.yearView"
@@ -12984,8 +13860,18 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence
 msgid "Yearly recurrence"
 msgstr "Yearly recurrence"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Yellow"
+msgstr "Yellow"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr "Yesterday"
+
+#: src/ui/kit/dateLabel.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Yesterday"
 msgstr "Yesterday"
 

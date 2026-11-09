@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { launchObsidian, closeObsidian, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 let app: ObsidianApp;
 const BASE = 'TaskNotes/Views/e2e-calendar-settings.base';
@@ -8,8 +8,9 @@ const PREFIX = 'TaskNotes/E2E settings';
 test.beforeAll(async () => { app = await launchObsidian(); });
 test.afterAll(async () => { if (app) await closeObsidian(app); });
 
-test('legacy calendar keys keep their rendering when opening the grouped settings', async () => {
+test('legacy calendar keys keep their rendering when opening the grouped settings', async ({}, testInfo) => {
   const page = app.page;
+  await setObsidianViewport(page, { width: 1050, height: 900 });
   const source = await page.evaluate(async ({ base, prefix }) => {
     const w = window as any;
     const day = w.moment().format('YYYY-MM-DD');
@@ -26,11 +27,19 @@ test('legacy calendar keys keep their rendering when opening the grouped setting
     const cal = page.locator('.tnc:visible').first();
     await expect(cal).toBeVisible();
     await expect(cal.locator('.tnc-tg-head .tnc-dh')).toHaveCount(3);
+    await expect(cal.locator('.tnc-more:visible')).toHaveCount(2);
+    await page.screenshot({ path: 'test-results/calendar-settings-legacy-width.png' });
     await expect(cal.locator('.tnc-item:visible')).toHaveCount(2);
     await expect(cal.locator('.tnc-more:visible')).toHaveCount(2);
-    await expect(cal.locator('.tnc-tg')).toContainText(/\d(am|pm)/);
+    await expect(cal.locator('.tnc-tg')).toContainText(/\d(?::\d{2})?\s*(am|pm)/i);
     const widths = await cal.locator('.tnc-tg-head .tnc-dh').evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
     expect(widths[0]).toBeGreaterThan(widths[1] * 1.5);
+    const timedStack = cal.locator('.tnc-more--stack');
+    await timedStack.click();
+    await expect(cal.locator('.tnc-popover .tnc-item')).toHaveCount(6);
+    await expect(cal.locator('.tnc-popover .tn-calendar-event-title')).toHaveText(Array.from({ length: 6 }, (_, index) => `Settings event ${index}`));
+    await page.keyboard.press('Escape');
+    await expect(timedStack).toBeFocused();
     const rendering = async () => cal.evaluate(el => Array.from(el.querySelectorAll('.tnc-item, .tnc-more')).filter(node => (node as HTMLElement).offsetHeight > 0).map(node => {
       const box = node.getBoundingClientRect();
       const root = el.getBoundingClientRect();
@@ -55,7 +64,14 @@ test('legacy calendar keys keep their rendering when opening the grouped setting
     await page.screenshot({ path: 'test-results/calendar-settings-advanced.png' });
     await panel.locator('.close-icon').click();
     await expect(panel).toBeHidden();
-    expect(await rendering()).toEqual(before);
+    await expect.poll(rendering).toEqual(before).catch(async error => {
+      await testInfo.attach('legacy-rendering', { body: JSON.stringify({ before, after: await rendering(), layout: await cal.evaluate(element => {
+        const ancestors = [];
+        for (let node: HTMLElement | null = element as HTMLElement; node; node = node.parentElement) ancestors.push({ cls: node.className, box: node.getBoundingClientRect().toJSON(), scroll: [node.scrollTop, node.scrollLeft, node.scrollHeight, node.clientHeight] });
+        return ancestors;
+      }) }), contentType: 'application/json' });
+      throw error;
+    });
     expect(await page.evaluate(async p => {
       const w = window as any;
       return w.app.vault.read(w.app.vault.getAbstractFileByPath(p));
@@ -64,11 +80,11 @@ test('legacy calendar keys keep their rendering when opening the grouped setting
     await page.evaluate(async p => {
       const w = window as any;
       const previous = w.app.workspace.getLeaf();
-      await w.app.workspace.getLeaf(true).openFile(w.app.vault.getAbstractFileByPath(p));
-      previous.detach();
+      await previous.setViewState({ type: 'empty' });
+      await previous.openFile(w.app.vault.getAbstractFileByPath(p));
     }, BASE);
     await expect(cal.locator('.tnc-item:visible')).toHaveCount(2);
-    expect(await rendering()).toEqual(before);
+    await expect.poll(rendering).toEqual(before);
   } finally {
     await page.evaluate(async ({ base, prefix }) => {
       const w = window as any;

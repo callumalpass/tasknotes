@@ -52,10 +52,12 @@ function createLifecyclePlugin(saveSettingsDataOnly: jest.Mock): any {
 			updateConfiguredValues: jest.fn(),
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			updateStatuses: jest.fn(),
 			isCompletedStatus: jest.fn(),
 		},
 		priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 			updatePriorities: jest.fn(),
 		},
 		cacheManager: { updateConfig: jest.fn() },

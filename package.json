@@ -60,7 +60,8 @@
 		"i18n:publish": "node scripts/publish-language-packs.mjs",
 		"test:language-packs": "node --test tests/scripts/language-pack*.test.mjs",
 		"test:translation-contracts": "node --test tests/scripts/plugin-translation-contracts.test.mjs",
-		"test:i18n-source": "node --test tests/scripts/obsidian-i18n-source.test.mjs tests/scripts/retired-i18n-source.test.mjs tests/scripts/catalogue-gates.test.mjs tests/scripts/docs-lingui-source.test.mjs tests/scripts/plural-contracts.test.mjs tests/scripts/message-values.test.mjs tests/scripts/italian-locale.test.mjs"
+		"test:i18n-source": "node --test tests/scripts/obsidian-i18n-source.test.mjs tests/scripts/retired-i18n-source.test.mjs tests/scripts/catalogue-gates.test.mjs tests/scripts/docs-lingui-source.test.mjs tests/scripts/plural-contracts.test.mjs tests/scripts/message-values.test.mjs tests/scripts/italian-locale.test.mjs",
+		"check:obsidian-tokens": "node scripts/check-obsidian-tokens.mjs"
 	},
 	"keywords": [],
 	"author": "",
@@ -92,6 +93,7 @@
 		"obsidian": "^1.13.1",
 		"obsidian-test-mocks": "^3.11.0",
 		"obsidian-typings": "^6.37.0",
+		"postcss-value-parser": "^4.2.0",
 		"prettier": "^3.6.2",
 		"stylelint": "^17.11.0",
 		"ts-jest": "^29.1.1",
@@ -112,7 +114,7 @@
 		"@callumalpass/mdbase-interop": "0.1.0-rc.2",
 		"@codemirror/view": "^6.38.6",
 		"@modelcontextprotocol/sdk": "1.32.1",
-		"@tasknotes/calendar": "0.1.6",
+		"@tasknotes/calendar": "0.1.10",
 		"@tasknotes/model": "0.3.0-rc.20",
 		"ajv": "8.20.0",
 		"ajv-formats": "3.0.1",

@@ -8,10 +8,10 @@ import { readFileSync } from "node:fs";
 test("host calendar stylesheet tracks the pinned upstream engine and license", () => {
   const packageRoot = new URL("../node_modules/@tasknotes/calendar/", import.meta.url);
   const version = JSON.parse(readFileSync(new URL("package.json", packageRoot), "utf8")).version;
-  assert.equal(version, "0.1.6");
+  assert.equal(version, "0.1.10");
   const upstreamHash = createHash("sha256")
     .update(readFileSync(new URL("dist/calendar.css", packageRoot))).digest("hex");
-  assert.equal(upstreamHash, "725742e962757e54a56f7e67b823f017993bb705f17e181233173d1f3e9ddfe1");
+  assert.equal(upstreamHash, "652876bf3041281974a22ab92f9d8950f95de2cbb3df033b120980d633e9ef38");
   const host = readFileSync(new URL("../vendor/tasknotes-calendar/calendar.css", import.meta.url), "utf8");
   assert.ok(host.replace(/[\s*]+/g, "").includes(upstreamHash));
   assert.deepEqual(readFileSync(new URL("../vendor/tasknotes-calendar/LICENSE", import.meta.url)),

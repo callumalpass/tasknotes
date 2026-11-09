@@ -1,3 +1,4 @@
+import { applyModalShell } from "./kit/modal";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Notice } from "obsidian";
@@ -18,6 +19,7 @@ class DeleteTaskConfirmationModal extends Modal {
 		private readonly plugin: TaskNotesPlugin
 	) {
 		super(app);
+		applyModalShell(this);
 		this.task = task;
 		this.onConfirm = onConfirm;
 	}

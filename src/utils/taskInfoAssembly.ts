@@ -1,4 +1,3 @@
-import { uiData } from "../i18n/dataText";
 import { taskInfoTitle } from "../i18n/taskInfoTitle";
 import type { TaskInfo } from "../types";
 import { calculateTotalTimeSpent } from "./helpers";
@@ -27,7 +26,7 @@ export function buildTaskInfoFromMappedTask({
 		path,
 		title: taskInfoTitle(mappedTask.title),
 		status: mappedTask.status || defaultTaskStatus,
-		priority: mappedTask.priority || uiData("normal", "Persisted priority value; preserve user metadata and matching semantics"),
+		priority: mappedTask.priority || "",
 		archived: mappedTask.archived || false,
 		tags: Array.isArray(mappedTask.tags) ? mappedTask.tags : [],
 		contexts: Array.isArray(mappedTask.contexts) ? mappedTask.contexts : [],

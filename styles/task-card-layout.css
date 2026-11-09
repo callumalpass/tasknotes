@@ -1,0 +1,294 @@
+/* Task card layout shared by Kanban cards, Task List rows and calendar list rows.
+   Kanban adds card chrome in kanban-view.css; the list draws rows without it. */
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+    --tn-kanban-card-menu: var(--tn-icon-sm);
+    align-items: flex-start;
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+    --tn-kanban-card-menu: var(--tn-mobile-task-card-menu-size);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tn-space-1);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__context-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__badges {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / 3;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    pointer-events: none;
+    flex: none;
+    flex-wrap: wrap;
+    row-gap: var(--tn-space-1);
+    padding-right: calc(var(--tn-kanban-card-menu) + var(--tn-space-1));
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title > * {
+    pointer-events: auto;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title-text,
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex-basis: 100%;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding-right: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    overflow: hidden;
+    text-overflow: clip;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata {
+    grid-column: 1;
+    grid-row: 2;
+    flex: none;
+    max-width: 100%;
+    padding: 0;
+    mask-image: none;
+    -webkit-mask-image: none;
+    justify-content: flex-start;
+    gap: var(--tn-space-1) var(--tn-space-2);
+    flex-wrap: wrap;
+    white-space: nowrap;
+    overflow: visible;
+    max-height: none;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) :is(.tag, .context-tag, .task-card__project-link) {
+    border: none;
+    border-radius: var(--tn-radius-none);
+    background: transparent;
+    box-shadow: none;
+    padding-inline: 0;
+    color: var(--tn-text-metadata);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata > * {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata > .task-card__metadata-overflow {
+    flex: none;
+    min-width: max-content;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__date-slot {
+    order: 0;
+    flex: none;
+    overflow: visible;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-values {
+    order: 3;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-property--due,
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-property--scheduled {
+    flex-shrink: 0;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-property--tags {
+    flex-wrap: nowrap;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata:empty {
+    display: none;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card--layout-compact {
+    padding: var(--tn-space-1) var(--tn-space-2);
+    border-radius: var(--tn-radius-md);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card--layout-compact .task-card__title {
+    font-size: var(--tn-type-xs);
+    line-height: 1.3;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card--layout-compact .task-card__metadata {
+    gap: 2px var(--tn-space-1);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow:not([hidden])),
+body.is-mobile .tasknotes-plugin :is(.kanban-view__column-collapse-button, .kanban-view__column-header .kanban-view__add-task-button, .kanban-view__column-header-cell .kanban-view__add-task-button) {
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title-text {
+    padding-right: 0;
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) > .task-card {
+    padding: var(--tn-space-1) var(--tn-space-2);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__context-menu {
+    width: var(--tn-touch-target);
+    height: var(--tn-touch-target);
+    opacity: 1;
+}
+
+.tn-tasknotesKanban {
+    container-type: inline-size;
+}
+
+/* Stacked layout: status and priority in the first column, title over metadata. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__main-row {
+    --tn-board-control-size: var(--tn-touch-target);
+    grid-template-columns: var(--tn-board-control-size) minmax(0, 1fr) auto auto var(--tn-board-control-size);
+    grid-template-rows: auto minmax(var(--tn-board-control-size), auto);
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__main-row {
+    grid-template-rows: minmax(var(--tn-board-control-size), auto);
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__status-dot {
+    align-self: center;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__content {
+    grid-row: 1 / span 2;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__metadata {
+    grid-column: 2 / 4;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--has-interactive-badges) .task-card__metadata {
+    grid-column: 2 / -1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__priority-dot {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__status-dot {
+    grid-row: 1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__badges:not(:empty) {
+    grid-column: 4;
+    grid-row: 1;
+    justify-self: end;
+    max-width: 100%;
+    overflow: visible;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__badges.task-card__badges--interactive {
+    grid-column: 4 / -1;
+    grid-row: 2;
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+/* Without metadata the badges and menu share one row, so reserve separate columns.
+   Stacked rows can use the menu column below it to retain readable metadata. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty .task-card__badges.task-card__badges--interactive {
+    grid-column: 4;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__context-menu {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__title {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    grid-column: 1 / -1;
+    grid-row: 1 / span 2;
+    padding: 0;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__title-text {
+    grid-column: 2 / 5;
+    padding: 0;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-decorative-badges .task-card__title-text {
+    grid-column: 2 / 4;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata > .task-card__date-slot {
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+}
+
+/* Too narrow for status, title, priority and menu on one line: priority moves under the status. */
+@container tn-task-card (max-width: 240px) {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__main-row {
+        grid-template-columns: var(--tn-board-control-size) minmax(0, 1fr) var(--tn-board-control-size);
+        grid-template-rows: auto minmax(var(--tn-board-control-size), auto);
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__priority-dot {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__context-menu {
+        grid-column: 3;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+        --tn-board-control-size: var(--tn-control-sm);
+    }
+
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card, .tasknotes-plugin.task-card-note-widget) .task-card :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow:not([hidden]), .task-card__badges [role="button"]) {
+        min-width: var(--tn-control-sm);
+        min-height: var(--tn-control-sm);
+        width: auto;
+        height: auto;
+    }
+
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__context-menu {
+        opacity: 0;
+    }
+
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--nested-interactive-hover):is(:hover, :focus-within) > .task-card__main-row .task-card__context-menu {
+        opacity: 1;
+    }
+}

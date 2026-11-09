@@ -1,4 +1,4 @@
-import { Page, chromium, Browser, expect } from '@playwright/test';
+import { Page, chromium, Browser, expect, type Locator } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
@@ -106,11 +106,34 @@ export async function setObsidianViewport(
   size: { width: number; height: number }
 ): Promise<void> {
   await page.evaluate(({ width, height }) => {
+    const currentWindow = (window as any).require('electron').remote.getCurrentWindow();
+    currentWindow.setMinimumSize(Math.min(width, 320), Math.min(height, 500));
+    if (currentWindow.isMaximized()) currentWindow.unmaximize();
+  }, size);
+  await expect.poll(() => page.evaluate(() =>
+    (window as any).require('electron').remote.getCurrentWindow().isMaximized()
+  )).toBe(false);
+  await page.evaluate(({ width, height }) => {
     const electron = (window as any).require?.('electron');
     const currentWindow = electron?.remote?.getCurrentWindow?.();
     currentWindow?.setContentSize(width, height);
   }, size);
   await page.setViewportSize(size);
+  await expect.poll(() => page.evaluate(() => ({
+    native: (window as any).require('electron').remote.getCurrentWindow().getContentSize(),
+    viewport: [innerWidth, innerHeight],
+  }))).toEqual({ native: [size.width, size.height], viewport: [size.width, size.height] });
+}
+
+export async function dismissObsidianModals(page: Page): Promise<void> {
+  for (let attempt = 0; attempt < 10 && await page.locator('.modal-container').count(); attempt++) {
+    const discard = page.getByRole('button', { name: 'Discard changes', exact: true });
+    const cancel = page.locator('.modal-container').last().getByRole('button', { name: 'Cancel', exact: true });
+    if (await discard.isVisible()) await discard.click();
+    else if (await cancel.isVisible()) await cancel.click();
+    else await page.keyboard.press('Escape');
+  }
+  await expect(page.locator('.modal-container')).toHaveCount(0);
 }
 
 /** Obsidian 1.13 uses a separate Settings window; older versions use a modal. */
@@ -138,13 +161,46 @@ export async function openTaskNotesSettings(workspacePage: Page, tabName?: strin
   const pluginTab = page.locator('.vertical-tab-nav-item').filter({ hasText: /^\s*TaskNotes\s*$/ });
   await expect(pluginTab).toBeVisible();
   await pluginTab.click();
-  await expect(page.locator('.tasknotes-settings')).toBeVisible();
-  if (tabName) {
-    const tab = page.getByRole('tab', { name: tabName, exact: true });
-    await tab.click();
-    await expect(tab).toHaveAttribute('aria-selected', 'true');
-  }
+  await expect(page.locator('.vertical-tab-content:visible .setting-group:visible').first()).toBeVisible();
+  if (tabName) await selectTaskNotesSettingsTab(page, tabName);
   return page;
+}
+
+export async function selectTaskNotesSettingsTab(page: Page, tabName: string): Promise<void> {
+  const workspace = page.context().pages().find(candidate => candidate.url().startsWith('app://')) ?? page;
+  await workspace.evaluate(path => {
+    const settings = (window as any).app.setting;
+    settings.navigateToPage(settings.openTabById('tasknotes'), path);
+  }, tabName.split('/'));
+  await expect(page.locator('.setting-page-title:visible').last()).toHaveText(tabName.split('/').at(-1)!);
+  await expect(page.locator('.vertical-tab-content').last()).toBeVisible();
+}
+
+export async function revealTaskNotesSetting(workspacePage: Page, key: string): Promise<Page> {
+  const page = await openTaskNotesSettings(workspacePage);
+  await workspacePage.evaluate(key => {
+    const settings = (window as any).app.setting;
+    const tab = settings.openTabById('tasknotes');
+    tab.update();
+    const find = (items: any[], path: string[] = []): any => {
+      for (const item of items) {
+        if (item.control?.key === key) return { definition: item, path };
+        const match = item.items && find(item.items, item.type === 'page' ? [...path, item.name] : path);
+        if (match) return match;
+      }
+    };
+    const match = find(tab.settingItems);
+    if (!match) throw new Error(`Missing native setting: ${key}`);
+    settings.navigateToPage(tab, match.path);
+    settings.scrollToDefinition(tab, match.definition);
+  }, key);
+  return page;
+}
+
+export function nativeSettingRow(page: Page, name: string) {
+  return page.locator('.setting-item:visible').filter({
+    has: page.locator('.setting-item-name').getByText(name, { exact: true }),
+  });
 }
 
 export async function closeObsidianSettings(workspacePage: Page, settingsPage: Page): Promise<void> {
@@ -307,6 +363,12 @@ export async function launchObsidian(): Promise<ObsidianApp> {
       // Pass the vault path directly to match the manual launch script.
       // Use --user-data-dir to force a separate Electron instance (prevents single-instance detection)
       const userDataDir = path.resolve(process.env.TASKNOTES_E2E_USER_DATA_DIR ?? path.join(PROJECT_ROOT, '.obsidian-config-e2e'));
+      const pluginSettingsPath = path.join(E2E_VAULT_DIR, '.obsidian/plugins/tasknotes/data.json');
+      if (fs.existsSync(pluginSettingsPath)) {
+        const settings = JSON.parse(fs.readFileSync(pluginSettingsPath, 'utf8'));
+        settings.lastSeenVersion = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'manifest.json'), 'utf8')).version;
+        fs.writeFileSync(pluginSettingsPath, JSON.stringify(settings, null, 2));
+      }
       if (process.env.TASKNOTES_E2E_PRESERVE_WORKSPACE !== '1') {
         fs.rmSync(path.join(E2E_VAULT_DIR, '.obsidian', 'workspace.json'), { force: true });
       }
@@ -420,32 +482,19 @@ export async function launchObsidian(): Promise<ObsidianApp> {
     console.log(`Verified Obsidian ${runtimeVersion.version}, vault: ${vaultPath}`);
     await setObsidianViewport(page, { width: 1400, height: 900 });
 
-    // Handle "Trust this vault" dialog - this enables community plugins
-    const trustButton = page.locator('button:has-text("Trust author and enable plugins")');
-    if (await trustButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await trustButton.click();
-      await page.waitForTimeout(2000);
-    }
-
-    // Alternative trust button text
-    const trustButton2 = page.locator('button:has-text("Trust")');
-    if (await trustButton2.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await trustButton2.click();
-      await page.waitForTimeout(1000);
-    }
-
-    // Handle "Turn on community plugins" dialog if it appears
-    const enablePluginsButton = page.locator('button:has-text("Turn on community plugins")');
-    if (await enablePluginsButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await enablePluginsButton.click();
-      await page.waitForTimeout(2000);
-    }
-
-    // Handle any "Enable" button for plugins
-    const enableButton = page.locator('button:has-text("Enable community plugins")');
-    if (await enableButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await enableButton.click();
-      await page.waitForTimeout(1000);
+    const onboardingLabels = ['Trust author and enable plugins', 'Trust', 'Turn on community plugins', 'Enable community plugins'];
+    for (;;) {
+      const state = await page.waitForFunction(labels => {
+        if (Object.keys((window as any).app.commands.commands).some(id => id.startsWith('tasknotes:'))) return 'ready';
+        return labels.find(label => Array.from(document.querySelectorAll('button')).some(button =>
+          button.textContent?.trim() === label && button.getClientRects().length > 0));
+      }, onboardingLabels);
+      const label = await state.jsonValue();
+      await state.dispose();
+      if (label === 'ready') break;
+      const button = page.getByRole('button', { name: label as string, exact: true });
+      await button.click();
+      await button.waitFor({ state: 'hidden' });
     }
 
     // Wait for the workspace to be ready
@@ -529,16 +578,10 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
 }
 
 export async function openCommandPalette(page: Page): Promise<void> {
-  // Close any existing modals first
+  await dismissObsidianModals(page);
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(200);
-
-  // Click on workspace to ensure focus
-  const workspace = page.locator('.workspace');
-  if (await workspace.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await workspace.click({ position: { x: 10, y: 10 } }).catch(() => {});
-    await page.waitForTimeout(100);
-  }
+  await expect(page.locator('.modal-container:visible, .tn-popover:visible')).toHaveCount(0);
+  await page.locator('.workspace').click({ position: { x: 10, y: 10 } });
 
   // Use Ctrl+P to open command palette
   await page.keyboard.press('Control+p');
@@ -546,23 +589,41 @@ export async function openCommandPalette(page: Page): Promise<void> {
   // Clear any existing text in the prompt input
   const promptInput = page.locator('.prompt-input');
   await promptInput.fill('');
+  await expect(promptInput).toBeFocused();
+}
+
+export async function expectTouchTarget(target: Locator, minimum = 40): Promise<void> {
+  await target.scrollIntoViewIfNeeded();
+  const description = await target.evaluate(element => element.outerHTML.slice(0, 240));
+  await expect.poll(() => target.evaluate((element, minimum) => {
+    const bounds = element.getBoundingClientRect();
+    const after = getComputedStyle(element, '::after');
+    const height = after.content !== 'none' && after.position === 'absolute'
+      ? Math.max(bounds.height, parseFloat(after.height) || 0)
+      : bounds.height;
+    const centerX = bounds.left + bounds.width / 2;
+    const centerY = bounds.top + bounds.height / 2;
+    return { tallEnough: height >= minimum, hits: [-1, 0, 1].map(direction => {
+      const hit = element.ownerDocument.elementFromPoint(centerX, centerY + direction * (minimum - 1) / 2);
+      return hit === element || element.contains(hit);
+    }) };
+  }, minimum), { message: `Touch target: ${description}` }).toEqual({ tallEnough: true, hits: [true, true, true] });
 }
 
 export async function runCommand(page: Page, command: string): Promise<void> {
   await openCommandPalette(page);
-  // Type the command
-  await page.keyboard.type(command, { delay: 30 });
-  await page.waitForTimeout(500); // Wait for search to filter
-
-  // Wait for suggestions to appear
-  const suggestion = page.locator('.suggestion-item').first();
+  const promptInput = page.locator('.prompt-input');
+  await promptInput.fill(command);
+  await expect(promptInput).toHaveValue(command);
+  const commandPattern = new RegExp(`^(?:TaskNotes:?\\s*)?${command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/:\s+/, ':?\\s*')}$`, 'i');
+  const suggestion = page.locator('.suggestion-title').filter({ hasText: commandPattern });
+  await expect(suggestion).toBeVisible({ timeout: 3000 });
+  const commandPalette = (await page.locator('.prompt').elementHandle())!;
   try {
-    await suggestion.waitFor({ timeout: 3000, state: 'visible' });
-    await page.keyboard.press('Enter');
-  } catch {
-    // If no suggestions found, still try to press Enter and close palette
-    await page.keyboard.press('Escape');
-    throw new Error(`Command not found: "${command}". Make sure TaskNotes plugin is loaded.`);
+    await suggestion.click();
+    await expect.poll(() => commandPalette.isVisible()).toBe(false);
+  } finally {
+    await commandPalette.dispose();
   }
 }
 

@@ -70,7 +70,7 @@ test('time grid settings from the .base file apply', async () => {
 	const heads = cal.locator('.tnc-tg-head .tnc-dh');
 	await expect(heads).toHaveCount(5);
 	await expect(cal.locator('.tnc-tg-allday')).toHaveCount(0);
-	await expect(cal.locator('.tnc-tg')).toContainText(/\d(am|pm)/);
+	await expect(cal.locator('.tnc-tg')).toContainText(/\d(?::\d{2})?\s*(am|pm)/i);
 	await expect(cal.locator('.tnc-tg-head .tnc-gutter-head')).toHaveText(/W\d+/);
 	const widths = await heads.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
 	expect(widths[0]).toBeGreaterThan(widths[1] * 1.5);
@@ -101,6 +101,7 @@ test('month settings from the .base file apply', async () => {
 
 test('a hovered timed item rises above the items it overlaps', async () => {
 	const page = app.page;
+	await page.mouse.move(5, 5);
 	const today = await page.evaluate(() => {
 		const d = new Date();
 		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -113,7 +114,9 @@ test('a hovered timed item rises above the items it overlaps', async () => {
 			);
 		}
 	}, [TASK_PATH, CHILD_PATH, today]);
-	await openBase(page, baseFile(`    calendarView: timeGridDay
+	await openBase(page, baseFile(`    calendarView: timeGridCustom
+    customDayCount: 1
+    slotEventOverlap: true
     scrollTime: 09:00:00
 `));
 	const cal = page.locator('.tnc:visible').first();
@@ -124,6 +127,7 @@ test('a hovered timed item rises above the items it overlaps', async () => {
 	const lower = items.nth(lowerIndex);
 	const upper = items.nth(1 - lowerIndex);
 	const [lb, ub] = [(await lower.boundingBox())!, (await upper.boundingBox())!];
+	expect(Math.min(lb.x + lb.width, ub.x + ub.width)).toBeGreaterThan(Math.max(lb.x, ub.x));
 	const overlapX = (Math.max(lb.x, ub.x) + Math.min(lb.x + lb.width, ub.x + ub.width)) / 2;
 	const midY = lb.y + lb.height / 2;
 	const itemAt = (x: number, y: number) => page.evaluate(([px, py]) =>
@@ -134,7 +138,7 @@ test('a hovered timed item rises above the items it overlaps', async () => {
 	const outside = lb.x < ub.x ? lb.x + 4 : lb.x + lb.width - 4;
 	await page.mouse.move(outside, midY);
 	await expect(lower).toHaveClass(/is-hover/);
-	expect(await itemAt(overlapX, midY)).toBe(lowerTitle);
+	await expect.poll(() => itemAt(overlapX, midY)).toBe(lowerTitle);
 
 	await page.mouse.move(5, 5);
 });
@@ -176,7 +180,11 @@ test('dragging and resizing a task writes back to its frontmatter', async () => 
 	await page.mouse.up();
 	await expect.poll(async () => (await frontmatter(page)).scheduled).toBe(`${tomorrow}T11:00`);
 
-	box = (await item.boundingBox())!;
+	await expect.poll(async () => {
+		const resizedBox = await item.boundingBox();
+		if (resizedBox) box = resizedBox;
+		return resizedBox;
+	}).not.toBeNull();
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height - 3);
 	await page.mouse.down();
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height * 2 - 3, { steps: 8 });
@@ -200,13 +208,15 @@ test('pattern gestures preserve multiline rules and the independently scheduled 
 		await (window as any).app.vault.create(path,
 			`---\ntitle: E2E calendar engine task\nstatus: open\npriority: normal\ntags: [task]\nscheduled: ${scheduled}\nrecurrence: ${JSON.stringify(recurrence)}\n---\n`);
 	}, { path: TASK_PATH, scheduled: `${tomorrow}T11:00`, recurrence: rule });
+	await expect.poll(() => page.evaluate(async path => (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(path))?.recurrence, TASK_PATH)).toBe(rule);
 	await openBase(page, baseFile(`    calendarView: timeGridCustom
     customDayCount: 3
     snapDuration: 00:30:00
     scrollTime: 08:00:00
-`));
+`).replace('- note.status && note.status != ""', `- file.path == "${TASK_PATH}"`));
 	const pattern = page.locator('.tnc:visible .fc-pattern-instance-event', { hasText: 'E2E calendar engine task' }).first();
 	await expect(pattern).toBeVisible();
+	await expect(page.locator(`.tnc:visible .fc-pattern-instance-event[data-task-path="${TASK_PATH}"][data-occurrence-day="${Math.floor(Date.parse(`${third}T00:00:00Z`) / 86400000)}"]`)).toHaveCount(0);
 	await pattern.focus();
 	await page.keyboard.press('Alt+ArrowDown');
 	await expect.poll(async () => (await frontmatter(page)).recurrence)

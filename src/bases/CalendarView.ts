@@ -1,5 +1,8 @@
+import { captureTaskUndo } from "../ui/taskMutationUndo";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
+import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import { applyCalendarDateDisplay, getCalendarDateDisplayOptions } from "./calendarDateDisplay";
 import type { MessageDescriptor } from "@lingui/core";
@@ -7,12 +10,17 @@ import TaskNotesPlugin from "../main";
 import { createElementInDocument } from "../utils/documentDom";
 import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
+import { installCalendarKeyboard } from "./calendarKeyboard";
+import { format } from "date-fns";
+import { formatTime } from "../utils/dateUtils";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import type { TimeblockCreationResult } from "../modals/TimeblockCreationModal";
+import { openListPicker } from "../ui/kit/listPicker";
 import {
 	Calendar,
 	basesLayoutOptions,
+	parseDay,
 	viewToBases,
 	type CalendarOptions,
 	type ExternalDropArg,
@@ -24,27 +32,17 @@ import {
 import {
 	generateTimeblockEvents,
 	getEventTextColor,
-	handleTimeblockCreation,
-	handleTimeEntryCreation,
 	handleDateTitleClick,
-	calculateTaskCreationValues,
-	generateTaskTooltip,
-	applyRecurringTaskStyling,
-	applyTimeblockStyling,
-	generateTimeblockTooltip,
-	addTaskHoverPreview,
 } from "./calendar-core";
 import { handleCalendarEventDrop, handleCalendarEventResize, type CalendarMutationContext } from "./calendarMutations";
 import { calendarTaskId } from "@tasknotes/model/calendar";
-import { buildCalendarBatchPreview, isCalendarBatchTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
+import { buildCalendarBatchPreview, isCalendarBatchTarget, isCalendarSelectionTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
+import { installCalendarSwipe } from "./calendarSwipe";
 import { CalendarBatchPreview } from "./calendarBatchPreview";
 import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR } from "../utils/clickHandlers";
-import { messageForKey } from "../i18n/messages";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
-import { TaskCreationModal } from "../modals/TaskCreationModal";
-import { CalendarEventCreationModal } from "../modals/CalendarEventCreationModal";
-import { Menu, Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
+import { Notice, Platform, TFile, setIcon } from "obsidian";
 import type { EventRef } from "obsidian";
 import {
 	CalendarRecreateNavigationState,
@@ -68,11 +66,7 @@ import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
 import { buildExternalCalendarEvents, buildLinkedGoogleEventPredicate, setProviderCalendarToggle } from "./calendarExternalEvents";
 import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
-	appendCalendarAttachmentIndicator,
-	decorateCalendarIcsEventElement,
-	getCalendarRelatedNoteTooltip,
 	createCalendarListEventCard,
-	normalizeCalendarRelatedNoteCount,
 	type BasesEntryWithGetValue,
 } from "./calendarEventMount";
 import {
@@ -84,8 +78,11 @@ import {
 	type CalendarEventInput,
 	type CalendarEventProps,
 } from "./calendarEngine";
+import { installCalendarTooltipGuard } from "./calendarTooltipGuard";
 import { CALENDAR_END_TIME_MAX_HOUR, normalizeCalendarTimeValue } from "../utils/calendarTime";
-import { filterEmptyProjects, sanitizeForCssClass } from "../utils/helpers";
+import { showCalendarCreationMenu } from "./calendarCreationMenu";
+import { decorateCalendarEvent } from "./calendarEventPresentation";
+export { suppressCalendarContextMenuOnMobile } from "./calendarEventPresentation";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/CalendarView" });
@@ -111,104 +108,17 @@ type CalendarEphemeralState = {
 
 type TaskCalendar = Calendar<CalendarEventProps>;
 
-export function suppressCalendarContextMenuOnMobile(element: HTMLElement): void {
-	if (!Platform.isMobile) return;
-
-	element.classList.add("tn-calendar-event-touch-target");
-	element.addEventListener(
-		"contextmenu",
-		(event) => {
-			event.preventDefault();
-			event.stopImmediatePropagation();
-		},
-		{ capture: true }
-	);
-}
 
 const CALENDAR_DATA_UPDATE_DEBOUNCE_MS = 5000;
 const CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS = 250;
 const CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS = 2000;
-const DEFAULT_CALENDAR_EVENT_ORDER = "start,-duration,allDay,title";
-export const TASKNOTES_CALENDAR_SORT_INDEX = "tasknotesSortIndex";
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null;
-}
-
-export function hasBasesCalendarSortConfig(sortConfig: unknown): boolean {
-	return Array.isArray(sortConfig) ? sortConfig.length > 0 : Boolean(sortConfig);
-}
-
-export function getTaskNotesCalendarEventOrder(sortConfig: unknown): string {
-	if (!hasBasesCalendarSortConfig(sortConfig)) {
-		return DEFAULT_CALENDAR_EVENT_ORDER;
-	}
-	// Bases ranks break ties at the same placement. They must not put a timed
-	// task ahead of an earlier appointment that has no Bases result index.
-	return `start,allDay,${TASKNOTES_CALENDAR_SORT_INDEX},-duration,title`;
-}
-
-function getCalendarEventSortPath(event: CalendarEventInput): string | null {
-	const extendedProps: unknown = event.extendedProps;
-	if (!isRecord(extendedProps)) {
-		return null;
-	}
-
-	const taskInfo = extendedProps.taskInfo;
-	if (isRecord(taskInfo) && typeof taskInfo.path === "string") {
-		return taskInfo.path;
-	}
-
-	return typeof extendedProps.filePath === "string" ? extendedProps.filePath : null;
-}
-
-export function applyBasesSortIndexesToCalendarEvents(
-	events: CalendarEventInput[],
-	sortIndexByPath: Map<string, number>
-): void {
-	if (sortIndexByPath.size === 0) {
-		return;
-	}
-
-	for (const event of events) {
-		const path = getCalendarEventSortPath(event);
-		if (!path) {
-			continue;
-		}
-
-		const sortIndex = sortIndexByPath.get(path);
-		if (sortIndex === undefined) {
-			continue;
-		}
-
-		event.extendedProps = Object.assign({}, event.extendedProps, {
-			[TASKNOTES_CALENDAR_SORT_INDEX]: sortIndex,
-		});
-	}
-}
-
-export function shouldFilterAllDayEventsForCalendarView(
-	viewType: string | undefined,
-	showAllDaySlot: boolean
-): boolean {
-	return !showAllDaySlot && Boolean(viewType?.startsWith("list"));
-}
-
-export function filterAllDayEventsForCalendarView<T extends { allDay?: boolean }>(
-	events: T[],
-	viewType: string | undefined,
-	showAllDaySlot: boolean
-): T[] {
-	if (!shouldFilterAllDayEventsForCalendarView(viewType, showAllDaySlot)) {
-		return events;
-	}
-
-	return events.filter((event) => event.allDay !== true);
-}
+import { applyBasesSortIndexesToCalendarEvents, filterAllDayEventsForCalendarView, getTaskNotesCalendarEventOrder, hasBasesCalendarSortConfig, isRecord, isTimeGridCalendarView, normalizeCalendarHeightMode, resolveEffectiveCalendarHeightMode, shouldHideCalendarTimeGrid, type CalendarHeightMode } from "./calendarViewLayout";
+export { applyBasesSortIndexesToCalendarEvents, filterAllDayEventsForCalendarView, getTaskNotesCalendarEventOrder, hasBasesCalendarSortConfig, isTimeGridCalendarView, normalizeCalendarHeightMode, resolveEffectiveCalendarHeightMode, shouldFilterAllDayEventsForCalendarView, shouldHideCalendarTimeGrid, TASKNOTES_CALENDAR_SORT_INDEX, type CalendarHeightMode } from "./calendarViewLayout";
 
 function sameRange(a: ViewInfo, b: ViewInfo): boolean {
 	return (
-		a.type === b.type && a.range.startDay === b.range.startDay && a.range.endDay === b.range.endDay
+		a.type === b.type && a.range.startDay === b.range.startDay && a.range.endDay === b.range.endDay &&
+		a.dataRange.startDay === b.dataRange.startDay && a.dataRange.endDay === b.dataRange.endDay
 	);
 }
 
@@ -220,41 +130,19 @@ function isCalendarScrollPosition(value: unknown): value is { top: number; left:
 	return isRecord(value) && typeof value.top === "number" && typeof value.left === "number";
 }
 
-export function isTimeGridCalendarView(viewType: string): boolean {
-	return (
-		viewType === "timeGridWeek" || viewType === "timeGridCustom" || viewType === "timeGridDay"
-	);
-}
-
-export function shouldHideCalendarTimeGrid(showTimeGrid: boolean, viewType: string): boolean {
-	return !showTimeGrid && isTimeGridCalendarView(viewType);
-}
-
-export type CalendarHeightMode = "fill" | "auto";
-
-export function normalizeCalendarHeightMode(value: unknown): CalendarHeightMode {
-	return typeof value === "string" && value.trim().toLowerCase() === "auto" ? "auto" : "fill";
-}
-
-export function resolveEffectiveCalendarHeightMode(
-	heightMode: CalendarHeightMode,
-	calendarView: string,
-	containerEl?: HTMLElement | null
-): CalendarHeightMode {
-	if (heightMode === "auto") {
-		return "auto";
-	}
-
-	const isEmbedded = !!containerEl?.closest(".internal-embed, .markdown-embed");
-	return isEmbedded ? "auto" : "fill";
-}
 
 export class CalendarView extends BasesViewBase {
 	type = "tasknotesCalendar";
 	calendar: TaskCalendar | null = null; // Made public for factory access
+	private keyboard?: ReturnType<typeof installCalendarKeyboard>;
 	private calendarEl: HTMLElement | null = null;
+	private dayPanel: TaskCalendar | null = null;
+	private dayPanelEl: HTMLElement | null = null;
+	private selectedMonthDay: string | null = null;
 	/** Range the current items were built for. */
 	private visibleView: ViewInfo | null = null;
+	private automaticViewChange = false;
+	private narrowWeek = false;
 	private refetchSeq = 0;
 	private currentTasks: TaskInfo[] = [];
 	private identityTasks: TaskInfo[] = [];
@@ -317,6 +205,8 @@ export class CalendarView extends BasesViewBase {
 		heightMode: CalendarHeightMode;
 		customDayCount: number;
 		listDayCount: number;
+		showAgendaStrip: boolean;
+		showMonthDayPanel: boolean;
 		slotMinTime: string;
 		slotMaxTime: string;
 		slotDuration: string;
@@ -385,6 +275,8 @@ export class CalendarView extends BasesViewBase {
 			heightMode: "fill",
 			customDayCount: calendarSettings.customDayCount,
 			listDayCount: 7,
+			showAgendaStrip: true,
+			showMonthDayPanel: false,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -432,16 +324,71 @@ export class CalendarView extends BasesViewBase {
 		this._previousControllerViewName = this.getControllerViewName();
 		// Call parent onload which sets up container and listeners
 		super.onload();
+		if (this.rootElement) {
+			this.keyboard = installCalendarKeyboard({
+				plugin: this.plugin,
+				root: this.rootElement,
+				calendar: () => this.calendar,
+				create: (date) => { void this.createFileForView(undefined, (frontmatter) => {
+					frontmatter[this.plugin.fieldMapper.toUserField("scheduled")] = format(date, "yyyy-MM-dd");
+				}); },
+				search: () => {
+					this.enableSearch = true;
+					if (this.rootElement) this.setupSearch(this.rootElement);
+					this.searchContainerEl?.querySelector("input")?.focus();
+				},
+				open: (arg) => handleCalendarEventClick(this.getMenuContext(), arg),
+			});
+			this.register(() => this.keyboard?.destroy());
+		}
 		if (this.plugin.icsSubscriptionService) {
 			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
 				if (this.rootElement?.isConnected) void this.refetchEvents();
 			}));
 		}
+		this.registerEvent(this.plugin.app.metadataCache.on("changed", (file, _data, cache) => {
+			if (!this.rootElement?.isConnected || !this.viewOptions.showTimeblocks) return;
+			if (Array.isArray(cache.frontmatter?.timeblocks) || this.nonTaskEvents.some(event =>
+				event.extendedProps?.eventType === "timeblock" && event.extendedProps.filePath === file.path)) {
+				void this.refetchEvents();
+			}
+		}));
 		if (this.rootElement) {
+			this.register(installCalendarTooltipGuard(this.rootElement));
+			this.register(installCalendarSwipe(this.rootElement, direction => {
+				if (direction > 0) this.calendar?.next();
+				else this.calendar?.prev();
+			}));
+			const observer = new ResizeObserver(() => this.onResize());
+			observer.observe(this.rootElement);
+			this.register(() => observer.disconnect());
+			const chooseCustomDays = () => {
+				if (!this.narrowWeek || !this.calendar) return;
+				this.narrowWeek = false;
+				this.calendar.setOptions({ dayCount: this.viewOptions.customDayCount });
+				this.handleViewChange(this.calendar.view);
+			};
+			this.registerDomEvent(this.rootElement, "change", (event: Event) => {
+				const target = event.target as HTMLSelectElement;
+				if (target.matches(".tnc-toolbar-view-select") && target.value === "days") chooseCustomDays();
+				if (target.matches(".tnc-toolbar-view-select")) queueMicrotask(() => this.rootElement?.focus({ preventScroll: true }));
+			}, { capture: true });
+			this.registerDomEvent(this.rootElement, "click", (event: MouseEvent) => {
+				const target = event.target as HTMLElement;
+				if (target.closest(".tnc-btn-view, .tnc-toolbar-nav button, .tnc-btn-refreshCalendars")) {
+					queueMicrotask(() => this.rootElement?.focus({ preventScroll: true }));
+				}
+				if (target.closest(".tnc-btn-view-days")) chooseCustomDays();
+				this.openMonthChipOverflow(event);
+			}, { capture: true });
+			this.registerDomEvent(this.rootElement, "keydown", (event: KeyboardEvent) => {
+				if (event.key === "Enter" || event.key === " ") this.openMonthChipOverflow(event);
+			}, { capture: true });
 			const preview = new CalendarBatchPreview({
 				root: this.rootElement,
 				getItems: () => this.calendarItems,
 				getRevision: () => this.calendarItems,
+				isValidTarget: (clientX, clientY) => Boolean(this.calendar?.hitTest(clientX, clientY)),
 				build: proposal => buildCalendarBatchPreview(this.getBatchCalendarItems(),
 					this.plugin.taskSelectionService?.getSelectedPaths() ?? [], proposal,
 					this.calendarTimezone, this.plugin.fieldMapper.getMapping(), new Date().toISOString()),
@@ -487,7 +434,46 @@ export class CalendarView extends BasesViewBase {
 	 * The calendar observes its own size; this covers hosts that resize without layout changes.
 	 */
 	onResize(): void {
+		if (this.calendar) {
+			const monthDisplay = this.getMonthDisplay();
+			const dayMaxEventRows = this.getAllDayRowLimit();
+			if (this.calendar.getOptions().monthDisplay !== monthDisplay || this.calendar.getOptions().dayMaxEventRows !== dayMaxEventRows) {
+				this.calendar.setOptions({ monthDisplay, dayMaxEventRows });
+			}
+		}
+		if (this.calendar) {
+			const preferred = basesLayoutOptions<CalendarEventProps>(this.viewOptions).view;
+			const view = this.isNarrowCalendar() && preferred === "week" ? "days" : preferred;
+			this.narrowWeek = view === "days" && preferred === "week";
+			if (view && this.calendar.view.type !== view) {
+				this.automaticViewChange = true;
+				try {
+					this.calendar.setOptions({ dayCount: this.narrowWeek ? 3 : this.viewOptions.customDayCount });
+					this.calendar.changeView(view);
+				} finally {
+					this.automaticViewChange = false;
+				}
+			}
+		}
 		this.calendar?.updateSize();
+		this.syncCalendarToolbar();
+		if (this.calendar) this.syncDayPanel();
+	}
+
+	private isNarrowCalendar(): boolean {
+		return Boolean(this.rootElement && this.rootElement.clientWidth > 0 && this.rootElement.clientWidth < 640);
+	}
+
+	private getMonthDisplay(): CalendarOptions<CalendarEventProps>["monthDisplay"] {
+		const width = this.rootElement?.clientWidth ?? 0;
+		return width > 0 && width <= 850
+			? width < 560 ? this.viewOptions.showMonthDayPanel ? "dots" : "full" : "chips"
+			: basesLayoutOptions<CalendarEventProps>(this.viewOptions).monthDisplay ?? "full";
+	}
+
+	private getAllDayRowLimit(): number {
+		const layout = basesLayoutOptions<CalendarEventProps>(this.viewOptions);
+		return isTimeGridCalendarView(this.viewOptions.calendarView) && this.viewOptions.showTimeGrid !== false && !layout.dayMaxEventRows && layout.dayMaxEvents === true ? 2 : layout.dayMaxEventRows ?? 0;
 	}
 
 	/**
@@ -862,10 +848,12 @@ export class CalendarView extends BasesViewBase {
 			);
 
 			// Layout
-			this.viewOptions.calendarView = this.getConfigOption(
-				"calendarView",
-				this.viewOptions.calendarView
-			);
+			if (!this._saveViewTypeTimer) {
+				this.viewOptions.calendarView = this.getConfigOption(
+					"calendarView",
+					this.viewOptions.calendarView
+				);
+			}
 			this.viewOptions.heightMode = normalizeCalendarHeightMode(
 				this.getConfigOption("heightMode", this.viewOptions.heightMode)
 			);
@@ -878,6 +866,8 @@ export class CalendarView extends BasesViewBase {
 				"listDayCount",
 				this.viewOptions.listDayCount
 			);
+			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
+			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
@@ -1047,10 +1037,16 @@ export class CalendarView extends BasesViewBase {
 						previousNavigationState,
 						nextNavigationState
 					);
-					this.calendar.setOptions(this.buildCalendarOptions());
-					applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
-					this.applyLayoutClasses();
+					this.automaticViewChange = true;
+					try {
+						this.calendar.setOptions(this.buildCalendarOptions());
+						applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
+					} finally {
+						this.automaticViewChange = false;
+					}
 					this.syncSelectionModeAfterCalendarRender();
+					this.destroyDayPanel();
+					this.syncDayPanel();
 				}
 			} else {
 				// Normal render - just re-read event toggles
@@ -1127,7 +1123,7 @@ export class CalendarView extends BasesViewBase {
 
 	protected getVisibleTaskPaths(): string[] {
 		return [...new Set(this.getBatchCalendarItems()
-			.filter(item => isCalendarBatchTarget(item.data))
+			.filter(item => isCalendarSelectionTarget(item.data))
 			.sort((a, b) => String(a.start).localeCompare(String(b.start)))
 			.flatMap(item => item.data?.taskInfo ? [item.data.taskInfo.path] : []))];
 	}
@@ -1158,19 +1154,23 @@ export class CalendarView extends BasesViewBase {
 		const selection = this.plugin.taskSelectionService;
 		this.rootElement.classList.toggle("tn-calendar-has-selection", Boolean(selection?.getSelectedPaths().length));
 		this.calendar?.setOptions({ selected: (this.calendarItems ?? [])
-			.filter(item => isCalendarBatchTarget(item.data) && selection?.isSelected(item.data.taskInfo.path))
+			.filter(item => isCalendarSelectionTarget(item.data) && selection?.isSelected(item.data.taskInfo.path))
 			.map(item => item.id) });
 		for (const el of this.rootElement.querySelectorAll<HTMLElement>(".tnc-item[data-task-path]")) {
-			const selected = Boolean(el.dataset.taskPath && selection?.isSelected(el.dataset.taskPath)) && el.dataset.batchSelectable === "true";
+			const selected = Boolean(el.dataset.taskPath && selection?.isSelected(el.dataset.taskPath));
 			el.classList.toggle("tn-calendar-item-selected", selected);
 			el.setAttribute("aria-pressed", String(selected));
+			const count = selected ? selection?.getSelectedPaths().length ?? 0 : 0;
+			if (count > 1 && el.dataset.batchSelectable === "true") el.dataset.dragCount = String(count);
+			else delete el.dataset.dragCount;
 		}
 	}
 
 	private setCalendarItems(items: CalendarEventItem[]): void {
 		this.batchPreview?.clear(false);
-		this.calendarItems = items;
-		this.calendar?.setItems(items);
+		this.calendarItems = items.map(item => item.data?.eventType === "due" ? { ...item, timeDisplay: "start" } : item);
+		this.calendar?.setItems(this.calendarItems);
+		this.dayPanel?.setItems(this.calendarItems);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		this.updateSelectionVisuals();
 	}
@@ -1179,13 +1179,20 @@ export class CalendarView extends BasesViewBase {
 		if (!this.calendarEl) return;
 
 		const initialDate = this.determineInitialDate(taskNotes);
+		this.destroyDayPanel();
 		this.calendarEl.replaceChildren();
-		this.calendar = new Calendar<CalendarEventProps>(this.calendarEl, {
-			...this.buildCalendarOptions(),
-			...(initialDate ? { date: initialDate } : {}),
-		});
-		applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
+		this.automaticViewChange = true;
+		try {
+			this.calendar = new Calendar<CalendarEventProps>(this.calendarEl, {
+				...this.buildCalendarOptions(),
+				...(initialDate ? { date: initialDate } : {}),
+			});
+			applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
+		} finally {
+			this.automaticViewChange = false;
+		}
 		this.applyLayoutClasses();
+		this.syncDayPanel();
 		await this.refetchEvents();
 	}
 
@@ -1193,15 +1200,40 @@ export class CalendarView extends BasesViewBase {
 	private buildCalendarOptions(): Partial<CalendarOptions<CalendarEventProps>> {
 		const t = (message: MessageDescriptor, fallback: string) => this.plugin.i18n.translate(message) || fallback;
 		const options = this.viewOptions;
+		const layout = basesLayoutOptions<CalendarEventProps>(options, {
+			embedded: this.getEffectiveHeightMode() === "auto",
+		});
 		const refreshLabel = t(
 			msg({ message: "Refresh calendar subscriptions", context: "views.basesCalendar.hints.refresh" }),
 			t(msg({ message: "Refresh", context: "views.basesCalendar.buttonText.refresh" }), "Refresh calendar subscriptions")
 		);
+		this.narrowWeek = this.isNarrowCalendar() && layout.view === "week";
 		return {
-			...basesLayoutOptions<CalendarEventProps>(options, {
-				embedded: this.getEffectiveHeightMode() === "auto",
-			}),
+			...layout,
 			...getCalendarDateDisplayOptions<CalendarEventProps>(this.plugin.settings.dateDisplayFormat),
+			monthDisplay: this.getMonthDisplay(),
+			dayMaxEventRows: this.getAllDayRowLimit(),
+			eventMinHeight: layout.eventMinHeight,
+			slotEventOverlap: layout.view === "day" ? false : layout.slotEventOverlap,
+			formatTime: minute => formatTime(new Date(2000, 0, 1, 0, minute), options.timeFormat === "12" ? "12" : "24"),
+			listAgenda: options.showAgendaStrip,
+			listAddText: null,
+			onListAdd: ({ dateStr }) => this.addTaskOnDay(dateStr),
+			dayClassNames: ({ dateStr }) => dateStr === this.selectedMonthDay ? ["tn-calendar-day-selected"] : [],
+			dayHeaderContent: arg => {
+				if (arg.view.type !== "list") return null;
+				const locale = options.locale || this.plugin.settings.uiLanguage || navigator.language || "en";
+				const heading = createElementInDocument(this.containerEl.ownerDocument, "span");
+				heading.className = "tn-calendar-day-heading";
+				heading.setAttribute("aria-label", new Intl.DateTimeFormat(locale, { dateStyle: "full" }).format(arg.date));
+				heading.createSpan({ cls: "tn-calendar-day-number", text: new Intl.DateTimeFormat(locale, { day: "numeric" }).format(arg.date) });
+				const label = heading.createSpan({ cls: "tn-calendar-day-label" });
+				label.createSpan({ cls: "tn-calendar-day-weekday", text: new Intl.DateTimeFormat(locale, { weekday: "long" }).format(arg.date) });
+				label.createSpan({ cls: "tn-calendar-day-month", text: new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" }).format(arg.date) });
+				return heading;
+			},
+			view: this.narrowWeek ? "days" : layout.view,
+			dayCount: this.narrowWeek ? 3 : layout.dayCount,
 			timeZone: this.calendarTimezone,
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
@@ -1211,8 +1243,37 @@ export class CalendarView extends BasesViewBase {
 			eventOrder: getTaskNotesCalendarEventOrder(this.dataAdapter.getSortConfig()),
 			toolbar: {
 				views: ["year", "month", "week", "days", "day", "list"],
+				viewDisplay: "select",
 				extraPlacement: "start",
 				extraButtons: [
+					{
+						id: "overflow",
+						text: t(msg({ message: "More options", context: "views.basesCalendar.moreOptions" }), "More options"),
+						icon: () => {
+							const icon = createElementInDocument(this.containerEl.ownerDocument, "span");
+							setIcon(icon, "ellipsis");
+							return icon;
+						},
+						onClick: event => {
+							const anchor = event.currentTarget as HTMLElement;
+							const select = t(msg({ message: "Select tasks", context: "views.basesCalendar.selectTasks" }), "Select tasks");
+							const selected = t(msg({ message: "Task options", context: "ui.taskCard.taskOptions" }), "Task options");
+							openListPicker({
+								anchor, app: this.plugin.app,
+								placeholder: selected, emptyText: selected,
+								items: [
+									{ id: "select", label: select },
+									...(this.plugin.taskSelectionService?.getSelectedPaths().length ? [{ id: "selected", label: selected }] : []),
+									{ id: "refresh", label: refreshLabel },
+								],
+								onChoose: item => {
+									if (item.id === "refresh") void this.refreshExternalCalendars();
+									else if (item.id === "selected") this.showBatchContextMenu(toMouseEvent(null, anchor));
+									else this.plugin.taskSelectionService?.toggleSelectionMode();
+								},
+							});
+						},
+					},
 					{
 						id: "selectTasks",
 						text: t(msg({ message: "Select tasks", context: "views.basesCalendar.selectTasks" }), "Select tasks"),
@@ -1251,20 +1312,22 @@ export class CalendarView extends BasesViewBase {
 				],
 			},
 			text: {
+				appointments: count => this.plugin.i18n.translate(msg({ message: "{count} appointments", context: "calendar collision count" }), { count }),
 				today: t(msg({ message: "Today", context: "views.basesCalendar.today" }), "Today"),
 				prev: t(msg({ message: "Previous", context: "views.basesCalendar.hints.prev" }), "Previous"),
 				next: t(msg({ message: "Next", context: "views.basesCalendar.hints.next" }), "Next"),
 				views: {
-					month: t(msg({ message: "M", context: "views.basesCalendar.buttonText.month" }), "Month"),
-					week: t(msg({ message: "W", context: "views.basesCalendar.buttonText.week" }), "Week"),
-					day: t(msg({ message: "D", context: "views.basesCalendar.buttonText.day" }), "Day"),
-					year: t(msg({ message: "Y", context: "views.basesCalendar.buttonText.year" }), "Year"),
-					list: t(msg({ message: "L", context: "views.basesCalendar.buttonText.list" }), "List"),
-					days: this.plugin.i18n.translate(msg({ message: "{count}D", context: "views.basesCalendar.buttonText.customDays" }), {
+					month: t(msg({ message: "Month", context: "calendar view name" }), "Month"),
+					week: t(msg({ message: "Week", context: "calendar view name" }), "Week"),
+					day: t(msg({ message: "Day", context: "calendar view name" }), "Day"),
+					year: t(msg({ message: "Year", context: "calendar view name" }), "Year"),
+					list: t(msg({ message: "List", context: "calendar view name" }), "List"),
+					days: this.plugin.i18n.translate(msg({ message: "{count} days", context: "calendar view name" }), {
 						count: options.customDayCount.toString(),
 					}),
 				},
 				viewHints: {
+					days: this.plugin.i18n.translate(msg({ message: "{count}-day view", context: "calendar view hint" }), { count: options.customDayCount.toString() }),
 					month: t(msg({ message: "Month view", context: "views.basesCalendar.hints.month" }), "Month view"),
 					week: t(msg({ message: "Week view", context: "views.basesCalendar.hints.week" }), "Week view"),
 					day: t(msg({ message: "Day view", context: "views.basesCalendar.hints.day" }), "Day view"),
@@ -1273,8 +1336,10 @@ export class CalendarView extends BasesViewBase {
 				},
 			},
 			onRangeChange: (view) => {
+				this.syncCalendarToolbar();
 				if (this.visibleView && sameRange(this.visibleView, view)) return;
-				if (this.visibleView) {
+				if (this.visibleView && (this.visibleView.type !== view.type ||
+					this.visibleView.range.startDay !== view.range.startDay || this.visibleView.range.endDay !== view.range.endDay)) {
 					this.plugin.taskSelectionService?.clearSelection();
 					this.plugin.taskSelectionService?.exitSelectionMode();
 				}
@@ -1287,10 +1352,17 @@ export class CalendarView extends BasesViewBase {
 					this.calendar?.changeView("month", arg.dateStr);
 					return;
 				}
+				if (arg.view.type === "month" && this.viewOptions.showMonthDayPanel) {
+					this.selectMonthDay(arg.dateStr);
+					return;
+				}
 				this.openDailyNoteFromDateLink(arg.date);
 			},
 			onItemClick: (arg) => {
 				void this.handleEventClick(arg);
+			},
+			onDateClick: arg => {
+				if (arg.view.type === "month" && this.viewOptions.showMonthDayPanel) this.selectMonthDay(arg.dateStr);
 			},
 			onItemContextMenu: (arg) => this.handleEventContextMenu(arg),
 			canDrop: proposal => this.batchPreview?.allow(proposal) ?? true,
@@ -1301,18 +1373,162 @@ export class CalendarView extends BasesViewBase {
 			onExternalDrop: (arg) => void this.handleExternalTaskDrop(arg),
 			itemDidMount: (arg) => this.handleEventDidMount(arg),
 			listItemContent: (arg) => this.renderListItem(arg),
+			...{
+				listEmptyContent: () => {
+					const container = createElementInDocument(this.containerEl.ownerDocument, "div");
+					this.renderTaskEmptyState(container);
+					return container;
+				},
+			},
 		};
 	}
 
 	private handleViewChange(view: ViewInfo): void {
+		const slotEventOverlap = view.type === "day" ? false : this.viewOptions.slotEventOverlap;
+		if (this.calendar && this.calendar.getOptions().slotEventOverlap !== slotEventOverlap) {
+			this.calendar.setOptions({ slotEventOverlap });
+		}
+		if (view.type === "week" && this.isNarrowCalendar() && this.calendar) {
+			this.narrowWeek = true;
+			this.calendar.setOptions({ dayCount: 3 });
+			this.calendar.changeView("days");
+			return;
+		}
+		if (view.type !== "days") this.narrowWeek = false;
 		this.batchPreview?.clear();
 		this.syncSelectionModeAfterCalendarRender();
-		const viewType = viewToBases(view.type);
-		if (viewType && viewType !== this.viewOptions.calendarView) {
+		const viewType = this.narrowWeek ? "timeGridWeek" : viewToBases(view.type);
+		if (!this.automaticViewChange && viewType && viewType !== this.viewOptions.calendarView) {
 			this.viewOptions.calendarView = viewType;
 			this.debouncedSaveViewType(viewType);
 		}
 		this.applyLayoutClasses();
+		this.syncDayPanel();
+		if (this.calendar && (view.type === "week" || view.type === "days" || view.type === "day")) {
+			this.calendar.scrollToTime(this.viewOptions.scrollTime);
+		}
+		const dayMaxEventRows = this.getAllDayRowLimit();
+		if (this.calendar && this.calendar.getOptions().dayMaxEventRows !== dayMaxEventRows) this.calendar.setOptions({ dayMaxEventRows });
+	}
+
+	private addTaskOnDay(dateStr: string): void {
+		void this.createFileForView(undefined, frontmatter => {
+			frontmatter[this.plugin.fieldMapper.toUserField("scheduled")] = dateStr;
+		});
+	}
+
+	private selectMonthDay(dateStr: string): void {
+		this.selectedMonthDay = dateStr;
+		this.calendar?.unselect();
+		this.calendar?.gotoDate(dateStr);
+		this.syncDayPanel();
+	}
+
+	private openMonthChipOverflow(event: MouseEvent | KeyboardEvent): void {
+		if (this.viewOptions.showMonthDayPanel) return;
+		const target = (event.target as HTMLElement).closest<HTMLElement>(".tnc-dg--chips .tnc-dg-dots-more");
+		const date = target?.closest<HTMLElement>("[data-date]")?.dataset.date;
+		const day = date ? parseDay(date) : null;
+		if (!target || day === null) return;
+		event.preventDefault();
+		this.calendar?.openMore(day, target, event);
+	}
+
+	private syncMonthChipControls(): void {
+		if (!this.calendar || this.viewOptions.showMonthDayPanel) return;
+		for (const cell of this.calendarEl?.querySelectorAll<HTMLElement>(".tnc-dg--chips .tnc-dg-day") ?? []) {
+			const day = parseDay(cell.dataset.date ?? "");
+			if (day === null) continue;
+			const number = cell.querySelector<HTMLElement>(".tnc-dg-top > span.tnc-dg-num");
+			if (number) number.replaceWith(this.calendar.navLink(day, number.textContent ?? "", "tnc-dg-num"));
+			const more = cell.querySelector<HTMLElement>(".tnc-dg-dots-more");
+			if (more) {
+				more.parentElement?.removeAttribute("aria-hidden");
+				more.setAttribute("role", "button");
+				more.setAttribute("tabindex", "0");
+				more.setAttribute("data-tnc-no-drag", "");
+			}
+		}
+	}
+
+	private syncDayPanel(): void {
+		this.syncMonthChipControls();
+		this.calendarEl?.classList.toggle("tn-calendar-agenda-strip", this.viewOptions.showAgendaStrip && this.visibleView?.type === "list");
+		const enabled = this.viewOptions.showMonthDayPanel && this.visibleView?.type === "month";
+		this.calendarEl?.classList.toggle("tn-calendar-composition", enabled);
+		if (!enabled) {
+			this.destroyDayPanel();
+			return;
+		}
+		if (!this.calendarEl || !this.calendar) return;
+		const month = format(this.calendar.getDate(), "yyyy-MM");
+		if (!this.selectedMonthDay?.startsWith(month)) {
+			const today = format(new Date(), "yyyy-MM-dd");
+			this.selectedMonthDay = today.startsWith(month) ? today : `${month}-01`;
+		}
+		for (const cell of this.calendarEl.querySelectorAll<HTMLElement>(".tnc-dg-day[data-date]")) {
+			const selected = cell.dataset.date === this.selectedMonthDay;
+			cell.classList.toggle("tn-calendar-day-selected", selected);
+			cell.setAttribute("aria-selected", String(selected));
+		}
+		const panelRoot = this.dayPanelEl?.querySelector<HTMLElement>(":scope > .tnc");
+		if (this.dayPanel && this.dayPanelEl && this.dayPanelEl.clientWidth > 0 &&
+			(!panelRoot || panelRoot.getClientRects().length === 0)) {
+			this.destroyDayPanel();
+		}
+		if (this.dayPanel) {
+			if (format(this.dayPanel.getDate(), "yyyy-MM-dd") !== this.selectedMonthDay) {
+				this.dayPanel.gotoDate(this.selectedMonthDay);
+			}
+			this.dayPanel.setItems(this.calendarItems);
+			this.updateDayPanelCount();
+			this.dayPanel.updateSize();
+			return;
+		}
+		this.dayPanelEl = this.calendarEl.createDiv({ cls: "tn-calendar-day-panel" });
+		this.dayPanel = new Calendar<CalendarEventProps>(this.dayPanelEl, {
+			...this.buildCalendarOptions(),
+			view: "list", date: this.selectedMonthDay, listDayCount: 1,
+			listAgenda: false, toolbar: false, height: "auto",
+			listItemContent: arg => this.renderListItem(arg, true),
+			onRangeChange: undefined, onViewChange: undefined,
+			onNavLink: arg => this.openDailyNoteFromDateLink(arg.date),
+			listEmptyContent: undefined,
+		});
+		this.dayPanel.setItems(this.calendarItems);
+		this.updateDayPanelCount();
+		const add = this.dayPanelEl.createEl("button", {
+			cls: "tn-calendar-day-panel-add",
+			text: this.plugin.i18n.translate(msg({ message: "Add task", context: "modals.task.dependencies.addTaskButton" })),
+		});
+		const addIcon = createElementInDocument(this.containerEl.ownerDocument, "span");
+		addIcon.setAttribute("aria-hidden", "true");
+		setIcon(addIcon, "plus");
+		add.prepend(addIcon);
+		add.addEventListener("click", () => {
+			if (this.selectedMonthDay) this.addTaskOnDay(this.selectedMonthDay);
+		});
+	}
+
+	private updateDayPanelCount(): void {
+		if (!this.dayPanelEl || !this.selectedMonthDay) return;
+		const start = new Date(`${this.selectedMonthDay}T00:00:00`);
+		const end = new Date(start);
+		end.setDate(end.getDate() + 1);
+		const paths = new Set(this.calendarItems.filter(item => {
+			const event = eventApiFromItem(item);
+			return event.start && event.start < end && (event.end ? event.end > start : event.start >= start);
+		}).map(item => item.data?.taskInfo?.path || item.id));
+		let count = this.dayPanelEl.querySelector<HTMLElement>(".tn-calendar-day-count");
+		if (!count) count = this.dayPanelEl.createDiv({ cls: "tn-calendar-day-count", attr: { role: "status" } });
+		count.textContent = this.plugin.i18n.translate(msg({ message: "{count, plural, one {# item} other {# items}}", context: "calendar selected day count" }), { count: paths.size });
+	}
+
+	private destroyDayPanel(): void {
+		this.dayPanel?.destroy();
+		this.dayPanel = null;
+		this.dayPanelEl?.remove();
+		this.dayPanelEl = null;
 	}
 
 	private updateBasesSortIndexes(taskNotes: TaskInfo[]): void {
@@ -1368,7 +1584,7 @@ export class CalendarView extends BasesViewBase {
 
 		if (this.rootElement) {
 			this.rootElement.classList.toggle("advanced-calendar-view--auto-height", isAutoHeight);
-			this.rootElement.classList.toggle("tn-static-min-height-800px-997b4c8c", !isAutoHeight);
+			this.rootElement.classList.remove("tn-static-min-height-800px-997b4c8c");
 		}
 
 		this.calendarEl?.classList.toggle(
@@ -1380,7 +1596,7 @@ export class CalendarView extends BasesViewBase {
 	private applyTimeGridVisibilityClass(): void {
 		const hideTimeGrid = shouldHideCalendarTimeGrid(
 			this.viewOptions.showTimeGrid,
-			this.viewOptions.calendarView
+			(this.visibleView ? viewToBases(this.visibleView.type) : null) ?? this.viewOptions.calendarView
 		);
 
 		this.rootElement?.classList.toggle("advanced-calendar-view--hide-time-grid", hideTimeGrid);
@@ -1391,12 +1607,13 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private applyCalendarModeClass(): void {
-		const isListView = this.viewOptions.calendarView.startsWith("list");
+		const isListView = this.visibleView ? this.visibleView.type === "list" : this.viewOptions.calendarView.startsWith("list");
 		this.rootElement?.classList.toggle("advanced-calendar-view--list", isListView);
 		this.calendarEl?.classList.toggle("advanced-calendar-view__calendar--list", isListView);
 	}
 
 	private applyLayoutClasses(): void {
+		this.syncCalendarToolbar();
 		this.applyHeightModeClass();
 		this.applyTimeGridVisibilityClass();
 		this.applyCalendarModeClass();
@@ -1405,6 +1622,22 @@ export class CalendarView extends BasesViewBase {
 			"advanced-calendar-view__calendar--week-numbers",
 			this.viewOptions.weekNumbers === true
 		);
+	}
+
+	private syncCalendarToolbar(): void {
+		const nav = this.calendarEl?.querySelector<HTMLElement>(".tnc-toolbar-nav");
+		if (nav?.parentElement && nav.parentElement.firstElementChild !== nav) nav.parentElement.prepend(nav);
+		if (!this.calendar) return;
+		const activeView = this.narrowWeek ? "week" : this.calendar.view.type;
+		const select = this.calendarEl?.querySelector<HTMLSelectElement>(".tnc-toolbar-view-select");
+		if (select) {
+			select.value = activeView;
+			// Obsidian's own dropdown, not the calendar's button styling.
+			select.classList.replace("tnc-btn", "dropdown");
+		}
+		for (const button of this.calendarEl?.querySelectorAll(".tnc-btn-view") ?? []) {
+			button.setAttribute("aria-pressed", String(button.classList.contains(`tnc-btn-view-${activeView}`)));
+		}
 	}
 
 	private getEffectiveHeightMode(): CalendarHeightMode {
@@ -1429,7 +1662,6 @@ export class CalendarView extends BasesViewBase {
 
 		// Debounce the save to avoid rapid recreation
 		this._saveViewTypeTimer = window.setTimeout(() => {
-			this._saveViewTypeTimer = null;
 			try {
 				if (this.config && typeof this.config.set === "function") {
 					this.config.set("calendarView", viewType);
@@ -1445,6 +1677,8 @@ export class CalendarView extends BasesViewBase {
 					operation: "save-view-type",
 					error: error,
 				});
+			} finally {
+				this._saveViewTypeTimer = null;
 			}
 		}, 1000);
 	}
@@ -1535,7 +1769,7 @@ export class CalendarView extends BasesViewBase {
 
 	private async buildAllEvents(view: ViewInfo): Promise<CalendarEventInput[]> {
 		const allEvents: CalendarEventInput[] = [];
-		const { range } = view;
+		const range = view.dataRange ?? view.range;
 
 		this.taskProjection.setContext({
 			timezone: this.calendarTimezone,
@@ -1642,8 +1876,9 @@ export class CalendarView extends BasesViewBase {
 
 	private buildTaskEvents(view: ViewInfo): CalendarEventInput[] {
 		const tasks = new Map(this.currentTasks.map(task => [calendarTaskId(task), task]));
+		const range = view.dataRange ?? view.range;
 		const events = this.taskProjection.entriesInRange({
-			start: view.range.start.toISOString(), end: view.range.end.toISOString(),
+			start: range.start.toISOString(), end: range.end.toISOString(),
 		}).flatMap(entry => {
 			const task = tasks.get(entry.taskId);
 			return task ? [calendarEntryToEvent(entry, task, {
@@ -1787,7 +2022,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private async handleEventClick(arg: ItemPointerArg<CalendarEventProps>): Promise<void> {
-		if (isCalendarBatchTarget(arg.item.data) &&
+		if (isCalendarSelectionTarget(arg.item.data) &&
 			this.handleSelectionClick(toMouseEvent(arg.jsEvent, arg.el), arg.item.data.taskInfo.path)) return;
 		await handleCalendarEventClick(this.getMenuContext(), arg);
 	}
@@ -1863,8 +2098,9 @@ export class CalendarView extends BasesViewBase {
 				return;
 			}
 			this.expectImmediateUpdate();
-			const updated = await this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr);
-			await this.refreshAfterDirectCalendarTaskWrite(updated);
+			const receipt = await captureTaskUndo(this.plugin, task, () => this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr));
+			if (receipt.task) await this.refreshAfterDirectCalendarTaskWrite(receipt.task);
+			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.plugin.app.vault, task.title);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error scheduling dropped task", {
 				category: "persistence",
@@ -1896,7 +2132,9 @@ export class CalendarView extends BasesViewBase {
 		}
 		this.batchMoveInProgress = true;
 		const completed: CalendarBatchMove[] = [];
+		const undo: Array<() => Promise<unknown>> = [];
 		let planned = false;
+		let failedTitle = "";
 		try {
 			const tasks = await Promise.all(paths.map(async path => {
 				const task = await this.plugin.cacheManager.getTaskInfo(path);
@@ -1908,12 +2146,15 @@ export class CalendarView extends BasesViewBase {
 				this.plugin.fieldMapper.getMapping(), new Date().toISOString());
 			planned = true;
 			for (const move of moves) {
+				failedTitle = move.task.title;
 				const fresh = await this.plugin.cacheManager.getTaskInfo(move.task.path);
 				if (!fresh || fresh.recurrence || fresh.scheduled !== move.before.scheduled || fresh.due !== move.before.due) {
 					throw new Error("Task dates changed during batch move");
 				}
-				const updated = await this.plugin.taskService.applyCalendarEdit(fresh, move.entry, move.change, this.calendarTimezone);
+				const receipt = await captureTaskUndo(this.plugin, fresh, () => this.plugin.taskService.applyCalendarEdit(fresh, move.entry, move.change, this.calendarTimezone));
+				const updated = receipt.task;
 				if (!updated) throw new Error("Calendar move was cancelled");
+				if (receipt.undo) undo.push(receipt.undo);
 				completed.push(move);
 				await this.refreshAfterDirectCalendarTaskWrite(updated);
 			}
@@ -1923,16 +2164,12 @@ export class CalendarView extends BasesViewBase {
 			// notes. Reproject successful writes so partial failure cannot show stale dates.
 			if (completed.length) this.refreshTaskItems();
 			tasknotesLogger.warn("Calendar batch move stopped", { category: "persistence", operation: "calendar-batch-move", error });
-			if (planned) {
-				new Notice(this.plugin.i18n.translate(msg({ message: "Action failed: {action}", context: "notices.audit.failed" }), {
-					action: this.plugin.i18n.translate(msg({ message: "Update tasks", context: "notices.audit.update" })),
-				}));
-			} else {
+			if (!planned) {
 				this.showUnsupportedCalendarBatchMove();
 			}
 		} finally {
 			this.batchMoveInProgress = false;
-			if (completed.length) this.showCalendarBatchUndo(completed, paths.length - completed.length);
+			if (planned) showTaskUndo(undo, paths.length !== completed.length, completed.length, this.plugin.app.vault, paths.length !== completed.length ? failedTitle : undefined, undefined, completed.map(move => move.task.title));
 		}
 	}
 
@@ -1943,40 +2180,6 @@ export class CalendarView extends BasesViewBase {
 		})));
 	}
 
-	private showCalendarBatchUndo(moves: CalendarBatchMove[], failed: number): void {
-		const fragment = (this.containerEl.ownerDocument.defaultView ?? window).createFragment();
-		fragment.append(this.plugin.i18n.translate(msg({ message: "{action} — successful: {count}; failed: {failed}.", context: "notices.audit.result" }), {
-			action: this.plugin.i18n.translate(msg({ message: "Update tasks", context: "notices.audit.update" })), count: moves.length, failed,
-		}), " ");
-		const button = createElementInDocument(this.containerEl.ownerDocument, "button");
-		button.textContent = this.plugin.i18n.translate(messageForKey("views.taskList.movement.undo"));
-		fragment.append(button);
-		const notice = new Notice(fragment, 12000);
-		button.addEventListener("click", () => {
-			if (this.batchMoveInProgress) return;
-			button.disabled = true;
-			this.batchMoveInProgress = true;
-			void (async () => {
-				try {
-					for (const move of [...moves].reverse()) {
-						const task = await this.plugin.cacheManager.getTaskInfo(move.task.path);
-						if (!task || task.recurrence || task.scheduled !== move.after.scheduled || task.due !== move.after.due) {
-							new Notice(this.plugin.i18n.translate(messageForKey("views.taskList.movement.undoConflict")));
-							continue;
-						}
-						const updated = await this.plugin.taskService.applyCalendarEdit(task, move.undoEntry, move.undoChange, this.calendarTimezone);
-						if (updated) await this.refreshAfterDirectCalendarTaskWrite(updated);
-					}
-				} catch (error) {
-					tasknotesLogger.error("Calendar batch undo failed", { category: "persistence", operation: "calendar-batch-undo", error });
-					new Notice(this.plugin.i18n.translate(messageForKey("views.taskList.movement.undoFailed")));
-				} finally {
-					this.batchMoveInProgress = false;
-					notice.hide();
-				}
-			})();
-		});
-	}
 
 	private async handleEventResize(info: CalendarEventChange): Promise<void> {
 		if (this.batchMoveInProgress) {
@@ -1990,220 +2193,46 @@ export class CalendarView extends BasesViewBase {
 		return {
 			plugin: this.plugin, options: this.viewOptions, timezone: this.calendarTimezone,
 			refreshTask: task => this.refreshAfterDirectCalendarTaskWrite(task),
+			refreshEvent: event => {
+				this.nonTaskEvents = this.nonTaskEvents.map(previous => previous.id === event.id ? {
+					...previous,
+					start: event.start?.toISOString() ?? previous.start,
+					end: event.end?.toISOString(),
+					allDay: event.allDay,
+					extendedProps: event.extendedProps,
+				} : previous);
+				this.refreshTaskItems();
+			},
 		};
 	}
 
 	private handleDateSelect(info: SelectArg): void {
-		if (this.plugin.taskSelectionService?.isSelectionModeActive()) {
-			this.plugin.taskSelectionService.exitSelectionMode(true);
-			this.calendar?.unselect();
+		if (info.view?.type === "month" && this.viewOptions.showMonthDayPanel && info.allDay &&
+			info.end.getTime() - info.start.getTime() <= 25 * 60 * 60 * 1000) {
+			this.selectMonthDay(info.startStr);
 			return;
 		}
-		// Determine what type of event to create based on view
-		const menu = new Menu();
-
-		menu.addItem((item) => {
-			item.setTitle(this.plugin.i18n.translate(msg({ message: "Create task", context: "modals.taskCreation.title" })))
-				.setIcon("check-square")
-				.onClick(async () => {
-					// Parse slot duration to get minutes (default to 30 if not set)
-					const slotDurationParts = this.viewOptions.slotDuration.split(":");
-					const slotDurationMinutes =
-						parseInt(slotDurationParts[0]) * 60 + parseInt(slotDurationParts[1] || "0");
-
-					const values = calculateTaskCreationValues(
-						info.start,
-						info.end,
-						info.allDay,
-						slotDurationMinutes
-					);
-
-					const modal = new TaskCreationModal(this.plugin.app, this.plugin, {
-						prePopulatedValues: values,
-						onTaskCreated: (task) => {
-							void this.refreshAfterDirectCalendarTaskWrite(task);
-						},
-					});
-					modal.open();
-				});
-		});
-
-		// Only show timeblock option if timeblocking is enabled
-		if (this.plugin.settings.calendarViewSettings.enableTimeblocking) {
-			menu.addItem((item) => {
-				item.setTitle(this.plugin.i18n.translate(msg({ message: "Create timeblock", context: "modals.timeblockCreation.heading" })))
-					.setIcon("clock")
-					.onClick(async () => {
-						await handleTimeblockCreation(
-							info.start,
-							info.end,
-							info.allDay,
-							this.plugin,
-							(result) => this.refetchWhenCreatedTimeblockIsIndexed(result)
-						);
-					});
-			});
-		}
-
-		menu.addItem((item) => {
-			item.setTitle(this.plugin.i18n.translate(msg({ message: "Create time entry", context: "ui.audit.createEntry" })))
-				.setIcon("play")
-				.onClick(async () => {
-					this.expectImmediateUpdate();
-					await handleTimeEntryCreation(info.start, info.end, info.allDay, this.plugin);
-				});
-		});
-
-		// Show "Create calendar event" if any external calendars are connected
-		const registry = this.plugin.calendarProviderRegistry;
-		if (registry) {
-			const hasWritableCalendars = registry
-				.getAllProviders()
-				.some((p) => p.getAvailableCalendars().length > 0);
-			if (hasWritableCalendars) {
-				menu.addSeparator();
-				menu.addItem((item) => {
-					item.setTitle(this.plugin.i18n.translate(msg({ message: "Create external calendar event", context: "ui.audit.createExternal" })))
-						.setIcon("calendar-plus")
-						.onClick(() => {
-							const modal = new CalendarEventCreationModal(
-								this.plugin.app,
-								this.plugin,
-								{
-									start: info.start,
-									end: info.end,
-									allDay: info.allDay,
-									onEventCreated: () => {
-										this.expectImmediateUpdate();
-										// Refresh provider data to show the new event
-										void registry.refreshAll();
-									},
-								}
-							);
-							modal.open();
-						});
-				});
-			}
-		}
-
-		menu.onHide(() => {
-			this.calendar?.unselect();
-		});
-
-		const anchor = this.calendarEl ?? this.containerEl;
-		menu.showAtMouseEvent(toMouseEvent(info.jsEvent, anchor));
+		showCalendarCreationMenu({
+			plugin: this.plugin,
+			slotDuration: this.viewOptions.slotDuration,
+			anchor: this.calendarEl ?? this.containerEl,
+			unselect: () => this.calendar?.unselect(),
+			onTaskCreated: (task) => this.refreshAfterDirectCalendarTaskWrite(task),
+			onTimeblockCreated: (result) => this.refetchWhenCreatedTimeblockIsIndexed(result),
+			expectImmediateUpdate: () => this.expectImmediateUpdate(),
+		}, info);
 	}
 
 	private handleEventDidMount(arg: ItemArg<CalendarEventProps>): void {
+		this.keyboard?.mount(arg);
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
-		const extendedProps = arg.item.data;
-		if (!extendedProps) return;
-		const el = arg.el;
-		const { taskInfo, timeblock, icsEvent, eventType, relatedNoteCount } = extendedProps;
-		suppressCalendarContextMenuOnMobile(el);
-
-		const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
-		const viewType = viewToBases(arg.view.type) ?? arg.view.type;
-		decorateCalendarIcsEventElement({
-			element: el,
-			viewType,
-			icsEvent,
-			relatedNoteCount: relatedNoteTotal,
-			plugin: this.plugin,
-		});
-
-		// Set event type attribute
-		el.setAttribute("data-event-type", eventType || "unknown");
-		if (taskInfo?.path) {
-			el.setAttribute("data-task-path", taskInfo.path);
-			el.classList.add("fc-task-event");
-			const selectable = isCalendarBatchTarget(extendedProps);
-			el.dataset.batchSelectable = String(selectable);
-			if (selectable) {
-				const selected = Boolean(this.plugin.taskSelectionService?.isSelected(taskInfo.path));
-				el.classList.toggle("tn-calendar-item-selected", selected);
-				el.setAttribute("aria-pressed", String(selected));
+		decorateCalendarEvent({ plugin: this.plugin, rootElement: this.rootElement, timeFormat: this.viewOptions.timeFormat === "12" ? "12" : "24" }, arg);
+		if (arg.view.type === "month") {
+			const status = arg.el.dataset.status;
+			if (status && !this.plugin.statusManager.getStatusConfig(status)?.color) {
+				arg.el.setCssProps({ "--tn-calendar-status-color": "var(--tnc-accent)" });
 			}
-		}
-
-		if (extendedProps.isBatchPreview) {
-			el.setAttribute("aria-hidden", "true");
-			el.tabIndex = -1;
-			return;
-		}
-
-		// List rows are task cards with their own tooltips, previews and menus.
-		if (arg.view.type === "list") return;
-
-		// Handle timeblock events
-		if (eventType === "timeblock" && timeblock) {
-			applyTimeblockStyling(el, timeblock);
-			setTooltip(el, generateTimeblockTooltip(timeblock), { placement: "top" });
-			return;
-		}
-
-		// Add data attributes and classes for tasks
-		if (taskInfo && taskInfo.path) {
-			this.attachTaskEventHoverLink(el, taskInfo.path);
-
-			// Add tag classes to tasks
-			if (taskInfo.tags && taskInfo.tags.length > 0) {
-				taskInfo.tags.forEach((tag: string) => {
-					const sanitizedTag = tag.replace(/[^a-zA-Z0-9-_]/g, "");
-					if (sanitizedTag) {
-						el.classList.add(`fc-tag-${sanitizedTag}`);
-					}
-				});
-			}
-
-			filterEmptyProjects(taskInfo.projects || []).forEach((project) => {
-				const sanitizedProject = sanitizeForCssClass(project);
-				if (sanitizedProject) {
-					el.classList.add(`fc-project-${sanitizedProject}`);
-				}
-			});
-
-			// Apply recurring task styling (handles completion styling as well)
-			applyRecurringTaskStyling(el, extendedProps);
-
-			appendCalendarAttachmentIndicator(el, this.plugin, taskInfo.attachments?.length ?? 0);
-		}
-
-		// Add hover tooltip for tasks and ICS events
-		if (taskInfo) {
-			setTooltip(el, generateTaskTooltip(taskInfo, this.plugin));
-		} else if (icsEvent) {
-			const relatedNotesText =
-				relatedNoteTotal > 0
-					? `\n\n${getCalendarRelatedNoteTooltip(this.plugin, relatedNoteTotal)}`
-					: "";
-			const tooltipText = icsEvent.description
-				? `${icsEvent.title}\n\n${icsEvent.description}${relatedNotesText}`
-				: `${icsEvent.title}${relatedNotesText}`;
-			setTooltip(el, tooltipText);
-		}
-
-		// Add hover preview for tasks (Ctrl+hover to preview daily note)
-		if (taskInfo && eventType !== "ics") {
-			addTaskHoverPreview(el, taskInfo, this.plugin, "tasknotes-bases-calendar");
-		}
-
-		// Add hover preview for property-based events (Ctrl+hover to preview note)
-		const filePath = extendedProps.filePath;
-		if (eventType === "property-based" && filePath) {
-			el.addEventListener("mouseover", (event: MouseEvent) => {
-				const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
-				if (file) {
-					this.plugin.app.workspace.trigger("hover-link", {
-						event,
-						source: "tasknotes-bases-calendar",
-						hoverParent: el,
-						targetEl: el,
-						linktext: filePath,
-						sourcePath: filePath,
-					});
-				}
-			});
+			arg.el.style.removeProperty("opacity");
 		}
 	}
 
@@ -2226,14 +2255,14 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	/** List view rows render as the same cards the other TaskNotes views use. */
-	private renderListItem(arg: ItemArg<CalendarEventProps>): Node | null {
+	private renderListItem(arg: ItemArg<CalendarEventProps>, inDayPanel = false): Node | null {
 		const card = createCalendarListEventCard({
 			event: eventApiFromItem(arg.item),
 			plugin: this.plugin,
 			config: this.config,
 			visibleProperties: this.getVisibleProperties(),
 			basesEntryByPath: this.basesEntryByPath,
-			buildTaskCardOptions: (options) => this.buildTaskCardOptions(options),
+			buildTaskCardOptions: (options) => this.buildTaskCardOptions({ ...options, layout: "default" }),
 			logDebug: (message, ...data) =>
 				tasknotesLogger.debug(message, {
 					category: "provider",
@@ -2246,9 +2275,7 @@ export class CalendarView extends BasesViewBase {
 			card.addEventListener("click", event => {
 				const control = (event.target as Element).closest(DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR);
 				if (control && card.contains(control)) return;
-				const selectable = isCalendarBatchTarget(arg.item.data);
-				// TaskCard has its own Shift-click selection. Do not let it select a
-				// recurrence preview or tracked-time row through this alternate route.
+				const selectable = isCalendarSelectionTarget(arg.item.data);
 				if ((!selectable && event.shiftKey) || (selectable && this.handleSelectionClick(event, task.path))) {
 					event.preventDefault();
 					event.stopImmediatePropagation();
@@ -2256,26 +2283,58 @@ export class CalendarView extends BasesViewBase {
 			}, { capture: true });
 		}
 		arg.el.classList.toggle("tn-calendar-list-card", card !== null);
+		if (card && task) {
+			const entry = createElementInDocument(arg.el.ownerDocument, "div");
+			entry.className = "tn-calendar-list-entry";
+			const stamp = entry.createDiv({ cls: "tn-calendar-list-stamp" });
+			const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
+			stamp.dataset.eventType = arg.item.data?.eventType ?? "";
+			if (arg.item.data?.eventType === "scheduled" && arg.timeText) {
+				const marker = stamp.createSpan({ cls: "tn-calendar-list-scheduled" });
+				marker.setAttribute("aria-hidden", "true");
+				setIcon(marker, "calendar");
+				stamp.setAttribute("aria-label", `${this.plugin.i18n.translate(messageForKey("ui.taskCard.labels.scheduled"))}: ${arg.timeText}`);
+			}
+			if (arg.item.data?.eventType === "due") {
+				const deadline = this.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }));
+				const marker = stamp.createSpan({ cls: "tn-calendar-list-deadline" });
+				marker.setAttribute("aria-hidden", "true");
+				setIcon(marker.createSpan(), "flag-triangle-right");
+				stamp.setAttribute("aria-label", `${deadline}: ${arg.timeText}`);
+			} else if (arg.item.data?.eventType === "timeEntry" && arg.item.end) {
+				const tracked = metadata?.createSpan({ cls: "tn-calendar-list-tracked" });
+				if (tracked && metadata) {
+					setIcon(tracked.createSpan(), "timer");
+					const duration = (new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000;
+					tracked.createSpan({ text: uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: this.plugin.formatTime(duration) }) });
+					metadata.hidden = false;
+					card.classList.remove("task-card--metadata-empty");
+				}
+			}
+			if (arg.timeText) {
+				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });
+				time.textContent = arg.timeText;
+			}
+			const priority = card.querySelector<HTMLElement>(".task-card__priority-dot");
+			const badges = card.querySelector<HTMLElement>(".task-card__badges");
+			if (metadata) {
+				if (stamp.childElementCount) metadata.prepend(stamp);
+				if (priority) metadata.prepend(priority);
+				if (badges) metadata.append(badges);
+				if (priority || badges?.childElementCount || stamp.childElementCount) {
+					metadata.hidden = false;
+					card.classList.remove("task-card--metadata-empty");
+				}
+			}
+			if (!metadata && stamp.childElementCount) card.querySelector(".task-card__content")?.append(stamp);
+			entry.classList.toggle("tn-calendar-list-entry--plain", card.classList.contains("task-card--metadata-empty"));
+			if (inDayPanel) entry.classList.add("tn-calendar-list-entry--panel");
+			entry.append(card);
+			return entry;
+		}
 		return card;
 	}
 
-	private attachTaskEventHoverLink(element: HTMLElement, taskPath: string): void {
-		const setRelatedState = (active: boolean) => {
-			const selector = `.fc-task-event[data-task-path="${CSS.escape(taskPath)}"]`;
-			const relatedEvents = this.rootElement?.querySelectorAll<HTMLElement>(selector) ?? [];
-
-			relatedEvents.forEach((relatedEvent) => {
-				if (relatedEvent === element) {
-					relatedEvent.classList.toggle("fc-task-event--hover-source", active);
-				} else {
-					relatedEvent.classList.toggle("fc-task-event--related-hover", active);
-				}
-			});
-		};
-
-		element.addEventListener("mouseenter", () => setRelatedState(true));
-		element.addEventListener("mouseleave", () => setRelatedState(false));
-	}
 
 	protected setupContainer(): void {
 		super.setupContainer();
@@ -2403,6 +2462,7 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	onunload(): void {
+		this.destroyDayPanel();
 		// Note: We intentionally do NOT call config.set() here (issue #1397)
 		// The Bases API has a bug where config objects can point to wrong files,
 		// causing view corruption when config.set() writes to unrelated .base files.
@@ -2466,7 +2526,10 @@ export class CalendarView extends BasesViewBase {
 		if (this.calendar) {
 			if (typeof state.calendarDate === "string") {
 				try {
-					this.calendar.gotoDate(new Date(state.calendarDate));
+					const restoredDate = new Date(state.calendarDate);
+					if (restoredDate.getTime() !== this.calendar.getDate().getTime()) {
+						this.calendar.gotoDate(restoredDate);
+					}
 				} catch (e) {
 					tasknotesLogger.debug("[CalendarView] Failed to restore calendar date:", {
 						category: "provider",

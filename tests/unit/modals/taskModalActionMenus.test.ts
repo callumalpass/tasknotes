@@ -1,24 +1,5 @@
-import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
-const mockDatePickerOpen = jest.fn();
-let mockDatePickerOptions: any;
-const mockDateTimePickerModal = jest.fn().mockImplementation((_app, options) => {
-	mockDatePickerOptions = options;
-	return { open: mockDatePickerOpen };
-});
-
-const mockStatusShow = jest.fn();
-let mockStatusOptions: any;
-const mockStatusContextMenu = jest.fn().mockImplementation((options) => {
-	mockStatusOptions = options;
-	return { show: mockStatusShow };
-});
-
-const mockPriorityShow = jest.fn();
-let mockPriorityOptions: any;
-const mockPriorityContextMenu = jest.fn().mockImplementation((options) => {
-	mockPriorityOptions = options;
-	return { show: mockPriorityShow };
-});
+import { observeTranslation as mockObserveTranslation } from "../../helpers/real-i18n";
+const mockOpenChoices = jest.fn();
 
 const mockRecurrenceShow = jest.fn();
 let mockRecurrenceOptions: any;
@@ -34,16 +15,8 @@ const mockReminderContextMenu = jest.fn().mockImplementation((...args) => {
 	return { show: mockReminderShow };
 });
 
-jest.mock("../../../src/modals/DateTimePickerModal", () => ({
-	DateTimePickerModal: mockDateTimePickerModal,
-}));
-
-jest.mock("../../../src/components/StatusContextMenu", () => ({
-	StatusContextMenu: mockStatusContextMenu,
-}));
-
-jest.mock("../../../src/components/PriorityContextMenu", () => ({
-	PriorityContextMenu: mockPriorityContextMenu,
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	openTaskPropertyChoices: mockOpenChoices,
 }));
 
 jest.mock("../../../src/components/RecurrenceContextMenu", () => ({
@@ -57,12 +30,9 @@ jest.mock("../../../src/components/ReminderContextMenu", () => ({
 import type { Reminder, TaskInfo } from "../../../src/types";
 import {
 	createTaskModalReminderDraft,
-	getSelectedDateValue,
-	showTaskModalDateContextMenu,
-	showTaskModalPriorityContextMenu,
+	showTaskModalPropertyPicker,
 	showTaskModalRecurrenceContextMenu,
 	showTaskModalReminderContextMenu,
-	showTaskModalStatusContextMenu,
 	type TaskModalActionMenuContext,
 	type TaskModalActionMenuState,
 } from "../../../src/modals/taskModalActionMenus";
@@ -122,80 +92,35 @@ function createHarness(overrides: Partial<TaskModalActionMenuState> = {}): {
 describe("taskModalActionMenus", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
-		mockDatePickerOptions = undefined;
-		mockStatusOptions = undefined;
-		mockPriorityOptions = undefined;
 		mockRecurrenceOptions = undefined;
 		mockReminderArgs = [];
 	});
 
-	it("opens the date picker with current date/time and applies combined selections", () => {
+	it.each(["due", "scheduled"] as const)("applies timed %s choices and clear to the draft", (property) => {
 		const { context, getState, onChange, plugin } = createHarness({
-			dueDate: "2026-05-20T09:30",
+			dueDate: "2026-05-20T09:30", scheduledDate: "2026-05-20T09:30",
 		});
-
-		showTaskModalDateContextMenu(context, "due");
-
-		expect(mockDateTimePickerModal).toHaveBeenCalledWith(context.app, {
-			currentDate: "2026-05-20",
-			currentTime: "09:30",
-			title: mockEnglishText(mockConceptDescriptor("modals.task.dateMenu.dueTitle")),
-			dateRole: "due",
-			plugin,
-			onSelect: expect.any(Function),
-		});
-		expect(mockDatePickerOpen).toHaveBeenCalledTimes(1);
-
-		mockDatePickerOptions.onSelect("2026-05-21", "10:15");
-
-		expect(getState().dueDate).toBe("2026-05-21T10:15");
-		expect(onChange).toHaveBeenCalledTimes(1);
+		const anchor = document.createElement("button");
+		showTaskModalPropertyPicker(context, property, anchor);
+		expect(mockOpenChoices).toHaveBeenCalledWith(plugin, property,
+			[expect.objectContaining({ [property]: "2026-05-20T09:30" })], anchor, expect.any(Function));
+		const apply = mockOpenChoices.mock.calls[0][4];
+		apply("2026-05-21T10:15");
+		const field = property === "due" ? "dueDate" : "scheduledDate";
+		expect(getState()[field]).toBe("2026-05-21T10:15");
+		apply((draft: TaskInfo) => draft[property] + ":00");
+		expect(getState()[field]).toBe("2026-05-21T10:15:00");
+		apply(undefined);
+		expect(getState()[field]).toBe("");
+		expect(onChange).toHaveBeenCalledTimes(3);
 	});
 
-	it("clears scheduled dates from the date picker callback", () => {
-		const { context, getState, onChange } = createHarness({
-			scheduledDate: "2026-05-22",
-		});
-
-		showTaskModalDateContextMenu(context, "scheduled");
-		mockDatePickerOptions.onSelect(null, null);
-
-		expect(mockDatePickerOptions.title).toBe(
-			mockEnglishText(mockConceptDescriptor("modals.task.dateMenu.scheduledTitle"))
-		);
-		expect(getState().scheduledDate).toBe("");
+	it.each(["status", "priority"] as const)("applies arbitrary %s picker values to the draft", (property) => {
+		const { context, getState, onChange } = createHarness();
+		showTaskModalPropertyPicker(context, property, document.createElement("button"));
+		mockOpenChoices.mock.calls[0][4]("custom-long-workflow-value");
+		expect(getState()[property]).toBe("custom-long-workflow-value");
 		expect(onChange).toHaveBeenCalledTimes(1);
-	});
-
-	it("updates status and priority through context menu callbacks", () => {
-		const statusEvent = new MouseEvent("click");
-		const priorityEvent = new MouseEvent("contextmenu");
-		const { context, getState, onChange, plugin } = createHarness({
-			status: "open",
-			priority: "normal",
-		});
-
-		showTaskModalStatusContextMenu(context, statusEvent);
-		showTaskModalPriorityContextMenu(context, priorityEvent);
-
-		expect(mockStatusContextMenu).toHaveBeenCalledWith({
-			currentValue: "open",
-			onSelect: expect.any(Function),
-			plugin,
-		});
-		expect(mockPriorityContextMenu).toHaveBeenCalledWith({
-			currentValue: "normal",
-			onSelect: expect.any(Function),
-			plugin,
-		});
-		expect(mockStatusShow).toHaveBeenCalledWith(statusEvent);
-		expect(mockPriorityShow).toHaveBeenCalledWith(priorityEvent);
-
-		mockStatusOptions.onSelect("done");
-		mockPriorityOptions.onSelect("high");
-
-		expect(getState()).toEqual(expect.objectContaining({ status: "done", priority: "high" }));
-		expect(onChange).toHaveBeenCalledTimes(2);
 	});
 
 	it("updates recurrence values and preserves the anchor when no new anchor is supplied", () => {
@@ -301,9 +226,4 @@ describe("taskModalActionMenus", () => {
 		});
 	});
 
-	it("normalizes date picker selections", () => {
-		expect(getSelectedDateValue("2026-05-19", null)).toBe("2026-05-19");
-		expect(getSelectedDateValue("2026-05-19", "09:30")).toBe("2026-05-19T09:30");
-		expect(getSelectedDateValue(null, "09:30")).toBe("");
-	});
 });

@@ -1,3 +1,5 @@
+import { fieldLabelForId } from "../i18n/fieldLabels";
+
 export type TaskModalTitleInputElement = HTMLInputElement | HTMLTextAreaElement;
 
 export interface TaskModalTitleTextareaOptions {
@@ -27,7 +29,7 @@ export function createTaskModalTitleTextarea({
 	input.placeholder = placeholder;
 	input.rows = 1;
 	input.spellcheck = true;
-	input.setAttribute("aria-label", placeholder);
+	input.setAttribute("aria-label", fieldLabelForId("title"));
 
 	input.addEventListener("keydown", (event) => {
 		if (event.key === "Enter" && !event.ctrlKey && !event.metaKey) {
@@ -85,10 +87,12 @@ export function resizeTaskModalTitleTextarea(input: TaskModalTitleInputElement):
 		borderBottom;
 
 	setTaskModalTitleTextareaCssProps(input, { "--tn-task-modal-title-height": "auto" });
-	const nextHeight = Math.min(input.scrollHeight, maxHeight);
+	// scrollHeight leaves out the border, which a border-box height includes.
+	const borders = computed?.boxSizing === "border-box" ? borderTop + borderBottom : 0;
+	const contentHeight = input.scrollHeight + borders;
 	setTaskModalTitleTextareaCssProps(input, {
-		"--tn-task-modal-title-height": `${nextHeight}px`,
-		"--tn-task-modal-title-overflow-y": input.scrollHeight > maxHeight ? "auto" : "hidden",
+		"--tn-task-modal-title-height": `${Math.min(contentHeight, maxHeight)}px`,
+		"--tn-task-modal-title-overflow-y": contentHeight > maxHeight ? "auto" : "hidden",
 	});
 }
 

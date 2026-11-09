@@ -314,7 +314,7 @@ export class TaskService {
 	 */
 	async createTask(
 		taskData: TaskCreationData,
-		options: { applyDefaults?: boolean; applyTemplate?: boolean } = {}
+		options: { applyDefaults?: boolean; applyTemplate?: boolean; targetFolder?: string } = {}
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
 		const result = await this.taskCreationService.createTask(taskData, options);
 		await this.seedInitialOccurrence(result.taskInfo);
@@ -860,7 +860,8 @@ export class TaskService {
 		property: keyof TaskInfo,
 		oldValue: unknown,
 		newValue: unknown,
-		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void,
+		restoringReceipt = false
 	): Promise<void> {
 		await runTaskPropertyChangeSideEffects(
 			{
@@ -879,9 +880,11 @@ export class TaskService {
 				property,
 				oldValue,
 				newValue,
+				cacheAlreadyUpdated: restoringReceipt,
 			}
 		);
 
+		if (restoringReceipt) return;
 		await this.seedInitialOccurrence(updatedTask, originalTask);
 
 		// Direct file edits and bulk property writes must reconcile occurrence
@@ -1933,7 +1936,9 @@ export class TaskService {
 		currentTask: TaskInfo,
 		addedBlockedTaskPaths: string[],
 		removedBlockedTaskPaths: string[],
-		rawEntries: Record<string, TaskDependency | string> = {}
+		rawEntries: Record<string, TaskDependency | string> = {},
+		updateBlockedTask: (task: TaskInfo, updates: Partial<TaskInfo>) => Promise<unknown> =
+			(task, updates) => this.updateTask(task, updates)
 	): Promise<void> {
 		// This method is called when the current task's "blocking" list is updated in the UI.
 		// The current task is the one blocking other tasks.
@@ -1958,7 +1963,7 @@ export class TaskService {
 				continue;
 			}
 
-			await this.updateTask(blockedTask, updates);
+			await updateBlockedTask(blockedTask, updates);
 		}
 
 		// Add current task to the blockedBy field of tasks it's now blocking
@@ -1982,7 +1987,7 @@ export class TaskService {
 				continue;
 			}
 
-			await this.updateTask(blockedTask, updates);
+			await updateBlockedTask(blockedTask, updates);
 		}
 	}
 

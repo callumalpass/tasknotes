@@ -12,14 +12,15 @@ import { createElementInDocument } from '../../utils/documentDom';
  */
 export class SearchBox {
 	private container: HTMLElement;
-	private onSearch: (term: string) => void;
+	private onSearch: (term: string) => void | Promise<void>;
+	private searchSettled: Promise<void> = Promise.resolve();
 	private debounceMs: number;
 	
 	private searchBoxEl: HTMLElement | null = null;
 	private inputEl: HTMLInputElement | null = null;
 	private clearBtnEl: HTMLElement | null = null;
 
-	private debouncedSearch: ((term: string) => void) | null = null;
+	private debouncedSearch: (((term: string) => void) & { flush: () => void }) | null = null;
 	private destroyed = false;
 
 	/**
@@ -29,7 +30,7 @@ export class SearchBox {
 	 */
 	constructor(
 		container: HTMLElement,
-		onSearch: (term: string) => void,
+		onSearch: (term: string) => void | Promise<void>,
 		debounceMs = 300
 	) {
 		this.container = container;
@@ -41,7 +42,7 @@ export class SearchBox {
 			(term: string) => {
 				// Don't execute if component has been destroyed
 				if (!this.destroyed) {
-					this.onSearch(term);
+					this.searchSettled = Promise.resolve(this.onSearch(term));
 				}
 			},
 			this.debounceMs,
@@ -134,14 +135,33 @@ export class SearchBox {
 	 * Handle keydown event
 	 */
 	private handleKeydown = (e: KeyboardEvent): void => {
+		if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
 		if (e.key === 'Escape') {
-			this.clear();
-			// Trigger search with empty term
-			if (this.debouncedSearch) {
-				this.debouncedSearch('');
+			e.preventDefault();
+			e.stopPropagation();
+			if (!this.getValue()) {
+				this.exitSearch(false);
+				return;
 			}
+			this.clear();
+			this.debouncedSearch?.('');
+			this.debouncedSearch?.flush();
+		} else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+			e.preventDefault();
+			e.stopPropagation();
+			this.debouncedSearch?.flush();
+			this.exitSearch(true);
 		}
 	};
+
+	private exitSearch(firstResult: boolean): void {
+		void this.searchSettled.then(() => {
+			if (!this.destroyed && this.inputEl === this.inputEl?.ownerDocument.activeElement) {
+				this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-exit', { bubbles: true, detail: firstResult }));
+				if (!firstResult) this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-close', { bubbles: true }));
+			}
+		});
+	}
 
 	/**
 	 * Handle clear button click

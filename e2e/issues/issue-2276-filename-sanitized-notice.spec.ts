@@ -35,18 +35,19 @@ test("creating a task with / in its title names the sanitized file", async () =>
 	const title = `Review https://tasknotes.dev/obsidian/ ${Date.now()}`;
 	await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.openTaskCreationModal());
 	const modal = page.locator(".modal.mod-tasknotes");
-	await modal.locator("textarea.title-input, textarea.title-input-detailed").fill(title);
-	await modal.getByRole("button", { name: "Save", exact: true }).click();
+	await modal.getByRole("textbox", { name: "Title" }).fill(title);
+	await modal.getByRole("button", { name: "Create task", exact: true }).click();
 
 	const filename = title.replace(/[:/]/g, "");
 	await expect(
-		page.locator(".notice").filter({ hasText: `created as file "${filename}"` })
+		page.locator(".tn-toast").filter({ hasText: `Task created as "${filename}". Unsupported filename characters omitted; full title kept in properties.` })
 	).toBeVisible();
 
-	const saved = await page.evaluate((filename) => {
+	// The creation toast follows the file write; Obsidian indexes frontmatter
+	// asynchronously, so wait for the cache before checking the preserved title.
+	await expect.poll(() => page.evaluate((filename) => {
 		const app = (window as any).app;
 		const file = app.vault.getMarkdownFiles().find((f: any) => f.basename === filename);
 		return file ? app.metadataCache.getFileCache(file)?.frontmatter?.title : null;
-	}, filename);
-	expect(saved).toBe(title);
+	}, filename)).toBe(title);
 });

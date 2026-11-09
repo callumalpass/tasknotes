@@ -50,7 +50,7 @@ export async function handleCalendarEventClick(
 		const eventStart = event.start;
 		if (!eventStart) return;
 		const originalDate = format(eventStart, "yyyy-MM-dd");
-		void showTimeblockInfoModal(timeblock, eventStart, originalDate, context.plugin, () =>
+		await showTimeblockInfoModal(timeblock, eventStart, originalDate, context.plugin, () =>
 			context.expectImmediateUpdate()
 		);
 		return;
@@ -58,7 +58,8 @@ export async function handleCalendarEventClick(
 
 	// Handle time entry click - left click opens time entry modal
 	if (eventType === "timeEntry" && taskInfo && jsEvent.button === 0) {
-		context.plugin.openTimeEntryEditor(taskInfo, () => context.expectImmediateUpdate());
+		const latest = await context.plugin.cacheManager.getTaskInfo(taskInfo.path);
+		if (latest) context.plugin.openTimeEntryEditor(latest, () => context.expectImmediateUpdate());
 		return;
 	}
 
@@ -87,7 +88,9 @@ export async function handleCalendarEventClick(
 
 	// Handle task click with single/double click detection based on user settings
 	if (taskInfo?.path && jsEvent.button === 0) {
-		void handleCalendarTaskClick(taskInfo, context.plugin, jsEvent, event.id, () =>
+		const latest = await context.plugin.cacheManager.getTaskInfo(taskInfo.path);
+		if (!latest) return;
+		void handleCalendarTaskClick(latest, context.plugin, jsEvent, event.id, () =>
 			context.expectImmediateUpdate()
 		);
 	}

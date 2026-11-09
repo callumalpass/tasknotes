@@ -43,7 +43,8 @@ describe("Bases toolbar helpers", () => {
 		expect(result).toBe("injected");
 		expect(parentEl.classList.contains("tasknotes-view-active")).toBe(true);
 		expect(injected).not.toBeNull();
-		expect(toolbarEl.firstElementChild).toBe(injected);
+		expect(toolbarEl.firstElementChild?.classList.contains("tn-bases-toolbar-more")).toBe(true);
+		expect(injected?.previousElementSibling).toBe(toolbarEl.firstElementChild);
 		expect(injected?.nextElementSibling).toBe(originalNewButton);
 		expect(injected?.querySelector("button")?.getAttribute("aria-label")).toBe("New");
 		expect(injected?.querySelector(".text-button-label")?.textContent).toBe("New");

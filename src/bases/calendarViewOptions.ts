@@ -287,6 +287,20 @@ function buildCalendarViewModeOptions(
 			shouldHide: () => getCalendarView(config, defaultView) !== "listWeek",
 		},
 		{
+			type: "toggle",
+			key: "showAgendaStrip",
+			displayName: uiText(msg({ message: "Show agenda date strip", context: "calendar composition option" })),
+			default: true,
+			shouldHide: () => getCalendarView(config, defaultView) !== "listWeek",
+		},
+		{
+			type: "toggle",
+			key: "showMonthDayPanel",
+			displayName: uiText(msg({ message: "Show selected day panel", context: "calendar composition option" })),
+			default: false,
+			shouldHide: () => getCalendarView(config, defaultView) !== "dayGridMonth",
+		},
+		{
 			type: "dropdown",
 			key: "heightMode",
 			displayName: t("layout.heightMode"),

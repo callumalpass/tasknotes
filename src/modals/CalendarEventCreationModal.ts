@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice } from "obsidian";
@@ -60,6 +61,7 @@ export class CalendarEventCreationModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: CalendarEventCreationOptions) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.options = options;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);

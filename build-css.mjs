@@ -4,15 +4,14 @@ import { readFileSync, writeFileSync } from 'node:fs';
 // their view-specific adaptations, and static style classes last.
 const CSS_FILES = [
     // Core System Files
-    'styles/variables.css',          // CSS custom properties and design system variables
-    'styles/utilities.css',          // Scoped utility classes for layout, spacing, typography
+    'styles/tokens.css',             // Design tokens (see docs/development/design-system.md)
+    'styles/kit.css',                // Shared component kit
     'styles/base.css',               // Basic styles, animations, card components, and layout
     
     // BEM Component Files
     'styles/task-card-bem.css',      // TaskCard component with proper BEM scoping
     'styles/task-inline-widget.css', // Inline task widget for editor with proper BEM scoping
     'styles/note-card-bem.css',      // NoteCard component with proper BEM scoping
-    'styles/filter-bar-bem.css',     // FilterBar component with proper BEM scoping
     'styles/filter-heading.css',     // FilterHeading component with proper BEM scoping
     'styles/search-box.css',         // SearchBox component with proper BEM scoping
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
@@ -23,7 +22,6 @@ const CSS_FILES = [
     'styles/task-selector-with-create-modal.css', // TaskSelectorWithCreateModal component with proper BEM scoping
     'styles/file-selector-modal.css', // FileSelectorModal component with proper BEM scoping
     'styles/unscheduled-tasks-selector-modal.css', // UnscheduledTasksSelectorModal component with proper BEM scoping
-    'styles/task-action-palette-modal.css', // TaskActionPaletteModal component with proper BEM scoping
     'styles/time-entry-editor-modal.css', // TimeEntryEditorModal component with proper BEM scoping
     'styles/relationships.css',  // RelationshipsWidget component with proper BEM scoping
     'styles/task-card-note-widget.css',  // TaskCardNoteWidget component with proper BEM scoping
@@ -35,7 +33,10 @@ const CSS_FILES = [
     'styles/advanced-calendar-view.css', // AdvancedCalendarView component with proper BEM scoping
     'styles/bases-calendar.css',     // Bases calendar theme mapping and TaskNotes event styles
     'styles/kanban-view.css',        // KanbanView component with proper BEM scoping
+    'styles/task-card-layout.css',   // Card layout shared by Kanban cards and Task List rows
     'styles/agenda-view.css',        // AgendaView component with proper BEM scoping
+    'styles/pomodoro-stats-view.css',
+    'styles/stats-view.css',
     'styles/pomodoro-view.css',      // PomodoroView component with proper BEM scoping
     'styles/release-notes-view.css', // Release notes view typography
     'styles/settings-view.css',      // SettingsView component with proper BEM scoping

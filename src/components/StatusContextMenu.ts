@@ -1,4 +1,5 @@
 import { configLabel } from "../i18n/configLabels";
+import { renderUnconfiguredMenuValue } from "../ui/kit/menu";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
@@ -29,20 +30,14 @@ export class StatusContextMenu {
 
 	private buildMenu(): void {
 		const statusOptions = this.getStatusOptions();
+		renderUnconfiguredMenuValue(this.menu, this.options.currentValue, statusOptions);
 
-		statusOptions.forEach((option, index) => {
+		statusOptions.forEach((option) => {
 			this.menu.addItem((item) => {
-				let title = option.label;
-
 				// Use custom icon if configured, otherwise default to circle
 				item.setIcon(option.icon || "circle");
 
-				// Highlight current selection with visual indicator
-				if (option.value === this.options.currentValue) {
-					title = `✓ ${option.label}`;
-				}
-
-				item.setTitle(title);
+				item.setTitle(option.label).setChecked(option.value === this.options.currentValue);
 
 				item.onClick(async () => {
 					this.options.onSelect(option.value);
@@ -109,9 +104,14 @@ export class StatusContextMenu {
 		if (!menuEl) return;
 
 		const menuItems = menuEl.querySelectorAll(".menu-item");
+		const offset =
+			this.options.currentValue &&
+			!statusOptions.some((option) => option.value === this.options.currentValue)
+				? 1
+				: 0;
 
 		statusOptions.forEach((option, index) => {
-			const menuItem = menuItems[index] as HTMLElement;
+			const menuItem = menuItems[index + offset] as HTMLElement;
 			if (menuItem && option.color) {
 				const iconEl = menuItem.querySelector(".menu-item-icon");
 				if (iconEl) {

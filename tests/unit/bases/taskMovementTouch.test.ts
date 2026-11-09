@@ -8,6 +8,45 @@ function pointer(target: EventTarget, type: string, options: Record<string, unkn
 }
 
 describe("handle-only touch movement", () => {
+	it("opens the row menu on a stationary hold, suppresses release clicks and lets scrolling cancel the hold", () => {
+		jest.useFakeTimers();
+		const root = document.createElement("div");
+		const card = document.createElement("div");
+		card.className = "task-card";
+		card.dataset.taskPath = "task.md";
+		root.appendChild(card);
+		document.body.appendChild(root);
+		const menu = jest.fn();
+		const touch = new TaskMovementTouch(root, { start: jest.fn(), update: jest.fn(), commit: jest.fn(), cancel: jest.fn(), menu });
+		pointer(card, "pointerdown");
+		jest.advanceTimersByTime(450);
+		expect(menu).toHaveBeenCalledWith(card, 10, 20);
+		jest.advanceTimersByTime(1500);
+		const touchEndListener = jest.fn();
+		document.addEventListener("touchend", touchEndListener);
+		const touchEnd = new Event("touchend", { bubbles: true, cancelable: true });
+		card.dispatchEvent(touchEnd);
+		expect(touchEnd.defaultPrevented).toBe(true);
+		expect(touchEndListener).not.toHaveBeenCalled();
+		document.removeEventListener("touchend", touchEndListener);
+		pointer(document, "pointerup");
+		const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+		card.dispatchEvent(click);
+		expect(click.defaultPrevented).toBe(true);
+		const menuItem = document.createElement("button");
+		document.body.appendChild(menuItem);
+		pointer(menuItem, "pointerdown");
+		const menuClick = new MouseEvent("click", { bubbles: true, cancelable: true });
+		menuItem.dispatchEvent(menuClick);
+		expect(menuClick.defaultPrevented).toBe(false);
+		menuItem.remove();
+		pointer(card, "pointerdown");
+		pointer(document, "pointermove", { clientY: 40 });
+		jest.advanceTimersByTime(450);
+		expect(menu).toHaveBeenCalledTimes(1);
+		touch.destroy();
+		root.remove();
+	});
 	let input: TaskMovementTouch;
 	let container: HTMLElement;
 	let handle: HTMLElement;

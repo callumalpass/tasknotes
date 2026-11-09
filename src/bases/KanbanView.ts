@@ -1,9 +1,18 @@
+import { changeTaskProperty, showTaskUndo, taskMovementMessage, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
+import { openTaskPropertySettings } from "../settings/TaskNotesSettingTab";
+import { unconfiguredValueLabel } from "../ui/kit/glyphs";
+import { buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
+import { createFileUndo, type FileUndoReceipt } from "../ui/taskMutationUndo";
+import { renderKanbanHeaderGlyph, resolveKanbanStatusColor } from "./kanbanStatusPresentation";
+import { KanbanDragPreview } from "./kanbanDragPreview";
+import { createKanbanCardScroller } from "./kanbanCardScroller";
 import { displayError } from "../i18n/runtime";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
 import { Notice, Platform, setIcon, setTooltip, TFile } from "obsidian";
+import { openPopover } from "../ui/kit/popover";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -24,7 +33,6 @@ import {
 	isSortOrderInSortConfig,
 	getSortOrderDirection,
 	prepareSortOrderUpdate,
-	applySortOrderPlan,
 	DropOperationQueue,
 	type SortOrderPlan,
 } from "./sortOrderUtils";
@@ -32,6 +40,7 @@ import {
 	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
 	buildSortOrderUpdateMap,
+	captureTaskViewScroll,
 	movePathsRelativeToTarget,
 } from "./manualOrderState";
 import { getKanbanTaskActionDate, handleKanbanCardAction } from "./kanbanCardActions";
@@ -139,6 +148,8 @@ type VirtualScrollerWithContainer = {
 };
 
 type KanbanEphemeralState = {
+	boardScrollLeft?: unknown;
+	boardScrollTop?: unknown;
 	scrollTop?: unknown;
 	columnScroll?: unknown;
 };
@@ -234,6 +245,11 @@ export class KanbanView extends BasesViewBase {
 	type = "tasknotesKanban";
 
 	private boardEl: HTMLElement | null = null;
+	private columnNav: HTMLElement | null = null;
+	private activeNavigatorColumn: string | null = null;
+	private columnSelect: HTMLSelectElement | null = null;
+	private previousColumn: HTMLButtonElement | null = null;
+	private nextColumn: HTMLButtonElement | null = null;
 	private basesController: KanbanController; // Store controller for accessing query.views
 	private currentTaskElements = new Map<string, HTMLElement>();
 	private draggedTaskPath: string | null = null;
@@ -246,17 +262,11 @@ export class KanbanView extends BasesViewBase {
 	private dragOverRafId = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentInsertionIndex = -1; // Current gap/slot position
-	private dragSourceColumnEl: HTMLElement | null = null; // Source column element (height-locked during drag)
+	private taskDropAccepted = false;
+	private structureDragActive = false;
 	private dragTargetColumnEl: HTMLElement | null = null; // Target column element (max-height expanded during drag)
 	private activeDragSourceElement: HTMLElement | null = null;
-	private floatingDragPreviewEl: HTMLElement | null = null;
-	private floatingDragPreviewDocument: Document | null = null;
-	private floatingDragPreviewMoveHandler: ((event: DragEvent) => void) | null = null;
-	private floatingDragPreviewRafId: number | null = null;
-	private floatingDragPreviewWidth = 280;
-	private floatingDragPreviewHeight = 40;
-	private floatingDragPreviewPendingX = 0;
-	private floatingDragPreviewPendingY = 0;
+	private dragPreview = new KanbanDragPreview();
 	private draggedSourceColumns: Map<string, string> = new Map(); // Track source column per task for batch operations
 	private draggedSourceSwimlanes: Map<string, string> = new Map(); // Track source swimlane per task for batch operations
 	private taskInfoCache = new Map<string, TaskInfo>();
@@ -266,6 +276,7 @@ export class KanbanView extends BasesViewBase {
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
 	/** Collapsed column values keyed by grouping property, saved in the .base view config. */
 	private collapsedColumns: Record<string, string[]> = {};
+	private expandedEmptyColumns = new Set<string>();
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
@@ -289,6 +300,10 @@ export class KanbanView extends BasesViewBase {
 	private longPressTimer: number | null = null;
 	private autoScrollTimer: number | null = null;
 	private autoScrollDirection = 0;
+	private autoScrollVertical = 0;
+	private autoScrollContainer: HTMLElement | null = null;
+	private autoScrollPointerX = 0;
+	private autoScrollPointerY = 0;
 	private readonly LONG_PRESS_DELAY = 350;
 	private readonly TOUCH_MOVE_THRESHOLD = 10;
 	private readonly AUTO_SCROLL_EDGE = 60;
@@ -319,6 +334,9 @@ export class KanbanView extends BasesViewBase {
 	private swimLaneCollapseOverrides = new Map<string, boolean>();
 	private cardLayout: TaskCardOptions["layout"] = "default";
 	private configLoaded = false; // Track if we've successfully loaded config
+	private restoreDragScroll: (() => void) | null = null;
+	private renderRevision = 0;
+	private renderingBoard = false;
 	/**
 	 * Threshold for enabling virtual scrolling in kanban columns/swimlane cells.
 	 * Virtual scrolling activates when a column or cell has >= 15 cards.
@@ -347,7 +365,10 @@ export class KanbanView extends BasesViewBase {
 		// Call parent onload which sets up container and listeners
 		super.onload();
 		this.registerEvent(this.plugin.emitter.on("settings-changed", () => this.debouncedRefresh()));
-		this.registerEvent(this.plugin.app.workspace.on("css-change", () => this.debouncedRefresh()));
+		this.registerEvent(this.plugin.app.workspace.on("css-change", () => {
+			this.lastRenderSignature = null;
+			this.debouncedRefresh();
+		}));
 	}
 
 	/**
@@ -356,9 +377,9 @@ export class KanbanView extends BasesViewBase {
 	 */
 	onDataUpdated(): void {
 		// During drag: defer render (destroying DOM kills drop events)
-		if (this.draggedTaskPath) {
+		if (this.draggedTaskPath || this.structureDragActive || this.touchDragActive) {
 			this.debugLog("ON-DATA-UPDATED: deferred (drag active)", {
-				draggedTask: this.draggedTaskPath.split("/").pop(),
+				draggedTask: this.draggedTaskPath?.split("/").pop(),
 			});
 			this.pendingRender = true;
 			return;
@@ -386,7 +407,6 @@ export class KanbanView extends BasesViewBase {
 			this.debugLog("ON-DATA-UPDATED: normal render (no suppression active)");
 		}
 
-		const savedState = this.getEphemeralState();
 		try {
 			void this.render();
 		} catch (error) {
@@ -397,7 +417,6 @@ export class KanbanView extends BasesViewBase {
 			});
 			this.renderError(error as Error);
 		}
-		this.setEphemeralState(savedState);
 	}
 
 	/**
@@ -440,7 +459,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Read enableSearch toggle (default: false for backward compatibility)
 			const enableSearchValue = get("enableSearch");
-			this.enableSearch = (enableSearchValue as boolean) ?? false;
+			this.updateSearchConfiguration((enableSearchValue as boolean) ?? false);
 			const expandedRelationshipFilterModeValue = get("expandedRelationshipFilterMode");
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
@@ -508,6 +527,8 @@ export class KanbanView extends BasesViewBase {
 		return {
 			...baseStateObject,
 			scrollTop: this.rootElement?.scrollTop || 0,
+			boardScrollLeft: this.boardEl?.scrollLeft || 0,
+			boardScrollTop: this.boardEl?.scrollTop || 0,
 			columnScroll,
 		};
 	}
@@ -519,77 +540,76 @@ export class KanbanView extends BasesViewBase {
 		if (!isKanbanEphemeralState(state)) return;
 		super.setEphemeralState(state);
 		const columnScroll = getColumnScrollState(state);
+		if (this.boardEl) {
+			if (typeof state.boardScrollLeft === "number") this.boardEl.scrollLeft = state.boardScrollLeft;
+			if (typeof state.boardScrollTop === "number") this.boardEl.scrollTop = state.boardScrollTop;
+		}
 
-		// Restore board-level horizontal scroll
 		if (typeof state.scrollTop === "number" && this.rootElement) {
-			const scrollTop = state.scrollTop;
-			window.requestAnimationFrame(() => {
-				if (this.rootElement && this.rootElement.isConnected) {
-					this.rootElement.scrollTop = scrollTop;
-				}
-			});
+			this.rootElement.scrollTop = state.scrollTop;
 		}
 
 		// Restore column scroll positions after render completes
 		if (columnScroll) {
-			// Use requestAnimationFrame to ensure DOM and VirtualScrollers are ready
-			window.requestAnimationFrame(() => {
-				// Restore virtual scroller positions
-				for (const [columnKey, scroller] of this.columnScrollers) {
-					const scrollTop = columnScroll[columnKey];
-					if (scrollTop !== undefined) {
-						const scrollContainer = (
-							scroller as unknown as VirtualScrollerWithContainer
-						).scrollContainer;
-						if (scrollContainer) {
-							scrollContainer.scrollTop = scrollTop;
+			for (const [columnKey, scroller] of this.columnScrollers) {
+				const scrollTop = columnScroll[columnKey];
+				if (scrollTop !== undefined) {
+					const scrollContainer = (
+						scroller as unknown as VirtualScrollerWithContainer
+					).scrollContainer;
+					if (scrollContainer) scrollContainer.scrollTop = scrollTop;
+				}
+			}
+
+			// Restore non-virtual column positions
+			if (this.boardEl) {
+				const columns = this.boardEl.querySelectorAll(".kanban-view__column");
+				columns.forEach((column) => {
+					const groupKey = column.getAttribute("data-group");
+					if (groupKey && columnScroll[groupKey] !== undefined) {
+						const cardsContainer = column.querySelector(
+							".kanban-view__cards"
+						) as HTMLElement;
+						if (cardsContainer && !this.columnScrollers.has(groupKey)) {
+							cardsContainer.scrollTop = columnScroll[groupKey];
 						}
 					}
-				}
+				});
 
-				// Restore non-virtual column positions
-				if (this.boardEl) {
-					const columns = this.boardEl.querySelectorAll(".kanban-view__column");
-					columns.forEach((column) => {
-						const groupKey = column.getAttribute("data-group");
-						if (groupKey && columnScroll[groupKey] !== undefined) {
-							const cardsContainer = column.querySelector(
-								".kanban-view__cards"
+				// Restore swimlane cell positions (class is kanban-view__swimlane-column)
+				const swimlaneCells = this.boardEl.querySelectorAll(
+					".kanban-view__swimlane-column"
+				);
+				swimlaneCells.forEach((cell) => {
+					const columnKey = cell.getAttribute("data-column");
+					const swimlaneKey = cell.getAttribute("data-swimlane");
+					if (columnKey && swimlaneKey) {
+						const cellKey = `${swimlaneKey}:${columnKey}`;
+						if (columnScroll[cellKey] !== undefined) {
+							const tasksContainer = cell.querySelector(
+								".kanban-view__tasks-container"
 							) as HTMLElement;
-							if (cardsContainer && !this.columnScrollers.has(groupKey)) {
-								cardsContainer.scrollTop = columnScroll[groupKey];
+							if (tasksContainer && !this.columnScrollers.has(cellKey)) {
+								tasksContainer.scrollTop = columnScroll[cellKey];
 							}
 						}
-					});
-
-					// Restore swimlane cell positions (class is kanban-view__swimlane-column)
-					const swimlaneCells = this.boardEl.querySelectorAll(
-						".kanban-view__swimlane-column"
-					);
-					swimlaneCells.forEach((cell) => {
-						const columnKey = cell.getAttribute("data-column");
-						const swimlaneKey = cell.getAttribute("data-swimlane");
-						if (columnKey && swimlaneKey) {
-							const cellKey = `${swimlaneKey}:${columnKey}`;
-							if (columnScroll[cellKey] !== undefined) {
-								const tasksContainer = cell.querySelector(
-									".kanban-view__tasks-container"
-								) as HTMLElement;
-								if (tasksContainer && !this.columnScrollers.has(cellKey)) {
-									tasksContainer.scrollTop = columnScroll[cellKey];
-								}
-							}
-						}
-					});
-				}
-			});
+					}
+				});
+			}
 		}
 	}
 
 	async render(): Promise<void> {
 		if (!this.boardEl || !this.rootElement) return;
+		const navigatorColumn = this.activeNavigatorColumn;
 		if (!this.data?.data) return;
+		if (this.draggedTaskPath || this.structureDragActive || this.touchDragActive) {
+			this.pendingRender = true;
+			return;
+		}
 
+		const revision = ++this.renderRevision;
+		let savedState: unknown;
 		this.debugLog("RENDER-START", {
 			activeDropCount: this.activeDropCount,
 			suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
@@ -614,6 +634,11 @@ export class KanbanView extends BasesViewBase {
 			computeBasesFormulas(this.data, dataItems);
 
 			const taskNotes = await identifyTaskNotesFromBasesData(dataItems, this.plugin);
+			if (revision !== this.renderRevision) return;
+			if (this.draggedTaskPath || this.structureDragActive || this.touchDragActive) {
+				this.pendingRender = true;
+				return;
+			}
 
 			// Apply search filter
 			const filteredTasks = this.applySearchFilter(taskNotes);
@@ -632,6 +657,8 @@ export class KanbanView extends BasesViewBase {
 
 			// Saving a collapse toggle re-renders the board; keep keyboard focus on that toggle.
 			const focusedCollapseColumn = this.getFocusedCollapseColumn();
+			savedState = this.getEphemeralState();
+			this.renderingBoard = true;
 
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
@@ -691,6 +718,12 @@ export class KanbanView extends BasesViewBase {
 				await this.renderFlat(groups, allGroups);
 			}
 			this.lastRenderSignature = renderSignature;
+			if (revision !== this.renderRevision) return;
+			this.renderingBoard = false;
+			this.updateBoardLayout();
+			this.setEphemeralState(savedState);
+			this.activeNavigatorColumn = navigatorColumn;
+			this.updateColumnNavigator();
 			this.restoreCollapseButtonFocus(focusedCollapseColumn);
 		} catch (error: unknown) {
 			this.lastRenderSignature = null;
@@ -700,6 +733,8 @@ export class KanbanView extends BasesViewBase {
 				error: error,
 			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
+		} finally {
+			if (revision === this.renderRevision) this.renderingBoard = false;
 		}
 	}
 
@@ -1280,6 +1315,7 @@ export class KanbanView extends BasesViewBase {
 
 		countEl.textContent = formatted.text;
 		countEl.classList.toggle("kanban-view__column-count--exceeded", formatted.isExceeded);
+		this.updateColumnNavigator();
 	}
 
 	private getVisibleColumnTaskCount(groupKey: string): number {
@@ -1317,6 +1353,7 @@ export class KanbanView extends BasesViewBase {
 			}
 		}
 		countEl.textContent = `${count}`;
+		row?.classList.toggle("kanban-view__swimlane-row--empty", count === 0);
 	}
 
 	private async confirmLargeReorder(
@@ -1324,7 +1361,6 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		swimLaneKey: string | null
 	): Promise<boolean> {
-		const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
 		const scopeLabel =
 			swimLaneKey === null
 				? this.plugin.i18n.translate(msg({ message: "column \"{group}\"", context: "views.kanban.reorder.scope.column" }), {
@@ -1336,14 +1372,14 @@ export class KanbanView extends BasesViewBase {
 					});
 
 		return showConfirmationModal(this.plugin.app, {
-			title: this.plugin.i18n.translate(msg({ message: "Confirm large reorder", context: "common.reorder.confirmLargeTitle" })),
-			message: this.plugin.i18n.translate(msg({ message: "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?", context: "common.reorder.confirmLargeMessage" }), {
-				field: sortOrderField,
+			title: this.plugin.i18n.translate(msg({ message: "Save this order?", context: "common.reorder.confirmLargeTitle" })),
+			message: this.plugin.i18n.translate(msg({ message: "To keep this order, {count} notes in {scope} need to be updated. You can undo this change.", context: "common.reorder.confirmLargeMessage" }), {
 				count: editCount,
 				scope: scopeLabel,
 			}),
 			confirmText: this.plugin.i18n.translate(msg({ message: "Reorder notes", context: "common.reorder.confirmButton" })),
 			cancelText: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
+			defaultToConfirm: true,
 		});
 	}
 
@@ -1388,6 +1424,11 @@ export class KanbanView extends BasesViewBase {
 		const sortOrderValues = new Map<string, unknown>();
 
 		for (const task of taskNotes) {
+			const current = this.plugin.cacheManager.getCachedTaskInfoSync(task.path);
+			if (current) {
+				if (current.sortOrder != null) sortOrderValues.set(task.path, current.sortOrder);
+				continue;
+			}
 			const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
 			const frontmatter =
 				file instanceof TFile
@@ -1510,25 +1551,11 @@ export class KanbanView extends BasesViewBase {
 		const status = this.findStatusConfigForGroupKey(groupKey);
 		if (!status || !isSupportedColorValue(status.color)) return;
 
-		const color = this.resolveStatusColor(element, normalizeThemeColor(status.color));
+		const color = resolveKanbanStatusColor(element, normalizeThemeColor(status.color));
 		if (!color) return;
 
 		element.addClass(modifierClass);
 		element.style.setProperty("--tn-kanban-status-color", color);
-	}
-
-	private resolveStatusColor(element: HTMLElement, color: string): string | null {
-		const doc = element.ownerDocument;
-		const probe = doc.win.createSpan();
-		probe.style.backgroundColor = color;
-		if (!probe.style.backgroundColor) return null;
-		doc.body.appendChild(probe);
-		const resolved = doc.defaultView!.getComputedStyle(probe).backgroundColor;
-		probe.remove();
-		// Unresolved variables and non-colour variable values compute to the
-		// initial transparent background, not a usable tint.
-		return !resolved || resolved === "transparent" || resolved === "rgba(0, 0, 0, 0)" ||
-			resolved.includes("var(") ? null : resolved;
 	}
 
 	private isUnknownStatusGroup(groupKey: string, groupByPropertyId: string | null): boolean {
@@ -1556,6 +1583,28 @@ export class KanbanView extends BasesViewBase {
 		setTooltip(element, uiText(msg({ message: "Status is not defined in TaskNotes settings", context: "bases/KanbanView: KanbanView.markUnknownStatusColumnHeader display" })));
 	}
 
+	private renderUnknownGroupRecovery(element: HTMLElement, groupKey: string, propertyId: string | null): void {
+		if (!propertyId || !groupKey.trim() || groupKey === NONE_GROUP_KEY) return;
+		const property = this.isStatusGroupingProperty(propertyId)
+			? "status"
+			: this.isPropertyField(propertyId, "priority") ? "priority" : null;
+		if (!property) return;
+		const configured = property === "status"
+			? this.findStatusConfigForGroupKey(groupKey)
+			: this.plugin.priorityManager.getPriorityConfig(groupKey);
+		if (configured) return;
+		const explanation = unconfiguredValueLabel(groupKey);
+		const recovery = element.createEl("button", {
+			cls: "tn-btn tn-btn--ghost tn-btn--icon",
+			attr: { type: "button", "aria-label": uiText(msg({ message: "Task settings", context: "picker recovery action" })), "aria-description": explanation, title: explanation },
+		});
+		setIcon(recovery, "circle-help");
+		recovery.addEventListener("click", event => {
+			event.stopPropagation();
+			openTaskPropertySettings(this.plugin, property);
+		});
+	}
+
 	private async renderFlat(
 		groups: Map<string, TaskInfo[]>,
 		allGroups: Map<string, TaskInfo[]>
@@ -1571,7 +1620,7 @@ export class KanbanView extends BasesViewBase {
 		);
 
 		// Set CSS variable for column width (allows responsive override)
-		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
+		this.boardEl.style.setProperty("--kanban-column-width", this.getRenderedColumnWidth());
 
 		// Render columns without swimlanes
 		const visibleProperties = this.getVisibleProperties();
@@ -1715,7 +1764,7 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl) return;
 
 		// Set CSS variables for column width and swimlane max height
-		this.boardEl.style.setProperty("--kanban-column-width", `${this.columnWidth}px`);
+		this.boardEl.style.setProperty("--kanban-column-width", this.getRenderedColumnWidth());
 		this.boardEl.style.setProperty(
 			"--kanban-swimlane-max-height",
 			`${this.maxSwimlaneHeight}px`
@@ -1756,19 +1805,22 @@ export class KanbanView extends BasesViewBase {
 			dragHandle.setAttribute("aria-hidden", "true");
 			setIcon(dragHandle, "grip-vertical");
 
-			// Status icon (when consolidation enabled and grouped by status)
-			if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
-				const statusConfig = this.plugin.statusManager.getStatusConfig(columnKey);
-				if (statusConfig?.icon) {
-					const iconEl = headerCell.createSpan({ cls: "kanban-view__column-icon" });
-					iconEl.style.color = statusConfig.color;
-					setIcon(iconEl, statusConfig.icon);
-				}
+			if (groupByPropertyId && this.isStatusGroupingProperty(groupByPropertyId)) {
+				renderKanbanHeaderGlyph(
+					headerCell,
+					this.findStatusConfigForGroupKey(columnKey),
+					this.plugin.statusManager.getAllStatuses()
+				);
 			}
 
 			const titleContainer = headerCell.createSpan({ cls: "kanban-view__column-title" });
 			this.renderGroupTitleWrapper(titleContainer, columnKey, false, true);
+			setTooltip(titleContainer, this.getGroupDisplayTitle(columnKey, groupByPropertyId));
+			this.renderUnknownGroupRecovery(headerCell, columnKey, groupByPropertyId);
+			headerCell.dataset.empty = String((columnTaskCounts.get(columnKey) ?? 0) === 0);
 			this.renderColumnCount(headerCell, columnKey, columnTaskCounts.get(columnKey) ?? 0);
+			this.createColumnCollapseButton(headerCell, headerCell, columnKey, groupByPropertyId);
+			this.createAddTaskButton(headerCell, groupByPropertyId, columnKey);
 
 			// Setup column header drag handlers for swimlane mode
 			this.setupColumnHeaderDragHandlers(headerCell);
@@ -1806,6 +1858,7 @@ export class KanbanView extends BasesViewBase {
 			// Add swimlane title and count
 			const titleEl = labelCell.createDiv({ cls: "kanban-view__swimlane-title" });
 			this.renderGroupTitleWrapper(titleEl, swimLaneKey, true);
+			row.classList.toggle("kanban-view__swimlane-row--empty", totalTasks === 0);
 			labelCell.createDiv({
 				cls: "kanban-view__swimlane-count",
 				text: `${totalTasks}`,
@@ -1899,8 +1952,9 @@ export class KanbanView extends BasesViewBase {
 		const doc = this.containerEl.ownerDocument;
 		const column = createElementInDocument(doc, "div");
 		column.className = "kanban-view__column";
-		column.style.width = `${this.columnWidth}px`;
+		column.style.width = this.getRenderedColumnWidth();
 		column.setAttribute("data-group", groupKey);
+		column.dataset.empty = String(tasks.length === 0);
 		this.applyStatusColor(
 			column,
 			groupKey,
@@ -1925,21 +1979,22 @@ export class KanbanView extends BasesViewBase {
 		dragHandle.setAttribute("aria-hidden", "true");
 		setIcon(dragHandle, "grip-vertical");
 
-		// Status icon (when consolidation enabled and grouped by status)
-		if (this.consolidateStatusIcon && this.isGroupedByStatus()) {
-			const statusConfig = this.plugin.statusManager.getStatusConfig(groupKey);
-			if (statusConfig?.icon) {
-				const iconEl = header.createSpan({ cls: "kanban-view__column-icon" });
-				iconEl.style.color = statusConfig.color;
-				setIcon(iconEl, statusConfig.icon);
-			}
+		if (groupByPropertyId && this.isStatusGroupingProperty(groupByPropertyId)) {
+			renderKanbanHeaderGlyph(
+				header,
+				this.findStatusConfigForGroupKey(groupKey),
+				this.plugin.statusManager.getAllStatuses()
+			);
 		}
 
 		const titleContainer = header.createSpan({ cls: "kanban-view__column-title" });
 		this.renderGroupTitleWrapper(titleContainer, groupKey, false, true);
+		setTooltip(titleContainer, this.getGroupDisplayTitle(groupKey, groupByPropertyId));
+		this.renderUnknownGroupRecovery(header, groupKey, groupByPropertyId);
 
 		this.renderColumnCount(header, groupKey, tasks.length);
 		this.createColumnCollapseButton(header, column, groupKey, groupByPropertyId);
+		this.createAddTaskButton(header, groupByPropertyId, groupKey);
 
 		// Setup column header drag handlers
 		this.setupColumnHeaderDragHandlers(header);
@@ -1979,17 +2034,19 @@ export class KanbanView extends BasesViewBase {
 		groupKey: string,
 		groupByPropertyId: string | null
 	): void {
+		const collapseLabel = this.plugin.i18n.translate(msg({ message: "Toggle {column} column", context: "views.kanban.toggleColumn" }), {
+			column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
+		});
 		const button = header.createEl("button", {
 			cls: "kanban-view__column-collapse-button",
 			attr: {
 				type: "button",
-				"aria-label": this.plugin.i18n.translate(msg({ message: "Toggle {column} column", context: "views.kanban.toggleColumn" }), {
-					column: this.getGroupDisplayTitle(groupKey, groupByPropertyId),
-				}),
+				"aria-label": collapseLabel,
 			},
 		});
 
 		const collapseProperty = groupByPropertyId ?? "";
+		setTooltip(button, collapseLabel);
 		column.dataset.collapseProperty = collapseProperty;
 		column.dataset.collapseValue = groupKey;
 		this.applyColumnCollapsedState(column);
@@ -2004,9 +2061,13 @@ export class KanbanView extends BasesViewBase {
 		button.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			const collapsed = !this.isColumnCollapsed(collapseProperty, groupKey);
+			const collapsed = !column.classList.contains("kanban-view__column--collapsed");
+			const expansionKey = JSON.stringify([collapseProperty, groupKey]);
+			if (collapsed) this.expandedEmptyColumns.delete(expansionKey);
+			else this.expandedEmptyColumns.add(expansionKey);
 			this.saveColumnCollapsed(collapseProperty, groupKey, collapsed);
 			this.applyColumnCollapsedState(column);
+			this.updateBoardLayout();
 			if (!collapsed) this.columnScrollers.get(groupKey)?.recalculate();
 		});
 	}
@@ -2017,7 +2078,7 @@ export class KanbanView extends BasesViewBase {
 		if (!board || !focused?.matches(".kanban-view__column-collapse-button") || !board.contains(focused)) {
 			return null;
 		}
-		const column = focused.closest<HTMLElement>(".kanban-view__column");
+		const column = focused.closest<HTMLElement>(".kanban-view__column, .kanban-view__column-header-cell");
 		if (!column) return null;
 		return {
 			property: column.dataset.collapseProperty ?? "",
@@ -2028,7 +2089,7 @@ export class KanbanView extends BasesViewBase {
 	private restoreCollapseButtonFocus(target: { property: string; value: string } | null): void {
 		if (!target || !this.boardEl) return;
 		for (const column of Array.from(
-			this.boardEl.querySelectorAll<HTMLElement>(".kanban-view__column")
+			this.boardEl.querySelectorAll<HTMLElement>(".kanban-view__column, .kanban-view__column-header-cell")
 		)) {
 			if (
 				column.dataset.collapseProperty === target.property &&
@@ -2043,17 +2104,58 @@ export class KanbanView extends BasesViewBase {
 	private applyColumnCollapsedState(column: HTMLElement): void {
 		const button = column.querySelector<HTMLElement>(".kanban-view__column-collapse-button");
 		if (!button) return;
-		const collapsed = this.isColumnCollapsed(
+		const expansionKey = JSON.stringify([column.dataset.collapseProperty ?? "", column.dataset.collapseValue ?? ""]);
+		const collapsed = (column.dataset.empty === "true" && !this.expandedEmptyColumns.has(expansionKey) && !this.pinnedColumns.includes(column.dataset.collapseValue ?? "")) || this.isColumnCollapsed(
 			column.dataset.collapseProperty ?? "",
 			column.dataset.collapseValue ?? ""
 		);
 		column.classList.toggle("kanban-view__column--collapsed", collapsed);
+		column.classList.toggle("kanban-view__column--empty-rail", collapsed && column.dataset.empty === "true");
 		column.dataset.collapsed = String(collapsed);
 		column.style.width = collapsed
 			? "var(--tn-kanban-collapsed-column-width, 48px)"
-			: `${this.columnWidth}px`;
+			: this.getRenderedColumnWidth();
 		button.setAttribute("aria-expanded", String(!collapsed));
 		setIcon(button, collapsed ? "chevron-right" : "chevron-left");
+	}
+
+	private getRenderedColumnWidth(): string {
+		return this.boardEl?.style.getPropertyValue("--kanban-column-width") || `${this.columnWidth}px`;
+	}
+
+	private updateBoardLayout(): void {
+		const board = this.boardEl;
+		if (!board || this.renderingBoard || this.draggedTaskPath || this.structureDragActive || this.touchDragActive) return;
+		const swimlanes = board.classList.contains("kanban-view__board--swimlanes");
+		const columns = Array.from(board.querySelectorAll<HTMLElement>(
+			swimlanes ? ".kanban-view__column-header-cell" : ".kanban-view__column"
+		));
+		const labelWidth = swimlanes ? (board.clientWidth < 480 ? 72 : 96) : 0;
+		const collapsedColumns = columns.filter(column => column.classList.contains("kanban-view__column--collapsed"));
+		const collapsedCount = collapsedColumns.length;
+		const collapsedWidth = collapsedColumns.reduce((total, column) => total + (column.getBoundingClientRect().width || 48), 0);
+		const openCount = columns.length - collapsedCount;
+		const available = board.clientWidth - labelWidth - 16 - collapsedWidth - Math.max(0, columns.length - 1) * (swimlanes ? 0 : 8);
+		const width = board.clientWidth < 480
+			? Math.max(0, Math.min(this.columnWidth, board.clientWidth - labelWidth - 16))
+			: Math.max(320, Math.min(this.columnWidth, available / Math.max(1, openCount)));
+		const tracks = columns.map(column => {
+			const collapsed = column.classList.contains("kanban-view__column--collapsed");
+			const track = collapsed ? "var(--tn-kanban-collapsed-column-width, 48px)" : `${width}px`;
+			column.style.width = track;
+			return track;
+		});
+		board.style.setProperty("--kanban-swimlane-label-width", `${labelWidth}px`);
+		board.style.setProperty("--kanban-column-width", `${width}px`);
+		if (swimlanes) {
+			for (const row of Array.from(board.querySelectorAll<HTMLElement>(".kanban-view__swimlane-row"))) {
+				row.style.gridTemplateColumns = `${labelWidth}px ${tracks.join(" ")}`;
+				Array.from(row.querySelectorAll<HTMLElement>(".kanban-view__swimlane-column")).forEach((cell, index) => {
+					cell.classList.toggle("kanban-view__column--collapsed", columns[index]?.classList.contains("kanban-view__column--collapsed") ?? false);
+				});
+			}
+		}
+		board.classList.toggle("kanban-view__board--overflow", board.scrollWidth > board.clientWidth + 1);
 	}
 
 	private renderColumnCount(container: HTMLElement, groupKey: string, taskCount: number): void {
@@ -2171,34 +2273,8 @@ export class KanbanView extends BasesViewBase {
 		visibleProperties: string[],
 		cardOptions: TaskCardOptions
 	): void {
-		// Use semantic class instead of inline style for easier maintenance.
 		cardsContainer.addClass("kanban-view__cards--virtual");
-
-		// Use containerEl.ownerDocument for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-		const scroller = new VirtualScroller<TaskInfo>({
-			container: cardsContainer,
-			items: tasks,
-			// itemHeight omitted - automatically calculated from sample
-			overscan: 3,
-			renderItem: (task: TaskInfo) => {
-				const cardWrapper = createElementInDocument(doc, "div");
-				cardWrapper.className = "kanban-view__card-wrapper";
-				cardWrapper.setAttribute("draggable", "true");
-				cardWrapper.setAttribute("data-task-path", task.path);
-
-				const card = createTaskCard(task, this.plugin, visibleProperties, cardOptions);
-				cardWrapper.appendChild(card);
-
-				this.taskInfoCache.set(task.path, task);
-				this.setupCardDragHandlers(cardWrapper, task);
-
-				return cardWrapper;
-			},
-			getItemKey: (task: TaskInfo) => task.path,
-		});
-
-		this.columnScrollers.set(groupKey, scroller);
+		this.columnScrollers.set(groupKey, this.createCardScroller(cardsContainer, tasks, visibleProperties, cardOptions));
 	}
 
 	private async createVirtualSwimLaneCell(
@@ -2207,37 +2283,23 @@ export class KanbanView extends BasesViewBase {
 		tasks: TaskInfo[],
 		visibleProperties: string[]
 	): Promise<void> {
-		// Use semantic class instead of inline style for easier maintenance.
 		tasksContainer.addClass("kanban-view__tasks-container--virtual");
+		this.columnScrollers.set(cellKey, this.createCardScroller(tasksContainer, tasks, visibleProperties, this.getCardOptions()));
+	}
 
-		const cardOptions = this.getCardOptions();
-
-		// Use containerEl.ownerDocument for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-		const scroller = new VirtualScroller<TaskInfo>({
-			container: tasksContainer,
-			items: tasks,
-			// itemHeight omitted - automatically calculated from sample
-			overscan: 3,
-			renderItem: (task: TaskInfo) => {
-				const cardWrapper = createElementInDocument(doc, "div");
-				cardWrapper.className = "kanban-view__card-wrapper";
-				cardWrapper.setAttribute("draggable", "true");
-				cardWrapper.setAttribute("data-task-path", task.path);
-
-				const card = createTaskCard(task, this.plugin, visibleProperties, cardOptions);
-
-				cardWrapper.appendChild(card);
-
+	private createCardScroller(container: HTMLElement, tasks: TaskInfo[], visibleProperties: string[], cardOptions: TaskCardOptions): VirtualScroller<TaskInfo> {
+		return createKanbanCardScroller({
+			container, tasks, visibleProperties, cardOptions, plugin: this.plugin,
+			document: this.containerEl.ownerDocument,
+			onRender: (wrapper, task) => {
+				this.currentTaskElements.set(task.path, wrapper);
+				if (this.draggedTaskPaths.includes(task.path)) {
+					wrapper.classList.add("kanban-view__card--dragging");
+				}
 				this.taskInfoCache.set(task.path, task);
-				this.setupCardDragHandlers(cardWrapper, task);
-
-				return cardWrapper;
+				this.setupCardDragHandlers(wrapper, task);
 			},
-			getItemKey: (task: TaskInfo) => task.path,
 		});
-
-		this.columnScrollers.set(cellKey, scroller);
 	}
 
 	private createNormalColumn(
@@ -2271,6 +2333,7 @@ export class KanbanView extends BasesViewBase {
 			e.dataTransfer.effectAllowed = "move";
 			e.dataTransfer.setData(SWIMLANE_DRAG_TYPE, swimLaneKey);
 			label.classList.add(draggingClass);
+			this.startStructureDrag(label, e, this.getGroupDisplayTitle(swimLaneKey, this.swimLanePropertyId));
 		});
 
 		label.addEventListener("dragover", (e: DragEvent) => {
@@ -2296,10 +2359,12 @@ export class KanbanView extends BasesViewBase {
 
 			const draggedKey = e.dataTransfer?.getData(SWIMLANE_DRAG_TYPE);
 			if (!draggedKey) return;
+			this.endStructureDrag();
 			void this.moveSwimLane(draggedKey, swimLaneKey);
 		});
 
 		label.addEventListener("dragend", () => {
+			this.endStructureDrag();
 			label.classList.remove(draggingClass);
 			this.boardEl
 				?.querySelectorAll(`.${dragoverClass}`)
@@ -2349,6 +2414,7 @@ export class KanbanView extends BasesViewBase {
 			e.dataTransfer.effectAllowed = "move";
 			e.dataTransfer.setData("text/x-kanban-column", columnKey);
 			header.classList.add(draggingClass);
+			this.startStructureDrag(header, e, this.getGroupDisplayTitle(columnKey, this.getGroupByPropertyId()));
 		});
 
 		header.addEventListener("dragover", (e: DragEvent) => {
@@ -2379,6 +2445,7 @@ export class KanbanView extends BasesViewBase {
 
 				// Remove visual feedback
 				header.classList.remove(dragoverClass);
+				this.endStructureDrag();
 
 				const draggedKey = e.dataTransfer.getData("text/x-kanban-column");
 				const targetKey = header.dataset.columnKey;
@@ -2414,9 +2481,29 @@ export class KanbanView extends BasesViewBase {
 
 		header.addEventListener("dragend", () => {
 			header.classList.remove(draggingClass);
+			this.endStructureDrag();
 		});
 
 		this.setupColumnHeaderTouchHandlers(header, columnKey, isSwimlaneHeader, draggingClass);
+	}
+
+	private startStructureDrag(source: HTMLElement, event: DragEvent, title: string): void {
+		this.structureDragActive = true;
+		this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
+		setElementDragImage(event, source, "kanban-view__drag-image");
+		this.dragPreview.show(source, event, 1, title);
+	}
+
+	private endStructureDrag(): void {
+		this.structureDragActive = false;
+		this.cleanupFloatingDragPreview();
+		this.stopAutoScroll();
+		this.clearDragoverFeedback();
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
+		if (this.pendingRender) {
+			this.pendingRender = false;
+			this.debouncedRefresh();
+		}
 	}
 
 	private setupColumnHeaderTouchHandlers(
@@ -2483,7 +2570,7 @@ export class KanbanView extends BasesViewBase {
 					e.preventDefault();
 					this.updateTouchDragGhost(touch.clientX, touch.clientY);
 					this.updateDropTargetFeedback(touch.clientX, touch.clientY);
-					this.handleAutoScroll(touch.clientX);
+					this.handleAutoScroll(touch.clientX, touch.clientY);
 				}
 			},
 			{ passive: false }
@@ -2807,29 +2894,37 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private createTouchDragGhost(sourceEl: HTMLElement, x: number, y: number): HTMLElement {
-		const ghost = sourceEl.cloneNode(true) as HTMLElement;
-		ghost.classList.add("kanban-view__touch-ghost");
-		ghost.style.cssText = `
-			position: fixed;
-			left: ${x}px;
-			top: ${y}px;
-			width: ${sourceEl.offsetWidth}px;
-			pointer-events: none;
-			z-index: 10000;
-			opacity: 0.8;
-			transform: translate(-50%, -50%) rotate(3deg);
-			box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-		`;
-		// Use containerEl.ownerDocument to support pop-out windows
 		const doc = this.containerEl.ownerDocument;
+		const ghost = createElementInDocument(doc, "div");
+		ghost.className = "tasknotes-plugin kanban-view__touch-ghost";
+		ghost.inert = true;
+		ghost.setAttribute("aria-hidden", "true");
+		const clone = sourceEl.cloneNode(true) as HTMLElement;
+		clone.classList.remove("kanban-view__card--dragging", "kanban-view__touch-drag-source");
+		clone.classList.remove("kanban-view__card-wrapper--selected", "kanban-view__card-wrapper--selected-primary", "tn-task-focused");
+		clone.querySelectorAll(".tn-task-focused, .task-card--selected, .task-card--selected-primary").forEach(element => element.classList.remove("tn-task-focused", "task-card--selected", "task-card--selected-primary"));
+		clone.querySelectorAll("[id]").forEach(element => element.removeAttribute("id"));
+		clone.removeAttribute("id");
+		clone.removeAttribute("data-task-path");
+		clone.removeAttribute("draggable");
+		clone.querySelectorAll("[data-task-path], [data-keyboard-id]").forEach(element => {
+			element.removeAttribute("data-task-path");
+			element.removeAttribute("data-keyboard-id");
+		});
+		ghost.appendChild(clone);
+		ghost.style.left = `${x + (doc.defaultView?.scrollX ?? 0)}px`;
+		ghost.style.top = `${y + (doc.defaultView?.scrollY ?? 0)}px`;
+		ghost.style.width = `${Math.min(sourceEl.offsetWidth, 320)}px`;
+		if (this.draggedTaskPaths.length > 1) ghost.dataset.dragCount = `${this.draggedTaskPaths.length}`;
 		doc.body.appendChild(ghost);
 		return ghost;
 	}
 
 	private updateTouchDragGhost(x: number, y: number): void {
 		if (this.touchDragGhost) {
-			this.touchDragGhost.style.left = `${x}px`;
-			this.touchDragGhost.style.top = `${y}px`;
+			const win = this.touchDragGhost.ownerDocument.defaultView;
+			this.touchDragGhost.style.left = `${x + (win?.scrollX ?? 0)}px`;
+			this.touchDragGhost.style.top = `${y + (win?.scrollY ?? 0)}px`;
 		}
 	}
 
@@ -2957,6 +3052,15 @@ export class KanbanView extends BasesViewBase {
 
 	private updateDropTargetFeedback(x: number, y: number): void {
 		this.clearDragoverFeedback();
+		this.cleanupDragShift();
+		const restriction = this.touchDragType === "task" ? this.getDropRestriction() : null;
+		if (restriction && this.touchDragGhost) {
+			this.touchDragGhost.classList.add("kanban-view__floating-drag-preview--invalid");
+			let feedback = this.touchDragGhost.querySelector<HTMLElement>(".kanban-view__drag-feedback");
+			feedback ??= this.touchDragGhost.createDiv({ cls: "kanban-view__drag-feedback" });
+			feedback.textContent = restriction;
+			return;
+		}
 		const target = this.findDropTargetAt(x, y);
 		if (target.element) {
 			if (target.type === "column") {
@@ -2980,6 +3084,17 @@ export class KanbanView extends BasesViewBase {
 				}
 			}
 		}
+		if (this.touchDragType === "task" && target.element) {
+			const container = target.cardsContainer ?? target.element.querySelector<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
+			if (container && isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+				const siblings = Array.from(container.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper"))
+					.filter(card => !this.draggedTaskPaths.includes(card.dataset.taskPath || ""));
+				const index = siblings.findIndex(card => y < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
+				this.dragContainer = container;
+				this.currentInsertionIndex = index < 0 ? siblings.length : index;
+				updateKanbanDropMarker(container, siblings, this.currentInsertionIndex);
+			}
+		}
 	}
 
 	private markTouchDragSource(element: HTMLElement, draggingClass: string): void {
@@ -2988,6 +3103,10 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private clearTouchDragState(): void {
+		const restoreScroll = !this.taskDropAccepted ? this.restoreDragScroll : null;
+		this.restoreDragScroll = null;
+		for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys([]);
+		this.boardEl?.classList.remove("kanban-view__board--task-dragging");
 		for (const element of this.touchDragSources) {
 			element.classList.remove(
 				"kanban-view__touch-drag-source",
@@ -3029,14 +3148,18 @@ export class KanbanView extends BasesViewBase {
 		this.draggedSourceSwimlanes.clear();
 		this.touchDragType = null;
 		this.draggedColumnKey = null;
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
+		restoreScroll?.();
 		if (this.pendingRender) {
 			this.pendingRender = false;
 			this.debouncedRefresh();
 		}
 	}
 
-	private handleAutoScroll(touchX: number): void {
+	private handleAutoScroll(touchX: number, clientY?: number): void {
 		if (!this.boardEl) return;
+		this.autoScrollPointerX = touchX;
+		this.autoScrollPointerY = clientY ?? 0;
 
 		const rect = this.boardEl.getBoundingClientRect();
 		const leftEdge = rect.left + this.AUTO_SCROLL_EDGE;
@@ -3046,15 +3169,30 @@ export class KanbanView extends BasesViewBase {
 		if (touchX < leftEdge) newDirection = -1;
 		else if (touchX > rightEdge) newDirection = 1;
 
-		if (newDirection !== this.autoScrollDirection) {
+		let verticalDirection = 0;
+		let scrollContainer: HTMLElement | null = null;
+		if (clientY !== undefined) {
+			const target = this.boardEl.ownerDocument.elementFromPoint(touchX, clientY);
+			const cards = target?.closest<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
+			scrollContainer = cards && cards.scrollHeight > cards.clientHeight ? cards : this.boardEl;
+			const bounds = scrollContainer.getBoundingClientRect();
+			const edge = Math.min(this.AUTO_SCROLL_EDGE, bounds.height / 4);
+			if (clientY < bounds.top + edge) verticalDirection = -1;
+			else if (clientY > bounds.bottom - edge) verticalDirection = 1;
+		}
+		if (newDirection !== this.autoScrollDirection || verticalDirection !== this.autoScrollVertical || scrollContainer !== this.autoScrollContainer) {
 			this.stopAutoScroll();
 			this.autoScrollDirection = newDirection;
-			if (newDirection !== 0) {
+			this.autoScrollVertical = verticalDirection;
+			this.autoScrollContainer = scrollContainer;
+			if (newDirection !== 0 || verticalDirection !== 0) {
 				this.autoScrollTimer = window.setInterval(() => {
 					if (this.boardEl) {
 						this.boardEl.scrollLeft +=
 							this.autoScrollDirection * this.AUTO_SCROLL_SPEED;
 					}
+					if (this.autoScrollContainer) this.autoScrollContainer.scrollTop += this.autoScrollVertical * this.AUTO_SCROLL_SPEED;
+					if (this.touchDragActive) this.updateDropTargetFeedback(this.autoScrollPointerX, this.autoScrollPointerY);
 				}, 16);
 			}
 		}
@@ -3066,6 +3204,8 @@ export class KanbanView extends BasesViewBase {
 			this.autoScrollTimer = null;
 		}
 		this.autoScrollDirection = 0;
+		this.autoScrollVertical = 0;
+		this.autoScrollContainer = null;
 	}
 
 	private setupCardDragHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
@@ -3115,6 +3255,7 @@ export class KanbanView extends BasesViewBase {
 		});
 
 		cardWrapper.addEventListener("dragover", (e: DragEvent) => {
+			if (!this.draggedTaskPath) return;
 			// Skip if dragging over self
 			if (this.draggedTaskPath === task.path) return;
 			if (isSwimLaneDrag(e)) return;
@@ -3138,46 +3279,16 @@ export class KanbanView extends BasesViewBase {
 					// Determine the container for this card
 					const container = cardWrapper.parentElement;
 					if (!container) return;
+					if (!isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+						this.cleanupDragShift();
+						this.dropTargetPath = null;
+						return;
+					}
 
 					// If the drag moved to a different container (cross-column),
 					// clean up old container and set up the new one
 					if (container !== this.dragContainer) {
 						this.cleanupDragShift();
-
-						// Measure the primary dragged card for gap sizing
-						const primaryWrapper = this.currentTaskElements.get(
-							this.draggedTaskPath || ""
-						);
-						const draggedHeight = primaryWrapper
-							? primaryWrapper.getBoundingClientRect().height || 60
-							: 60;
-						const gapStr = getComputedStyle(container).gap;
-						const gap = parseFloat(gapStr) || 4;
-						const totalGap = draggedHeight + gap;
-						container.style.setProperty("--tn-drag-gap", `${totalGap}px`);
-						container.classList.remove("tn-static-margin-top-12px-91e0f558");
-						// Padding grows the container's content box so
-						// translateY-shifted cards have real layout space.
-						// Also bump the column's max-height so it can grow
-						// to accommodate the taller container.
-						container.style.paddingBottom = `${totalGap}px`;
-						const parentCol = container.closest<HTMLElement>(
-							".kanban-view__column, .kanban-view__swimlane-column"
-						);
-						if (parentCol) {
-							const currentHeight = parentCol.getBoundingClientRect().height;
-							parentCol.style.maxHeight = `${currentHeight + totalGap}px`;
-							this.dragTargetColumnEl = parentCol;
-						}
-
-						const siblings = container.querySelectorAll<HTMLElement>(
-							".kanban-view__card-wrapper"
-						);
-						for (const sib of siblings) {
-							if (!this.draggedTaskPaths.includes(sib.dataset.taskPath || "")) {
-								sib.classList.add("kanban-view__card-wrapper--drag-shift");
-							}
-						}
 						this.dragContainer = container;
 					}
 
@@ -3196,12 +3307,6 @@ export class KanbanView extends BasesViewBase {
 
 					if (insertionIndex !== this.currentInsertionIndex) {
 						this.currentInsertionIndex = insertionIndex;
-						for (let i = 0; i < siblings.length; i++) {
-							siblings[i].classList.toggle(
-								"kanban-view__card-wrapper--shift-down",
-								i >= insertionIndex
-							);
-						}
 						updateKanbanDropMarker(container, siblings, insertionIndex);
 					}
 				});
@@ -3275,6 +3380,7 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
 			e.stopPropagation();
+			this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
 			const dragSource = dragSourceOverride ?? {
 				taskPath: task.path,
 				sourceElement: cardWrapper,
@@ -3288,6 +3394,8 @@ export class KanbanView extends BasesViewBase {
 				inCurrentTaskElements: this.currentTaskElements.has(draggedTaskPath),
 				isNestedSource: draggedTaskPath !== task.path,
 			});
+			this.taskDropAccepted = false;
+			this.boardEl?.classList.add("kanban-view__board--task-dragging");
 			setElementDragImage(e, dragImageSource, "kanban-view__drag-image");
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
@@ -3343,6 +3451,7 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			this.activeDragSourceElement = dragImageSource;
+			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys(this.draggedTaskPaths);
 			this.showFloatingDragPreview(dragImageSource, e);
 
 			// Capture the source column and swimlane for list property handling (single drag fallback)
@@ -3360,92 +3469,17 @@ export class KanbanView extends BasesViewBase {
 			const draggedHeight = dragImageSource.getBoundingClientRect().height;
 			const container = cardWrapper.parentElement;
 
-			// Lock the source column's height so it doesn't shrink when the
-			// dragged card collapses.  Works for both regular columns and
-			// swimlane cells.
-			const sourceCol = cardWrapper.closest<HTMLElement>(
-				".kanban-view__column, .kanban-view__swimlane-column"
-			);
-			if (sourceCol) {
-				sourceCol.style.minHeight = `${sourceCol.offsetHeight}px`;
-				this.dragSourceColumnEl = sourceCol;
+			if (container) {
+				container.style.setProperty("--tn-drag-gap", `${draggedHeight}px`);
+				this.dragContainer = container;
+				this.currentInsertionIndex = -1;
 			}
-
-			// Collapse dragged cards on next frame (after browser captures drag image)
-			window.requestAnimationFrame(() => {
-				for (const path of this.draggedTaskPaths) {
-					const wrapper = this.currentTaskElements.get(path);
-					if (wrapper) {
-						wrapper.classList.remove(
-							"tn-static-display-flex-4d51fc62",
-							"tn-static-height-100-62264068",
-							"tn-static-height-12px-06c0747e",
-							"tn-static-height-16px-30de4aee",
-							"tn-static-height-24px-29a11d37",
-							"tn-static-min-height-800px-997b4c8c"
-						);
-						wrapper.classList.add("tn-static-height-0-7a31cef0");
-						wrapper.classList.remove("tn-static-flex-1-14e3b769");
-						wrapper.classList.add("tn-static-overflow-hidden-69824400");
-						wrapper.classList.remove(
-							"tn-static-margin-8px-0-0-0-a2eb8382",
-							"tn-static-padding-0-16px-16px-16px-f1aa998c",
-							"tn-static-padding-12px-43bef435",
-							"tn-static-padding-16px-287f770e",
-							"tn-static-padding-20px-769fed37",
-							"tn-static-padding-20px-7a035d95",
-							"tn-static-padding-20px-ebe8e48c",
-							"tn-static-padding-2px-8px-c8eea84a",
-							"tn-static-padding-2rem-42aa6d9c"
-						);
-						wrapper.classList.add("tn-static-padding-0-41d7d7e2");
-						wrapper.classList.remove(
-							"tn-static-margin-0-auto-266e9b04",
-							"tn-static-margin-0-db0d5f36",
-							"tn-static-margin-0-var-size-4-2-77f7dc08",
-							"tn-static-margin-2px-0-edce9b14",
-							"tn-static-margin-8px-0-0-0-a2eb8382",
-							"tn-static-padding-12px-43bef435",
-							"tn-static-padding-20px-ebe8e48c"
-						);
-						wrapper.classList.add("tn-static-margin-0-11696618");
-						wrapper.classList.remove(
-							"tn-static-border-1px-solid-var-background-mo-b65b5121",
-							"tn-static-padding-12px-43bef435"
-						);
-						wrapper.classList.add("tn-static-border-none-2eda1daa");
-						wrapper.classList.remove(
-							"tn-static-opacity-0-6-d95b59ac",
-							"tn-static-opacity-1-c6e7979d"
-						);
-						wrapper.classList.add("tn-static-opacity-0-8d919cb5");
-					}
-				}
-
-				// Set up gap/slot on siblings in the source container
-				if (container) {
-					const gapStr = getComputedStyle(container).gap;
-					const gap = parseFloat(gapStr) || 4;
-					container.style.setProperty("--tn-drag-gap", `${draggedHeight + gap}px`);
-					// Keep the column scrollable while dragging long manual-order lists.
-					container.classList.remove("tn-static-margin-top-12px-91e0f558");
-
-					const siblings = container.querySelectorAll<HTMLElement>(
-						".kanban-view__card-wrapper"
-					);
-					for (const sib of siblings) {
-						if (!this.draggedTaskPaths.includes(sib.dataset.taskPath || "")) {
-							sib.classList.add("kanban-view__card-wrapper--drag-shift");
-						}
-					}
-					this.dragContainer = container;
-					this.currentInsertionIndex = -1;
-				}
-			});
 		});
 
 		cardWrapper.addEventListener("dragend", (e: DragEvent) => {
 			e.stopPropagation();
+			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys([]);
+			this.boardEl?.classList.remove("kanban-view__board--task-dragging");
 			this.debugLog("DRAGEND-FIRED", {
 				draggedTask: task.path.split("/").pop(),
 				draggedTaskPath: this.draggedTaskPath?.split("/").pop() || "(already null)",
@@ -3456,6 +3490,7 @@ export class KanbanView extends BasesViewBase {
 			});
 
 			this.cleanupFloatingDragPreview();
+			this.stopAutoScroll();
 
 			// Restore collapsed dragged cards' inline styles
 			for (const path of this.draggedTaskPaths) {
@@ -3479,15 +3514,15 @@ export class KanbanView extends BasesViewBase {
 
 			// Clean up gap/slot state and unlock source column height
 			this.cleanupDragShift();
-			if (this.dragSourceColumnEl) {
-				this.dragSourceColumnEl.classList.remove(
-					"tn-static-flex-1-14e3b769",
-					"tn-static-min-height-800px-997b4c8c"
-				);
-				this.dragSourceColumnEl.style.removeProperty("min-height");
-				this.dragSourceColumnEl = null;
+			if (!this.taskDropAccepted && !cardWrapper.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+				cardWrapper.classList.add("kanban-view__card--returned");
+				cardWrapper.addEventListener("animationend", () => {
+					cardWrapper.classList.remove("kanban-view__card--returned");
+				}, { once: true });
 			}
-			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active");
+			if (!this.taskDropAccepted) this.restoreDragScroll?.();
+			this.restoreDragScroll = null;
+			this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 
 			// Clear drag state. The drop handler snapshots dropTargetPath and
 			// clears it before its first await, so this is safe even if
@@ -3500,14 +3535,8 @@ export class KanbanView extends BasesViewBase {
 			this.draggedSourceSwimlanes.clear();
 
 			// Clean up any lingering dragover classes
-			this.boardEl?.querySelectorAll(".kanban-view__column--dragover").forEach((el) => {
-				el.classList.remove("kanban-view__column--dragover");
-			});
-			this.boardEl
-				?.querySelectorAll(".kanban-view__swimlane-column--dragover")
-				.forEach((el) => {
-					el.classList.remove("kanban-view__swimlane-column--dragover");
-				});
+			this.clearDragoverFeedback();
+			this.boardEl?.classList.remove("kanban-view__board--invalid-drop");
 
 			this.dropTargetPath = null;
 
@@ -3621,124 +3650,12 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private showFloatingDragPreview(sourceElement: HTMLElement, event: DragEvent): void {
-		this.cleanupFloatingDragPreview();
-
-		const doc = sourceElement.ownerDocument;
-		const body = doc.body;
-		if (!body) return;
-
-		const rect = sourceElement.getBoundingClientRect();
-		const preview = createElementInDocument(doc, "div");
-		const title = this.getFloatingDragPreviewTitle(sourceElement);
-		const titleEl = createElementInDocument(doc, "span");
-
-		titleEl.className = "kanban-view__floating-drag-preview-title";
-		titleEl.textContent = title;
-
-		preview.classList.add("tasknotes-plugin", "kanban-view__floating-drag-preview");
-		preview.appendChild(titleEl);
-		preview.setAttribute("aria-hidden", "true");
-		preview.setAttribute("draggable", "false");
-		if (this.draggedTaskPaths.length > 1) {
-			preview.dataset.dragCount = `${this.draggedTaskPaths.length}`;
-		}
-		this.floatingDragPreviewWidth = Math.min(Math.max(rect.width, 180), 320);
-		this.floatingDragPreviewHeight = 40;
-		preview.setCssProps({
-			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
-			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
-		});
-
-		body.appendChild(preview);
-		this.floatingDragPreviewEl = preview;
-		this.floatingDragPreviewDocument = doc;
-
-		const handleMove = (dragEvent: DragEvent) => {
-			this.positionFloatingDragPreview(dragEvent.clientX, dragEvent.clientY);
-		};
-		this.floatingDragPreviewMoveHandler = handleMove;
-		doc.addEventListener("drag", handleMove, true);
-		doc.addEventListener("dragover", handleMove, true);
-
-		this.positionFloatingDragPreview(event.clientX, event.clientY);
-	}
-
-	private positionFloatingDragPreview(clientX: number, clientY: number): void {
-		const preview = this.floatingDragPreviewEl;
-		if (!preview || (clientX === 0 && clientY === 0)) return;
-
-		const win = preview.ownerDocument.defaultView ?? window;
-		const margin = 8;
-		const offset = 14;
-		const width = this.floatingDragPreviewWidth;
-		const height = this.floatingDragPreviewHeight;
-		let x = clientX + offset;
-		let y = clientY + offset;
-
-		if (x + width > win.innerWidth - margin) {
-			x = clientX - width - offset;
-		}
-		if (y + height > win.innerHeight - margin) {
-			y = clientY - height - offset;
-		}
-
-		x = Math.max(margin, Math.min(x, Math.max(margin, win.innerWidth - width - margin)));
-		y = Math.max(margin, Math.min(y, Math.max(margin, win.innerHeight - height - margin)));
-		x += win.scrollX;
-		y += win.scrollY;
-		this.floatingDragPreviewPendingX = x;
-		this.floatingDragPreviewPendingY = y;
-
-		if (this.floatingDragPreviewRafId !== null) {
-			return;
-		}
-
-		this.floatingDragPreviewRafId = win.requestAnimationFrame(() => {
-			this.floatingDragPreviewRafId = null;
-			const pendingX = this.floatingDragPreviewPendingX;
-			const pendingY = this.floatingDragPreviewPendingY;
-			this.floatingDragPreviewEl?.setCssProps({
-				"--tn-kanban-drag-preview-transform": `translate3d(${pendingX}px, ${pendingY}px, 0)`,
-			});
-		});
-	}
-
-	private getFloatingDragPreviewTitle(sourceElement: HTMLElement): string {
-		const title =
-			sourceElement.querySelector<HTMLElement>(".task-card__title-text")?.textContent ||
-			sourceElement.querySelector<HTMLElement>(".task-card__title")?.textContent ||
-			sourceElement.dataset.taskPath?.split("/").pop()?.replace(/\.md$/i, "") ||
-			uiText(msg({ message: "Task", context: "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display" }));
-		const normalized = title.trim().replace(/\s+/g, " ");
-		return normalized.length > 80 ? `${normalized.slice(0, 77).trimEnd()}...` : normalized;
+		this.dragPreview.show(sourceElement, event, this.draggedTaskPaths.length,
+			uiText(msg({ message: "Task", context: "bases/KanbanView: KanbanView.getFloatingDragPreviewTitle display" })));
 	}
 
 	private cleanupFloatingDragPreview(): void {
-		if (this.floatingDragPreviewRafId !== null) {
-			const win = this.floatingDragPreviewDocument?.defaultView ?? window;
-			win.cancelAnimationFrame(this.floatingDragPreviewRafId);
-			this.floatingDragPreviewRafId = null;
-		}
-		if (this.floatingDragPreviewMoveHandler && this.floatingDragPreviewDocument) {
-			this.floatingDragPreviewDocument.removeEventListener(
-				"drag",
-				this.floatingDragPreviewMoveHandler,
-				true
-			);
-			this.floatingDragPreviewDocument.removeEventListener(
-				"dragover",
-				this.floatingDragPreviewMoveHandler,
-				true
-			);
-		}
-		this.floatingDragPreviewEl?.remove();
-		this.floatingDragPreviewEl = null;
-		this.floatingDragPreviewDocument = null;
-		this.floatingDragPreviewMoveHandler = null;
-		this.floatingDragPreviewWidth = 280;
-		this.floatingDragPreviewHeight = 40;
-		this.floatingDragPreviewPendingX = 0;
-		this.floatingDragPreviewPendingY = 0;
+		this.dragPreview.destroy();
 	}
 
 	private setupCardTouchHandlers(cardWrapper: HTMLElement, task: TaskInfo): void {
@@ -3817,8 +3734,11 @@ export class KanbanView extends BasesViewBase {
 		y: number,
 		dragSourceOverride: KanbanTaskDragSource | null = null
 	): void {
+		this.taskDropAccepted = false;
+		this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
 		this.touchDragActive = true;
 		this.touchDragType = "task";
+		this.boardEl?.classList.add("kanban-view__board--task-dragging");
 		// Use containerEl.ownerDocument to support pop-out windows
 		this.containerEl.ownerDocument.addEventListener(
 			"contextmenu",
@@ -3861,6 +3781,7 @@ export class KanbanView extends BasesViewBase {
 			this.markTouchDragSource(dragImageSource, "kanban-view__card--dragging");
 		}
 		this.activeDragSourceElement = dragImageSource;
+		for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys(this.draggedTaskPaths);
 
 		const column = cardWrapper.closest("[data-group]") as HTMLElement;
 		const swimlaneColumn = cardWrapper.closest("[data-column]") as HTMLElement;
@@ -3879,11 +3800,23 @@ export class KanbanView extends BasesViewBase {
 		dropTarget?: KanbanDropTarget,
 		options: KanbanDropExecutionOptions = {}
 	): Promise<void> {
+		this.taskDropAccepted = true;
 		this.activeDropCount++;
 		let dropRequiresPostDropRefresh = true;
 		// Read before queueing: a drop acts on the occurrence its card showed, not
 		// on whatever the series has advanced to by the time the queue reaches it.
 		const droppedOccurrences = this.getDroppedOccurrences(taskPath, options);
+		const pendingPaths = getKanbanDraggedPaths(options.draggedPaths ?? this.draggedTaskPaths, taskPath);
+		const pendingElements = pendingPaths.map(path => this.currentTaskElements.get(path));
+		for (const element of pendingElements) {
+			element?.classList.add("kanban-view__card--pending");
+			element?.setAttribute("aria-busy", "true");
+		}
+		const feedback: TaskUndoFeedback = { undo: [], failed: false };
+		let reorderConfirmed = false;
+		let recurringMessage: string | undefined;
+		const rewritten = new Set<string>();
+		const failedTitles: string[] = [];
 		try {
 			await this.dropQueue.enqueue(taskPath, async () => {
 				// Suppress renders immediately — dragend clears draggedTaskPath
@@ -4027,8 +3960,27 @@ export class KanbanView extends BasesViewBase {
 						status: getKanbanDropStatusValue(dropPlan),
 						shownOccurrence: droppedOccurrences.get(path),
 						getOccurrenceDate: getKanbanTaskActionDate,
+						onUndo: (undo, message) => {
+							if (pathsToUpdate.length === 1) recurringMessage = message;
+							feedback.undo.push(async () => {
+								if (!(await undo())) throw new Error("Occurrence changed since drop");
+							});
+						},
 					});
 					if (isSettled) continue;
+					const taskUndo: TaskUndoFeedback = { undo: [], failed: false };
+					let registeredTaskUndo = false;
+					const finishTaskUndo = () => {
+						if (!taskUndo.undo.length || registeredTaskUndo) return;
+						registeredTaskUndo = true;
+						const pending = taskUndo.undo;
+						feedback.undo.push(async () => {
+							while (pending.length) {
+								await pending[pending.length - 1]();
+								pending.pop();
+								}
+						});
+					};
 
 					// Compute sort_order first (read-only — no file writes yet)
 					let sortOrderPlan = null;
@@ -4066,13 +4018,14 @@ export class KanbanView extends BasesViewBase {
 							}
 
 							const totalEditedNotes = sortOrderPlan.additionalWrites.length + 1;
-							if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
+							if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD && !reorderConfirmed) {
 								const confirmed = await this.confirmLargeReorder(
 									totalEditedNotes,
 									newGroupValue,
 									newSwimLaneValue
 								);
 								if (!confirmed) return;
+								reorderConfirmed = true;
 							}
 						} else {
 							// No specific drop target (cross-column drop without card position).
@@ -4093,21 +4046,59 @@ export class KanbanView extends BasesViewBase {
 						});
 					}
 
+					const currentTask = await this.plugin.cacheManager.getTaskInfo(path);
+					if (currentTask?.recurrence_parent && getKanbanDropStatusValue(dropPlan) !== null) {
+						await changeTaskProperty(this.plugin, [currentTask], "status", getKanbanDropStatusValue(dropPlan) ?? "", taskUndo);
+						finishTaskUndo();
+						feedback.failed ||= taskUndo.failed;
+						if (taskUndo.failed) {
+							failedTitles.push(currentTask.title);
+							continue;
+						}
+						if (dropPlan.groupByTaskProp === "status") dropPlan.needsGroupUpdate = false;
+						if (dropPlan.swimlaneTaskProp === "status") dropPlan.needsSwimlaneUpdate = false;
+					}
+
 					// Skip file write if nothing to change
 					const needsWrite = kanbanDropPlanNeedsWrite(dropPlan, sortOrderPlan !== null);
-					if (!needsWrite) continue;
+					if (!needsWrite) {
+						finishTaskUndo();
+						continue;
+					}
 
 					const file = this.plugin.app.vault.getAbstractFileByPath(path);
 					if (!file || !(file instanceof TFile)) continue;
 
+					const receipts: FileUndoReceipt[] = [];
+					const record = (target: TFile, changes: TaskMovementUndoChange[]) => {
+						if (!changes.length) return;
+						rewritten.add(target.path);
+						receipts.push({ file: target, content: { changes, beforeBody: "", afterBody: "" } });
+						if (receipts.length === 1) {
+							taskUndo.undo.push(createFileUndo(this.plugin, receipts, async () => {
+								await this.render();
+							}));
+							finishTaskUndo();
+						}
+					};
 					if (sortOrderPlan) {
-						await applySortOrderPlan(path, sortOrderPlan, this.plugin, {
-							includeDragged: false,
-						});
+						for (const write of sortOrderPlan.additionalWrites) {
+							const target = this.plugin.app.vault.getAbstractFileByPath(write.path);
+							if (!(target instanceof TFile)) throw new Error(`Missing task: ${write.path}`);
+							let neighborChanges: TaskMovementUndoChange[] = [];
+							await processVaultFrontMatter(this.plugin.app, target, frontmatter => {
+								const before = structuredClone(frontmatter);
+								frontmatter[sortOrderField] = write.sortOrder;
+								neighborChanges = buildTaskMovementUndo(before, frontmatter, this.plugin.fieldMapper.toUserField("dateModified"));
+							});
+							record(target, neighborChanges);
+						}
 					}
 
 					// Single atomic write: groupBy + swimlane + sort_order
+					let changes: TaskMovementUndoChange[] = [];
 					await processVaultFrontMatter(this.plugin.app, file, (fm) => {
+						const before = structuredClone(fm);
 						applyKanbanTaskDropFrontmatterPlan(fm, dropPlan, {
 							coerceGroupValue: (frontmatterKey, groupKey) =>
 								this.coerceGroupKeyForFrontmatter(frontmatterKey, groupKey),
@@ -4133,7 +4124,10 @@ export class KanbanView extends BasesViewBase {
 							fm[statusDerivativePlan.dateModifiedField] =
 								statusDerivativePlan.dateModifiedValue;
 						}
+						changes = buildTaskMovementUndo(before, fm, this.plugin.fieldMapper.toUserField("dateModified"));
 					});
+					record(file, changes);
+					finishTaskUndo();
 
 					this.debugLog("ATOMIC-WRITE-DONE", {
 						taskFile: path.split("/").pop(),
@@ -4231,12 +4225,34 @@ export class KanbanView extends BasesViewBase {
 				}
 			}); // end dropQueue.enqueue
 		} catch (error) {
+			feedback.failed = true;
+			for (const path of pendingPaths) {
+				if (rewritten.has(path)) continue;
+				failedTitles.push(this.currentTaskElements.get(path)?.querySelector(".task-card__title-text")?.textContent || path);
+			}
+			if (!feedback.failedPaths?.length) feedback.failedPaths = [taskPath];
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error updating task:", {
 				category: "persistence",
 				operation: "updating-task",
 				error: error,
 			});
 		} finally {
+			for (const element of pendingElements) {
+				element?.classList.remove("kanban-view__card--pending");
+				element?.removeAttribute("aria-busy");
+			}
+			for (const path of rewritten) {
+				const element = this.currentTaskElements.get(path);
+				if (!element || element.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches) continue;
+				element.classList.add("kanban-view__card--settled");
+				element.addEventListener("animationend", () => element.classList.remove("kanban-view__card--settled"), { once: true });
+			}
+			const destination = [this.getGroupDisplayTitle(newGroupValue, this.getGroupByPropertyId()), newSwimLaneValue === null ? "" : this.getGroupDisplayTitle(newSwimLaneValue, this.swimLanePropertyId)].filter(Boolean).join(" · ");
+			showTaskUndo(feedback.undo, feedback.failed, feedback.undo.length, this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? taskMovementMessage(feedback.undo.length, destination), undefined, undefined,
+				feedback.failedPaths?.length ? {
+					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
+					run: async () => { await this.app.workspace.openLinkText(feedback.failedPaths![0], "", false); },
+				} : undefined);
 			this.activeDropCount--;
 			if (dropRequiresPostDropRefresh) {
 				this.postDropRefreshRequested = true;
@@ -4278,7 +4294,74 @@ export class KanbanView extends BasesViewBase {
 		board.className = "kanban-view__board";
 		this.rootElement?.appendChild(board);
 		this.boardEl = board;
+		const nav = this.rootElement?.createEl("nav", {
+			cls: "kanban-view__column-nav",
+			attr: { "aria-label": uiText(msg({ message: "Move between columns", context: "interaction shortcut" })) },
+		});
+		if (nav) {
+			board.before(nav);
+			this.columnNav = nav;
+			this.previousColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
+			setIcon(this.previousColumn, "chevron-left");
+			const picker = nav.createDiv({ cls: "kanban-view__column-picker" });
+			this.columnSelect = picker.createEl("select", { cls: "tn-select", attr: { "aria-label": nav.getAttribute("aria-label") ?? "" } });
+			setIcon(picker.createSpan({ cls: "kanban-view__column-picker-icon", attr: { "aria-hidden": "true" } }), "chevron-down");
+			this.nextColumn = nav.createEl("button", { cls: "clickable-icon", attr: { type: "button" } });
+			setIcon(this.nextColumn, "chevron-right");
+			this.previousColumn.addEventListener("click", () => this.revealNavigatorColumn((this.columnSelect?.selectedIndex ?? 0) - 1));
+			this.nextColumn.addEventListener("click", () => this.revealNavigatorColumn((this.columnSelect?.selectedIndex ?? 0) + 1));
+			this.columnSelect.addEventListener("change", () => this.revealNavigatorColumn(this.columnSelect?.selectedIndex ?? 0));
+			this.registerDomEvent(board, "scroll", () => this.updateColumnNavigator());
+		}
 		this.registerBoardListeners();
+		const observer = new ResizeObserver(() => {
+			this.updateBoardLayout();
+			this.updateColumnNavigator();
+		});
+		observer.observe(board);
+		this.register(() => observer.disconnect());
+	}
+
+	private navigatorColumns(): HTMLElement[] {
+		return Array.from(this.boardEl?.querySelectorAll<HTMLElement>(".kanban-view__column, .kanban-view__column-header-cell") ?? []);
+	}
+
+	private revealNavigatorColumn(index: number): void {
+		const column = this.navigatorColumns()[index];
+		if (!column) return;
+		this.activeNavigatorColumn = column.dataset.group ?? column.dataset.columnKey ?? null;
+		column.scrollIntoView({ block: "nearest", inline: "start", behavior: this.containerEl.ownerDocument.defaultView?.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+	}
+
+	private updateColumnNavigator(restoreAlignment = false): void {
+		const select = this.columnSelect;
+		if (!select || !this.boardEl || !this.previousColumn || !this.nextColumn) return;
+		const columns = this.navigatorColumns();
+		if (!columns.length) return;
+		const keys = columns.map(column => column.dataset.group ?? column.dataset.columnKey ?? "");
+		const labels = columns.map(column => `${column.querySelector(".kanban-view__column-title")?.textContent ?? column.dataset.group ?? column.dataset.columnKey ?? ""} · ${column.querySelector(".kanban-view__column-count")?.textContent ?? "0"}`);
+		if (Array.from(select.options).map(option => `${option.value}:${option.text}`).join("\n") !== labels.map((label, index) => `${keys[index]}:${label}`).join("\n")) {
+			select.empty();
+			labels.forEach((label, index) => select.createEl("option", { text: label, value: keys[index] }));
+		}
+		if (this.columnNav) this.columnNav.hidden = columns.length < 2;
+		const padding = parseFloat(this.containerEl.ownerDocument.defaultView?.getComputedStyle(this.boardEl).paddingLeft ?? "0") || 0;
+		const left = this.boardEl.getBoundingClientRect().left + padding;
+		if (restoreAlignment && this.columnNav?.offsetWidth) {
+			let target = keys.indexOf(this.activeNavigatorColumn ?? "");
+			if (target < 0) target = columns.findIndex(column => column.querySelector(".task-card") !== null);
+			const column = columns[Math.max(0, target)];
+			this.boardEl.scrollLeft += column.getBoundingClientRect().left - left;
+		}
+		let closest = 0;
+		for (let index = 1; index < columns.length; index++) if (Math.abs(columns[index].getBoundingClientRect().left - left) < Math.abs(columns[closest].getBoundingClientRect().left - left)) closest = index;
+		select.value = keys[closest];
+		if (this.columnNav?.offsetWidth) this.activeNavigatorColumn = keys[closest];
+		select.title = labels[closest] ?? "";
+		this.previousColumn.disabled = closest === 0;
+		this.nextColumn.disabled = closest >= columns.length - 1;
+		this.previousColumn.setAttribute("aria-label", labels[Math.max(0, closest - 1)] ?? select.getAttribute("aria-label") ?? "");
+		this.nextColumn.setAttribute("aria-label", labels[Math.min(columns.length - 1, closest + 1)] ?? select.getAttribute("aria-label") ?? "");
 	}
 
 	protected async handleTaskUpdate(task: TaskInfo): Promise<void> {
@@ -4286,10 +4369,6 @@ export class KanbanView extends BasesViewBase {
 		this.debouncedRefresh();
 	}
 
-	/**
-	 * Override debouncedRefresh to preserve scroll positions during re-renders.
-	 * Saves ephemeral state before render and restores it after.
-	 */
 	protected debouncedRefresh(): void {
 		if (this.updateDebounceTimer) {
 			this.debugLog("DEBOUNCED-REFRESH: cancelling previous pending timer");
@@ -4327,11 +4406,8 @@ export class KanbanView extends BasesViewBase {
 					activeDropCount: this.activeDropCount,
 					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 				});
-				const savedState = this.getEphemeralState();
 				await this.render();
 				this.updateDebounceTimer = null;
-				// Restore scroll state after render completes
-				this.setEphemeralState(savedState);
 			})();
 		}, 150);
 	}
@@ -4376,12 +4452,7 @@ export class KanbanView extends BasesViewBase {
 
 	private renderEmptyState(): void {
 		if (!this.boardEl) return;
-		// Use containerEl.ownerDocument for pop-out window support
-		const doc = this.containerEl.ownerDocument;
-		const empty = createElementInDocument(doc, "div");
-		empty.className = "tn-bases-empty";
-		empty.textContent = uiText(msg({ message: "No tasknotes tasks found for this base.", context: "bases/KanbanView: KanbanView.renderEmptyState display" }));
-		this.boardEl.appendChild(empty);
+		this.renderTaskEmptyState(this.boardEl);
 	}
 
 	private renderNoGroupByError(): void {
@@ -4496,6 +4567,7 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {
+		container.title = title;
 		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
 			translate: this.plugin.i18n.translate.bind(this.plugin.i18n),
@@ -4503,6 +4575,33 @@ export class KanbanView extends BasesViewBase {
 			workspace: app.workspace,
 		};
 		renderGroupTitle(container, title, linkServices);
+		container.tabIndex = 0;
+		if (!container.querySelector("a")) container.setAttribute("role", "button");
+		container.setAttribute("aria-label", container.textContent || title);
+		container.setAttribute("aria-haspopup", "dialog");
+		container.setAttribute("aria-expanded", "false");
+		const reveal = () => {
+			if (container.getAttribute("aria-expanded") === "true") return;
+			const popover = openPopover({ anchor: container, app,
+				onClose: () => container.setAttribute("aria-expanded", "false"),
+			});
+			popover.el.setAttribute("role", "dialog");
+			popover.el.setAttribute("aria-label", container.textContent || title);
+			popover.el.createDiv({ cls: "tn-popover__title", text: container.textContent || title });
+			container.setAttribute("aria-expanded", "true");
+			popover.reposition();
+		};
+		container.addEventListener("click", event => {
+			if ((event.target as HTMLElement).closest("a")) return;
+			event.stopPropagation();
+			reveal();
+		});
+		container.addEventListener("keydown", event => {
+			if (event.target !== container || (event.key !== "Enter" && event.key !== " ")) return;
+			event.preventDefault();
+			event.stopPropagation();
+			reveal();
+		});
 	}
 
 	private applyColumnOrder(groupBy: string, actualKeys: string[]): string[] {
@@ -4669,6 +4768,76 @@ export class KanbanView extends BasesViewBase {
 		});
 	}
 
+	protected getVisibleTaskPaths(): string[] {
+		const paths: string[] = [];
+		const containers =
+			this.rootElement?.querySelectorAll<HTMLElement>(
+				".kanban-view__cards, .kanban-view__tasks-container"
+			) ?? [];
+		for (const container of containers) {
+			if (container.closest(".kanban-view__column--collapsed")) continue;
+			const column = container.closest<HTMLElement>(
+				"[data-group], [data-column][data-swimlane]"
+			);
+			const key =
+				column?.dataset.group ??
+				this.getColumnScrollerKey(
+					column?.dataset.column ?? "",
+					column?.dataset.swimlane ?? null
+				);
+			const scroller = this.columnScrollers.get(key);
+			if (scroller) paths.push(...scroller.getItems().map((task) => task.path));
+			else
+				paths.push(
+					...Array.from(
+						container.querySelectorAll<HTMLElement>(".task-card[data-task-path]")
+					).flatMap((card) => (card.dataset.taskPath ? [card.dataset.taskPath] : []))
+				);
+		}
+		return [...new Set(paths)];
+	}
+
+	protected revealKeyboardTask(path: string): void {
+		for (const scroller of this.columnScrollers.values()) {
+			const index = scroller.getItems().findIndex((task) => task.path === path);
+			if (index >= 0) {
+				scroller.scrollToIndex(index, "instant");
+				return;
+			}
+		}
+	}
+
+	protected getHorizontalTaskPath(path: string | null, direction: number): string | null {
+		const board = this.boardEl;
+		if (!board) return null;
+		const initialPath = path ?? this.getVisibleTaskPaths()[direction > 0 ? 0 : this.getVisibleTaskPaths().length - 1];
+		const source = initialPath ? this.currentTaskElements.get(initialPath) : null;
+		if (!path && initialPath) return initialPath;
+		const sourceCell = source?.closest<HTMLElement>(".kanban-view__column, .kanban-view__swimlane-column");
+		const row = sourceCell?.parentElement ?? board;
+		const columns = Array.from(row.querySelectorAll<HTMLElement>(":scope > .kanban-view__column, :scope > .kanban-view__swimlane-column"));
+		let index = sourceCell ? columns.indexOf(sourceCell) + direction : direction > 0 ? 0 : columns.length - 1;
+		while (index >= 0 && index < columns.length) {
+			const column = columns[index];
+			if (!column.classList.contains("kanban-view__column--collapsed")) {
+				const destinations = column.classList.contains("kanban-view__swimlane-column")
+					? Array.from(board.querySelectorAll<HTMLElement>(".kanban-view__swimlane-column")).filter(cell => cell.dataset.column === column.dataset.column)
+					: [column];
+				const cards = destinations.flatMap(cell => Array.from(cell.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper[data-task-path]")));
+				const sourceY = source?.getBoundingClientRect().top ?? 0;
+				cards.sort((first, second) => Math.abs(first.getBoundingClientRect().top - sourceY) - Math.abs(second.getBoundingClientRect().top - sourceY));
+				if (cards[0]?.dataset.taskPath) return cards[0].dataset.taskPath;
+				for (const destination of destinations) {
+					const key = destination.dataset.group ?? this.getColumnScrollerKey(destination.dataset.column ?? "", destination.dataset.swimlane ?? null);
+					const virtual = this.columnScrollers.get(key)?.getItems();
+					if (virtual?.length) return virtual[0].path;
+				}
+			}
+			index += direction;
+		}
+		return path;
+	}
+
 	/**
 	 * Check if the view is currently grouped by the status property
 	 */
@@ -4693,7 +4862,111 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private registerBoardListeners(): void {
-		// Task cards now handle their own events - no delegation needed
+		if (!this.boardEl) return;
+		for (const eventName of ["dragenter", "dragover"] as const) {
+			this.registerDomEvent(this.boardEl.ownerDocument, eventName, event => {
+				if (!this.draggedTaskPath || this.boardEl?.contains(event.target as Node)) return;
+				this.boardEl?.classList.add("kanban-view__board--invalid-drop");
+				this.boardEl?.ownerDocument.body.classList.add("tn-drag-invalid");
+				this.dragPreview.setInvalid(uiText(msg({ message: "Drop on a task row or group destination.", context: "task list drop restriction" })));
+				this.clearDragoverFeedback();
+				this.cleanupDragShift();
+				this.stopAutoScroll();
+			}, { capture: true });
+		}
+		this.registerDomEvent(this.boardEl, "pointerdown", () => {
+			this.rootElement?.classList.add("kanban-view--pointer");
+		}, { capture: true });
+		for (const eventName of ["dragenter", "dragover"] as const) {
+			this.registerDomEvent(this.boardEl, eventName, event => {
+				if (this.structureDragActive) {
+					this.handleAutoScroll(event.clientX, event.clientY);
+					return;
+				}
+				if (!this.draggedTaskPath) return;
+				this.handleAutoScroll(event.clientX, event.clientY);
+				this.updateNativeDropFeedback(event);
+			}, { capture: true });
+		}
+		this.registerDomEvent(this.boardEl, "drop", event => {
+			if (this.draggedTaskPath && this.getDropRestriction()) {
+				event.preventDefault();
+				event.stopImmediatePropagation();
+			}
+		}, { capture: true });
+		this.registerDomEvent(this.boardEl, "dragleave", event => {
+			if (!this.boardEl?.contains(event.relatedTarget as Node | null)) {
+				this.stopAutoScroll();
+				this.clearDragoverFeedback();
+				this.cleanupDragShift();
+			}
+		});
+		this.registerDomEvent(this.boardEl.ownerDocument, "keydown", event => {
+			this.rootElement?.classList.remove("kanban-view--pointer");
+			if (event.key === "Escape" && (this.touchDragActive || this.draggedTaskPath)) {
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				this.cleanupFloatingDragPreview();
+				this.clearTouchDragState();
+				if (this.pendingRender) {
+					this.pendingRender = false;
+					this.debouncedRefresh();
+				}
+			}
+		}, { capture: true });
+	}
+
+	private getDropRestriction(): string | null {
+		if (this.getGroupByPropertyId()?.startsWith("formula.")) {
+			return this.plugin.i18n.translate(msg({ message: "Cannot move tasks between formula-based columns. Formula values are computed and cannot be directly modified.", context: "views.kanban.errors.formulaGroupingReadOnly" }));
+		}
+		if (this.swimLanePropertyId?.startsWith("formula.")) {
+			return this.plugin.i18n.translate(msg({ message: "Cannot move tasks between formula-based swimlanes. Formula values are computed and cannot be directly modified.", context: "views.kanban.errors.formulaSwimlaneReadOnly" }));
+		}
+		return null;
+	}
+
+	private updateNativeDropFeedback(event: DragEvent): void {
+		const restriction = this.getDropRestriction();
+		const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(".kanban-view__column, .kanban-view__swimlane-column");
+		this.boardEl?.classList.toggle("kanban-view__board--invalid-drop", restriction !== null || !target);
+		this.boardEl?.ownerDocument.body.classList.toggle("tn-drag-invalid", restriction !== null || !target);
+		this.dragPreview.setInvalid(restriction ?? (target ? null : uiText(msg({ message: "Drop on a task row or group destination.", context: "task list drop restriction" }))));
+		this.clearDragoverFeedback();
+		if (restriction) {
+			if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			this.cleanupDragShift();
+			return;
+		}
+		if (!target) {
+			if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+			this.cleanupDragShift();
+			return;
+		}
+		event.preventDefault();
+		if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+		target.classList.add(target.matches(".kanban-view__column") ? "kanban-view__column--dragover" : "kanban-view__swimlane-column--dragover");
+		const container = target.querySelector<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
+		if (!container || !isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) return;
+		if (this.dragOverRafId) {
+			cancelAnimationFrame(this.dragOverRafId);
+			this.dragOverRafId = 0;
+		}
+		if (container !== this.dragContainer) {
+			this.cleanupDragShift();
+			this.dragContainer = container;
+		}
+		const siblings = Array.from(container.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper"))
+			.filter(card => !this.draggedTaskPaths.includes(card.dataset.taskPath || ""));
+		const insertionIndex = siblings.findIndex(card => event.clientY < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
+		this.currentInsertionIndex = insertionIndex < 0 ? siblings.length : insertionIndex;
+		const next = siblings[this.currentInsertionIndex];
+		const last = siblings[siblings.length - 1];
+		this.dropTargetPath = next?.dataset.taskPath ?? last?.dataset.taskPath ?? null;
+		this.dropAbove = !!next;
+		updateKanbanDropMarker(container, siblings, this.currentInsertionIndex);
 	}
 
 	private unregisterBoardListeners(): void {
@@ -4792,6 +5065,8 @@ export class KanbanView extends BasesViewBase {
 	 */
 	onunload(): void {
 		this.pendingRender = false;
+		this.structureDragActive = false;
+		this.containerEl.ownerDocument.body.classList.remove("tn-drag-active", "tn-drag-invalid");
 		this.clearTouchDragState();
 		if (this.postDropTimer) {
 			window.clearTimeout(this.postDropTimer);
@@ -4807,6 +5082,11 @@ export class KanbanView extends BasesViewBase {
 		this.currentTaskElements.clear();
 		this.taskInfoCache.clear();
 		this.sortScopeTaskPaths.clear();
+		this.columnNav?.remove();
+		this.columnNav = null;
+		this.columnSelect = null;
+		this.previousColumn = null;
+		this.nextColumn = null;
 		this.boardEl = null;
 	}
 }

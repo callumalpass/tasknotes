@@ -357,9 +357,9 @@ tags:
 		};
 
 		await openCalendarByPath(page, normalBasePath);
-		const weekButton = page.locator('.workspace-leaf.mod-active button.tnc-btn-view-week').first();
+		const weekButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
 		if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await weekButton.click();
+			await weekButton.selectOption('week');
 			await page.waitForTimeout(700);
 		}
 		await recorder.capture(page, 4, { clip: await getCalendarClip() });
@@ -631,8 +631,8 @@ tags:
 		await expect(event).toBeVisible({ timeout: 10000 });
 		await event.click();
 		await page.waitForTimeout(800);
-		const titleInput = page.locator('.modal textarea.title-input');
-		await expect(titleInput).toHaveValue('Future calendar edit');
+		const titleInput = page.locator('.modal .title-input');
+		await expect(titleInput).toHaveText('Future calendar edit');
 		await titleInput.fill("Future calendar edit updated");
 		await page.waitForTimeout(400);
 		const saveButton = page.locator('.modal').getByRole('button', { name: /^Save(?: task)?$/i });

@@ -1,10 +1,11 @@
 import { uiData } from "../i18n/dataText";
+import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { uiNumber, formatUIDate } from "../i18n/formatters";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
-import { Notice, setTooltip, TFile, type CachedMetadata } from "obsidian";
+import { Notice, setIcon, setTooltip, TFile, type CachedMetadata } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo } from "../types";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -44,11 +45,13 @@ import {
 } from "./renderers/linkRenderer";
 import { renderContextsValue, renderTagsValue, type TagServices } from "./renderers/tagRenderer";
 import { normalizeDependencyEntry, resolveDependencyEntry } from "../utils/dependencyUtils";
+import { relativeDay } from "./kit/dateLabel";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardProperties" });
 
 export interface TaskCardPropertyOptions {
+	plainTags?: boolean;
 	propertyLabels?: TaskCardPresentationOptions["propertyLabels"];
 	/** See TaskCardOptions.occurrenceScheduled. */
 	occurrenceScheduled?: string;
@@ -74,7 +77,7 @@ function prepareInteractiveControl(element: HTMLElement): void {
 	element.dataset.tnNoDrag = "true";
 	element.setAttribute("draggable", "false");
 	element.addEventListener("mousedown", (event) => {
-		event.preventDefault();
+		if (!element.closest(".kanban-view__card-wrapper")) event.preventDefault();
 		event.stopPropagation();
 	});
 	element.addEventListener("keydown", (event) => {
@@ -152,6 +155,10 @@ function attachDateClickHandler(
 	prepareInteractiveControl(span);
 	span.addEventListener("click", (event) => {
 		event.stopPropagation();
+		if (span.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+			void tasksForPropertyAction(plugin, task).then((tasks) => openTaskPropertyPicker(plugin, dateType, tasks, span));
+			return;
+		}
 		const currentValue = dateType === "due" ? task.due : task.scheduled;
 		const menu = new DateContextMenu({
 			currentValue: getDatePart(currentValue || ""),
@@ -167,7 +174,7 @@ function attachDateClickHandler(
 						} else {
 							finalValue = dateValue;
 						}
-						await plugin.updateTaskProperty(task, dateType, finalValue);
+						await changeTaskProperty(plugin, [task], dateType, finalValue);
 					} catch (error) {
 						const errorMessage = error instanceof Error ? error.message : String(error);
 						tasknotesLogger.error(`Error updating ${dateType} date:`, {
@@ -259,6 +266,8 @@ function calculateChecklistProgress(cache: unknown): ChecklistProgress | null {
 	};
 }
 
+const SELF_DESCRIBING_PROPERTIES = new Set(["file.tags", "note.tags", "file.name"]);
+
 type PropertyRenderer = (
 	element: HTMLElement,
 	value: unknown,
@@ -316,7 +325,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			renderContextsValue(element, value, tagServices);
 		}
 	},
-	tags: (element, value, _, plugin) => {
+	tags: (element, value, _, plugin, options) => {
 		if (Array.isArray(value)) {
 			let tagsToRender = value;
 			if (
@@ -332,6 +341,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 
 			if (tagsToRender.length > 0) {
 				const tagServices: TagServices = {
+					showHashPrefix: !options?.plainTags,
 					onTagClick: async (tag) => {
 						const searchTag = tag.startsWith("#") ? tag.slice(1) : tag;
 						await plugin.openTagsPane(`#${searchTag}`);
@@ -353,7 +363,10 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	},
 	recurrence: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
-			element.textContent = getRecurrenceTooltip(plugin, value, options?.propertyLabels);
+			const description = getRecurrenceTooltip(plugin, value, options?.propertyLabels);
+			setIcon(element, "repeat");
+			element.setAttribute("aria-label", description);
+			setTooltip(element, description, { placement: "top" });
 		}
 	},
 	recurrenceParent: (element, value, task, plugin) => {
@@ -590,9 +603,13 @@ export function renderPropertyMetadata(
 	plugin: TaskNotesPlugin,
 	options: TaskCardPropertyOptions = {}
 ): HTMLElement | null {
-	const value = getTaskCardPropertyValue(task, propertyId, plugin);
+	const plainTags = options.plainTags && (propertyId === "file.tags" || propertyId === "note.tags");
+	const value = plainTags ? task.tags : getTaskCardPropertyValue(task, propertyId, plugin);
 
 	if (!hasValidValue(value)) {
+		return null;
+	}
+	if (propertyId === "file.name" && String(extractBasesValue(value)).replace(/\.md$/u, "") === task.title) {
 		return null;
 	}
 
@@ -602,7 +619,7 @@ export function renderPropertyMetadata(
 
 	try {
 		const mappingKey = plugin.fieldMapper.lookupMappingKey(propertyId);
-		const rendererKey = mappingKey || (propertyId === "file.tags" ? "tags" : propertyId);
+		const rendererKey = plainTags ? "tags" : mappingKey || propertyId;
 
 		if (propertyId === "file.tags") {
 			PROPERTY_RENDERERS.tags(element, getFileTagsList(value, task), task, plugin, options);
@@ -664,7 +681,10 @@ function renderUserProperty(
 	}
 
 	const fieldName = userField.displayName || fieldId;
-	element.createSpan({ text: uiText(msg({ message: "{fieldName}: ", context: "ui/taskCardProperties: renderUserProperty text" }), { fieldName: fieldName }) });
+	element.createSpan({
+		cls: "task-card__metadata-label",
+		text: uiText(msg({ message: "{fieldName}: ", context: "ui/taskCardProperties: renderUserProperty text" }), { fieldName: fieldName }),
+	});
 	const valueContainer = element.createSpan({
 		cls: "task-card__metadata-value",
 	});
@@ -710,6 +730,11 @@ interface UserField {
 	displayName?: string;
 }
 
+/** Tags and file names read as what they are, so a label only adds noise. */
+function isSelfDescribingProperty(propertyId: string): boolean {
+	return SELF_DESCRIBING_PROPERTIES.has(propertyId);
+}
+
 function renderGenericProperty(
 	element: HTMLElement,
 	propertyId: string,
@@ -717,8 +742,13 @@ function renderGenericProperty(
 	plugin?: TaskNotesPlugin,
 	displayNameOverride?: string
 ): void {
-	const displayName = resolveTaskCardPropertyLabel(propertyId, {}, displayNameOverride);
-	element.createSpan({ text: uiText(msg({ message: "{displayName}: ", context: "ui/taskCardProperties: renderGenericProperty text" }), { displayName: displayName }) });
+	if (!isSelfDescribingProperty(propertyId)) {
+		const displayName = resolveTaskCardPropertyLabel(propertyId, {}, displayNameOverride);
+		element.createSpan({
+			cls: "task-card__metadata-label",
+			text: uiText(msg({ message: "{displayName}: ", context: "ui/taskCardProperties: renderGenericProperty text" }), { displayName: displayName }),
+		});
+	}
 	const valueContainer = element.createSpan({
 		cls: "task-card__metadata-value",
 	});
@@ -730,7 +760,11 @@ function renderGenericProperty(
 			renderPropertyValue(valueContainer, item, plugin);
 		});
 	} else {
-		renderPropertyValue(valueContainer, value, plugin);
+		renderPropertyValue(
+			valueContainer,
+			propertyId === "file.name" && typeof value === "string" ? value.replace(/\.md$/u, "") : value,
+			plugin
+		);
 	}
 }
 
@@ -899,6 +933,38 @@ function getTaskCardDateFormat(dateString: string): string {
 	return Number.isInteger(year) && year !== new Date().getFullYear() ? "MMM d, yyyy" : "MMM d";
 }
 
+/** Short value in the row. The full sentence moves to the tooltip. */
+function renderDateValue(
+	element: HTMLElement,
+	dateValue: string,
+	icon: string,
+	fullText: string,
+	plugin: TaskNotesPlugin,
+	label: string
+): void {
+	element.empty();
+	setIcon(element.createSpan({ cls: "task-card__date-icon" }), icon);
+	element.createSpan({ cls: "task-card__date-label", text: label });
+	element.createSpan({
+		cls: "task-card__date-value",
+		text: formatCardDate(dateValue, plugin).display,
+	});
+	element.createSpan({
+		cls: "task-card__date-value task-card__date-value--compact",
+		text: plugin.settings.dateDisplayFormat === "iso" || getRelativeCardDay(dateValue, plugin) || relativeDay(dateValue) ? formatCardDate(dateValue, plugin).display : formatDateTimeForDisplay(dateValue, {
+			dateFormat: "MMM d",
+			showTime: true,
+			userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
+		}),
+	});
+	element.setAttribute("aria-label", fullText);
+	const { fullDisplay } = formatCardDate(dateValue, plugin);
+	const tooltip = fullDisplay
+		? tTaskCard(plugin, "scheduledLabel", { label, display: fullDisplay })
+		: fullText;
+	setTooltip(element, tooltip, { placement: "top" });
+}
+
 function renderDueDateProperty(
 	element: HTMLElement,
 	due: string,
@@ -936,10 +1002,12 @@ function renderDueDateProperty(
 		}
 	}
 
-	element.textContent = dueDateText;
+	renderDateValue(element, due, "flag-triangle-right", dueDateText, plugin, dueLabel);
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--due");
 	if (isDueOverdue) {
 		element.classList.add("task-card__metadata-date--overdue");
+		const label = element.querySelector(".task-card__date-label");
+		if (label) label.textContent = uiText(msg({ message: "Overdue", context: "services.filter.groupLabels.due.overdue" }));
 	}
 	if (isDueToday) {
 		element.classList.add("task-card__metadata-date--today");
@@ -1003,7 +1071,7 @@ function renderScheduledDateProperty(
 		}
 	}
 
-	element.textContent = scheduledDateText;
+	renderDateValue(element, scheduled, "calendar", scheduledDateText, plugin, scheduledLabel);
 	element.classList.add("task-card__metadata-date", "task-card__metadata-date--scheduled");
 	if (isScheduledPast) {
 		element.classList.add("task-card__metadata-date--past");

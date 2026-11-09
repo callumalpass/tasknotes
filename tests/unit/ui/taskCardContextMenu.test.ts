@@ -55,6 +55,44 @@ describe("taskCardContextMenu", () => {
 		jest.clearAllMocks();
 	});
 
+	afterEach(() => {
+		document.body.classList.remove("is-mobile");
+		jest.restoreAllMocks();
+	});
+
+	it("restores a dismissed mobile list menu's row focus without stealing another control's focus", async () => {
+		document.body.classList.add("is-mobile");
+		const list = document.createElement("div");
+		list.className = "tn-tasknotesTaskList";
+		list.tabIndex = -1;
+		const row = list.appendChild(document.createElement("div"));
+		row.className = "task-card";
+		document.body.appendChild(list);
+		const input = document.body.appendChild(document.createElement("input"));
+		jest.spyOn(window, "requestAnimationFrame").mockImplementation(callback => {
+			callback(0);
+			return 0;
+		});
+		const event = new MouseEvent("contextmenu");
+		Object.defineProperty(event, "target", { value: row });
+		await showTaskContextMenu(event, createTask().path, createPlugin(), new Date());
+		const dismiss = (TaskContextMenu as jest.Mock).mock.calls[0][0].onHide;
+		expect(dismiss).toEqual(expect.any(Function));
+
+		dismiss();
+		expect(document.activeElement).toBe(row);
+		list.focus();
+		dismiss();
+		expect(document.activeElement).toBe(row);
+		input.focus();
+		dismiss();
+		expect(document.activeElement).toBe(input);
+		row.remove();
+		input.blur();
+		dismiss();
+		expect(document.activeElement).toBe(document.body);
+	});
+
 	it("creates a no-drag context-menu button and opens the task context menu", async () => {
 		const task = createTask();
 		const plugin = createPlugin(task);

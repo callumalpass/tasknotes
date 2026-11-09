@@ -1,0 +1,490 @@
+.tasknotes-plugin.pomodoro-stats-view {
+    padding: var(--tn-space-3);
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-space-4);
+    height: 100%;
+    overflow-y: auto; container-type: inline-size; min-width: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--tn-border-color);
+    padding-bottom: var(--tn-space-2);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__header .setting-item {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    padding: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-half);
+    flex: 0 0 auto;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__refresh-button {
+    background: transparent;
+    color: var(--tn-text-normal);
+    border: none;
+    box-shadow: none;
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__refresh-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
+}
+.tasknotes-plugin .pomodoro-stats-view__bases-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--tn-text-muted);
+    border-radius: var(--tn-radius-md);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__bases-help:focus-visible {
+    background: var(--tn-interactive-hover);
+    color: var(--tn-text-normal);
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__bases-help:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+        color: var(--tn-text-normal);
+    }
+}
+.tasknotes-plugin .pomodoro-stats-view__bases-help svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-space-2);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__section .setting-item {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid,
+.tasknotes-plugin .pomodoro-stats-view__stats-grid {
+    max-width: none;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__period-summary {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+    margin: var(--tn-space-2) 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics.tn-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--tn-space-3);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics .pomodoro-stats-view__overview-value {
+    font-size: var(--tn-type-lg);
+    line-height: 1.2;
+    order: 0;
+    overflow-wrap: normal;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics .pomodoro-stats-view__overview-label {
+    font-size: var(--tn-type-xs);
+    line-height: 1.4;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-card {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--tn-space-4);
+    padding: var(--tn-space-3) 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    min-height: 0;
+    text-align: start;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-value {
+    line-height: 1;
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: 0;
+    order: 2;
+    text-align: end;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-label {
+    margin-bottom: var(--tn-space-half);
+    line-height: 1.2;
+    font-size: var(--tn-type-sm);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--tn-font-weight-normal);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-change {
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-medium);
+    line-height: 1.2;
+    margin-inline-start: var(--tn-space-3);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-change.positive {
+    color: var(--tn-success);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-change.negative {
+    color: var(--tn-color-error);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__stat-card {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--tn-space-4);
+    padding: var(--tn-space-3) 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    min-height: 0;
+    text-align: start;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__stat-value {
+    line-height: 1;
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: 0;
+    order: 2;
+    text-align: end;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__stat-label {
+    line-height: 1.2;
+    font-size: var(--tn-type-sm);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--tn-font-weight-normal);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__recent-sessions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-space-1);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-item {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr auto;
+    gap: var(--tn-space-2);
+    align-items: center;
+    padding: var(--tn-space-3) 0;
+    background: transparent;
+    border-radius: var(--tn-radius-none);
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    transition: background-color var(--tn-transition-fast);
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__session-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
+}
+.tasknotes-plugin .pomodoro-stats-view__session-date {
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
+    font-weight: var(--tn-font-weight-medium);
+    min-width: 100px;
+    font-variant-numeric: tabular-nums;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-duration {
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-normal);
+    font-weight: var(--tn-font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+    min-width: 60px;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-status {
+    font-size: var(--tn-type-2xs);
+    font-weight: var(--tn-font-weight-semibold);
+    text-transform: none;
+    letter-spacing: normal;
+    padding: var(--tn-space-half) var(--tn-space-1);
+    border-radius: var(--tn-radius-md);
+    min-width: 80px;
+    text-align: center;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-status--completed {
+    background: transparent;
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-status--interrupted {
+    background: transparent;
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-task {
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-normal);
+    font-weight: var(--tn-font-weight-medium);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-delete-button {
+    grid-column: -2 / -1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    color: var(--tn-text-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--tn-radius-md);
+    cursor: var(--cursor-link, pointer);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__session-delete-button:focus-visible {
+    color: var(--tn-color-error);
+    background: var(--tn-interactive-hover);
+    border-color: var(--tn-border-color);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-stats-view__session-delete-button {
+        opacity: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-stats-view__session-item:is(:hover, :focus-within) .pomodoro-stats-view__session-delete-button,
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-stats-view__session-delete-button:focus-visible {
+        opacity: 1;
+    }
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .pomodoro-stats-view__session-delete-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--tn-color-error);
+        background: var(--tn-interactive-hover);
+        border-color: var(--tn-border-color);
+    }
+}
+@container (max-width: 768px) {
+    .tasknotes-plugin.pomodoro-stats-view {
+        padding: var(--tn-space-2);
+        gap: var(--tn-space-2);
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__header {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--tn-space-1);
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__refresh-button {
+        align-self: flex-end;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics.tn-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__stats-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-item {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: var(--tn-space-1);
+        text-align: start;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-date,
+    .tasknotes-plugin .pomodoro-stats-view__session-duration,
+    .tasknotes-plugin .pomodoro-stats-view__session-task {
+        min-width: auto;
+        text-align: start;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-status {
+        justify-self: end;
+        grid-column: 2;
+        grid-row: 2;
+        min-width: 0;
+        padding: 0;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-delete-button {
+        justify-self: end;
+        grid-column: 3;
+        grid-row: 1 / span 2;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-duration {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: end;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-task {
+        grid-column: 1;
+        grid-row: 2;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+@container (max-width: 480px) {
+    .tasknotes-plugin.pomodoro-stats-view {
+        padding: var(--tn-space-1);
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__overview-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__stats-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__overview-card {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--tn-space-4);
+        padding: var(--tn-space-3) 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--tn-hairline);
+        border-radius: var(--tn-radius-none);
+        min-height: 0;
+        text-align: start;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__overview-value {
+        font-size: var(--tn-type-lg);
+        font-weight: var(--tn-font-weight-medium);
+        color: var(--tn-text-normal);
+        margin-bottom: 0;
+        order: 2;
+        text-align: end;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__stat-card {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--tn-space-4);
+        padding: var(--tn-space-3) 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--tn-hairline);
+        border-radius: var(--tn-radius-none);
+        min-height: 0;
+        text-align: start;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__stat-value {
+        font-size: var(--tn-type-lg);
+        font-weight: var(--tn-font-weight-medium);
+        color: var(--tn-text-normal);
+        margin-bottom: 0;
+        order: 2;
+        text-align: end;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-item {
+        padding: var(--tn-space-1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tasknotes-plugin .pomodoro-stats-view__overview-card,
+    .tasknotes-plugin .pomodoro-stats-view__stat-card,
+    .tasknotes-plugin .pomodoro-stats-view__session-item,
+    .tasknotes-plugin .pomodoro-stats-view__refresh-button {
+        transition: none;
+    }
+}
+
+.tasknotes-plugin .pomodoro-stats-view__refresh-button:focus {
+    outline: 2px solid var(--tn-interactive-accent);
+    outline-offset: 2px;
+}
+
+@media (prefers-contrast: high) {
+    .tasknotes-plugin .pomodoro-stats-view__overview-card,
+    .tasknotes-plugin .pomodoro-stats-view__stat-card,
+    .tasknotes-plugin .pomodoro-stats-view__session-item {
+        border-width: 2px;
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__session-status {
+        border: 2px solid currentColor;
+    }
+}
+body.is-mobile .tasknotes-plugin.pomodoro-stats-view button,
+body.is-mobile .tasknotes-plugin.pomodoro-stats-view select,
+body.is-mobile .tasknotes-plugin.pomodoro-stats-view input { min-height: var(--tn-touch-target); }

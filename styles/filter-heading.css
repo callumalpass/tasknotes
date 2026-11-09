@@ -6,8 +6,8 @@
 
 /* Main Container */
 .tasknotes-plugin .filter-heading {
-    margin-top: var(--tn-spacing-lg);
-    margin-bottom: var(--tn-spacing-lg);
+    margin-top: var(--tn-space-3);
+    margin-bottom: var(--tn-space-3);
 }
 
 /* Content wrapper with heading and count */
@@ -15,7 +15,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
 }
 
 /* Heading title */
@@ -37,5 +37,5 @@
 .tasknotes-plugin .filter-heading__divider {
     height: 1px;
     background-color: var(--background-modifier-border);
-    margin-bottom: var(--tn-spacing-lg);
+    margin-bottom: var(--tn-space-3);
 }

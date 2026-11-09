@@ -9,29 +9,23 @@ function readRepoFile(relativePath: string): string {
 
 describe("Issue #982: Obsidian text font size inheritance", () => {
 	it("derives TaskNotes typography tokens from Obsidian's text font size setting", () => {
-		const css = readRepoFile("styles/variables.css");
+		const css = readRepoFile("styles/tokens.css");
 
-		expect(css).toContain("--tn-font-size-base: var(--font-text-size, 16px)");
-		expect(css).toContain(
-			"--tn-font-size-xs: max(var(--font-ui-smaller, 12px), calc(var(--tn-font-size-base) * 0.6875))"
-		);
-		expect(css).toContain(
-			"--tn-font-size-md: max(var(--font-ui-small, 13px), calc(var(--tn-font-size-base) * 0.8125))"
-		);
-		expect(css).toContain(
-			"--tn-font-size-lg: max(var(--font-ui-medium, 14px), calc(var(--tn-font-size-base) * 0.9375))"
-		);
-		expect(css).toContain("--tn-font-size-2xl: calc(var(--tn-font-size-base) * 1.125)");
+		expect(css).toContain("--tn-type-base: var(--font-text-size, 16px)");
+		expect(css).toContain("--tn-type-2xs: calc(var(--tn-type-base) * 0.6875)");
+		expect(css).toContain("--tn-type-xs: calc(var(--tn-type-base) * 0.75)");
+		expect(css).toContain("--tn-type-sm: calc(var(--tn-type-base) * 0.8125)");
+		expect(css).toContain("--tn-type-lg: calc(var(--tn-type-base) * 1.125)");
 	});
 
-	it("keeps mobile task cards tied to the Obsidian text size instead of compact desktop tokens", () => {
+	it("keeps narrow title and supporting type proportional to the Obsidian text size", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__title\s*\{[^}]*font-size:\s*var\(--tn-font-size-base\);/s
+			/Stacked card layout at every width[\s\S]*\.task-card__title-text\s*\{[^}]*font-size:\s*var\(--tn-type-md\);/s
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__metadata\s*\{[^}]*font-size:\s*max\(var\(--tn-font-size-lg\),\s*var\(--font-ui-small,\s*13px\)\);/s
+			/Stacked card layout at every width[\s\S]*\.task-card__metadata\s*\{[^}]*font-size:\s*var\(--tn-type-xs\);/s
 		);
 	});
 });

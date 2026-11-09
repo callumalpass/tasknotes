@@ -19,7 +19,7 @@ const today = localDate();
 const nextWeek = localDate(7);
 const rule = `DTSTART:${today.replaceAll("-", "")};FREQ=WEEKLY`;
 const taskPath = (name: string) => `${folder}/${name}.md`;
-const notice = (name: string): Locator => page.locator(".notice").filter({ hasText: name });
+const notice = (name: string): Locator => page.locator(".tn-toast").filter({ hasText: name });
 
 async function yaml(name: string): Promise<Record<string, any>> {
 	const text = await page.evaluate(async (path) => {
@@ -86,7 +86,7 @@ test.beforeEach(async () => {
 	folder = `${root}/${Date.now()}`;
 	await page.evaluate(async (folder) => {
 		await (window as any).app.vault.createFolder(folder);
-		document.querySelectorAll(".notice").forEach((notice) => notice.remove());
+		document.querySelectorAll(".notice, .tn-toast").forEach((notice) => notice.remove());
 	}, folder);
 });
 

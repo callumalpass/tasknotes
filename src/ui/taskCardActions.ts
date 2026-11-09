@@ -8,6 +8,32 @@ import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderModal } from "../modals/ReminderModal";
 import { getEffectiveTaskStatus } from "../utils/helpers";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import {
+	openTaskPropertyPicker,
+	tasksForPropertyAction,
+	showTaskUndo,
+	changeTaskProperty,
+} from "./taskPropertyPickers";
+import { completeRecurringTaskWithUndo } from "../services/task-service/recurringCompletionUndo";
+
+const statusWriteStates = new WeakMap<TaskNotesPlugin, Map<string, "pending" | "failed">>();
+
+export function syncTaskCardWriteState(card: HTMLElement, plugin: TaskNotesPlugin, path: string): void {
+	const state = statusWriteStates.get(plugin)?.get(path);
+	if (!state && !card.dataset.tnStatusWriteState) return;
+	if (state) card.dataset.tnStatusWriteState = state;
+	else delete card.dataset.tnStatusWriteState;
+	card.classList.toggle("task-card--pending", state === "pending");
+	card.classList.toggle("task-card--write-failed", state === "failed");
+	const status = card.querySelector<HTMLElement>(":scope > .task-card__main-row .task-card__status-dot");
+	if (state === "pending") {
+		status?.setAttribute("aria-busy", "true");
+		status?.setAttribute("aria-disabled", "true");
+	} else {
+		status?.removeAttribute("aria-busy");
+		status?.removeAttribute("aria-disabled");
+	}
+}
 
 export type TaskCardStatusVisualUpdater = (
 	updatedTask: TaskInfo,
@@ -46,7 +72,9 @@ function getRecurringCycleStatus(
 	const { statusManager } = plugin;
 	if (!statusManager.getConfiguredStatusAfterCompletion()) return undefined;
 	const completedStatus = statusManager.getCompletedStatuses()[0];
-	if (statusManager.isCompletedStatus(getEffectiveTaskStatus(task, targetDate, completedStatus))) {
+	if (
+		statusManager.isCompletedStatus(getEffectiveTaskStatus(task, targetDate, completedStatus))
+	) {
 		return undefined;
 	}
 	const currentStatus = task.status || plugin.settings.defaultTaskStatus;
@@ -65,48 +93,82 @@ export function createStatusCycleHandler(
 	const { task, plugin, targetDate, updateStatusVisuals } = options;
 	return (e: MouseEvent) => {
 		e.stopPropagation();
+		const anchor = (e.target as Element | null)?.closest<HTMLElement>(".task-card__status-dot") ?? e.currentTarget as HTMLElement;
+		const card = anchor?.closest<HTMLElement>(".task-card");
+		const states = statusWriteStates.get(plugin) ?? new Map<string, "pending" | "failed">();
+		statusWriteStates.set(plugin, states);
+		if (states.get(task.path) === "pending") return;
+		const setState = (state?: "pending" | "failed") => {
+			if (state) states.set(task.path, state);
+			else states.delete(task.path);
+			const cards = new Set([card, ...Array.from(card?.ownerDocument.querySelectorAll<HTMLElement>(".task-card[data-task-path]") ?? []).filter(element => element.dataset.taskPath === task.path)]);
+			for (const current of cards) if (current) syncTaskCardWriteState(current, plugin, task.path);
+		};
+		setState("pending");
+		card?.classList.remove("task-card--write-failed");
+		card?.classList.add("task-card--pending");
+		anchor?.setAttribute("aria-busy", "true");
+		anchor?.setAttribute("aria-disabled", "true");
 		void (async () => {
 			const logger = getTaskCardActionLogger(plugin);
 			try {
-				if (task.recurrence) {
-					const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-					const cycleStatus =
-						freshTask && getRecurringCycleStatus(freshTask, plugin, targetDate, e.shiftKey);
-					if (freshTask && cycleStatus) {
-						const updatedTask = await plugin.updateTaskProperty(freshTask, "status", cycleStatus);
-						updateStatusVisuals(updatedTask, cycleStatus, false);
+				{
+					const fresh = await plugin.cacheManager.getTaskInfo(task.path);
+					if (!fresh) {
+						new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
 						return;
 					}
-					const updatedTask = await plugin.toggleRecurringTaskComplete(task, targetDate);
-					const newEffectiveStatus = getEffectiveTaskStatus(
-						updatedTask,
-						targetDate,
-						plugin.statusManager.getCompletedStatuses()[0]
-					);
-					const isNowCompleted =
-						plugin.statusManager.isCompletedStatus(newEffectiveStatus);
-					updateStatusVisuals(updatedTask, newEffectiveStatus, isNowCompleted);
+					let updated: TaskInfo | null;
+					const cycle = fresh.recurrence
+						? getRecurringCycleStatus(fresh, plugin, targetDate, e.shiftKey)
+						: e.shiftKey
+							? plugin.statusManager.getPreviousStatus(
+									fresh.status || plugin.settings.defaultTaskStatus
+								)
+							: plugin.statusManager.getNextStatus(
+									fresh.status || plugin.settings.defaultTaskStatus
+								);
+					if (cycle) {
+						updated = (await changeTaskProperty(
+							plugin,
+							anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")
+								? await tasksForPropertyAction(plugin, fresh)
+								: [fresh],
+							"status",
+							cycle
+						)).find(updatedTask => updatedTask.path === fresh.path) ?? null;
+						if (!updated) setState("failed");
+					} else {
+						const date = await plugin.taskService.resolveRecurringTaskActionDate(
+							fresh,
+							targetDate
+						);
+						const result = await completeRecurringTaskWithUndo(plugin, fresh, date);
+						if (result.changed)
+							showTaskUndo([
+								async () => {
+									if (!(await result.undo()))
+										throw new Error("Task changed since completion");
+								},
+							], false, 1, plugin.app.vault);
+						updated = await plugin.cacheManager.getTaskInfo(fresh.path);
+					}
+					if (updated) {
+						const effective = getEffectiveTaskStatus(
+							updated,
+							targetDate,
+							plugin.statusManager.getCompletedStatuses()[0]
+						);
+						updateStatusVisuals(
+							updated,
+							effective,
+							plugin.statusManager.isCompletedStatus(effective)
+						);
+					}
 					return;
 				}
-
-				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-				if (!freshTask) {
-					new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
-					return;
-				}
-
-				const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
-				const nextStatus = e.shiftKey
-					? plugin.statusManager.getPreviousStatus(currentStatus)
-					: plugin.statusManager.getNextStatus(currentStatus);
-				const updatedTask = await plugin.updateTaskProperty(
-					freshTask,
-					"status",
-					nextStatus
-				);
-				const isNowCompleted = plugin.statusManager.isCompletedStatus(nextStatus);
-				updateStatusVisuals(updatedTask, nextStatus, isNowCompleted);
 			} catch (error) {
+				setState("failed");
 				const errorMessage = error instanceof Error ? error.message : String(error);
 				logger.error("Error cycling task status", {
 					category: "persistence",
@@ -115,10 +177,21 @@ export function createStatusCycleHandler(
 					error,
 				});
 				new Notice(
-					plugin.i18n.translate(msg({ message: "Failed to update task status: {message}", context: "notices.interface.statusFailed" }), {
-						message: displayError(errorMessage),
-					})
+					plugin.i18n.translate(
+						msg({
+							message: "Failed to update task status: {message}",
+							context: "notices.interface.statusFailed",
+						}),
+						{
+							message: displayError(errorMessage),
+						}
+					)
 				);
+			} finally {
+				setState(states.get(task.path) === "failed" ? "failed" : undefined);
+				card?.classList.remove("task-card--pending");
+				anchor?.removeAttribute("aria-busy");
+				anchor?.removeAttribute("aria-disabled");
 			}
 		})();
 	};
@@ -133,13 +206,20 @@ export function createPriorityClickHandler(
 ): (e: MouseEvent) => void {
 	return (e: MouseEvent) => {
 		e.stopPropagation();
+		const anchor = e.currentTarget as HTMLElement;
+		if (anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
+			void tasksForPropertyAction(plugin, task).then((tasks) =>
+				openTaskPropertyPicker(plugin, "priority", tasks, anchor)
+			);
+			return;
+		}
 		const menu = new PriorityContextMenu({
 			currentValue: task.priority,
 			onSelect: (newPriority) => {
 				void (async () => {
 					const logger = getTaskCardActionLogger(plugin);
 					try {
-						await plugin.updateTaskProperty(task, "priority", newPriority);
+						await changeTaskProperty(plugin, [task], "priority", newPriority);
 					} catch (error) {
 						logger.error("Error updating priority", {
 							category: "persistence",
@@ -147,7 +227,14 @@ export function createPriorityClickHandler(
 							details: { taskPath: task.path, newPriority },
 							error,
 						});
-						new Notice(plugin.i18n.translate(msg({ message: "Failed to update priority", context: "notices.interface.priorityFailed" })));
+						new Notice(
+							plugin.i18n.translate(
+								msg({
+									message: "Failed to update priority",
+									context: "notices.interface.priorityFailed",
+								})
+							)
+						);
 					}
 				})();
 			},
@@ -189,7 +276,14 @@ export function createRecurrenceClickHandler(
 							details: { taskPath: task.path, newRecurrence, anchor },
 							error,
 						});
-						new Notice(plugin.i18n.translate(msg({ message: "Failed to update recurrence", context: "notices.interface.recurrenceFailed" })));
+						new Notice(
+							plugin.i18n.translate(
+								msg({
+									message: "Failed to update recurrence",
+									context: "notices.interface.recurrenceFailed",
+								})
+							)
+						);
 					}
 				})();
 			},
@@ -222,7 +316,12 @@ export function createReminderClickHandler(task: TaskInfo, plugin: TaskNotesPlug
 						error,
 					});
 					new Notice(
-						plugin.i18n.translate(msg({ message: "Failed to update reminders", context: "contextMenus.task.notices.updateRemindersFailure" }))
+						plugin.i18n.translate(
+							msg({
+								message: "Failed to update reminders",
+								context: "contextMenus.task.notices.updateRemindersFailure",
+							})
+						)
 					);
 				}
 			})();

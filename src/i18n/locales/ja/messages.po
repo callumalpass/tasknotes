@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: ja\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #: src/bases/calendar-core.ts
 msgctxt "calendar task estimate tooltip"
@@ -174,8 +180,8 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[数式エラー]"
 
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
 msgstr "{action} — 成功：{count}件、失敗：{failed}件。"
@@ -245,6 +251,16 @@ msgctxt "recurrence occurrence limit"
 msgid "{count, plural, one {{recurrence} (# time)} other {{recurrence} (# times)}}"
 msgstr "{count, plural, other {{recurrence} (# 回)}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence EXDATE exceptions"
+msgid "{count, plural, one {{recurrence}, except # date} other {{recurrence}, except # dates}}"
+msgstr "{count, plural, other {{recurrence}（# 日を除く）}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence extra RDATE dates"
+msgid "{count, plural, one {{recurrence}, plus # extra date} other {{recurrence}, plus # extra dates}}"
+msgstr "{count, plural, other {{recurrence}（追加日 # 日）}}"
+
 #: src/ui/TimeBlockCard.ts
 msgctxt "timeblock attachment count"
 msgid "{count, plural, one {# attachment} other {# attachments}}"
@@ -254,6 +270,11 @@ msgstr "{count, plural, other {添付ファイル # 件}}"
 msgctxt "ui.taskCard.relativeDaysAgo"
 msgid "{count, plural, one {# day ago} other {# days ago}}"
 msgstr "{count, plural, other {#日前}}"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar selected day count"
+msgid "{count, plural, one {# item} other {# items}}"
+msgstr "{count, plural, other {# 件}}"
 
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
@@ -265,15 +286,41 @@ msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
 msgstr "{count, plural, other {リマインダー # 件を設定済み}}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback archive"
+msgid "{count, plural, one {# task archived} other {# tasks archived}}"
+msgstr "{count, plural, other {# 件のタスクをアーカイブしました}}"
+
 #: src/components/BatchContextMenu.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.buildMenu display"
 msgid "{count, plural, one {# task selected} other {# tasks selected}}"
 msgstr "{count, plural, other {タスク # 件を選択中}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback unarchive"
+msgid "{count, plural, one {# task unarchived} other {# tasks unarchived}}"
+msgstr "{count, plural, other {# 件のタスクをアーカイブから戻しました}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}"
+msgstr "{count, plural, other {# 件のタスクを更新しました}}"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property feedback"
+msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
+msgstr "{count, plural, other {# 件のタスクを更新しました}}：{property} → {value}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.conversionSuccess"
 msgid "{count, plural, one {✅ Successfully converted {count, number} task to TaskNotes!} other {✅ Successfully converted {count, number} tasks to TaskNotes!}}"
 msgstr "{count, plural, other {✅ {count, number}件のタスクを TaskNotes に変換しました！}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail minutes past the hour"
+msgid "{count, plural, one {at minute {minutes}} other {at minutes {minutes}}}"
+msgstr "{count, plural, other {{minutes} 分}}"
 
 #: src/services/InstantTaskConvertService.ts
 msgctxt "services.instantTaskConvert.notices.convertingTasks"
@@ -285,35 +332,70 @@ msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
 msgstr "{count, plural, other {{count, number}件のタスクを含む {filename} をダウンロードしました}}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weeks of year"
+msgid "{count, plural, one {in the {weeks} week of the year} other {in the {weeks} weeks of the year}}"
+msgstr "{count, plural, other {年の週：{weeks}}}"
+
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.oauth.lastSynced"
 msgid "{count, plural, one {Last synced: {date} (# event)} other {Last synced: {date} (# events)}}"
 msgstr "{count, plural, other {最終同期: {date}（#件のイベント）}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of month"
+msgid "{count, plural, one {on the {days} day of the month} other {on the {days} days of the month}}"
+msgstr "{count, plural, other {月の日：{days}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail days of year"
+msgid "{count, plural, one {on the {days} day of the year} other {on the {days} days of the year}}"
+msgstr "{count, plural, other {年の日：{days}}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail set positions"
+msgid "{count, plural, one {only the {positions} match in each period} other {only the {positions} matches in each period}}"
+msgstr "{count, plural, other {各期間の順位：{positions}}}"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, other {# 件のタスクを追跡中 (合計 {totalElapsed})}}"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByAdded"
-msgid "{count} dependency added"
-msgstr "{count}件の依存関係が追加されました"
+#: src/bases/CalendarView.ts
+msgctxt "calendar collision count"
+msgid "{count} appointments"
+msgstr "{count} 件の予定"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingAdded"
-msgid "{count} dependent task added"
-msgstr "{count}件の依存タスクが追加されました"
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "{count} days"
+msgstr "{count}日間"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
+msgid "{count} fewer than yesterday"
+msgstr "昨日より{count}少ない"
 
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.summaryTitle"
 msgid "{count} missed TaskNotes reminders"
 msgstr "見逃したTaskNotesリマインダー：{count}件"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.more"
+msgid "{count} more than yesterday"
+msgstr "昨日より{count}多い"
+
 #: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.customDays"
-msgid "{count}D"
-msgstr "{count}日"
+msgctxt "calendar view hint"
+msgid "{count}-day view"
+msgstr "{count}日表示"
+
+#: src/views/stats/charts.ts
+msgctxt "statistics daily time tooltip"
+msgid "{date}: {duration}"
+msgstr "{date}: {duration}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence ordinal number"
@@ -364,6 +446,16 @@ msgstr "{displayName}: "
 msgctxt "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text"
 msgid "{displayName}: {displayValue}"
 msgstr "{displayName}: {displayValue}"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.less"
+msgid "{duration} less than yesterday"
+msgstr "昨日より{duration}少ない"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.more"
+msgid "{duration} more than yesterday"
+msgstr "昨日より{duration}多い"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
@@ -424,6 +516,21 @@ msgstr "{interval, plural, =1 {{weekday, select, MO {{position, select, last {�
 msgctxt "recurrence daily interval"
 msgid "{interval, plural, =1 {Daily} other {Every # days}}"
 msgstr "{interval, plural, =1 {毎日} other {#日ごと}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence minutely interval"
+msgid "{interval, plural, =1 {Every minute} other {Every # minutes}}"
+msgstr "{interval, plural, =1 {毎分} other {#分ごと}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence secondly interval"
+msgid "{interval, plural, =1 {Every second} other {Every # seconds}}"
+msgstr "{interval, plural, =1 {毎秒} other {#秒ごと}}"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence hourly interval"
+msgid "{interval, plural, =1 {Hourly} other {Every # hours}}"
+msgstr "{interval, plural, =1 {毎時} other {#時間ごと}}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence interval on month day"
@@ -535,6 +642,11 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, other {{length, number}件のカレンダーイベントにリンク済み}}"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
+msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
+msgstr "{length, plural, other {{length, number}件のタスクを表示中}}"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro break notification"
 msgid "{length, select, long {Time for a long break 💤} other {Time for a short break ☕}}"
@@ -549,6 +661,11 @@ msgstr "{minutes, number}分"
 msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, other {{minutes, number}分前}}"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.duration"
+msgid "{minutes} min"
+msgstr "{minutes}分"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
@@ -605,6 +722,11 @@ msgctxt "services.notification.missed.message"
 msgid "{prefix}: {text}"
 msgstr "{prefix}：{text}"
 
+#: src/views/StatsView.ts
+msgctxt "views/StatsView: StatsView.openProjectDrilldown display"
+msgid "{projectName} - Detailed View"
+msgstr "{projectName} - 詳細ビュー"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: renderPropertyMetadata display"
 msgid "{propertyId}: (error)"
@@ -634,6 +756,11 @@ msgstr "{provider}の OAuth が設定されていません。設定で OAuth 認
 msgctxt "recurrence end date"
 msgid "{recurrence} (until {date})"
 msgstr "{recurrence} ({date}まで)"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence followed by one detail clause"
+msgid "{recurrence}, {detail}"
+msgstr "{recurrence}、{detail}"
 
 #: src/settings/native/creation.ts
 msgctxt "default reminder timing summary"
@@ -675,16 +802,6 @@ msgctxt "services.instantTaskConvert.notices.partialConversion"
 msgid "{successCount, plural, one {Converted {successCount, number} task. {failureCount, number} failed.} other {Converted {successCount, number} tasks. {failureCount, number} failed.}}"
 msgstr "{successCount, plural, other {{successCount, number}件のタスクを変換しました。{failureCount, number}件は失敗しました。}}"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.running"
-msgid "{time} left · Ends at {endTime}"
-msgstr "残り {time} · {endTime} に終了"
-
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.ready"
-msgid "{time} planned · {count} completed today"
-msgstr "{time} 予定 · 今日 {count} 完了"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.dueIs"
 msgid "{title} is due {when}"
@@ -710,15 +827,15 @@ msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles} ほか{count}件"
 
-#: src/views/PomodoroView.ts
-msgctxt "views.pomodoro.meta.paused"
-msgid "{type} paused · {time} left"
-msgstr "{type} 一時停止中 · 残り {time}"
+#: src/views/stats/charts.ts
+msgctxt "views/StatsView: StatsView.renderProgressCircle display"
+msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
+msgstr "{total, plural, other {{completed, number}/{total, number}件のタスク}}"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
-msgid "{type} ready · {time} planned"
-msgstr "{type} 準備完了 · {time} 予定"
+msgid "{type} ready"
+msgstr "{type}の準備完了"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.andTaskNotessettingsbothchangedsincetheywerelastsynchronized"
@@ -730,6 +847,11 @@ msgctxt "integration.isnotavalidTaskNotescontractTaskNoteskeptitslast"
 msgid "{typePath} is not a valid TaskNotes contract. TaskNotes kept its last-known-good settings."
 msgstr "{typePath} は有効な TaskNotes コントラクトではありません。TaskNotes は最後の有効な設定を保持しました。"
 
+#: src/ui/kit/glyphs.ts
+msgctxt "ui.kit.unconfiguredValue"
+msgid "{value} (not configured)"
+msgstr "{value}（未設定）"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.createNotePreviewText display"
 msgid "{value1, plural, one {+ {value1, number} more...} other {+ {value1, number} more...}}"
@@ -740,11 +862,8 @@ msgctxt "ui/taskCardProperties: timeEstimate display"
 msgid "{value1} estimated"
 msgstr "見積もり {value1}"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.onOpen display"
-msgid "{value1} from {startTime} to {endTime}"
-msgstr "{value1}: {startTime}～{endTime}"
-
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: totalTrackedTime display"
 msgid "{value1} tracked"
@@ -762,6 +881,16 @@ msgid "{value2, plural, one {{taskTitles}\n"
 "... and {value2, number} more}}"
 msgstr "{value2, plural, other {{taskTitles}\n"
 "...ほか {value2, number}件}}"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "filtered task count"
+msgid "{visible} of {total} tasks"
+msgstr "{total} 件中 {visible} 件のタスク"
+
+#: src/i18n/recurrence.ts
+msgctxt "monthly first weekday recurrence"
+msgid "{weekday, select, MO {Monthly on the first Monday} TU {Monthly on the first Tuesday} WE {Monthly on the first Wednesday} TH {Monthly on the first Thursday} FR {Monthly on the first Friday} SA {Monthly on the first Saturday} SU {Monthly on the first Sunday} other {Monthly}}"
+msgstr "{weekday, select, MO {毎月第1月曜日} TU {毎月第1火曜日} WE {毎月第1水曜日} TH {毎月第1木曜日} FR {毎月第1金曜日} SA {毎月第1土曜日} SU {毎月第1日曜日} other {毎月}}"
 
 #: src/services/ICSNoteService.ts
 msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
@@ -820,16 +949,6 @@ msgctxt "contextMenus.ics.markdown.descriptionHeading"
 msgid "### Description"
 msgstr "### 説明"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorPlaceholder"
-msgid "#3b82f6"
-msgstr "#3b82f6"
-
 #: src/views/PomodoroView.ts
 msgctxt "timer add duration button"
 msgid "+{duration}"
@@ -874,7 +993,7 @@ msgctxt "modals.storageLocation.finalNote.migrate"
 msgid "⚠️ Make sure you have backups if needed. This change cannot be automatically undone."
 msgstr "⚠️ 必要に応じてバックアップを取ってください。この変更は自動的に元に戻すことはできません。"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contextSelected"
 msgid "✓ {context}"
 msgstr "✓ {context}"
@@ -890,18 +1009,8 @@ msgid "✓ {count, number}/{total, number} completed ({completionRate, number}%)
 msgstr "✓ {count, number}/{total, number}件完了 ({completionRate, number}%)"
 
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 msgctxt "contextMenus.date.selected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.prioritySelected"
-msgid "✓ {label}"
-msgstr "✓ {label}"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.statusSelected"
 msgid "✓ {label}"
 msgstr "✓ {label}"
 
@@ -920,11 +1029,6 @@ msgctxt "settings.appearance.timeSettings.startTime.placeholder"
 msgid "06:00"
 msgstr "06:00"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimePlaceholder"
-msgid "09:00"
-msgstr "09:00"
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
@@ -935,7 +1039,7 @@ msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "1日前"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.oneDay"
 msgid "1 day before"
 msgstr "1日前"
@@ -945,15 +1049,10 @@ msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1時間前"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.oneHour"
 msgid "1 hour before"
 msgstr "1時間前"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimePlaceholder"
-msgid "11:00"
-msgstr "11:00"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twelveHour"
@@ -980,7 +1079,7 @@ msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15分前"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.fifteenMinutes"
 msgid "15 minutes before"
 msgstr "15分前"
@@ -1020,7 +1119,7 @@ msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
 msgid "5 minutes before"
 msgstr "5分前"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.fiveMinutes"
 msgid "5 minutes before"
 msgstr "5分前"
@@ -1100,8 +1199,12 @@ msgctxt "services/buildTaskCreationDataFromCli: parseReminderShorthand display"
 msgid "Absolute reminders must use at:YYYY-MM-DDTHH:MM or full ISO datetime"
 msgstr "日時指定のリマインダーには at:YYYY-MM-DDTHH:MM または完全な ISO 日時を使用してください"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Accent"
+msgstr "アクセント"
+
 #: src/bases/BasesViewBase.ts
-#: src/bases/CalendarView.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
@@ -1117,6 +1220,11 @@ msgctxt "settings.general.taskInteraction.singleClick.description"
 msgid "Action performed when single-clicking a task card"
 msgstr "タスクカードをシングルクリックした際に実行するアクション"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Actions"
+msgstr "操作"
+
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.actionsHeading"
 msgid "Actions"
@@ -1126,6 +1234,16 @@ msgstr "アクション"
 msgctxt "settings.integrations.webhooks.statusLabels.active"
 msgid "Active"
 msgstr "アクティブ"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.filters.activeOnly"
+msgid "Active only"
+msgstr "アクティブのみ"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.activeProjects"
+msgid "Active projects"
+msgstr "アクティブプロジェクト"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
@@ -1137,12 +1255,17 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "アクティブ："
 
-#: src/components/TaskContextMenu.ts
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.activity"
+msgid "Activity over time (last 30 days)"
+msgstr "活動の推移（過去30日間）"
+
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
 msgid "Add “blocked by”…"
 msgstr "先に完了するタスクを追加…"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "「ブロックしている」を追加…"
@@ -1184,7 +1307,7 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "カレンダー購読を追加"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.addContext"
 msgid "Add context…"
 msgstr "コンテキストを追加…"
@@ -1266,17 +1389,18 @@ msgctxt "commands.addSubtaskToCurrentNote"
 msgid "Add subtask to current note"
 msgstr "現在のノートにサブタスクを追加"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "サブタスクを追加…"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.addTag"
 msgid "Add tag…"
 msgstr "タグを追加…"
 
+#: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
@@ -1314,7 +1438,8 @@ msgctxt "modals.task.organization.addToProjectButton"
 msgid "Add to project"
 msgstr "プロジェクトに追加"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
+#: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "プロジェクトに追加…"
@@ -1412,15 +1537,35 @@ msgctxt "settings.native.allNotes"
 msgid "All notes"
 msgstr "すべてのノート"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.allTasks"
+msgid "All project tasks"
+msgstr "プロジェクトのすべてのタスク"
+
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "すべてのタスクリンクが削除されました"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.filters.allTasks"
+msgid "All tasks"
+msgstr "すべてのタスク"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "All Tasks"
 msgstr "すべてのタスク"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.allTime"
+msgid "All time"
+msgstr "全期間"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.allTime"
+msgid "All time"
+msgstr "全期間"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.description"
@@ -1447,6 +1592,11 @@ msgstr "すでに {parent} のサブタスクです。"
 msgctxt "views.taskList.movement.noChange"
 msgid "Already in this group."
 msgstr "すでにこのグループにあります。"
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Alt"
+msgstr "Alt"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.anIcsFileInThisVault"
@@ -1498,7 +1648,6 @@ msgctxt "api/loadAPIEndpoints: loadAPIEndpoints display"
 msgid "API unavailable ({status})"
 msgstr "API を利用できません ({status})"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.appearanceInteraction"
 msgid "Appearance & interaction"
@@ -1540,6 +1689,11 @@ msgctxt "contextMenus.task.archive"
 msgid "Archive"
 msgstr "アーカイブ"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction archive"
+msgid "Archive"
+msgstr "アーカイブ"
+
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.buttons.archive"
 msgid "Archive"
@@ -1559,11 +1713,6 @@ msgstr "タスクをアーカイブ"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "このタスクをアーカイブ"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.archived"
-msgid "archived"
-msgstr "アーカイブ"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
@@ -1591,6 +1740,11 @@ msgctxt "services.notification.missed.whenTodayAt"
 msgid "at {time}"
 msgstr "{time}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail times"
+msgid "at {times}"
+msgstr "{times} に"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.atDue"
 msgid "At the due date"
@@ -1606,7 +1760,7 @@ msgctxt "components.reminderContextMenu.quickReminders.atTime"
 msgid "At time of event"
 msgstr "イベント時刻に"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "イベント時刻に"
@@ -1796,6 +1950,26 @@ msgctxt "modals.icsNoteCreation.variables"
 msgid "Available template variables"
 msgstr "使用できるテンプレート変数"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.average"
+msgid "Avg length"
+msgstr "平均長さ"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.average"
+msgid "Avg per task"
+msgstr "タスクあたりの平均"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.avgTimePerTask"
+msgid "Avg time per task"
+msgstr "タスクあたりの平均時間"
+
+#: src/views/StatsView.ts
+msgctxt "views/StatsView: StatsView.renderProjectStats display"
+msgid "Avg: {value1}/task"
+msgstr "平均: {value1}/タスク"
+
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fix"
 msgid "Back up and fix"
@@ -1925,6 +2099,11 @@ msgstr "{count} 件のタスクをブロック"
 msgctxt "ui/taskCardProperties: blockingTasks text"
 msgid "Blocking: "
 msgstr "ブロック先: "
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Blue"
+msgstr "青"
 
 #: src/settings/native/features.ts
 msgctxt "settings.defaults.header.bodyTemplate"
@@ -2152,6 +2331,7 @@ msgstr "カレンダーと連携"
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/components/TaskContextMenu.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
@@ -2167,6 +2347,7 @@ msgstr "カレンダーと連携"
 #: src/modals/TimeEntryEditorModal.ts
 #: src/ui/TaskActionCoordinator.ts
 #: src/ui/taskCardDeletion.ts
+#: src/views/PomodoroStatsView.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "キャンセル"
@@ -2313,10 +2494,10 @@ msgctxt "collectionCheck.unresolvedUserField"
 msgid "Cannot resolve owned user field {field}. Review its schema and retained field type before saving settings. Existing settings and metadata were preserved."
 msgstr "管理対象のカスタムフィールド {field} の型を判定できません。設定を保存する前に、スキーマと保持されたフィールドの型を確認してください。既存の設定とメタデータは保持されています。"
 
-#: src/ui/recurringCompletionNotice.ts
-msgctxt "notices.recurringCompletion.conflict"
-msgid "Cannot undo: this occurrence or its schedule has changed."
-msgstr "元に戻せません。この回または予定が変更されています。"
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo conflict"
+msgid "Cannot undo: the note has changed."
+msgstr "ノートが変更されたため、元に戻せません。"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.undoConflict"
@@ -2347,6 +2528,11 @@ msgstr "タスクの優先度を {label} に変更"
 msgctxt "views.pomodoro.buttons.changeTask"
 msgid "Change task..."
 msgstr "タスクを変更..."
+
+#: src/ui/kit/toast.ts
+msgctxt "interaction undo confirmation"
+msgid "Change undone."
+msgstr "変更を元に戻しました。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.changingTheseValuesDoesNotUpdateExistingTaskNotes"
@@ -2499,6 +2685,11 @@ msgctxt "integration.ChoosewhichversionshouldbecomecanonicalUsingTaskNotessettin
 msgid "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
 msgstr "正規のバージョンにするものを選択してください。TaskNotes の設定を使用すると、変更した設定のみを書き込み、ファイル内の他のフィールドは保持されます。"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction clear"
+msgid "Clear"
+msgstr "クリア"
+
 #: src/components/ReminderContextMenu.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
@@ -2509,14 +2700,14 @@ msgctxt "contextMenus.task.clearReminders"
 msgid "Clear all reminders"
 msgstr "すべてのリマインダーをクリア"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.clearContexts"
 msgid "Clear contexts"
 msgstr "コンテキストをクリア"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.clearDate"
 msgid "Clear date"
@@ -2542,7 +2733,7 @@ msgctxt "components.recurrenceContextMenu.clearRecurrence"
 msgid "Clear recurrence"
 msgstr "繰り返しをクリア"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.clearRecurrence"
 msgid "Clear recurrence"
 msgstr "繰り返しをクリア"
@@ -2557,13 +2748,24 @@ msgctxt "bases/components/SearchBox: SearchBox.render display"
 msgid "Clear search"
 msgstr "検索をクリア"
 
+#: src/bases/basesSearchUi.ts
+msgctxt "empty state action"
+msgid "Clear search"
+msgstr "検索をクリア"
+
+#: src/bases/basesSelectionUi.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Clear selection"
+msgstr "選択を解除"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "ui.audit.clearSelection"
 msgid "Clear selection"
 msgstr "選択を解除"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.clearTags"
 msgid "Clear tags"
 msgstr "タグをクリア"
@@ -2572,11 +2774,6 @@ msgstr "タグをクリア"
 msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "タスクをクリア"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.complete"
-msgid "Click the status control until the task is `Done`. It leaves `Today`, but its note stays in your vault."
-msgstr "完了になるまで状態ボタンをクリックします。「今日」からは消えますが、ノートは保管庫に残ります。"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
@@ -2623,12 +2820,17 @@ msgctxt "settings/components/CardComponent: createCard display"
 msgid "Collapse card"
 msgstr "カードを折りたたむ"
 
+#: src/settings/components/CardComponent.ts
+msgctxt "settings/components/CardComponent: setCardCollapsed display"
+msgid "Collapse card"
+msgstr "カードを折りたたむ"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
 msgstr "サブグループを折りたたむ"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Collapse subtasks"
 msgstr "サブタスクを折りたたむ"
@@ -2729,7 +2931,7 @@ msgctxt "settings.taskProperties.fieldMapping.fields.completeInstances"
 msgid "Complete instances"
 msgstr "完了した回"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.pickDateTitle"
 msgid "Complete on date"
 msgstr "完了日を選択"
@@ -2741,6 +2943,16 @@ msgstr "この回を完了"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.completed"
+msgid "Completed"
+msgstr "完了"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.status.completed"
+msgid "Completed"
+msgstr "完了"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "完了"
 
@@ -2764,45 +2976,65 @@ msgctxt "notices.recurringCompletion.completed"
 msgid "Completed occurrence: {date}"
 msgstr "完了した繰り返し: {date}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeOnPicked"
 msgid "Completed on (pick date)"
 msgstr "指定日に完了（日付を選択）"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeOnDue"
 msgid "Completed on due date"
 msgstr "期限日に完了"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "予定日に完了"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.filters.completedOnly"
+msgid "Completed only"
+msgstr "完了のみ"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.statsLabel"
 msgid "completed today"
 msgstr "今日完了"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "今日完了"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
+msgid "Completed: "
+msgstr "完了："
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.completion"
+msgid "Completion"
+msgstr "完了"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
 msgstr "完了日"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.completionOnly"
 msgid "Completion only"
 msgstr "完了時のみ"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "完了時またはスキップ時"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.completionRate"
+msgid "Completion rate"
+msgstr "完了率"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.sections.completions"
@@ -2825,7 +3057,7 @@ msgid "Configure where Pomodoro session data is stored and how it''s managed."
 msgstr "ポモドーロセッションデータの保存場所と管理方法を設定します。"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "common.confirm"
 msgid "Confirm"
 msgstr "確認"
@@ -2839,12 +3071,6 @@ msgstr "確認"
 msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "確認"
-
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeTitle"
-msgid "Confirm large reorder"
-msgstr "大規模な並べ替えを確認"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connect"
@@ -2891,7 +3117,7 @@ msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display"
 msgid "Content too long to process safely"
 msgstr "安全に処理するには内容が長すぎます"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contextPlaceholder"
 msgid "context"
 msgstr "コンテキスト"
@@ -2916,8 +3142,13 @@ msgctxt "components.propertyVisibilityDropdown.properties.contexts"
 msgid "Contexts"
 msgstr "コンテキスト"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
+msgid "Contexts"
+msgstr "コンテキスト"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Contexts"
 msgstr "コンテキスト"
 
@@ -3170,6 +3401,11 @@ msgctxt "modals.taskEdit.notices.blockingUnresolved"
 msgid "Could not resolve: {entries}"
 msgstr "解決できませんでした：{entries}"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction save failure recovery"
+msgid "Could not save task changes. Check that the notes are writable, then try again."
+msgstr "タスクの変更を保存できませんでした。ノートが書き込み可能か確認して、もう一度お試しください。"
+
 #: src/settings/native/SettingsContext.ts
 msgctxt "settings.native.saveError"
 msgid "Could not save TaskNotes settings: {error}"
@@ -3184,6 +3420,12 @@ msgstr "繰り返しタスクの変更を元に戻せませんでした。"
 msgctxt "views.taskList.movement.undoFailed"
 msgid "Could not undo this move."
 msgstr "この移動を元に戻せませんでした。"
+
+#: src/components/BatchContextMenu.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction failure"
+msgid "Could not update tasks"
+msgstr "タスクを更新できませんでした"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.countsAsCompleted"
@@ -3204,11 +3446,6 @@ msgstr "作成"
 msgctxt "modals.icsEventInfo.createFromEventDesc"
 msgid "Create a new note or task from this calendar event"
 msgstr "このカレンダーイベントから新しいノートまたはタスクを作成"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.create"
-msgid "Create a real task and schedule it for today."
-msgstr "実際のタスクを作成し、今日に予定を設定します。"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
@@ -3240,7 +3477,7 @@ msgctxt "modals.calendarEventCreation.createButton"
 msgid "Create event"
 msgstr "イベントを作成"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 msgctxt "ui.audit.createExternal"
 msgid "Create external calendar event"
 msgstr "外部カレンダーの予定を作成"
@@ -3260,10 +3497,15 @@ msgctxt "modals.icsNoteCreation.heading"
 msgid "Create from ICS event"
 msgstr "ICSイベントから作成"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.manual"
 msgid "Create manually"
 msgstr "手動で作成"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "task modal repeat creation"
+msgid "Create more"
+msgstr "続けて作成"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.createInlineTask"
@@ -3271,13 +3513,12 @@ msgid "Create new inline task"
 msgstr "新しいインラインタスクを作成"
 
 #: src/bootstrap/pluginBootstrap.ts
-#: src/bootstrap/starterNote.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.createNewTask"
 msgid "Create new task"
 msgstr "新しいタスクを作成"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.afterCompletion"
 msgid "Create next after completion"
 msgstr "完了後に次を作成"
@@ -3312,7 +3553,13 @@ msgctxt "contextMenus.task.createSubtask"
 msgid "Create subtask"
 msgstr "サブタスクを作成"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarKeyboard.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Create task"
+msgstr "タスクを作成"
+
+#: src/bases/calendarCreationMenu.ts
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
@@ -3329,7 +3576,7 @@ msgctxt "settings.integrations.basesIntegration.createDefaultFiles.description"
 msgid "Create the default .base files in TaskNotes/Views/ directory. Existing files will not be overwritten."
 msgstr "TaskNotes/Views/ フォルダーに既定の .base ファイルを作成します。既存のファイルは上書きしません。"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 msgctxt "ui.audit.createEntry"
 msgid "Create time entry"
 msgstr "時間エントリを作成"
@@ -3339,9 +3586,8 @@ msgctxt "modals.timeblockCreation.createButton"
 msgid "Create timeblock"
 msgstr "タイムブロックを作成"
 
-#: src/bases/CalendarView.ts
+#: src/bases/calendarCreationMenu.ts
 #: src/components/TaskContextMenu.ts
-#: src/modals/TimeblockCreationModal.ts
 msgctxt "modals.timeblockCreation.heading"
 msgid "Create timeblock"
 msgstr "タイムブロックを作成"
@@ -3413,6 +3659,11 @@ msgctxt "note created date"
 msgid "Created: {date}"
 msgstr "作成日: {date}"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Ctrl"
+msgstr "Ctrl"
+
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.current"
 msgid "Current"
@@ -3448,7 +3699,7 @@ msgctxt "modals.reminder.current"
 msgid "Current reminders"
 msgstr "現在のリマインダー"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.notices.currentTaskNotFound"
 msgid "Current task file not found"
 msgstr "現在のタスクファイルが見つかりませんでした"
@@ -3472,7 +3723,7 @@ msgid "Currently tracking: {title}\n"
 msgstr "現在追跡中: {title}\n"
 "経過時間: {elapsed}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 msgctxt "contextMenus.task.customDates"
 msgid "Custom dates"
 msgstr "カスタム日付"
@@ -3512,6 +3763,11 @@ msgctxt "components.propertyVisibilityDropdown.customProperties"
 msgid "Custom properties"
 msgstr "カスタムプロパティ"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.customRange"
+msgid "Custom range"
+msgstr "カスタム範囲"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
@@ -3527,7 +3783,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "カスタム繰り返し..."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "カスタム繰り返し..."
@@ -3567,6 +3823,11 @@ msgctxt "settings.taskProperties.projectsCard.customizeDisplay"
 msgid "Customize display"
 msgstr "表示をカスタマイズ"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Cyan"
+msgstr "シアン"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.cycleCurrentTaskPriority"
 msgid "Cycle current task priority"
@@ -3576,11 +3837,6 @@ msgstr "現在のタスクの優先度を切り替え"
 msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "現在のタスクのステータスを切り替え"
-
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.day"
-msgid "D"
-msgstr "日"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
@@ -3592,7 +3848,7 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "毎日"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.daily"
 msgid "Daily"
 msgstr "毎日"
@@ -3684,11 +3940,6 @@ msgctxt "modals.calendarEventCreation.dateTimeLabel"
 msgid "Date & time: "
 msgstr "日時："
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.dateTimeLabel"
-msgid "Date & time: "
-msgstr "日時："
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.dateFormat.name"
 msgid "Date format"
@@ -3704,21 +3955,27 @@ msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName"
 msgid "Date Property"
 msgstr "日付プロパティ"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.dateRange"
+msgid "Date range"
+msgstr "日付範囲"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.reminders.fields.date"
 msgid "Date:"
 msgstr "日付："
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.dateLabel"
-msgid "Date: "
-msgstr "日付："
-
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.dates"
 msgid "Dates"
 msgstr "日付"
+
+#: src/bases/calendarKeyboard.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Day"
+msgstr "日"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.dayCells"
@@ -3756,6 +4013,12 @@ msgstr "日"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "曜日"
+
+#: src/bases/calendarEventPresentation.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar event marker"
+msgid "Deadline"
+msgstr "期限"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.debugLogging.header"
@@ -3964,6 +4227,11 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "削除"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
+msgid "Delete"
+msgstr "削除"
+
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteEntry"
@@ -3985,6 +4253,16 @@ msgctxt "contextMenus.task.deleteTitle"
 msgid "Delete file"
 msgstr "ファイル削除"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteAria"
+msgid "Delete Pomodoro session"
+msgstr "ポモドーロセッションを削除"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteConfirmTitle"
+msgid "Delete Pomodoro session?"
+msgstr "ポモドーロセッションを削除しますか？"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -3994,6 +4272,11 @@ msgstr "プロパティを削除"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "リマインダーを削除"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.delete"
+msgid "Delete session"
+msgstr "セッションを削除"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -4057,25 +4340,10 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Dependencies"
 msgstr "依存関係"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.dependenciesUpdateSuccess"
-msgid "Dependencies updated"
-msgstr "依存関係が更新されました"
-
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.dependency"
 msgid "Dependency"
 msgstr "依存関係"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockedByRemoved"
-msgid "Dependency removed"
-msgstr "依存関係が削除されました"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
-msgid "Dependent task removed"
-msgstr "依存タスクが削除されました"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
@@ -4339,6 +4607,12 @@ msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.descripti
 msgid "Draw a line through completed task card titles. Turn off to keep completed tasks easier to read"
 msgstr "完了したタスクカードのタイトルに線を引きます。完了タスクを読みやすくするにはオフにします"
 
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "task list drop restriction"
+msgid "Drop on a task row or group destination."
+msgstr "タスクの行またはグループの移動先にドロップしてください。"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Due"
@@ -4361,6 +4635,12 @@ msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "期限日"
 
+#: src/modals/DateTimePickerModal.ts
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Due date"
+msgstr "期限"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.due"
 msgid "Due date"
@@ -4382,20 +4662,10 @@ msgctxt "ui.filterBar.group.dueDate"
 msgid "Due date"
 msgstr "期限日"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueCleared"
-msgid "Due date cleared"
-msgstr "期限を削除しました"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Due date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "期限日または日時 (YYYY-MM-DD または YYYY-MM-DDTHH:MM)"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.dueSet"
-msgid "Due date set"
-msgstr "期限を設定しました"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
@@ -4417,6 +4687,11 @@ msgstr "期限：{date}"
 msgctxt "modals.task.tooltips.dueValue"
 msgid "Due: {value}"
 msgstr "期限：{value}"
+
+#: src/bases/calendarResizeFeedback.ts
+msgctxt "calendar resize feedback"
+msgid "Duration → {duration}"
+msgstr "所要時間 → {duration}"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.defaultDuration.description"
@@ -4488,6 +4763,11 @@ msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "リマインダーを編集"
 
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Edit task"
+msgstr "タスクを編集"
+
 #: src/components/TaskContextMenu.ts
 #: src/main.ts
 #: src/modals/TaskEditModal.ts
@@ -4515,11 +4795,6 @@ msgstr "時間エントリを編集"
 msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "時間エントリを編集（タスクを選択）"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.editHeading"
-msgid "Edit timeblock"
-msgstr "タイムブロックを編集"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
@@ -4644,6 +4919,7 @@ msgid "End on {date}"
 msgstr "{date}に終了"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.endTimeLabel"
 msgid "End time"
 msgstr "終了時刻"
@@ -4667,6 +4943,11 @@ msgstr "終了時刻は開始時刻より後である必要があります"
 msgctxt "modals.icsNoteCreation.endLabel"
 msgid "End: "
 msgstr "終了："
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.meta.running"
+msgid "Ends at {endTime}"
+msgstr "{endTime}に終了"
 
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.textPlaceholder"
@@ -4717,6 +4998,11 @@ msgstr "00:00〜23:59 の時刻を入力してください。"
 msgctxt "modals.task.timeEstimateInvalid"
 msgid "Enter a time such as 45 or 1h 30m"
 msgstr "45 や 1h 30m のように時間を入力してください"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction date"
+msgid "Enter a valid date"
+msgstr "有効な日付を入力してください"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.validDate"
@@ -4783,6 +5069,11 @@ msgctxt "bases/MiniCalendarView: MiniCalendarView.renderError display"
 msgid "Error loading mini calendar: {message}"
 msgstr "ミニカレンダーの読み込みに失敗しました: {message}"
 
+#: src/views/StatsView.ts
+msgctxt "notices.statsLoadingFailed"
+msgid "Error loading project details."
+msgstr "プロジェクト詳細の読み込みエラー。"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.renderError display"
 msgid "Error loading tasks: {message}"
@@ -4807,6 +5098,11 @@ msgstr "繰り返し回のノートテンプレートを読み込めませんで
 msgctxt "services.task.notices.templateReadError"
 msgid "Error reading task body template: {template}"
 msgstr "タスクボディテンプレートの読み込みエラー：{template}"
+
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Esc"
+msgstr "Esc"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
@@ -4863,7 +5159,7 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "このエンドポイントにはイベントが送信されなくなります。"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.everyTwoWeeks"
 msgid "Every 2 weeks"
 msgstr "2週間ごと"
@@ -4878,7 +5174,7 @@ msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "3日ごと（完了後）"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.everyThreeMonths"
 msgid "Every 3 months"
 msgstr "3か月ごと"
@@ -4983,12 +5279,17 @@ msgctxt "settings/components/CardComponent: createCard display"
 msgid "Expand card"
 msgstr "カードを展開"
 
+#: src/settings/components/CardComponent.ts
+msgctxt "settings/components/CardComponent: setCardCollapsed display"
+msgid "Expand card"
+msgstr "カードを展開"
+
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Expand subgroups"
 msgstr "サブグループを展開"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 msgctxt "bases/TaskListView: TaskListView.toggleSubtasks display"
 msgid "Expand subtasks"
 msgstr "サブタスクを展開"
@@ -5093,7 +5394,12 @@ msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "Model Context Protocol を介して /mcp エンドポイントで TaskNotes ツールを公開します。HTTP API を有効にする必要があります。"
 
-#: src/components/TaskContextMenu.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Extend selection"
+msgstr "選択範囲を拡張"
+
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.notices.addReminderFailure"
 msgid "Failed to add reminder"
 msgstr "リマインダーの追加に失敗しました"
@@ -5103,23 +5409,18 @@ msgctxt "modals.reminder.addFailed"
 msgid "Failed to add reminder. Please check your inputs."
 msgstr "リマインダーを追加できませんでした。入力内容を確認してください。"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 msgctxt "contextMenus.task.organization.notices.addAsSubtaskFailed"
 msgid "Failed to add task as subtask"
 msgstr "タスクをサブタスクとして追加できませんでした"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.organization.notices.addToProjectFailed"
 msgid "Failed to add task to project"
 msgstr "タスクをプロジェクトに追加できませんでした"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveFailure"
-msgid "Failed to archive task"
-msgstr "タスクのアーカイブに失敗しました"
 
 #: src/main.ts
 msgctxt "notices.commands.batchConversionFailed"
@@ -5420,7 +5721,7 @@ msgctxt "notices.commands.taskLoadFailed"
 msgid "Failed to load current task"
 msgstr "現在のタスクを読み込めませんでした"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/i18n/messages.ts
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "ui.taskCard.blockingLoadError"
@@ -5456,11 +5757,6 @@ msgstr "タスクの読み込みに失敗しました"
 msgctxt "services.pomodoro.notices.migrationFailure"
 msgid "Failed to migrate Pomodoro data. Please try again or check the console for details."
 msgstr "ポモドーロデータの移行に失敗しました。再試行するか、詳細についてはコンソールを確認してください。"
-
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockMoveFailed"
-msgid "Failed to move timeblock: {message}"
-msgstr "タイムブロックの移動に失敗しました：{message}"
 
 #: src/bases/calendar-core.ts
 #: src/main.ts
@@ -5499,7 +5795,7 @@ msgctxt "notices.interface.occurrenceOpenFailed"
 msgid "Failed to open occurrence note: {message}"
 msgstr "繰り返し回のノートを開けませんでした：{message}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.organization.notices.projectSelectFailed"
@@ -5521,7 +5817,7 @@ msgctxt "notices.commands.tagSearchFailed"
 msgid "Failed to open search pane for tag: {tag}"
 msgstr "タグの検索ペインを開けませんでした：{tag}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 msgctxt "contextMenus.task.organization.notices.subtaskSelectFailed"
 msgid "Failed to open subtask selector"
@@ -5619,11 +5915,6 @@ msgctxt "services.instantTaskConvert.notices.replaceLineFailed"
 msgid "Failed to replace task line."
 msgstr "タスク行の置換に失敗しました。"
 
-#: src/bases/calendar-core.ts
-msgctxt "views.advancedCalendar.notices.timeblockResizeFailed"
-msgid "Failed to resize timeblock: {message}"
-msgstr "タイムブロックのサイズ変更に失敗しました：{message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "Failed to resolve moved task file: {newPath}"
@@ -5638,11 +5929,6 @@ msgstr "リマインダーを保存できませんでした。もう一度お試
 msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "カレンダーのパスワードを保存できませんでした"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeEntryEditor.saveFailed"
-msgid "Failed to save time entries"
-msgstr "時間エントリの保存に失敗しました"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.failed"
@@ -5659,11 +5945,6 @@ msgctxt "modals.timeTracking.startFailed"
 msgid "Failed to start time tracking"
 msgstr "時間追跡の開始に失敗しました"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.trackingStopFailed"
-msgid "Failed to stop time tracking"
-msgstr "時間追跡を停止できませんでした"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogleFailed"
 msgid "Failed to sync task to Google Calendar"
@@ -5674,12 +5955,12 @@ msgctxt "settings.integrations.googleCalendarExport.notices.syncFailed"
 msgid "Failed to sync task to Google Calendar: {message}"
 msgstr "タスクのGoogleカレンダーへの同期に失敗しました：{message}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.notices.toggleSkipFailure"
 msgid "Failed to toggle recurring task skip: {message}"
 msgstr "繰り返しタスクのスキップ切り替えに失敗しました：{message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.subtasksFailed"
 msgid "Failed to toggle subtasks"
@@ -5695,17 +5976,17 @@ msgctxt "services/TaskService: TaskService.toggleStatus display"
 msgid "Failed to toggle task status: {errorMessage}"
 msgstr "タスクのステータスを切り替えられませんでした: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 msgctxt "contextMenus.task.notices.updateCustomDateFailure"
 msgid "Failed to update {field}: {message}"
 msgstr "{field}の更新に失敗しました：{message}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.notices.updateContextsFailed"
 msgid "Failed to update contexts"
 msgstr "コンテキストの更新に失敗しました"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.updateFailed"
 msgid "Failed to update dependencies"
@@ -5721,13 +6002,13 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "イベントの更新に失敗しました: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.priorityFailed"
 msgid "Failed to update priority"
 msgstr "優先度を更新できませんでした"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.recurrenceFailed"
 msgid "Failed to update recurrence"
@@ -5738,15 +6019,14 @@ msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
 msgstr "繰り返しタスクを更新できませんでした"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
 msgid "Failed to update reminders"
 msgstr "リマインダーの更新に失敗しました"
 
-#: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.notices.updateTagsFailed"
 msgid "Failed to update tags"
 msgstr "タグの更新に失敗しました"
@@ -5756,17 +6036,12 @@ msgctxt "notices.commands.taskUpdateFailed"
 msgid "Failed to update task"
 msgstr "タスクを更新できませんでした"
 
-#: src/main.ts
-msgctxt "notices.commands.archiveFailed"
-msgid "Failed to update task archive status"
-msgstr "タスクのアーカイブ状態を更新できませんでした"
-
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "タスクの完了状態を更新できませんでした: {message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
@@ -5783,7 +6058,7 @@ msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
 msgid "Failed to update task recurrence: {message}"
 msgstr "タスク繰り返しの更新に失敗しました：{message}"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
 #: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
@@ -5795,8 +6070,8 @@ msgctxt "notices.commands.statusFailed"
 msgid "Failed to update task status"
 msgstr "タスクのステータスを更新できませんでした"
 
-#: src/bases/TaskListView.ts
-#: src/components/TaskContextMenu.ts
+#: src/bases/taskListCardActions.ts
+#: src/components/task-context-menu/properties.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
 msgid "Failed to update task status: {message}"
@@ -5807,7 +6082,9 @@ msgctxt "services/task-service/TaskUpdateService: TaskUpdateService.updateTask d
 msgid "Failed to update task: {errorMessage}"
 msgstr "タスクの更新に失敗しました: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
+#: src/components/task-context-menu/properties.ts
+#: src/components/task-context-menu/recurrence.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.updateFailure"
 msgid "Failed to update task: {message}"
@@ -5918,15 +6195,16 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "コンテナを埋める"
 
+#: src/bases/BasesViewBase.ts
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.filters"
+msgid "Filters"
+msgstr "フィルター"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
 msgstr "フィルター有効"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.review"
-msgid "Find your task in `Today`."
-msgstr "「今日」ビューでタスクを確認します。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
@@ -5953,6 +6231,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.strategies.first"
 msgid "First result"
 msgstr "最初の結果"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence first weekday of month"
+msgid "First weekday of the month"
+msgstr "毎月最初の平日（月～金）"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.getPomodoroSessionLabel display"
 msgid "Focus"
@@ -5962,16 +6245,6 @@ msgstr "集中"
 msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "フォーカス"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "新機能に集中、中断なし"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.descriptionPlaceholder"
-msgid "Focus on new features, no interruptions"
-msgstr "新機能に集中、中断なし"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderLabel"
@@ -6008,11 +6281,6 @@ msgctxt "modals.icsNoteCreation.folderPlaceholder"
 msgid "folder/subfolder"
 msgstr "フォルダー/サブフォルダー"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.inbox"
-msgid "For undated capture, clear the scheduled date. The inbox shows incomplete tasks with no project, scheduled date, or due date."
-msgstr "日付を付けずに記録するには予定日を消します。受信トレイにはプロジェクト、予定日、期限のない未完了タスクが表示されます。"
-
 #: src/settings/native/connections.ts
 msgctxt "settings.native.forgetCredentials"
 msgid "Forget credentials"
@@ -6028,7 +6296,6 @@ msgctxt "settings.native.forgetSavedCredentials"
 msgid "Forget saved credentials"
 msgstr "保存済み認証情報を削除"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.formFields"
 msgid "Form fields"
@@ -6060,6 +6327,11 @@ msgstr "金曜日"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.friday"
 msgid "Friday"
 msgstr "金曜日"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.dateRangeFrom"
+msgid "From"
+msgstr "開始"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.header"
@@ -6181,6 +6453,11 @@ msgctxt "views.pomodoro.status.breakPrompt"
 msgid "Great work! Time for a {length} break"
 msgstr "素晴らしい仕事です！{length}休憩の時間です"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Green"
+msgstr "緑"
+
 #: src/settings/native/creation.ts
 msgctxt "ui.filterBar.groupMenuHeader"
 msgid "Group"
@@ -6245,11 +6522,6 @@ msgstr "非表示にするタグの範囲"
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
 msgstr "期限切れから完了タスクを非表示"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.hideDetailedOptions"
-msgid "Hide detailed options"
-msgstr "詳細オプションを非表示"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -6346,6 +6618,11 @@ msgstr "タスクの識別方法"
 msgctxt "modals.task.attachments.importButton"
 msgid "Import file"
 msgstr "ファイルをインポート"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail months"
+msgid "in {months}"
+msgstr "{months} に"
 
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
@@ -6461,6 +6738,11 @@ msgstr "taskNoteリンクを挿入"
 msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "インターフェース言語"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.status.interrupted"
+msgid "Interrupted"
+msgstr "中断"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
@@ -6638,10 +6920,11 @@ msgctxt "settings.features.recurring.maintainOffsetDesc"
 msgid "Keep the offset between due date and scheduled date when recurring tasks are completed"
 msgstr "繰り返しタスクが完了したときに期限日と予定日の間のオフセットを保持"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.list"
-msgid "L"
-msgstr "一覧"
+#: src/components/TaskContextMenu.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction help"
+msgid "Keyboard shortcuts"
+msgstr "キーボードショートカット"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.fields.label"
@@ -6663,10 +6946,40 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.la
 msgid "last"
 msgstr "最終"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence position last"
+msgid "last"
+msgstr "最後"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.last30Days"
+msgid "Last 30 days"
+msgstr "過去30日間"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.last7Days"
+msgid "Last 7 days"
+msgstr "過去7日間"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.timeRanges.last90Days"
+msgid "Last 90 days"
+msgstr "過去90日間"
+
+#: src/views/StatsView.ts
+msgctxt "views/StatsView: StatsView.renderProjectStats display"
+msgid "Last activity: {value1}"
+msgstr "最終活動: {value1}"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "月末"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last day of month"
+msgid "Last day of the month"
+msgstr "毎月末日"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.status.lastExport"
@@ -6677,6 +6990,11 @@ msgstr "最後のエクスポート：{time}"
 msgctxt "settings.native.lastSync"
 msgid "Last sync"
 msgstr "最終同期"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence last weekday of month"
+msgid "Last weekday of the month"
+msgstr "毎月最後の平日（月～金）"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -6798,6 +7116,11 @@ msgctxt "services.icsNote.notices.linkedToEvent"
 msgid "Linked note to ICS event: {title}"
 msgstr "ノートをICSイベントにリンクしました：{title}"
 
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "List"
+msgstr "リスト"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.types.list"
 msgid "List"
@@ -6834,6 +7157,11 @@ msgstr "リマインダーを読み込み中…"
 msgctxt "contextMenus.task.subtasks.loading"
 msgid "Loading subtasks..."
 msgstr "サブタスクを読み込み中..."
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.loading"
+msgid "Loading..."
+msgstr "読み込み中..."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.typeOptions.local"
@@ -6925,11 +7253,6 @@ msgctxt "settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator"
 msgid "Lucide icon name. Leave empty for the default indicator."
 msgstr "Lucide アイコン名。空欄なら既定の表示を使用します。"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.month"
-msgid "M"
-msgstr "月"
-
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
@@ -6945,7 +7268,12 @@ msgctxt "contextMenus.task.manageReminders"
 msgid "Manage all reminders…"
 msgstr "すべてのリマインダーを管理…"
 
-#: src/components/TaskContextMenu.ts
+#: src/bases/TaskListView.ts
+msgctxt "settings.taskProperties.properties.sortOrder.name"
+msgid "Manual order"
+msgstr "手動順序"
+
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
 msgid "Mark complete"
 msgstr "完了としてマーク"
@@ -6955,7 +7283,7 @@ msgctxt "contextMenus.task.markComplete"
 msgid "Mark complete for this date"
 msgstr "この日付で完了としてマーク"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.submenu"
 msgid "Mark complete or skip"
 msgstr "完了としてマークまたはスキップ"
@@ -6965,7 +7293,7 @@ msgctxt "views.basesCalendar.settings.layout.showNowIndicator"
 msgid "Mark current time"
 msgstr "現在時刻を表示"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.markIncomplete"
 msgid "Mark incomplete"
 msgstr "未完了としてマーク"
@@ -7050,6 +7378,11 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "ポモドーロデータを移行しますか？"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.filters.minTime"
+msgid "Min time (minutes)"
+msgstr "最小時間（分）"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7071,6 +7404,7 @@ msgid "minutes"
 msgstr "分"
 
 #: src/modals/ReminderModal.ts
+#: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.stats.minutes"
 msgid "Minutes"
 msgstr "分"
@@ -7142,6 +7476,12 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.monday"
 msgid "Monday"
 msgstr "月曜日"
 
+#: src/bases/calendarKeyboard.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Month"
+msgstr "月"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
 msgid "Month grid"
@@ -7173,15 +7513,22 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenc
 msgid "Monthly recurrence"
 msgstr "月次繰り返し"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.more"
-msgid "More"
-msgstr "その他"
-
+#: src/bases/basesToolbar.ts
 #: src/modals/taskModalActionButtons.ts
 msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "その他の操作"
+
+#: src/components/RecurrenceContextMenu.ts
+#: src/modals/TaskModal.ts
+msgctxt "task modal field disclosure"
+msgid "More fields"
+msgstr "その他の項目"
+
+#: src/bases/CalendarView.ts
+msgctxt "views.basesCalendar.moreOptions"
+msgid "More options"
+msgstr "その他のオプション"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -7203,11 +7550,23 @@ msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
 msgstr "アーカイブしたタスクをフォルダーに移動"
 
+#: src/bases/KanbanView.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move between columns"
+msgstr "列間を移動"
+
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.moveDown"
 msgid "Move down"
 msgstr "下へ移動"
+
+#: src/bases/calendarKeyboard.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Move focus"
+msgstr "フォーカスを移動"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -7232,6 +7591,11 @@ msgctxt "views.taskList.movement.moveUp"
 msgid "Move up"
 msgstr "上へ移動"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction move feedback"
+msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
+msgstr "{count, plural, other {# 件のタスク}}を {destination} に移動しました"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -7251,6 +7615,11 @@ msgstr "クエリ「{query}」に複数のタスクが一致しました: {value
 msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Multiple tasks matched title \"{title}\": {value2}"
 msgstr "タイトル「{title}」に複数のタスクが一致しました: {value2}"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.notAvailable"
+msgid "N/A"
+msgstr "N/A"
 
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameAToZ"
@@ -7299,6 +7668,9 @@ msgid "Never ends"
 msgstr "終了しない"
 
 #: src/bases/BasesViewBase.ts
+#: src/bases/taskListGroupHeader.ts
+#: src/views/stats/drilldown.ts
+#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "新規"
@@ -7338,6 +7710,7 @@ msgctxt "settings.native.newTasksHaveNoDefaultReminders"
 msgid "New tasks have no default reminders."
 msgstr "新しいタスクに既定のリマインダーはありません。"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.next"
 msgid "Next"
@@ -7354,7 +7727,7 @@ msgid "Next in order"
 msgstr "順序内の次のステータス"
 
 #: src/bases/MiniCalendarView.ts
-#: src/modals/taskEditCompletions.ts
+#: src/ui/kit/monthCalendar.ts
 msgctxt "components.dateContextMenu.nextMonth"
 msgid "Next month"
 msgstr "来月"
@@ -7471,6 +7844,12 @@ msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "実行中の時間追跡セッションが見つかりません"
 
+#: src/views/PomodoroStatsView.ts
+#: src/views/stats/summary.ts
+msgctxt "statistics empty period"
+msgid "No activity in this period."
+msgstr "この期間の活動はありません。"
+
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
 msgid "No API endpoints found in specification."
@@ -7511,7 +7890,7 @@ msgctxt "services.instantTaskConvert.notices.noCheckboxTasks"
 msgid "No checkbox tasks found in the current note."
 msgstr "現在のノートにチェックボックスタスクが見つかりません。"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.noCompletedStatus"
 msgid "No completed status configured"
 msgstr "完了ステータスが設定されていません"
@@ -7582,7 +7961,7 @@ msgctxt "contextMenus.task.completion.noDueDate"
 msgid "No due date on this task"
 msgstr "このタスクには期限日が設定されていません"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 #: src/main.ts
 msgctxt "contextMenus.task.organization.notices.noEligibleSubtasks"
 msgid "No eligible tasks available to assign as subtasks"
@@ -7623,7 +8002,22 @@ msgctxt "settings.native.noKeySet"
 msgid "No key set"
 msgstr "キー未設定"
 
-#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "interaction picker"
+msgid "No matching actions"
+msgstr "一致する操作がありません"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching priorities"
+msgstr "一致する優先度がありません"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No matching statuses"
+msgstr "一致するステータスがありません"
+
+#: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.noEligibleTasks"
 msgid "No matching tasks available"
@@ -7633,11 +8027,6 @@ msgstr "一致するタスクが利用できません"
 msgctxt "notices.recurringCompletion.noNext"
 msgid "No next occurrence"
 msgstr "次回の繰り返しはありません"
-
-#: src/bases/MiniCalendarView.ts
-msgctxt "notices.audit.noNotes"
-msgid "No notes found for selected dates"
-msgstr "選択した日付のノートが見つかりません"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.noOverdue"
@@ -7649,10 +8038,25 @@ msgctxt "OAuth callback description"
 msgid "No pending authorization matches this callback."
 msgstr "このコールバックに対応する認証要求はありません。"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No priorities configured"
+msgstr "優先度が設定されていません"
+
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "プロジェクトなし"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.noProject"
+msgid "No project"
+msgstr "プロジェクトなし"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.noProjectData"
+msgid "No project data available"
+msgstr "プロジェクトデータがありません"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
@@ -7684,6 +8088,16 @@ msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "このタスクには予定日が設定されていません"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.empty"
+msgid "No sessions recorded yet"
+msgstr "まだセッションが記録されていません"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction picker"
+msgid "No statuses configured"
+msgstr "ステータスが設定されていません"
+
 #: src/ui/taskCardRelationshipExpansion.ts
 msgctxt "contextMenus.task.subtasks.noSubtasks"
 msgid "No subtasks found"
@@ -7703,16 +8117,6 @@ msgstr "タスクのデータを取得できませんでした"
 msgctxt "notices.commands.noTaskLink"
 msgid "No task link found"
 msgstr "タスクのリンクが見つかりません"
-
-#: src/bases/KanbanView.ts
-msgctxt "bases/KanbanView: KanbanView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "このベースに対応するタスクノートが見つかりません。"
-
-#: src/bases/TaskListView.ts
-msgctxt "bases/TaskListView: TaskListView.renderEmptyState display"
-msgid "No tasknotes tasks found for this base."
-msgstr "このベースに対応するタスクノートが見つかりません。"
 
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.noTasks"
@@ -7735,6 +8139,11 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "時間を追跡できるタスクがありません"
 
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.noTasks"
+msgid "No tasks found"
+msgstr "タスクが見つかりません"
+
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.noTasksToExport"
 msgid "No tasks found to export"
@@ -7751,14 +8160,29 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "「{searchTerm}」に一致するタスクはありません"
 
 #: src/bases/BasesViewBase.ts
+msgctxt "empty task view recovery"
+msgid "No tasks match this view. Review its filters."
+msgstr "このビューに一致するタスクはありません。フィルターを確認してください。"
+
+#: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
 msgid "No tasks to copy"
 msgstr "コピーするタスクはありません"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection"
+msgid "No tasks yet."
+msgstr "タスクはまだありません。"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "まだ時間エントリがありません"
+
+#: src/views/stats/charts.ts
+msgctxt "views.stats.project.noTracking"
+msgid "No time tracking data"
+msgstr "時間追跡データがありません"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockTimes display"
@@ -7814,6 +8238,11 @@ msgstr "なし"
 
 #: src/components/SubgroupMenuBuilder.ts
 msgctxt "ui.filterBar.group.none"
+msgid "None"
+msgstr "なし"
+
+#: src/ui/taskCardPrimaryIndicators.ts
+msgctxt "ui.taskCard.noPriority"
 msgid "None"
 msgstr "なし"
 
@@ -7892,6 +8321,16 @@ msgstr "ノートパネル"
 msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
 msgstr "注意：'{{dueDate}}'と'{{scheduledDate}}'はYYYY-MM-DD形式で、設定されていない場合は空になります。"
+
+#: src/bases/MiniCalendarView.ts
+msgctxt "mini calendar empty selection"
+msgid "Nothing scheduled for the selected dates."
+msgstr "選択した日付に予定はありません。"
+
+#: src/bases/MiniCalendarView.ts
+msgctxt "mini calendar empty day"
+msgid "Nothing scheduled for this day."
+msgstr "この日の予定はありません。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundEnabledName"
@@ -7998,12 +8437,12 @@ msgctxt "services.task.notices.occurrenceTemplateNotFound"
 msgid "Occurrence note template not found: {path}"
 msgstr "繰り返し回のノートテンプレートが見つかりません：{path}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.occurrenceNotes"
 msgid "Occurrence notes"
 msgstr "繰り返し回のノート"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "notices.audit.occurrencePolicy"
 msgid "Occurrence notes: {mode}"
 msgstr "繰り返し回のノート：{mode}"
@@ -8063,6 +8502,11 @@ msgctxt "services.notification.missed.whenOnDayAt"
 msgid "on {day} at {time}"
 msgstr "{day} {time}"
 
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail weekdays"
+msgid "on {days}"
+msgstr "{days} に"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
 msgid "On {month} {day} each year"
@@ -8082,6 +8526,16 @@ msgstr "毎年{month}の{week}{day}曜日"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth"
 msgid "On the {week} {day} of each month"
 msgstr "毎月{week}{day}曜日"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Open"
+msgstr "開く"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "interaction created open"
+msgid "Open"
+msgstr "開く"
 
 #: src/modals/DeviceCodeModal.ts
 #: src/modals/ICSEventInfoModal.ts
@@ -8163,7 +8617,6 @@ msgctxt "settings.features.taskCreation.openAfterCreate.options.sameTab"
 msgid "Open in the same tab"
 msgstr "同じタブで開く"
 
-#: src/bootstrap/starterNote.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openInbox"
 msgid "Open inbox"
@@ -8223,12 +8676,17 @@ msgctxt "contextMenus.task.openNoteInNewTab"
 msgid "Open note in new tab"
 msgstr "ノートを新しいタブで開く"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "繰り返しのノートを開く・作成"
+
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openPomodoroStats"
+msgid "Open Pomodoro statistics"
+msgstr "ポモドーロ統計を開く"
 
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
@@ -8236,7 +8694,7 @@ msgctxt "commands.openPomodoroView"
 msgid "Open Pomodoro timer"
 msgstr "ポモドーロタイマーを開く"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openParent"
 msgid "Open recurring parent"
@@ -8246,6 +8704,19 @@ msgstr "元の繰り返しタスクを開く"
 msgctxt "ui/taskCardMetadata: createOccurrenceMetadataPill display"
 msgid "Open recurring parent for occurrence on {occurrence_date}"
 msgstr "{occurrence_date}の繰り返し回の親タスクを開く"
+
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Open task"
+msgstr "タスクを開く"
+
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStatisticsView"
+msgid "Open task & project statistics"
+msgstr "タスクとプロジェクト統計を開く"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.name"
@@ -8284,12 +8755,16 @@ msgctxt "modals.actionPalette.openParentDesc"
 msgid "Open the recurring task that generated this occurrence"
 msgstr "この回を生成した繰り返しタスクを開く"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openStartHereGuide"
+msgid "Open the Start Here guide"
+msgstr "「Start Here」ガイドを開く"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "タスクのファイルをエディターで開く"
 
-#: src/bootstrap/starterNote.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
 msgid "Open today"
@@ -8314,16 +8789,6 @@ msgstr "{provider}の認証用ブラウザーを開いています..."
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
 msgid "Operation failed"
 msgstr "操作に失敗しました"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "タイムブロックのオプション色"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.colorDesc"
-msgid "Optional color for the timeblock"
-msgstr "タイムブロックのオプション色"
 
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionDesc"
@@ -8355,6 +8820,11 @@ msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Optional work-session duration override for action=start"
 msgstr "action=start に使用する作業セッションの時間を上書き (任意)"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Orange"
+msgstr "オレンジ"
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.organization.title"
 msgid "Organization"
@@ -8385,7 +8855,6 @@ msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
 msgstr "その他"
 
-#: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.otherDestinations"
 msgid "Other destinations"
@@ -8417,6 +8886,7 @@ msgid "Overdue"
 msgstr "期限超過"
 
 #: src/services/filter-service/filterTaskGrouping.ts
+#: src/ui/taskCardProperties.ts
 msgctxt "services.filter.groupLabels.due.overdue"
 msgid "Overdue"
 msgstr "期限切れ"
@@ -8541,7 +9011,7 @@ msgctxt "modals.actionPalette.deleteDesc"
 msgid "Permanently delete this task"
 msgstr "このタスクを完全に削除"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
@@ -8549,10 +9019,16 @@ msgstr "{field}の日付を選択"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "日時を選択…"
+
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Pink"
+msgstr "ピンク"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
@@ -8615,6 +9091,7 @@ msgid "Plugin data"
 msgstr "プラグインデータ"
 
 #: src/views/PomodoroView.ts
+#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "ポモドーロ"
@@ -8623,6 +9100,11 @@ msgstr "ポモドーロ"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Pomodoro action to perform (default: status)"
 msgstr "実行するポモドーロ操作 (デフォルト: status)"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.basesMigration.description"
+msgid "Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes."
+msgstr "ポモドーロの Bases ビューはデイリーノートのフロントマターを使用します。生成された統計ビューに履歴を表示するには、設定でポモドーロのデータを移行し、保存先をデイリーノートにしてください。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.pomodoroCompleted.label"
@@ -8659,6 +9141,16 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "ポモドーロセッションデータは、プラグインデータファイルではなくデイリーノートのフロントマターに保存されます。"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteSuccess"
+msgid "Pomodoro session deleted"
+msgstr "ポモドーロセッションを削除しました"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteNotFound"
+msgid "Pomodoro session was not found"
+msgstr "ポモドーロセッションが見つかりませんでした"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -8674,10 +9166,20 @@ msgctxt "pomodoro start notification"
 msgid "Pomodoro started for {title}"
 msgstr "{title}のポモドーロを開始しました"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.heading"
+msgid "Pomodoro statistics"
+msgstr "ポモドーロ統計"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "ポモドーロ統計の Bases ビュー"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.title"
+msgid "Pomodoro stats"
+msgstr "ポモドーロ統計"
 
 #: src/services/PomodoroService.ts
 msgctxt "services.pomodoro.notices.stoppedAndReset"
@@ -8693,6 +9195,11 @@ msgstr "ポモドーロストレージ場所を{location}に変更しました"
 msgctxt "settings.features.pomodoro.header"
 msgid "Pomodoro timer"
 msgstr "ポモドーロタイマー"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.pomodoros"
+msgid "Pomodoros"
+msgstr "ポモドーロ"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.description"
@@ -8739,18 +9246,20 @@ msgctxt "views.basesCalendar.settings.layout.showSelectionPreview"
 msgid "Preview selected time range"
 msgstr "選択した時間範囲をプレビュー"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.hints.prev"
 msgid "Previous"
 msgstr "前へ"
 
 #: src/bases/MiniCalendarView.ts
-#: src/modals/taskEditCompletions.ts
+#: src/ui/kit/monthCalendar.ts
 msgctxt "modals.taskEdit.previousMonth"
 msgid "Previous month"
 msgstr "前の月"
 
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.priorities"
 msgid "Priorities"
 msgstr "優先度"
@@ -8764,6 +9273,11 @@ msgstr "優先度"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getPrioritySuggestions info"
+msgid "Priority"
+msgstr "優先度"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Priority"
 msgstr "優先度"
 
@@ -8781,11 +9295,6 @@ msgstr "優先度"
 msgctxt "ui.filterBar.group.priority"
 msgid "Priority"
 msgstr "優先度"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.priorityChanged"
-msgid "Priority changed to {label}"
-msgstr "優先度を {label} に変更しました"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.priorityDot"
@@ -8818,6 +9327,11 @@ msgctxt "ui.filterBar.group.project"
 msgid "Project"
 msgstr "プロジェクト"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.projectBreakdown"
+msgid "Project breakdown"
+msgstr "プロジェクト内訳"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredTags.placeholder"
 msgid "project, active, important"
@@ -8833,6 +9347,12 @@ msgctxt "generated Bases view name"
 msgid "Projects"
 msgstr "プロジェクト"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Projects"
+msgstr "プロジェクト"
+
+#: src/modals/TaskModal.ts
 #: src/modals/taskModalOrganizationFields.ts
 #: src/settings/native/creation.ts
 #: src/settings/native/properties.ts
@@ -8850,12 +9370,16 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "プロジェクト"
 
+#: src/views/stats/summary.ts
+msgctxt "views.stats.labels.projects"
+msgid "Projects"
+msgstr "プロジェクト"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
 msgstr "プロジェクト/, 仕事/アクティブ, 個人"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "ui.filterBar.properties"
 msgid "Properties"
@@ -8906,6 +9430,11 @@ msgctxt "views.basesCalendar.settings.groups.propertyBasedEvents"
 msgid "Property-based events"
 msgstr "プロパティベースのイベント"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Purple"
+msgstr "紫"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Quick (<30m)"
@@ -8920,11 +9449,6 @@ msgstr "現在のタスクのクイックアクション"
 msgctxt "commands.quickActionsTaskUnderCursor"
 msgid "Quick actions for task under cursor"
 msgstr "カーソル下のタスクのクイックアクション"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.title"
-msgid "Quick actions: {title}"
-msgstr "クイックアクション：{title}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/errors: RateLimitError display"
@@ -8945,6 +9469,11 @@ msgstr "次のポモドーロを始めますか？"
 msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "開始準備完了"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.recent"
+msgid "Recent sessions"
+msgstr "最近のセッション"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
@@ -9002,11 +9531,6 @@ msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
 msgstr "繰り返しタスクの変更を元に戻しました。"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.occurrenceCompleted"
-msgid "Recurring task instance completed"
-msgstr "繰り返しタスクのこの回を完了しました"
-
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurringSection.header"
 msgid "Recurring tasks"
@@ -9017,6 +9541,11 @@ msgctxt "notices.commands.repeatRecurring"
 msgid "Recurring tasks already track each occurrence"
 msgstr "繰り返しタスクでは各回の完了がすでに記録されます"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Red"
+msgstr "赤"
+
 #: src/bases/CalendarView.ts
 msgctxt "views.basesCalendar.buttonText.refresh"
 msgid "Refresh"
@@ -9024,6 +9553,16 @@ msgstr "更新"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "views.notes.refreshButton"
+msgid "Refresh"
+msgstr "更新"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.refresh"
+msgid "Refresh"
+msgstr "更新"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.refreshButton"
 msgid "Refresh"
 msgstr "更新"
 
@@ -9208,7 +9747,7 @@ msgctxt "modals.task.attachments.removeAriaLabel"
 msgid "Remove {name} from this task"
 msgstr "このタスクから {name} を外す"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.removeTag"
 msgid "Remove {tag}"
 msgstr "{tag} を削除"
@@ -9228,12 +9767,12 @@ msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList dis
 msgid "Remove attachment"
 msgstr "添付ファイルを削除"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.removeBlockedBy"
 msgid "Remove blocked-by…"
 msgstr "先に完了するタスクを削除…"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.removeBlocking"
 msgid "Remove blocking…"
 msgstr "ブロックされるタスクを削除…"
@@ -9254,7 +9793,7 @@ msgid "Remove subtask"
 msgstr "サブタスクを削除"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.removeTagInput"
 msgid "Remove tag…"
 msgstr "タグを削除…"
@@ -9305,12 +9844,6 @@ msgstr "このタスクを再開し、完了日を保存してアーカイブを
 msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "ノートを並べ替える"
-
-#: src/bases/KanbanView.ts
-#: src/bases/TaskListView.ts
-msgctxt "common.reorder.confirmLargeMessage"
-msgid "Reordering here will update \"{field}\" in {count} notes to create a persistent manual order for {scope}. Hidden or filtered notes in the same scope may also be updated. Continue?"
-msgstr "ここで並べ替えると、{scope} の永続的な手動順序を作るために {count} 件のノートの \"{field}\" が更新されます。同じ範囲内の非表示または絞り込み済みのノートも更新される場合があります。続行しますか？"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
@@ -9384,6 +9917,11 @@ msgctxt "settings.native.resetFileMapping"
 msgid "Reset file mapping"
 msgstr "ファイルの対応付けをリセット"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.resetFiltersButton"
+msgid "Reset filters"
+msgstr "フィルターをリセット"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields"
 msgid "Reset form fields"
@@ -9434,7 +9972,7 @@ msgctxt "settings.features.pomodoro.mobileSidebar.right"
 msgid "Right sidebar"
 msgstr "右サイドバー"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "ui.audit.rolling"
 msgid "Rolling window (not automated yet)"
 msgstr "移動ウィンドウ（自動化未対応）"
@@ -9503,6 +10041,12 @@ msgctxt "modals.timeblockInfo.saveButton"
 msgid "Save changes"
 msgstr "変更を保存"
 
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeTitle"
+msgid "Save this order?"
+msgstr "この順序を保存しますか？"
+
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.placeholders.passwordSaved"
 msgid "Saved. Enter a new password to replace it"
@@ -9545,6 +10089,12 @@ msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "予定日"
 
+#: src/modals/DateTimePickerModal.ts
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Scheduled date"
+msgstr "予定日"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.options.scheduled"
 msgid "Scheduled date"
@@ -9566,20 +10116,10 @@ msgctxt "ui.filterBar.group.scheduledDate"
 msgid "Scheduled date"
 msgstr "予定日"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledCleared"
-msgid "Scheduled date cleared"
-msgstr "予定日を削除しました"
-
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Scheduled date or datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM)"
 msgstr "予定日または日時 (YYYY-MM-DD または YYYY-MM-DDTHH:MM)"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.scheduledSet"
-msgid "Scheduled date set"
-msgstr "予定日を設定しました"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -9590,6 +10130,11 @@ msgstr "予定：{date}"
 msgctxt "modals.task.tooltips.scheduledValue"
 msgid "Scheduled: {value}"
 msgstr "予定：{value}"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Search"
+msgstr "検索"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/TimeblockCreationModal.ts
@@ -9645,6 +10190,7 @@ msgid "See what''s new in the latest version of TaskNotes"
 msgstr "TaskNotesの最新バージョンの新機能を確認する"
 
 #: src/modals/DateTimePickerModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "contextMenus.date.modal.select"
 msgid "Select"
 msgstr "選択"
@@ -9830,7 +10376,7 @@ msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesM
 msgid "Series-wide"
 msgstr "繰り返し予定全体"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListCardActions.ts
 #: src/ui/taskCardSecondaryBadges.ts
 msgctxt "notices.interface.serviceUnavailable"
 msgid "Service not available. Please try reloading the plugin."
@@ -9843,6 +10389,7 @@ msgstr "サービスが初期化されていません - Obsidianを再起動し�
 
 #: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
+#: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
 msgid "Set date & time"
 msgstr "日時を設定"
@@ -9851,11 +10398,6 @@ msgstr "日時を設定"
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.actions.due"
-msgid "Set due date"
-msgstr "期限日を設定"
-
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.dueTitle"
 msgid "Set due date"
 msgstr "期限日を設定"
 
@@ -9894,11 +10436,6 @@ msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "予定日を設定"
 
-#: src/modals/taskModalActionMenus.ts
-msgctxt "modals.task.dateMenu.scheduledTitle"
-msgid "Set scheduled date"
-msgstr "予定日を設定"
-
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "modals.task.actions.status"
@@ -9930,15 +10467,10 @@ msgctxt "modals.scheduledDate.descriptions.dateTime"
 msgid "Set when you plan to work on this task"
 msgstr "このタスクに取り組む予定を設定"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "common.settings"
-msgid "Settings"
-msgstr "設定"
-
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.settings"
-msgid "Settings, when you need them"
-msgstr "必要になったら設定する"
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Shift"
+msgstr "Shift"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakLength.short"
@@ -9975,6 +10507,11 @@ msgctxt "cli/commands/timeStatusCommand: defaults description"
 msgid "Show active time-tracking sessions, or detailed status for a specific task"
 msgstr "有効な時間追跡セッションを表示するか、指定したタスクの詳細な状態を表示します"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show agenda date strip"
+msgstr "アジェンダの日付バーを表示"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
@@ -10004,11 +10541,6 @@ msgstr "チェックボックスの横に変換ボタンを表示"
 msgctxt "settings.appearance.calendarView.showCurrentTimeIndicator.name"
 msgid "Show current time indicator"
 msgstr "現在時刻インジケーターを表示"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.showDetailedOptions"
-msgid "Show detailed options"
-msgstr "詳細オプションを表示"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.showDetails"
@@ -10119,6 +10651,11 @@ msgstr "予定タスクを表示"
 msgctxt "views.basesCalendar.settings.events.showScheduledTasks"
 msgid "Show scheduled tasks"
 msgstr "予定されたタスクを表示"
+
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar composition option"
+msgid "Show selected day panel"
+msgstr "選択した日のパネルを表示"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showSkippedRecurringInstances"
@@ -10245,7 +10782,7 @@ msgctxt "settings.integrations.mobileCalendar.disable.description"
 msgid "Skip Google, Microsoft, and ICS calendar loading on Obsidian mobile. Desktop calendar integrations are unchanged."
 msgstr "Obsidian Mobile で Google、Microsoft、ICS カレンダーの読み込みをスキップします。デスクトップのカレンダー連携は変更されません。"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.skipInstance"
 msgid "Skip instance"
@@ -10281,6 +10818,11 @@ msgctxt "settings.native.source"
 msgid "Source"
 msgstr "取得元"
 
+#: src/ui/kit/keyHint.ts
+msgctxt "keyboard key name"
+msgid "Space"
+msgstr "スペース"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.spanScheduledToDue"
 msgid "Span tasks between scheduled and due dates"
@@ -10306,15 +10848,16 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "開始日プロパティ"
 
+#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
 msgstr "フォーカスを開始"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.title"
-msgid "Start here with TaskNotes"
-msgstr "TaskNotes を始める"
+#: src/bases/BasesViewBase.ts
+msgctxt "empty task collection guide"
+msgid "Start Here guide"
+msgstr "「Start Here」ガイド"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.enable.description"
@@ -10342,6 +10885,7 @@ msgid "Start time"
 msgstr "開始時刻"
 
 #: src/modals/TimeblockCreationModal.ts
+#: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockCreation.startTimeLabel"
 msgid "Start time"
 msgstr "開始時刻"
@@ -10392,10 +10936,10 @@ msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "開始："
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "modals.timeTracking.started"
-msgid "Started tracking time for: {taskTitle}"
-msgstr "時間追跡を開始しました：{taskTitle}"
+#: src/views/StatsView.ts
+msgctxt "views.stats.title"
+msgid "Statistics"
+msgstr "統計"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -10406,6 +10950,11 @@ msgstr "ステータス"
 
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getStatusSuggestions info"
+msgid "Status"
+msgstr "ステータス"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Status"
 msgstr "ステータス"
 
@@ -10423,11 +10972,6 @@ msgstr "ステータス"
 msgctxt "ui.filterBar.group.status"
 msgid "Status"
 msgstr "ステータス"
-
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.statusChanged"
-msgid "Status changed to {label}"
-msgstr "ステータスを {label} に変更しました"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
@@ -10450,6 +10994,7 @@ msgid "Status: {value}"
 msgstr "ステータス：{value}"
 
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.statuses"
 msgid "Statuses"
 msgstr "ステータス"
@@ -10506,6 +11051,11 @@ msgstr "TaskNotes の設定ではなく、Obsidian のシークレットスト�
 msgctxt "settings.native.storedInTaskNotesChangingThisDoesNotRename"
 msgid "Stored in task notes. Changing this does not rename values in existing notes."
 msgstr "タスクノートに保存されます。変更しても既存のノート内の値は改名されません。"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.stats.streak"
+msgid "Streak"
+msgstr "連続記録"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
@@ -10766,7 +11316,7 @@ msgid "Tag"
 msgstr "タグ"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.tagPlaceholder"
 msgid "Tag or #tag"
 msgstr "タグまたは #tag"
@@ -10789,6 +11339,11 @@ msgstr "タグ"
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.tags"
+msgid "Tags"
+msgstr "タグ"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
 msgid "Tags"
 msgstr "タグ"
 
@@ -10832,39 +11387,12 @@ msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "タスク"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successFilenameSanitized"
-msgid "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property."
-msgstr "タスク\"{title}\"をファイル\"{filename}\"として作成しました。ファイル名に使用できない文字があるため、完全なタイトルはタイトルプロパティに保存されています。"
-
-#: src/modals/TaskCreationModal.ts
-#: src/modals/TaskSelectorWithCreateModal.ts
-msgctxt "modals.taskCreation.notices.success"
-msgid "Task \"{title}\" created successfully"
-msgstr "タスク\"{title}\"が正常に作成されました"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.notices.successShortened"
-msgid "Task \"{title}\" created successfully (filename shortened due to length)"
-msgstr "タスク\"{title}\"が正常に作成されました（長さのためファイル名が短縮されました）"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task \"{title}\" deleted successfully"
-msgstr "タスク「{title}」を削除しました"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.updateSuccess"
-msgid "Task \"{title}\" updated successfully"
-msgstr "タスク\"{title}\"が正常に更新されました"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.archiveSuccess"
-msgid "Task {action} successfully"
-msgstr "タスクが正常に{action}されました"
+#: src/views/StatsView.ts
+msgctxt "views.stats.taskProjectStats"
+msgid "Task & project statistics"
+msgstr "タスクとプロジェクトの統計"
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.archived"
 msgid "Task archived"
 msgstr "タスクをアーカイブしました"
@@ -10925,9 +11453,30 @@ msgid "Task created"
 msgstr "タスク作成"
 
 #: src/modals/TaskCreationModal.ts
+#: src/modals/TaskSelectorWithCreateModal.ts
+msgctxt "task creation feedback"
+msgid "Task created"
+msgstr "タスクを作成しました"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successShortened"
+msgid "Task created (filename shortened)"
+msgstr "タスクを作成しました（ファイル名を短縮）"
+
+#: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.successFilenameSanitized"
+msgid "Task created as \"{filename}\". Unsupported filename characters omitted; full title kept in properties."
+msgstr "「{filename}」としてタスクを作成しました。ファイル名に使えない文字は省略し、完全なタイトルはプロパティに保存しました。"
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.followUpFailure"
 msgid "Task created, but a follow-up step failed: {message}"
 msgstr "タスクを作成しましたが、後続の処理に失敗しました: {message}"
+
+#: src/bases/BasesViewBase.ts
+msgctxt "bases creation feedback"
+msgid "Task created, but hidden by this view"
+msgstr "タスクを作成しましたが、このビューでは表示されません"
 
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
@@ -10949,12 +11498,16 @@ msgctxt "notices.icsTaskCreatedSuccess"
 msgid "Task created: {title}"
 msgstr "タスクが作成されました：{title}"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/native/features.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "タスク作成"
+
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.deleteSuccess"
+msgid "Task deleted"
+msgstr "タスクを削除しました"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
@@ -10971,7 +11524,6 @@ msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Task details/body; overrides NLP-derived details"
 msgstr "タスクの詳細/本文。NLP から取得した詳細より優先します"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.taskFiles"
 msgid "Task files"
@@ -11114,10 +11666,21 @@ msgctxt "modals.reminder.title"
 msgid "Task reminders"
 msgstr "タスクのリマインダー"
 
+#: src/modals/TaskEditModal.ts
+msgctxt "modals.taskEdit.notices.updateSuccess"
+msgid "Task saved"
+msgstr "タスクを保存しました"
+
 #: src/services/TaskService.ts
 msgctxt "services/TaskService: TaskService.seedInitialOccurrence display"
 msgid "Task saved, but its first occurrence could not be created. Use Create occurrence to retry."
 msgstr "タスクを保存しましたが、最初の繰り返し回を作成できませんでした。「繰り返し回を作成」から再試行してください。"
+
+#: src/bases/KanbanView.ts
+#: src/ui/taskPropertyPickers.ts
+msgctxt "picker recovery action"
+msgid "Task settings"
+msgstr "タスク設定"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.header"
@@ -11171,7 +11734,6 @@ msgid "Task title..."
 msgstr "タスクタイトル..."
 
 #: src/main.ts
-#: src/modals/TaskActionPaletteModal.ts
 msgctxt "notices.commands.unarchived"
 msgid "Task unarchived"
 msgstr "タスクをアーカイブから戻しました"
@@ -11341,10 +11903,10 @@ msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
 msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 msgstr "TaskNotes は mdbase メタデータを v0.3 に更新しました。タスクファイルは変更されていません。以前のメタデータは {backupFolder} にバックアップされています。"
 
-#: src/bootstrap/starterNote.ts
-msgctxt "onboarding.intro"
-msgid "Tasks are Markdown notes in your vault. Use the command palette for these three steps."
-msgstr "タスクは保管庫内の Markdown ノートです。コマンドパレットで次の3つの手順を試してください。"
+#: src/views/stats/summary.ts
+msgctxt "views.stats.labels.tasks"
+msgid "Tasks"
+msgstr "タスク"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -11356,11 +11918,6 @@ msgstr "コピーしたタスク：{count}件"
 msgctxt "settings.integrations.autoExport.notices.exportSuccess"
 msgid "Tasks exported successfully"
 msgstr "タスクが正常にエクスポートされました"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponed"
-msgid "Tasks postponed: {count}. Failed: {failed}."
-msgstr "延期したタスク：{count}件。失敗：{failed}件。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.customTemplate.description"
@@ -11411,6 +11968,11 @@ msgstr "テキスト"
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
 msgstr "この回はすでに完了、スキップ、または日程変更されています。"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
+msgid "the {position} {weekday}"
+msgstr "{position}の{weekday}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11472,10 +12034,251 @@ msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotificatio
 msgid "This is a test reminder from TaskNotes."
 msgstr "これは TaskNotes からのテスト用リマインダーです。"
 
+#: src/bases/TaskListView.ts
+msgctxt "task list drop restriction"
+msgid "This is the dragged task."
+msgstr "これはドラッグ中のタスクです。"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "This month"
 msgstr "今月"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.thisMonth"
+msgid "This month"
+msgstr "今月"
+
+#: src/bootstrap/starterNote.ts
+msgctxt "starter note Markdown"
+msgid "This note is a small tour of TaskNotes inside your own vault. Work through it in place, then keep it as a reference or delete it when you no longer need it.\n"
+"\n"
+"TaskNotes works best when three things feel connected:\n"
+"\n"
+"1. Capture a task quickly.\n"
+"2. Store the task as a normal Markdown note.\n"
+"3. Review tasks through Bases views.\n"
+"\n"
+"## Before you start\n"
+"\n"
+"- [ ] Enable the Obsidian **Bases** core plugin.\n"
+"- [ ] Confirm TaskNotes has created the default {token1} files in {token2}.\n"
+"- [ ] Open the command palette and run **TaskNotes: Open tasks view**.\n"
+"\n"
+"TaskNotes creates missing default {token3} files automatically on startup when **Auto-create default files** is enabled. If the files are missing, use **Settings -> TaskNotes -> Appearance & interaction -> Views & base files -> Create files**.\n"
+"\n"
+"## 1. Create a task from the command palette\n"
+"\n"
+"Run **TaskNotes: Create new task** and create a real task you intend to do soon.\n"
+"\n"
+"Try a title like:\n"
+"\n"
+"```text\n"
+"Review my TaskNotes setup tomorrow #admin\n"
+"```\n"
+"\n"
+"After saving, TaskNotes creates a Markdown note for that task. Open the task note and look at the YAML properties at the top. Those properties are what Bases reads for filtering, sorting, grouping, and calendar placement.\n"
+"\n"
+"## 2. Convert inline tasks into TaskNotes\n"
+"\n"
+"The checkboxes below are ordinary Markdown tasks. Convert each one into a TaskNote from the line''s inline action or the command palette.\n"
+"\n"
+"- [ ] Create a TaskNotes inbox task due tomorrow #admin\n"
+"- [ ] Schedule a 20 minute planning task for next Monday #planning\n"
+"- [ ] Make a task linked to an active project note\n"
+"\n"
+"After conversion, notice a few things:\n"
+"\n"
+"- The source line can stay in this note as context.\n"
+"- The actual task now lives as its own Markdown note, so it can appear in TaskNotes views.\n"
+"- The converted line links to the TaskNote. Right-click that TaskNote link to open the task menu, then try changing a property such as status, priority, due date, scheduled date, or project.\n"
+"\n"
+"## 3. Review your tasks\n"
+"\n"
+"The embedded views below use the default TaskNotes Bases files.\n"
+"\n"
+"### Task list\n"
+"\n"
+"{token4}\n"
+"\n"
+"Use this when you want a straightforward list of everything open.\n"
+"\n"
+"### Agenda\n"
+"\n"
+"{token5}\n"
+"\n"
+"Use this when you care about due dates, scheduled dates, and what needs attention soon.\n"
+"\n"
+"### Mini calendar\n"
+"\n"
+"{token6}\n"
+"\n"
+"Use this when you want a compact calendar alongside your notes.\n"
+"\n"
+"### Calendar\n"
+"\n"
+"{token7}\n"
+"\n"
+"Use this when you want a larger calendar for scheduled work, due dates, timeblocks, and calendar events.\n"
+"\n"
+"### Kanban\n"
+"\n"
+"{token8}\n"
+"\n"
+"Use this when you want to move work through statuses like open, in progress, and done.\n"
+"\n"
+"## 4. Adjust only what gets in your way\n"
+"\n"
+"The defaults are enough to start. Visit settings later when you know what you want to change:\n"
+"\n"
+"- If task files are going to the wrong place, check **Settings -> TaskNotes -> Task files**.\n"
+"- If converted inline tasks should be created somewhere else, check **Settings -> TaskNotes -> Task creation -> Inline tasks**.\n"
+"- If the task modal shows too much or too little, check **Settings -> TaskNotes -> Task creation -> Form fields**.\n"
+"- If your vault uses different property names, statuses, priorities, or custom fields, check **Settings -> TaskNotes -> Properties**.\n"
+"\n"
+"## 5. Make it yours\n"
+"\n"
+"Try adding one custom property to a task, such as {token9}, {token10}, or {token11}. Because tasks are Markdown notes, custom properties can be used in Bases without locking you into a separate task database.\n"
+"\n"
+"## 6. Contextual views\n"
+"\n"
+"You can embed Bases views inside daily notes, project notes, meeting notes, or task notes. Advanced Bases filters can use the current note as context, so one view can show tasks related to whatever note it is embedded in.\n"
+"\n"
+"TaskNotes uses this pattern for the Relationships widget in task notes. When you are ready to customize views, see the TaskNotes documentation for examples.\n"
+"\n"
+"Useful next experiments:\n"
+"\n"
+"- Duplicate {token12} and make a view for one project.\n"
+"- Add a group to a Base view, such as status or priority.\n"
+"- Add a filter for tasks due this week.\n"
+"- Link a task to a project note and use backlinks to see where it is mentioned.\n"
+"\n"
+"## More help and extensions\n"
+"\n"
+"- Documentation: [tasknotes.dev]({token13})\n"
+"- Problems or bugs: [open an issue on GitHub]({token14})\n"
+"- Companion plugins:\n"
+"  - [Canvas Bases]({token15}) adds canvas-style boards and JSON Canvas snapshots for Bases views, with optional TaskNotes badges, actions, and relationship edges.\n"
+"  - [TaskNotes Workflows]({token16}) adds Markdown-defined automation for TaskNotes events, schedules, manual commands, and task actions.\n"
+"\n"
+"## Finished\n"
+"\n"
+"Now you know the core idea: tasks are notes, properties make them queryable, and Bases turns them into views.\n"
+""
+msgstr "このノートでは、自分の保管庫で TaskNotes を使いながら基本を学べます。実際に操作した後も参照用に残すか、不要になったら削除してください。\n"
+"\n"
+"TaskNotes では、次の3つをつなげて使います。\n"
+"\n"
+"1. タスクをすばやく記録する。\n"
+"2. タスクを通常の Markdown ノートとして保存する。\n"
+"3. Bases ビューでタスクを確認する。\n"
+"\n"
+"## 始める前に\n"
+"\n"
+"- [ ] Obsidian の **Bases** コアプラグインを有効にする。\n"
+"- [ ] TaskNotes がデフォルトの {token1} ファイルを {token2} に作成しているか確認する。\n"
+"- [ ] コマンドパレットを開き、**TaskNotes: タスクビューを開く**を実行する。\n"
+"\n"
+"**デフォルトファイルを自動作成**が有効な場合、TaskNotes は起動時に不足しているデフォルトの {token3} ファイルを自動作成します。ファイルが見つからない場合は、**設定 -> TaskNotes -> 一般 -> ビューと Base ファイル -> ファイルを作成**を使用してください。\n"
+"\n"
+"## 1. コマンドパレットからタスクを作成\n"
+"\n"
+"**TaskNotes: 新しいタスクを作成**を実行し、近いうちに取り組む実際のタスクを作成します。\n"
+"\n"
+"タイトルの例:\n"
+"\n"
+"```text\n"
+"Review my TaskNotes setup tomorrow #admin\n"
+"```\n"
+"\n"
+"保存すると、TaskNotes はタスクの Markdown ノートを作成します。タスクノートを開き、冒頭の YAML プロパティを確認してください。Bases はこの情報を使って絞り込み、並べ替え、グループ化、カレンダーへの配置を行います。\n"
+"\n"
+"## 2. インラインタスクを TaskNotes に変換\n"
+"\n"
+"下のチェックボックスは通常の Markdown タスクです。各行のインライン操作またはコマンドパレットから、それぞれをタスクノートに変換してください。\n"
+"\n"
+"- [ ] 明日が期限の TaskNotes 受信箱タスクを作成 #admin\n"
+"- [ ] 次の月曜日に20分の計画タスクを予定 #planning\n"
+"- [ ] 進行中のプロジェクトノートにリンクしたタスクを作成\n"
+"\n"
+"変換したら、次の点を確認してください。\n"
+"\n"
+"- 元の行をこのノートに残して、文脈として参照できます。\n"
+"- 実際のタスクは独立した Markdown ノートになるため、TaskNotes のビューに表示できます。\n"
+"- 変換された行にはタスクノートへのリンクが付きます。そのリンクを右クリックしてタスクメニューを開き、ステータス、優先度、期限日、予定日、プロジェクトなどのプロパティを変更してみてください。\n"
+"\n"
+"## 3. タスクを確認\n"
+"\n"
+"以下の埋め込みビューは TaskNotes のデフォルトの Bases ファイルを使用します。\n"
+"\n"
+"### タスクリスト\n"
+"\n"
+"{token4}\n"
+"\n"
+"未完了のタスクを一覧で確認したいときに使います。\n"
+"\n"
+"### アジェンダ\n"
+"\n"
+"{token5}\n"
+"\n"
+"期限日、予定日、近いうちに対応が必要なタスクを確認するときに使います。\n"
+"\n"
+"### ミニカレンダー\n"
+"\n"
+"{token6}\n"
+"\n"
+"ノートの横で小さなカレンダーを見たいときに使います。\n"
+"\n"
+"### カレンダー\n"
+"\n"
+"{token7}\n"
+"\n"
+"予定日、期限日、タイムブロック、カレンダーイベントを広いカレンダーで確認するときに使います。\n"
+"\n"
+"### カンバン\n"
+"\n"
+"{token8}\n"
+"\n"
+"未着手、進行中、完了などのステータス間でタスクを移動するときに使います。\n"
+"\n"
+"## 4. 必要なところだけ調整\n"
+"\n"
+"最初はデフォルト設定で十分です。変更したい点が分かってから設定を開いてください。\n"
+"\n"
+"- タスクファイルの保存先が違う場合は、**設定 -> TaskNotes -> 一般**を確認します。\n"
+"- 変換したインラインタスクを別の場所に作成したい場合は、**設定 -> TaskNotes -> インラインタスクの設定**を確認します。\n"
+"- タスクモーダルの項目が多すぎる、または少なすぎる場合は、**設定 -> TaskNotes -> モーダルのフィールド**を確認します。\n"
+"- 保管庫で異なるプロパティ名、ステータス、優先度、カスタムフィールドを使う場合は、**設定 -> TaskNotes -> タスクのプロパティ**を確認します。\n"
+"\n"
+"## 5. 自分に合わせて使う\n"
+"\n"
+"タスクに {token9}、{token10}、{token11} などのカスタムプロパティを1つ追加してみてください。タスクは Markdown ノートなので、専用のタスクデータベースに縛られず、Bases でもカスタムプロパティを利用できます。\n"
+"\n"
+"## 6. 文脈に合わせたビュー\n"
+"\n"
+"デイリーノート、プロジェクトノート、会議ノート、タスクノートには Bases ビューを埋め込めます。高度な Bases フィルターでは現在のノートを文脈として使用できるため、同じビューでも埋め込み先のノートに関連するタスクを表示できます。\n"
+"\n"
+"TaskNotes はタスクノートの関係ウィジェットでこの仕組みを使用します。ビューをカスタマイズするときは TaskNotes のドキュメントで例を確認してください。\n"
+"\n"
+"次に試せること:\n"
+"\n"
+"- {token12} を複製し、1つのプロジェクト用のビューを作る。\n"
+"- Base ビューにステータスや優先度によるグループを追加する。\n"
+"- 今週が期限のタスクを絞り込むフィルターを追加する。\n"
+"- タスクをプロジェクトノートにリンクし、バックリンクで言及箇所を確認する。\n"
+"\n"
+"## ヘルプと拡張機能\n"
+"\n"
+"- ドキュメント: [tasknotes.dev]({token13})\n"
+"- 問題やバグ: [GitHub で報告]({token14})\n"
+"- 関連プラグイン:\n"
+"  - [Canvas Bases]({token15}) は Bases ビューにキャンバス形式のボードと JSON Canvas のスナップショットを追加し、TaskNotes のバッジ、操作、関係の線も任意で表示できます。\n"
+"  - [TaskNotes Workflows]({token16}) は TaskNotes のイベント、スケジュール、手動コマンド、タスク操作を対象に、Markdown で定義した自動化を追加します。\n"
+"\n"
+"## 完了\n"
+"\n"
+"これで基本が分かりました。タスクはノートであり、プロパティによって検索でき、Bases によってビューとして表示できます。\n"
+""
 
 #: src/main.ts
 msgctxt "commands.convertCurrentNoteToTask.alreadyTask"
@@ -11496,6 +12299,11 @@ msgstr "TaskNotes のフォームから削除しますが、既存のノート�
 msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "Obsidian のシークレットストレージからクライアント ID とシークレットを削除します。"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
+msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
+msgstr "ポモドーロの履歴からセッションを削除します。既存のタスクの時間エントリは変更されません。"
 
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
@@ -11536,6 +12344,16 @@ msgstr "この値はすでに存在します。"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "This week"
+msgstr "今週"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.week"
+msgid "This week"
+msgstr "今週"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.thisWeek"
 msgid "This week"
 msgstr "今週"
 
@@ -11692,10 +12510,21 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "タイムラインビューを開く際にスクロールする時刻（HH:MM形式）"
 
+#: src/views/stats/summary.ts
+#: src/views/StatsView.ts
+msgctxt "views.stats.cards.timeTrackedEstimated"
+msgid "Time tracked / estimated"
+msgstr "追跡時間 / 見積時間"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeTrackingSection.header"
 msgid "Time tracking"
 msgstr "時間追跡"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "task menu time tracking group"
+msgid "Time tracking"
+msgstr "時間の記録"
 
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "notices.interface.trackingActive"
@@ -11707,7 +12536,6 @@ msgctxt "services/TaskService: TaskService.startTimeTrackingLocked display"
 msgid "Time tracking is already active for this task"
 msgstr "このタスクでは既に時間追跡が進行中です"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStarted"
 msgid "Time tracking started"
@@ -11718,7 +12546,6 @@ msgctxt "settings.features.timeTracking.stopNotificationName"
 msgid "Time tracking stop notification"
 msgstr "時間追跡停止通知"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/ui/TaskActionCoordinator.ts
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
@@ -11740,21 +12567,6 @@ msgctxt "unnamed timeblock tooltip"
 msgid "Timeblock"
 msgstr "タイムブロック"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.created"
-msgid "Timeblock \"{title}\" created successfully"
-msgstr "タイムブロック「{title}」を作成しました"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockDeletedSuccess"
-msgid "Timeblock \"{title}\" deleted successfully"
-msgstr "タイムブロック\"{title}\"が正常に削除されました"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "notices.timeblockUpdatedSuccess"
-msgid "Timeblock \"{title}\" updated successfully"
-msgstr "タイムブロック\"{title}\"が正常に更新されました"
-
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
 msgid "Timeblock {timeblockId} not found"
@@ -11770,15 +12582,20 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name
 msgid "Timeblock calendar"
 msgstr "タイムブロック用カレンダー"
 
+#: src/modals/TimeblockCreationModal.ts
+msgctxt "modals.timeblockCreation.created"
+msgid "Timeblock created"
+msgstr "タイムブロックを作成しました"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockDeletedSuccess"
+msgid "Timeblock deleted"
+msgstr "タイムブロックを削除しました"
+
 #: src/bases/calendar-core.ts
 msgctxt "notices.audit.timeblockCopied"
 msgid "Timeblock duplicated successfully"
 msgstr "タイムブロックを複製しました"
-
-#: src/bases/calendar-core.ts
-msgctxt "notices.audit.timeblockResized"
-msgid "Timeblock duration updated"
-msgstr "タイムブロックの長さを更新しました"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name"
@@ -11789,6 +12606,11 @@ msgstr "タイムブロックイベントのタイトルテンプレート"
 msgctxt "notices.audit.timeblockMoved"
 msgid "Timeblock moved successfully"
 msgstr "タイムブロックを移動しました"
+
+#: src/modals/TimeblockInfoModal.ts
+msgctxt "notices.timeblockUpdatedSuccess"
+msgid "Timeblock saved"
+msgstr "タイムブロックを保存しました"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeblocking.header"
@@ -11851,6 +12673,7 @@ msgid "Title"
 msgstr "タイトル"
 
 #: src/i18n/fieldLabels.ts
+#: src/modals/TaskCreationModal.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Title"
 msgstr "タイトル"
@@ -11869,16 +12692,6 @@ msgstr "カレンダーイベントのタイトル"
 msgctxt "modals.icsNoteCreation.titleDesc"
 msgid "Title for the new content"
 msgstr "新しいコンテンツのタイトル"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.titleDesc"
-msgid "Title for your timeblock"
-msgstr "タイムブロックのタイトル"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.titleDesc"
-msgid "Title for your timeblock"
-msgstr "タイムブロックのタイトル"
 
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.titleRequired"
@@ -11905,6 +12718,11 @@ msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "title: {title}"
 msgstr "タイトル: {title}"
 
+#: src/views/StatsView.ts
+msgctxt "views.stats.dateRangeTo"
+msgid "To"
+msgstr "終了"
+
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
@@ -11923,16 +12741,17 @@ msgctxt "modals.taskSelectorWithCreate.instructions.create"
 msgid "to create new task"
 msgstr "で新しいタスクを作成"
 
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
+#: src/ui/kit/listPicker.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "閉じる"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.execute"
-msgid "To execute"
-msgstr "実行"
+#: src/bases/KanbanView.ts
+#: src/bases/TaskListView.ts
+msgctxt "common.reorder.confirmLargeMessage"
+msgid "To keep this order, {count} notes in {scope} need to be updated. You can undo this change."
+msgstr "この順序を維持するには、{scope}にある{count}件のノートを更新する必要があります。この変更は元に戻せます。"
 
 #: src/modals/TaskSelectorWithCreateModal.ts
 msgctxt "modals.taskSelector.instructions.navigate"
@@ -11941,11 +12760,15 @@ msgstr "移動"
 
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
-#: src/modals/TaskActionPaletteModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.navigate"
 msgid "to navigate"
 msgstr "移動"
+
+#: src/bases/TaskListView.ts
+msgctxt "task list sorted drop restriction"
+msgid "To reorder tasks, sort this view by {property}."
+msgstr "タスクを並べ替えるには、このビューを {property} でソートしてください。"
 
 #: src/modals/UnscheduledTasksSelectorModal.ts
 msgctxt "modals.unscheduledTasksSelector.instructions.schedule"
@@ -11996,14 +12819,30 @@ msgctxt "settings.defaults.options.today"
 msgid "Today"
 msgstr "今日"
 
+#: src/ui/kit/dateLabel.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Today"
+msgstr "今日"
+
 #: src/modals/DateTimePickerModal.ts
 msgctxt "views.agenda.today"
 msgid "Today"
 msgstr "今日"
 
+#: src/bases/calendarKeyboard.ts
 #: src/bases/CalendarView.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.today"
+msgid "Today"
+msgstr "今日"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.sections.today"
+msgid "Today"
+msgstr "今日"
+
+#: src/views/StatsView.ts
+msgctxt "views.stats.sections.today"
 msgid "Today"
 msgstr "今日"
 
@@ -12012,15 +12851,30 @@ msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
 msgid "Today column width (×)"
 msgstr "今日の列幅（倍）"
 
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayFocus.label"
+msgid "Today''s focus"
+msgstr "今日の集中時間"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
+msgid "Today''s pomos"
+msgstr "今日のポモドーロ数"
+
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "列「{column}」を折りたたみ・展開"
 
-#: src/bases/TaskListView.ts
+#: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"
 msgid "Toggle group"
 msgstr "グループの表示を切り替え"
+
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction shortcut"
+msgid "Toggle selection"
+msgstr "選択を切り替え"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.exchangeCodeForTokens display"
@@ -12070,6 +12924,11 @@ msgctxt "settings.defaults.options.tomorrow"
 msgid "Tomorrow"
 msgstr "明日"
 
+#: src/ui/kit/dateLabel.ts
+msgctxt "ui.taskCard.relativeDay"
+msgid "Tomorrow"
+msgstr "明日"
+
 #: src/ui/taskCardProperties.ts
 msgctxt "ui.taskCard.relativeTomorrow"
 msgid "Tomorrow"
@@ -12079,6 +12938,31 @@ msgstr "明日"
 msgctxt "settings.appearance.uiElements.relationshipsPosition.options.top"
 msgid "Top of note"
 msgstr "ノートの上部"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.totalFocus.label"
+msgid "Total focus duration"
+msgstr "総フォーカス時間"
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
+msgid "Total pomos"
+msgstr "総ポモ数"
+
+#: src/views/stats/summary.ts
+msgctxt "views.stats.cards.totalTasks"
+msgid "Total tasks"
+msgstr "総タスク数"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.totalTasks"
+msgid "Total tasks"
+msgstr "タスクの合計"
+
+#: src/views/stats/drilldown.ts
+msgctxt "views.stats.project.totalTime"
+msgid "Total time"
+msgstr "合計時間"
 
 #: src/ui/PropertyVisibilityDropdown.ts
 msgctxt "components.propertyVisibilityDropdown.properties.totalTrackedTime"
@@ -12134,11 +13018,6 @@ msgstr "トリガーが長すぎます（最大10文字）"
 msgctxt "bases/basesValueConversion: formatBasesGroupKeyValue display"
 msgid "True"
 msgstr "真"
-
-#: src/bases/basesSearchUi.ts
-msgctxt "bases/basesSearchUi: renderBasesSearchNoResults display"
-msgid "Try a different search term or clear the search"
-msgstr "別の検索語を試すか、検索をクリアしてください"
 
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.tue"
@@ -12224,19 +13103,21 @@ msgid "Unarchive"
 msgstr "アーカイブ解除"
 
 #: src/modals/TaskActionPaletteModal.ts
+#: src/ui/taskViewKeyboard.ts
 msgctxt "modals/TaskActionPaletteModal: TaskActionPaletteModal.buildActionsList title"
 msgid "Unarchive task"
 msgstr "タスクをアーカイブから戻す"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.archiveAction.unarchived"
-msgid "unarchived"
-msgstr "アーカイブ解除"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Under estimate"
 msgstr "見積もり内"
+
+#: src/ui/taskPropertyPickers.ts
+#: src/ui/taskViewKeyboard.ts
+msgctxt "interaction undo"
+msgid "Undo"
+msgstr "元に戻す"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undo"
@@ -12253,7 +13134,7 @@ msgctxt "settings.defaults.reminders.fields.unit"
 msgid "Unit:"
 msgstr "単位："
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.unknownDependency"
 msgid "Unknown"
 msgstr "不明"
@@ -12348,7 +13229,7 @@ msgctxt "modals.unscheduledTasksSelector.title"
 msgid "Unscheduled tasks"
 msgstr "予定されていないタスク"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/completion.ts
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.unskipInstance"
 msgid "Unskip instance"
@@ -12436,12 +13317,6 @@ msgstr "更新間隔（5から1440分の間）"
 msgctxt "modals.reminder.updateButton"
 msgid "Update reminder"
 msgstr "リマインダーを更新"
-
-#: src/bases/CalendarView.ts
-#: src/components/BatchContextMenu.ts
-msgctxt "notices.audit.update"
-msgid "Update tasks"
-msgstr "タスクを更新"
 
 #: src/main.ts
 msgctxt "notices.commands.basesUpdated"
@@ -12620,7 +13495,6 @@ msgctxt "modals.actionPalette.editTimeDesc"
 msgid "View, edit, or add time entries for this task"
 msgstr "このタスクの時間エントリを表示・編集・追加"
 
-#: src/bootstrap/starterNote.ts
 #: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.header"
 msgid "Views & base files"
@@ -12636,15 +13510,15 @@ msgctxt "settings.features.notifications.soundVolumeDesc"
 msgid "Volume for task reminder sounds (0-100)"
 msgstr "タスクリマインダー音の音量 (0-100)"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.week"
-msgid "W"
-msgstr "週"
-
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
 msgstr "認証を待機中..."
+
+#: src/views/PomodoroStatsView.ts
+msgctxt "views.pomodoroStats.basesMigration.title"
+msgid "Want a base view?"
+msgstr "Bases ビューを使いますか？"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.starMessage"
@@ -12679,6 +13553,12 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.wednesd
 msgid "Wednesday"
 msgstr "水曜日"
 
+#: src/bases/calendarKeyboard.ts
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Week"
+msgstr "週"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.weekStartsOn"
 msgid "Week starts on"
@@ -12696,12 +13576,13 @@ msgid "Week view"
 msgstr "週表示"
 
 #: src/components/DateContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/properties.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "平日"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.weekdays"
 msgid "Weekdays"
 msgstr "平日"
@@ -12715,6 +13596,11 @@ msgstr "平日"
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "平日のみ"
+
+#: src/i18n/recurrence.ts
+msgctxt "recurrence weekends"
+msgid "Weekends"
+msgstr "毎週末"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
@@ -12741,7 +13627,7 @@ msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "毎週{day}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/task-context-menu/recurrence.ts
 msgctxt "modals.task.recurrence.weeklyOn"
 msgid "Weekly on {days}"
 msgstr "毎週{days}"
@@ -12769,8 +13655,8 @@ msgstr "表示する内容"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.header"
-msgid "What''s new in TaskNotes {version}"
-msgstr "TaskNotes {version} の新機能"
+msgid "What''s new in TaskNotes"
+msgstr "TaskNotesの新機能"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.title"
@@ -12892,16 +13778,6 @@ msgctxt "settings.integrations.webhooks.events.taskUnarchived.description"
 msgid "When tasks are unarchived"
 msgstr "タスクのアーカイブが解除されたとき"
 
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.endTimeDesc"
-msgid "When the timeblock ends"
-msgstr "タイムブロックが終了する時刻"
-
-#: src/modals/TimeblockCreationModal.ts
-msgctxt "modals.timeblockCreation.startTimeDesc"
-msgid "When the timeblock starts"
-msgstr "タイムブロックが開始される時刻"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.description"
 msgid "When time tracking starts"
@@ -12942,15 +13818,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "作業時間"
 
-#: src/bases/CalendarView.ts
-msgctxt "views.basesCalendar.buttonText.year"
-msgid "Y"
-msgstr "年"
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
 msgstr "Yahooカレンダー"
+
+#: src/bases/CalendarView.ts
+msgctxt "calendar view name"
+msgid "Year"
+msgstr "年"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.yearView"
@@ -12983,8 +13859,18 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence
 msgid "Yearly recurrence"
 msgstr "年次繰り返し"
 
+#: src/ui/kit/modal.ts
+msgctxt "color name"
+msgid "Yellow"
+msgstr "黄"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
+msgid "Yesterday"
+msgstr "昨日"
+
+#: src/ui/kit/dateLabel.ts
+msgctxt "ui.taskCard.relativeDay"
 msgid "Yesterday"
 msgstr "昨日"
 

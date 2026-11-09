@@ -15,15 +15,19 @@ describe("Bases search UI helpers", () => {
 	it("renders the no-results message without treating the search term as markup", () => {
 		const container = document.createElement("div");
 
-		const result = renderBasesSearchNoResults(container, "<client>");
+		const onClear = jest.fn();
+		const result = renderBasesSearchNoResults(container, "<client>", onClear);
 
-		expect(result.className).toBe("tn-search-no-results");
-		expect(container.querySelector(".tn-search-no-results__text")?.textContent).toBe(
+		expect(result.classList.contains("tn-search-no-results")).toBe(true);
+		expect(container.querySelector(".tn-empty__message")?.textContent).toBe(
 			'No tasks match "<client>"'
 		);
-		expect(container.querySelector(".tn-search-no-results__hint")?.textContent).toBe(
-			"Try a different search term or clear the search"
-		);
+		const button = container.querySelector("button");
+		expect(button?.textContent).toContain("Clear search");
+		button?.click();
+		expect(onClear).toHaveBeenCalledTimes(1);
+		button?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+		expect(onClear).toHaveBeenCalledTimes(2);
 		expect(container.querySelector("client")).toBeNull();
 	});
 

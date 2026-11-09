@@ -1,4 +1,5 @@
 import { configLabel } from "../i18n/configLabels";
+import { renderPriorityMenuGlyph, renderUnconfiguredMenuValue } from "../ui/kit/menu";
 import TaskNotesPlugin from "../main";
 import { PriorityConfig } from "../types";
 import { ContextMenu } from "./ContextMenu";
@@ -14,7 +15,6 @@ export class PriorityContextMenu {
 	private menu: ContextMenu;
 	private options: PriorityContextMenuOptions;
 	private sortedPriorities: PriorityConfig[] = [];
-	private targetDoc: Document = activeDocument;
 
 	constructor(options: PriorityContextMenuOptions) {
 		this.menu = new ContextMenu();
@@ -25,20 +25,15 @@ export class PriorityContextMenu {
 	private buildMenu(): void {
 		// Match the order shown in Priority settings.
 		this.sortedPriorities = this.options.plugin.priorityManager.getPrioritiesByWeightAsc();
+		renderUnconfiguredMenuValue(this.menu, this.options.currentValue, this.sortedPriorities);
 
 		this.sortedPriorities.forEach((priority) => {
 			this.menu.addItem((item) => {
-				let title = configLabel(priority);
+				renderPriorityMenuGlyph(item, priority, this.sortedPriorities);
 
-				// Preview the priority's own icon, if it has one
-				item.setIcon(priority.icon || "star");
-
-				// Highlight current selection with visual indicator
-				if (priority.value === this.options.currentValue) {
-					title = `✓ ${configLabel(priority)}`;
-				}
-
-				item.setTitle(title);
+				item.setTitle(configLabel(priority)).setChecked(
+					priority.value === this.options.currentValue
+				);
 
 				item.onClick(async () => {
 					this.options.onSelect(priority.value);
@@ -48,45 +43,10 @@ export class PriorityContextMenu {
 	}
 
 	public show(event: UIEvent): void {
-		// Store the document reference from the event target to support pop-out windows
-		// Use cross-window compatible instanceOf check
-		if ((event.target as Node)?.instanceOf?.(HTMLElement)) {
-			this.targetDoc = (event.target as HTMLElement).ownerDocument;
-		}
 		showCoordinatedMenu(this.menu, event);
-
-		// Apply color styling after menu is shown
-		window.setTimeout(() => {
-			this.applyColorStyling();
-		}, 10);
 	}
 
 	public showAtElement(element: HTMLElement): void {
-		// Store the document reference from the element to support pop-out windows
-		this.targetDoc = element.ownerDocument;
 		showCoordinatedMenuAtElement(this.menu, element);
-
-		// Apply color styling after menu is shown
-		window.setTimeout(() => {
-			this.applyColorStyling();
-		}, 10);
-	}
-
-	private applyColorStyling(): void {
-		const menuEl = this.targetDoc.querySelector(".menu");
-
-		if (!menuEl) return;
-
-		const menuItems = menuEl.querySelectorAll(".menu-item");
-
-		this.sortedPriorities.forEach((priority, index) => {
-			const menuItem = menuItems[index] as HTMLElement;
-			if (menuItem && priority.color) {
-				const iconEl = menuItem.querySelector(".menu-item-icon");
-				if (iconEl) {
-					(iconEl as HTMLElement).style.color = priority.color;
-				}
-			}
-		});
 	}
 }

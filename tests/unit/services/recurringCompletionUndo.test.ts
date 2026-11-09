@@ -63,6 +63,14 @@ describe('recurring completion Undo receipt', () => {
 		expect(readCompletionContent(restored!).frontmatter).toMatchObject({ priority: 'high', title: 'Renamed' });
 	});
 
+	it('preserves blank lines and trailing body whitespace for a frontmatter-only Undo', () => {
+		const previous = '---\npriority: normal\n---\n\n\nKeep trailing whitespace.  \n\n';
+		const next = previous.replace('priority: normal', 'priority: high');
+		const undo = buildCompletionContentUndo(previous, next, ['priority'], 'dateModified');
+		const restored = restoreCompletionContent(next, undo, 'dateModified', 'now');
+		expect(readCompletionContent(restored!).body).toBe(readCompletionContent(previous).body);
+	});
+
 	it.each([
 		['schedule', after.replace('2027-10-21', '2027-11-01')],
 		['recurrence rule', after.replace('FREQ=YEARLY', 'FREQ=MONTHLY')],

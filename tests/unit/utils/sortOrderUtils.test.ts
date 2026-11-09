@@ -73,6 +73,21 @@ function createPlugin(frontmatterByPath: FrontmatterMap, sortOrderField = "taskn
 }
 
 describe("sortOrderUtils", () => {
+	it.each(["asc", "desc"] as const)("initializes only the prefix needed for a first %s drop, then writes only the moved note", async (direction) => {
+		const frontmatterByPath: FrontmatterMap = Object.fromEntries(Array.from({ length: 39 }, (_, index) => [`task-${index}.md`, { status: "todo" }]));
+		const plugin = createPlugin(frontmatterByPath);
+		const visibleTaskPaths = Object.keys(frontmatterByPath);
+		const plan = await prepareSortOrderUpdate("task-2.md", true, "todo", "status", "task-0.md", plugin, { visibleTaskPaths, sortDirection: direction });
+		expect(plan.reason).toBe("sparse-init");
+		expect(plan.additionalWrites.map((write) => write.path)).toEqual(["task-1.md"]);
+		await applySortOrderPlan("task-0.md", plan, plugin);
+		const ranks = [frontmatterByPath["task-1.md"].tasknotes_manual_order, frontmatterByPath["task-0.md"].tasknotes_manual_order];
+		if (direction === "asc") expectAscendingDisplayOrder(ranks);
+		else expectDescendingDisplayOrder(ranks);
+		const next = await prepareSortOrderUpdate("task-1.md", true, "todo", "status", "task-0.md", plugin, { visibleTaskPaths: ["task-1.md", "task-0.md", ...visibleTaskPaths.slice(2)], sortDirection: direction });
+		expect(next.additionalWrites).toEqual([]);
+		expect(plugin.app.fileManager.processFrontMatter).toHaveBeenCalledTimes(2);
+	});
 	it.each(["asc", "desc"] as const)("keeps missing manual ranks last in %s order", (direction) => {
 		for (const missing of [undefined, null, ""]) {
 			expect(compareManualOrderValues(missing, "tnmmmmmmmmmm", direction)).toBeGreaterThan(0);

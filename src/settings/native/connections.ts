@@ -502,12 +502,13 @@ function subscriptionAuthentication(
 			visible: () => !credentialsHidden(),
 			render: (setting) => {
 				setting.addText((text) => {
-					const setPlaceholder = () =>
+					const setPlaceholder = (): void => {
 						text.setPlaceholder(
 							service?.hasPassword(subscriptionId)
 								? ctx.t(msg({ message: "Saved. Enter a new password to replace it", context: "settings.integrations.subscriptionsList.placeholders.passwordSaved" }))
 								: ctx.t(msg({ message: "Password", context: "settings.integrations.subscriptionsList.placeholders.password" }))
 						);
+					};
 					text.inputEl.type = "password";
 					text.inputEl.autocomplete = "new-password";
 					setPlaceholder();

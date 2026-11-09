@@ -209,7 +209,9 @@ describe("defaultBasesFiles", () => {
 
 		expect(parse(template).formulas.dueIn).toContain('if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
 		expect(parse(template).properties["formula.dueIn"].displayName).toBe("Due in");
-		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
+		const order = parse(template).views[0].order;
+		expect(order[order.indexOf("due") + 1]).toBe("formula.dueIn");
+		expect(order).not.toContain("file.name");
 		expect(template).toContain('calendarView: "listWeek"');
 		expect(template).toContain("listDayCount: 7");
 		expect(template).toContain("showOverdueOnToday: true");

@@ -21,10 +21,17 @@ import {
   DEFAULT_TASK_CARD_OPTIONS
 } from '../../../src/ui/TaskCard';
 
-import { observeTranslation } from "../../helpers/real-i18n";
-import { TaskInfo } from '../../../src/types';
-import { TaskFactory } from '../../helpers/mock-factories';
-import { MockObsidian, TFile, Menu, Notice, Modal, App } from '../../helpers/obsidian-runtime';
+import { TaskInfo } from "../../../src/types";
+import { createI18nService } from "../../../src/i18n";
+import { TaskFactory } from "../../helpers/mock-factories";
+import { MockObsidian, TFile, Menu, Notice, Modal, App } from "../../helpers/obsidian-runtime";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+}));
 
 // Mock external dependencies
 jest.mock('date-fns', () => ({
@@ -107,485 +114,1056 @@ jest.mock('../../../src/components/TaskContextMenu', () => {
   };
 });
 
-describe('TaskCard Component', () => {
-  let mockPlugin: any;
-  let mockApp: any;
-  let container: HTMLElement;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    MockObsidian.reset();
-
-    // Create DOM container
-    document.body.innerHTML = '';
-    container = document.createElement('div');
-    document.body.appendChild(container);
-
-    // Mock plugin
-    mockApp = new App();
-    mockPlugin = {
-      app: mockApp,
-      selectedDate: new Date('2025-01-15'),
-      fieldMapper: {
-        isPropertyForField: jest.fn(() => false),
-        toUserField: jest.fn((field) => field),
-        toInternalField: jest.fn((field) => field),
-        getMapping: jest.fn(() => ({
-          status: 'status',
-          priority: 'priority',
-          due: 'due',
-          scheduled: 'scheduled',
-          title: 'title',
-          tags: 'tags',
-          contexts: 'contexts',
-          projects: 'projects',
-        })),
-      },
-      statusManager: {
-        isCompletedStatus: jest.fn((status) => status === 'done'),
-        getStatusConfig: jest.fn((status) => ({
-          value: status,
-          label: status,
-          color: '#666666'
-        })),
-        getAllStatuses: jest.fn(() => [
-          { value: 'open', label: 'Open' },
-          { value: 'done', label: 'Done' }
-        ]),
-        getNonCompletionStatuses: jest.fn(() => [
-          { value: 'open', label: 'Open' },
-          { value: 'in-progress', label: 'In Progress' }
-        ]),
-        getNextStatus: jest.fn(() => 'done'),
-        getCompletedStatuses: jest.fn(() => ['done'])
-      },
-      priorityManager: {
-        getPriorityConfig: jest.fn((priority) => ({
-          value: priority,
-          label: priority,
-          color: '#ff0000'
-        })),
-        getPrioritiesByWeight: jest.fn(() => [
-          { value: 'high', label: 'High' },
-          { value: 'normal', label: 'Normal' }
-        ])
-      },
-      getActiveTimeSession: jest.fn(() => null),
-      toggleTaskStatus: jest.fn(),
-      toggleRecurringTaskComplete: jest.fn(),
-      updateTaskProperty: jest.fn(),
-      openTaskEditModal: jest.fn(),
-      openDueDateModal: jest.fn(),
-      openScheduledDateModal: jest.fn(),
-      startTimeTracking: jest.fn(),
-      stopTimeTracking: jest.fn(),
-      toggleTaskArchive: jest.fn(),
-      formatTime: jest.fn((minutes) => `${minutes}m`),
-      cacheManager: {
-        getTaskInfo: jest.fn()
-      },
-      taskService: {
-        deleteTask: jest.fn()
-      },
-      projectSubtasksService: {
-        isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
-        isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false)
-      },
-      expandedProjectsService: {
-        isExpanded: jest.fn(() => false),
-        toggle: jest.fn(() => true),
-      },
-      i18n: {
-        translate: observeTranslation(),
-      },
-      settings: {
-        singleClickAction: 'edit',
-        doubleClickAction: 'none',
-        showExpandableSubtasks: true,
-        subtaskChevronPosition: 'right',
-        calendarViewSettings: {
-          timeFormat: '12' // Default to 12-hour format for test consistency
-        }
-      }
-    };
-
-    // Ensure app has proper mock methods - use the same mockApp variable
-    mockApp.vault = mockApp.vault || {};
-    mockApp.vault.getAbstractFileByPath = jest.fn();
-    mockApp.workspace = mockApp.workspace || {};
-    mockApp.workspace.getLeaf = jest.fn().mockReturnValue({
-      openFile: jest.fn()
-    });
-    mockApp.workspace.openLinkText = jest.fn();
-    mockApp.workspace.trigger = jest.fn();
-    mockApp.metadataCache = mockApp.metadataCache || {};
-    mockApp.metadataCache.getFirstLinkpathDest = jest.fn();
-    mockApp.metadataCache.getCache = jest.fn();
-
-    // Mock console methods
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
-    jest.spyOn(console, 'debug').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-    document.body.innerHTML = '';
-  });
-
-  describe('createTaskCard', () => {
-    it('should create basic task card', () => {
-      const task = TaskFactory.createTask({
-        title: 'Test Task',
-        status: 'open',
-        priority: 'high'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card).toBeInstanceOf(HTMLElement);
-      expect(card.classList.contains('task-card')).toBe(true);
-      expect(card.classList.contains('task-card--priority-high')).toBe(true);
-      expect(card.classList.contains('task-card--status-open')).toBe(true);
-      expect(card.dataset.taskPath).toBe(task.path);
-      expect(card.dataset.status).toBe('open');
-    });
-
-    it('should sanitize status and priority class modifiers with spaces', () => {
-      const task = TaskFactory.createTask({
-        title: 'Test Task',
-        status: '60-In Progress',
-        priority: 'High Priority'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--status-60-in-progress')).toBe(true);
-      expect(card.classList.contains('task-card--priority-high-priority')).toBe(true);
-      expect(card.classList.contains('Progress')).toBe(false);
-      expect(card.classList.contains('Priority')).toBe(false);
-    });
-
-    it('should create task card with all default options', () => {
-      const task = TaskFactory.createTask();
-      const card = createTaskCard(task, mockPlugin);
-
-      // Should not have checkbox by default
-      expect(card.querySelector('.task-card__checkbox')).toBeNull();
-
-      // Should have status dot
-      expect(card.querySelector('.task-card__status-dot')).toBeTruthy();
-
-      // Should have title
-      const titleEl = card.querySelector('.task-card__title');
-      expect(titleEl?.textContent).toBe(task.title);
-    });
-
-    it('should render wikilinks in task titles as clickable internal links (#1733)', () => {
-      const linkedFile = new TFile('Lidl.md');
-      mockPlugin.app.metadataCache.getFirstLinkpathDest.mockReturnValue(linkedFile);
-      const task = TaskFactory.createTask({
-        title: 'Buy milk from [[Lidl]]',
-        path: 'Tasks/buy-milk-from-lidl.md'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      const titleText = card.querySelector('.task-card__title-text');
-      const link = titleText?.querySelector('a.internal-link') as HTMLAnchorElement | null;
-      expect(titleText?.textContent).toBe('Buy milk from Lidl');
-      expect(link).toBeTruthy();
-      expect(link?.textContent).toBe('Lidl');
-      expect(link?.getAttribute('data-href')).toBe('Lidl');
-    });
-
-    it.skip('should create task card with checkbox when enabled', () => {
-      const task = TaskFactory.createTask({ status: 'done' });
-      const options: Partial<TaskCardOptions> = { showCheckbox: true };
-
-      const card = createTaskCard(task, mockPlugin, undefined, options);
-
-      const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
-      expect(checkbox).toBeTruthy();
-      expect(checkbox.checked).toBe(true);
-      expect(card.classList.contains('task-card--checkbox-enabled')).toBe(true);
-    });
-
-    it('should create recurring task card', () => {
-      const task = TaskFactory.createRecurringTask('FREQ=DAILY');
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--recurring')).toBe(true);
-      expect(card.querySelector('.task-card__recurring-indicator')).toBeTruthy();
-    });
-
-    it('should indicate when a task has note body details', () => {
-      const task = TaskFactory.createTask({
-        details: 'Bring the reusable bags.'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--has-details')).toBe(true);
-      expect(card.dataset.hasDetails).toBe('true');
-      expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();
-    });
-
-    it('should indicate when Obsidian metadata shows note body content', () => {
-      const task = TaskFactory.createTask({
-        path: 'Tasks/body-from-cache.md',
-        details: undefined
-      });
-      mockPlugin.app.metadataCache.getCache.mockReturnValue({
-        sections: [
-          { type: 'yaml' },
-          { type: 'paragraph' }
-        ]
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(mockPlugin.app.metadataCache.getCache).toHaveBeenCalledWith(task.path);
-      expect(card.classList.contains('task-card--has-details')).toBe(true);
-      expect(card.dataset.hasDetails).toBe('true');
-      expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();
-    });
-
-    it('should not indicate whitespace-only task details', () => {
-      const task = TaskFactory.createTask({
-        details: '   \n\t'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--has-details')).toBe(false);
-      expect(card.dataset.hasDetails).toBe('false');
-      expect(card.querySelector('.task-card__details-indicator')).toBeNull();
-    });
-
-    it('should create completed task card', () => {
-      const task = TaskFactory.createTask({ status: 'done' });
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--completed')).toBe(true);
-      expect(card.classList.contains('task-card--completed-strikethrough')).toBe(true);
-
-      const titleEl = card.querySelector('.task-card__title');
-      expect(titleEl?.classList.contains('completed')).toBe(true);
-    });
-
-    it('should keep completed task card titles readable when strikethrough is disabled', () => {
-      mockPlugin.settings.showCompletedTaskStrikethrough = false;
-      const task = TaskFactory.createTask({ status: 'done' });
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--completed')).toBe(true);
-      expect(card.classList.contains('task-card--completed-strikethrough')).toBe(false);
-    });
-
-    it('should create archived task card', () => {
-      const task = TaskFactory.createTask({ archived: true });
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--archived')).toBe(true);
-    });
-
-    it('should create actively tracked task card', () => {
-      const task = TaskFactory.createTask();
-      mockPlugin.getActiveTimeSession.mockReturnValue({
-        startTime: '2025-01-15T10:00:00Z'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.classList.contains('task-card--actively-tracked')).toBe(true);
-    });
-
-    it('should add has-projects class for tasks with projects (issue #355)', () => {
-      const taskWithProjects = TaskFactory.createTask({
-        projects: ['[[My Project]]', 'Another Project']
-      });
-      const cardWithProjects = createTaskCard(taskWithProjects, mockPlugin);
-
-      expect(cardWithProjects.classList.contains('task-card--has-projects')).toBe(true);
-
-      const taskWithoutProjects = TaskFactory.createTask({
-        projects: []
-      });
-      const cardWithoutProjects = createTaskCard(taskWithoutProjects, mockPlugin);
-
-      expect(cardWithoutProjects.classList.contains('task-card--has-projects')).toBe(false);
-
-      const taskWithEmptyProjects = TaskFactory.createTask({
-        projects: ['', '  ', null as any, undefined as any]
-      });
-      const cardWithEmptyProjects = createTaskCard(taskWithEmptyProjects, mockPlugin);
-
-      expect(cardWithEmptyProjects.classList.contains('task-card--has-projects')).toBe(false);
-    });
-
-    it('should apply priority and status colors', () => {
-      const task = TaskFactory.createTask({
-        status: 'open',
-        priority: 'high'
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-
-      expect(card.style.getPropertyValue('--priority-color')).toBe('#ff0000');
-      expect(card.style.getPropertyValue('--current-priority-color')).toBe('#ff0000');
-      expect(card.dataset.priority).toBe('high');
-      expect(card.style.getPropertyValue('--current-status-color')).toBe('#666666');
-    });
-
-    it('should create priority indicator dot', () => {
-      const task = TaskFactory.createTask({ priority: 'high' });
-      const card = createTaskCard(task, mockPlugin);
-
-      const priorityDot = card.querySelector('.task-card__priority-dot') as HTMLElement;
-      expect(priorityDot).toBeTruthy();
-      expect(priorityDot.style.borderColor).toBe('rgb(255, 0, 0)');
-      expect(priorityDot.getAttribute('aria-label')).toBe('Priority: high');
-    });
-
-    it('should render configured priority icons instead of a plain dot', () => {
-      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
-        value: priority,
-        label: priority,
-        color: '#ff0000',
-        icon: priority === 'high' ? 'alert-circle' : undefined
-      }));
-      const task = TaskFactory.createTask({ priority: 'high' });
-      const card = createTaskCard(task, mockPlugin);
-
-      const priorityDot = card.querySelector('.task-card__priority-dot') as HTMLElement;
-      expect(priorityDot).toBeTruthy();
-      expect(priorityDot.classList.contains('task-card__priority-dot--icon')).toBe(true);
-      expect(priorityDot.getAttribute('data-icon')).toBe('alert-circle');
-      expect(priorityDot.getAttribute('aria-label')).toBe('Priority: high');
-    });
-
-    it.skip('should create metadata line with various task properties', () => {
-      const task = TaskFactory.createTask({
-        due: '2025-01-15T14:30:00',
-        scheduled: '2025-01-15',
-        contexts: ['work', 'urgent'],
-        timeEstimate: 60,
-        timeEntries: [{ startTime: '2025-01-15T10:00:00Z', endTime: '2025-01-15T10:30:00Z' }]
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-      const metadataLine = card.querySelector('.task-card__metadata');
-
-      expect(metadataLine?.textContent).toContain('Due:');
-      expect(metadataLine?.textContent).toContain('Scheduled:');
-      expect(metadataLine?.textContent).toContain('@work, @urgent');
-      // Time tracking info should only show when explicitly configured as visible properties
-      expect(metadataLine?.textContent).not.toContain('30m spent');
-      expect(metadataLine?.textContent).not.toContain('60m estimated');
-    });
-
-    it.skip('should show time tracking properties when explicitly enabled', () => {
-      const task = TaskFactory.createTask({
-        timeEstimate: 60,
-        timeEntries: [{ startTime: '2025-01-15T10:00:00Z', endTime: '2025-01-15T10:30:00Z' }],
-        totalTrackedTime: 30
-      });
-
-      // Test with timeEstimate and totalTrackedTime properties explicitly enabled
-      const visibleProperties = ['timeEstimate', 'totalTrackedTime'];
-      const card = createTaskCard(task, mockPlugin, visibleProperties);
-      const metadataLine = card.querySelector('.task-card__metadata');
-
-      expect(metadataLine?.textContent).toContain('60m estimated');
-      expect(metadataLine?.textContent).toContain('30m tracked');
-    });
-
-    it('should not show totalTrackedTime when value is 0', () => {
-      const task = TaskFactory.createTask({
-        totalTrackedTime: 0
-      });
-
-      // Enable totalTrackedTime property but value is 0
-      const visibleProperties = ['totalTrackedTime'];
-      const card = createTaskCard(task, mockPlugin, visibleProperties);
-      const metadataLine = card.querySelector('.task-card__metadata');
-
-      expect(metadataLine?.textContent).not.toContain('tracked');
-    });
-
-    it.skip('should create clickable project links for wikilink projects', () => {
-      const task = TaskFactory.createTask({
-        projects: ['[[Project A]]', '[[Project B]]', 'regular-project']
-      });
-
-      const card = createTaskCard(task, mockPlugin);
-      const metadataLine = card.querySelector('.task-card__metadata');
-
-      // Check that project links are rendered
-      expect(metadataLine?.textContent).toContain('+Project A');
-      expect(metadataLine?.textContent).toContain('+Project B');
-      expect(metadataLine?.textContent).toContain('+regular-project');
-
-      // Check that wikilink projects have clickable links
-      const projectLinks = card.querySelectorAll('.task-card__project-link');
-      expect(projectLinks.length).toBe(2); // Only wikilink projects should have clickable links
-
-      // Check link properties
-      expect(projectLinks[0].textContent).toBe('Project A');
-      expect(projectLinks[0].getAttribute('data-href')).toBe('Project A');
-      expect(projectLinks[0].classList.contains('internal-link')).toBe(true);
-
-      expect(projectLinks[1].textContent).toBe('Project B');
-      expect(projectLinks[1].getAttribute('data-href')).toBe('Project B');
-      expect(projectLinks[1].classList.contains('internal-link')).toBe(true);
-    });
-
-    it.skip('should handle project link clicks and open files', async () => {
-      const task = TaskFactory.createTask({
-        projects: ['[[Test Project]]']
-      });
-
-      const mockFile = new TFile('test-project.md');
-      mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(mockFile);
-
-      const card = createTaskCard(task, mockPlugin);
-      const projectLink = card.querySelector('.task-card__project-link') as HTMLElement;
-
-      expect(projectLink).toBeTruthy();
-
-      // Simulate click
-      const clickEvent = new MouseEvent('click', { bubbles: true });
-      projectLink.dispatchEvent(clickEvent);
+describe("TaskCard Component", () => {
+	let mockPlugin: any;
+	let mockApp: any;
+	let container: HTMLElement;
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		MockObsidian.reset();
+
+		// Create DOM container
+		document.body.innerHTML = "";
+		container = document.createElement("div");
+		document.body.appendChild(container);
+
+		// Mock plugin
+		mockApp = new App();
+		mockPlugin = {
+			app: mockApp,
+			selectedDate: new Date("2025-01-15"),
+			fieldMapper: {
+				isPropertyForField: jest.fn(() => false),
+				toUserField: jest.fn((field) => field),
+				toInternalField: jest.fn((field) => field),
+				getMapping: jest.fn(() => ({
+					status: "status",
+					priority: "priority",
+					due: "due",
+					scheduled: "scheduled",
+					title: "title",
+					tags: "tags",
+					contexts: "contexts",
+					projects: "projects",
+				})),
+			},
+			openTagsPane: jest.fn(),
+			statusManager: {
+				isCompletedStatus: jest.fn((status) => status === "done"),
+				getStatusConfig: jest.fn((status) => ({
+					value: status,
+					label: status,
+					color: "#666666",
+				})),
+				getAllStatuses: jest.fn(() => [
+					{ value: "open", label: "Open" },
+					{ value: "done", label: "Done" },
+				]),
+				getNonCompletionStatuses: jest.fn(() => [
+					{ value: "open", label: "Open" },
+					{ value: "in-progress", label: "In Progress" },
+				]),
+				getNextStatus: jest.fn(() => "done"),
+				getCompletedStatuses: jest.fn(() => ["done"]),
+			},
+			priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
+				getPriorityConfig: jest.fn((priority) => ({
+					value: priority,
+					label: priority,
+					color: "#ff0000",
+				})),
+				getPrioritiesByWeight: jest.fn(() => [
+					{ value: "high", label: "High" },
+					{ value: "normal", label: "Normal" },
+				]),
+			},
+			getActiveTimeSession: jest.fn(() => null),
+			toggleTaskStatus: jest.fn(),
+			toggleRecurringTaskComplete: jest.fn(),
+			updateTaskProperty: jest.fn(),
+			openTaskEditModal: jest.fn(),
+			openDueDateModal: jest.fn(),
+			openScheduledDateModal: jest.fn(),
+			startTimeTracking: jest.fn(),
+			stopTimeTracking: jest.fn(),
+			toggleTaskArchive: jest.fn(),
+			formatTime: jest.fn((minutes) => `${minutes}m`),
+			cacheManager: {
+				getTaskInfo: jest.fn(),
+			},
+			taskService: {
+				deleteTask: jest.fn(),
+			},
+			projectSubtasksService: {
+				isTaskUsedAsProject: jest.fn().mockResolvedValue(false),
+				isTaskUsedAsProjectSync: jest.fn().mockReturnValue(false),
+			},
+			expandedProjectsService: {
+				isExpanded: jest.fn(() => false),
+				toggle: jest.fn(() => true),
+			},
+			i18n: createI18nService(),
+			settings: {
+				singleClickAction: "edit",
+				doubleClickAction: "none",
+				showExpandableSubtasks: true,
+				subtaskChevronPosition: "right",
+				calendarViewSettings: {
+					timeFormat: "12", // Default to 12-hour format for test consistency
+				},
+			},
+		};
+
+		// Ensure app has proper mock methods - use the same mockApp variable
+		mockApp.vault = mockApp.vault || {};
+		mockApp.vault.getAbstractFileByPath = jest.fn();
+		mockApp.workspace = mockApp.workspace || {};
+		mockApp.workspace.getLeaf = jest.fn().mockReturnValue({
+			openFile: jest.fn(),
+		});
+		mockApp.workspace.openLinkText = jest.fn();
+		mockApp.workspace.trigger = jest.fn();
+		mockApp.metadataCache = mockApp.metadataCache || {};
+		mockApp.metadataCache.getFirstLinkpathDest = jest.fn();
+		mockApp.metadataCache.getCache = jest.fn();
+
+		// Mock console methods
+		jest.spyOn(console, "error").mockImplementation(() => {});
+		jest.spyOn(console, "warn").mockImplementation(() => {});
+		jest.spyOn(console, "debug").mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		jest.restoreAllMocks();
+		document.body.innerHTML = "";
+	});
+
+	describe("createTaskCard", () => {
+		it.each(["default", "compact", "inline"] as const)(
+			"keeps title and metadata separate in the %s layout",
+			(layout) => {
+				const task = TaskFactory.createTask({ title: "A long task title", recurrence: "FREQ=DAILY" });
+				const card = createTaskCard(task, mockPlugin, ["status", "due"], { layout });
+				const title = card.querySelector(".task-card__title-text");
+				expect(title?.textContent).toBe(task.title);
+				expect(title?.getAttribute("title")).toBe(task.title);
+				const metadata = card.querySelector(".task-card__metadata");
+				expect(metadata?.closest(".task-card__title")).toBeNull();
+				if (layout === "inline") {
+					expect(card.querySelector(".task-card__badges")).toBeNull();
+				} else {
+					expect(card.querySelector(".task-card__badges")?.parentElement)
+						.toBe(card.querySelector(".task-card__title"));
+				}
+			}
+		);
+
+		it("should create basic task card", () => {
+			const task = TaskFactory.createTask({
+				title: "Test Task",
+				status: "open",
+				priority: "high",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card).toBeInstanceOf(HTMLElement);
+			expect(card.classList.contains("task-card")).toBe(true);
+			expect(card.classList.contains("task-card--priority-high")).toBe(true);
+			expect(card.classList.contains("task-card--status-open")).toBe(true);
+			expect(card.dataset.taskPath).toBe(task.path);
+			expect(card.dataset.status).toBe("open");
+		});
+
+		it("should sanitize status and priority class modifiers with spaces", () => {
+			const task = TaskFactory.createTask({
+				title: "Test Task",
+				status: "60-In Progress",
+				priority: "High Priority",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--status-60-in-progress")).toBe(true);
+			expect(card.classList.contains("task-card--priority-high-priority")).toBe(true);
+			expect(card.classList.contains("Progress")).toBe(false);
+			expect(card.classList.contains("Priority")).toBe(false);
+		});
+
+		it("should create task card with all default options", () => {
+			const task = TaskFactory.createTask();
+			const card = createTaskCard(task, mockPlugin);
+
+			// Should not have checkbox by default
+			expect(card.querySelector(".task-card__checkbox")).toBeNull();
+
+			// Should have status dot
+			expect(card.querySelector(".task-card__status-dot")).toBeTruthy();
+
+			// Should have title
+			const titleEl = card.querySelector(".task-card__title");
+			expect(titleEl?.textContent).toBe(task.title);
+		});
+
+		it("should render wikilinks in task titles as clickable internal links (#1733)", () => {
+			const linkedFile = new TFile("Lidl.md");
+			mockPlugin.app.metadataCache.getFirstLinkpathDest.mockReturnValue(linkedFile);
+			const task = TaskFactory.createTask({
+				title: "Buy milk from [[Lidl]]",
+				path: "Tasks/buy-milk-from-lidl.md",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			const titleText = card.querySelector(".task-card__title-text");
+			const link = titleText?.querySelector("a.internal-link") as HTMLAnchorElement | null;
+			expect(titleText?.textContent).toBe("Buy milk from Lidl");
+			expect(link).toBeTruthy();
+			expect(link?.textContent).toBe("Lidl");
+			expect(link?.getAttribute("data-href")).toBe("Lidl");
+		});
+
+		it.skip("should create task card with checkbox when enabled", () => {
+			const task = TaskFactory.createTask({ status: "done" });
+			const options: Partial<TaskCardOptions> = { showCheckbox: true };
+
+			const card = createTaskCard(task, mockPlugin, undefined, options);
+
+			const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement;
+			expect(checkbox).toBeTruthy();
+			expect(checkbox.checked).toBe(true);
+			expect(card.classList.contains("task-card--checkbox-enabled")).toBe(true);
+		});
+
+		it("should create recurring task card", () => {
+			const task = TaskFactory.createRecurringTask("FREQ=DAILY");
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--recurring")).toBe(true);
+			expect(card.querySelector(".task-card__recurring-indicator")).toBeTruthy();
+		});
+
+		it("should indicate when a task has note body details", () => {
+			const task = TaskFactory.createTask({
+				details: "Bring the reusable bags.",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--has-details")).toBe(true);
+			expect(card.dataset.hasDetails).toBe("true");
+			expect(card.querySelector(".task-card__details-indicator")).toBeTruthy();
+		});
+
+		it("should indicate when Obsidian metadata shows note body content", () => {
+			const task = TaskFactory.createTask({
+				path: "Tasks/body-from-cache.md",
+				details: undefined,
+			});
+			mockPlugin.app.metadataCache.getCache.mockReturnValue({
+				sections: [{ type: "yaml" }, { type: "paragraph" }],
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(mockPlugin.app.metadataCache.getCache).toHaveBeenCalledWith(task.path);
+			expect(card.classList.contains("task-card--has-details")).toBe(true);
+			expect(card.dataset.hasDetails).toBe("true");
+			expect(card.querySelector(".task-card__details-indicator")).toBeTruthy();
+		});
+
+		it("should not indicate whitespace-only task details", () => {
+			const task = TaskFactory.createTask({
+				details: "   \n\t",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--has-details")).toBe(false);
+			expect(card.dataset.hasDetails).toBe("false");
+			expect(card.querySelector(".task-card__details-indicator")).toBeNull();
+		});
+
+		it("should create completed task card", () => {
+			const task = TaskFactory.createTask({ status: "done" });
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--completed")).toBe(true);
+			expect(card.classList.contains("task-card--completed-strikethrough")).toBe(true);
+
+			const titleEl = card.querySelector(".task-card__title");
+			expect(titleEl?.classList.contains("completed")).toBe(true);
+		});
+
+		it("should keep completed task card titles readable when strikethrough is disabled", () => {
+			mockPlugin.settings.showCompletedTaskStrikethrough = false;
+			const task = TaskFactory.createTask({ status: "done" });
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--completed")).toBe(true);
+			expect(card.classList.contains("task-card--completed-strikethrough")).toBe(false);
+		});
+
+		it("should create archived task card", () => {
+			const task = TaskFactory.createTask({ archived: true });
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--archived")).toBe(true);
+		});
+
+		it("should create actively tracked task card", () => {
+			const task = TaskFactory.createTask();
+			mockPlugin.getActiveTimeSession.mockReturnValue({
+				startTime: "2025-01-15T10:00:00Z",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.classList.contains("task-card--actively-tracked")).toBe(true);
+		});
+
+		it("should add has-projects class for tasks with projects (issue #355)", () => {
+			const taskWithProjects = TaskFactory.createTask({
+				projects: ["[[My Project]]", "Another Project"],
+			});
+			const cardWithProjects = createTaskCard(taskWithProjects, mockPlugin);
+
+			expect(cardWithProjects.classList.contains("task-card--has-projects")).toBe(true);
+
+			const taskWithoutProjects = TaskFactory.createTask({
+				projects: [],
+			});
+			const cardWithoutProjects = createTaskCard(taskWithoutProjects, mockPlugin);
+
+			expect(cardWithoutProjects.classList.contains("task-card--has-projects")).toBe(false);
+
+			const taskWithEmptyProjects = TaskFactory.createTask({
+				projects: ["", "  ", null as any, undefined as any],
+			});
+			const cardWithEmptyProjects = createTaskCard(taskWithEmptyProjects, mockPlugin);
+
+			expect(cardWithEmptyProjects.classList.contains("task-card--has-projects")).toBe(false);
+		});
+
+		it("should apply priority and status colors", () => {
+			const task = TaskFactory.createTask({
+				status: "open",
+				priority: "high",
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+
+			expect(card.style.getPropertyValue("--priority-color")).toBe("#ff0000");
+			expect(card.style.getPropertyValue("--current-priority-color")).toBe("#ff0000");
+			expect(card.dataset.priority).toBe("high");
+			expect(card.style.getPropertyValue("--current-status-color")).toBe("#666666");
+		});
+
+		it("should create priority indicator dot", () => {
+			const task = TaskFactory.createTask({ priority: "high" });
+			const card = createTaskCard(task, mockPlugin);
+
+			const priorityDot = card.querySelector(".task-card__priority-dot") as HTMLElement;
+			expect(priorityDot).toBeTruthy();
+			expect(card.style.getPropertyValue("--current-priority-color")).toBe("#ff0000");
+			expect(priorityDot.getAttribute("aria-label")).toBe("Priority: high");
+		});
+
+		it("should render configured priority icons instead of a plain dot", () => {
+			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
+				(priority) => ({
+					value: priority,
+					label: priority,
+					color: "#ff0000",
+					icon: priority === "high" ? "alert-circle" : undefined,
+				})
+			);
+			const task = TaskFactory.createTask({ priority: "high" });
+			const card = createTaskCard(task, mockPlugin);
+
+			const priorityDot = card.querySelector(".task-card__priority-dot") as HTMLElement;
+			expect(priorityDot).toBeTruthy();
+			expect(priorityDot.classList.contains("task-card__priority-dot--icon")).toBe(true);
+			expect(priorityDot.getAttribute("data-icon")).toBe("alert-circle");
+			expect(priorityDot.getAttribute("aria-label")).toBe("Priority: high");
+		});
+
+		it.skip("should create metadata line with various task properties", () => {
+			const task = TaskFactory.createTask({
+				due: "2025-01-15T14:30:00",
+				scheduled: "2025-01-15",
+				contexts: ["work", "urgent"],
+				timeEstimate: 60,
+				timeEntries: [
+					{ startTime: "2025-01-15T10:00:00Z", endTime: "2025-01-15T10:30:00Z" },
+				],
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+			const metadataLine = card.querySelector(".task-card__metadata");
+
+			expect(metadataLine?.textContent).toContain("Due:");
+			expect(metadataLine?.textContent).toContain("Scheduled:");
+			expect(metadataLine?.textContent).toContain("@work, @urgent");
+			// Time tracking info should only show when explicitly configured as visible properties
+			expect(metadataLine?.textContent).not.toContain("30m spent");
+			expect(metadataLine?.textContent).not.toContain("60m estimated");
+		});
+
+		it.skip("should show time tracking properties when explicitly enabled", () => {
+			const task = TaskFactory.createTask({
+				timeEstimate: 60,
+				timeEntries: [
+					{ startTime: "2025-01-15T10:00:00Z", endTime: "2025-01-15T10:30:00Z" },
+				],
+				totalTrackedTime: 30,
+			});
+
+			// Test with timeEstimate and totalTrackedTime properties explicitly enabled
+			const visibleProperties = ["timeEstimate", "totalTrackedTime"];
+			const card = createTaskCard(task, mockPlugin, visibleProperties);
+			const metadataLine = card.querySelector(".task-card__metadata");
+
+			expect(metadataLine?.textContent).toContain("60m estimated");
+			expect(metadataLine?.textContent).toContain("30m tracked");
+		});
+
+		it("should not show totalTrackedTime when value is 0", () => {
+			const task = TaskFactory.createTask({
+				totalTrackedTime: 0,
+			});
+
+			// Enable totalTrackedTime property but value is 0
+			const visibleProperties = ["totalTrackedTime"];
+			const card = createTaskCard(task, mockPlugin, visibleProperties);
+			const metadataLine = card.querySelector(".task-card__metadata");
+
+			expect(metadataLine?.textContent).not.toContain("tracked");
+		});
+
+		it.skip("should create clickable project links for wikilink projects", () => {
+			const task = TaskFactory.createTask({
+				projects: ["[[Project A]]", "[[Project B]]", "regular-project"],
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+			const metadataLine = card.querySelector(".task-card__metadata");
+
+			// Check that project links are rendered
+			expect(metadataLine?.textContent).toContain("+Project A");
+			expect(metadataLine?.textContent).toContain("+Project B");
+			expect(metadataLine?.textContent).toContain("+regular-project");
+
+			// Check that wikilink projects have clickable links
+			const projectLinks = card.querySelectorAll(".task-card__project-link");
+			expect(projectLinks.length).toBe(2); // Only wikilink projects should have clickable links
+
+			// Check link properties
+			expect(projectLinks[0].textContent).toBe("Project A");
+			expect(projectLinks[0].getAttribute("data-href")).toBe("Project A");
+			expect(projectLinks[0].classList.contains("internal-link")).toBe(true);
+
+			expect(projectLinks[1].textContent).toBe("Project B");
+			expect(projectLinks[1].getAttribute("data-href")).toBe("Project B");
+			expect(projectLinks[1].classList.contains("internal-link")).toBe(true);
+		});
+
+		it.skip("should handle project link clicks and open files", async () => {
+			const task = TaskFactory.createTask({
+				projects: ["[[Test Project]]"],
+			});
+
+			const mockFile = new TFile("test-project.md");
+			mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(mockFile);
+
+			const card = createTaskCard(task, mockPlugin);
+			const projectLink = card.querySelector(".task-card__project-link") as HTMLElement;
+
+			expect(projectLink).toBeTruthy();
+
+			// Simulate click
+			const clickEvent = new MouseEvent("click", { bubbles: true });
+			projectLink.dispatchEvent(clickEvent);
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(mockPlugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+				"Test Project",
+				""
+			);
+			expect(mockPlugin.app.workspace.getLeaf).toHaveBeenCalledWith(false);
+		});
+
+		it.skip("should show notice when project link file not found", async () => {
+			const task = TaskFactory.createTask({
+				projects: ["[[Nonexistent Project]]"],
+			});
+
+			mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(null);
+
+			const card = createTaskCard(task, mockPlugin);
+			const projectLink = card.querySelector(".task-card__project-link") as HTMLElement;
+
+			expect(projectLink).toBeTruthy();
+
+			// Simulate click
+			const clickEvent = new MouseEvent("click", { bubbles: true });
+			projectLink.dispatchEvent(clickEvent);
+
+			// Wait for async operations
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(mockPlugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+				"Nonexistent Project",
+				""
+			);
+			expect(Notice).toHaveBeenCalledWith('Note "Nonexistent Project" not found');
+		});
+
+		it("should hide metadata line when no metadata available", () => {
+			const task = TaskFactory.createTask({
+				due: undefined,
+				scheduled: undefined,
+				contexts: undefined,
+				timeEstimate: undefined,
+				timeEntries: undefined,
+			});
+
+			const card = createTaskCard(task, mockPlugin);
+			const metadataLine = card.querySelector(".task-card__metadata") as HTMLElement;
+
+			// Should be hidden (either 'none' or empty string depending on browser)
+			expect(metadataLine.style.display === "none" || metadataLine.style.display === "").toBe(
+				true
+			);
+		});
+	});
+
+	describe("Task Card Interactions", () => {
+		let task: TaskInfo;
+		let card: HTMLElement;
+
+		beforeEach(() => {
+			task = TaskFactory.createTask();
+			card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
+			container.appendChild(card);
+		});
+
+		it.skip("should handle checkbox click for regular tasks", async () => {
+			const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement;
+
+			checkbox.click();
+
+			expect(mockPlugin.toggleTaskStatus).toHaveBeenCalledWith(task);
+		});
+
+		it.skip("should handle checkbox click for recurring tasks", async () => {
+			const recurringTask = TaskFactory.createRecurringTask("FREQ=DAILY");
+			const recurringCard = createTaskCard(recurringTask, mockPlugin, undefined, {
+				showCheckbox: true,
+			});
+			const checkbox = recurringCard.querySelector(
+				".task-card__checkbox"
+			) as HTMLInputElement;
+
+			checkbox.click();
+
+			expect(mockPlugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
+				recurringTask,
+				mockPlugin.selectedDate
+			);
+		});
+
+		it("should handle status dot click for regular tasks", async () => {
+			mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(task);
+
+			const statusDot = card.querySelector(".task-card__status-dot") as HTMLElement;
+			statusDot.click();
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+			expect(changeTaskProperty).toHaveBeenCalledWith(mockPlugin, [task], "status", "done");
+			expect(mockPlugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
+		});
+
+		it.skip("should handle status dot click for recurring tasks", async () => {
+			const recurringTask = TaskFactory.createRecurringTask("FREQ=DAILY");
+			const recurringCard = createTaskCard(recurringTask, mockPlugin);
+			mockPlugin.toggleRecurringTaskComplete.mockResolvedValue(recurringTask);
+
+			const statusDot = recurringCard.querySelector(".task-card__status-dot") as HTMLElement;
+			statusDot.click();
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(mockPlugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
+				recurringTask,
+				mockPlugin.selectedDate
+			);
+		});
+
+		it("should handle context menu icon click", async () => {
+			const contextIcon = card.querySelector(".task-card__context-menu") as HTMLElement;
+			const mockEvent = new MouseEvent("click", { bubbles: true });
+
+			// Mock showTaskContextMenu
+			const showTaskContextMenuSpy = jest.fn();
+			jest.doMock("../../../src/ui/TaskCard", () => ({
+				...jest.requireActual("../../../src/ui/TaskCard"),
+				showTaskContextMenu: showTaskContextMenuSpy,
+			}));
+
+			contextIcon.dispatchEvent(mockEvent);
+
+			// Context menu should be triggered
+			expect(contextIcon).toBeTruthy();
+		});
+
+		it("should handle card click to open edit modal", async () => {
+			const clickEvent = new MouseEvent("click", { bubbles: true });
+
+			// Dispatch the event and wait for the handler
+			card.dispatchEvent(clickEvent);
+
+			// Wait for the async click handler to complete
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(mockPlugin.openTaskEditModal).toHaveBeenCalledWith(task);
+		});
+
+		it("should not open the edit modal when clicking a Bases-rendered tag", async () => {
+			const basesTagsValue = {
+				renderTo: (el: HTMLElement) => {
+					el.createEl("a", {
+						cls: "tag",
+						text: "#client",
+						attr: { href: "#client" },
+					});
+				},
+				toString: () => "#client",
+			};
+			const tagTask = TaskFactory.createTask({
+				customProperties: {
+					"file.tags": basesTagsValue,
+				},
+			});
+			mockPlugin.fieldMapper.lookupMappingKey = jest.fn(() => null);
+			const tagCard = createTaskCard(tagTask, mockPlugin, ["file.tags"]);
+			container.appendChild(tagCard);
+
+			const tag = tagCard.querySelector(".tag") as HTMLElement;
+			expect(tag).toBeTruthy();
+
+			tag.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(mockPlugin.openTaskEditModal).not.toHaveBeenCalled();
+		});
+
+		it("should handle Ctrl+click to open source note", async () => {
+			const mockFile = new TFile("test.md");
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+			const ctrlClickEvent = new MouseEvent("click", {
+				bubbles: true,
+				ctrlKey: true,
+			});
+
+			card.dispatchEvent(ctrlClickEvent);
+
+			// Wait for the async click handler to complete
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
+			expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+		});
+
+		it("should handle middle-click to open source note in a new tab", async () => {
+			const mockFile = new TFile("test.md");
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+			const middleClickEvent = new MouseEvent("auxclick", {
+				bubbles: true,
+				cancelable: true,
+				button: 1,
+			});
+
+			card.dispatchEvent(middleClickEvent);
+
+			expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
+			expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+		});
+
+		it("should handle right-click context menu", async () => {
+			const contextMenuEvent = new MouseEvent("contextmenu", { bubbles: true });
+
+			card.dispatchEvent(contextMenuEvent);
+
+			// Should prevent default and trigger context menu
+			expect(card.dataset.taskPath).toBe(task.path);
+		});
+
+		it("should handle mouseover for hover preview", () => {
+			const mockFile = new TFile("test.md");
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+			const mouseoverEvent = new MouseEvent("mouseover", { bubbles: true });
+			card.dispatchEvent(mouseoverEvent);
+
+			expect(mockApp.workspace.trigger).toHaveBeenCalledWith("hover-link", {
+				event: mouseoverEvent,
+				source: "tasknotes-task-card",
+				hoverParent: card,
+				targetEl: card,
+				linktext: task.path,
+				sourcePath: task.path,
+			});
+		});
+
+		it.skip("should handle errors in event handlers gracefully", async () => {
+			mockPlugin.toggleTaskStatus.mockRejectedValue(new Error("Network error"));
+
+			const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement;
+			checkbox.click();
+
+			await new Promise((resolve) => setTimeout(resolve, 0));
+
+			expect(console.error).toHaveBeenCalled();
+			expect(Notice).toHaveBeenCalledWith(
+				expect.stringContaining("Failed to toggle task status")
+			);
+		});
+	});
+
+	describe("updateTaskCard", () => {
+		let task: TaskInfo;
+		let card: HTMLElement;
+
+		beforeEach(() => {
+			task = TaskFactory.createTask({
+				title: "Original Task",
+				status: "open",
+				priority: "normal",
+			});
+			card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
+		});
+
+		it("preserves host interaction state without keeping stale locally-updated task classes", () => {
+			card.classList.add("task-card--selected", "tn-task-focused", "task-card--reorderable", "task-card--dragging", "task-card--pending", "task-card--status-done", "task-card--completed");
+			updateTaskCard(card, { ...task, priority: "high" }, mockPlugin);
+			for (const state of ["task-card--selected", "tn-task-focused", "task-card--reorderable", "task-card--dragging", "task-card--pending"]) {
+				expect(card.classList.contains(state)).toBe(true);
+			}
+			expect(card.classList.contains("task-card--status-done")).toBe(false);
+			expect(card.classList.contains("task-card--completed")).toBe(false);
+			expect(card.classList.contains("task-card--priority-normal")).toBe(false);
+			expect(card.classList.contains("task-card--priority-high")).toBe(true);
+		});
+
+		it("should update task card with new data", () => {
+			const updatedTask = TaskFactory.createTask({
+				...task,
+				title: "Updated Task",
+				status: "done",
+				priority: "high",
+			});
+
+			updateTaskCard(card, updatedTask, mockPlugin);
+
+			expect(card.classList.contains("task-card--completed")).toBe(true);
+			expect(card.classList.contains("task-card--completed-strikethrough")).toBe(true);
+			expect(card.classList.contains("task-card--priority-high")).toBe(true);
+			expect(card.classList.contains("task-card--status-done")).toBe(true);
+
+			const titleEl = card.querySelector(".task-card__title");
+			expect(titleEl?.textContent).toBe("Updated Task");
+			expect(titleEl?.classList.contains("completed")).toBe(true);
+		});
+
+		it("should sanitize status and priority class modifiers when updating a card", () => {
+			const updatedTask = TaskFactory.createTask({
+				...task,
+				title: "Updated Task",
+				status: "In Progress",
+				priority: "High Priority",
+			});
+
+			updateTaskCard(card, updatedTask, mockPlugin);
+
+			expect(card.classList.contains("task-card--status-in-progress")).toBe(true);
+			expect(card.classList.contains("task-card--priority-high-priority")).toBe(true);
+			expect(card.classList.contains("Progress")).toBe(false);
+			expect(card.classList.contains("Priority")).toBe(false);
+		});
+
+		it.skip("should update checkbox state", () => {
+			const updatedTask = TaskFactory.createTask({
+				...task,
+				status: "done",
+			});
+
+			updateTaskCard(card, updatedTask, mockPlugin);
+
+			const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement;
+			expect(checkbox.checked).toBe(true);
+		});
+
+		it("should add priority indicator when task gains priority", () => {
+			// Create a task without priority initially
+			const taskWithoutPriority = TaskFactory.createTask({
+				title: "Task without priority",
+				status: "open",
+				priority: undefined,
+			});
+			const cardWithoutPriority = createTaskCard(taskWithoutPriority, mockPlugin, undefined, {
+				showCheckbox: true,
+			});
+
+			// Task initially has no priority indicator
+			expect((cardWithoutPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("unset");
+
+			const updatedTask = TaskFactory.createTask({
+				...taskWithoutPriority,
+				priority: "high",
+			});
+
+			updateTaskCard(cardWithoutPriority, updatedTask, mockPlugin);
+
+			const priorityDot = cardWithoutPriority.querySelector(".task-card__priority-dot");
+			expect(priorityDot).toBeTruthy();
+		});
+
+		it("should update a priority indicator when the configured icon changes", () => {
+			const taskWithPriority = TaskFactory.createTask({
+				...task,
+				priority: "high",
+			});
+			const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("bars");
+
+			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
+				(priority) => ({
+					value: priority,
+					label: priority,
+					color: "#ff0000",
+					icon: "alert-circle",
+				})
+			);
+
+			updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
+
+			const priorityDot = cardWithPriority.querySelector(
+				".task-card__priority-dot"
+			) as HTMLElement;
+			expect(priorityDot.classList.contains("task-card__priority-dot--icon")).toBe(true);
+			expect(priorityDot.getAttribute("data-icon")).toBe("alert-circle");
+		});
+
+		it("should return a custom priority icon to rank bars when the icon is cleared", () => {
+			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
+				(priority) => ({
+					value: priority,
+					label: priority,
+					color: "#ff0000",
+					icon: "alert-circle",
+				})
+			);
+			const taskWithPriority = TaskFactory.createTask({
+				...task,
+				priority: "high",
+			});
+			const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
+				(priority) => ({
+					value: priority,
+					label: priority,
+					color: "#ff0000",
+				})
+			);
+
+			updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
+
+			const priorityDot = cardWithPriority.querySelector(
+				".task-card__priority-dot"
+			) as HTMLElement;
+			expect(priorityDot.dataset.tnGlyph).toBe("bars");
+			expect(priorityDot.querySelector("svg.tn-glyph")).not.toBeNull();
+		});
+
+		it("should show unset priority glyph when task loses priority", () => {
+			// Start with priority
+			const taskWithPriority = TaskFactory.createTask({
+				...task,
+				priority: "high",
+			});
+			const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+			expect(cardWithPriority.querySelector(".task-card__priority-dot")).toBeTruthy();
+
+			const updatedTask = TaskFactory.createTask({
+				...taskWithPriority,
+				priority: undefined,
+			});
+
+			updateTaskCard(cardWithPriority, updatedTask, mockPlugin);
+
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("unset");
+		});
+
+		it("should add details indicator when task gains note body details", () => {
+			expect(card.classList.contains("task-card--has-details")).toBe(false);
+			expect(card.querySelector(".task-card__details-indicator")).toBeNull();
+
+			const updatedTask = TaskFactory.createTask({
+				...task,
+				details: "Follow up with Alice.",
+			});
+
+			updateTaskCard(card, updatedTask, mockPlugin);
+
+			expect(card.classList.contains("task-card--has-details")).toBe(true);
+			expect(card.dataset.hasDetails).toBe("true");
+			expect(card.querySelector(".task-card__details-indicator")).toBeTruthy();
+		});
+
+		it("should remove details indicator when task loses note body details", () => {
+			const taskWithDetails = TaskFactory.createTask({
+				...task,
+				details: "Follow up with Alice.",
+			});
+			const cardWithDetails = createTaskCard(taskWithDetails, mockPlugin);
+
+			expect(cardWithDetails.querySelector(".task-card__details-indicator")).toBeTruthy();
+
+			const updatedTask = TaskFactory.createTask({
+				...taskWithDetails,
+				details: "",
+			});
+
+			updateTaskCard(cardWithDetails, updatedTask, mockPlugin);
+
+			expect(cardWithDetails.classList.contains("task-card--has-details")).toBe(false);
+			expect(cardWithDetails.dataset.hasDetails).toBe("false");
+			expect(cardWithDetails.querySelector(".task-card__details-indicator")).toBeNull();
+		});
+
+		it("should update status dot color", () => {
+			mockPlugin.statusManager.getStatusConfig.mockReturnValue({
+				value: "done",
+				label: "Done",
+				color: "#00ff00",
+			});
+
+			const updatedTask = TaskFactory.createTask({
+				...task,
+				status: "done",
+			});
+
+			updateTaskCard(card, updatedTask, mockPlugin);
+
+			const statusDot = card.querySelector(".task-card__status-dot") as HTMLElement;
+			expect(card.style.getPropertyValue("--current-status-color")).toBe("#00ff00");
+		});
+
+		it.skip("should update metadata line", () => {
+			const updatedTask = TaskFactory.createTask({
+				...task,
+				due: "2025-01-15T14:30:00",
+				contexts: ["work"],
+			});
+
+			updateTaskCard(card, updatedTask, mockPlugin);
+
+			const metadataLine = card.querySelector(".task-card__metadata");
+			expect(metadataLine?.textContent).toContain("Due:");
+			expect(metadataLine?.textContent).toContain("@work");
+		});
+	});
+
+	describe("showTaskContextMenu", () => {
+		let task: TaskInfo;
+		let mockMenu: any;
+
+		beforeEach(() => {
+			task = TaskFactory.createTask();
+			mockMenu = {
+				addItem: jest.fn((callback) => {
+					const mockItem = {
+						setTitle: jest.fn().mockReturnThis(),
+						setIcon: jest.fn().mockReturnThis(),
+						onClick: jest.fn().mockReturnThis(),
+					};
+					callback(mockItem);
+					return mockItem;
+				}),
+				addSeparator: jest.fn(),
+				showAtMouseEvent: jest.fn(),
+			};
+
+			MockObsidian.Menu.mockImplementation(() => mockMenu);
+			mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(task);
+		});
+
+		it("should create context menu with basic actions", async () => {
+			const mockEvent = new MouseEvent("contextmenu");
+
+			await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date("2025-01-15"));
+
+			expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+			expect(lastMenuInstance.addItem).toHaveBeenCalled();
+			// Note: Menu.showAtMouseEvent might not be trackable in test environment due to Obsidian mocking complexities
+			// The key behavior (context menu creation and population) is verified by addItem calls
+		});
+
+		it("should add status options to context menu", async () => {
+			const mockEvent = new MouseEvent("contextmenu");
+
+			await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date("2025-01-15"));
+
+			// Should have called addItem for each status
+			expect(lastMenuInstance.addItem).toHaveBeenCalled();
+		});
+
+		it("should add completion toggle for recurring tasks", async () => {
+			const recurringTask = TaskFactory.createRecurringTask("FREQ=DAILY");
+			mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+			const mockEvent = new MouseEvent("contextmenu");
+
+			await showTaskContextMenu(
+				mockEvent,
+				recurringTask.path,
+				mockPlugin,
+				new Date("2025-01-15")
+			);
+
+			expect(lastMenuInstance.addSeparator).toHaveBeenCalled();
+		});
+
+		it("should handle task not found by showing file context menu", async () => {
+			mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(null);
+			const mockFile = new TFile("nonexistent.md");
+			mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+			const mockEvent = new MouseEvent("contextmenu");
+
+			await showTaskContextMenu(
+				mockEvent,
+				"nonexistent.md",
+				mockPlugin,
+				new Date("2025-01-15")
+			);
 
       // Wait for async operations
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      expect(mockPlugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith('Test Project', '');
-      expect(mockPlugin.app.workspace.getLeaf).toHaveBeenCalledWith(false);
-    });
-
-    it.skip('should show notice when project link file not found', async () => {
-      const task = TaskFactory.createTask({
-        projects: ['[[Nonexistent Project]]']
-      });
-
-      mockPlugin.app.metadataCache.getFirstLinkpathDest = jest.fn().mockReturnValue(null);
-
-      const card = createTaskCard(task, mockPlugin);
-      const projectLink = card.querySelector('.task-card__project-link') as HTMLElement;
-
-      expect(projectLink).toBeTruthy();
-
-      // Simulate click
-      const clickEvent = new MouseEvent('click', { bubbles: true });
-      projectLink.dispatchEvent(clickEvent);
-
-      // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(mockPlugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith('Nonexistent Project', '');
-      expect(Notice).toHaveBeenCalledWith('Note "Nonexistent Project" not found');
+      expect(mockApp.workspace.trigger).toHaveBeenCalledWith("file-menu", expect.anything(), mockFile, "tasknotes-bases-view");
     });
 
     it('should hide metadata line when no metadata available', () => {
@@ -867,7 +1445,7 @@ describe('TaskCard Component', () => {
       const cardWithoutPriority = createTaskCard(taskWithoutPriority, mockPlugin, undefined, { showCheckbox: true });
 
       // Task initially has no priority indicator
-      expect(cardWithoutPriority.querySelector('.task-card__priority-dot')).toBeNull();
+      expect(cardWithoutPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('unset');
 
       const updatedTask = TaskFactory.createTask({
         ...taskWithoutPriority,
@@ -887,7 +1465,7 @@ describe('TaskCard Component', () => {
       });
       const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
 
-      expect(cardWithPriority.querySelector('.task-card__priority-dot--icon')).toBeNull();
+      expect(cardWithPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('bars');
 
       (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
         value: priority,
@@ -903,7 +1481,7 @@ describe('TaskCard Component', () => {
       expect(priorityDot.getAttribute('data-icon')).toBe('alert-circle');
     });
 
-    it('should return a priority icon indicator to a plain dot when the icon is cleared', () => {
+    it('should return a priority icon indicator to the shared glyph when the icon is cleared', () => {
       (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
         value: priority,
         label: priority,
@@ -925,11 +1503,11 @@ describe('TaskCard Component', () => {
       updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
 
       const priorityDot = cardWithPriority.querySelector('.task-card__priority-dot') as HTMLElement;
-      expect(priorityDot.classList.contains('task-card__priority-dot--icon')).toBe(false);
+      expect(priorityDot.getAttribute('data-tn-glyph')).toBe('bars');
       expect(priorityDot.getAttribute('data-icon')).toBeNull();
     });
 
-    it('should remove priority indicator when task loses priority', () => {
+    it('should show an unset priority glyph when task loses priority', () => {
       // Start with priority
       const taskWithPriority = TaskFactory.createTask({
         ...task,
@@ -946,7 +1524,7 @@ describe('TaskCard Component', () => {
 
       updateTaskCard(cardWithPriority, updatedTask, mockPlugin);
 
-      expect(cardWithPriority.querySelector('.task-card__priority-dot')).toBeNull();
+      expect(cardWithPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('unset');
     });
 
     it('should add details indicator when task gains note body details', () => {
@@ -1001,7 +1579,7 @@ describe('TaskCard Component', () => {
       updateTaskCard(card, updatedTask, mockPlugin);
 
       const statusDot = card.querySelector('.task-card__status-dot') as HTMLElement;
-      expect(statusDot.style.borderColor).toBe('rgb(0, 255, 0)');
+      expect(card.style.getPropertyValue('--current-status-color')).toBe('#00ff00');
     });
 
     it.skip('should update metadata line', () => {

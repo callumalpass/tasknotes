@@ -141,9 +141,7 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 				date: i18n.translate(msg({ message: "today", context: "modals.actionPalette.presets.today" })),
 			})
 		);
-		const el = document.createElement("div");
-		modal.renderSuggestion({ item: today, match: { score: 1, matches: [] } }, el);
-		expect(el.querySelector(".task-action-palette__category")?.textContent).toBe(
+		expect(modal.getItemText(today)).toContain(
 			i18n.translate(msg({ message: "Dates", context: "modals.actionPalette.categories.dates" }))
 		);
 		expect(today.id).toBe("set-scheduled-today");

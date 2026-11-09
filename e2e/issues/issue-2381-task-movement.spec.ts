@@ -53,10 +53,10 @@ async function openView(
 async function beginMouseDrag(target: Locator): Promise<void> {
 	await target.hover();
 	await card("Source").hover();
-	const source = await card("Source").boundingBox();
-	const destination = await target.boundingBox();
-	expect(source).not.toBeNull();
-	expect(destination).not.toBeNull();
+	let source = await card("Source").boundingBox();
+	await expect.poll(async () => (source = await card("Source").boundingBox())).not.toBeNull();
+	let destination = await target.boundingBox();
+	await expect.poll(async () => (destination = await target.boundingBox())).not.toBeNull();
 	await instance.page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2);
 	await instance.page.mouse.down();
 	await instance.page.mouse.move(
@@ -217,7 +217,7 @@ test("parent drop adds a relationship without moving groups or manual rank", asy
 	const projects = (await frontmatter()).projects as string[];
 	expect(projects.slice(0, 2)).toEqual(["[[Existing project]]", "Marketing"]);
 	expect(projects[2]).toContain("Done");
-	await expect(instance.page.locator(".notice")).toContainText("Added as a subtask of Done");
+	await expect(instance.page.locator(".tn-toast")).toContainText("Added as a subtask of Done");
 	await expect(instance.page.locator(".task-list-view--moving")).toHaveCount(0);
 });
 
@@ -236,10 +236,8 @@ test("parent assignment works in an ungrouped due-sorted list", async () => {
 test("parent drop blocks self assignment without writing", async () => {
 	await openView();
 	const before = await frontmatter();
-	await beginParentDrop("Source");
-	await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
-		"cannot be its own parent"
-	);
+	await beginMouseDrag(card("Source"));
+	await expect(card("Source").locator(".task-list-view__parent-target")).toBeHidden();
 	await instance.page.mouse.up();
 	expect(await frontmatter()).toEqual(before);
 });
@@ -321,7 +319,7 @@ test("parent Undo refuses to replace later project edits", async () => {
 	await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
 	await setFields("Source", { projects: ["Later project"] });
 	await instance.page.getByRole("button", { name: "Undo", exact: true }).click();
-	await expect(instance.page.locator(".notice")).toContainText("Cannot undo");
+	await expect(instance.page.locator(".tn-toast")).toContainText("Cannot undo");
 	expect((await frontmatter()).projects).toEqual(["Later project"]);
 });
 
@@ -398,8 +396,10 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 	});
 	await openView();
 	const cdp = await instance.page.context().newCDPSession(instance.page);
+	let touchActive = false;
 	try {
 		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+		await card("Source").getByRole("button", { name: "Move task" }).focus();
 		const handle = await card("Source")
 			.getByRole("button", { name: "Move task" })
 			.boundingBox();
@@ -409,14 +409,22 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 			type: "touchStart",
 			touchPoints: [{ x, y, id: 1 }],
 		});
+		touchActive = true;
 		await cdp.send("Input.dispatchTouchEvent", {
 			type: "touchMove",
 			touchPoints: [{ x: x + 12, y, id: 1 }],
+		});
+		await card("Done").scrollIntoViewIfNeeded();
+		const destination = await card("Done").boundingBox();
+		await cdp.send("Input.dispatchTouchEvent", {
+			type: "touchMove",
+			touchPoints: [{ x: destination!.x + destination!.width / 2, y: destination!.y + destination!.height / 2, id: 1 }],
 		});
 		const target = card("Done").locator(
 			":scope > .task-card__main-row > .task-list-view__parent-target"
 		);
 		await expect(target).toBeVisible();
+		await target.scrollIntoViewIfNeeded();
 		const bounds = await target.boundingBox();
 		expect(bounds!.height).toBeGreaterThanOrEqual(44);
 		for (let step = 1; step <= 8; step++)
@@ -424,12 +432,19 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 				type: "touchMove",
 				touchPoints: [
 					{
-						x: x + ((bounds!.x + bounds!.width / 2 - x) * step) / 8,
-						y: y + ((bounds!.y + bounds!.height / 2 - y) * step) / 8,
+						x: destination!.x + destination!.width / 2 + ((bounds!.x + bounds!.width / 2 - destination!.x - destination!.width / 2) * step) / 8,
+						y: destination!.y + destination!.height / 2 + ((bounds!.y + bounds!.height / 2 - destination!.y - destination!.height / 2) * step) / 8,
 						id: 1,
 					},
 				],
 			});
+		await testInfo.attach('parent-target-hit-test', {
+			body: JSON.stringify(await target.evaluate(element => {
+				const bounds = element.getBoundingClientRect();
+				return { bounds: bounds.toJSON(), hits: document.elementsFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2).map(node => node.className) };
+			})), contentType: 'application/json',
+		});
+		await instance.page.screenshot({ path: testInfo.outputPath('touch-parent-hit.png') });
 		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
 			"Add as subtask of Done"
 		);
@@ -437,6 +452,7 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 			path: testInfo.outputPath("touch-parent-dark-preview.png"),
 		});
 		await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+		touchActive = false;
 		await expect.poll(async () => (await frontmatter()).projects).toHaveLength(1);
 		await expect(instance.page.locator(".task-list-view__touch-ghost")).toHaveCount(0);
 		expect(await frontmatter()).toMatchObject({
@@ -445,6 +461,7 @@ test("touch parent drop stays distinct and readable at a narrow dark viewport", 
 			tasknotes_manual_order: sourceRank,
 		});
 	} finally {
+		if (touchActive) await cdp.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
 		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
 		await cdp.detach();
 		await instance.page.evaluate(() => {
@@ -458,8 +475,7 @@ test("due-sorted movement previews both properties and preserves manual rank", a
 	await openView();
 	await beginMouseDrag(card("Done"));
 	const feedback = instance.page.locator(".task-list-view__movement-feedback");
-	await expect(feedback).toContainText("status → done");
-	await expect(feedback).toContainText("priority → low");
+	await expect(feedback).toHaveText("Done · Low");
 	await expect(
 		instance.page.locator(".task-list-view__drop-slot-before, .task-list-view__drop-slot-after")
 	).toHaveCount(0);
@@ -483,7 +499,7 @@ test("movement feedback stays readable in the native dark theme", async ({}, tes
 		await openView();
 		await beginMouseDrag(card("Done"));
 		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
-			"status → done"
+			"Done · Low"
 		);
 		await instance.page.screenshot({ path: testInfo.outputPath("dark-move-preview.png") });
 		await instance.page.keyboard.press("Escape");
@@ -510,7 +526,7 @@ test("collapsed subgroups remain usable destinations", async () => {
 	const header = instance.page.locator(
 		'.workspace-leaf.mod-active .task-group[data-level="sub"][data-group-key="open:low"]'
 	);
-	await header.locator("button").click();
+	await header.getByRole("button", { name: "Toggle group", exact: true }).click();
 	await expect(card("Low")).toHaveCount(0);
 	await card("Source").dragTo(header);
 	await expect.poll(async () => (await frontmatter()).priority).toBe("low");
@@ -527,7 +543,7 @@ test("configured empty subgroups have explicit drop destinations", async () => {
 		source!.y + source!.height / 2,
 		{ steps: 3 }
 	);
-	const destination = instance.page.getByText("open / normal", { exact: true });
+	const destination = instance.page.getByText("status → Open / Normal", { exact: true });
 	await expect(destination).toBeVisible();
 	const target = await destination.boundingBox();
 	await instance.page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, {
@@ -543,10 +559,10 @@ test("the movement handle exposes a keyboard-accessible group menu", async () =>
 	const handle = card("Source").getByRole("button", { name: "Move task" });
 	await handle.focus();
 	await handle.press("Enter");
-	const group = instance.page.locator(".menu-item").filter({ hasText: /^open$/ });
+	const group = instance.page.locator(".menu-item").filter({ hasText: /^Open$/ });
 	await expect(group).toBeVisible();
 	await group.hover();
-	const destination = instance.page.locator(".menu-item").filter({ hasText: /^normal$/ });
+	const destination = instance.page.locator(".menu-item").filter({ hasText: /^Normal$/ });
 	await expect(destination).toBeVisible();
 	await destination.click();
 	await expect.poll(async () => (await frontmatter()).priority).toBe("normal");
@@ -744,7 +760,7 @@ test("clearing a priority deletes its value without putting null into the task c
 	await beginMouseDrag(card("Source"));
 	const destination = instance.page
 		.locator(".task-list-view__destination")
-		.filter({ hasText: /^open \/ No value$/ });
+		.filter({ hasText: /^status → Open \/ No value$/ });
 	await expect(destination).toBeVisible();
 	const rect = await destination.boundingBox();
 	await instance.page.mouse.move(rect!.x + rect!.width / 2, rect!.y + rect!.height / 2, {
@@ -753,6 +769,21 @@ test("clearing a priority deletes its value without putting null into the task c
 	await instance.page.mouse.move(rect!.x + rect!.width / 2, rect!.y + rect!.height / 2);
 	await instance.page.mouse.up();
 	await expect.poll(async () => (await frontmatter()).priority).toBeUndefined();
+	const referencePath = await instance.page.evaluate(async (folder) => {
+		const app = (window as any).app;
+		const source = app.vault.getAbstractFileByPath(`${folder}/Source.md`);
+		const referencePath = `${folder}/Priority reference.md`;
+		await app.vault.create(referencePath, await app.vault.read(source));
+		return referencePath;
+	}, folder);
+	let expectedPriority: unknown;
+	await expect.poll(async () => {
+		expectedPriority = await instance.page.evaluate(async (path) => {
+			const plugin = (window as any).app.plugins.getPlugin("tasknotes");
+			return (await plugin.cacheManager.getTaskInfo(path))?.priority;
+		}, referencePath);
+		return typeof expectedPriority;
+	}).toBe("string");
 	await expect
 		.poll(() =>
 			instance.page.evaluate(async (folder) => {
@@ -760,7 +791,7 @@ test("clearing a priority deletes its value without putting null into the task c
 				return (await plugin.cacheManager.getTaskInfo(`${folder}/Source.md`)).priority;
 			}, folder)
 		)
-		.toBe("normal");
+		.toBe(expectedPriority);
 	expect((await frontmatter()).tasknotes_manual_order).toBe(sourceRank);
 });
 
@@ -783,8 +814,11 @@ test("an all-empty primary group still keeps subgroup movement on the correct pr
 
 test("Undo restores group fields and completion metadata while preserving later unrelated edits", async () => {
 	await openView();
+	const previousToast = await instance.page.locator(".tn-toast").elementHandle();
 	await card("Source").dragTo(card("Done"));
 	await expect.poll(async () => (await frontmatter()).status).toBe("done");
+	if (previousToast) await expect.poll(() => previousToast.evaluate((toast) => toast.isConnected)).toBe(false);
+	await expect(instance.page.locator(".tn-toast__action")).toBeVisible();
 	await instance.page.evaluate(async (folder) => {
 		const app = (window as any).app;
 		await app.fileManager.processFrontMatter(
@@ -806,8 +840,11 @@ test("Undo restores group fields and completion metadata while preserving later 
 
 test("Undo refuses to overwrite a later edit to a moved field", async () => {
 	await openView();
+	const previousToast = await instance.page.locator(".tn-toast").elementHandle();
 	await card("Source").dragTo(card("Done"));
 	await expect.poll(async () => (await frontmatter()).status).toBe("done");
+	if (previousToast) await expect.poll(() => previousToast.evaluate((toast) => toast.isConnected)).toBe(false);
+	await expect(instance.page.locator(".tn-toast__action")).toBeVisible();
 	await instance.page.evaluate(async (folder) => {
 		const app = (window as any).app;
 		await app.fileManager.processFrontMatter(
@@ -819,7 +856,7 @@ test("Undo refuses to overwrite a later edit to a moved field", async () => {
 	}, folder);
 	await expect.poll(async () => (await frontmatter()).priority).toBe("normal");
 	await instance.page.getByRole("button", { name: "Undo", exact: true }).last().click();
-	await expect(instance.page.locator(".notice").filter({ hasText: "Cannot undo" })).toBeVisible();
+	await expect(instance.page.locator(".tn-toast").filter({ hasText: "Cannot undo" })).toBeVisible();
 	expect(await frontmatter()).toMatchObject({ status: "done", priority: "normal" });
 });
 
@@ -834,12 +871,13 @@ test("handle-only touch movement works at a narrow viewport and cleans up its gh
 	const cdp = await instance.page.context().newCDPSession(instance.page);
 	try {
 		await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
+		await card("Source").getByRole("button", { name: "Move task" }).focus();
 		await card("Source").getByRole("button", { name: "Move task" }).hover();
 		const start = await card("Source").getByRole("button", { name: "Move task" }).boundingBox();
 		const target = await card("Low").boundingBox();
 		const x = start!.x + start!.width / 2;
 		const y = start!.y + start!.height / 2;
-		const targetX = target!.x + target!.width / 2;
+		const targetX = target!.x + 24;
 		const targetY = target!.y + target!.height / 2;
 		await cdp.send("Input.dispatchTouchEvent", {
 			type: "touchStart",
@@ -854,15 +892,22 @@ test("handle-only touch movement works at a narrow viewport and cleans up its gh
 			});
 		}
 		await expect(instance.page.locator(".task-list-view__movement-feedback")).toContainText(
-			"priority → low"
+			"Low"
 		);
 		expect(await frontmatter()).toEqual(before);
 		await expect(instance.page.locator(".task-list-view__touch-ghost")).toBeVisible();
 		const ghostBounds = await instance.page
 			.locator(".task-list-view__touch-ghost")
 			.boundingBox();
-		expect(Math.abs(ghostBounds!.x - (targetX + 12))).toBeLessThan(20);
-		expect(Math.abs(ghostBounds!.y - (targetY + 12))).toBeLessThan(20);
+		const previewPosition = (pointer: number, size: number, viewport: number) => {
+			const preferred = pointer + 14 + size > viewport - 8 ? pointer - size - 14 : pointer + 14;
+			return Math.max(8, Math.min(preferred, Math.max(8, viewport - size - 8)));
+		};
+		expect(Math.abs(ghostBounds!.x - previewPosition(targetX, ghostBounds!.width, 480))).toBeLessThan(2);
+		expect(Math.abs(ghostBounds!.y - previewPosition(targetY, ghostBounds!.height, 800))).toBeLessThan(2);
+		expect(ghostBounds!.x).toBeGreaterThanOrEqual(0);
+		expect(ghostBounds!.x + ghostBounds!.width).toBeLessThanOrEqual(480);
+		expect(ghostBounds!.y + ghostBounds!.height).toBeLessThanOrEqual(800);
 		await instance.page.screenshot({ path: testInfo.outputPath("touch-move-preview.png") });
 		await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
 		await expect.poll(async () => (await frontmatter()).priority).toBe("low");
@@ -874,6 +919,7 @@ test("handle-only touch movement works at a narrow viewport and cleans up its gh
 		await expect(instance.page.locator(".menu")).toHaveCount(0);
 		await expect(card("Source")).toHaveAttribute("data-priority", "low");
 		const afterMove = await frontmatter();
+		await card("Source").getByRole("button", { name: "Move task" }).focus();
 		const handle = await card("Source")
 			.getByRole("button", { name: "Move task" })
 			.boundingBox();

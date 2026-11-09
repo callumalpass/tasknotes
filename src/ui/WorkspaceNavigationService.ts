@@ -5,6 +5,8 @@ import type TaskNotesPlugin from "../main";
 import {
 	AGENDA_VIEW_TYPE,
 	POMODORO_VIEW_TYPE,
+	POMODORO_STATS_VIEW_TYPE,
+	STATS_VIEW_TYPE,
 } from "../types";
 import { RELEASE_NOTES_VIEW_TYPE } from "../views/ReleaseNotesView";
 import { showNotice } from "../ui/notifications";
@@ -59,6 +61,14 @@ export class WorkspaceNavigationService {
 
 	async activateAgendaView(): Promise<WorkspaceLeaf> {
 		return this.activateView(AGENDA_VIEW_TYPE);
+	}
+
+	async activatePomodoroStatsView(): Promise<WorkspaceLeaf> {
+		return this.activateView(POMODORO_STATS_VIEW_TYPE);
+	}
+
+	async activateStatsView(): Promise<WorkspaceLeaf> {
+		return this.activateView(STATS_VIEW_TYPE);
 	}
 
 	async activatePomodoroView(): Promise<WorkspaceLeaf> {

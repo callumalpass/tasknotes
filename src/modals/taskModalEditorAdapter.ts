@@ -27,8 +27,12 @@ export interface TaskModalEditorOptions {
 	onSubmit: (shift: boolean) => void;
 	onEscape: () => void;
 	onTab: (shift: boolean) => boolean;
+	onEnter?: (shift: boolean) => boolean;
 	extensions?: Extension[];
 	file?: Nullable<TFile>;
+	enterVimInsertMode?: boolean;
+	/** Replaces the default textarea when the embedded editor cannot be created. */
+	createFallback?: () => void;
 }
 
 export function createTaskModalMarkdownEditor(
@@ -38,8 +42,10 @@ export function createTaskModalMarkdownEditor(
 ): EmbeddableMarkdownEditor | null {
 	try {
 		const EmbeddableMarkdownEditor = loadEmbeddableMarkdownEditor();
+		const { onEnter } = options;
 		return new EmbeddableMarkdownEditor(app, container, {
 			...options,
+			onEnter: onEnter ? (_editor, _mod, shift) => onEnter(shift) : undefined,
 			onSubmit: (_editor, shift) => options.onSubmit(shift),
 			onTab: (_editor, shift) => options.onTab(shift),
 		});
@@ -49,6 +55,11 @@ export function createTaskModalMarkdownEditor(
 			operation: "create-markdown-editor",
 			error: error,
 		});
+
+		if (options.createFallback) {
+			options.createFallback();
+			return null;
+		}
 
 		const fallbackTextarea = container.createEl("textarea", {
 			cls: options.cls + "-fallback",

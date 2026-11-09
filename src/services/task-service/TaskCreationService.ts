@@ -113,6 +113,7 @@ export interface TaskCreationServiceDependencies {
 export interface TaskCreationOptions {
 	applyDefaults?: boolean;
 	applyTemplate?: boolean;
+	targetFolder?: string;
 }
 
 export class TaskCreationService {
@@ -192,7 +193,7 @@ export class TaskCreationService {
 							taskData.occurrence_date
 						)
 					: generateTaskFilename(filenameContext, runtime.settings);
-			const folder = await this.resolveTargetFolder(taskData);
+			const folder = options.targetFolder ?? await this.resolveTargetFolder(taskData);
 
 			if (folder) {
 				await ensureFolderExists(runtime.app.vault, folder);
@@ -382,9 +383,6 @@ export class TaskCreationService {
 			};
 
 			try {
-				if (runtime.cacheManager.waitForFreshTaskData) {
-					await runtime.cacheManager.waitForFreshTaskData(file);
-				}
 				runtime.cacheManager.updateTaskInfoInCache(file.path, taskInfo);
 			} catch (cacheError) {
 				tasknotesLogger.error("Error updating cache for new task:", {

@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import { Modal, App, Setting } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -30,6 +31,7 @@ export class PropertySelectorModal extends Modal {
 		plugin?: TaskNotesPlugin
 	) {
 		super(app);
+		applyModalShell(this);
 		this.availableProperties = availableProperties;
 		this.currentSelection = currentSelection;
 		this.tempSelection = [...currentSelection];

@@ -2,6 +2,10 @@ import { calendarDateToInstant, calendarInstantToDate, planCalendarEdit, type Ca
 import type { TaskInfo } from "../types";
 import { eventApiFromItem, type CalendarEventChange, type CalendarEventItem, type CalendarEventProps } from "./calendarEngine";
 
+export function isCalendarSelectionTarget(props: CalendarEventProps | undefined): props is CalendarEventProps & { taskInfo: TaskInfo } {
+	return Boolean(props?.taskInfo && !props.isBatchPreview);
+}
+
 /** Only ordinary date markers are task-level targets, not series, spans or tracked time. */
 export function isCalendarBatchTarget(props: CalendarEventProps | undefined): props is CalendarEventProps & { taskInfo: TaskInfo; modelEntry: CalendarEntry } {
 	const entry = props?.modelEntry;

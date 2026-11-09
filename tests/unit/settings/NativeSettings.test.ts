@@ -1,5 +1,5 @@
 import { Platform } from "obsidian";
-import { STARTER_NOTE_CONTENT } from "../../../src/bootstrap/starterNote";
+import { getStarterNoteContent } from "../../../src/bootstrap/starterNote";
 import { settingsFixture, flattenSettings, control, page } from "../../helpers/native-settings";
 
 describe("Native settings navigation and search", () => {
@@ -8,10 +8,10 @@ describe("Native settings navigation and search", () => {
 		const definitions = tab.getSettingDefinitions();
 		for (const name of ["Task files", "Properties", "Task creation", "Form fields", "Appearance & interaction"]) {
 			expect(page(definitions, name)).toBeDefined();
-			expect(STARTER_NOTE_CONTENT).toContain(name);
+			expect(getStarterNoteContent()).toContain(name);
 		}
 		expect(flattenSettings(definitions).some(item => "heading" in item && item.heading === "Views & base files")).toBe(true);
-		expect(STARTER_NOTE_CONTENT).toContain("Views & base files");
+		expect(getStarterNoteContent()).toContain("Views & base files");
 	});
 
 	test("does not expose retired settings while retaining the persisted legacy alignment key", () => {

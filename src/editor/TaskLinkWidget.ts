@@ -20,7 +20,8 @@ export class TaskLinkWidget extends WidgetType {
 		originalText: string,
 		displayText?: string,
 		targetDate: Date = createUTCDateFromLocalCalendarDate(new Date()),
-		private subpath?: string
+		private subpath?: string,
+		private inSentence = false
 	) {
 		super();
 		this.taskInfo = taskInfo;
@@ -41,11 +42,15 @@ export class TaskLinkWidget extends WidgetType {
 			"scheduled",
 			"recurrence",
 		];
-		const visibleProperties = convertInternalToUserProperties(internalProperties, this.plugin);
+		const visibleProperties = convertInternalToUserProperties(
+			this.taskInfo.isBlocked ? [...new Set([...internalProperties, "blocked"])] : internalProperties,
+			this.plugin
+		);
 
 		// Create a wrapper span with the tasknotes-plugin class for CSS scoping
 		const wrapper = activeWindow.createSpan();
 		wrapper.className = "tasknotes-plugin tasknotes-inline-widget";
+		wrapper.classList.toggle("tasknotes-inline-widget--sentence", this.inSentence);
 		// Ensure wrapper displays inline to prevent line breaks
 		wrapper.classList.remove(
 			"tn-static-display-block-2a1b75c9",
@@ -84,6 +89,18 @@ export class TaskLinkWidget extends WidgetType {
 			displayText: this.displayText,
 			navigationSubpath: this.subpath,
 		});
+		const mainRow = card.querySelector(".task-card__main-row");
+		const content = card.querySelector(".task-card__content");
+		const status = card.querySelector(".task-card__status-dot");
+		const menu = card.querySelector(".task-card__context-menu");
+		if (this.inSentence && mainRow && content && menu) {
+			const controls = activeWindow.createSpan();
+			controls.className = "task-card__inline-controls";
+			if (status) controls.append(status);
+			mainRow.insertBefore(controls, content);
+			mainRow.insertBefore(card.ownerDocument.createTextNode("\u2060"), content);
+			mainRow.append(menu);
+		}
 
 		// Add card to wrapper
 		wrapper.appendChild(card);
@@ -115,6 +132,7 @@ export class TaskLinkWidget extends WidgetType {
 			return false;
 		}
 		return (
+			this.inSentence === other.inSentence &&
 			this.taskInfo.path === other.taskInfo.path &&
 			this.taskInfo.status === other.taskInfo.status &&
 			this.taskInfo.title === other.taskInfo.title &&
@@ -123,6 +141,8 @@ export class TaskLinkWidget extends WidgetType {
 			this.taskInfo.due === other.taskInfo.due &&
 			this.taskInfo.scheduled === other.taskInfo.scheduled &&
 			this.taskInfo.recurrence === other.taskInfo.recurrence &&
+			this.taskInfo.isBlocked === other.taskInfo.isBlocked &&
+			JSON.stringify(this.taskInfo.blockedBy) === JSON.stringify(other.taskInfo.blockedBy) &&
 			this.displayText === other.displayText &&
 			this.subpath === other.subpath &&
 			this.originalText === other.originalText &&

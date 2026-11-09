@@ -1,5 +1,5 @@
 import { formatProjectEntryLinkExpression } from "../../../src/templates/defaultBasesFiles";
-import { extractBasesFilterDefaults } from "../../../src/bases/basesFilterDefaults";
+import { extractBasesFilterDefaults, inferBasesCreationFolder } from "../../../src/bases/basesFilterDefaults";
 import type { TaskCreationFieldMapper } from "../../../src/bases/basesTaskCreation";
 import type { FieldMapping } from "../../../src/types";
 
@@ -38,6 +38,14 @@ function createFieldMapper(overrides: Partial<FieldMapping> = {}): TaskCreationF
 }
 
 describe("Bases filter defaults", () => {
+	it('infers nested folder and tag defaults only from deterministic conjunctions', () => {
+		const config = { query: { filters: { and: ['file.inFolder("Work")', 'file.hasTag("review")'] } }, filters: { rule: { text: 'file.inFolder("Work/Inbox")' } } };
+		expect(inferBasesCreationFolder(config)).toBe('Work/Inbox');
+		expect(extractBasesFilterDefaults({ config, fieldMapper: createFieldMapper(), taskTag: 'task' })).toEqual({ tags: ['review'] });
+		expect(inferBasesCreationFolder({ filters: { and: ['file.inFolder("Work")', 'file.inFolder("Personal")'] } })).toBeUndefined();
+		expect(inferBasesCreationFolder({ filters: { or: ['file.inFolder("Work")', 'file.inFolder("Personal")'] } })).toBeUndefined();
+		expect(inferBasesCreationFolder({ filters: { rule: { text: 'file.inFolder("../Work")' } } })).toBeUndefined();
+	});
 	it.each([
 		'list(note.projects).map("constant").contains(this.file.asLink())',
 		'list(note.projects).map(value).filter(false).contains(this.file.asLink())',

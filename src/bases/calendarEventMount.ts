@@ -12,6 +12,7 @@ import { createTimeBlockCard } from "../ui/TimeBlockCard";
 import { getOccurrenceDateForEvent, getTargetDateForEvent } from "./calendar-core";
 import { createElementInDocument } from "../utils/documentDom";
 import type { CalendarEventApi } from "./calendarEngine";
+import { isPropertyForField } from "../utils/propertyMapping";
 
 type BasesEntryValue = {
 	data?: string;
@@ -229,16 +230,21 @@ export function createCalendarListEventCard({
 	const relatedNoteTotal = normalizeCalendarRelatedNoteCount(relatedNoteCount);
 
 	if (taskInfo && eventType !== "ics" && eventType !== "property-based") {
+		const hasDue = visibleProperties.some(property => isPropertyForField(property, "due", plugin));
+		const cardProperties = visibleProperties.filter(property => {
+			if (!taskInfo.recurrence && (eventType === "scheduled" || eventType === "due") && isPropertyForField(property, eventType, plugin)) return false;
+			return property !== "formula.dueIn" || !hasDue;
+		});
 		const enrichedTask = enrichCalendarListTaskInfo({
 			taskInfo,
 			basesEntry: basesEntryByPath.get(taskInfo.path),
-			visibleProperties,
+			visibleProperties: cardProperties,
 			logDebug,
 		});
 		return (factories.createTaskCard ?? createTaskCard)(
 			enrichedTask,
 			plugin,
-			visibleProperties,
+			cardProperties,
 			buildTaskCardOptions({
 				targetDate: getTargetDateForEvent({ event }),
 				occurrenceScheduled: getOccurrenceScheduled(event),

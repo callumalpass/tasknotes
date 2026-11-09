@@ -7,6 +7,8 @@ import type TaskNotesPlugin from "../main";
 import {
 	EVENT_TASK_UPDATED,
 	POMODORO_VIEW_TYPE,
+	POMODORO_STATS_VIEW_TYPE,
+	STATS_VIEW_TYPE,
 	TaskInfo,
 } from "../types";
 import { RequestDeduplicator, PredictivePrefetcher } from "../utils/RequestDeduplicator";
@@ -28,6 +30,8 @@ import { StatusBarService } from "../ui/StatusBarService";
 import { NotificationService } from "../ui/NotificationService";
 import { ViewPerformanceService } from "../services/ViewPerformanceService";
 import { PomodoroView } from "../views/PomodoroView";
+import { PomodoroStatsView } from "../views/PomodoroStatsView";
+import { StatsView } from "../views/StatsView";
 import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "../views/ReleaseNotesView";
 import { RELEASE_NOTES_BUNDLE, CURRENT_VERSION } from "../releaseNotes";
 import { createTaskLinkOverlay, dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
@@ -382,7 +386,6 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		if (plugin.settings.autoCreateDefaultBasesFiles) {
 			await plugin.ensureBasesViewFiles();
 		}
-		await plugin.ensureStarterNote();
 
 		plugin.injectCustomStyles();
 		registerActiveViews(plugin);
@@ -412,6 +415,8 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 
 function registerActiveViews(plugin: TaskNotesPlugin): void {
 	plugin.registerView(POMODORO_VIEW_TYPE, (leaf) => new PomodoroView(leaf, plugin));
+	plugin.registerView(POMODORO_STATS_VIEW_TYPE, (leaf) => new PomodoroStatsView(leaf, plugin));
+	plugin.registerView(STATS_VIEW_TYPE, (leaf) => new StatsView(leaf, plugin));
 	plugin.registerView(
 		RELEASE_NOTES_VIEW_TYPE,
 		(leaf) => new ReleaseNotesView(leaf, plugin, RELEASE_NOTES_BUNDLE, CURRENT_VERSION)

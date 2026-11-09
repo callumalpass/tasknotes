@@ -96,7 +96,7 @@ describe("taskModalActionIconStates", () => {
 		mockSetIcon.mockClear();
 	});
 
-	it("shows the status as a circle, check circle, or configured icon like task cards (#2401)", () => {
+	it("shares workflow glyphs with task cards and preserves configured icons (#2401)", () => {
 		const actionBar = createActionBar();
 		const statusIconElement = actionBar.querySelector('[data-type="status"] .icon');
 		const base = createState();
@@ -106,18 +106,16 @@ describe("taskModalActionIconStates", () => {
 
 		updateTaskModalActionIconStates(actionBar, { translate }, base);
 		updateTaskModalActionIconStates(actionBar, { translate }, base);
+		expect(statusIconElement?.getAttribute("data-tn-glyph")).toBe("open");
 		updateTaskModalActionIconStates(actionBar, { translate }, createState({ status: "done" }));
+		expect(statusIconElement?.getAttribute("data-tn-glyph")).toBe("complete");
 		updateTaskModalActionIconStates(
 			actionBar,
 			{ translate },
 			createState({ statusConfigs: withIcon })
 		);
 
-		expect(mockSetIcon.mock.calls).toEqual([
-			[statusIconElement, "circle"],
-			[statusIconElement, "circle-check"],
-			[statusIconElement, "clock"],
-		]);
+		expect(mockSetIcon.mock.calls).toEqual([[statusIconElement, "clock"]]);
 	});
 
 	it("labels chips with the current value, not only when hovered (#2048)", () => {
@@ -139,8 +137,8 @@ describe("taskModalActionIconStates", () => {
 				reminderCount: 2,
 			})
 		);
-		expect(label("due-date")).toBe("Due: Today 14:30");
-		expect(label("scheduled-date")).toBe("Scheduled: May 19, 2020");
+		expect(label("due-date")).toBe("Today 14:30");
+		expect(label("scheduled-date")).toBe("May 19, 2020");
 		expect(label("status")).toBe("Done");
 		expect(label("reminders")).toBe("2 reminders set");
 	});
@@ -247,12 +245,12 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			statusIcon,
-			mockEnglishText(msg({ message: "Set status", context: "modals.task.actions.status" })),
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.statusValue"), { value: "Open" }),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			priorityIcon,
-			mockEnglishText(msg({ message: "Set priority", context: "modals.task.actions.priority" })),
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.priorityValue"), { value: "Normal" }),
 			{ placement: "top" }
 		);
 	});

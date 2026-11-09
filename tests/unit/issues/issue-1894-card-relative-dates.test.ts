@@ -1,7 +1,7 @@
 import { App, Menu } from "obsidian";
 import { DateContextMenu } from "../../../src/components/DateContextMenu";
 import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
-import { TaskListView } from "../../../src/bases/TaskListView";
+import { TaskListCardActions } from "../../../src/bases/taskListCardActions";
 import { handleKanbanCardAction } from "../../../src/bases/kanbanCardActions";
 import { renderPropertyMetadata } from "../../../src/ui/taskCardProperties";
 import { createI18nService } from "../../../src/i18n";
@@ -10,6 +10,11 @@ import type { TaskInfo } from "../../../src/types";
 
 // Exercise real calendar arithmetic, not the global date-fns mock.
 jest.mock("date-fns", () => jest.requireActual("../../../node_modules/date-fns"));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	changeTaskProperty: async (plugin: TaskNotesPlugin, tasks: TaskInfo[], property: keyof TaskInfo, value: unknown) => {
+		for (const task of tasks) await plugin.updateTaskProperty(task, property, value);
+	},
+}));
 
 type MockMenuItem = Record<string, jest.Mock>;
 type MockMenu = { items: (MockMenuItem | { type: string })[] };
@@ -77,18 +82,17 @@ async function openMenu(
 			app: plugin.app,
 		});
 	} else if (path === "task-list") {
-		// Invoke the real delegated card handler without starting a Bases controller.
-		const view = Object.create(TaskListView.prototype) as TaskListView;
-		Object.assign(view, { plugin, app: plugin.app });
-		await (
-			view as unknown as {
-				openDateContextMenu(
-					task: TaskInfo,
-					field: DateField,
-					event: MouseEvent
-				): Promise<void>;
-			}
-		).openDateContextMenu(task, field, event);
+		const actions = new TaskListCardActions({
+			plugin,
+			containerEl: document.body.createDiv(),
+			clickTimeouts: new Map(),
+			getApp: () => plugin.app,
+			getTargetDate: () => new Date("2026-05-16T12:00:00"),
+			handleSelectionClick: () => false,
+		});
+		const target = document.body.createSpan();
+		target.dataset.tnDateType = field;
+		await actions.handleActionClick("edit-date", task, target, event);
 	} else {
 		new TaskContextMenu({ task, plugin, targetDate: new Date("2026-05-16T12:00:00") });
 		const root = menuMock.mock.results[firstMenu].value as MockMenu;

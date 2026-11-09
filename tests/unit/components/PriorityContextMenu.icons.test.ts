@@ -11,7 +11,7 @@ describe("PriorityContextMenu icons", () => {
 		menuMock.mockClear();
 	});
 
-	it("previews each priority's configured icon and falls back to a star", () => {
+	it("previews each priority's configured icon and falls back to the shared priority signal", () => {
 		const priorities: PriorityConfig[] = [
 			{
 				id: "low",
@@ -43,7 +43,7 @@ describe("PriorityContextMenu icons", () => {
 		const menu = menuMock.mock.results[firstNewMenuIndex].value as MockMenu;
 		expect(menu.items.map((item) => item.setIcon.mock.calls[0][0])).toEqual([
 			"arrow-down",
-			"star",
+			"signal",
 			"flame",
 		]);
 	});

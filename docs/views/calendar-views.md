@@ -26,7 +26,7 @@ The Mini Calendar displays a month-based view that shows which days contain task
 
 - **Date Navigation**: Click any date to open a fuzzy selector modal showing all notes associated with that date
 - **Keyboard Navigation**: Navigate the calendar using arrow keys and select dates with Enter
-- **Heatmap Styling**: Visual indicators show the density of tasks or notes on each day
+- **Date Density**: Small marks beneath dates show the density of tasks or notes without filling the cells. Today keeps the strong accent mark independently of the selected date.
 - **Configurable Date Property**: Set which date property to track (not limited to tasks - can display any dated notes based on configured property)
 - **Month Navigation**: Browse forward and backward through months to view historical and future task distribution
 Mini Calendar is commonly used as an entry view: select a date, then open Task List, Agenda, or Calendar for execution.
@@ -55,13 +55,19 @@ The focused marker's Alt+arrow keyboard move also moves the selected group. Resi
 
 The Calendar View supports the following view modes:
 
-- **Month**: Month grid showing all-day and timed events
+- **Month**: Month grid showing all-day and timed events. By default, clicking a day opens the creation menu and clicking a date number opens the daily note. Turn on **Show selected day panel** in the view options to select a day and list its tasks, with **Add task** for that date.
+
+Busy timed columns collapse overlapping appointments into a labelled stack when there is not enough room to read them side by side. Open the stack to access its appointments without widening the whole week. At narrow widths, day buttons above the grid reveal offscreen dates; **Today** also brings the current day into view. Overflow lists stay within the visible calendar pane and scroll vertically. All-day bars use single-line ellipsis in the grid, while overflow rows wrap their titles.
 - **Week**: Week view with hourly time slots for detailed scheduling
 - **Day**: Single day view with hourly breakdown
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
 - **Custom Days**: Configurable multi-day view (2-10 days)
 View modes can be switched within a single `.base` file based on planning horizon (day, week, month, year, or custom range).
+
+The view switch shows full names when there is room and short labels in narrow panes. A week view temporarily opens as a list below 640px unless you explicitly choose a view in that pane. This automatic adjustment does not change the `.base` file, and widening the pane restores the week view.
+
+Constrained calendar blocks prioritize the task title over glyphs and time labels; hover for the full details. Due markers use a flag and dotted edge to distinguish a deadline from the same task's scheduled placement. List entries retain their event times and label deadlines separately. Recurring projections remain available through the date's **+ more** chooser on crowded days.
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|

@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import { App, FuzzySuggestModal, TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -17,6 +18,7 @@ export class AttachmentFileSuggestModal extends FuzzySuggestModal<TFile> {
 		excludePath?: string
 	) {
 		super(app);
+		applyModalShell(this);
 		this.onChoose = onChoose;
 		this.excludePath = excludePath;
 		this.setPlaceholder(

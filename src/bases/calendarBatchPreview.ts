@@ -6,6 +6,7 @@ interface CalendarBatchPreviewOptions {
 	getItems(): readonly CalendarEventItem[];
 	/** Stable identity of the current canonical item set; invalidates the proposal cache. */
 	getRevision(): unknown;
+	isValidTarget(clientX: number, clientY: number): boolean;
 	build(proposal: CalendarBatchProposal): CalendarEventItem[] | null;
 	upsert(items: CalendarEventItem[]): void;
 	remove(ids: string[]): void;
@@ -22,6 +23,7 @@ export class CalendarBatchPreview {
 	private readonly cleanup: Array<() => void> = [];
 	private boundDocument: Document | null = null;
 	private unbindDocument: (() => void) | null = null;
+	private completionTimer: number | undefined;
 
 	constructor(private readonly options: CalendarBatchPreviewOptions) {
 		const { root } = options;
@@ -48,18 +50,33 @@ export class CalendarBatchPreview {
 		const end = (event: PointerEvent) => {
 			if (event.pointerId !== this.pointerId) return;
 			const invalid = this.denied && event.type === "pointerup";
-			this.clear();
-			if (invalid) this.options.onInvalidDrop();
+			if (event.type === "pointercancel") {
+				this.clear();
+				return;
+			}
+			this.completionTimer = win?.setTimeout(() => {
+				if (event.pointerId !== this.pointerId) return;
+				this.clear();
+				if (invalid) this.options.onInvalidDrop();
+			}, 0);
 		};
 		const key = (event: KeyboardEvent) => { if (event.key === "Escape") this.clear(); };
 		const blur = () => this.clear();
 		const visibility = () => { if (doc.hidden) this.clear(); };
+		const move = (event: PointerEvent) => {
+			if (event.pointerId !== this.pointerId || this.options.isValidTarget(event.clientX, event.clientY)) return;
+			this.restore();
+			this.lastKey = null;
+			this.lastRevision = undefined;
+		};
+		doc.addEventListener("pointermove", move, true);
 		doc.addEventListener("pointerup", end, true);
 		doc.addEventListener("pointercancel", end, true);
 		doc.addEventListener("keydown", key, true);
 		doc.addEventListener("visibilitychange", visibility);
 		win?.addEventListener("blur", blur);
 		this.unbindDocument = () => {
+			doc.removeEventListener("pointermove", move, true);
 			doc.removeEventListener("pointerup", end, true);
 			doc.removeEventListener("pointercancel", end, true);
 			doc.removeEventListener("keydown", key, true);
@@ -93,6 +110,8 @@ export class CalendarBatchPreview {
 
 	/** A full source refresh supersedes preview items, so need not repaint the old set. */
 	clear(restore = true): void {
+		this.boundDocument?.defaultView?.clearTimeout(this.completionTimer);
+		this.completionTimer = undefined;
 		if (restore) this.restore();
 		else this.previewIds.clear();
 		this.pointerId = null;

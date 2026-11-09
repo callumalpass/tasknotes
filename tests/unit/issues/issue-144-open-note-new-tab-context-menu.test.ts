@@ -85,10 +85,16 @@ function getTopLevelMenu(): MockMenu {
 	return menuMock.mock.results[0].value as MockMenu;
 }
 
-function findTopLevelTitle(menu: MockMenu, title: string): MockMenuItem | undefined {
-	return menu.items.find((item) =>
-		item.setTitle?.mock.calls.some(([value]) => value === title)
-	);
+function findMenuTitle(menu: MockMenu, title: string): MockMenuItem | undefined {
+	for (const item of menu.items) {
+		if (item.setTitle?.mock.calls.some(([value]) => value === title)) return item;
+		const submenu = item.setSubmenu?.mock.results[0]?.value as MockMenu | undefined;
+		if (submenu) {
+			const match = findMenuTitle(submenu, title);
+			if (match) return match;
+		}
+	}
+	return undefined;
 }
 
 describe("Issue #144: task context menu opens notes in a new tab", () => {
@@ -113,9 +119,7 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		});
 
 		const menu = getTopLevelMenu();
-		const moreItem = findTopLevelTitle(menu, "More");
-		const moreMenu = moreItem?.setSubmenu?.mock.results[0].value as MockMenu;
-		const newTabItem = findTopLevelTitle(moreMenu, "Open note in new tab");
+		const newTabItem = findMenuTitle(menu, "Open note in new tab");
 
 		expect(newTabItem).toBeDefined();
 

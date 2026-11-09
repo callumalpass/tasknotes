@@ -719,7 +719,7 @@ export class NotificationService {
 			day: date.toDateString() === new Date().toDateString()
 				? null
 				: date.toLocaleDateString(uiLocale(), { month: "short", day: "numeric" }),
-			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit" }),
+			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit", hour12: this.plugin.settings.calendarViewSettings?.timeFormat === "12" }),
 		};
 	}
 

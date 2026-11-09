@@ -1,4 +1,6 @@
-/* TASK MODAL - Google Keep/Todoist Inspired */
+/* =====================================================================
+   TASK MODAL - Composer and property bar
+   ===================================================================== */
 
 /* Fix suggestion text truncation */
 .suggestion-item .nlp-suggest-text {
@@ -9,94 +11,54 @@
     width: auto;
 }
 
-/* EMBEDDABLE MARKDOWN EDITOR */
-
-.tn-task-modal__markdown-editor--details {
-    margin-bottom: var(--size-4-3);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    overflow: hidden;
-    min-height: 200px;
-    max-height: 400px;
-}
-
-.tn-task-modal__markdown-editor--details .task-details-editor {
-    min-height: 200px;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-/* Make the editor container scrollable */
-.tn-task-modal__markdown-editor--details .cm-editor {
-    height: 100%;
-    min-height: 200px;
-    max-height: 400px;
-}
-
-.tn-task-modal__markdown-editor--details .cm-scroller {
-    overflow: auto;
-    min-height: inherit;
-    height: 100%;
-    max-height: 400px;
-    cursor: text;
-}
-
-.tn-task-modal__markdown-editor--details .cm-sizer,
-.tn-task-modal__markdown-editor--details .cm-contentContainer,
-.tn-task-modal__markdown-editor--details .cm-content {
-    box-sizing: border-box;
-    min-height: inherit;
-    min-width: 100%;
-    width: 100%;
-}
+/* =====================================================================
+   EMBEDDED EDITORS
+   These are Obsidian's own editors. Only their box is set here: the details
+   text, live preview, lists, checkboxes and embeds keep the note styling.
+   ===================================================================== */
 
 .tn-task-modal__markdown-editor .cm-sizer {
     container-type: normal;
 }
 
-.tn-task-modal__markdown-editor--details .cm-sizer,
-.tn-task-modal__markdown-editor--details .cm-contentContainer {
+.tn-task-modal__markdown-editor :is(.cm-lineNumbers, .cm-gutters) {
+    display: none;
+}
+
+.tn-task-modal__markdown-editor .cm-scroller {
+    cursor: text;
+}
+
+.tn-task-modal__markdown-editor :is(.cm-cursor, .cm-dropCursor) {
+    border-left-color: var(--text-normal);
+}
+
+.tn-task-modal__markdown-editor--details,
+.tn-task-modal__markdown-editor--details .details-editor,
+.tn-task-modal__markdown-editor--details .cm-editor {
+    display: flex;
     flex: 1 1 auto;
-}
-
-.tn-task-modal__markdown-editor--details .details-editor-fallback {
-    display: block;
+    flex-direction: column;
     width: 100%;
-    min-height: inherit;
-    height: 100%;
-    max-height: 400px;
-    box-sizing: border-box;
-    padding: var(--size-4-2);
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    color: var(--text-normal);
-    font-family: var(--font-text);
-    font-size: var(--font-ui-medium);
-    line-height: var(--line-height-normal);
-    resize: none;
-    overflow-y: auto;
+    min-height: 0;
 }
 
-.tn-task-modal__markdown-editor--details .details-editor-fallback:focus {
-    outline: none;
-    box-shadow: none;
+.tn-task-modal__markdown-editor--details {
+    overflow: hidden;
 }
 
-/* Style the editor content */
-.tn-task-modal__markdown-editor--details .cm-content {
-    padding-left: var(--size-4-2);
-    padding-right: var(--size-4-2);
-    padding-top: var(--size-4-2);
-    padding-bottom: var(--size-4-2);
-    font-family: var(--font-text);
-    font-size: var(--font-ui-medium);
-    line-height: var(--line-height-normal);
-    caret-color: var(--text-normal);
+.tn-task-modal__markdown-editor--details .cm-editor {
+    font-size: var(--tn-modal-editor-size);
+}
+
+.tn-task-modal__markdown-editor--details .cm-scroller {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
 }
 
 .tn-task-modal__markdown-editor--details .markdown-source-view.mod-cm6 .cm-content {
-    padding: var(--size-4-2);
+    padding: var(--tn-space-2) 0;
 }
 
 .tn-task-modal__markdown-editor--details .cm-header,
@@ -134,113 +96,61 @@
     color: var(--h6-color, var(--text-normal));
 }
 
-.tn-task-modal__markdown-editor--details .cm-cursor,
-.tn-task-modal__markdown-editor--details .cm-dropCursor {
-    border-left-color: var(--text-normal);
-}
-
-.tn-task-modal__markdown-editor--details .cm-lineNumbers,
-.tn-task-modal__markdown-editor--details .cm-gutters {
-    display: none;
-}
-
-/* Placeholder styling */
-.tn-task-modal__markdown-editor--details .cm-placeholder {
-    color: var(--text-faint);
+.tn-task-modal__markdown-editor .cm-placeholder {
+    color: var(--tn-text-placeholder);
     font-style: normal;
+    font-weight: var(--tn-font-weight-normal);
 }
 
-/* NLP MARKDOWN EDITOR */
-
-.tn-task-modal__markdown-editor--nlp {
-    margin-bottom: var(--size-4-2);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    overflow: visible;
-    min-height: 80px;
-    max-height: 200px;
-    background: transparent;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.tn-task-modal__markdown-editor--nlp .nlp-editor {
-    min-height: 80px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.tn-task-modal__markdown-editor--nlp .cm-editor {
-    height: 100%;
-    min-height: 80px;
-    max-height: 200px;
-    background: transparent;
-	overflow: visible;
-}
-
-/* Focus state for NLP editor - match old nl-input styling */
-.tn-task-modal__markdown-editor--nlp:focus-within {
-    border-color: var(--interactive-accent);
-    background: transparent;
-    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
-}
-
-.tn-task-modal__markdown-editor--nlp:focus-within .cm-editor {
+/* Title and natural language fields share one treatment */
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) {
+    --tn-title-line: calc(var(--tn-type-lg) * 1.4);
     background: transparent;
 }
 
-.tn-task-modal__markdown-editor--nlp .cm-scroller {
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) .cm-editor {
+    min-height: var(--tn-title-line);
+    background: transparent;
+}
+
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) .cm-sizer {
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) .cm-scroller {
+    max-height: calc(var(--tn-title-line) * 4);
     overflow: auto;
-    min-height: inherit;
-    height: 100%;
-    max-height: 200px;
-    cursor: text;
+    font-family: var(--font-interface);
 }
 
-.tn-task-modal__markdown-editor--nlp .cm-sizer,
-.tn-task-modal__markdown-editor--nlp .cm-contentContainer,
-.tn-task-modal__markdown-editor--nlp .cm-content {
-    box-sizing: border-box;
-    min-height: inherit;
-    min-width: 100%;
-    width: 100%;
-}
-
-.tn-task-modal__markdown-editor--nlp .cm-sizer,
-.tn-task-modal__markdown-editor--nlp .cm-contentContainer {
-    flex: 1 1 auto;
-}
-
-.tn-task-modal__markdown-editor--nlp .cm-content {
-    padding-left: var(--size-4-2);
-    padding-right: var(--size-4-2);
-    padding-top: var(--size-4-3);
-    padding-bottom: var(--size-4-3);
-    font-family: var(--font-text);
-    font-size: var(--font-ui-medium);
-    line-height: 1.5;
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) .markdown-source-view.mod-cm6 .cm-content {
+    padding: 0;
+    font-family: var(--font-interface);
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    line-height: 1.4;
     caret-color: var(--text-normal);
 }
 
-.tn-task-modal__markdown-editor--nlp .markdown-source-view.mod-cm6 .cm-content {
-    padding: var(--size-4-3) var(--size-4-2);
+/* Markdown syntax must not resize a title */
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) :is(.cm-line, .cm-header) {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
 }
 
-.tn-task-modal__markdown-editor--nlp .cm-cursor,
-.tn-task-modal__markdown-editor--nlp .cm-dropCursor {
-    border-left-color: var(--text-normal);
+/* A tag pill's vertical padding would overflow one line and show a scrollbar */
+.tn-task-modal__markdown-editor:is(.tn-task-modal__markdown-editor--nlp, .tn-task-modal__markdown-editor--title) .cm-hashtag {
+    padding-block: 0;
 }
 
-.tn-task-modal__markdown-editor--nlp .cm-lineNumbers,
-.tn-task-modal__markdown-editor--nlp .cm-gutters {
-    display: none;
-}
-
-.tn-task-modal__markdown-editor--nlp .cm-placeholder {
-    color: var(--text-muted);
-    font-style: normal;
-}
-
-/* CODEMIRROR AUTOCOMPLETE STYLING (for NLP triggers) Scoped to TaskNotes modals only */
+/* =====================================================================
+   CODEMIRROR AUTOCOMPLETE STYLING (for NLP triggers)
+   Scoped to TaskNotes modals only
+   ===================================================================== */
 
 /* Main autocomplete tooltip - scoped to TaskNotes modals */
 .tasknotes-plugin .cm-tooltip-autocomplete {
@@ -249,7 +159,7 @@
     border-radius: var(--radius-m);
     box-shadow: var(--shadow-s);
     padding: var(--size-4-1);
-    font-family: var(--font-ui);
+    font-family: var(--font-interface);
     font-size: var(--font-ui-small);
 	z-index: 9999;
     max-height: 300px;
@@ -275,11 +185,11 @@
 }
 
 /* Hovered option */
-.tasknotes-plugin .cm-tooltip-autocomplete li:hover,
-.tasknotes-plugin .cm-tooltip-autocomplete li[aria-selected="true"] {
-    background-color: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .cm-tooltip-autocomplete li:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+    }
 }
-
 /* Selected option */
 .tasknotes-plugin .cm-tooltip-autocomplete li[aria-selected="true"] {
     background-color: var(--background-modifier-active-hover);
@@ -335,88 +245,255 @@
 .tn-task-modal__section-label {
     font-weight: 600;
     color: var(--text-muted);
-    font-size: var(--font-ui-small);
+    font-size: var(--tn-type-sm);
     margin-bottom: var(--size-4-2);
     text-transform: none;
     letter-spacing: normal;
 }
 
-.tasknotes-plugin.minimalist-task-modal .modal-content {
+/* =====================================================================
+   SHELL
+   One column: title, details, property row, fields. From 900px the details
+   editor is a pane beside the rest. The modal has one size in that layout, so
+   opening More fields never moves it; the left pane scrolls instead.
+   ===================================================================== */
+
+.tasknotes-plugin.minimalist-task-modal > .modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+    width: var(--tn-modal-composer-width);
+    max-width: calc(100vw - var(--tn-space-8));
+    max-height: calc(100% - var(--tn-modal-top-offset) * 2);
+    margin-top: var(--tn-modal-top-offset);
     padding: 0;
-    border-radius: var(--radius-l);
-    box-shadow: var(--shadow-l);
-    min-width: 480px;
-    max-width: 600px;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    overflow: hidden;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-header {
+    flex: 0 0 auto;
+    margin: 0;
+    height: var(--tn-modal-header-height);
+    padding: var(--tn-space-3) var(--tn-space-4) 0;
+    box-sizing: border-box;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-title {
+    margin: 0;
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+    font-weight: var(--tn-font-weight-medium);
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    padding: 0;
+    overflow: hidden;
+    scrollbar-gutter: auto;
 }
 
 .tasknotes-plugin .minimalist-modal-container {
-    padding: var(--size-4-5);
-    background: var(--modal-background);
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-normal);
 }
 
-/* Override shadow variable inside the modal, then re-apply outer shadow explicitly */
-.theme-light .tasknotes-plugin.minimalist-task-modal,
-.theme-dark .tasknotes-plugin.minimalist-task-modal {
-    --shadow-l: none;
+.tasknotes-plugin.minimalist-task-modal .minimalist-modal-container {
+    container-type: inline-size;
 }
 
-/* Re-apply outer shadow to the modal element itself */
-.tasknotes-plugin.minimalist-task-modal > .modal {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+.tasknotes-plugin.minimalist-task-modal .modal-split-content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-/* TITLE INPUT - PRIMARY FOCUS */
+.tasknotes-plugin.minimalist-task-modal .modal-split-primary {
+    padding: var(--tn-space-2) var(--tn-space-4) var(--tn-space-1);
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-left {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0 var(--tn-space-4) var(--tn-space-3);
+}
+
+/* The pane scrolls; its sections keep their height rather than shrink to fit it */
+.tasknotes-plugin.minimalist-task-modal .modal-split-left > * {
+    flex-shrink: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-right {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    min-width: 0;
+    padding-inline: var(--tn-space-4);
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-right:empty {
+    display: none;
+}
+
+/* Kept for assistive technology: the placeholder and position name the editor on screen */
+.tasknotes-plugin.minimalist-task-modal .modal-split-right .detail-label {
+    display: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .modal-split-right .tn-task-modal__markdown-editor--details {
+    min-height: var(--tn-modal-details-min-height);
+    max-height: calc(var(--tn-space-8) * 8);
+}
+
+@media (min-width: 900px) {
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled > .modal {
+        width: var(--tn-modal-split-width);
+        height: var(--tn-modal-split-height);
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(var(--tn-modal-details-min-width), 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        overflow: hidden;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-primary {
+        grid-area: 1 / 1;
+        padding-top: var(--tn-modal-header-height);
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-left {
+        grid-area: 2 / 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .tn-task-modal__action-bar {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--tn-bg-primary);
+    }
+
+    /* Positioned links in the fields scroll beneath the sticky row, never over it */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-left > .details-container {
+        isolation: isolate;
+    }
+
+    /* The divider runs the full height of the modal, with the title row beside it */
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-right {
+        grid-area: 1 / 2 / 3 / 2;
+        min-height: 0;
+        padding: var(--tn-modal-header-height) 0 0;
+        border-left: 1px solid var(--tn-hairline);
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-right .tn-task-modal__markdown-editor--details {
+        flex: 1 1 auto;
+        max-height: none;
+    }
+
+    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled .modal-split-right .markdown-source-view.mod-cm6 .cm-content {
+        padding: 0 var(--tn-space-4) var(--tn-space-4);
+    }
+}
+
+/* Compact Create: the title and property row only, sized to its content.
+   More fields opens the full layout, details pane included. */
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--compact > .modal {
+    width: var(--tn-modal-compact-width);
+    height: auto;
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--compact .modal-split-content {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.tasknotes-plugin.minimalist-task-modal.tn-task-modal--compact .modal-split-right {
+    display: none;
+}
+
+/* =====================================================================
+   TITLE
+   ===================================================================== */
 
 .tasknotes-plugin .title-input-container {
-    margin-bottom: var(--size-4-3);
+    margin: 0;
 }
 
-.tasknotes-plugin .title-input {
+/* Used only if the embedded editor cannot start */
+.tasknotes-plugin textarea.title-input {
     width: 100%;
-    padding: var(--size-4-2) var(--size-4-1);
+    padding: 0;
     font-family: inherit;
-    font-size: var(--font-ui-large);
-    font-weight: 500;
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
     line-height: 1.4;
     border: none;
     outline: none;
     background: transparent;
     color: var(--text-normal);
     resize: none;
-    min-height: 44px;
-    max-height: calc((var(--font-ui-large) * 1.4 * 3) + (var(--size-4-2) * 2));
+    min-height: 0;
     height: var(--tn-task-modal-title-height, auto);
     overflow-y: var(--tn-task-modal-title-overflow-y, hidden);
-    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .title-input::placeholder {
-    color: var(--text-muted);
-    font-weight: 400;
+.tasknotes-plugin textarea.title-input::placeholder {
+    color: var(--tn-text-placeholder);
+    font-weight: var(--tn-font-weight-normal);
 }
 
-.tasknotes-plugin .title-input:focus,
-.tasknotes-plugin .title-input:active,
-.tasknotes-plugin .title-input:focus-visible {
-    background: var(--background-modifier-hover);
-    border-radius: var(--radius-s);
-    outline: none;
+.tasknotes-plugin textarea.title-input:focus-visible {
     box-shadow: none;
 }
 
-/* ACTION BAR - LABELLED CHIPS */
+/* =====================================================================
+   PROPERTY ROW
+   ===================================================================== */
 
 .tasknotes-plugin .tn-task-modal__action-bar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--size-2-3);
-    margin-bottom: var(--size-4-3);
-    padding: var(--size-4-1) 0;
+    gap: var(--tn-space-1);
+    padding: var(--tn-space-2) 0;
 }
 
-.tasknotes-plugin .action-icon {
+.tasknotes-plugin .tn-task-modal__action-bar > .tn-chip--property {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    border-color: var(--tn-hairline);
+    background: transparent;
+}
+
+.tasknotes-plugin .tn-task-modal__action-bar > .tn-task-modal__details-toggle {
+    border-color: transparent;
+}
+
+.tasknotes-plugin .action-icon:not(.tn-chip--property) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -428,57 +505,22 @@
     position: relative;
 }
 
-.tasknotes-plugin .action-icon:hover {
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .action-icon:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+    }
 }
-
-.tasknotes-plugin .action-icon .icon {
+.tasknotes-plugin .action-icon:not(.tn-chip--property) .icon {
     width: 16px;
     height: 16px;
     color: var(--text-muted);
     transition: color 0.2s ease;
 }
 
-.tasknotes-plugin .action-icon:hover .icon {
-    color: var(--text-normal);
-}
-
-.tasknotes-plugin .tn-task-modal__chip {
-    width: auto;
-    min-width: 0;
-    max-width: 15rem;
-    height: 28px;
-    gap: var(--size-2-2);
-    padding: 0 var(--size-2-3);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-m);
-}
-
-.tasknotes-plugin .tn-task-modal__chip .icon {
-    flex: 0 0 auto;
-}
-
-.tasknotes-plugin .action-icon__label {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-muted);
-    font-size: var(--font-ui-smaller);
-    line-height: 1;
-    padding-block: 2px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.tasknotes-plugin .tn-task-modal__chip.has-value {
-    border-color: var(--interactive-accent);
-}
-
-.tasknotes-plugin .tn-task-modal__chip.has-value .action-icon__label {
-    color: var(--text-normal);
-}
-
-.tasknotes-plugin .tn-task-modal__details-toggle {
-    margin-left: auto;
+@media (hover: hover) {
+    .tasknotes-plugin .action-icon:hover:not(:disabled):not([aria-disabled="true"]) .icon {
+        color: var(--text-normal);
+    }
 }
 
 /* FIELD ERRORS AND LOADING */
@@ -493,15 +535,17 @@
     min-height: 240px;
 }
 
-/* DETAILS SECTION - PROGRESSIVE DISCLOSURE */
+/* =====================================================================
+   FIELDS - DISCLOSED BY MORE FIELDS
+   ===================================================================== */
 
-.tasknotes-plugin.minimalist-task-modal .tn-task-modal__section--collapsed {
+.tasknotes-plugin.minimalist-task-modal .details-container.tn-task-modal__section--collapsed {
     display: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
     .tasknotes-plugin.minimalist-task-modal.expanded .details-container {
-        animation: tn-task-modal-reveal 0.2s ease;
+        animation: tn-task-modal-reveal 0.15s ease;
     }
 }
 
@@ -512,281 +556,283 @@
 }
 
 .tasknotes-plugin .detail-label {
-    font-size: var(--font-ui-small);
-    font-weight: 600;
     color: var(--text-muted);
-    margin-bottom: var(--size-4-1);
-    margin-top: var(--size-4-3);
+    font-size: var(--tn-type-sm);
+    font-weight: var(--tn-font-weight-medium);
     text-transform: none;
     letter-spacing: normal;
 }
 
-.tasknotes-plugin .detail-label:first-child {
-    margin-top: 0;
+.tasknotes-plugin.minimalist-task-modal .details-container {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-space-half);
+    padding-top: var(--tn-space-1);
 }
 
-.tasknotes-plugin .title-input-detailed {
-    width: 100%;
-    padding: var(--size-4-2);
-    font-family: inherit;
-    font-size: var(--font-ui-medium);
-    font-weight: 500;
-    line-height: 1.4;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    background: transparent;
-    color: var(--text-normal);
-    resize: none;
-    min-height: calc((var(--font-ui-medium) * 1.4) + (var(--size-4-2) * 2) + 2px);
-    max-height: calc((var(--font-ui-medium) * 1.4 * 3) + (var(--size-4-2) * 2) + 2px);
-    height: var(--tn-task-modal-title-height, auto);
-    overflow-y: var(--tn-task-modal-title-overflow-y, hidden);
-    margin-bottom: var(--size-4-3);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+.tasknotes-plugin .task-modal__field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tn-space-half);
 }
-
-.tasknotes-plugin .title-input-detailed:focus,
-.tasknotes-plugin .title-input-detailed:active,
-.tasknotes-plugin .title-input-detailed:focus-visible {
-    outline: none;
-    box-shadow: none;
-    border-color: var(--interactive-accent);
-    background: transparent;
-}
-
-.tasknotes-plugin .title-input-detailed::placeholder {
-    color: var(--text-muted);
-}
-
-
-/* ADDITIONAL FIELDS - SETTINGS STYLE */
 
 .tasknotes-plugin.minimalist-task-modal .details-container .setting-item {
     display: grid;
-    grid-template-columns: minmax(7rem, 1fr) minmax(0, 2fr);
-    align-items: center;
-    gap: 0 var(--size-4-3);
+    grid-template-columns: var(--tn-modal-field-label-width) minmax(0, 1fr);
+    align-items: start;
+    gap: 0 var(--tn-space-2);
+    min-height: var(--tn-control-md);
+    padding: 0;
     border: none;
-    padding: var(--size-2-2) 0;
 }
 
 .tasknotes-plugin .details-container .setting-item-info {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: var(--tn-control-md);
     margin: 0;
-    min-width: 0;
 }
 
-.tasknotes-plugin .details-container .setting-item-control {
-    justify-content: flex-start;
-    min-width: 0;
-}
-
-.tasknotes-plugin .details-container .setting-item-name {
-    font-size: var(--font-ui-small);
-    font-weight: 600;
-    color: var(--text-muted);
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-name {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+    font-weight: var(--tn-font-weight-normal);
+    line-height: 1.3;
     text-transform: none;
     letter-spacing: normal;
 }
 
-.tasknotes-plugin .details-container .setting-item-control input:not([type="checkbox"]) {
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: var(--tn-space-1);
     width: 100%;
     min-width: 0;
+    min-height: var(--tn-control-md);
+}
+
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control :is(input:not([type="checkbox"]), textarea) {
+    width: 100%;
+    min-width: 0;
+    height: var(--tn-control-md);
+    padding: 0 var(--tn-space-2);
+    border: 1px solid transparent;
+    border-radius: var(--tn-radius-md);
     background: transparent;
-    border: 1px solid var(--background-modifier-border);
-    border-radius: var(--radius-s);
-    padding: var(--size-4-1) var(--size-4-2);
-    font-size: var(--font-ui-medium);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    box-shadow: none;
+    font-size: var(--tn-type-sm);
+    transition: none;
 }
 
-.tasknotes-plugin .details-container .setting-item-control input:focus {
-    border-color: var(--interactive-accent);
+@media (hover: hover) {
+    .tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control :is(input:not([type="checkbox"]), textarea):hover {
+        background: var(--tn-hover);
+    }
+}
+
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control :is(input:not([type="checkbox"]), textarea):focus {
     background: transparent;
-    outline: none;
+    box-shadow: none;
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: -1px;
 }
 
-/* MODAL BUTTON CONTAINER - Native Obsidian style */
-
-/* Use native modal-button-container class */
-.modal.mod-tasknotes .modal-button-container {
-    display: flex;
-    gap: var(--size-4-2);
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control :is(input, textarea)::placeholder {
+    color: var(--tn-text-muted);
 }
 
-/* Push Save/Cancel buttons to the right on desktop only */
-body:not(.is-mobile) .modal.mod-tasknotes .modal-button-container .mod-cta {
-    margin-left: auto;
+/* The disclosed title wraps like any other value, up to three lines */
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control textarea.title-input-detailed {
+    height: var(--tn-task-modal-title-height, auto);
+    min-height: var(--tn-control-md);
+    padding-block: calc((var(--tn-control-md) - 1.4em) / 2);
+    color: var(--text-normal);
+    line-height: 1.4;
+    resize: none;
+    overflow-y: var(--tn-task-modal-title-overflow-y, hidden);
 }
 
-/* MODAL EXPANSION ANIMATION */
-
-.tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
-    min-height: 400px;
-    max-height: 85vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+/* Value-column actions read as an empty value, like the rows around them */
+.tasknotes-plugin.tn-modal .details-container button.tn-task-modal__field-action {
+    justify-content: flex-start;
+    color: var(--tn-text-muted);
+    font-weight: var(--tn-font-weight-normal);
 }
 
-/* Flex column so the split-content fills remaining space while buttons stay pinned */
-.tasknotes-plugin.minimalist-task-modal.expanded .minimalist-modal-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
+.tasknotes-plugin.minimalist-task-modal .details-container :is(.task-projects-list, .task-attachments-list) {
+    margin: 0 0 var(--tn-space-1) calc(var(--tn-modal-field-label-width) + var(--tn-space-2));
 }
 
-.tasknotes-plugin.minimalist-task-modal.expanded .modal-split-content {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* Keep buttons pinned at the bottom, outside the scrollable area */
-.tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
-    flex-shrink: 0;
-    flex-wrap: wrap;
-    padding-top: var(--size-4-3);
-    margin-top: var(--size-4-3);
-}
-
-/* RESPONSIVE DESIGN */
-
-@media (max-width: 600px) {
-    .tasknotes-plugin.minimalist-task-modal .modal-content {
-        min-width: 90vw;
-        max-width: 90vw;
-    }
-
-    .tasknotes-plugin .minimalist-modal-container {
-        padding: var(--size-4-3);
-    }
-
-    .tasknotes-plugin .tn-task-modal__action-bar {
-        flex-wrap: wrap;
-        gap: var(--size-4-2);
-    }
-
-    .modal.mod-tasknotes .modal-button-container {
-        flex-direction: column;
-    }
-
-    .modal.mod-tasknotes .modal-button-container button {
-        width: 100%;
-    }
-
-    /* Reset margin for small screens on desktop too */
-    .modal.mod-tasknotes .modal-button-container .mod-cta {
+/* Phone-width panes give linked items the full width beneath their label */
+@container (max-width: 400px) {
+    .tasknotes-plugin.minimalist-task-modal .details-container :is(.task-projects-list, .task-attachments-list) {
         margin-left: 0;
     }
 }
 
-/* MOBILE-SPECIFIC FIXES (Obsidian Mobile) On mobile, modals often take full screen. Ensure buttons stay at bottom without overlapping scrollable content. */
+.tasknotes-plugin.minimalist-task-modal .tn-modal__disclosure {
+    border-top: none;
+    padding-top: 0;
+    margin-top: var(--tn-space-2);
+}
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+
+.modal.mod-tasknotes .tn-task-modal__button-bar {
     display: flex;
-    flex-direction: column;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--tn-space-2);
+    margin: 0;
+    padding: var(--tn-space-2) var(--tn-space-4);
+    border-top: 1px solid var(--tn-hairline);
+    background: var(--tn-bg-primary);
+}
+
+.tasknotes-plugin :is(.tn-task-modal__leading-actions, .tn-task-modal__submit-actions) {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-2);
     min-width: 0;
-    width: 100%;
-    max-width: none;
-    max-height: calc(100vh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal > .modal {
-    width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
-    max-width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
-    max-height: 100%;
+.tasknotes-plugin .tn-task-modal__submit-actions {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
 }
 
-@supports (height: 100dvh) {
-    body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-content {
-        max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+.tasknotes-plugin.minimalist-task-modal .tn-task-modal__overflow-button {
+    width: var(--tn-control-md);
+    height: var(--tn-control-md);
+    padding: 0;
+}
+
+/* The footer has one hint at rest, on the button that saves */
+.tasknotes-plugin.minimalist-task-modal .tn-modal__create-more .tn-key-hint {
+    opacity: 0;
+    transition: opacity var(--tn-transition-fast);
+}
+
+.tasknotes-plugin.minimalist-task-modal .tn-modal__create-more:is(:hover, :focus-within) .tn-key-hint {
+    opacity: 1;
+}
+
+@container (max-width: 480px) {
+    .tasknotes-plugin.minimalist-task-modal .tn-task-modal__button-bar .tn-key-hint {
+        display: none;
     }
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .minimalist-modal-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
+/* =====================================================================
+   SHEET - PHONES AND NARROW WINDOWS
+   Anchored to the bottom edge and only as tall as it needs, so the list it
+   was opened from stays in view.
+   ===================================================================== */
+
+@media (max-width: 600px) {
+    .tasknotes-plugin.minimalist-task-modal > .modal {
+        align-self: flex-end;
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(100% - var(--tn-modal-sheet-clearance));
+        margin: 0;
+        border-width: 1px 0 0;
+        border-radius: var(--tn-radius-xl) var(--tn-radius-xl) var(--tn-radius-none) var(--tn-radius-none);
+    }
+
+    .modal.mod-tasknotes .tn-task-modal__button-bar {
+        padding-bottom: calc(var(--tn-space-2) + env(safe-area-inset-bottom));
+    }
+
+    .tasknotes-plugin.minimalist-task-modal .modal-split-left {
+        padding-bottom: var(--tn-space-1);
+    }
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-split-content {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    /* Add padding at bottom to ensure content isn't hidden behind buttons during scroll */
-    padding-bottom: var(--size-4-2);
+/* The shared narrow-modal touch rule is for touch, not for a narrow window */
+@media (max-width: 600px) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin.tn-modal.mod-tasknotes :is(button, select, input:not([type="checkbox"]), .tn-chip--property) {
+        min-height: var(--tn-control-md);
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin.tn-modal.mod-tasknotes .tn-modal__create-more {
+        min-height: 0;
+    }
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container {
-    order: 3;
+/* =====================================================================
+   OBSIDIAN MOBILE
+   Control sizes follow the mobile --tn-control-md. The property row scrolls
+   so the keyboard never shares the sheet with three rows of chips.
+   ===================================================================== */
+
+body.is-mobile .tasknotes-plugin.minimalist-task-modal > .modal {
+    max-width: 100%;
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-right {
-    order: 4;
+body.is-mobile .tasknotes-plugin .tn-task-modal__action-bar {
+    flex-wrap: nowrap;
+    margin-inline: calc(var(--tn-space-4) * -1);
+    padding-inline: var(--tn-space-4);
+    overflow-x: auto;
+    scrollbar-width: none;
 }
 
-body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details,
-body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .task-details-editor,
-body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .cm-editor,
-body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .details-editor-fallback {
-    min-height: 140px;
-    max-height: 32vh;
-}
-
-body.is-mobile .tasknotes-plugin .tn-task-modal__markdown-editor--details .cm-scroller {
-    max-height: 32vh;
-}
-
-body.is-mobile .tasknotes-plugin .action-icon {
-    min-width: 40px;
-    min-height: 40px;
+body.is-mobile .tasknotes-plugin .tn-task-modal__action-bar > .tn-chip--property {
+    flex: 0 0 auto;
     width: auto;
+    max-width: 70%;
+}
+
+body.is-mobile .tasknotes-plugin .tn-task-modal__action-bar::-webkit-scrollbar {
+    display: none;
+}
+
+/* More fields stays reachable however far the row has been scrolled */
+body.is-mobile .tasknotes-plugin .tn-task-modal__action-bar > .tn-task-modal__details-toggle {
+    position: sticky;
+    right: 0;
+    width: var(--tn-control-md);
+    padding: 0;
+    justify-content: center;
+    background: var(--tn-bg-primary);
+    /* The second shadow covers the row's gutter, where scrolled chips would show past it */
+    box-shadow:
+        calc(var(--tn-space-2) * -1) 0 var(--tn-space-2) var(--tn-bg-primary),
+        calc(var(--tn-space-4) * 2) 0 0 var(--tn-bg-primary);
+}
+
+body.is-mobile .tasknotes-plugin .tn-task-modal__details-toggle .action-icon__label {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    body.is-mobile .tasknotes-plugin.minimalist-task-modal .modal-split-right .tn-task-modal__markdown-editor--details {
+        max-height: 32vh;
+    }
+}
+
+body.is-mobile .tasknotes-plugin .action-icon:not(.tn-chip--property) {
+    width: 40px;
     height: 40px;
 }
 
-body.is-mobile .tasknotes-plugin .tn-task-modal__chip {
-    width: auto;
-}
-
-body.is-mobile .tasknotes-plugin .tn-task-modal__chip .icon {
-    width: auto;
-    height: auto;
-}
-
-body.is-mobile .tasknotes-plugin.minimalist-task-modal .details-container .setting-item {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--size-2-2) 0;
-}
-
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.is-mobile-keyboard-focused.expanded .modal-split-content {
+body.is-mobile .tasknotes-plugin.minimalist-task-modal.is-mobile-keyboard-focused .modal-split-content {
     padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
     scroll-padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
 }
 
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.expanded .modal-button-container {
-    flex-shrink: 0;
-    position: relative;
-    background: var(--modal-background);
-    padding-top: var(--size-4-3);
-    margin-top: var(--size-4-2);
-    margin-bottom: max(var(--size-4-1), env(safe-area-inset-bottom));
-}
-
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--size-4-2);
+    gap: var(--tn-space-1);
+    padding-bottom: calc(var(--tn-space-2) + env(safe-area-inset-bottom));
 }
 
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar button {
-    width: 100%;
-    min-height: 40px;
+    width: auto;
     margin: 0;
     padding-inline: var(--size-4-2);
     white-space: nowrap;
@@ -794,9 +840,8 @@ body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar button {
     text-overflow: ellipsis;
 }
 
-body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .mod-cta,
-body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-task-modal__open-note-button {
-    grid-column: span 2;
+body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar .tn-modal__create-more {
+    margin-inline-end: auto;
 }
 
 body.is-mobile .tasknotes-plugin .task-project-remove {
@@ -810,215 +855,9 @@ body.is-mobile .tasknotes-plugin .task-project-remove {
     margin-left: var(--size-4-1);
 }
 
-body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-remove {
-    margin-top: var(--size-4-1);
-}
-
-/* SPLIT LAYOUT - BASE STYLES (mobile/narrow screens) On narrow screens, content flows vertically with details below title */
-
-/* Split content wrapper - use flex column for ordering on narrow screens */
-.tasknotes-plugin.minimalist-task-modal .modal-split-content {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Left column: contains title, action bar, and form fields */
-.tasknotes-plugin.minimalist-task-modal .modal-split-left {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Title input container - first item */
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .title-input-container,
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__markdown-editor--nlp {
-    order: 1;
-}
-
-/* Action bar - second item */
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .tn-task-modal__action-bar {
-    order: 2;
-}
-
-/* Right column: contains details editor - appears after action bar on narrow screens */
-.tasknotes-plugin.minimalist-task-modal .modal-split-right {
-    order: 3;
-}
-
-/* Details container (form fields) - after the details editor on narrow screens */
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .details-container {
-    order: 4;
-}
-
-/* Additional sections (completions calendar, metadata) - last */
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .completions-calendar-container,
-.tasknotes-plugin.minimalist-task-modal .modal-split-left .metadata-container {
-    order: 5;
-}
-
-/* Hide empty right column indicator on narrow screens */
-.tasknotes-plugin.minimalist-task-modal .modal-split-right:empty {
-    display: none;
-}
-
-/* SPLIT LAYOUT - WIDE SCREENS (900px+) Details field appears on the right when modal is expanded Only applies when split-layout-enabled class is present (controlled by setting) */
-
-@media (min-width: 900px) {
-    /* Widen modal for split layout when expanded */
-    /* Target both .modal (modalEl) and .modal-content for max compatibility */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded.modal {
-        width: 850px;
-        max-width: 90vw;
-    }
-
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-content {
-        min-width: 100%;
-        max-width: 100%;
-        padding: 0;
-    }
-
-    /* Main container - no padding on right for edge-to-edge details */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .minimalist-modal-container {
-        display: flex;
-        flex-direction: column;
-        padding-right: 0;
-    }
-
-    /* Split content wrapper - holds left and right columns side by side */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content {
-        display: block;
-        flex: 1;
-        min-height: 0;
-        gap: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    /* Left column - use grid so the details editor can sit beside the form without display: contents. */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
-        min-width: 0;
-        display: grid;
-        grid-template-columns: 380px minmax(280px, 1fr);
-        gap: 0;
-        padding-right: 0;
-        overflow: visible;
-        max-height: 70vh;
-    }
-
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .title-input-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .tn-task-modal__markdown-editor--nlp,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .tn-task-modal__action-bar,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .details-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .completions-calendar-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left .metadata-container {
-        order: unset;
-        grid-column: 1;
-        margin-right: var(--size-4-4);
-    }
-
-    /* Right column - details editor takes full height, edge to edge */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right {
-        min-width: 280px;
-        min-height: 360px;
-        display: flex;
-        flex-direction: column;
-        grid-column: 2;
-        grid-row: 1 / span 20;
-        order: unset;
-        border-left: 1px solid var(--background-modifier-border);
-        margin: calc(-1 * var(--size-4-4)) 0;
-        margin-right: calc(-1 * var(--size-4-4));
-        border-radius: 0;
-        max-height: 70vh;
-        overflow: hidden;
-    }
-
-    /* Hide empty right column on wide screens too */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right:empty {
-        display: none;
-    }
-
-    /* When right column is empty, left column takes full width */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left {
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
-        padding-right: 0;
-    }
-
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .title-input-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .tn-task-modal__markdown-editor--nlp,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .tn-task-modal__action-bar,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .details-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .completions-calendar-container,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-content--right-empty .modal-split-left .metadata-container {
-        margin-right: 0;
-    }
-
-    /* Details label in right column */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .detail-label {
-        margin: 0;
-        padding: var(--size-4-3) var(--size-4-4);
-        border-bottom: 1px solid var(--background-modifier-border);
-    }
-
-    /* Make details editor fill the right column completely */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details {
-        flex: 1;
-        min-height: 0;
-        height: 100%;
-        max-height: none;
-        display: flex;
-        flex-direction: column;
-        border: none;
-        border-radius: 0;
-        margin: 0;
-        overflow: hidden;
-    }
-
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details .cm-editor {
-        flex: 1;
-        height: 100%;
-        max-height: none;
-        border-radius: 0;
-        min-height: 320px;
-    }
-
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details .cm-scroller {
-        flex: 1;
-        max-height: none;
-        overflow-y: auto;
-    }
-
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-right .tn-task-modal__markdown-editor--details .task-details-editor {
-        max-height: none;
-        flex: 1;
-        min-height: 320px;
-        height: 100%;
-        overflow: hidden;
-    }
-
-    /* Button container needs proper positioning */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-button-container {
-        padding-right: var(--size-4-4);
-    }
-}
-
-/* SPLIT LAYOUT - EXTRA WIDE SCREENS (1200px+) Modal expands to 1100px on larger screens */
-
-@media (min-width: 1200px) {
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal,
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded.modal {
-        width: 1100px;
-    }
-
-    /* Left column gets more space on wider screens */
-    .tasknotes-plugin.minimalist-task-modal.split-layout-enabled.expanded .modal-split-left {
-        grid-template-columns: 480px minmax(280px, 1fr);
-    }
-}
-
-/* ACCESSIBILITY ENHANCEMENTS */
+/* =====================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ===================================================================== */
 
 .tasknotes-plugin .action-icon:focus-visible {
 	outline: none;
@@ -1028,66 +867,49 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 /* METADATA SECTION - FOR EDIT MODAL */
 
-.tasknotes-plugin .metadata-container {
-    margin-top: var(--size-4-3);
-    padding-top: var(--size-4-3);
-    border-top: 0.5px solid var(--background-modifier-border);
-}
-
-.tasknotes-plugin .metadata-container > .detail-label {
-    margin-bottom: 0;
-    cursor: var(--cursor-link, pointer);
-}
-
+/* Read-only rows share the field rows' label column */
 .tasknotes-plugin .metadata-content {
     display: flex;
     flex-direction: column;
-    gap: var(--size-4-1);
-    margin-top: var(--size-4-2);
+    margin-top: var(--tn-space-1);
 }
 
 .tasknotes-plugin .metadata-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--tn-modal-field-label-width) minmax(0, 1fr);
+    gap: 0 var(--tn-space-2);
     align-items: center;
-    font-size: var(--font-ui-small);
     min-width: 0;
+    min-height: var(--tn-control-md);
+    font-size: var(--tn-type-sm);
 }
 
 .tasknotes-plugin .metadata-key {
-    color: var(--text-muted);
-    flex: 0 0 auto;
-    font-weight: 500;
-    min-width: 80px;
+    color: var(--tn-text-muted);
 }
 
 .tasknotes-plugin .metadata-value {
-    color: var(--text-normal);
-    flex: 1 1 auto;
-    font-family: var(--font-monospace);
     min-width: 0;
+    /* Lines up with the text inside the editable fields above */
+    padding-inline-start: var(--tn-space-2);
+    color: var(--tn-text-normal);
     overflow-wrap: anywhere;
-    white-space: normal;
 }
 
 /* COMPLETIONS CALENDAR SECTION */
 
-.tasknotes-plugin .completions-calendar-container {
-    margin-top: var(--size-4-3);
-    padding-top: var(--size-4-3);
-    border-top: 0.5px solid var(--background-modifier-border);
-}
-
 .tasknotes-plugin .completions-calendar-content {
     max-width: 200px;
-    margin: 0 auto;
+    margin: var(--tn-space-1) 0 0 calc(var(--tn-modal-field-label-width) + var(--tn-space-2));
+}
+
+@container (max-width: 400px) {
+    .tasknotes-plugin .completions-calendar-content {
+        margin-left: 0;
+    }
 }
 
 /* RECURRING CALENDAR COMPONENT - BEM & MINIMALIST */
-
-.tasknotes-plugin .metadata-item--calendar {
-    flex-direction: column;
-    align-items: flex-start;
-}
 
 .tasknotes-plugin .recurring-calendar {
     margin-top: var(--size-4-1);
@@ -1124,12 +946,17 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-.tasknotes-plugin .recurring-calendar__nav:hover,
 .tasknotes-plugin .recurring-calendar__nav:focus-visible {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__nav:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
+}
 .tasknotes-plugin .recurring-calendar__nav svg {
     width: 16px;
     height: 16px;
@@ -1154,9 +981,9 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: var(--tn-type-2xs);
     color: var(--text-faint);
-    border-radius: 2px;
+    border-radius: var(--tn-radius-xs);
 }
 
 .tasknotes-plugin .recurring-calendar__day--faded {
@@ -1169,32 +996,35 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-.tasknotes-plugin .recurring-calendar__day--clickable:hover {
-    background: var(--background-modifier-hover);
-    color: var(--text-normal);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--clickable:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--background-modifier-hover);
+        color: var(--text-normal);
+    }
 }
-
 .tasknotes-plugin .recurring-calendar__day--recurring {
     color: var(--text-normal);
     border: 1px solid var(--text-muted);
 }
 
-.tasknotes-plugin .recurring-calendar__day--recurring:hover {
-    border-color: var(--interactive-accent);
-    color: var(--interactive-accent);
-    background: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--recurring:hover:not(:disabled):not([aria-disabled="true"]) {
+        border-color: var(--interactive-accent);
+        color: var(--interactive-accent);
+        background: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .recurring-calendar__day--completed {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border: 1px solid var(--interactive-accent);
 }
 
-.tasknotes-plugin .recurring-calendar__day--completed:hover {
-    background: var(--interactive-accent-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--completed:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--interactive-accent-hover);
+    }
 }
-
 .tasknotes-plugin .recurring-calendar__day--skipped {
     background: rgba(128, 128, 128, 0.3);
     color: var(--text-muted);
@@ -1202,12 +1032,15 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     text-decoration: line-through;
 }
 
-.tasknotes-plugin .recurring-calendar__day--skipped:hover {
-    background: rgba(128, 128, 128, 0.4);
-    border-color: var(--text-muted);
+@media (hover: hover) {
+    .tasknotes-plugin .recurring-calendar__day--skipped:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: rgba(128, 128, 128, 0.4);
+        border-color: var(--text-muted);
+    }
 }
-
-/* DARK MODE ADJUSTMENTS */
+/* =====================================================================
+   DARK MODE ADJUSTMENTS
+   ===================================================================== */
 
 /* NLP Auto-suggestion specific styles */
 .tasknotes-plugin .nlp-suggest-icon {
@@ -1224,7 +1057,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 /* NLP Project Suggestion Styles - Rich Metadata Display (Textarea-based suggester in TaskCreationModal) */
 .tasknotes-plugin .nlp-suggest-project__filename {
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-medium);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
     margin-bottom: 2px;
@@ -1247,18 +1080,25 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     color: var(--text-normal);
 }
 
+/* Project picker rows read like Obsidian's quick switcher: name, then quieter details */
+.tasknotes-plugin.tn-modal .project-suggestion .project-name {
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin.tn-modal .project-suggestion .project-meta {
+    overflow: hidden;
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* CodeMirror Project Suggestion Styles - Rich Metadata Display */
 .tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion {
     display: flex;
     flex-direction: column;
     gap: 2px;
     padding: var(--size-4-1) 0;
-}
-
-.tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__name {
-    font-weight: var(--font-weight-medium);
-    color: var(--text-normal);
-    font-size: var(--font-ui-small);
 }
 
 .tasknotes-plugin .cm-tooltip-autocomplete .cm-project-suggestion__meta {
@@ -1291,16 +1131,210 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     overflow-y: auto;
 }
 
-.tasknotes-plugin .task-projects-empty {
-    padding: var(--size-4-3);
-    text-align: center;
-    color: var(--text-muted);
-    font-style: normal;
-    border: none;
-    font-size: var(--font-ui-small);
+.tasknotes-plugin .tn-task-modal__project-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tn-space-1);
+}
+
+/* Project items match the property chips above them: outlined, plain text, a quiet remove button */
+.tasknotes-plugin .task-project-item.tn-chip {
+    height: var(--tn-control-md);
+    padding: 0 var(--tn-space-half) 0 var(--tn-space-2);
+    border: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-md);
+    background: transparent;
+    gap: var(--tn-space-1);
+}
+
+.tasknotes-plugin .task-project-item.tn-chip .clickable-project .internal-link {
+    padding: 0;
+    color: var(--tn-text-normal);
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-normal);
+}
+
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-item.tn-chip .clickable-project .internal-link:hover {
+        background: none;
+        color: var(--tn-text-normal);
+    }
+}
+
+/* Lists in the field column grow with the pane, which already scrolls */
+.tasknotes-plugin.minimalist-task-modal .details-container .task-projects-list {
+    max-height: none;
+    overflow: visible;
+}
+
+.tasknotes-plugin .tn-task-modal__action-bar > .action-icon[hidden] {
+    display: none;
+}
+
+/* =====================================================================
+   LINKED TASK ROWS
+   Subtasks and dependencies: glyphs, a truncating title, then short dates
+   ===================================================================== */
+
+.tasknotes-plugin .task-project-item--task-card,
+.tasknotes-plugin.minimalist-task-modal .details-container .task-project-item:not(.tn-chip) {
+    align-items: center;
+    gap: var(--tn-space-1);
+    padding: 0;
+    border-radius: var(--tn-radius-sm);
+}
+
+/* Scoped above the card's own narrow-container grid, which stacks the title over the metadata */
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) {
+    min-height: var(--tn-control-md);
+    padding: 0 var(--tn-space-1);
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) > .task-card__main-row {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot) {
+    flex: 0 0 auto;
+    align-self: center;
+    width: var(--tn-control-sm);
+    min-width: var(--tn-control-sm);
+    height: var(--tn-control-sm);
+    min-height: var(--tn-control-sm);
+    margin: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) :is(.task-card__content, .task-card__title) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--tn-space-2);
+    min-width: 0;
+    pointer-events: auto;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__content {
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__title {
+    flex: 1 1 0;
+    font-size: var(--tn-type-sm);
+    font-weight: var(--tn-font-weight-normal);
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__title-text {
+    min-width: 4em;
+    font-size: inherit;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__metadata {
+    flex: 0 0 auto;
+    width: auto;
+    gap: var(--tn-space-2);
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__metadata-values {
+    display: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__date-slot {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) :is(.task-card__metadata-date, .task-card__metadata-overflow) {
+    min-width: 0;
+    min-height: 0;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__metadata-overflow:empty {
+    display: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__metadata-date > .task-card__date-value {
+    display: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__metadata-date > .task-card__date-value--compact {
+    display: inline;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__date-label {
+    display: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__date-icon {
+    display: inline-flex;
+}
+
+/* Narrow rows keep the title readable: the due date outranks the scheduled one */
+@container tn-task-card (max-width: 420px) {
+    .tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline).tn-task-modal__task-row--has-due .task-card__date-slot--scheduled {
+        display: none;
+    }
+}
+
+/* The row menu stays reachable without crowding the remove button */
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline) .task-card__context-menu {
+    display: none;
+}
+
+.tasknotes-plugin.minimalist-task-modal .task-card.tn-task-modal__task-row:not(.task-card--layout-inline):is(:hover, :focus-within) .task-card__context-menu {
+    display: inline-flex;
+}
+
+.tasknotes-plugin .task-project-item:not(.tn-chip) > .task-project-info {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    min-height: var(--tn-control-md);
+    padding: 0 var(--tn-space-1);
+}
+
+.tasknotes-plugin .task-project-item:not(.tn-chip) > .task-project-info > :is(.task-project-name, .task-project-path) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin .task-project-item:not(.tn-chip) > .task-project-info > .task-project-name {
+    flex: 0 1 auto;
+    font-weight: var(--tn-font-weight-normal);
+}
+
+.tasknotes-plugin .task-project-item:not(.tn-chip) > .task-project-info > .task-project-path {
+    flex: 1 1 0;
+    margin: 0;
+}
+
+.tasknotes-plugin .tn-task-modal__task-row-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 var(--tn-control-sm);
+    height: var(--tn-control-sm);
+    color: var(--tn-text-faint);
+}
+
+.tasknotes-plugin .tn-task-modal__task-row-placeholder svg {
+    width: var(--tn-icon-sm);
+    height: var(--tn-icon-sm);
 }
 
 .tasknotes-plugin .task-project-item {
+    max-width: 100%;
+}
+
+.tasknotes-plugin .task-project-item:not(.tn-chip) {
     display: flex;
     align-items: center;
     padding: var(--size-4-2);
@@ -1310,20 +1344,22 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     transition: background-color 0.2s ease;
 }
 
-.tasknotes-plugin .task-project-item:hover {
-    background-color: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .task-project-item--task-card {
     align-items: flex-start;
     padding: 0;
     background: transparent;
 }
 
-.tasknotes-plugin .task-project-item--task-card:hover {
-    background: transparent;
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-item--task-card:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: transparent;
+    }
 }
-
 .tasknotes-plugin .task-project-card-host {
     flex: 1;
     min-width: 0;
@@ -1335,10 +1371,6 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     margin-bottom: 0;
 }
 
-.tasknotes-plugin .task-project-item--task-card .task-project-remove {
-    margin-top: var(--size-4-2);
-}
-
 .tasknotes-plugin .task-project-info {
     flex: 1;
     min-width: 0;
@@ -1346,18 +1378,27 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 .tasknotes-plugin .task-project-name {
     display: block;
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-medium);
     color: var(--text-normal);
     font-size: var(--font-ui-small);
 }
 
 .tasknotes-plugin .task-project-item--unresolved {
-    border: 1px solid var(--color-orange);
-    background: color-mix(in srgb, var(--color-orange) 12%, var(--background-secondary));
+    border-color: transparent;
 }
 
 .tasknotes-plugin .task-project-item--unresolved .task-project-name {
-    color: var(--color-orange);
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .tn-task-modal__project-icon {
+    display: inline-flex;
+    color: var(--text-muted);
+}
+
+.tasknotes-plugin .tn-task-modal__project-icon svg {
+    width: var(--tn-icon-md);
+    height: var(--tn-icon-md);
 }
 
 /* Make clickable project names in edit modal look and behave like links */
@@ -1365,42 +1406,41 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     color: var(--link-color);
     text-decoration: none;
     cursor: var(--cursor-link, pointer);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-medium);
     font-size: var(--font-ui-small);
-    border-radius: var(--radius-xs);
+    border-radius: var(--radius-s);
     padding: 1px 2px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .clickable-project .internal-link:hover {
-    background-color: var(--background-modifier-hover);
-    color: var(--link-color-hover);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin .clickable-project .internal-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+        color: var(--link-color-hover);
+        text-decoration: underline;
+    }
 }
-
-/* Remove the default + prefix for clickable projects since they're now clearly links */
-.tasknotes-plugin .clickable-project .internal-link::before {
-    content: '+';
-    color: var(--text-muted);
-    margin-right: 2px;
-}
-
 /* Style dependency items the same way when rendered as internal links */
 .tasknotes-plugin .clickable-dependency .task-dependency-link {
     color: var(--link-color);
     text-decoration: none;
     cursor: var(--cursor-link, pointer);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-medium);
     font-size: var(--font-ui-small);
-    border-radius: var(--radius-xs);
+    border-radius: var(--radius-s);
     padding: 1px 2px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .clickable-dependency .task-dependency-link:hover {
-    background-color: var(--background-modifier-hover);
-    color: var(--link-color-hover);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin .clickable-dependency .task-dependency-link:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+        color: var(--link-color-hover);
+        text-decoration: underline;
+    }
+}
+.tasknotes-plugin .task-project-item.tn-chip .task-project-path {
+    display: none;
 }
 
 .tasknotes-plugin .task-project-path {
@@ -1414,50 +1454,34 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 
 /* Use consistent button system for project remove button */
 .tasknotes-plugin .task-project-remove {
+    flex: 0 0 auto;
     background: transparent;
     border: none;
     box-shadow: none;
-    color: var(--text-muted);
-    font-size: 16px;
-    font-weight: bold;
+    color: var(--tn-text-faint);
+    font-size: var(--tn-type-base);
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    padding: 0;
+    border-radius: var(--tn-radius-sm);
 }
 
-.tasknotes-plugin .task-project-remove:hover {
-    background: var(--tn-color-error);
-    color: var(--tn-bg-primary);
-    border: none;
-    box-shadow: none;
+@media (hover: hover) {
+    .tasknotes-plugin .task-project-remove:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-hover);
+        color: var(--tn-text-normal);
+        border: none;
+        box-shadow: none;
+    }
 }
+/* =====================================================================
+   PROJECT SELECT MODAL
+   ===================================================================== */
 
-/* PROJECT SELECT MODAL */
-
-/* Use consistent button system for project suggestions */
-.tasknotes-plugin .project-suggestion {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: var(--size-4-2);
-    border-radius: var(--radius-s);
-}
-
-.tasknotes-plugin .project-suggestion:hover {
-    background: var(--tn-interactive-hover);
-    border: none;
-    box-shadow: none;
-}
-
+/* Rows take their padding and hover from the suggestion item. */
 .tasknotes-plugin .project-name {
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-medium);
     color: var(--text-normal);
-}
-
-.tasknotes-plugin .project-path {
-    font-size: var(--font-ui-smaller);
-    color: var(--text-muted);
-    margin-top: 2px;
 }
 
 /* Parts of the NLP input the parser recognised */
@@ -1518,10 +1542,11 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     border-radius: var(--radius-s);
 }
 
-.tasknotes-plugin .task-attachment-item:hover {
-    background-color: var(--background-modifier-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .task-attachment-item:hover:not(:disabled):not([aria-disabled="true"]) {
+        background-color: var(--background-modifier-hover);
+    }
 }
-
 .tasknotes-plugin .task-attachment-icon {
     display: inline-flex;
     flex-shrink: 0;
@@ -1545,7 +1570,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: var(--font-ui-small);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-medium);
     color: var(--text-normal);
     text-align: start;
 }
@@ -1560,11 +1585,12 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
     cursor: var(--cursor-link, pointer);
 }
 
-.tasknotes-plugin button.task-attachment-open:hover {
-    color: var(--link-color-hover);
-    text-decoration: underline;
+@media (hover: hover) {
+    .tasknotes-plugin button.task-attachment-open:hover:not(:disabled):not([aria-disabled="true"]) {
+        color: var(--link-color-hover);
+        text-decoration: underline;
+    }
 }
-
 .tasknotes-plugin .task-attachment-path,
 .tasknotes-plugin .task-attachment-hint {
     font-size: var(--font-ui-smaller);

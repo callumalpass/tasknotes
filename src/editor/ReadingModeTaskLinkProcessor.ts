@@ -440,7 +440,8 @@ export class ReadingModeTaskLinkProcessor {
 				const displayText = widgetEl.dataset.displayText || undefined;
 				const widget = new TaskLinkWidget(
 					taskInfo, this.plugin, originalText, displayText,
-					undefined, parseLinktext(originalLinkPath).subpath || undefined
+					undefined, parseLinktext(originalLinkPath).subpath || undefined,
+					widgetEl.classList.contains("tasknotes-inline-widget--sentence")
 				);
 				const refreshedElement = this.createReadingModeWidget(
 					widget,
@@ -449,6 +450,7 @@ export class ReadingModeTaskLinkProcessor {
 					originalText,
 					displayText
 				);
+				refreshedElement.classList.toggle("tasknotes-inline-widget--sentence", widgetEl.classList.contains("tasknotes-inline-widget--sentence"));
 				widgetEl.replaceWith(refreshedElement);
 			}
 		}
@@ -597,10 +599,15 @@ export class ReadingModeTaskLinkProcessor {
 				);
 			}
 
+			const textContainer = linkEl.closest("p, li, h1, h2, h3, h4, h5, h6, td, th") ?? linkEl.parentElement;
+			const inSentence = (textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? "");
+			if (!inSentence && linkEl.closest("li.task-list-item")) {
+				linkEl.parentElement?.classList.add("tasknotes-inline-widget-host");
+			}
 			// Create a task widget instance
 			const widget = new TaskLinkWidget(
 				taskInfo, this.plugin, originalText, displayText,
-				undefined, parseLinktext(originalLinkPath).subpath || undefined
+				undefined, parseLinktext(originalLinkPath).subpath || undefined, inSentence
 			);
 
 			// Create the DOM element for reading mode

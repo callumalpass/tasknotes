@@ -122,6 +122,14 @@ export class DateContextMenu {
 			});
 		});
 
+		this.menu.addItem((item) => {
+			item.setTitle(this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
+			item.setIcon("calendar");
+			item.onClick(async () => {
+				this.showDateTimePicker();
+			});
+		});
+
 		const weekdayOptions = dateOptions.filter((option) => option.category === "weekday");
 		if (weekdayOptions.length > 0) {
 			this.menu.addSeparator();
@@ -149,14 +157,6 @@ export class DateContextMenu {
 		}
 
 		this.menu.addSeparator();
-
-		this.menu.addItem((item) => {
-			item.setTitle(this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
-			item.setIcon("calendar");
-			item.onClick(async () => {
-				this.showDateTimePicker();
-			});
-		});
 
 		if (this.options.currentValue) {
 			this.menu.addItem((item) => {

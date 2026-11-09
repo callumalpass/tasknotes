@@ -15,6 +15,33 @@ import { propertyDefinitions } from "./native/properties";
 import { creationDefaults, filenameDefinitions, formDefinitions } from "./native/creation";
 import { apiDefinitions, calendarDefinitions } from "./native/integrations";
 
+export function openTaskPropertySettings(plugin: TaskNotesPlugin, property: "status" | "priority"): void {
+	plugin.app.setting.open();
+	const tab = plugin.app.setting.openTabById(plugin.manifest.id);
+	tab.update();
+	const heading = plugin.i18n.translate(property === "status"
+		? msg({ message: "Statuses", context: "settings.native.statuses" })
+		: msg({ message: "Priorities", context: "settings.native.priorities" }));
+	const findDefinition = (items: SettingDefinitionItem[], path: string[] = []): { definition: SettingDefinitionItem; path: string[] } | undefined => {
+		for (const item of items) {
+			if ("heading" in item && item.heading === heading) return { definition: item, path };
+			if ("items" in item) {
+				const match = findDefinition(item.items ?? [], item.type === "page" ? [...path, item.name] : path);
+				if (match) return match;
+			}
+		}
+	};
+	const match = findDefinition(tab.settingItems);
+	if (match) {
+		const navigation = plugin.app.setting as unknown as {
+			navigateToPage?: (target: typeof tab, path: string[]) => void;
+		};
+		navigation.navigateToPage?.(tab, match.path);
+		plugin.app.setting.scrollToDefinition(tab, match.definition);
+		tab.getElementForDefinition(match.definition)?.querySelector<HTMLElement>(".extra-setting-button")?.focus();
+	}
+}
+
 /** Native definitions are both the settings UI and Obsidian's search index. */
 export class TaskNotesSettingTab extends PluginSettingTab {
 	private readonly context: SettingsContext;

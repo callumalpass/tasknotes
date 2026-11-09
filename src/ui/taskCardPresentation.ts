@@ -32,7 +32,9 @@ export function isBasesValue(value: unknown): value is RenderableBasesValue {
 
 function getBasesDisplayString(value: RenderableBasesValue): string {
 	const text = value.toString();
-	return text === "[object Object]" ? "" : uiData(text, "Native Bases query display string; preserve user data");
+	return text === "[object Object]"
+		? ""
+		: uiData(text, "Native Bases query display string; preserve user data");
 }
 
 export function isNullBasesValue(value: unknown): boolean {
@@ -79,7 +81,11 @@ export function renderBasesValue(
 	}
 
 	try {
-		if (settings?.dateDisplayFormat === "iso" && typeof DateValue === "function" && value instanceof DateValue) {
+		if (typeof DateValue === "function" && value instanceof DateValue) {
+			if (settings?.dateDisplayFormat !== "iso") {
+				container.textContent = getBasesDisplayString(value);
+				return true;
+			}
 			container.textContent = formatDateTimeForDisplay(value.toString(), {
 				dateDisplayFormat: settings.dateDisplayFormat,
 				userTimeFormat: settings.calendarViewSettings?.timeFormat,
@@ -107,7 +113,10 @@ export function renderBasesValue(
  * returned intact so TaskCard can render them with Value.renderTo().
  */
 export function extractBasesValue(value: unknown): unknown {
-	return uiData(extractBasesData(value), "Native Bases property/query output; user data, not interface copy");
+	return uiData(
+		extractBasesData(value),
+		"Native Bases property/query output; user data, not interface copy"
+	);
 }
 
 function extractBasesData(value: unknown): unknown {
@@ -168,7 +177,13 @@ export function resolveTaskCardPropertyLabel(
 		return fallbackLabel;
 	}
 	if (propertyId.startsWith("formula.")) {
-		return uiData(propertyId.substring(8), "User-authored formula identifier; preserve the native property name");
+		return uiData(
+			propertyId.substring(8),
+			"User-authored formula identifier; preserve the native property name"
+		);
 	}
-	return uiData(propertyId.charAt(0).toUpperCase() + propertyId.slice(1), "Unknown/custom property identifier; preserve user schema metadata");
+	return uiData(
+		propertyId.charAt(0).toUpperCase() + propertyId.slice(1),
+		"Unknown/custom property identifier; preserve user schema metadata"
+	);
 }

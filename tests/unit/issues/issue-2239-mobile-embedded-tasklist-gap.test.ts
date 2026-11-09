@@ -55,9 +55,9 @@ describe("Issue #2239: Mobile embedded Task List bottom gap", () => {
 			"body.is-mobile .markdown-embed .tn-bases-tasknotes-list"
 		);
 
-		expect(internalEmbedListBlock).toContain("padding-bottom: var(--tn-spacing-sm)");
+		expect(internalEmbedListBlock).toContain("padding-bottom: var(--tn-space-1)");
 		expect(internalEmbedListBlock).toContain("scroll-padding-bottom: 0");
-		expect(markdownEmbedListBlock).toContain("padding-bottom: var(--tn-spacing-sm)");
+		expect(markdownEmbedListBlock).toContain("padding-bottom: var(--tn-space-1)");
 		expect(markdownEmbedListBlock).toContain("scroll-padding-bottom: 0");
 	});
 });

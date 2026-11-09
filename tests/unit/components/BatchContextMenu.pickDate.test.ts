@@ -3,6 +3,9 @@ import { BatchContextMenu } from "../../../src/components/BatchContextMenu";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import { DateTimePickerModal, type DateTimePickerOptions } from "../../../src/modals/DateTimePickerModal";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ changeTaskProperty: jest.fn() }));
 
 jest.mock("../../../src/modals/DateTimePickerModal", () => ({
 	DateTimePickerModal: jest.fn().mockImplementation(() => ({ open: jest.fn() })),
@@ -44,10 +47,8 @@ it.each(["scheduled", "due"] as const)("opens the shared picker with the %s date
 	paths.push("Tasks/Other.md");
 	options.onSelect("2026-12-14", "15:45");
 	await new Promise(resolve => setTimeout(resolve, 0));
-	expect(plugin.taskService.updateProperty).toHaveBeenCalledTimes(2);
-	for (const path of ["Tasks/One.md", "Tasks/Two.md"]) {
-		expect(plugin.taskService.updateProperty).toHaveBeenCalledWith({ path }, role, "2026-12-14T15:45");
-	}
+	expect(changeTaskProperty).toHaveBeenCalledTimes(1);
+	expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [{ path: "Tasks/One.md" }, { path: "Tasks/Two.md" }], role, "2026-12-14T15:45");
 });
 
 it("keeps a date-only choice date-only", async () => {
@@ -57,7 +58,7 @@ it("keeps a date-only choice date-only", async () => {
 	const options = (DateTimePickerModal as unknown as jest.Mock).mock.calls[0][1] as DateTimePickerOptions;
 	options.onSelect("2026-12-14", null);
 	await new Promise(resolve => setTimeout(resolve, 0));
-	expect(plugin.taskService.updateProperty).toHaveBeenCalledWith({ path: "Tasks/One.md" }, "scheduled", "2026-12-14");
+	expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [{ path: "Tasks/One.md" }, { path: "Tasks/Two.md" }], "scheduled", "2026-12-14");
 });
 
 it("opening then cancelling the picker does not write or clear selection", () => {
@@ -65,5 +66,6 @@ it("opening then cancelling the picker does not write or clear selection", () =>
 	const submenu = find(root, "Due date").setSubmenu.mock.results[0].value as MockMenu;
 	find(submenu, "Pick date & time…").onClick.mock.calls[0][0]();
 	expect(plugin.taskService.updateProperty).not.toHaveBeenCalled();
+	expect(changeTaskProperty).not.toHaveBeenCalled();
 	expect(plugin.taskSelectionService.clearSelection).not.toHaveBeenCalled();
 });

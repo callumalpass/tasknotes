@@ -14,10 +14,143 @@ import {
 } from "./taskCardProperties";
 import { getBlockedByTaskPaths } from "./taskCardRelationships";
 import { prepareInteractiveControl } from "./taskCardIndicators";
+import { openPopover } from "./kit/popover";
 import {
 	toggleTaskCardBlockedByExpansion,
 	type TaskCardSecondaryBadgeHandlers,
 } from "./taskCardSecondaryBadges";
+
+const metadataObservers = new WeakMap<HTMLElement, ResizeObserver>();
+
+export function cleanupTaskCardMetadata(metadataLine: HTMLElement): void {
+	metadataObservers.get(metadataLine)?.disconnect();
+	metadataObservers.delete(metadataLine);
+}
+
+export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement, plugin?: TaskNotesPlugin, occurrenceScheduled = ""): void {
+	const atoms: HTMLElement[] = [];
+	const groups: Array<{ property: HTMLElement; chips: HTMLElement[] }> = [];
+	for (const property of Array.from(values.children) as HTMLElement[]) {
+		const chips = Array.from(
+			property.querySelectorAll<HTMLElement>(".tag, .context-tag, .task-card__project-link")
+		);
+		if (chips.length) {
+			property.classList.add("task-card__metadata-chips");
+			groups.push({ property, chips });
+			for (const node of Array.from(property.childNodes)) {
+				if (node.nodeType === Node.TEXT_NODE) node.remove();
+			}
+			atoms.push(...chips);
+		} else atoms.push(property);
+	}
+	const dateSlots = Array.from(metadataLine.querySelectorAll<HTMLElement>(".task-card__date-slot")).filter((slot) => slot.childElementCount > 0);
+	const summary = metadataLine.createSpan({
+		cls: "task-card__metadata-overflow",
+		attr: { "aria-haspopup": "dialog", "aria-expanded": "false" },
+	});
+	prepareInteractiveControl(summary);
+	summary.dataset.occurrenceScheduled = occurrenceScheduled;
+	summary.hidden = true;
+	let hiddenLabels: string[] = [];
+	summary.addEventListener("click", (event) => {
+		event.stopPropagation();
+		if (!hiddenLabels.length) return;
+		const card = summary.closest<HTMLElement>(".task-card");
+		const root = summary.closest<HTMLElement>(".tasknotes-plugin") ?? card?.parentElement;
+		const path = card?.dataset.taskPath;
+		const inDayPanel = !!summary.closest(".tn-calendar-day-panel");
+		let currentSummary = summary;
+		const resolveAnchor = () => {
+			if (!root?.isConnected) return null;
+			if (currentSummary.isConnected) return currentSummary;
+			const replacement = Array.from(root.querySelectorAll<HTMLElement>(".task-card"))
+				.filter((element) => element.dataset.taskPath === path && !!element.closest(".tn-calendar-day-panel") === inDayPanel)
+				.flatMap((element) => Array.from(element.querySelectorAll<HTMLElement>(".task-card__metadata-overflow")))
+				.find((element) => element.dataset.occurrenceScheduled === occurrenceScheduled);
+			if (!replacement) return null;
+			currentSummary = replacement;
+			currentSummary.setAttribute("aria-expanded", "true");
+			return currentSummary;
+		};
+		const popover = openPopover({
+			anchor: summary,
+			resolveAnchor,
+			app: plugin?.app,
+			className: "tn-picker",
+			onClose: () => {
+				currentSummary.setAttribute("aria-expanded", "false");
+			},
+		});
+		summary.setAttribute("aria-expanded", "true");
+		popover.el.setAttribute("role", "dialog");
+		popover.el.setAttribute("aria-label", summary.getAttribute("aria-label") || "");
+		const list = popover.el.createDiv({ cls: "tn-picker__list" });
+		for (const label of hiddenLabels) list.createDiv({ cls: "tn-picker__row", text: label });
+		popover.el.tabIndex = -1;
+		popover.reposition();
+		popover.el.focus();
+	});
+	const fit = () => {
+		if (!values.isConnected) {
+			cleanupTaskCardMetadata(metadataLine);
+			return;
+		}
+		if (metadataLine.clientWidth === 0) return;
+		const overflowFocused = metadataLine.ownerDocument.activeElement === summary;
+		values.hidden = false;
+		for (const atom of atoms) atom.hidden = false;
+		for (const group of groups) group.property.hidden = false;
+		for (const slot of dateSlots) slot.hidden = false;
+		summary.hidden = true;
+		hiddenLabels = [];
+		const fits = () => {
+			values.hidden = !atoms.some((atom) => !atom.hidden);
+			return [...atoms, ...dateSlots, summary].every((element) => {
+				if (element.hidden) return true;
+				const bounds = element.getBoundingClientRect();
+				const boundary = atoms.includes(element) ? values.getBoundingClientRect().right : metadataLine.getBoundingClientRect().right;
+				return bounds.right <= boundary + 0.5 && element.scrollWidth <= element.clientWidth + 1;
+			});
+		};
+		if (fits()) return;
+		summary.hidden = false;
+		summary.textContent = `+${atoms.length + dateSlots.length}`;
+		for (const atom of atoms) atom.hidden = true;
+		for (const group of groups) group.property.hidden = true;
+		for (const slot of dateSlots) {
+			if (fits()) break;
+			slot.hidden = true;
+		}
+		for (const atom of atoms) {
+			atom.hidden = false;
+			for (const group of groups)
+				group.property.hidden = group.chips.every((chip) => chip.hidden);
+			if (!fits()) atom.hidden = true;
+		}
+		for (const group of groups)
+			group.property.hidden = group.chips.every((chip) => chip.hidden);
+		values.hidden = !atoms.some((atom) => !atom.hidden);
+		const hidden = [...atoms, ...dateSlots]
+			.filter((atom) => atom.hidden)
+			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
+		summary.textContent = hidden.length ? `+${hidden.length}` : "";
+		summary.hidden = hidden.length === 0;
+		const label = hidden.join(" · ");
+		hiddenLabels = hidden;
+		summary.setAttribute("aria-label", label);
+		setTooltip(summary, label, { placement: "top" });
+		if (overflowFocused && !summary.hidden && metadataLine.ownerDocument.activeElement === metadataLine.ownerDocument.body) {
+			summary.focus({ preventScroll: true });
+		}
+	};
+	const Observer = metadataLine.ownerDocument.defaultView?.ResizeObserver;
+	if (Observer) {
+		const observer = new Observer(fit);
+		observer.observe(values);
+		observer.observe(metadataLine);
+		metadataObservers.set(metadataLine, observer);
+	}
+}
 
 export interface RenderTaskCardMetadataConfig {
 	metadataLine: HTMLElement;
@@ -57,7 +190,9 @@ function createBlockedMetadataPill(config: RenderTaskCardMetadataConfig): HTMLEl
 		return null;
 	}
 
-	const blockedLabel = plugin.i18n.translate(msg({ message: "Blocked", context: "ui.taskCard.blockedBadge" }));
+	const blockedLabel = plugin.i18n.translate(
+		msg({ message: "Blocked", context: "ui.taskCard.blockedBadge" })
+	);
 	const blockedByPaths = getBlockedByTaskPaths(task, plugin.app);
 	const blockedCount = task.blockedBy?.length ?? 0;
 	const pillText = blockedCount > 0 ? `${blockedLabel} (${blockedCount})` : blockedLabel;
@@ -80,9 +215,18 @@ function createBlockedMetadataPill(config: RenderTaskCardMetadataConfig): HTMLEl
 			onBlockedByToggle();
 		});
 	} else {
-		setTooltip(blockedPill, plugin.i18n.translate(msg({ message: "This task is waiting on another task", context: "ui.taskCard.blockedBadgeTooltip" })), {
-			placement: "top",
-		});
+		setTooltip(
+			blockedPill,
+			plugin.i18n.translate(
+				msg({
+					message: "This task is waiting on another task",
+					context: "ui.taskCard.blockedBadgeTooltip",
+				})
+			),
+			{
+				placement: "top",
+			}
+		);
 	}
 
 	return blockedPill;
@@ -94,16 +238,27 @@ function createBlockingMetadataPill(config: RenderTaskCardMetadataConfig): HTMLE
 		return null;
 	}
 
-	const blockingLabel = plugin.i18n.translate(msg({ message: "Blocking", context: "ui.taskCard.blockingBadge" }));
+	const blockingLabel = plugin.i18n.translate(
+		msg({ message: "Blocking", context: "ui.taskCard.blockingBadge" })
+	);
 	const blockingCount = task.blocking?.length ?? 0;
 	const pillText = blockingCount > 0 ? `${blockingLabel} (${blockingCount})` : blockingLabel;
 	const blockingPill = metadataLine.createSpan({
 		cls: "task-card__metadata-pill task-card__metadata-pill--blocking",
 		text: pillText,
 	});
-	setTooltip(blockingPill, plugin.i18n.translate(msg({ message: "This task is blocking another task", context: "ui.taskCard.blockingBadgeTooltip" })), {
-		placement: "top",
-	});
+	setTooltip(
+		blockingPill,
+		plugin.i18n.translate(
+			msg({
+				message: "This task is blocking another task",
+				context: "ui.taskCard.blockingBadgeTooltip",
+			})
+		),
+		{
+			placement: "top",
+		}
+	);
 	return blockingPill;
 }
 
@@ -117,9 +272,18 @@ function createGoogleCalendarSyncPill(config: RenderTaskCardMetadataConfig): HTM
 		cls: "task-card__metadata-pill task-card__metadata-pill--google-calendar",
 	});
 	setIcon(syncPill, "calendar");
-	setTooltip(syncPill, plugin.i18n.translate(msg({ message: "Synced to Google Calendar", context: "ui.taskCard.googleCalendarSyncTooltip" })), {
-		placement: "top",
-	});
+	setTooltip(
+		syncPill,
+		plugin.i18n.translate(
+			msg({
+				message: "Synced to Google Calendar",
+				context: "ui.taskCard.googleCalendarSyncTooltip",
+			})
+		),
+		{
+			placement: "top",
+		}
+	);
 	return syncPill;
 }
 
@@ -139,15 +303,39 @@ function createOccurrenceMetadataPill(config: RenderTaskCardMetadataConfig): HTM
 		cls: "task-card__metadata-pill task-card__metadata-pill--occurrence",
 	});
 	setIcon(pill, "refresh-ccw");
-	pill.createSpan({ text: uiText(msg({ message: "Occurrence: {dateLabel}", context: "ui/taskCardMetadata: createOccurrenceMetadataPill text" }), { dateLabel: dateLabel }) });
+	pill.createSpan({
+		text: uiText(
+			msg({
+				message: "Occurrence: {dateLabel}",
+				context: "ui/taskCardMetadata: createOccurrenceMetadataPill text",
+			}),
+			{ dateLabel: dateLabel }
+		),
+	});
 	prepareInteractiveControl(pill);
 	pill.setAttribute(
 		"aria-label",
-		uiText(msg({ message: "Open recurring parent for occurrence on {occurrence_date}", context: "ui/taskCardMetadata: createOccurrenceMetadataPill display" }), { occurrence_date: task.occurrence_date })
+		uiText(
+			msg({
+				message: "Open recurring parent for occurrence on {occurrence_date}",
+				context: "ui/taskCardMetadata: createOccurrenceMetadataPill display",
+			}),
+			{ occurrence_date: task.occurrence_date }
+		)
 	);
-	setTooltip(pill, uiText(msg({ message: "Occurrence of {recurrence_parent} on {occurrence_date}", context: "ui/taskCardMetadata: createOccurrenceMetadataPill display" }), { recurrence_parent: task.recurrence_parent, occurrence_date: task.occurrence_date }), {
-		placement: "top",
-	});
+	setTooltip(
+		pill,
+		uiText(
+			msg({
+				message: "Occurrence of {recurrence_parent} on {occurrence_date}",
+				context: "ui/taskCardMetadata: createOccurrenceMetadataPill display",
+			}),
+			{ recurrence_parent: task.recurrence_parent, occurrence_date: task.occurrence_date }
+		),
+		{
+			placement: "top",
+		}
+	);
 	pill.addEventListener("click", (event) => {
 		event.stopPropagation();
 		const parentPath = parseLinkToPath(task.recurrence_parent || "");
@@ -166,10 +354,15 @@ function isTitleProperty(propertyId: string, plugin: TaskNotesPlugin): boolean {
 }
 
 export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HTMLElement[] {
-	const { metadataLine, task, plugin, visibleProperties, propertyOptions = {} } = config;
+	const { metadataLine, card, task, plugin, visibleProperties, propertyOptions = {} } = config;
+	cleanupTaskCardMetadata(metadataLine);
 	metadataLine.empty();
 	const metadataElements: HTMLElement[] = [];
 	const propertiesToShow = getPropertiesToShow(visibleProperties, plugin);
+	for (const field of ["scheduled", "due"] as const) {
+		metadataLine.classList.toggle(`task-card__metadata--with-${field}`,
+			propertiesToShow.some((property) => isPropertyForField(property, field, plugin)));
+	}
 
 	const occurrencePill = createOccurrenceMetadataPill(config);
 	if (occurrencePill) {
@@ -222,6 +415,26 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 	}
 
 	updateMetadataVisibility(metadataLine, metadataElements);
+	metadataLine.hidden = metadataElements.length === 0;
+	card.classList.toggle("task-card--metadata-empty", metadataLine.hidden);
+	const values = metadataLine.createSpan({ cls: "task-card__metadata-values" });
+	for (const element of metadataElements) {
+		if (!element.classList.contains("task-card__metadata-date")) values.appendChild(element);
+	}
+	metadataLine.prepend(values);
+	for (const field of ["scheduled", "due"] as const) {
+		if (!propertiesToShow.some((property) => isPropertyForField(property, field, plugin)))
+			continue;
+		const slot = metadataLine.createSpan({
+			cls: `task-card__date-slot task-card__date-slot--${field}`,
+		});
+		const date = metadataElements.find((element) =>
+			element.classList.contains(`task-card__metadata-date--${field}`)
+		);
+		slot.hidden = !date;
+		if (date) slot.appendChild(date);
+	}
+	fitTaskCardMetadata(values, metadataLine, plugin, propertyOptions.occurrenceScheduled);
 	return metadataElements;
 }
 

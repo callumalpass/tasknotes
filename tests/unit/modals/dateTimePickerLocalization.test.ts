@@ -1,5 +1,4 @@
 import { msg } from "@lingui/core/macro";
-import { Notice } from "obsidian";
 import { createI18nService, translationResources } from "../../../src/i18n";
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 
@@ -23,7 +22,8 @@ describe("date picker localization", () => {
 		expect(content.textContent).toContain(i18n.translate(msg({ message: "Cancel", context: "common.cancel" })));
 		input.value = "invalid";
 		input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-		expect(Notice).toHaveBeenLastCalledWith(i18n.translate(msg({ message: "Could not find a date in that text.", context: "modals.dateTimePicker.notFound" })));
+		expect(input.getAttribute("aria-invalid")).toBe("true");
+		expect(content.querySelector('.date-time-picker-modal__error[role="alert"]')?.textContent).toBe(i18n.translate(msg({ message: "Could not find a date in that text.", context: "modals.dateTimePicker.notFound" })));
 		modal.onClose();
 	});
 });

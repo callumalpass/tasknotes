@@ -3,6 +3,7 @@ import type { KanbanTaskDropUpdatePlan } from "../../../src/bases/kanbanDragUtil
 import type { SortOrderPlan } from "../../../src/bases/sortOrderUtils";
 import type { TaskInfo } from "../../../src/types";
 import { buildTaskCardRenderState } from "../../../src/ui/taskCardState";
+import { TFile } from "obsidian";
 
 function createTask(path: string, sortOrder: string): TaskInfo {
 	return {
@@ -63,6 +64,30 @@ function createStatusDropPlan(
 }
 
 describe("KanbanView manual-order fast path", () => {
+	it.each(["tnzzzzzzzzzz", undefined])("uses an Undo-published rank before metadata catches up: %s", (sortOrder) => {
+		const view = makeView();
+		const task = createTask("tasks/a.md", "tnaaaaaaaaaa");
+		const file = new TFile(task.path);
+		const plugin = (view as any).plugin;
+		plugin.app.vault = { getAbstractFileByPath: () => file };
+		plugin.app.metadataCache = { getFileCache: () => ({ frontmatter: { sort_order: task.sortOrder } }) };
+		plugin.cacheManager = { getCachedTaskInfoSync: () => ({ ...task, sortOrder }) };
+		const values = (view as any).getSortOrderValues([task], "sort_order") as Map<string, unknown>;
+		expect(values.get(task.path)).toBe(sortOrder);
+		expect(values.has(task.path)).toBe(sortOrder !== undefined);
+	});
+
+	it("uses native metadata for a task without a shared cache entry", () => {
+		const view = makeView();
+		const task = createTask("tasks/a.md", "old");
+		const file = new TFile(task.path);
+		const plugin = (view as any).plugin;
+		plugin.app.vault = { getAbstractFileByPath: () => file };
+		plugin.app.metadataCache = { getFileCache: () => ({ frontmatter: { sort_order: "tnzzzzzzzzzz" } }) };
+		plugin.cacheManager = { getCachedTaskInfoSync: () => null };
+		expect((view as any).getSortOrderValues([task], "sort_order").get(task.path)).toBe("tnzzzzzzzzzz");
+	});
+
 	it("patches sort-order cache and visible scope order after a same-column optimistic drop", () => {
 		const view = makeView();
 		const taskA = createTask("tasks/a.md", "old-a");

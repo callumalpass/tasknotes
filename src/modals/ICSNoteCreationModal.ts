@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import { formatStableDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
@@ -34,6 +35,7 @@ export class ICSNoteCreationModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: ICSNoteCreationOptions) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.options = options;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);

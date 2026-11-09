@@ -127,14 +127,14 @@ describe("#2354 date display preference", () => {
 		expect(el?.textContent).toContain(value.replace("T", " "));
 		plugin.settings.dateDisplayFormat = "default";
 		const nativeEl = renderPropertyMetadata(container, "file.ctime", nativeTask as never, plugin as never);
-		expect(nativeEl?.textContent).toContain("Native date display");
+		expect(nativeEl?.textContent).toContain(value);
 	});
 
 	it("uses ISO and the chosen clock for all Task Information dates", () => {
 		const plugin = pluginFixture();
 		plugin.settings.calendarViewSettings.timeFormat = "12";
 		const modal = Object.assign(Object.create(TaskEditModal.prototype), {
-			plugin, task, t: (key: string) => key,
+			plugin, task, t: observeTranslation(),
 		});
 		const container = document.createElement("div");
 		modal.createMetadataSection(container);

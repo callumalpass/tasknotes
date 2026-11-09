@@ -1,3 +1,4 @@
+import { showToast } from "../ui/kit/toast";
 import { displayError } from "../i18n/runtime";
 import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
@@ -5,10 +6,7 @@ import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 import {
 	App,
-	FuzzySuggestModal,
-	FuzzyMatch,
 	setIcon,
-	Notice,
 	TAbstractFile,
 	TFile,
 	moment as obsidianMoment,
@@ -24,10 +22,14 @@ import {
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { ProjectSelectModal } from "./ProjectSelectModal";
 import { addTaskToProject } from "../services/taskRelationshipActions";
+import { openListPicker } from "../ui/kit/listPicker";
+import type { PopoverHandle } from "../ui/kit/popover";
+import { archiveTasksWithUndo, changeTaskProperty } from "../ui/taskPropertyPickers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskActionPaletteModal" });
 
 export interface TaskAction {
+	keyHint?: string;
 	id: string;
 	title: string;
 	description: string;
@@ -62,47 +64,53 @@ function getMoment(): MomentLike {
 	return (obsidianMoment as unknown as () => MomentLike)();
 }
 
-export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
+export class TaskActionPaletteModal {
+	private app: App;
+	private picker?: PopoverHandle;
 	private task: TaskInfo;
 	private plugin: TaskNotesPlugin;
 	private targetDate: Date;
 	private actions: TaskAction[];
 
-	constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date) {
-		super(app);
+	constructor(app: App, task: TaskInfo, plugin: TaskNotesPlugin, targetDate: Date, transformActions?: (actions: TaskAction[]) => TaskAction[]) {
+		this.app = app;
 		this.task = task;
 		this.plugin = plugin;
 		this.targetDate = targetDate;
 		this.actions = this.buildActionsList();
+		if (transformActions) this.actions = transformActions(this.actions);
 
-		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Type to search for an action...", context: "modals.actionPalette.placeholder" })));
-		this.setInstructions([
-			{
-				command: "↑↓",
-				purpose: this.plugin.i18n.translate(
-					msg({ message: "to navigate", context: "modals.unscheduledTasksSelector.instructions.navigate" })
-				),
+	}
+
+	open(): void {
+		const actions = this.getItems();
+		const win = activeWindow;
+		const anchor = { x: 8, y: Math.min(160, win.innerHeight / 4) };
+		this.picker = openListPicker({
+			anchor,
+			app: this.app,
+			className: "task-action-palette-modal",
+			placeholder: this.plugin.i18n.translate(msg({ message: "Type to search for an action...", context: "modals.actionPalette.placeholder" })),
+			emptyText: uiText(msg({ message: "No matching actions", context: "interaction picker" })),
+			items: actions.map((action) => ({
+				id: action.id,
+				label: action.title,
+				keywords: this.getItemText(action),
+				keyHint: action.keyHint,
+				renderLeading: (host) => setIcon(host, action.icon),
+			})),
+			onChoose: (item) => {
+				const action = actions.find((candidate) => candidate.id === item.id);
+				if (action) void this.executeAction(action);
 			},
-			{ command: "↵", purpose: this.plugin.i18n.translate(msg({ message: "To execute", context: "modals.actionPalette.execute" })) },
-			{
-				command: "esc",
-				purpose: this.plugin.i18n.translate(
-					msg({ message: "to dismiss", context: "modals.unscheduledTasksSelector.instructions.dismiss" })
-				),
-			},
-		]);
+		});
+		anchor.x = Math.max(8, (win.innerWidth - this.picker.el.getBoundingClientRect().width) / 2);
+		this.picker.reposition();
+	}
 
-		// Set modal title for accessibility
-		this.titleEl.setText(
-			this.plugin.i18n.translate(msg({ message: "Quick actions: {title}", context: "modals.actionPalette.title" }), { title: task.title })
-		);
-		this.titleEl.setAttribute("id", "task-action-palette-title");
-
-		// Set aria attributes on the modal
-		this.containerEl.setAttribute("aria-labelledby", "task-action-palette-title");
-		this.containerEl.setAttribute("role", "dialog");
-		this.containerEl.setAttribute("aria-modal", "true");
-		this.containerEl.addClass("task-action-palette-modal");
+	close(): void {
+		this.picker?.close();
+		this.picker = undefined;
 	}
 
 	private buildActionsList(): TaskAction[] {
@@ -128,12 +136,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["status", statusConfig.value, configLabel(statusConfig), "change", "set"],
 				isApplicable: () => !isCurrentStatus,
 				execute: async (task) => {
-					await this.plugin.updateTaskProperty(task, "status", statusConfig.value);
-					new Notice(
-						this.plugin.i18n.translate(msg({ message: "Status changed to {label}", context: "modals.actionPalette.statusChanged" }), {
-							label: configLabel(statusConfig),
-						})
-					);
+					await changeTaskProperty(this.plugin, [task], "status", statusConfig.value);
 				},
 			});
 		});
@@ -154,12 +157,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["priority", priorityConfig.value, configLabel(priorityConfig), "change", "set"],
 				isApplicable: () => !isCurrentPriority,
 				execute: async (task) => {
-					await this.plugin.updateTaskProperty(task, "priority", priorityConfig.value);
-					new Notice(
-						this.plugin.i18n.translate(msg({ message: "Priority changed to {label}", context: "modals.actionPalette.priorityChanged" }), {
-							label: configLabel(priorityConfig),
-						})
-					);
+					await changeTaskProperty(this.plugin, [task], "priority", priorityConfig.value);
 				},
 			});
 		});
@@ -201,8 +199,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["clear", "remove", "due", "date"],
 				isApplicable: (task) => !!task.due,
 				execute: async (task) => {
-					await this.plugin.updateTaskProperty(task, "due", undefined);
-					new Notice(this.plugin.i18n.translate(msg({ message: "Due date cleared", context: "modals.actionPalette.dueCleared" })));
+					await changeTaskProperty(this.plugin, [task], "due", undefined);
 				},
 			},
 			{
@@ -216,8 +213,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["clear", "remove", "scheduled", "date"],
 				isApplicable: (task) => !!task.scheduled,
 				execute: async (task) => {
-					await this.plugin.updateTaskProperty(task, "scheduled", undefined);
-					new Notice(this.plugin.i18n.translate(msg({ message: "Scheduled date cleared", context: "modals.actionPalette.scheduledCleared" })));
+					await changeTaskProperty(this.plugin, [task], "scheduled", undefined);
 				},
 			}
 		);
@@ -242,10 +238,8 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				const currentSession = this.plugin.getActiveTimeSession(task);
 				if (currentSession) {
 					await this.plugin.stopTimeTracking(task);
-					new Notice(this.plugin.i18n.translate(msg({ message: "Time tracking stopped", context: "modals.actionPalette.trackingStopped" })));
 				} else {
 					await this.plugin.startTimeTracking(task);
-					new Notice(this.plugin.i18n.translate(msg({ message: "Time tracking started", context: "modals.actionPalette.trackingStarted" })));
 				}
 			},
 		});
@@ -292,12 +286,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				keywords: ["archive", this.task.archived ? "unarchive" : "archive", "organize"],
 				isApplicable: () => true,
 				execute: async (task) => {
-					await this.plugin.toggleTaskArchive(task);
-					new Notice(
-						task.archived
-							? this.plugin.i18n.translate(msg({ message: "Task unarchived", context: "notices.commands.unarchived" }))
-							: this.plugin.i18n.translate(msg({ message: "Task archived", context: "notices.commands.archived" }))
-					);
+					await archiveTasksWithUndo(this.plugin, [task], !task.archived);
 				},
 			}
 		);
@@ -318,9 +307,6 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				},
 				execute: async (task, plugin, targetDate) => {
 					await plugin.toggleRecurringTaskComplete(task, targetDate);
-					new Notice(
-						this.plugin.i18n.translate(msg({ message: "Recurring task instance completed", context: "modals.actionPalette.occurrenceCompleted" }))
-					);
 				},
 			});
 
@@ -410,13 +396,9 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				execute: async (task) => {
 					try {
 						await navigator.clipboard.writeText(task.title);
-						new Notice(
-							this.plugin.i18n.translate(msg({ message: "Task title copied to clipboard", context: "contextMenus.task.notices.copyTitleSuccess" }))
-						);
+						showToast({ message: this.plugin.i18n.translate(msg({ message: "Task title copied to clipboard", context: "contextMenus.task.notices.copyTitleSuccess" })) });
 					} catch {
-						new Notice(
-							this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" }))
-						);
+						showToast({ message: this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })) });
 					}
 				},
 			},
@@ -434,14 +416,10 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 						if (file instanceof TFile) {
 							const linkText = this.plugin.app.metadataCache.fileToLinktext(file, "");
 							await navigator.clipboard.writeText(`[[${linkText}]]`);
-							new Notice(
-								this.plugin.i18n.translate(msg({ message: "Task link copied to clipboard", context: "modals.actionPalette.linkCopied" }))
-							);
+							showToast({ message: this.plugin.i18n.translate(msg({ message: "Task link copied to clipboard", context: "modals.actionPalette.linkCopied" })) });
 						}
 					} catch {
-						new Notice(
-							this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" }))
-						);
+						showToast({ message: this.plugin.i18n.translate(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" })) });
 					}
 				},
 			},
@@ -551,14 +529,7 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 					return currentDate !== preset.value;
 				},
 				execute: async (task) => {
-					await this.plugin.updateTaskProperty(task, property, preset.value);
-					new Notice(
-						this.plugin.i18n.translate(
-							property === "scheduled"
-								? msg({ message: "Scheduled date set", context: "modals.actionPalette.scheduledSet" })
-								: msg({ message: "Due date set", context: "modals.actionPalette.dueSet" })
-						)
-					);
+					await changeTaskProperty(this.plugin, [task], property, preset.value);
 				},
 			});
 		});
@@ -578,15 +549,13 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 	): Promise<void> {
 		try {
 			if (!(projectFile instanceof TFile)) {
-				new Notice(
-					this.plugin.i18n.translate(
+				showToast({ message: this.plugin.i18n.translate(
 						msg({ message: "Failed to open project selector", context: "contextMenus.task.organization.notices.projectSelectFailed" })
-					)
-				);
+					) });
 				return;
 			}
 
-			await addTaskToProject(this.plugin, task, projectFile);
+			await addTaskToProject(this.plugin, task, projectFile, async (current, projects) => (await changeTaskProperty(this.plugin, [current], "projects", projects))[0] ?? null, message => { showToast({ message }); });
 		} catch (error) {
 			tasknotesLogger.error("Failed to add task to project:", {
 				category: "persistence",
@@ -594,11 +563,9 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				details: { taskPath: task.path },
 				error: error instanceof Error ? error.message : String(error),
 			});
-			new Notice(
-				this.plugin.i18n.translate(
+			showToast({ message: this.plugin.i18n.translate(
 					msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })
-				)
-			);
+				) });
 		}
 	}
 
@@ -617,6 +584,12 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 		return this.actions
 			.filter((action) => action.isApplicable(this.task, this.plugin, this.targetDate))
 			.sort((a, b) => {
+				const primary = ["edit-task", "open-task-file", "picker-status", "picker-priority", "picker-due", "picker-scheduled", "picker-tags", "picker-contexts", "picker-projects"];
+				const rank = (action: TaskAction) => {
+					const index = primary.indexOf(action.id);
+					return index < 0 ? primary.length : index;
+				};
+				if (rank(a) !== rank(b)) return rank(a) - rank(b);
 				// Sort by category first
 				const categoryOrder = {
 					status: 0,
@@ -649,50 +622,19 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 		].join(" ");
 	}
 
-	renderSuggestion(item: FuzzyMatch<TaskAction>, el: HTMLElement) {
-		const action = item.item;
-		const container = el.createDiv({ cls: "task-action-palette__suggestion" });
-
-		// Icon
-		const iconEl = container.createDiv({ cls: "task-action-palette__icon" });
-		setIcon(iconEl, action.icon);
-
-		// Content
-		const contentEl = container.createDiv({ cls: "task-action-palette__content" });
-
-		// Title
-		contentEl.createDiv({
-			cls: "task-action-palette__title",
-			text: action.title,
-		});
-
-		// Description
-		contentEl.createDiv({
-			cls: "task-action-palette__description",
-			text: action.description,
-		});
-
-		// Category badge
-		const badgeEl = container.createDiv({ cls: "task-action-palette__badge" });
-		badgeEl.createSpan({
-			cls: `task-action-palette__category task-action-palette__category--${action.category}`,
-			text: this.getCategoryLabel(action.category),
-		});
-	}
-
 	onChooseItem(action: TaskAction, evt: MouseEvent | KeyboardEvent): void {
 		void this.executeAction(action, evt);
 	}
 
 	private async executeAction(
 		action: TaskAction,
-		evt: MouseEvent | KeyboardEvent
+		evt?: MouseEvent | KeyboardEvent
 	): Promise<void> {
 		try {
 			// Refresh task data to ensure we have the latest information
 			const freshTask = await this.plugin.cacheManager.getTaskInfo(this.task.path);
 			if (!freshTask) {
-				new Notice(this.plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
+				showToast({ message: this.plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })) });
 				return;
 			}
 
@@ -705,11 +647,9 @@ export class TaskActionPaletteModal extends FuzzySuggestModal<TaskAction> {
 				details: { actionId: action.id, taskPath: this.task.path },
 				error: errorMessage,
 			});
-			new Notice(
-				this.plugin.i18n.translate(msg({ message: "Failed to execute action: {message}", context: "modals.actionPalette.actionFailed" }), {
+			showToast({ message: this.plugin.i18n.translate(msg({ message: "Failed to execute action: {message}", context: "modals.actionPalette.actionFailed" }), {
 					message: displayError(errorMessage),
-				})
-			);
+				}) });
 		}
 	}
 }

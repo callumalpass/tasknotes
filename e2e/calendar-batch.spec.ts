@@ -104,11 +104,11 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 	await expect(event(page, "Alpha")).toHaveAttribute("aria-pressed", "true");
 	await page.keyboard.press("Control+a");
 	const paths = await selected(page);
-	expect(paths).toHaveLength(4);
-	expect(paths).not.toContain(`${folder}/Recurring.md`);
+	expect(paths).toHaveLength(5);
+	expect(paths).toContain(`${folder}/Recurring.md`);
 	await page.locator(".tn-selection-indicator:visible").click();
 	expect(await selected(page)).toEqual([]);
-	await expect(page.getByRole("button", { name: "Select tasks", exact: true })).toHaveAttribute("aria-pressed", "false");
+	await expect(page.locator(".tnc-btn-selectTasks")).toHaveAttribute("aria-pressed", "false");
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await event(page, "Charlie").click({ modifiers: ["Shift"] });
 	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Charlie.md`]));
@@ -117,9 +117,9 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 	await page.keyboard.press("Escape");
 });
 
-test("calendar list mode keeps selection consistent and excludes recurrence previews", async () => {
+test("calendar list mode keeps selection consistent and includes recurring tasks", async () => {
 	const page = obsidian.page;
-	await page.getByRole("button", { name: "List view", exact: true }).click();
+	await page.locator(".tnc-toolbar-view-select").selectOption("list");
 	// Wait for the existing debounced view preference save, not just the first
 	// list paint: its config refresh can replace a card during a pointer click.
 	await expect.poll(() => page.evaluate(async path => {
@@ -128,10 +128,11 @@ test("calendar list mode keeps selection consistent and excludes recurrence prev
 	}, basePath)).toMatch(/calendarView:\s*listWeek/);
 	await event(page, "Alpha").locator(".task-card").click({ modifiers: ["Control"] });
 	await event(page, "Bravo").locator(".task-card").click({ modifiers: ["Control"] });
-	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Shift"] });
-	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`]));
-	await page.locator(".tnc-btn-selectedTasks:visible").click();
-	await expect(page.getByText("2 tasks selected", { exact: true })).toBeVisible();
+	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Control"] });
+	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
+	await page.locator(".tnc-btn-overflow:visible").click();
+	await page.locator('.tn-picker__row[data-picker-id="selected"]').click();
+	await expect(page.getByText("3 tasks selected", { exact: true })).toBeVisible();
 	await page.keyboard.press("Escape");
 });
 
@@ -145,7 +146,7 @@ test("select-all excludes tasks hidden by the all-day setting", async () => {
 	await expect(page.locator(".tnc:visible .tnc-tg-allday")).toHaveCount(0);
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await page.keyboard.press("Control+a");
-	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`]));
+	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
 });
 
 test("group dragging keeps relative days, local times and deadlines, and offers Undo", async () => {
@@ -153,11 +154,15 @@ test("group dragging keeps relative days, local times and deadlines, and offers 
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	await dragByColumn(page, event(page, "Alpha"));
-	await expect.poll(() => taskDates(page, "Alpha")).toEqual({ scheduled: `${days[1]}T09:00`, due: `${days[2]}T17:00` });
-	expect(await taskDates(page, "Bravo")).toEqual({ scheduled: `${days[2]}T11:30`, due: `${days[2]}T16:00` });
+	await expect.poll(() => Promise.all([taskDates(page, "Alpha"), taskDates(page, "Bravo")])).toEqual([
+		{ scheduled: `${days[1]}T09:00`, due: `${days[2]}T17:00` },
+		{ scheduled: `${days[2]}T11:30`, due: `${days[2]}T16:00` },
+	]);
 	await page.getByRole("button", { name: "Undo", exact: true }).click();
-	await expect.poll(async () => (await taskDates(page, "Bravo")).scheduled).toBe(`${days[1]}T11:30`);
-	expect((await taskDates(page, "Alpha")).scheduled).toBe(`${days[0]}T09:00`);
+	await expect.poll(() => Promise.all([taskDates(page, "Alpha"), taskDates(page, "Bravo")])).toEqual([
+		{ scheduled: `${days[0]}T09:00`, due: `${days[2]}T17:00` },
+		{ scheduled: `${days[1]}T11:30`, due: `${days[2]}T16:00` },
+	]);
 });
 
 test("peer previews precede writes and Escape restores all placements", async () => {
@@ -190,7 +195,7 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 		}
 		await app.vault.create(`${folder}/Busy.md`, "---\ntitle: Busy\nstatus: open\npriority: normal\ntags: [task]\nscheduled: 2031-05-07T07:00\n---\n");
 	}, folder);
-	await page.getByRole("button", { name: "Month view", exact: true }).click();
+	await page.locator(".tnc-toolbar-view-select").selectOption("month");
 	await expect.poll(() => page.evaluate(async path => {
 		const app = (window as any).app;
 		return app.vault.read(app.vault.getAbstractFileByPath(path));
@@ -204,13 +209,19 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 		calendar.setOptions({ dayMaxEvents: 1 }); calendar.flush();
 	});
 	expect(await selected(page)).toHaveLength(2);
+	await page.locator('.advanced-calendar-view').evaluate(async element => {
+		await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
+	});
 	const box = (await event(page, "Alpha").boundingBox())!;
+	const peerBox = await event(page, "Bravo").boundingBox();
 	const target = (await page.locator('.tnc-dg-day[data-date="2031-05-06"]').boundingBox())!;
 	await page.mouse.move(box.x + 20, box.y + 8); await page.mouse.down();
 	await page.mouse.move(target.x + target.width / 2, target.y + 55, { steps: 20 });
-	await expect(event(page, "Bravo")).toHaveClass(/tn-calendar-batch-preview/);
-	await expect(event(page, "Bravo")).toBeVisible();
-	await expect(event(page, "Bravo")).toHaveClass(/is-mirror/);
+	const preview = page.locator(`.tnc-month-preview.tn-calendar-batch-preview[data-task-path="${folder}/Bravo.md"]`);
+	await expect(preview).toBeVisible();
+	await expect(preview).toHaveClass(/is-mirror/);
+	expect(await event(page, "Alpha").boundingBox()).toEqual(box);
+	expect(await event(page, "Bravo").boundingBox()).toEqual(peerBox);
 	expect((await taskDates(page, "Bravo")).scheduled).toBe("2031-05-06T11:30");
 	await page.keyboard.press("Escape"); await page.mouse.up();
 	await expect(page.locator(".tn-calendar-batch-preview")).toHaveCount(0);
@@ -247,7 +258,9 @@ test("incompatible markers are rejected without partially moving the selection",
 	await event(page, "Alpha").click({ modifiers: ["Control"] });
 	await event(page, "DueOnly", "due").click({ modifiers: ["Control"] });
 	await dragByColumn(page, event(page, "Alpha"));
-	await expect(page.locator(".notice").filter({ hasText: "Group moves require" })).toBeVisible();
+	const rejection = page.locator(".notice").filter({ hasText: "Group moves require" });
+	await expect(rejection).toHaveCount(1);
+	await expect(rejection).toBeVisible();
 	expect((await taskDates(page, "Alpha")).scheduled).toBe(`${days[0]}T09:00`);
 	expect((await taskDates(page, "DueOnly")).due).toBe(days[1]);
 });
