@@ -58,6 +58,18 @@ async function openView(type: string, name: string, manual = false) {
   const root = page.locator(`.workspace-leaf.mod-active .${type === 'tasknotesCalendar' ? 'advanced-calendar-view' : `tn-${type}`}`);
   await expect(root).toBeVisible();
   if (type !== 'tasknotesCalendar') await expect(root.locator('.task-card').first()).toBeVisible();
+  else {
+    await expect.poll(() => page.evaluate(name => {
+      const app = (window as any).app;
+      return Boolean(app.workspace.getLeavesOfType('bases').find((leaf: any) => leaf.view.file?.basename === name)?.view.controller.view.calendar);
+    }, name)).toBe(true);
+    await page.evaluate(name => {
+      // The fixed November 6 fixtures must remain in range after the current week changes.
+      const app = (window as any).app;
+      const view = app.workspace.getLeavesOfType('bases').find((leaf: any) => leaf.view.file?.basename === name).view.controller.view;
+      view.calendar.gotoDate('2026-11-06');
+    }, name);
+  }
   await root.focus();
   return root;
 }

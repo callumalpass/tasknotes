@@ -550,10 +550,9 @@ export async function closeObsidian(app: ObsidianApp): Promise<void> {
 }
 
 export async function openCommandPalette(page: Page): Promise<void> {
-  await expect(async () => {
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.modal-container:visible, .tn-popover:visible')).toHaveCount(0);
-  }).toPass({ timeout: 5000 });
+  await dismissObsidianModals(page);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.modal-container:visible, .tn-popover:visible')).toHaveCount(0);
   await page.locator('.workspace').click({ position: { x: 10, y: 10 } });
 
   // Use Ctrl+P to open command palette

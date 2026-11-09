@@ -17,6 +17,7 @@ import { test, expect, Page } from '@playwright/test';
 import {
   launchObsidian,
   closeObsidian,
+  dismissObsidianModals,
   ObsidianApp,
   runCommand,
   setObsidianViewport,
@@ -59,12 +60,9 @@ function getPage(): Page {
 
 // Helper to ensure clean state before each screenshot
 async function ensureCleanState(page: Page): Promise<void> {
-  // Close any open modals
-  for (let i = 0; i < 3; i++) {
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(100);
-  }
-  await page.waitForTimeout(300);
+  // A filled composer now asks before discarding. Repeated Escape only reopens
+  // that confirmation, leaving it in front of the next documentation capture.
+  await dismissObsidianModals(page);
 }
 
 // Helper to expand Views folder in sidebar

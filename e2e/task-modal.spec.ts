@@ -270,6 +270,7 @@ test.describe("linked items", () => {
 		await setNaturalLanguage(true);
 		await openCreate({ title: "A title long enough to wrap onto a second line in the disclosed field row" });
 		await expand();
+		await modal().evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
 		const title = modal().locator(".title-input-detailed");
 		const fits = await title.evaluate((input) => input.scrollHeight <= input.clientHeight + 1);
 		expect(fits).toBe(true);
