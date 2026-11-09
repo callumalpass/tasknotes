@@ -167,13 +167,16 @@ async function expectNativeDrop(lane: string, refreshDuringDrag = false) {
       (window as any).kanbanDrops.push({ column: cell?.dataset.column, lane: cell?.dataset.swimlane });
     }, true);
   });
+  let bounds: Awaited<ReturnType<Locator['boundingBox']>> = null;
   await expect(async () => {
     await expect(source).toBeVisible();
     await source.scrollIntoViewIfNeeded();
+    // Undo can restore the file before the board's queued refresh replaces its
+    // cards. Retry geometry acquisition and let hover wait for a stable source.
+    bounds = await source.boundingBox();
+    expect(bounds).not.toBeNull();
+    await source.hover({ position: { x: bounds!.width / 2, y: 20 } });
   }).toPass({ timeout: 5000 });
-  const bounds = await source.boundingBox();
-  expect(bounds).not.toBeNull();
-  await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + 20);
   await page.mouse.down();
   await page.mouse.move(bounds!.x + bounds!.width / 2 + 15, bounds!.y + 20, { steps: 5 });
   await expect(page.locator('.kanban-view__board')).toHaveClass(/kanban-view__board--task-dragging/);
