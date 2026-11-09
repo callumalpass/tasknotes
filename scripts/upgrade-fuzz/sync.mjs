@@ -313,9 +313,11 @@ async function runScenario(seed, w) {
 		const metaWrites = env.transfers.filter((t) => METADATA_RE.test(t.p) && t.op === "write");
 		const perPath = {};
 		for (const t of metaWrites) perPath[t.p] = (perPath[t.p] ?? 0) + 1;
-		for (const [p, c] of Object.entries(perPath)) if (c > 3) add("warn", "metadata-churn", { path: p, syncedWrites: c });
-		const backups = Object.keys(filesEnd).filter((p) => p.startsWith(".tasknotes/"));
-		if (backups.length > 12) add("warn", "backup-pileup", backups.length);
+		// Expected while a 4.x device regenerates its v0.2 type; recorded, not a defect.
+		for (const [p, c] of Object.entries(perPath)) if (c > 3) add("info", "metadata-churn", { path: p, syncedWrites: c });
+		// Identical backups are reused, so repeated v4 rewrites settle at three folders.
+		const backups = new Set(Object.keys(filesEnd).filter((p) => /^\.tasknotes\/migrations\/mdbase-v0\.2-[^/]+\//.test(p)).map((p) => p.split("/").slice(0, 3).join("/")));
+		if (backups.size > 3) add("warn", "backup-pileup", [...backups]);
 		const conflicts = env.transfers.filter((t) => t.conflict);
 		if (conflicts.length) add("info", "sync-conflicts", conflicts.map((c) => c.p));
 		for (const d of [a, b]) {

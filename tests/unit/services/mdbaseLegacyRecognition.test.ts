@@ -197,4 +197,20 @@ describe("historical generated type recognition", () => {
 		assertMigrated(h);
 		expect(h.settings.userFields.map((field) => field.key)).toContain("effort");
 	});
+
+	it("reuses an identical backup when a 4.x device keeps rewriting the v0.2 type", async () => {
+		const h = harness("live-4.17.0-defaults");
+		const backups = () => new Set([...h.files.keys()].filter((p) => p.includes("/mdbase-v0.2-") && !p.endsWith("pending.json")).map((p) => p.split("/").slice(0, 3).join("/")));
+		await h.service.initialize();
+		// A synced 4.x device regenerates its v0.2 type on every start. The first two
+		// re-migrations back up different support files and config; later ones repeat.
+		const counts: number[] = [];
+		for (let start = 0; start < 5; start++) {
+			h.files.set("_types/task.md", h.entries["_types/task.md"]);
+			await new MdbaseSpecService(h.plugin).initialize();
+			assertMigrated(h);
+			counts.push(backups().size);
+		}
+		expect(counts).toEqual([2, 3, 3, 3, 3]);
+	});
 });

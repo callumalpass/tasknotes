@@ -74,6 +74,12 @@ const writableMembershipKeys = effectiveMembershipKeys;
 const MDBASE_MIGRATION_BACKUP_FOLDER = uiData(".tasknotes/migrations", "Vault-relative recovery folder, not UI prose");
 const MDBASE_MIGRATION_PENDING_PATH = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-pending.json`;
 
+/** Sort key for v0.2 backup folders: their timestamp, then the collision counter. */
+function backupFolderOrder(folder: string): string {
+	const match = /mdbase-v0\.2-(.+?)(?:-(\d+))?$/.exec(folder);
+	return match ? `${match[1]}#${(match[2] ?? "1").padStart(6, "0")}` : folder;
+}
+
 type SupportedSpecFamily = "v0.2" | "v0.3";
 
 type MdbaseYamlConfig = {
@@ -679,6 +685,23 @@ export class MdbaseSpecService {
 		legacyType: LegacyTaskNotesTypeState,
 		snapshots: FileSnapshot[]
 	): Promise<string> {
+		// Backup file (relative to the folder) -> content, and source path -> backup file.
+		const contents = new Map<string, string>([
+			["mdbase.yaml.bak", configContent],
+			["task.md.bak", legacyType.content],
+		]);
+		const files: Record<string, string> = { "mdbase.yaml": "mdbase.yaml.bak", [legacyType.path]: "task.md.bak" };
+		for (const snapshot of snapshots) {
+			if (snapshot.content === null || snapshot.path === "mdbase.yaml") continue;
+			contents.set(`${snapshot.path}.bak`, snapshot.content);
+			if (snapshot.path !== legacyType.path) files[snapshot.path] = `${snapshot.path}.bak`;
+		}
+
+		// A device still on 4.x rewrites the v0.2 type each time it starts, so the same
+		// metadata can be migrated again and again. Reuse an identical latest backup.
+		const latest = await this.latestV02MigrationBackup();
+		if (latest && await this.backupMatches(latest, files, contents)) return latest;
+
 		const suffix = new Date().toISOString().replace(/[:.]/g, "-");
 		const baseFolder = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-${suffix}`;
 		let folder = baseFolder;
@@ -688,32 +711,49 @@ export class MdbaseSpecService {
 			attempt += 1;
 		}
 		await this.ensureFolderPath(folder);
-		await this.metadataIO.replace({ path: `${folder}/mdbase.yaml.bak`, content: null }, configContent);
-		await this.metadataIO.replace({ path: `${folder}/task.md.bak`, content: null }, legacyType.content);
-		for (const snapshot of snapshots) {
-			if (snapshot.content === null) continue;
-			const path = `${folder}/${snapshot.path}.bak`;
-			if (path === `${folder}/mdbase.yaml.bak`) continue;
+		for (const [relative, content] of contents) {
+			const path = `${folder}/${relative}`;
 			await this.ensureFolderPath(path.split("/").slice(0, -1).join("/"));
-			await this.metadataIO.replace({ path, content: null }, snapshot.content);
+			await this.metadataIO.replace({ path, content: null }, content);
 		}
 		await this.metadataIO.replace(
 			{ path: `${folder}/manifest.json`, content: null },
-			JSON.stringify(
-				{
-					created_at: new Date().toISOString(),
-					source_spec_version: "0.2",
-					files: {
-						"mdbase.yaml": "mdbase.yaml.bak",
-						[legacyType.path]: "task.md.bak",
-						...Object.fromEntries(snapshots.filter((snapshot) => snapshot.content !== null && snapshot.path !== "mdbase.yaml" && snapshot.path !== legacyType.path).map((snapshot) => [snapshot.path, `${snapshot.path}.bak`])),
-					},
-				},
-				null,
-				2
-			) + "\n"
+			JSON.stringify({ created_at: new Date().toISOString(), source_spec_version: "0.2", files }, null, 2) + "\n"
 		);
 		return folder;
+	}
+
+	private async latestV02MigrationBackup(): Promise<string | null> {
+		const adapter = this.plugin.app.vault.adapter;
+		if (!(await adapter.exists(MDBASE_MIGRATION_BACKUP_FOLDER))) return null;
+		const prefix = `${MDBASE_MIGRATION_BACKUP_FOLDER}/mdbase-v0.2-`;
+		const folders = (await adapter.list(MDBASE_MIGRATION_BACKUP_FOLDER)).folders
+			.filter((folder) => folder.startsWith(prefix))
+			.sort((a, b) => backupFolderOrder(a).localeCompare(backupFolderOrder(b)));
+		return folders[folders.length - 1] ?? null;
+	}
+
+	/** Whether a backup folder holds exactly these files with this content. */
+	private async backupMatches(
+		folder: string,
+		files: Record<string, string>,
+		contents: Map<string, string>
+	): Promise<boolean> {
+		const adapter = this.plugin.app.vault.adapter;
+		try {
+			const manifest = JSON.parse(await adapter.read(`${folder}/manifest.json`)) as unknown;
+			if (!isRecord(manifest) || !isRecord(manifest.files)) return false;
+			const saved = Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b));
+			const wanted = Object.entries(files).sort(([a], [b]) => a.localeCompare(b));
+			if (JSON.stringify(saved) !== JSON.stringify(wanted)) return false;
+			for (const [relative, content] of contents) {
+				const path = `${folder}/${relative}`;
+				if (!(await adapter.exists(path)) || (await adapter.read(path)) !== content) return false;
+			}
+			return true;
+		} catch {
+			return false;
+		}
 	}
 
 	private async verifyMigratedV03Collection(
