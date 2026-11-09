@@ -419,7 +419,7 @@ export class BasesFilterConverter {
 		// Handle array values (for multi-select properties)
 		if (Array.isArray(value)) {
 			if (value.length == 0) {
-				return `(!${basesProperty} || ${basesProperty}.length == 0)`;
+				return `${basesProperty}.isEmpty()`;
 			}
 
 			// Check if property contains any of the values
