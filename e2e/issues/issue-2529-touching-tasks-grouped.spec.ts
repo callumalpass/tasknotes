@@ -24,7 +24,7 @@ test('touching tasks stay full width at a compact slot height', async () => {
 				await w.app.vault.create(path, `---\ntitle: ${path.replace(/\.md$/, '')}\nstatus: open\npriority: normal\nscheduled: ${day}T${i ? '11:30' : '11:00'}\ntimeEstimate: 30\ntags:\n  - task\n---\n`);
 			}
 			// 8px per 30-minute slot draws a 30-minute task shorter than the 15px minimum height.
-			await w.app.vault.create(base, 'views:\n  - type: tasknotesCalendar\n    name: Day\n    calendarView: timeGridDay\n    slotDuration: "00:30:00"\n    slotHeight: 8\n    scrollTime: 10:00:00\n    showTimeblocks: false\n');
+			await w.app.vault.create(base, 'filters:\n  and:\n    - file.name.startsWith("Issue 2529 ")\nviews:\n  - type: tasknotesCalendar\n    name: Day\n    calendarView: timeGridDay\n    slotDuration: "00:30:00"\n    slotHeight: 8\n    scrollTime: 10:00:00\n    showTimeblocks: false\n');
 			await w.app.workspace.getLeaf('tab').openFile(w.app.vault.getAbstractFileByPath(base));
 		}, { tasks: TASKS, base: BASE });
 		const boxes = [];

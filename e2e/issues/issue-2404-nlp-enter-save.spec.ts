@@ -95,6 +95,9 @@ test("Enter selects visible autocomplete rather than saving", async () => {
 	await instance.page.keyboard.type("*op", { delay: 50 });
 	await expect(editor()).toContainText("*op*");
 	await expect(instance.page.locator(".cm-tooltip-autocomplete")).toBeVisible();
+	// Visibility precedes CodeMirror's 75ms interaction delay. This case tests
+	// accepting a ready popup; the unit suite separately tests early-key suppression.
+	await instance.page.waitForTimeout(100);
 	await instance.page.keyboard.press("Enter");
 	await expect(editor()).toBeVisible();
 	await expect(instance.page.locator(".cm-tooltip-autocomplete")).toHaveCount(0);

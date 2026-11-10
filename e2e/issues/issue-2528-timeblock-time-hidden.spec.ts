@@ -33,7 +33,7 @@ test('hour-long timeblocks show their time range in week view', async () => {
 			const existing = w.app.vault.getAbstractFileByPath(note);
 			if (existing) await w.app.vault.modify(existing, text);
 			else await w.app.vault.create(note, text);
-			await w.app.vault.create(base, 'views:\n  - type: tasknotesCalendar\n    name: Week\n    calendarView: timeGridWeek\n    showTimeblocks: true\n    scrollTime: 07:00:00\n');
+			await w.app.vault.create(base, `filters:\n  and:\n    - file.path == "${note}"\nviews:\n  - type: tasknotesCalendar\n    name: Week\n    calendarView: timeGridWeek\n    showTimeblocks: true\n    scrollTime: 07:00:00\n`);
 			await w.app.workspace.getLeaf('tab').openFile(w.app.vault.getAbstractFileByPath(base));
 		}, { note, base: BASE });
 		for (const [title, range] of [['Gym Workout', '08:00 – 09:00'], ['Exercise', '17:00 – 18:00']]) {

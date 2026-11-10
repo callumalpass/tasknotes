@@ -61,7 +61,7 @@ async function openBase(view: string, extra = '') {
 	await page.evaluate(
 		async ({ path, view, extra }) => {
 			const w = window as any;
-			const text = `views:\n  - type: tasknotesCalendar\n    name: Issue 2527\n    calendarView: ${view}\n    showTimeblocks: true\n    scrollTime: 08:00:00\n${extra}`;
+			const text = `filters:\n  and:\n    - file.name.startsWith("Issue 2527 task")\nviews:\n  - type: tasknotesCalendar\n    name: Issue 2527\n    calendarView: ${view}\n    showTimeblocks: true\n    scrollTime: 08:00:00\n${extra}`;
 			const existing = w.app.vault.getAbstractFileByPath(path);
 			if (existing) await w.app.vault.modify(existing, text);
 			else await w.app.vault.create(path, text);
