@@ -928,6 +928,52 @@ describe("TaskNotesApiV1", () => {
 		);
 	});
 
+	it("keeps Bases view data out of tasks and events returned to companion plugins (#2119)", async () => {
+		// Bases views attach their entry to the cached TaskInfo. The entry
+		// reaches the Obsidian app, which is a circular object graph.
+		const app: { appMenuBarManager?: { app: unknown } } = {};
+		app.appMenuBarManager = { app };
+		const parent = createTask({
+			title: "Parent",
+			path: "Projects/project.md",
+			basesData: { app },
+		});
+		const task = createTask({
+			projects: ["[[Projects/project]]"],
+			tags: ["work"],
+			basesData: { app },
+		});
+		const { plugin, emitter } = createPluginContext([parent, task]);
+		const api = new TaskNotesAPI(plugin);
+		const events: TaskNotesApiEventPayload[] = [];
+		api.on("task.status.changed", (payload) => events.push(payload));
+		const pomodoroEvents: TaskNotesApiEventPayload[] = [];
+		api.on("pomodoro.started", (payload) => pomodoroEvents.push(payload));
+
+		const returned: unknown[] = [
+			await api.getTask(task.path),
+			await api.listTasks(),
+			await api.relationships.parents(task.path),
+			await api.updateTask(task.path, { status: "active" }),
+		];
+
+		expect(returned[0]).toEqual({ ...task, basesData: undefined });
+		expect(events).toHaveLength(1);
+		for (const value of [...returned, events[0]?.task, events[0]?.before, events[0]?.after]) {
+			expect(() => JSON.stringify(value)).not.toThrow();
+		}
+		expect(events[0]?.after).not.toHaveProperty("basesData");
+		expect(events[0]?.changes).toEqual({ status: { before: "open", after: "active" } });
+
+		emitter.trigger(EVENT_POMODORO_START, { task, session: { taskPath: task.path } });
+		expect(pomodoroEvents).toHaveLength(1);
+		expect(() => JSON.stringify(pomodoroEvents[0])).not.toThrow();
+		expect(pomodoroEvents[0]?.data).toEqual({
+			task: { ...task, basesData: undefined },
+			session: { taskPath: task.path },
+		});
+	});
+
 	it("exposes query, stats, time summary, task time data, and health helpers", async () => {
 		const task = createTask({
 			timeEntries: [

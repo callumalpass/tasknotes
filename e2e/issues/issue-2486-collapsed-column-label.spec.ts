@@ -68,16 +68,25 @@ test('collapsed columns keep their icon and a vertical, truncated title', async 
       await expect(icon).toBeVisible();
       await expect(title).toBeVisible();
       await expect(title).toHaveCSS('writing-mode', 'vertical-rl');
-      const [colBox, iconBox, titleBox] = await Promise.all(
-        [col, icon, title].map(locator => locator.boundingBox())
-      );
-      // Icon above the title, and both inside the narrow strip.
-      expect(iconBox!.y + iconBox!.height).toBeLessThanOrEqual(titleBox!.y + 1);
-      for (const box of [iconBox!, titleBox!]) {
-        expect(box.x).toBeGreaterThanOrEqual(colBox!.x);
-        expect(box.x + box.width).toBeLessThanOrEqual(colBox!.x + colBox!.width + 0.5);
-      }
-      expect(titleBox!.height).toBeGreaterThan(20);
+      await expect(async () => {
+        // A refresh can replace the column between separate boundingBox calls.
+        // Read one live DOM subtree atomically, keeping every geometry assertion.
+        const boxes = await col.evaluate(element => {
+          const icon = element.querySelector('.kanban-view__column-icon');
+          const title = element.querySelector('.kanban-view__column-title');
+          if (!icon || !title) return null;
+          return [element, icon, title].map(node => node.getBoundingClientRect().toJSON());
+        });
+        expect(boxes).not.toBeNull();
+        const [colBox, iconBox, titleBox] = boxes!;
+        // Icon above the title, and both inside the narrow strip.
+        expect(iconBox.y + iconBox.height).toBeLessThanOrEqual(titleBox.y + 1);
+        for (const box of [iconBox, titleBox]) {
+          expect(box.x).toBeGreaterThanOrEqual(colBox.x);
+          expect(box.x + box.width).toBeLessThanOrEqual(colBox.x + colBox.width + 0.5);
+        }
+        expect(titleBox.height).toBeGreaterThan(20);
+      }).toPass({ timeout: 5000 });
       // Reads top to bottom: the first letter sits at the top of the title box.
       const firstLetterTop = await title.evaluate(el => {
         const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
