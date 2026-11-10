@@ -1,5 +1,7 @@
 import {
+	reconcileTaskNotesMdbaseTypeVocabulary,
 	resolveTaskNotesModelConfigFromMdbaseType,
+	taskNotesMdbaseTypeDisagreements,
 	upgradeTaskNotesMdbaseTypeContract,
 	type TaskNotesMdbaseResources,
 } from "@tasknotes/model/mdbase";
@@ -100,7 +102,27 @@ export function hasLegacyAppSettings(binding: unknown): boolean {
 	return Object.keys(taskNotesAppSettingsFromLegacyBinding(binding)).length > 0;
 }
 
-export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeValidationResult {
+/**
+ * The type with one list of statuses and priorities. A type states them in its
+ * schema and again in its binding; after a hand edit, or a write by another
+ * tool, the copies can differ. Nothing a task may hold is taken away: a value
+ * either copy names is kept. A type whose copies agree, or cannot be made to,
+ * is returned as it is.
+ */
+export function withAgreedVocabulary(type: UnknownRecord): UnknownRecord {
+	try {
+		return reconcileTaskNotesMdbaseTypeVocabulary(type);
+	} catch {
+		return type;
+	}
+}
+
+/**
+ * Validates the type as TaskNotes reads it: with its vocabulary agreed (see
+ * withAgreedVocabulary). The next write from settings stores that vocabulary.
+ */
+export function validateCanonicalTaskType(source: UnknownRecord): CanonicalTypeValidationResult {
+	const type = withAgreedVocabulary(source);
 	const issues: string[] = [];
 	const implementation = taskNotesImplementation(type);
 	const extension = asRecord(implementation?.binding);
@@ -151,10 +173,7 @@ export function validateCanonicalTaskType(type: UnknownRecord): CanonicalTypeVal
 	}
 
 	validateTaskIdentification(type, issues);
-	if (implementation) {
-		validateVocabularyMirror(type, implementation, "status", issues);
-		validateVocabularyMirror(type, implementation, "priority", issues);
-	}
+	issues.push(...vocabularyMirrorIssues(type, fieldRoles));
 
 	const statusField = fieldRoles?.status;
 	const advertisedStatusValues = stringArray(extension?.status, "values");
@@ -243,7 +262,8 @@ export function applyCanonicalTaskTypeToSettings(
 	settings.storeTitleInFilename = modelConfig.storeTitleInFilename;
 	settings.userFields = mergeResolvedUserFields(
 		settings.userFields ?? [],
-		modelConfig.userFields
+		modelConfig.userFields,
+		recordAt(type, ["schema", "value", "properties"]) ?? {}
 	);
 	settings.maintainDueDateOffsetInRecurring = modelConfig.recurrence.maintainDueDateOffset;
 
@@ -391,6 +411,7 @@ export function portableSettingsFingerprint(settings: TaskNotesSettings): string
 		customPriorities: settings.customPriorities,
 		userFields: (settings.userFields ?? []).map((field) => ({
 			key: field.key,
+			displayName: field.displayName,
 			type: field.type,
 			defaultValue: field.defaultValue,
 		})),
@@ -483,38 +504,16 @@ function validateTaskIdentification(type: UnknownRecord, issues: string[]): void
 	}
 }
 
-function validateVocabularyMirror(
-	type: UnknownRecord,
-	implementation: UnknownRecord,
-	role: "status" | "priority",
-	issues: string[]
-): void {
-	const fieldName = asRecord(implementation.fields)?.[role];
-	const policy = asRecord(asRecord(implementation.binding)?.[role]);
-	const extensionValues = stringArray(policy, "values");
-	if (typeof fieldName !== "string" || extensionValues.length === 0) return;
-	const schemaValues = stringArrayAt(type, ["schema", "value", "properties", fieldName, "enum"]);
-	if (schemaValues.length > 0 && !sameStrings(extensionValues, schemaValues)) {
-		issues.push(`${role}.values contradicts schema enum for ${fieldName}`);
-	}
-
-	const extensionDefault = policy?.default;
-	const schemaDefault = valueAt(type, ["schema", "value", "properties", fieldName, "default"]);
-	const collectionDefault = valueAt(type, ["collection", "read_defaults", fieldName]);
-	if (
-		extensionDefault !== undefined &&
-		schemaDefault !== undefined &&
-		extensionDefault !== schemaDefault
-	) {
-		issues.push(`${role}.default contradicts the schema default for ${fieldName}`);
-	}
-	if (
-		extensionDefault !== undefined &&
-		collectionDefault !== undefined &&
-		extensionDefault !== collectionDefault
-	) {
-		issues.push(`${role}.default contradicts collection.read_defaults for ${fieldName}`);
-	}
+/** The copies of a status or priority list or default that still differ. */
+function vocabularyMirrorIssues(type: UnknownRecord, fieldRoles: UnknownRecord | null): string[] {
+	return taskNotesMdbaseTypeDisagreements(type).flatMap(({ list, part }) => {
+		const fieldName = typeof fieldRoles?.[list] === "string" ? fieldRoles[list] : list;
+		if (part === "schema-enum") return [`${list}.values contradicts schema enum for ${fieldName}`];
+		if (part === "schema-default") return [`${list}.default contradicts the schema default for ${fieldName}`];
+		if (part === "read-default") return [`${list}.default contradicts collection.read_defaults for ${fieldName}`];
+		// Earlier releases did not compare the other copies; keep accepting those types.
+		return [];
+	});
 }
 
 function validateUniqueStrings(values: string[], label: string, issues: string[]): void {
@@ -582,15 +581,22 @@ function mergeResolvedUserFields(
 		key: string;
 		type: UserMappedField["type"];
 		defaultValue?: UserMappedField["defaultValue"];
-	}>
+	}>,
+	properties: UnknownRecord
 ): UserMappedField[] {
 	return resolved.map((field) => {
 		// Saved keys may carry whitespace that settings load trims (or the type kept).
 		const previous = existing.find((candidate) => candidate.key.trim() === field.key.trim());
+		// The type carries the name every TaskNotes client shows; a type written
+		// before names were stored there leaves this device's name in place.
+		const title = asRecord(properties[field.key])?.title;
 		return {
 			...field,
 			id: previous?.id ?? field.id,
-			displayName: previous?.displayName ?? field.displayName,
+			displayName:
+				typeof title === "string" && title.trim()
+					? title.trim()
+					: (previous?.displayName ?? field.displayName),
 			...(previous?.autosuggestFilter
 				? { autosuggestFilter: previous.autosuggestFilter }
 				: {}),
@@ -606,10 +612,6 @@ function isTaskFilenameFormat(value: unknown): value is TaskNotesSettings["taskF
 		value === "uuid" ||
 		value === "custom"
 	);
-}
-
-function sameStrings(left: string[], right: string[]): boolean {
-	return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function taskNotesImplementation(type: UnknownRecord): UnknownRecord | null {

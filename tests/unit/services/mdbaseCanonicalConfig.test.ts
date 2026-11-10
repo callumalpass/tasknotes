@@ -11,6 +11,7 @@ import {
 	buildTaskNotesModelConfig,
 	mergeCanonicalTaskTypeDocument,
 	parseMdbaseTaskTypeDocument,
+	portableSettingsFingerprint,
 	validateCanonicalTaskType,
 } from "../../../src/services/mdbaseCanonicalConfig";
 
@@ -117,13 +118,57 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		);
 	});
 
-	it("rejects contradictory compatibility mirrors", () => {
-		const resources = buildTaskNotesMdbaseResources();
+	it("reads a status only the schema allows, and writes one list back", () => {
+		const settings = clone(DEFAULT_SETTINGS);
+		const resources = buildTaskNotesMdbaseResources({ modelConfig: buildTaskNotesModelConfig(settings) });
 		const type = clone(resources.type);
 		const schema = type.schema as {
 			value: { properties: Record<string, { enum?: string[] }> };
 		};
+		const before = [...(schema.value.properties.status.enum ?? [])];
+		schema.value.properties.status.enum = [...before, "blocked"];
+
+		expect(validateCanonicalTaskType(type)).toEqual({ valid: true });
+		applyCanonicalTaskTypeToSettings(settings, type);
+		expect(settings.customStatuses.map((status) => status.value)).toEqual([...before, "blocked"]);
+
+		const written = parseMdbaseTaskTypeDocument(
+			mergeCanonicalTaskTypeDocument(
+				`---\n${initialDocumentYaml(type)}---\n`,
+				buildTaskNotesMdbaseResources({ modelConfig: buildTaskNotesModelConfig(settings) })
+			)
+		).type;
+		const status = implementation(written).binding as { status: { values: string[] } };
+		expect(status.status.values).toEqual([...before, "blocked"]);
+		expect((written.schema as typeof schema).value.properties.status.enum).toEqual([...before, "blocked"]);
+	});
+
+	it("keeps a status the schema lost while the binding still describes it", () => {
+		const type = clone(buildTaskNotesMdbaseResources().type);
+		const schema = type.schema as {
+			value: { properties: Record<string, { enum?: string[] }> };
+		};
+		const before = [...(schema.value.properties.status.enum ?? [])];
 		schema.value.properties.status.enum = ["open", "done"];
+		const settings = clone(DEFAULT_SETTINGS);
+
+		expect(validateCanonicalTaskType(type)).toEqual({ valid: true });
+		applyCanonicalTaskTypeToSettings(settings, type);
+		expect(settings.customStatuses.map((status) => status.value)).toEqual(before);
+	});
+
+	it("rejects mirrors that cannot be made to agree", () => {
+		const type = clone(buildTaskNotesMdbaseResources().type);
+		const schema = type.schema as {
+			value: { properties: Record<string, { enum?: string[] }> };
+		};
+		schema.value.properties.status.enum = ["open", "done"];
+		// With every status completed there is no list a collection could hold.
+		const binding = implementation(type).binding as {
+			status: { values: string[]; completed_values: string[]; definitions: Array<{ is_completed: boolean }> };
+		};
+		binding.status.completed_values = [...binding.status.values];
+		binding.status.definitions.forEach((definition) => (definition.is_completed = true));
 
 		expect(validateCanonicalTaskType(type)).toEqual({
 			valid: false,
@@ -275,10 +320,44 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		]);
 	});
 
+	it("shares a custom field's name through the type", () => {
+		const settings = clone(DEFAULT_SETTINGS);
+		settings.userFields = [{ id: "effort-id", displayName: "Effort", key: "effort", type: "number" }];
+		const generate = () => buildTaskNotesMdbaseResources({ modelConfig: buildTaskNotesModelConfig(settings) });
+		const first = generate();
+		expect(titleOf(first.type, "effort")).toBe("Effort");
+
+		// Renamed here: the type follows, and the fingerprint notices.
+		const fingerprint = portableSettingsFingerprint(settings);
+		settings.userFields[0].displayName = "Effort level";
+		expect(portableSettingsFingerprint(settings)).not.toBe(fingerprint);
+		const renamed = parseMdbaseTaskTypeDocument(
+			mergeCanonicalTaskTypeDocument(first.typeDocument, generate())
+		).type;
+		expect(titleOf(renamed, "effort")).toBe("Effort level");
+
+		// Renamed by another client: this device follows the type.
+		const elsewhere = clone(renamed);
+		(elsewhere.schema as { value: { properties: Record<string, { title?: string }> } }).value.properties.effort.title = "Size";
+		applyCanonicalTaskTypeToSettings(settings, elsewhere);
+		expect(settings.userFields).toEqual([
+			expect.objectContaining({ id: "effort-id", displayName: "Size", key: "effort" }),
+		]);
+
+		// A type written before names were stored keeps this device's name.
+		delete (elsewhere.schema as { value: { properties: Record<string, { title?: string }> } }).value.properties.effort.title;
+		applyCanonicalTaskTypeToSettings(settings, elsewhere);
+		expect(settings.userFields[0].displayName).toBe("Size");
+	});
+
 });
 
 function initialDocumentYaml(value: Record<string, unknown>): string {
 	return `${YAML.stringify(value, { lineWidth: 0 }).trimEnd()}\n`;
+}
+
+function titleOf(type: Record<string, unknown>, field: string): unknown {
+	return (type.schema as { value: { properties: Record<string, { title?: string }> } }).value.properties[field]?.title;
 }
 
 function clone<T>(value: T): T {

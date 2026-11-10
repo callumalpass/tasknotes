@@ -109,7 +109,8 @@ export function preserveUnownedCanonicalSettings(existing: ObjectValue, generate
 		const prior = previousProperties[field];
 		if (prior && typeof prior === "object") {
 			const merged = { ...object(definition), ...object(prior) };
-			for (const key of ["type", "enum", "default"]) {
+			// A custom field's name is a plugin setting, stored as the property's title.
+			for (const key of ["type", "enum", "default", "title"]) {
 				if (object(definition)[key] !== undefined) merged[key] = object(definition)[key];
 			}
 			properties[field] = merged;

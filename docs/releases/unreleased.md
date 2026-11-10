@@ -34,6 +34,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- A custom field's name is now stored in the mdbase task type, as the property's `title`, so TaskNotes on another device and the TaskNotes app show the name you gave it. A name changed elsewhere is picked up here. Types written before this keep each device's own name until the type is next saved.
+- A status or priority added to the task type's schema by hand, or by another tool, is now read as a status instead of making TaskNotes report the type as inconsistent. TaskNotes reads every value either list names, and the next settings change writes one list to both places. A type whose lists cannot be reconciled is still reported and left alone.
+
 - Brought the TaskNotes settings record (`_settings/dev.tasknotes.md`) in line with the `mdbase.app-settings` contract. Opening a vault no longer creates the record or adds this device's settings to it, so one device can't change a collection's settings just by opening it. A setting missing from the record, or invalid in it, now takes its default instead of this device's saved value, and removing the record returns every setting to its default. The record is created on the first change you make, and upgrades still move your settings into it. See [Migrating to v5](https://tasknotes.dev/migration-v4-to-v5/#tasknotes-settings-record).
 
 - The calendar toolbar is quieter. Views are chosen from one dropdown instead of a row of six buttons, and Select tasks and Refresh are in the toolbar's "…" menu. Select tasks stays in the toolbar while you are selecting.

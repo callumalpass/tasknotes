@@ -3,7 +3,7 @@ import { type TFile } from "obsidian";
 import { createI18nService } from "../../i18n";
 import YAML from "yaml";
 import type TaskNotesPlugin from "../../main";
-import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, withCurrentTaskNotesContract } from "../mdbaseCanonicalConfig";
+import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, withAgreedVocabulary, withCurrentTaskNotesContract } from "../mdbaseCanonicalConfig";
 import { compileRecordSchema, validateTaskRecord, validationIssues } from "./contractValidation";
 import { taskExclusionExpression } from "./collectionConfig";
 import { recordDocument } from "./frontmatter";
@@ -48,7 +48,10 @@ export async function checkCollection(plugin: TaskNotesPlugin): Promise<Collecti
 		const validate = compileRecordSchema(schema);
 		const statusField = fields.status as string;
 		const dateCreatedField = fields.dateCreated as string;
-		const statusValues = object(object(implementation.binding).status).values as string[];
+		// The statuses TaskNotes reads from this type, which include one only its schema allows.
+		const agreed = withAgreedVocabulary(type);
+		const agreedImplementation = Array.isArray(agreed.implements) ? agreed.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
+		const statusValues = object(object((agreedImplementation ?? implementation).binding).status).values as string[];
 		const match = object(type.match);
 		try { assertSupportedMatch(type.match); }
 		catch (error) { throw new Error(`${provider.path}: ${String(error)}`); }
