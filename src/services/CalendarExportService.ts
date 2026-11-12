@@ -437,6 +437,26 @@ export class CalendarExportService {
 			};
 		}
 
+		// A task with only a due date is an event on that date, not a span
+		// ending at it.
+		if (!task.scheduled && task.due) {
+			if (!this.hasTimeComponent(task.due)) {
+				return {
+					startLine: `DTSTART;VALUE=DATE:${this.formatDateOnlyToICS(task.due)}`,
+					endLine: `DTEND;VALUE=DATE:${this.formatDateOnlyToICS(this.addDaysToDateString(task.due, 1))}`,
+				};
+			}
+			try {
+				const due = this.parseTaskDate(task.due);
+				return {
+					startLine: `DTSTART:${this.formatDateToICS(due)}`,
+					endLine: `DTEND:${this.formatDateToICS(new Date(due.getTime() + 60 * 60 * 1000))}`,
+				};
+			} catch {
+				// fall through to the range below
+			}
+		}
+
 		const { startICS, endICS } = this.getICSDateFormat(task, useScheduledAsDue, options);
 
 		return {
