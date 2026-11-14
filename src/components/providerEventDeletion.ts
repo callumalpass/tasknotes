@@ -24,8 +24,8 @@ export function getDeletingProvider(
 export interface DeleteProviderEventOptions {
 	plugin: TaskNotesPlugin;
 	icsEvent: ICSEvent;
-	confirm(options: ConfirmationModalOptions): Promise<boolean>;
-	notify(message: string): void;
+	confirm: (options: ConfirmationModalOptions) => Promise<boolean>;
+	notify: (message: string) => void;
 }
 
 /**
