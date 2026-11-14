@@ -4253,6 +4253,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "Atraso em milissegundos antes de mostrar sugestões"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirmButton"
+msgid "Delete"
+msgstr "Excluir"
+
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 #: src/modals/TaskEditModal.ts
@@ -4283,6 +4288,11 @@ msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
 msgid "Delete"
 msgstr "Excluir"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirm"
+msgid "Delete \"{title}\" from {provider}?"
+msgstr "Excluir “{title}” de {provider}?"
+
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteEntry"
@@ -4303,6 +4313,12 @@ msgstr "Excluir a conta do serviço de agenda"
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
 msgstr "Excluir registro"
+
+#: src/components/ICSEventContextMenu.ts
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent"
+msgid "Delete event"
+msgstr "Excluir evento"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
@@ -4365,6 +4381,11 @@ msgstr "Excluir tarefas"
 msgctxt "notices.audit.deleteConfirm"
 msgid "Delete tasks ({count})? This action cannot be undone."
 msgstr "Excluir tarefas ({count})? Esta ação não pode ser desfeita."
+
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
+msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
+msgstr "Excluir esta ocorrência de “{title}” de {provider}? As outras ocorrências serão mantidas."
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
@@ -5191,6 +5212,11 @@ msgctxt "keyboard key name"
 msgid "Esc"
 msgstr "Esc"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.notices.deleteSuccess"
+msgid "Event deleted"
+msgstr "Evento excluído"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
 msgid "Event details copied as Markdown"
@@ -5704,6 +5730,11 @@ msgstr "Não foi possível alternar a prioridade da tarefa"
 msgctxt "notices.commands.statusCycleFailed"
 msgid "Failed to cycle task status"
 msgstr "Não foi possível alternar o status da tarefa"
+
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.notices.deleteFailure"
+msgid "Failed to delete event: {message}"
+msgstr "Falha ao excluir o evento: {message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.deleteEvent display"
@@ -13506,6 +13537,7 @@ msgid "Untitled"
 msgstr "Sem título"
 
 #: src/components/ICSEventContextMenu.ts
+#: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.markdown.titleFallback"
 msgid "Untitled event"
 msgstr "Evento Sem Título"

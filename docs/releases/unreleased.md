@@ -32,6 +32,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2542) Google and Microsoft calendar events shown in TaskNotes calendar views can now be deleted from their right-click menu, after a confirmation. For a recurring event, only the clicked occurrence is deleted. The option is not shown for read-only calendars or ICS subscriptions. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#synchronization-behavior).
+  - Thanks to @iantierney for the request
+
 ## Changed
 
 - The Google Calendar settings now say more plainly that exporting tasks and timeblocks needs your own Google Cloud project. The connection page is now called **Advanced: use your own Google Cloud project**, and both export pages say what to connect, and where, until it is connected. See [Calendar Integration Setup](https://tasknotes.dev/calendar-setup/#google-calendar).
