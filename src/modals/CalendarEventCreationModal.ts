@@ -75,7 +75,8 @@ export class CalendarEventCreationModal extends Modal {
 
 		for (const provider of registry.getAllProviders()) {
 			for (const calendar of provider.getAvailableCalendars()) {
-				entries.push({ provider, calendar });
+				// A calendar shared for reading only cannot take a new event.
+				if (calendar.canWrite !== false) entries.push({ provider, calendar });
 			}
 		}
 		return entries;

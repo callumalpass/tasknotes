@@ -52,11 +52,15 @@ Enable **Disable calendar integrations on mobile** when you sync TaskNotes setti
 
 ### Setup Requirements
 
-OAuth integration requires creating your own OAuth application with Google and/or Microsoft. Initial setup takes approximately 15 minutes per provider.
+Google Calendar can be connected with **Sign in with Google**, which needs no setup. Connecting Microsoft Outlook, or Google Calendar with your own credentials, requires creating your own OAuth application. Initial setup takes approximately 15 minutes per provider.
 
 **Setup Guide**: See [Calendar Integration Setup](../calendar-setup.md) for detailed instructions on creating OAuth credentials with Google Cloud Console and Azure Portal.
 
 ### Google Calendar
+
+**Sign in with Google** opens Google's sign-in page in your browser, then asks for the code the browser shows. Once signed in, the page shows **Calendars shown** (up to five), **Refresh calendar events**, **Sign out on this device**, and **Access and account**, where you can disconnect Google Calendar on every device or delete your calendar service account. Events are read through the TaskNotes Calendar service and are not saved in your vault. See [Sign in with Google](../calendar-setup.md#sign-in-with-google).
+
+**Use your own Google application** holds the settings for your own OAuth credentials. Exporting tasks and timeblocks to Google Calendar needs this connection. Only one of the two can be in use at a time.
 
 Provide **Client ID** and **Client Secret** from Google Cloud Console, then use **Connect Google Calendar** to complete OAuth loopback authentication. **Disconnect** revokes account tokens while retaining the OAuth app credentials for reconnection. Use **Forget saved credentials** to remove the client ID and client secret.
 
@@ -64,7 +68,7 @@ The **Target calendar** setting used for exporting tasks to Google Calendar is a
 
 For timed task exports, **Default reminder** accepts one or more minute offsets separated by commas, such as `60, 1440`. All-day task exports use the target Google Calendar's default reminder settings.
 
-When connected, displays:
+When connected with your own Google application, displays:
 - Connected account email
 - Connection time
 - Last sync time
@@ -84,7 +88,8 @@ When connected, displays:
 - OAuth client credentials and account tokens are stored in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system
 - OAuth credentials and account tokens are not written to TaskNotes' `data.json`
 - Access tokens refresh automatically
-- Calendar data syncs directly between Obsidian and the calendar provider (no intermediary servers)
+- With your own OAuth application, calendar data syncs directly between Obsidian and the calendar provider (no intermediary servers)
+- With **Sign in with Google**, events pass through the TaskNotes Calendar service, which holds your Google access and does not store events. Obsidian Secret Storage holds only this device's session with the service. See the [privacy policy](../privacy.md#tasknotes-calendar-hosted-service)
 - Disconnect at any time to revoke account access; use **Forget saved credentials** to remove the OAuth app credentials
 
 ## Calendar subscriptions (ICS)

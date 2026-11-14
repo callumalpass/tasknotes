@@ -17,7 +17,7 @@ import {
 } from "./errors";
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
 import {
-	CalendarProvider,
+	GoogleCalendarSource,
 	findProviderCalendar,
 	PRIMARY_CALENDAR_ALIAS,
 	ProviderCalendar,
@@ -71,9 +71,7 @@ type GoogleCalendarEventPayload = Record<string, unknown> & {
  * Uses OAuth for authentication and provides calendar event access.
  * Implements the CalendarProvider interface for abstraction.
  */
-export class GoogleCalendarService extends CalendarProvider {
-	readonly providerId = "google";
-	readonly providerName = "Google Calendar";
+export class GoogleCalendarService extends GoogleCalendarSource {
 	private plugin: TaskNotesPlugin;
 	private oauthService: OAuthService;
 	private baseUrl = "https://www.googleapis.com/calendar/v3";

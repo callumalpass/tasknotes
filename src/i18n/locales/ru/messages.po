@@ -362,6 +362,11 @@ msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, one {Учёт времени для # задачи (всего {totalElapsed})} few {Учёт времени для # задач (всего {totalElapsed})} many {Учёт времени для # задач (всего {totalElapsed})} other {Учёт времени для # задач (всего {totalElapsed})}}"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.limit"
+msgid "{count, plural, one {You can show # calendar at a time.} other {You can show up to # calendars at a time.}}"
+msgstr "{count, plural, one {Одновременно можно показывать # календарь.} few {Одновременно можно показывать до # календарей.} many {Одновременно можно показывать до # календарей.} other {Одновременно можно показывать до # календаря.}}"
+
 #: src/bases/CalendarView.ts
 msgctxt "calendar collision count"
 msgid "{count} appointments"
@@ -768,6 +773,7 @@ msgid "{relatedTo, select, due {{direction, select, before {{duration} before du
 msgstr "{relatedTo, select, due {{direction, select, before {За {duration} до срока выполнения} after {Через {duration} после срока выполнения} other {За {duration} до срока выполнения}}} scheduled {{direction, select, before {За {duration} до запланированной даты} after {Через {duration} после запланированной даты} other {За {duration} до запланированной даты}}} other {{direction, select, before {За {duration} до запланированной даты} after {Через {duration} после запланированной даты} other {За {duration} до запланированной даты}}}}"
 
 #: src/services/GoogleCalendarService.ts
+#: src/services/HostedGoogleCalendarService.ts
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "calendar refresh throttling"
 msgid "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}"
@@ -1206,6 +1212,11 @@ msgstr "Для абсолютного напоминания используй�
 msgctxt "color name"
 msgid "Accent"
 msgstr "Акцент"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.account.name"
+msgid "Access and account"
+msgstr "Доступ и аккаунт"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -2240,6 +2251,7 @@ msgid "Calendar ID"
 msgstr "Идентификатор календаря"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.calendarIntegrationIsUnavailableOnThisDevice"
 msgid "Calendar integration is unavailable on this device."
 msgstr "Интеграция календаря недоступна на этом устройстве."
@@ -2331,6 +2343,16 @@ msgctxt "settings.native.calendarsIntegrations"
 msgid "Calendars & integrations"
 msgstr "Календари и интеграции"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: creating a calendar"
+msgid "Calendars can’t be created from TaskNotes. Create one in Google Calendar."
+msgstr "Создавать календари в TaskNotes нельзя. Создайте календарь в Google Календаре."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.heading"
+msgid "Calendars shown"
+msgstr "Показываемые календари"
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
@@ -2374,6 +2396,16 @@ msgstr "Отмена"
 msgctxt "modals/TextInputModal: TextInputModal cancelText"
 msgid "Cancel"
 msgstr "Отмена"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.cancel"
+msgid "Cancel"
+msgstr "Отмена"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.cancelName"
+msgid "Cancel sign-in"
+msgstr "Отменить вход"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentCycle"
@@ -3076,6 +3108,7 @@ msgid "Confirm"
 msgstr "Подтвердить"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.connect"
 msgid "Connect"
 msgstr "Подключить"
@@ -3085,15 +3118,25 @@ msgctxt "settings.native.connectAccount"
 msgid "Connect {name}"
 msgstr "Подключить {name}"
 
-#: src/settings/native/integrations.ts
-msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
-msgid "Connect a Google or Microsoft calendar using credentials from your own developer application."
-msgstr "Подключите календарь Google или Microsoft с помощью собственных учётных данных приложения OAuth."
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.connect.name"
+msgid "Connect Google Calendar"
+msgstr "Подключить Google Календарь"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.description"
+msgid "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this."
+msgstr "Подключитесь с учётными данными собственного проекта Google Cloud. Это нужно для экспорта задач и временных блоков в Google Календарь."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
 msgid "Connected"
 msgstr "Подключено"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.ownApplication"
+msgid "Connected with your own Google application"
+msgstr "Подключено через собственное приложение Google"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
@@ -3101,6 +3144,7 @@ msgid "Connected: {date}"
 msgstr "Подключено: {date}"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.connectionStatus"
 msgid "Connection status"
 msgstr "Состояние подключения"
@@ -3174,6 +3218,11 @@ msgstr "Контексты"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Contexts"
 msgstr "Контексты"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.confirmationCode.confirm"
+msgid "Continue"
+msgstr "Продолжить"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4241,6 +4290,16 @@ msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
 msgstr "Удалить {name}?"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.button"
+msgid "Delete account"
+msgstr "Удалить аккаунт"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.name"
+msgid "Delete calendar service account"
+msgstr "Удалить аккаунт службы календаря"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
@@ -4327,6 +4386,16 @@ msgstr "Удалить веб-хук"
 msgctxt "settings.native.deleteWebhook"
 msgid "Delete webhook?"
 msgstr "Удалить вебхук?"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.confirmTitle"
+msgid "Delete your calendar service account?"
+msgstr "Удалить ваш аккаунт службы календаря?"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.description"
+msgid "Deletes what the TaskNotes calendar service holds about you, including its access to Google Calendar."
+msgstr "Удаляет всё, что служба календаря TaskNotes хранит о вас, включая её доступ к Google Календарю."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryStatus"
@@ -4436,6 +4505,7 @@ msgid "Discard changes"
 msgstr "Отменить изменения"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.disconnect"
 msgid "Disconnect"
 msgstr "Отключить"
@@ -4444,6 +4514,16 @@ msgstr "Отключить"
 msgctxt "settings.native.disconnectAccount"
 msgid "Disconnect {name}"
 msgstr "Отключить {name}"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.name"
+msgid "Disconnect Google Calendar"
+msgstr "Отключить Google Календарь"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.confirmTitle"
+msgid "Disconnect Google Calendar?"
+msgstr "Отключить Google Календарь?"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.disconnect display"
@@ -5052,6 +5132,11 @@ msgctxt "settings.features.nlp.enterToSubmit.name"
 msgid "Enter saves task"
 msgstr "Enter сохраняет задачу"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.confirmationCode.title"
+msgid "Enter the code shown in your browser"
+msgstr "Введите код, показанный в браузере"
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.enterCode"
 msgid "Enter this code when prompted:"
@@ -5181,6 +5266,11 @@ msgstr "Каждые 3 дня (после завершения)"
 msgctxt "modals.task.recurrence.everyThreeMonths"
 msgid "Every 3 months"
 msgstr "Каждые 3 месяца"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.confirmMessage"
+msgid "Every device is signed out and the service’s access to Google Calendar is withdrawn. Your events in Google Calendar are not changed. This cannot be undone."
+msgstr "На всех устройствах будет выполнен выход, а доступ службы к Google Календарю будет отозван. Ваши события в Google Календаре не изменятся. Это действие нельзя отменить."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
@@ -5391,6 +5481,11 @@ msgstr "Экспортировать представления V3"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "Экспортировано {count} сохранённых представлений в {filePath}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.description"
+msgid "Exporting to Google Calendar needs your own Google application, connected under Google Calendar."
+msgstr "Для экспорта в Google Календарь нужно собственное приложение Google, подключённое в разделе Google Календарь."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -6378,6 +6473,11 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOr
 msgid "Generated link text is too long."
 msgstr "Текст созданной ссылки слишком длинный."
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.connect.description"
+msgid "Give TaskNotes access to your Google Calendar again."
+msgstr "Снова предоставьте TaskNotes доступ к вашему Google Календарю."
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.hints.today"
 msgid "Go to today"
@@ -6418,6 +6518,16 @@ msgctxt "settings.integrations.googleCalendarExport.notices.connectionExpired"
 msgid "Google Calendar connection expired. Please reconnect in Settings > Integrations."
 msgstr "Срок действия подключения к Google Календарю истёк. Подключитесь заново в разделе Настройки > Интеграции."
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: change refused"
+msgid "Google Calendar didn’t accept this change."
+msgstr "Google Календарь не принял это изменение."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.description"
+msgid "Google Calendar events stop showing here. Other devices stay signed in."
+msgstr "События Google Календаря перестанут показываться здесь. На других устройствах вход сохранится."
+
 #: src/services/TaskCalendarSyncService.ts
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
@@ -6428,6 +6538,26 @@ msgstr "Экспорт в Google Календарь не включен или �
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabled"
 msgid "Google Calendar export is not enabled. Configure it in Settings > Integrations."
 msgstr "Экспорт в Google Календарь не включен. Настройте его в Настройки > Интеграции."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: rate limited"
+msgid "Google Calendar is busy. Try again shortly."
+msgstr "Google Календарь перегружен. Повторите попытку чуть позже."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: service unavailable"
+msgid "Google Calendar is unavailable right now. Try again."
+msgstr "Google Календарь сейчас недоступен. Повторите попытку."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.reconnect"
+msgid "Google Calendar needs reconnecting."
+msgstr "Google Календарь нужно подключить заново."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: reconnect required"
+msgid "Google Calendar needs reconnecting. Reconnect it in TaskNotes settings."
+msgstr "Google Календарь нужно подключить заново. Сделайте это в настройках TaskNotes."
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
@@ -6448,6 +6578,11 @@ msgstr "Целевой календарь Google Календаря не нас�
 msgctxt "views.basesCalendar.settings.groups.googleCalendars"
 msgid "Google calendars"
 msgstr "Календари Google"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization failed"
+msgid "Google didn’t complete the authorization. Try again."
+msgstr "Google не завершил авторизацию. Повторите попытку."
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakPrompt"
@@ -6986,6 +7121,11 @@ msgstr "Последний день месяца"
 msgctxt "settings.integrations.autoExport.status.lastExport"
 msgid "Last export: {time}"
 msgstr "Последний экспорт: {time}"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.lastRefreshed"
+msgid "Last refreshed: {date}"
+msgstr "Последнее обновление: {date}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
@@ -8252,6 +8392,11 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "Обычный"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.name"
+msgid "Not available while signed in with Google"
+msgstr "Недоступно, пока выполнен вход через Google"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8263,6 +8408,7 @@ msgid "Not completed"
 msgstr "Не завершено"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.notConnected"
 msgid "Not connected"
 msgstr "Не подключено"
@@ -9461,6 +9607,11 @@ msgctxt "Bases data inspector"
 msgid "Raw data structure"
 msgstr "Структура исходных данных"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.readOnly"
+msgid "Read only"
+msgstr "Только чтение"
+
 #: src/services/PomodoroService.ts
 msgctxt "services/PomodoroService: PomodoroService.completePomodoro display"
 msgid "Ready for the next pomodoro?"
@@ -9583,6 +9734,7 @@ msgid "Refresh cache"
 msgstr "Обновить кэш"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.refreshCalendarEvents"
 msgid "Refresh calendar events"
 msgstr "Обновить события календаря"
@@ -9598,6 +9750,7 @@ msgid "Refresh interval (minutes)"
 msgstr "Интервал обновления (минуты)"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.integrations.subscriptionsList.actions.refreshNow"
 msgid "Refresh now"
 msgstr "Обновить сейчас"
@@ -10743,10 +10896,60 @@ msgctxt "settings.native.showWhenEditingTasks"
 msgid "Show when editing tasks"
 msgstr "Показывать при редактировании задач"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.description"
+msgid "Shows your Google Calendar events in TaskNotes and lets you change them. Events come through the TaskNotes calendar service and aren’t saved in your vault."
+msgstr "Показывает события вашего Google Календаря в TaskNotes и позволяет их изменять. События поступают через службу календаря TaskNotes и не сохраняются в вашем хранилище."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.button"
+msgid "Sign in"
+msgstr "Войти"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.name"
+msgid "Sign in with Google"
+msgstr "Войти через Google"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.description"
+msgid "Sign in with Google there, then enter the code it shows you here."
+msgstr "Войдите через Google в браузере, затем введите здесь код, который он покажет."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
+msgid "Sign in with Google, or connect a Google or Microsoft calendar using credentials from your own developer application."
+msgstr "Войдите через Google или подключите календарь Google или Microsoft с помощью собственных учётных данных приложения OAuth."
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
 msgstr "Войдите в свой аккаунт Google и предоставьте доступ"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.button"
+msgid "Sign out"
+msgstr "Выйти"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.signOutFirst"
+msgid "Sign out of Google Calendar before connecting your own Google application."
+msgstr "Выйдите из Google Календаря, прежде чем подключать собственное приложение Google."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.name"
+msgid "Sign out on this device"
+msgstr "Выйти на этом устройстве"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.signedIn"
+msgid "Signed in with Google"
+msgstr "Выполнен вход через Google"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.signedInOnly"
+msgid "Signed in. Google Calendar isn’t connected yet."
+msgstr "Вход выполнен. Google Календарь ещё не подключён."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecret"
@@ -11904,6 +12107,11 @@ msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
 msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 msgstr "TaskNotes обновил метаданные mdbase до v0.3. Файлы задач не изменены. Прежние метаданные сохранены в {backupFolder}."
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.confirmMessage"
+msgid "TaskNotes will stop showing Google Calendar events on every device where you signed in with Google. Your events in Google Calendar are not changed."
+msgstr "TaskNotes перестанет показывать события Google Календаря на всех устройствах, где вы вошли через Google. Ваши события в Google Календаре не изменятся."
+
 #: src/views/stats/summary.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
@@ -11965,6 +12173,11 @@ msgctxt "settings.taskProperties.customUserFields.types.text"
 msgid "Text"
 msgstr "Текст"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: confirmation code rejected"
+msgid "That confirmation code wasn’t accepted, or it expired. Start again to get a new one."
+msgstr "Этот код подтверждения не принят или срок его действия истёк. Начните заново, чтобы получить новый."
+
 #: src/bases/recurringStatusMove.ts
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
@@ -11974,6 +12187,16 @@ msgstr "Этот повтор уже выполнен, пропущен или �
 msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
 msgid "the {position} {weekday}"
 msgstr "{position} {weekday}"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization link refused"
+msgid "The authorization link wasn’t valid, so it wasn’t opened."
+msgstr "Ссылка для авторизации недействительна, поэтому она не была открыта."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: browser not opened"
+msgid "The browser couldn’t be opened to sign in with Google."
+msgstr "Не удалось открыть браузер для входа через Google."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11999,6 +12222,11 @@ msgstr "Цвет по умолчанию, используемый при соз
 msgctxt "settings.general.taskIdentification.taskProperty.description"
 msgid "The frontmatter property name (e.g., \"category\")"
 msgstr "Имя свойства frontmatter (например, \"категория\")"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization expired"
+msgid "The Google authorization expired. Try again."
+msgstr "Срок авторизации Google истёк. Повторите попытку."
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
@@ -12029,6 +12257,21 @@ msgstr "третий"
 msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "Это действие нельзя отменить."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: too many events"
+msgid "This calendar has too many events to show."
+msgstr "В этом календаре слишком много событий для показа."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: event changed elsewhere"
+msgid "This event changed in Google Calendar. The latest version has been loaded; try again."
+msgstr "Это событие изменилось в Google Календаре. Загружена последняя версия; повторите попытку."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: event missing"
+msgid "This event no longer exists in Google Calendar."
+msgstr "Этого события больше нет в Google Календаре."
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
@@ -13426,6 +13669,11 @@ msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "Используйте этот секрет для проверки данных в принимающем приложении."
 
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.name"
+msgid "Use your own Google application"
+msgstr "Использовать собственное приложение Google"
+
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
@@ -13515,6 +13763,11 @@ msgstr "Громкость звуков напоминаний задач (0-100
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
 msgstr "Ожидание авторизации..."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.name"
+msgid "Waiting for you to finish in your browser"
+msgstr "Ожидание завершения в браузере"
 
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.basesMigration.title"
@@ -13814,6 +14067,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
 msgid "Which task date should trigger calendar event creation."
 msgstr "Какая дата задачи должна вызывать создание события."
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.account.description"
+msgid "Withdraw Google Calendar access or delete your calendar service account."
+msgstr "Отзовите доступ к Google Календарю или удалите аккаунт службы календаря."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.description"
+msgid "Withdraws TaskNotes’ access to Google Calendar on every device."
+msgstr "Отзывает доступ TaskNotes к Google Календарю на всех устройствах."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
@@ -13904,6 +14167,11 @@ msgstr "Ваш код:"
 msgctxt "settings.native.yourCustomFieldLayoutWillBeReplacedWithThe"
 msgid "Your custom field layout will be replaced with the default layout."
 msgstr "Пользовательская компоновка полей будет заменена стандартной."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: session ended"
+msgid "Your Google Calendar sign-in ended. Sign in again in TaskNotes settings."
+msgstr "Вход в Google Календарь завершён. Войдите снова в настройках TaskNotes."
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

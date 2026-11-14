@@ -362,6 +362,11 @@ msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, other {正在跟踪 # 个任务（总计 {totalElapsed}）}}"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.limit"
+msgid "{count, plural, one {You can show # calendar at a time.} other {You can show up to # calendars at a time.}}"
+msgstr "{count, plural, other {最多可同时显示 # 个日历。}}"
+
 #: src/bases/CalendarView.ts
 msgctxt "calendar collision count"
 msgid "{count} appointments"
@@ -768,6 +773,7 @@ msgid "{relatedTo, select, due {{direction, select, before {{duration} before du
 msgstr "{relatedTo, select, due {{direction, select, before {截止日期前 {duration}} after {截止日期后 {duration}} other {截止日期前 {duration}}}} scheduled {{direction, select, before {计划日期前 {duration}} after {计划日期后 {duration}} other {计划日期前 {duration}}}} other {{direction, select, before {计划日期前 {duration}} after {计划日期后 {duration}} other {计划日期前 {duration}}}}}"
 
 #: src/services/GoogleCalendarService.ts
+#: src/services/HostedGoogleCalendarService.ts
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "calendar refresh throttling"
 msgid "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}"
@@ -1203,6 +1209,11 @@ msgstr "绝对时间提醒必须使用 at:YYYY-MM-DDTHH:MM 或完整的 ISO 日�
 msgctxt "color name"
 msgid "Accent"
 msgstr "强调色"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.account.name"
+msgid "Access and account"
+msgstr "访问权限与账号"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -2237,6 +2248,7 @@ msgid "Calendar ID"
 msgstr "日历 ID"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.calendarIntegrationIsUnavailableOnThisDevice"
 msgid "Calendar integration is unavailable on this device."
 msgstr "此设备无法使用日历集成。"
@@ -2328,6 +2340,16 @@ msgctxt "settings.native.calendarsIntegrations"
 msgid "Calendars & integrations"
 msgstr "日历与集成"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: creating a calendar"
+msgid "Calendars can’t be created from TaskNotes. Create one in Google Calendar."
+msgstr "无法在 TaskNotes 中创建日历。请在 Google 日历中创建。"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.heading"
+msgid "Calendars shown"
+msgstr "显示的日历"
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
@@ -2371,6 +2393,16 @@ msgstr "取消"
 msgctxt "modals/TextInputModal: TextInputModal cancelText"
 msgid "Cancel"
 msgstr "取消"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.cancel"
+msgid "Cancel"
+msgstr "取消"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.cancelName"
+msgid "Cancel sign-in"
+msgstr "取消登录"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentCycle"
@@ -3073,6 +3105,7 @@ msgid "Confirm"
 msgstr "确认"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.connect"
 msgid "Connect"
 msgstr "连接"
@@ -3082,15 +3115,25 @@ msgctxt "settings.native.connectAccount"
 msgid "Connect {name}"
 msgstr "连接 {name}"
 
-#: src/settings/native/integrations.ts
-msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
-msgid "Connect a Google or Microsoft calendar using credentials from your own developer application."
-msgstr "使用您自己的 OAuth 应用凭据连接 Google 或 Microsoft 日历。"
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.connect.name"
+msgid "Connect Google Calendar"
+msgstr "连接 Google 日历"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.description"
+msgid "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this."
+msgstr "使用你自己的 Google Cloud 项目凭据进行连接。将任务和时间块导出到 Google 日历需要这种连接方式。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
 msgid "Connected"
 msgstr "已连接"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.ownApplication"
+msgid "Connected with your own Google application"
+msgstr "已通过你自己的 Google 应用连接"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
@@ -3098,6 +3141,7 @@ msgid "Connected: {date}"
 msgstr "连接时间：{date}"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.connectionStatus"
 msgid "Connection status"
 msgstr "连接状态"
@@ -3171,6 +3215,11 @@ msgstr "上下文"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Contexts"
 msgstr "上下文"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.confirmationCode.confirm"
+msgid "Continue"
+msgstr "继续"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4238,6 +4287,16 @@ msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
 msgstr "删除 {name}？"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.button"
+msgid "Delete account"
+msgstr "删除账号"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.name"
+msgid "Delete calendar service account"
+msgstr "删除日历服务账号"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
@@ -4324,6 +4383,16 @@ msgstr "删除Webhook"
 msgctxt "settings.native.deleteWebhook"
 msgid "Delete webhook?"
 msgstr "删除 Webhook？"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.confirmTitle"
+msgid "Delete your calendar service account?"
+msgstr "要删除你的日历服务账号吗？"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.description"
+msgid "Deletes what the TaskNotes calendar service holds about you, including its access to Google Calendar."
+msgstr "删除 TaskNotes 日历服务保存的关于你的信息，包括它对 Google 日历的访问权限。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryStatus"
@@ -4433,6 +4502,7 @@ msgid "Discard changes"
 msgstr "放弃更改"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.disconnect"
 msgid "Disconnect"
 msgstr "断开连接"
@@ -4441,6 +4511,16 @@ msgstr "断开连接"
 msgctxt "settings.native.disconnectAccount"
 msgid "Disconnect {name}"
 msgstr "断开 {name}"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.name"
+msgid "Disconnect Google Calendar"
+msgstr "断开 Google 日历"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.confirmTitle"
+msgid "Disconnect Google Calendar?"
+msgstr "要断开 Google 日历吗？"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.disconnect display"
@@ -5049,6 +5129,11 @@ msgctxt "settings.features.nlp.enterToSubmit.name"
 msgid "Enter saves task"
 msgstr "按 Enter 保存任务"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.confirmationCode.title"
+msgid "Enter the code shown in your browser"
+msgstr "输入浏览器中显示的验证码"
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.enterCode"
 msgid "Enter this code when prompted:"
@@ -5178,6 +5263,11 @@ msgstr "每3天（完成后）"
 msgctxt "modals.task.recurrence.everyThreeMonths"
 msgid "Every 3 months"
 msgstr "每3个月"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.confirmMessage"
+msgid "Every device is signed out and the service’s access to Google Calendar is withdrawn. Your events in Google Calendar are not changed. This cannot be undone."
+msgstr "所有设备都会退出登录，并撤销该服务对 Google 日历的访问权限。你在 Google 日历中的日程不会改变。此操作无法撤销。"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
@@ -5388,6 +5478,11 @@ msgstr "导出 v3 视图"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "已将 {count} 个已保存视图导出到 {filePath}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.description"
+msgid "Exporting to Google Calendar needs your own Google application, connected under Google Calendar."
+msgstr "导出到 Google 日历需要在“Google 日历”下连接你自己的 Google 应用。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -6375,6 +6470,11 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOr
 msgid "Generated link text is too long."
 msgstr "生成的链接文本过长。"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.connect.description"
+msgid "Give TaskNotes access to your Google Calendar again."
+msgstr "重新授权 TaskNotes 访问你的 Google 日历。"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.hints.today"
 msgid "Go to today"
@@ -6415,6 +6515,16 @@ msgctxt "settings.integrations.googleCalendarExport.notices.connectionExpired"
 msgid "Google Calendar connection expired. Please reconnect in Settings > Integrations."
 msgstr "Google 日历连接已过期。请在“设置 > 集成”中重新连接。"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: change refused"
+msgid "Google Calendar didn’t accept this change."
+msgstr "Google 日历未接受此更改。"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.description"
+msgid "Google Calendar events stop showing here. Other devices stay signed in."
+msgstr "此设备将不再显示 Google 日历的日程。其他设备保持登录状态。"
+
 #: src/services/TaskCalendarSyncService.ts
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
@@ -6425,6 +6535,26 @@ msgstr "Google 日历导出未启用或未配置"
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabled"
 msgid "Google Calendar export is not enabled. Configure it in Settings > Integrations."
 msgstr "Google 日历导出未启用。请在设置 > 集成中配置。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: rate limited"
+msgid "Google Calendar is busy. Try again shortly."
+msgstr "Google 日历繁忙，请稍后重试。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: service unavailable"
+msgid "Google Calendar is unavailable right now. Try again."
+msgstr "Google 日历暂时不可用，请重试。"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.reconnect"
+msgid "Google Calendar needs reconnecting."
+msgstr "需要重新连接 Google 日历。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: reconnect required"
+msgid "Google Calendar needs reconnecting. Reconnect it in TaskNotes settings."
+msgstr "需要重新连接 Google 日历。请在 TaskNotes 设置中重新连接。"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
@@ -6445,6 +6575,11 @@ msgstr "尚未配置 Google Calendar 的目标日历"
 msgctxt "views.basesCalendar.settings.groups.googleCalendars"
 msgid "Google calendars"
 msgstr "Google 日历"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization failed"
+msgid "Google didn’t complete the authorization. Try again."
+msgstr "Google 未完成授权，请重试。"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakPrompt"
@@ -6983,6 +7118,11 @@ msgstr "每月最后一天"
 msgctxt "settings.integrations.autoExport.status.lastExport"
 msgid "Last export: {time}"
 msgstr "上次导出：{time}"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.lastRefreshed"
+msgid "Last refreshed: {date}"
+msgstr "上次刷新：{date}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
@@ -8249,6 +8389,11 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "无"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.name"
+msgid "Not available while signed in with Google"
+msgstr "使用 Google 账号登录期间不可用"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8260,6 +8405,7 @@ msgid "Not completed"
 msgstr "未受阻"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.notConnected"
 msgid "Not connected"
 msgstr "未连接"
@@ -9458,6 +9604,11 @@ msgctxt "Bases data inspector"
 msgid "Raw data structure"
 msgstr "原始数据结构"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.readOnly"
+msgid "Read only"
+msgstr "只读"
+
 #: src/services/PomodoroService.ts
 msgctxt "services/PomodoroService: PomodoroService.completePomodoro display"
 msgid "Ready for the next pomodoro?"
@@ -9580,6 +9731,7 @@ msgid "Refresh cache"
 msgstr "刷新缓存"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.refreshCalendarEvents"
 msgid "Refresh calendar events"
 msgstr "刷新日历事件"
@@ -9595,6 +9747,7 @@ msgid "Refresh interval (minutes)"
 msgstr "刷新间隔（分钟）"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.integrations.subscriptionsList.actions.refreshNow"
 msgid "Refresh now"
 msgstr "立即刷新"
@@ -10740,10 +10893,60 @@ msgctxt "settings.native.showWhenEditingTasks"
 msgid "Show when editing tasks"
 msgstr "编辑任务时显示"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.description"
+msgid "Shows your Google Calendar events in TaskNotes and lets you change them. Events come through the TaskNotes calendar service and aren’t saved in your vault."
+msgstr "在 TaskNotes 中显示你的 Google 日历日程，并允许你修改。日程通过 TaskNotes 日历服务获取，不会保存到你的仓库。"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.button"
+msgid "Sign in"
+msgstr "登录"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.name"
+msgid "Sign in with Google"
+msgstr "使用 Google 账号登录"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.description"
+msgid "Sign in with Google there, then enter the code it shows you here."
+msgstr "在浏览器中使用 Google 账号登录，然后在此输入它显示的验证码。"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
+msgid "Sign in with Google, or connect a Google or Microsoft calendar using credentials from your own developer application."
+msgstr "使用 Google 账号登录，或使用您自己的 OAuth 应用凭据连接 Google 或 Microsoft 日历。"
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
 msgstr "使用你的 Google 帐户登录并授予访问权限"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.button"
+msgid "Sign out"
+msgstr "退出登录"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.signOutFirst"
+msgid "Sign out of Google Calendar before connecting your own Google application."
+msgstr "连接你自己的 Google 应用之前，请先退出 Google 日历。"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.name"
+msgid "Sign out on this device"
+msgstr "在此设备上退出登录"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.signedIn"
+msgid "Signed in with Google"
+msgstr "已使用 Google 账号登录"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.signedInOnly"
+msgid "Signed in. Google Calendar isn’t connected yet."
+msgstr "已登录。尚未连接 Google 日历。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecret"
@@ -11901,6 +12104,11 @@ msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
 msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 msgstr "TaskNotes 已将 mdbase 元数据更新到 v0.3。任务文件未更改。先前的元数据已备份到 {backupFolder}。"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.confirmMessage"
+msgid "TaskNotes will stop showing Google Calendar events on every device where you signed in with Google. Your events in Google Calendar are not changed."
+msgstr "在所有使用 Google 账号登录的设备上，TaskNotes 都将不再显示 Google 日历的日程。你在 Google 日历中的日程不会改变。"
+
 #: src/views/stats/summary.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
@@ -11962,6 +12170,11 @@ msgctxt "settings.taskProperties.customUserFields.types.text"
 msgid "Text"
 msgstr "文本"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: confirmation code rejected"
+msgid "That confirmation code wasn’t accepted, or it expired. Start again to get a new one."
+msgstr "验证码未被接受或已过期。请重新开始以获取新的验证码。"
+
 #: src/bases/recurringStatusMove.ts
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
@@ -11971,6 +12184,16 @@ msgstr "此次重复已完成、已跳过或已重新安排。"
 msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
 msgid "the {position} {weekday}"
 msgstr "{position} {weekday}"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization link refused"
+msgid "The authorization link wasn’t valid, so it wasn’t opened."
+msgstr "授权链接无效，因此未打开。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: browser not opened"
+msgid "The browser couldn’t be opened to sign in with Google."
+msgstr "无法打开浏览器以使用 Google 账号登录。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11996,6 +12219,11 @@ msgstr "创建新时间块时使用的默认颜色"
 msgctxt "settings.general.taskIdentification.taskProperty.description"
 msgid "The frontmatter property name (e.g., \"category\")"
 msgstr "前置元数据中的属性名（例如 \"category\"）"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization expired"
+msgid "The Google authorization expired. Try again."
+msgstr "Google 授权已过期，请重试。"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
@@ -12026,6 +12254,21 @@ msgstr "第三"
 msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "此操作无法撤销。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: too many events"
+msgid "This calendar has too many events to show."
+msgstr "此日历的日程过多，无法显示。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: event changed elsewhere"
+msgid "This event changed in Google Calendar. The latest version has been loaded; try again."
+msgstr "此日程已在 Google 日历中更改。已加载最新版本，请重试。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: event missing"
+msgid "This event no longer exists in Google Calendar."
+msgstr "此日程在 Google 日历中已不存在。"
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
@@ -13423,6 +13666,11 @@ msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "使用此密钥在接收应用中验证数据载荷。"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.name"
+msgid "Use your own Google application"
+msgstr "使用你自己的 Google 应用"
+
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
@@ -13512,6 +13760,11 @@ msgstr "任务提醒声音音量 (0-100)"
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
 msgstr "等待授权中..."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.name"
+msgid "Waiting for you to finish in your browser"
+msgstr "正在等待你在浏览器中完成操作"
 
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.basesMigration.title"
@@ -13811,6 +14064,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
 msgid "Which task date should trigger calendar event creation."
 msgstr "哪个任务日期应触发日历事件创建。"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.account.description"
+msgid "Withdraw Google Calendar access or delete your calendar service account."
+msgstr "撤销对 Google 日历的访问权限，或删除你的日历服务账号。"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.description"
+msgid "Withdraws TaskNotes’ access to Google Calendar on every device."
+msgstr "在所有设备上撤销 TaskNotes 对 Google 日历的访问权限。"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
@@ -13901,6 +14164,11 @@ msgstr "你的代码："
 msgctxt "settings.native.yourCustomFieldLayoutWillBeReplacedWithThe"
 msgid "Your custom field layout will be replaced with the default layout."
 msgstr "自定义字段布局将被默认布局替换。"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: session ended"
+msgid "Your Google Calendar sign-in ended. Sign in again in TaskNotes settings."
+msgstr "你的 Google 日历登录已结束。请在 TaskNotes 设置中重新登录。"
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

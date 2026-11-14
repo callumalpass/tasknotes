@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- Added **Sign in with Google** for Google Calendar. Sign in under **Settings → TaskNotes → Calendars & integrations → Google Calendar** to see, create and edit your Google Calendar events without setting up a Google Cloud project. Events are read through the TaskNotes Calendar service and are not saved in your vault. Connecting with your own credentials is still there, under **Use your own Google application**, and exporting tasks and timeblocks to Google Calendar still needs it. See [Calendar Integration Setup](https://tasknotes.dev/calendar-setup/#sign-in-with-google).
+
 ## Changed
 
 - A custom field's name is now stored in the mdbase task type, as the property's `title`, so TaskNotes on another device and the TaskNotes app show the name you gave it. A name changed elsewhere is picked up here. Types written before this keep each device's own name until the type is next saved.

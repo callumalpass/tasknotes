@@ -49,7 +49,9 @@ import { ICSNoteService } from "../services/ICSNoteService";
 import { OAuthService } from "../services/OAuthService";
 import { GoogleCalendarService } from "../services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "../services/MicrosoftCalendarService";
-import { CalendarProviderRegistry } from "../services/CalendarProvider";
+import { CalendarProviderRegistry, useGoogleCalendarSource } from "../services/CalendarProvider";
+import { HostedGoogleCalendarService } from "../services/HostedGoogleCalendarService";
+import { createCalendarServiceClient } from "../services/calendarServiceHost";
 import { PomodoroService } from "../services/PomodoroService";
 import { AutoExportService } from "../services/AutoExportService";
 import { TaskFileLifecycleReconciliationService } from "../services/TaskFileLifecycleReconciliationService";
@@ -254,10 +256,14 @@ export function registerRibbonIcons(plugin: TaskNotesPlugin): void {
 
 export function initializeCalendarProviders(plugin: TaskNotesPlugin): void {
 	plugin.oauthService = new OAuthService(plugin, plugin.oauthSecretStore);
-	plugin.googleCalendarService = new GoogleCalendarService(plugin, plugin.oauthService);
+	plugin.ownGoogleCalendarService = new GoogleCalendarService(plugin, plugin.oauthService);
+	plugin.hostedGoogleCalendarService = new HostedGoogleCalendarService(
+		plugin,
+		createCalendarServiceClient(plugin.app)
+	);
 	plugin.microsoftCalendarService = new MicrosoftCalendarService(plugin, plugin.oauthService);
 	plugin.calendarProviderRegistry = new CalendarProviderRegistry();
-	plugin.calendarProviderRegistry.register(plugin.googleCalendarService);
+	useGoogleCalendarSource(plugin);
 	plugin.calendarProviderRegistry.register(plugin.microsoftCalendarService);
 }
 
@@ -472,14 +478,20 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 				);
 
 				await runLazyInitStep("google-calendar", async () => {
-					plugin.googleCalendarService.on("data-changed", () => {
-						plugin.notifyDataChanged(undefined, false, true);
+					const changed = () => plugin.notifyDataChanged(undefined, false, true);
+					plugin.ownGoogleCalendarService.on("data-changed", changed);
+					plugin.hostedGoogleCalendarService.on("data-changed", changed);
+					plugin.hostedGoogleCalendarService.on("session-changed", () => {
+						if (useGoogleCalendarSource(plugin)) changed();
 					});
-					await plugin.googleCalendarService.initialize();
+					await plugin.hostedGoogleCalendarService.initialize();
+					await plugin.ownGoogleCalendarService.initialize();
 
+					// Writing tasks and timeblocks into Google Calendar stays with the
+					// person's own Google application; the calendar service does not do it.
 					plugin.taskCalendarSyncService = new (
 						await import("../services/TaskCalendarSyncService")
-					).TaskCalendarSyncService(plugin, plugin.googleCalendarService);
+					).TaskCalendarSyncService(plugin, plugin.ownGoogleCalendarService);
 					await plugin.taskCalendarSyncService.initializeExternalFileReconciliation();
 					plugin.taskCalendarSyncService.timeblocks.initialize();
 					plugin.taskCalendarSyncService.timeblocks.registerVaultEvents();

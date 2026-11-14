@@ -1,6 +1,12 @@
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "../../i18n";
-import { Notice, Platform, type SettingDefinitionItem, type SettingDefinitionPage } from "obsidian";
+import {
+	Notice,
+	Platform,
+	type SettingDefinition,
+	type SettingDefinitionItem,
+	type SettingDefinitionPage,
+} from "obsidian";
 import { SettingsContext } from "./SettingsContext";
 import { formatDateLabel } from "../../utils/dateUtils";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
@@ -29,10 +35,16 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		});
 	const formatExportTime = (date: Date | null | undefined): string =>
 		date ? formatDateLabel(date, plugin.settings, undefined, true) : "—";
+	// Signing in with Google reads and edits events; it does not write tasks into a calendar.
+	const exportNeedsOwnApplication: SettingDefinition = {
+		name: ctx.t(msg({ message: "Not available while signed in with Google", context: "settings.calendarService.export.name" })),
+		desc: ctx.t(msg({ message: "Exporting to Google Calendar needs your own Google application, connected under Google Calendar.", context: "settings.calendarService.export.description" })),
+		visible: () => plugin.hostedGoogleCalendarService?.isSignedIn() === true,
+	};
 	return [
 		{
 			name: ctx.t(msg({ message: "Calendar setup guide", context: "settings.native.calendarSetupGuide" })),
-			desc: ctx.t(msg({ message: "Connect a Google or Microsoft calendar using credentials from your own developer application.", context: "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn" })),
+			desc: ctx.t(msg({ message: "Sign in with Google, or connect a Google or Microsoft calendar using credentials from your own developer application.", context: "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn" })),
 			action: () =>
 				window.open("https://callumalpass.github.io/tasknotes/calendar-setup", "_blank"),
 		},
@@ -131,6 +143,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			name: t(msg({ message: "Export tasks to Google Calendar", context: "settings.integrations.googleCalendarExport.header" })),
 			desc: t(msg({ message: "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarExport.description" })),
 			items: [
+				exportNeedsOwnApplication,
 				field(google, "enabled", "googleCalendarExport.enabled", { name: msg({ message: "Enable task export", context: "settings.integrations.googleCalendarExport.enable.name" }), description: msg({ message: "When enabled, tasks with dates will be automatically synced to Google Calendar as events.", context: "settings.integrations.googleCalendarExport.enable.description" }) }),
 				ctx.field(
 					google,
@@ -146,7 +159,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 								? { [google.targetCalendarId]: google.targetCalendarId }
 								: {}),
 							...Object.fromEntries(
-								(plugin.googleCalendarService?.getAvailableCalendars() ?? []).map(
+								(plugin.ownGoogleCalendarService?.getAvailableCalendars() ?? []).map(
 									(calendar) => [calendar.id, calendar.summary]
 								)
 							),
@@ -294,6 +307,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			name: t(msg({ message: "Export timeblocks to Google Calendar", context: "settings.integrations.googleCalendarTimeblockExport.header" })),
 			desc: t(msg({ message: "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarTimeblockExport.description" })),
 			items: [
+				exportNeedsOwnApplication,
 				field(google, "syncTimeblocks", "googleCalendarExport.syncTimeblocks", { name: msg({ message: "Sync timeblocks", context: "settings.integrations.googleCalendarTimeblockExport.enable.name" }), description: msg({ message: "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them.", context: "settings.integrations.googleCalendarTimeblockExport.enable.description" }) }),
 				ctx.field(
 					google,
@@ -309,7 +323,7 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 								? { [google.timeblockTargetCalendarId]: google.timeblockTargetCalendarId }
 								: {}),
 							...Object.fromEntries(
-								(plugin.googleCalendarService?.getAvailableCalendars() ?? []).map(
+								(plugin.ownGoogleCalendarService?.getAvailableCalendars() ?? []).map(
 									(calendar) => [calendar.id, calendar.summary]
 								)
 							),

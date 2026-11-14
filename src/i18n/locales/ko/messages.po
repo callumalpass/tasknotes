@@ -362,6 +362,11 @@ msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "{count, plural, one {Tracking # task ({totalElapsed} total)} other {Tracking # tasks ({totalElapsed} total)}}"
 msgstr "{count, plural, other {작업 #개 추적 중 (총 {totalElapsed})}}"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.limit"
+msgid "{count, plural, one {You can show # calendar at a time.} other {You can show up to # calendars at a time.}}"
+msgstr "{count, plural, other {한 번에 캘린더를 #개까지 표시할 수 있습니다.}}"
+
 #: src/bases/CalendarView.ts
 msgctxt "calendar collision count"
 msgid "{count} appointments"
@@ -768,6 +773,7 @@ msgid "{relatedTo, select, due {{direction, select, before {{duration} before du
 msgstr "{relatedTo, select, due {{direction, select, before {마감일 {duration} 전} after {마감일 {duration} 후} other {마감일 {duration} 전}}} scheduled {{direction, select, before {예정일 {duration} 전} after {예정일 {duration} 후} other {예정일 {duration} 전}}} other {{direction, select, before {예정일 {duration} 전} after {예정일 {duration} 후} other {예정일 {duration} 전}}}}"
 
 #: src/services/GoogleCalendarService.ts
+#: src/services/HostedGoogleCalendarService.ts
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "calendar refresh throttling"
 msgid "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}"
@@ -1203,6 +1209,11 @@ msgstr "절대 시간 리마인더는 at:YYYY-MM-DDTHH:MM 또는 전체 ISO 날�
 msgctxt "color name"
 msgid "Accent"
 msgstr "강조색"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.account.name"
+msgid "Access and account"
+msgstr "액세스 및 계정"
 
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
@@ -2237,6 +2248,7 @@ msgid "Calendar ID"
 msgstr "캘린더 ID"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.calendarIntegrationIsUnavailableOnThisDevice"
 msgid "Calendar integration is unavailable on this device."
 msgstr "이 기기에서는 캘린더 연동을 사용할 수 없습니다."
@@ -2328,6 +2340,16 @@ msgctxt "settings.native.calendarsIntegrations"
 msgid "Calendars & integrations"
 msgstr "캘린더 및 연동"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: creating a calendar"
+msgid "Calendars can’t be created from TaskNotes. Create one in Google Calendar."
+msgstr "TaskNotes에서는 캘린더를 만들 수 없습니다. Google 캘린더에서 만드세요."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.heading"
+msgid "Calendars shown"
+msgstr "표시할 캘린더"
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
@@ -2371,6 +2393,16 @@ msgstr "취소"
 msgctxt "modals/TextInputModal: TextInputModal cancelText"
 msgid "Cancel"
 msgstr "취소"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.cancel"
+msgid "Cancel"
+msgstr "취소"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.cancelName"
+msgid "Cancel sign-in"
+msgstr "로그인 취소"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentCycle"
@@ -3073,6 +3105,7 @@ msgid "Confirm"
 msgstr "확인"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.connect"
 msgid "Connect"
 msgstr "연결"
@@ -3082,15 +3115,25 @@ msgctxt "settings.native.connectAccount"
 msgid "Connect {name}"
 msgstr "{name} 연결"
 
-#: src/settings/native/integrations.ts
-msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
-msgid "Connect a Google or Microsoft calendar using credentials from your own developer application."
-msgstr "자신의 OAuth 앱 자격 증명으로 Google 또는 Microsoft 캘린더에 연결하세요."
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.connect.name"
+msgid "Connect Google Calendar"
+msgstr "Google 캘린더 연결"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.description"
+msgid "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this."
+msgstr "본인의 Google Cloud 프로젝트 자격 증명으로 연결합니다. 작업과 타임블록을 Google 캘린더로 내보내려면 이 연결이 필요합니다."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
 msgid "Connected"
 msgstr "연결됨"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.ownApplication"
+msgid "Connected with your own Google application"
+msgstr "본인의 Google 애플리케이션으로 연결됨"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
@@ -3098,6 +3141,7 @@ msgid "Connected: {date}"
 msgstr "연결 일시: {date}"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.connectionStatus"
 msgid "Connection status"
 msgstr "연결 상태"
@@ -3171,6 +3215,11 @@ msgstr "컨텍스트"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Contexts"
 msgstr "컨텍스트"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.confirmationCode.confirm"
+msgid "Continue"
+msgstr "계속"
 
 #: src/cli/commands/pomodoroCommand.ts
 msgctxt "cli/commands/pomodoroCommand: defaults description"
@@ -4238,6 +4287,16 @@ msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
 msgstr "{name}을(를) 삭제할까요?"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.button"
+msgid "Delete account"
+msgstr "계정 삭제"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.name"
+msgid "Delete calendar service account"
+msgstr "캘린더 서비스 계정 삭제"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
@@ -4324,6 +4383,16 @@ msgstr "웹훅 삭제"
 msgctxt "settings.native.deleteWebhook"
 msgid "Delete webhook?"
 msgstr "웹훅을 삭제할까요?"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.confirmTitle"
+msgid "Delete your calendar service account?"
+msgstr "캘린더 서비스 계정을 삭제할까요?"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.description"
+msgid "Deletes what the TaskNotes calendar service holds about you, including its access to Google Calendar."
+msgstr "TaskNotes 캘린더 서비스가 보관 중인 내 정보를 Google 캘린더 액세스 권한까지 포함해 삭제합니다."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.deliveryStatus"
@@ -4433,6 +4502,7 @@ msgid "Discard changes"
 msgstr "변경 사항 버리기"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.disconnect"
 msgid "Disconnect"
 msgstr "연결 해제"
@@ -4441,6 +4511,16 @@ msgstr "연결 해제"
 msgctxt "settings.native.disconnectAccount"
 msgid "Disconnect {name}"
 msgstr "{name} 연결 해제"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.name"
+msgid "Disconnect Google Calendar"
+msgstr "Google 캘린더 연결 해제"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.confirmTitle"
+msgid "Disconnect Google Calendar?"
+msgstr "Google 캘린더 연결을 해제할까요?"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.disconnect display"
@@ -5049,6 +5129,11 @@ msgctxt "settings.features.nlp.enterToSubmit.name"
 msgid "Enter saves task"
 msgstr "Enter로 작업 저장"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.confirmationCode.title"
+msgid "Enter the code shown in your browser"
+msgstr "브라우저에 표시된 코드를 입력하세요"
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.enterCode"
 msgid "Enter this code when prompted:"
@@ -5178,6 +5263,11 @@ msgstr "3일마다 (완료 후)"
 msgctxt "modals.task.recurrence.everyThreeMonths"
 msgid "Every 3 months"
 msgstr "3개월마다"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.deleteAccount.confirmMessage"
+msgid "Every device is signed out and the service’s access to Google Calendar is withdrawn. Your events in Google Calendar are not changed. This cannot be undone."
+msgstr "모든 기기에서 로그아웃되고 서비스의 Google 캘린더 액세스 권한이 철회됩니다. Google 캘린더의 일정은 변경되지 않습니다. 이 작업은 되돌릴 수 없습니다."
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
@@ -5388,6 +5478,11 @@ msgstr "V3 뷰 내보내기"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "저장된 뷰 {count}개를 내보냈습니다. 파일: {filePath}"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.description"
+msgid "Exporting to Google Calendar needs your own Google application, connected under Google Calendar."
+msgstr "Google 캘린더로 내보내려면 Google 캘린더 항목에서 연결한 본인의 Google 애플리케이션이 필요합니다."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -6377,6 +6472,11 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOr
 msgid "Generated link text is too long."
 msgstr "생성된 링크 텍스트가 너무 깁니다."
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.connect.description"
+msgid "Give TaskNotes access to your Google Calendar again."
+msgstr "TaskNotes에 Google 캘린더 액세스 권한을 다시 부여합니다."
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.basesCalendar.hints.today"
 msgid "Go to today"
@@ -6417,6 +6517,16 @@ msgctxt "settings.integrations.googleCalendarExport.notices.connectionExpired"
 msgid "Google Calendar connection expired. Please reconnect in Settings > Integrations."
 msgstr "Google 캘린더 연결이 만료되었습니다. 설정 > 통합에서 다시 연결하세요."
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: change refused"
+msgid "Google Calendar didn’t accept this change."
+msgstr "Google 캘린더가 이 변경을 받아들이지 않았습니다."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.description"
+msgid "Google Calendar events stop showing here. Other devices stay signed in."
+msgstr "Google 캘린더 일정이 이 기기에 더 이상 표시되지 않습니다. 다른 기기는 로그인 상태로 유지됩니다."
+
 #: src/services/TaskCalendarSyncService.ts
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
@@ -6427,6 +6537,26 @@ msgstr "Google 캘린더 내보내기가 활성화되거나 구성되지 않았�
 msgctxt "settings.integrations.googleCalendarExport.notices.notEnabled"
 msgid "Google Calendar export is not enabled. Configure it in Settings > Integrations."
 msgstr "Google 캘린더 내보내기가 활성화되지 않았습니다. 설정 > 통합에서 구성하세요."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: rate limited"
+msgid "Google Calendar is busy. Try again shortly."
+msgstr "Google 캘린더가 혼잡합니다. 잠시 후 다시 시도하세요."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: service unavailable"
+msgid "Google Calendar is unavailable right now. Try again."
+msgstr "지금은 Google 캘린더를 사용할 수 없습니다. 다시 시도하세요."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.reconnect"
+msgid "Google Calendar needs reconnecting."
+msgstr "Google 캘린더를 다시 연결해야 합니다."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: reconnect required"
+msgid "Google Calendar needs reconnecting. Reconnect it in TaskNotes settings."
+msgstr "Google 캘린더를 다시 연결해야 합니다. TaskNotes 설정에서 다시 연결하세요."
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
@@ -6447,6 +6577,11 @@ msgstr "Google Calendar 대상 캘린더가 구성되지 않았습니다"
 msgctxt "views.basesCalendar.settings.groups.googleCalendars"
 msgid "Google calendars"
 msgstr "Google 캘린더"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization failed"
+msgid "Google didn’t complete the authorization. Try again."
+msgstr "Google에서 인증을 완료하지 못했습니다. 다시 시도하세요."
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.status.breakPrompt"
@@ -6985,6 +7120,11 @@ msgstr "매월 마지막 날"
 msgctxt "settings.integrations.autoExport.status.lastExport"
 msgid "Last export: {time}"
 msgstr "마지막 내보내기: {time}"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.lastRefreshed"
+msgid "Last refreshed: {date}"
+msgstr "마지막 새로고침: {date}"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.lastSync"
@@ -8251,6 +8391,11 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "보통"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.name"
+msgid "Not available while signed in with Google"
+msgstr "Google로 로그인한 동안에는 사용할 수 없음"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8262,6 +8407,7 @@ msgid "Not completed"
 msgstr "완료되지 않음"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.notConnected"
 msgid "Not connected"
 msgstr "연결되지 않음"
@@ -9460,6 +9606,11 @@ msgctxt "Bases data inspector"
 msgid "Raw data structure"
 msgstr "원시 데이터 구조"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.calendars.readOnly"
+msgid "Read only"
+msgstr "읽기 전용"
+
 #: src/services/PomodoroService.ts
 msgctxt "services/PomodoroService: PomodoroService.completePomodoro display"
 msgid "Ready for the next pomodoro?"
@@ -9582,6 +9733,7 @@ msgid "Refresh cache"
 msgstr "캐시 새로고침"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.native.refreshCalendarEvents"
 msgid "Refresh calendar events"
 msgstr "캘린더 일정 새로고침"
@@ -9597,6 +9749,7 @@ msgid "Refresh interval (minutes)"
 msgstr "새로고침 간격(분)"
 
 #: src/settings/native/connections.ts
+#: src/settings/native/googleCalendarService.ts
 msgctxt "settings.integrations.subscriptionsList.actions.refreshNow"
 msgid "Refresh now"
 msgstr "지금 새로고침"
@@ -10742,10 +10895,60 @@ msgctxt "settings.native.showWhenEditingTasks"
 msgid "Show when editing tasks"
 msgstr "작업 편집 시 표시"
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.description"
+msgid "Shows your Google Calendar events in TaskNotes and lets you change them. Events come through the TaskNotes calendar service and aren’t saved in your vault."
+msgstr "Google 캘린더 일정을 TaskNotes에 표시하고 변경할 수 있게 합니다. 일정은 TaskNotes 캘린더 서비스를 통해 가져오며 보관함에 저장되지 않습니다."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.button"
+msgid "Sign in"
+msgstr "로그인"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signIn.name"
+msgid "Sign in with Google"
+msgstr "Google 계정으로 로그인"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.description"
+msgid "Sign in with Google there, then enter the code it shows you here."
+msgstr "브라우저에서 Google로 로그인한 다음, 표시되는 코드를 여기에 입력하세요."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
+msgid "Sign in with Google, or connect a Google or Microsoft calendar using credentials from your own developer application."
+msgstr "Google 계정으로 로그인하거나 자신의 OAuth 앱 자격 증명으로 Google 또는 Microsoft 캘린더에 연결하세요."
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
 msgstr "Google 계정으로 로그인하고 액세스 권한을 부여하세요"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.button"
+msgid "Sign out"
+msgstr "로그아웃"
+
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.signOutFirst"
+msgid "Sign out of Google Calendar before connecting your own Google application."
+msgstr "본인의 Google 애플리케이션을 연결하기 전에 Google 캘린더에서 로그아웃하세요."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.signOut.name"
+msgid "Sign out on this device"
+msgstr "이 기기에서 로그아웃"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.signedIn"
+msgid "Signed in with Google"
+msgstr "Google 계정으로 로그인됨"
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.status.signedInOnly"
+msgid "Signed in. Google Calendar isn’t connected yet."
+msgstr "로그인되었습니다. Google 캘린더는 아직 연결되지 않았습니다."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.signingSecret"
@@ -11903,6 +12106,11 @@ msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
 msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 msgstr "TaskNotes가 mdbase 메타데이터를 v0.3으로 업데이트했습니다. 작업 파일은 변경되지 않았습니다. 이전 메타데이터는 {backupFolder}에 백업되어 있습니다."
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.confirmMessage"
+msgid "TaskNotes will stop showing Google Calendar events on every device where you signed in with Google. Your events in Google Calendar are not changed."
+msgstr "Google로 로그인한 모든 기기에서 TaskNotes가 Google 캘린더 일정을 더 이상 표시하지 않습니다. Google 캘린더의 일정은 변경되지 않습니다."
+
 #: src/views/stats/summary.ts
 msgctxt "views.stats.labels.tasks"
 msgid "Tasks"
@@ -11964,6 +12172,11 @@ msgctxt "settings.taskProperties.customUserFields.types.text"
 msgid "Text"
 msgstr "텍스트"
 
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: confirmation code rejected"
+msgid "That confirmation code wasn’t accepted, or it expired. Start again to get a new one."
+msgstr "확인 코드가 받아들여지지 않았거나 만료되었습니다. 처음부터 다시 시작해 새 코드를 받으세요."
+
 #: src/bases/recurringStatusMove.ts
 msgctxt "views.recurringStatusMove.stale"
 msgid "That occurrence was already completed, skipped or rescheduled."
@@ -11973,6 +12186,16 @@ msgstr "이 반복 회차는 이미 완료, 건너뛰기 또는 일정 변경되
 msgctxt "recurrence detail nth weekday, e.g. the 2nd Monday"
 msgid "the {position} {weekday}"
 msgstr "{position} {weekday}"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization link refused"
+msgid "The authorization link wasn’t valid, so it wasn’t opened."
+msgstr "인증 링크가 올바르지 않아 열지 않았습니다."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: browser not opened"
+msgid "The browser couldn’t be opened to sign in with Google."
+msgstr "Google 로그인을 위한 브라우저를 열 수 없습니다."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.theCalendarSubscriptionWillBeRemovedLinkedNotesWill"
@@ -11998,6 +12221,11 @@ msgstr "새 타임블록 생성 시 사용되는 기본 색상"
 msgctxt "settings.general.taskIdentification.taskProperty.description"
 msgid "The frontmatter property name (e.g., \"category\")"
 msgstr "프런트매터 속성 이름 (예: \"category\")"
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: authorization expired"
+msgid "The Google authorization expired. Try again."
+msgstr "Google 인증이 만료되었습니다. 다시 시도하세요."
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
@@ -12028,6 +12256,21 @@ msgstr "셋째"
 msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "이 작업은 실행 취소할 수 없습니다."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: too many events"
+msgid "This calendar has too many events to show."
+msgstr "이 캘린더는 일정이 너무 많아 표시할 수 없습니다."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: event changed elsewhere"
+msgid "This event changed in Google Calendar. The latest version has been loaded; try again."
+msgstr "이 일정이 Google 캘린더에서 변경되었습니다. 최신 버전을 불러왔으니 다시 시도하세요."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: event missing"
+msgid "This event no longer exists in Google Calendar."
+msgstr "이 일정은 Google 캘린더에 더 이상 존재하지 않습니다."
 
 #: src/ui/NotificationService.ts
 msgctxt "ui/NotificationService: NotificationService.sendTestReminderNotification display"
@@ -13425,6 +13668,11 @@ msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "수신 애플리케이션에서 페이로드를 검증할 때 이 비밀 키를 사용하세요."
 
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.name"
+msgid "Use your own Google application"
+msgstr "본인의 Google 애플리케이션 사용"
+
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
 msgid "User"
@@ -13514,6 +13762,11 @@ msgstr "작업 리마인더 소리 볼륨 (0-100)"
 msgctxt "modals.deviceCode.waitingForAuthorization"
 msgid "Waiting for authorization..."
 msgstr "인증 대기 중..."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.waiting.name"
+msgid "Waiting for you to finish in your browser"
+msgstr "브라우저에서 작업을 마칠 때까지 기다리는 중"
 
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.basesMigration.title"
@@ -13813,6 +14066,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncTrigger.description"
 msgid "Which task date should trigger calendar event creation."
 msgstr "어떤 작업 날짜가 캘린더 이벤트 생성을 트리거할지 설정합니다."
 
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.account.description"
+msgid "Withdraw Google Calendar access or delete your calendar service account."
+msgstr "Google 캘린더 액세스 권한을 철회하거나 캘린더 서비스 계정을 삭제합니다."
+
+#: src/settings/native/googleCalendarService.ts
+msgctxt "settings.calendarService.disconnect.description"
+msgid "Withdraws TaskNotes’ access to Google Calendar on every device."
+msgstr "모든 기기에서 TaskNotes의 Google 캘린더 액세스 권한을 철회합니다."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
@@ -13903,6 +14166,11 @@ msgstr "코드:"
 msgctxt "settings.native.yourCustomFieldLayoutWillBeReplacedWithThe"
 msgid "Your custom field layout will be replaced with the default layout."
 msgstr "사용자 지정 필드 배치를 기본 배치로 바꿉니다."
+
+#: src/services/HostedGoogleCalendarService.ts
+msgctxt "services/HostedGoogleCalendarService: session ended"
+msgid "Your Google Calendar sign-in ended. Sign in again in TaskNotes settings."
+msgstr "Google 캘린더 로그인이 종료되었습니다. TaskNotes 설정에서 다시 로그인하세요."
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

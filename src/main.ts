@@ -87,7 +87,8 @@ import {
 } from "./settings/deviceLocalSettings";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
-import { CalendarProviderRegistry } from "./services/CalendarProvider";
+import { CalendarProviderRegistry, type GoogleCalendarSource } from "./services/CalendarProvider";
+import type { HostedGoogleCalendarService } from "./services/HostedGoogleCalendarService";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 import { addTaskToProject, assignTaskAsSubtask } from "./services/taskRelationshipActions";
 import {
@@ -234,8 +235,12 @@ export default class TaskNotesPlugin extends Plugin {
 	private oauthSecretStorageReady = false;
 	private deviceLocalStorageReady = false;
 
-	// Google Calendar service
-	googleCalendarService: GoogleCalendarService;
+	// Google Calendar: the one source the views read. It is the TaskNotes
+	// calendar service while this device is signed in to it, and otherwise the
+	// person's own Google application.
+	googleCalendarService: GoogleCalendarSource;
+	ownGoogleCalendarService: GoogleCalendarService;
+	hostedGoogleCalendarService: HostedGoogleCalendarService;
 
 	// Microsoft Calendar service
 	microsoftCalendarService: MicrosoftCalendarService;
