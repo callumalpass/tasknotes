@@ -6477,8 +6477,8 @@ msgstr "General"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr "Genera y mantiene los archivos de tipos mdbase (mdbase.yaml y _types/task.md) en la raíz de la bóveda al cambiar los ajustes."
+msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
+msgstr "Genera y mantiene mdbase.yaml y los archivos de tipos configurados cuando cambias los ajustes. Las nuevas configuraciones usan _mdbase/types; las bóvedas existentes conservan sus carpetas."
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
@@ -6680,6 +6680,11 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "Alcance de etiquetas ocultas"
 
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
+msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
+msgstr "Oculta _mdbase, las carpetas configuradas de tipos y contratos, _settings y las carpetas de esquemas de mdbase. Sus archivos siguen apareciendo en la búsqueda y el selector rápido."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
@@ -6699,6 +6704,11 @@ msgstr "Ocultar carriles vacíos"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "Ocultar etiquetas de identificación en tarjetas de tarea"
+
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
+msgid "Hide mdbase folders in the file explorer"
+msgstr "Ocultar las carpetas de mdbase en el explorador de archivos"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"

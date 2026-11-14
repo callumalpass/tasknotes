@@ -40,6 +40,7 @@ import {
 	writeAppSettingsDocument,
 	type TaskNotesAppSettingsValues,
 } from "@tasknotes/model/settings";
+import { NEW_TYPES_FOLDER, NEW_CONTRACTS_FOLDER, MDBASE_README_PATH, MDBASE_README } from "./mdbase/folders";
 import { APP_SETTINGS_RECORD_PATH, appSettingsSupportResources } from "./mdbase/appSettingsResources";
 
 import TaskNotesPlugin from "../main";
@@ -207,6 +208,7 @@ export class MdbaseSpecService {
 	private plugin: TaskNotesPlugin;
 	private canonicalTypePath: string | null = null;
 	private canonicalTypesFolder: string | null = null;
+	private canonicalContractsFolder: string | null = null;
 	private canonicalResourcePaths = new Set<string>();
 	private lastKnownTypeContent: string | null = null;
 	private lastAppliedSettingsFingerprint: string | null = null;
@@ -410,6 +412,7 @@ export class MdbaseSpecService {
 			await this.removeMigrationJournal();
 			await this.loadAppSettingsRecord();
 			this.canonicalTypesFolder = typesFolder;
+			this.canonicalContractsFolder = this.resolveContractsFolder(existingCollection);
 			this.applyCanonicalState(state);
 			this.publishNotice(
 				uiText(msg({ message: "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}.", context: "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere" }), { backupFolder: backupFolder })
@@ -908,10 +911,12 @@ export class MdbaseSpecService {
 		const contractsFolder = this.resolveContractsFolder(existingCollection);
 		const legacyCompatibility = isRecord(existingCollection.config?.["x-legacy-v0.2"]);
 		this.canonicalTypesFolder = typesFolder;
+		this.canonicalContractsFolder = this.resolveContractsFolder(existingCollection);
 		if (!existingCollection.exists && !this.canonicalTypePath &&
 			!await this.readCanonicalType(existingCollection, false)) {
 			const adapter = this.plugin.app.vault.adapter;
-			for (const folder of [typesFolder, contractsFolder]) {
+			// Sync can deliver old metadata before its config. Do not create a second collection.
+			for (const folder of new Set([typesFolder, contractsFolder, DEFAULT_TYPES_FOLDER, DEFAULT_CONTRACTS_FOLDER])) {
 				if (await adapter.exists(folder) && (await this.listMarkdownFilesRecursively(folder)).length > 0) {
 					this.publishNotice(migrationRecognitionNotice(this.plugin, "waiting", { path: folder }));
 					return;
@@ -1071,7 +1076,7 @@ export class MdbaseSpecService {
 		}
 
 		if (!existingCollection.exists) {
-			await this.writeFile("mdbase.yaml", resources.configDocument);
+			await this.writeNewCollectionConfig(resources);
 		} else {
 			await this.reconcileMembershipKeys();
 		}
@@ -1084,6 +1089,7 @@ export class MdbaseSpecService {
 		this.canonicalReadBlocked = false;
 		const typesFolder = this.resolveTypesFolder(existingCollection);
 		this.canonicalTypesFolder = typesFolder;
+		this.canonicalContractsFolder = this.resolveContractsFolder(existingCollection);
 		const defaultPath = `${typesFolder}/task.md`;
 		const defaultState = await this.readCanonicalTypeAtPath(defaultPath, reportErrors);
 		const adapter = this.plugin.app.vault.adapter;
@@ -1674,6 +1680,7 @@ export class MdbaseSpecService {
 	private clearCanonicalState(): void {
 		this.canonicalTypePath = null;
 		this.canonicalTypesFolder = null;
+		this.canonicalContractsFolder = null;
 		this.canonicalResourcePaths.clear();
 		this.lastKnownTypeContent = null;
 		this.lastAppliedSettingsFingerprint = null;
@@ -1687,8 +1694,7 @@ export class MdbaseSpecService {
 	private resolveTypesFolder(existingCollection: ExistingCollection): string {
 		return (
 			this.normalizeTypesFolder(existingCollection.config?.settings?.types_folder) ??
-			this.canonicalTypesFolder ??
-			DEFAULT_TYPES_FOLDER
+			(existingCollection.exists ? DEFAULT_TYPES_FOLDER : (this.canonicalTypesFolder ?? NEW_TYPES_FOLDER))
 		);
 	}
 
@@ -1696,7 +1702,7 @@ export class MdbaseSpecService {
 		return (
 			this.normalizeTypesFolder(
 				existingCollection.config?.settings?.contracts_folder
-			) ?? DEFAULT_CONTRACTS_FOLDER
+			) ?? (existingCollection.exists ? DEFAULT_CONTRACTS_FOLDER : (this.canonicalContractsFolder ?? NEW_CONTRACTS_FOLDER))
 		);
 	}
 
@@ -1710,9 +1716,19 @@ export class MdbaseSpecService {
 			typesFolder,
 			legacyCompatibility,
 			typeName,
-			DEFAULT_CONTRACTS_FOLDER
+			this.canonicalContractsFolder ?? NEW_CONTRACTS_FOLDER
 		);
 		await this.writeCanonicalSupportResources(resources);
+		await this.writeNewCollectionConfig(resources);
+	}
+
+	private async writeNewCollectionConfig(resources: TaskNotesMdbaseResources): Promise<void> {
+		const config = YAML.parse(resources.configDocument) as MdbaseYamlConfig;
+		if (config.settings?.types_folder === NEW_TYPES_FOLDER &&
+			config.settings.contracts_folder === NEW_CONTRACTS_FOLDER &&
+			await this.metadataIO.read(MDBASE_README_PATH) === null) {
+			await this.writeFileIfUnchanged({ path: MDBASE_README_PATH, content: null }, MDBASE_README);
+		}
 		await this.writeFile("mdbase.yaml", resources.configDocument);
 	}
 
@@ -1874,10 +1890,10 @@ export class MdbaseSpecService {
 	/**
 	 * Build the mdbase.yaml content.
 	 */
-	buildMdbaseYaml(typesFolder = DEFAULT_TYPES_FOLDER): string {
+	buildMdbaseYaml(typesFolder = NEW_TYPES_FOLDER): string {
 		const normalizedTypesFolder =
-			this.normalizeTypesFolder(typesFolder) ?? DEFAULT_TYPES_FOLDER;
-		return this.buildCanonicalMdbaseResources(normalizedTypesFolder, false).configDocument;
+			this.normalizeTypesFolder(typesFolder) ?? NEW_TYPES_FOLDER;
+		return this.buildCanonicalMdbaseResources(normalizedTypesFolder, false, "task", NEW_CONTRACTS_FOLDER).configDocument;
 	}
 
 	/**
@@ -2156,10 +2172,12 @@ export class MdbaseSpecService {
 		const occurrenceTemplatePath =
 			settings.taskCreationDefaults?.occurrenceBodyTemplate?.trim() ?? "";
 
+		const schemaParent = contractsFolder.split("/").slice(0, -1).join("/");
 		const resources = buildTaskNotesMdbaseResources({
 			typeName,
 			typesFolder,
 			contractsFolder,
+			schemasFolder: schemaParent ? `${schemaParent}/_schemas/tasknotes` : "_schemas/tasknotes",
 			tasksFolder: settings.tasksFolder || "",
 			legacyCompatibility,
 			modelConfig: buildTaskNotesModelConfig(settings),

@@ -222,6 +222,7 @@ export interface TaskNotesSettings {
 	inlineVisibleProperties?: string[];
 	// Bases integration settings
 	enableMdbaseSpec: boolean;
+	hideMdbaseFolders: boolean;
 	autoCreateDefaultBasesFiles: boolean; // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {

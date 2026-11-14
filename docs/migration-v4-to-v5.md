@@ -55,6 +55,22 @@ Existing tasks without an `id` remain valid and are not changed. Path-based inte
 
 If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract (version 0.3.0-rc.6) used by TaskNotes App and other compatible tools. It is the same contract, byte for byte, that TaskNotes App installs, so the plugin and the app can share a collection. Tasks can list assignees as links to person notes; the property is optional.
 
+### mdbase metadata folders
+
+When TaskNotes first creates `mdbase.yaml`, including a v4 to v5 upgrade without
+an existing config, it explicitly uses `_mdbase/types/` and `_mdbase/contracts/`.
+Contract schemas live beside them in `_mdbase/schemas/` (and pack task schemas in
+`_mdbase/_schemas/tasknotes/`). `_mdbase/README.md` explains the folder; an existing
+README is never overwritten.
+
+A vault that already has `mdbase.yaml` keeps its configured folders. A config
+without folder settings still uses the spec defaults `_types/` and `_contracts/`.
+No existing metadata is moved. The settings record still uses `_settings/`.
+
+**Hide mdbase folders in the file explorer** is on by default under Calendars &
+integrations. Turn it off to browse these folders; their files remain available
+in search and the quick switcher. See [Integrations](settings/integrations.md).
+
 ### TaskNotes settings record
 
 Collection-wide TaskNotes behaviour is stored in `_settings/dev.tasknotes.md`, a settings record that TaskNotes App reads and writes too. It holds natural-language capture triggers, body templates for new tasks and occurrences, whether archiving moves the file and where to, whether completing a task stops its timer, whether recurring tasks uncheck body checkboxes, the link format written to frontmatter, and per-status next status, cycle exclusion and auto-archive settings. Everything else, such as property mappings, statuses, priorities and filename rules, stays in the task type.

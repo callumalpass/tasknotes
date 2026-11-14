@@ -1,4 +1,5 @@
 import YAML from "yaml";
+import { MDBASE_README, MDBASE_README_PATH, NEW_TYPES_FOLDER, NEW_CONTRACTS_FOLDER } from "./folders";
 import { SafeMetadata, type MetadataSnapshot } from "./SafeMetadata";
 import { APP_SETTINGS_RECORD_PATH, isAppSettingsMetadataPath } from "./appSettingsResources";
 
@@ -116,16 +117,22 @@ export class MetadataTransaction {
 			const manifest = await this.io.read(`${backupFolder}/manifest.json`);
 			if (manifest !== JSON.stringify(journal, null, 2)) throw new Error("Journal does not match backup manifest");
 			const configEntry = journal.snapshots.find((entry) => entry.path === "mdbase.yaml");
-			const config = YAML.parse(configEntry?.content ?? "settings: {}") as { settings?: { types_folder?: string; contracts_folder?: string } };
+			const config = YAML.parse(configEntry?.content ?? journal.intendedWrites.find((entry) => entry.path === "mdbase.yaml")?.content ?? "settings: {}") as { settings?: { types_folder?: string; contracts_folder?: string } };
 			const types = config.settings?.types_folder ?? "_types";
 			const contracts = config.settings?.contracts_folder ?? "_contracts";
+			const newReadme = configEntry?.content === null && types === NEW_TYPES_FOLDER && contracts === NEW_CONTRACTS_FOLDER &&
+				journal.snapshots.find((entry) => entry.path === MDBASE_README_PATH)?.content === null &&
+				journal.intendedWrites.find((entry) => entry.path === MDBASE_README_PATH)?.content === MDBASE_README;
+			const schemaParent = contracts.split("/").slice(0, -1).join("/");
+			const taskSchemas = schemaParent ? `${schemaParent}/_schemas/tasknotes/` : "_schemas/tasknotes/";
 			for (const entry of [...journal.snapshots, ...journal.intendedWrites]) {
 				if (typeof entry.path !== "string" || (entry.content !== null && typeof entry.content !== "string")) throw new Error("Invalid journal entry");
 				await this.io.assertPhysical(entry.path);
-				if (entry.path !== "mdbase.yaml" && entry.path !== `${contracts}/tasknotes.task.md` &&
+				if (entry.path !== "mdbase.yaml" && !(newReadme && entry.path === MDBASE_README_PATH) && entry.path !== `${contracts}/tasknotes.task.md` &&
 					!(entry.path.startsWith(`${contracts}/tasknotes.task/`) && entry.path.endsWith(".md")) &&
 					!isAppSettingsMetadataPath(entry.path, contracts, types) &&
-					!(/^_schemas\/tasknotes\/tasknotes-task(-binding)?\.schema\.json$/.test(entry.path)) &&
+					!(/^_schemas\/tasknotes\/tasknotes-task(-binding)?\.schema\.json$/.test(entry.path) ||
+						(entry.path.startsWith(taskSchemas) && /^tasknotes-task(-binding)?\.schema\.json$/.test(entry.path.slice(taskSchemas.length)))) &&
 					!(entry.path.startsWith(`${types}/`) && entry.path.endsWith(".md"))) throw new Error(`Unsafe recovery target: ${entry.path}`);
 			}
 			for (const snapshot of journal.snapshots) {

@@ -34,6 +34,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- Added **Hide mdbase folders in the file explorer**, enabled by default. Metadata files remain available in search and the quick switcher. New mdbase setups put types, contracts and schemas under `_mdbase/`, with a README; existing vaults keep their folders. See [Integrations](https://tasknotes.dev/settings/integrations/#hide-mdbase-folders-in-the-file-explorer).
 - (#2542) Google and Microsoft calendar events shown in TaskNotes calendar views can now be deleted from their right-click menu, after a confirmation. For a recurring event, only the clicked occurrence is deleted. The option is not shown for read-only calendars or ICS subscriptions. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#synchronization-behavior).
   - Thanks to @iantierney for the request
 

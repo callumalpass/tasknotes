@@ -168,7 +168,14 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 						"enableMdbaseSpec",
 						"enableMdbaseSpec",
 						t(msg({ message: "Generate mdbase type definitions", context: "settings.integrations.mdbaseSpec.enable.name" })),
-						{ desc: t(msg({ message: "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change.", context: "settings.integrations.mdbaseSpec.enable.description" })) }
+						{ desc: t(msg({ message: "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders.", context: "settings.integrations.mdbaseSpec.enable.description" })) }
+					),
+					ctx.field(
+						this.plugin.settings,
+						"hideMdbaseFolders",
+						"hideMdbaseFolders",
+						t(msg({ message: "Hide mdbase folders in the file explorer", context: "settings.integrations.mdbaseSpec.hideFolders.name" })),
+						{ desc: t(msg({ message: "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher.", context: "settings.integrations.mdbaseSpec.hideFolders.description" })) }
 					),
 					{
 						name: t(msg({ message: "Learn more about mdbase-spec", context: "settings.integrations.mdbaseSpec.learnMore" })),
