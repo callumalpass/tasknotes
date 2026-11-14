@@ -7,11 +7,13 @@ import {
 	type SettingDefinitionList,
 	type SettingDefinitionPage,
 	type SettingDefinition,
+	type SettingDefinitionItem,
 } from "obsidian";
 import type { OAuthProvider, WebhookEvent, ICSSubscription } from "../../types";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { isCalendarIntegrationDisabledOnMobile } from "../../utils/calendarIntegration";
 import { SettingsContext } from "./SettingsContext";
+import { calendarServiceItems } from "./googleCalendarService";
 import { relativeSyncTime } from "./relativeSyncTime";
 import { formatDateLabel } from "../../utils/dateUtils";
 
@@ -103,10 +105,7 @@ export function connectionPage(
 			};
 		},
 	};
-	return {
-		type: "page",
-		name,
-		items: [
+	const items: SettingDefinitionItem[] = [
 			status,
 			{
 				type: "page",
@@ -202,8 +201,13 @@ export function connectionPage(
 									msg({ message: "Calendar integration is unavailable on this device.", context: "settings.native.calendarIntegrationIsUnavailableOnThisDevice" })
 								)
 							);
+						// One Google source at a time.
+						if (provider === "google" && plugin.hostedGoogleCalendarService?.isSignedIn())
+							throw new Error(
+								ctx.t(msg({ message: "Sign out of Google Calendar before connecting your own Google application.", context: "settings.calendarService.ownApplication.signOutFirst" }))
+							);
 						await plugin.oauthService.authenticate(provider);
-						if (provider === "google") await plugin.googleCalendarService?.initialize();
+						if (provider === "google") await plugin.ownGoogleCalendarService?.initialize();
 						else await plugin.microsoftCalendarService?.initialize();
 						ctx.rebuild();
 					},
@@ -218,7 +222,7 @@ export function connectionPage(
 					onClick: async () => {
 						const service =
 							provider === "google"
-								? plugin.googleCalendarService
+								? plugin.ownGoogleCalendarService
 								: plugin.microsoftCalendarService;
 						if (!service)
 							throw new Error(
@@ -238,13 +242,26 @@ export function connectionPage(
 					onClick: async () => {
 						await plugin.oauthService?.disconnect(provider);
 						if (provider === "google")
-							await plugin.googleCalendarService?.handleDisconnect();
+							await plugin.ownGoogleCalendarService?.handleDisconnect();
 						else await plugin.microsoftCalendarService?.disconnect();
 						ctx.rebuild();
 					},
 				},
 				unavailable
 			),
+	];
+	if (provider === "microsoft") return { type: "page", name, items };
+	return {
+		type: "page",
+		name,
+		items: [
+			...calendarServiceItems(ctx, unavailable),
+			{
+				type: "page",
+				name: ctx.t(msg({ message: "Use your own Google application", context: "settings.calendarService.ownApplication.name" })),
+				desc: ctx.t(msg({ message: "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this.", context: "settings.calendarService.ownApplication.description" })),
+				items,
+			},
 		],
 	};
 }

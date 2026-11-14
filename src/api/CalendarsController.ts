@@ -110,10 +110,12 @@ export class CalendarsController extends BaseController {
 		const providers: unknown[] = [];
 
 		// Google Calendar
-		const googleConnected = await this.oauthService.isConnected("google");
-		const googleConnection = googleConnected
+		const googleConnection = (await this.oauthService.isConnected("google"))
 			? await this.oauthService.getConnection("google")
 			: null;
+		// The calendar service connects Google without this vault holding a Google account.
+		const googleConnected =
+			googleConnection !== null || this.plugin.hostedGoogleCalendarService?.isConnected() === true;
 		const googleCalendars = this.plugin.googleCalendarService?.getAvailableCalendars() || [];
 
 		providers.push({
@@ -148,8 +150,12 @@ export class CalendarsController extends BaseController {
 	}
 
 	private async getProviderDetails(provider: OAuthProvider): Promise<unknown> {
-		const connected = await this.oauthService.isConnected(provider);
-		const connection = connected ? await this.oauthService.getConnection(provider) : null;
+		const connection = (await this.oauthService.isConnected(provider))
+			? await this.oauthService.getConnection(provider)
+			: null;
+		const connected =
+			connection !== null ||
+			(provider === "google" && this.plugin.hostedGoogleCalendarService?.isConnected() === true);
 
 		if (!connected) {
 			return { connected: false };

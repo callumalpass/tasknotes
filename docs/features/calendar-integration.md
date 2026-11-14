@@ -13,7 +13,9 @@ TaskNotes supports bidirectional synchronization with Google Calendar and Micros
 
 ### Setup Requirements
 
-OAuth calendar integration requires creating an OAuth application with your calendar provider. This process takes approximately 15 minutes per provider. You will need to:
+Google Calendar can be connected by signing in with Google, with no setup. Events are then read through the TaskNotes Calendar service, and exporting tasks and timeblocks is not available. See [Sign in with Google](../calendar-setup.md#sign-in-with-google).
+
+Connecting Microsoft Outlook, or Google Calendar with your own credentials, requires creating an OAuth application with your calendar provider. This process takes approximately 15 minutes per provider. You will need to:
 
 1. Create an OAuth application in Google Cloud Console or Microsoft Azure Portal
 2. Configure redirect URIs and scopes
@@ -22,7 +24,7 @@ OAuth calendar integration requires creating an OAuth application with your cale
 
 ### Synchronization Behavior
 
-- Events are fetched automatically every 15 minutes
+- Events are fetched automatically every 15 minutes. When you sign in with Google, they are fetched every 30 minutes while Obsidian is on screen
 - Events are also fetched when local changes occur (task creation, updates, rescheduling)
 - Dragging calendar events to new dates/times updates the event in the calendar provider
 - Per-calendar visibility toggles allow selective display of calendars

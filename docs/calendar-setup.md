@@ -1,10 +1,28 @@
 # Calendar Integration Setup
 
-TaskNotes supports Google Calendar and Microsoft Calendar integration via OAuth 2.0.
+TaskNotes shows Google Calendar and Microsoft Calendar events beside your tasks. Google Calendar can be connected in two ways: by signing in with Google, or with your own OAuth credentials. Microsoft Calendar uses your own OAuth credentials.
+
+## Sign in with Google
+
+Signing in with Google needs no Google Cloud project.
+
+1. Open `Settings -> TaskNotes -> Calendars & integrations -> Google Calendar`.
+2. Select **Sign in with Google**. Google's sign-in page opens in your browser.
+3. Sign in. The browser then shows an eight-character code.
+4. Enter the code in Obsidian. Your browser opens once more, this time to ask for access to Google Calendar.
+
+TaskNotes then shows your primary calendar and the calendars that are ticked in Google Calendar, up to five at a time. Choose which are shown under **Calendars shown**.
+
+- Events are read through the TaskNotes Calendar service, from about two months back to four months ahead. They are held in memory while Obsidian is open. They are not saved in your vault, and the service does not store them. See the [privacy policy](privacy.md#tasknotes-calendar-hosted-service).
+- Events refresh every 30 minutes while Obsidian is on screen, when you return to Obsidian after that long, and when you select **Refresh calendar events**.
+- You can create events, and move, edit and delete events, on calendars you can write to. Calendars shared with you as read-only are shown but cannot be changed.
+- Exporting tasks and timeblocks to Google Calendar is not available when you sign in with Google. It needs your own OAuth credentials, described below. Task events you exported earlier appear as ordinary events.
+- Each device signs in separately. **Sign out on this device** leaves your other devices signed in. Under **Access and account**, **Disconnect Google Calendar** withdraws access on every device, and **Delete calendar service account** also removes what the service holds about you.
+- TaskNotes uses one Google connection at a time. Disconnect your own Google application before signing in with Google, and sign out before connecting your own.
 
 ## Setup (Your Own OAuth Credentials)
 
-To connect calendars, create OAuth credentials with Google and/or Microsoft, then paste them into TaskNotes Integrations settings. The sections below walk through each provider.
+To connect Microsoft Calendar, or to connect Google Calendar without the TaskNotes Calendar service, create OAuth credentials with the provider and paste them into TaskNotes settings. The sections below walk through each provider.
 
 ![Integrations calendar settings](assets/settings-integrations-calendar.png)
 
@@ -14,7 +32,7 @@ To connect calendars, create OAuth credentials with Google and/or Microsoft, the
 
 *Video by [@antoneheyward](https://www.youtube.com/@antoneheyward)*
 
-In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Integrations`) and click **Connect Google Calendar**.
+In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Calendars & integrations -> Google Calendar -> Use your own Google application`) and select **Connect Google Calendar**.
 
 If your Google OAuth app is still in testing mode, add the Google account you will connect with under **Google Auth Platform -> Audience -> Test users**. Otherwise Google may block sign-in with a 403 `access_denied` error saying the app has not completed verification.
 
@@ -42,6 +60,8 @@ If Azure does not accept the loopback redirect URI through the normal UI, config
 Next, add delegated Microsoft Graph API permissions (`Calendars.Read`, `Calendars.ReadWrite`, and `offline_access`) and grant consent when required by your organization. Copy the Application (client) ID into TaskNotes, then click **Connect Microsoft Calendar**. The client secret field can be left blank for public-client desktop setup.
 
 ## Security Notes
+
+These notes apply to your own OAuth credentials. When you sign in with Google instead, Google's tokens stay with the TaskNotes Calendar service, and Obsidian Secret Storage holds only this device's session with that service.
 
 OAuth client IDs, client secrets, and account tokens are stored locally in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system. They are not written to TaskNotes' `data.json`. Tokens refresh automatically, calendar data syncs directly between your vault and provider, and you can disconnect at any time to revoke account access.
 

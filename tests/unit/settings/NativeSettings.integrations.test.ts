@@ -70,7 +70,7 @@ describe("Native integration settings", () => {
 
 	test("timeblock export settings persist and keep the default title template when cleared", async () => {
 		const { plugin, ctx } = settingsFixture();
-		plugin.googleCalendarService = {
+		plugin.ownGoogleCalendarService = {
 			getAvailableCalendars: () => [{ id: "work", summary: "Work" }],
 		} as never;
 		calendarDefinitions(ctx);

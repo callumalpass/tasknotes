@@ -73,7 +73,7 @@ const vaultWriteAllowedPatterns = [
 
 const networkAllowedPatterns = [
 	/^src\/api\/.*\.ts$/,
-	/^src\/services\/(?:GoogleCalendarService|HTTPAPIService|ICSSubscriptionService|MCPService|MicrosoftCalendarService|OAuthService)\.ts$/,
+	/^src\/services\/(?:GoogleCalendarService|HTTPAPIService|ICSSubscriptionService|MCPService|MicrosoftCalendarService|OAuthService|calendarServiceHost)\.ts$/,
 ];
 
 const pluginImportAllowedPatterns = [
