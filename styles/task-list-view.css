@@ -75,7 +75,11 @@
 }
 
 .tn-tasknotesTaskList .task-group-add {
+    width: var(--tn-control-sm);
+    height: var(--tn-control-sm);
+    min-height: var(--tn-control-sm);
     margin-inline-start: auto;
+    border-radius: var(--tn-radius-sm);
     opacity: 0;
 }
 
@@ -117,14 +121,14 @@ body:not(.is-mobile) .tn-tasknotesTaskList .task-group-header:hover .task-group-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    min-height: 20px;
-    margin: 0 var(--tn-space-half) 0 0;
+    width: var(--tn-control-sm);
+    height: var(--tn-control-sm);
+    min-width: var(--tn-control-sm);
+    min-height: var(--tn-control-sm);
+    margin: 0;
     padding: 0;
     border: 0;
-    border-radius: var(--tn-radius-md);
+    border-radius: var(--tn-radius-sm);
     box-shadow: none;
     background: transparent;
     color: var(--tn-text-muted);
@@ -468,6 +472,8 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
 }
 
 .tn-tasknotesTaskList .task-group-header {
+    /* The header is an <h3>; drop Obsidian's heading margins. */
+    margin-block: 0;
     padding-block: var(--tn-space-1);
     border-radius: var(--tn-radius-md);
     transition: background-color var(--tn-transition-fast);

@@ -58,6 +58,24 @@ export function shouldShowPriorityIndicator(
 	);
 }
 
+/**
+ * When the view shows neither status nor priority, the card drops its first layout column so the
+ * title starts at the edge. This follows the view's properties, not the task, so every card in a
+ * view lines up.
+ */
+export function syncTaskCardLeadColumn(
+	card: HTMLElement,
+	visibleProperties: string[] | undefined,
+	plugin: TaskNotesPlugin,
+	hideStatusIndicator = false
+): void {
+	card.classList.toggle(
+		"task-card--no-lead",
+		!shouldShowStatusIndicator(visibleProperties, plugin, hideStatusIndicator) &&
+			!shouldShowPriorityIndicator(visibleProperties, plugin)
+	);
+}
+
 export function applyTaskCardStatusColors(
 	card: HTMLElement,
 	effectiveStatus: string,

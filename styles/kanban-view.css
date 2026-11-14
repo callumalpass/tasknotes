@@ -403,7 +403,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
     padding: 0;
     flex-shrink: 0;
     border: 0;
-    border-radius: var(--tn-radius-md);
+    border-radius: var(--tn-radius-sm);
     box-shadow: none;
     background: transparent;
     color: var(--tn-text-muted);

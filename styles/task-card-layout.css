@@ -164,10 +164,15 @@ body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plug
     container-type: inline-size;
 }
 
-/* Stacked layout: status and priority in the first column, title over metadata. */
-body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__main-row {
+/* Touch-sized controls by default. Kept at low specificity so the fine-pointer size below wins. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
     --tn-board-control-size: var(--tn-touch-target);
-    grid-template-columns: var(--tn-board-control-size) minmax(0, 1fr) auto auto var(--tn-board-control-size);
+}
+
+/* Stacked layout: status and priority in the first column, title over metadata.
+   --tn-task-lead is the first column; it collapses when a card shows neither status nor priority. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__main-row {
+    grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, 1fr) auto auto var(--tn-board-control-size);
     grid-template-rows: auto minmax(var(--tn-board-control-size), auto);
 }
 
@@ -258,7 +263,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 /* Too narrow for status, title, priority and menu on one line: priority moves under the status. */
 @container tn-task-card (max-width: 240px) {
     body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__main-row {
-        grid-template-columns: var(--tn-board-control-size) minmax(0, 1fr) var(--tn-board-control-size);
+        grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, 1fr) var(--tn-board-control-size);
         grid-template-rows: auto minmax(var(--tn-board-control-size), auto);
     }
 
@@ -329,7 +334,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 @media (hover: hover) and (pointer: fine) {
     @container tn-task-list (min-width: 640px) {
         body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row {
-            grid-template-columns: var(--tn-board-control-size) minmax(0, max-content) auto minmax(0, 1fr) fit-content(50%) var(--tn-control-sm) var(--tn-board-control-size);
+            grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, max-content) auto minmax(0, 1fr) fit-content(50%) var(--tn-control-sm) var(--tn-board-control-size);
             grid-template-rows: auto;
         }
 
@@ -356,7 +361,8 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
             flex-wrap: nowrap;
             justify-content: flex-end;
             gap: var(--tn-space-2);
-            padding-inline-start: var(--tn-space-4);
+            /* The end padding leaves room for the last date's hover background. */
+            padding-inline: var(--tn-space-4) var(--tn-space-1);
             overflow: hidden;
         }
 
@@ -391,5 +397,60 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
             grid-column: 7;
             grid-row: 1;
         }
+    }
+}
+
+/* A view that shows neither status nor priority (a Kanban board grouped by status, for one)
+   drops the empty first column, so titles start at the edge. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--no-lead:not(.task-card--layout-inline) > .task-card__main-row {
+    --tn-task-lead: 0px;
+}
+
+/* Icon controls with a mouse: one shape everywhere. Each is a 24px square with Obsidian's small
+   radius, gets the same hover background, and its icon turns to the normal text colour.
+   Display-only badges (details, attachments) take the same 24px slot so icons stay evenly spaced. */
+@media (hover: hover) and (pointer: fine) {
+    /* The main row has no column gap, so the first column carries the space between status and title. */
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+        --tn-task-lead: calc(var(--tn-control-sm) + var(--tn-space-1));
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__priority-dot) {
+        justify-self: start;
+    }
+
+    /* Kanban cards size to their content, so a card with only a title is one line tall. */
+    body:not(.is-mobile) .tasknotes-plugin .kanban-view__card-wrapper .task-card:not(.task-card--layout-inline) {
+        min-height: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-overflow:not([hidden]), .task-card__badges > *) {
+        min-width: var(--tn-control-sm);
+        min-height: var(--tn-control-sm);
+        border-radius: var(--tn-radius-sm);
+    }
+
+    /* The reorder handle keeps its own 20 by 28 size in the left gutter, clear of the status. */
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__drag-handle {
+        min-width: 0;
+        min-height: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__badges > [role="button"]:not(.task-card__blocking-toggle--expanded, .task-card__blocked-toggle--expanded):hover {
+        color: var(--tn-text-normal);
+    }
+
+    /* Dates: the hover background reaches past the text on both sides. Two offset shadows draw the
+       extension, so the date's measured width, which decides what fits on the line, does not change. */
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata-date:not(.task-card__metadata-date--readonly):hover {
+        box-shadow: calc(-1 * var(--tn-space-1)) 0 0 var(--tn-hover), var(--tn-space-1) 0 0 var(--tn-hover);
+    }
+
+    /* Tags, contexts and projects read as text links: no background, just colour and an underline. */
+    body:not(.is-mobile) .tasknotes-plugin .task-card .task-card__metadata :is(.tag, .context-tag, .task-card__project-link):hover {
+        background: transparent;
+        color: var(--tn-text-normal);
+        text-decoration: underline;
+        text-underline-offset: 2px;
     }
 }

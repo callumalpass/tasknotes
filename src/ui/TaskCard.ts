@@ -17,6 +17,7 @@ import {
 	applyTaskCardPriorityColor,
 	createPriorityIndicator,
 	createStatusIndicator,
+	syncTaskCardLeadColumn,
 	updatePriorityIndicator,
 	updateStatusIndicator,
 } from "./taskCardPrimaryIndicators";
@@ -208,6 +209,7 @@ export function createTaskCard(
 		visibleProperties,
 		onClick: createPriorityClickHandler(task, plugin),
 	});
+	syncTaskCardLeadColumn(card, visibleProperties, plugin, opts.hideStatusIndicator);
 
 	// Content container
 	const contentContainer = mainRow.createEl(layout === "inline" ? "span" : "div", {
@@ -387,6 +389,7 @@ export function updateTaskCard(
 		visibleProperties,
 		onClick: createPriorityClickHandler(task, plugin),
 	});
+	syncTaskCardLeadColumn(element, visibleProperties, plugin, opts.hideStatusIndicator);
 
 	const secondaryBadgeHandlers = createSecondaryBadgeHandlers(plugin);
 	updateTaskCardSecondaryBadges({

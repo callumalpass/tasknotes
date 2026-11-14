@@ -41,3 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - The Google Calendar settings now say more plainly that exporting tasks and timeblocks needs your own Google Cloud project. The connection page is now called **Advanced: use your own Google Cloud project**, and both export pages say what to connect, and where, until it is connected. See [Calendar Integration Setup](https://tasknotes.dev/calendar-setup/#google-calendar).
 - On desktop, Task List rows are more compact. In a list at least 640 pixels wide, each task takes a single line, with its properties, dates and priority lined up on the right. In narrower lists the two-line rows are about a third shorter.
+- On desktop, the icon buttons on tasks in the Task List, Kanban and calendar lists are all the same 24-pixel square with the same hover. Status, priority and the **⋯** menu were wide ovals, and the other icons had different corners and hover colours. Group headers in the Task List and the collapse buttons on Kanban columns match them.
+- On desktop, Kanban cards are shorter: a card with only a title is one line tall. On a board grouped by status, titles no longer leave an empty space where the status would sit.
+- Hovering an overdue or due-today date keeps its colour, and the highlight around a date is evenly padded. Hovering a tag, context or project underlines it instead of drawing a box behind it.
+- Done tasks show their priority, dates and properties faded, like their title.
+- Task List groups start closer to the toolbar, with less space above each group header.
