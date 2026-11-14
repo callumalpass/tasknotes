@@ -1503,6 +1503,11 @@ msgctxt "views.basesCalendar.settings.groups.advanced"
 msgid "Advanced"
 msgstr "Avanzado"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.name"
+msgid "Advanced: use your own Google Cloud project"
+msgstr "Avanzado: usar tu propio proyecto de Google Cloud"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.reminders.directions.after"
@@ -1936,11 +1941,6 @@ msgstr "Iniciar automáticamente sesiones de trabajo después de descansos"
 msgctxt "settings.features.timeTracking.autoStopDesc"
 msgid "Automatically stop time tracking when a task is marked complete"
 msgstr "Detener automáticamente el seguimiento de tiempo cuando una tarea se marca como completa"
-
-#: src/settings/native/integrations.ts
-msgctxt "settings.integrations.googleCalendarExport.description"
-msgid "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above."
-msgstr "Sincroniza automáticamente tus tareas al Calendario de Google como eventos. Requiere que el Calendario de Google esté conectado arriba."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.description"
@@ -3123,8 +3123,8 @@ msgstr "Conectar el Calendario de Google"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.calendarService.ownApplication.description"
-msgid "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this."
-msgstr "Conéctate con credenciales de tu propio proyecto de Google Cloud. Es necesario para exportar tareas y bloques de tiempo al Calendario de Google."
+msgid "Connect with OAuth credentials from a Google Cloud project you create. Exporting tasks and timeblocks to Google Calendar works only with this connection."
+msgstr "Conéctate con credenciales OAuth de un proyecto de Google Cloud que crees tú. Solo con esta conexión se pueden exportar tareas y bloques de tiempo al Calendario de Google."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
@@ -3133,8 +3133,8 @@ msgstr "Conectado"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.status.ownApplication"
-msgid "Connected with your own Google application"
-msgstr "Conectado con tu propia aplicación de Google"
+msgid "Connected with your own Google Cloud project"
+msgstr "Conectado con tu propio proyecto de Google Cloud"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
@@ -5481,11 +5481,6 @@ msgid "Exported {count} saved views to {filePath}"
 msgstr "Exportadas {count} vistas guardadas a {filePath}"
 
 #: src/settings/native/integrations.ts
-msgctxt "settings.calendarService.export.description"
-msgid "Exporting to Google Calendar needs your own Google application, connected under Google Calendar."
-msgstr "Para exportar al Calendario de Google hace falta tu propia aplicación de Google, conectada en Calendario de Google."
-
-#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "Expone las herramientas de TaskNotes mediante Model Context Protocol en el endpoint /mcp. Requiere que la API HTTP esté habilitada."
@@ -7798,6 +7793,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty"
 msgid "Navigate to date from property"
 msgstr "Navegar a la fecha desde la propiedad"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.name"
+msgid "Needs your own Google Cloud project"
+msgstr "Requiere tu propio proyecto de Google Cloud"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.completionSubmenu.description"
 msgid "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu."
@@ -8391,11 +8391,6 @@ msgstr "Ninguna"
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "Normal"
-
-#: src/settings/native/integrations.ts
-msgctxt "settings.calendarService.export.name"
-msgid "Not available while signed in with Google"
-msgstr "No disponible mientras tengas la sesión iniciada con Google"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -10911,6 +10906,11 @@ msgctxt "settings.calendarService.signIn.name"
 msgid "Sign in with Google"
 msgstr "Iniciar sesión con Google"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.signedInDescription"
+msgid "Sign in with Google can’t export tasks or timeblocks. To export, sign out of Google Calendar, then connect your own project under Google Calendar → Advanced: use your own Google Cloud project."
+msgstr "«Iniciar sesión con Google» no puede exportar tareas ni bloques de tiempo. Para exportar, cierra la sesión del Calendario de Google y conecta tu propio proyecto en Calendario de Google → Avanzado: usar tu propio proyecto de Google Cloud."
+
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.waiting.description"
 msgid "Sign in with Google there, then enter the code it shows you here."
@@ -10933,8 +10933,8 @@ msgstr "Cerrar sesión"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.calendarService.ownApplication.signOutFirst"
-msgid "Sign out of Google Calendar before connecting your own Google application."
-msgstr "Cierra la sesión del Calendario de Google antes de conectar tu propia aplicación de Google."
+msgid "Sign out of Google Calendar before connecting your own Google Cloud project."
+msgstr "Cierra la sesión del Calendario de Google antes de conectar tu propio proyecto de Google Cloud."
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.signOut.name"
@@ -11465,8 +11465,8 @@ msgstr "Sincronizar bloques de tiempo"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
-msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
-msgstr "Sincroniza los bloques de tiempo de tus notas diarias con el Calendario de Google como eventos. Requiere que el Calendario de Google esté conectado arriba."
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export."
+msgstr "Sincroniza los bloques de tiempo de tus notas diarias con el Calendario de Google como eventos. Requiere tu propio proyecto de Google Cloud; «Iniciar sesión con Google» no puede exportar."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
@@ -11477,6 +11477,11 @@ msgstr "Sincronizar con el Calendario de Google"
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.name"
 msgid "Sync trigger"
 msgstr "Disparador de sincronización"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.description"
+msgid "Sync your tasks to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export."
+msgstr "Sincroniza tus tareas con el Calendario de Google como eventos. Requiere tu propio proyecto de Google Cloud; «Iniciar sesión con Google» no puede exportar."
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -12991,6 +12996,11 @@ msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "para descartar"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.notConnectedDescription"
+msgid "To export, connect your own project under Google Calendar → Advanced: use your own Google Cloud project. Sign in with Google can’t export."
+msgstr "Para exportar, conecta tu propio proyecto en Calendario de Google → Avanzado: usar tu propio proyecto de Google Cloud. «Iniciar sesión con Google» no puede exportar."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmLargeMessage"
@@ -13668,11 +13678,6 @@ msgstr "Usar plantilla"
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "Use este secreto para verificar los datos en la aplicación receptora."
-
-#: src/settings/native/connections.ts
-msgctxt "settings.calendarService.ownApplication.name"
-msgid "Use your own Google application"
-msgstr "Usar tu propia aplicación de Google"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"

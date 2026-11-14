@@ -204,7 +204,7 @@ export function connectionPage(
 						// One Google source at a time.
 						if (provider === "google" && plugin.hostedGoogleCalendarService?.isSignedIn())
 							throw new Error(
-								ctx.t(msg({ message: "Sign out of Google Calendar before connecting your own Google application.", context: "settings.calendarService.ownApplication.signOutFirst" }))
+								ctx.t(msg({ message: "Sign out of Google Calendar before connecting your own Google Cloud project.", context: "settings.calendarService.ownApplication.signOutFirst" }))
 							);
 						await plugin.oauthService.authenticate(provider);
 						if (provider === "google") await plugin.ownGoogleCalendarService?.initialize();
@@ -258,8 +258,8 @@ export function connectionPage(
 			...calendarServiceItems(ctx, unavailable),
 			{
 				type: "page",
-				name: ctx.t(msg({ message: "Use your own Google application", context: "settings.calendarService.ownApplication.name" })),
-				desc: ctx.t(msg({ message: "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this.", context: "settings.calendarService.ownApplication.description" })),
+				name: ctx.t(msg({ message: "Advanced: use your own Google Cloud project", context: "settings.calendarService.ownApplication.name" })),
+				desc: ctx.t(msg({ message: "Connect with OAuth credentials from a Google Cloud project you create. Exporting tasks and timeblocks to Google Calendar works only with this connection.", context: "settings.calendarService.ownApplication.description" })),
 				items,
 			},
 		],

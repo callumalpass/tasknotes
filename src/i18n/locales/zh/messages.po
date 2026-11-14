@@ -1502,6 +1502,11 @@ msgctxt "views.basesCalendar.settings.groups.advanced"
 msgid "Advanced"
 msgstr "高级"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.name"
+msgid "Advanced: use your own Google Cloud project"
+msgstr "高级：使用你自己的 Google Cloud 项目"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.reminders.directions.after"
@@ -1935,11 +1940,6 @@ msgstr "休息后自动开始工作会话"
 msgctxt "settings.features.timeTracking.autoStopDesc"
 msgid "Automatically stop time tracking when a task is marked complete"
 msgstr "任务标记为完成时自动停止时间跟踪"
-
-#: src/settings/native/integrations.ts
-msgctxt "settings.integrations.googleCalendarExport.description"
-msgid "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above."
-msgstr "自动将你的任务同步到Google 日历作为事件。需要在上方连接Google 日历。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.description"
@@ -3122,8 +3122,8 @@ msgstr "连接 Google 日历"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.calendarService.ownApplication.description"
-msgid "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this."
-msgstr "使用你自己的 Google Cloud 项目凭据进行连接。将任务和时间块导出到 Google 日历需要这种连接方式。"
+msgid "Connect with OAuth credentials from a Google Cloud project you create. Exporting tasks and timeblocks to Google Calendar works only with this connection."
+msgstr "使用你自己创建的 Google Cloud 项目的 OAuth 凭据进行连接。只有通过这种连接，才能将任务和时间块导出到 Google 日历。"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
@@ -3132,8 +3132,8 @@ msgstr "已连接"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.status.ownApplication"
-msgid "Connected with your own Google application"
-msgstr "已通过你自己的 Google 应用连接"
+msgid "Connected with your own Google Cloud project"
+msgstr "已通过你自己的 Google Cloud 项目连接"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
@@ -5480,11 +5480,6 @@ msgid "Exported {count} saved views to {filePath}"
 msgstr "已将 {count} 个已保存视图导出到 {filePath}"
 
 #: src/settings/native/integrations.ts
-msgctxt "settings.calendarService.export.description"
-msgid "Exporting to Google Calendar needs your own Google application, connected under Google Calendar."
-msgstr "导出到 Google 日历需要在“Google 日历”下连接你自己的 Google 应用。"
-
-#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "通过 /mcp 端点使用 Model Context Protocol 暴露 TaskNotes 工具。需要启用 HTTP API。"
@@ -7795,6 +7790,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty"
 msgid "Navigate to date from property"
 msgstr "从属性导航到日期"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.name"
+msgid "Needs your own Google Cloud project"
+msgstr "需要你自己的 Google Cloud 项目"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.completionSubmenu.description"
 msgid "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu."
@@ -8388,11 +8388,6 @@ msgstr "无"
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "无"
-
-#: src/settings/native/integrations.ts
-msgctxt "settings.calendarService.export.name"
-msgid "Not available while signed in with Google"
-msgstr "使用 Google 账号登录期间不可用"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -10908,6 +10903,11 @@ msgctxt "settings.calendarService.signIn.name"
 msgid "Sign in with Google"
 msgstr "使用 Google 账号登录"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.signedInDescription"
+msgid "Sign in with Google can’t export tasks or timeblocks. To export, sign out of Google Calendar, then connect your own project under Google Calendar → Advanced: use your own Google Cloud project."
+msgstr "“使用 Google 账号登录”无法导出任务或时间块。如需导出，请先退出 Google 日历，再在“Google 日历 → 高级：使用你自己的 Google Cloud 项目”中连接你自己的项目。"
+
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.waiting.description"
 msgid "Sign in with Google there, then enter the code it shows you here."
@@ -10930,8 +10930,8 @@ msgstr "退出登录"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.calendarService.ownApplication.signOutFirst"
-msgid "Sign out of Google Calendar before connecting your own Google application."
-msgstr "连接你自己的 Google 应用之前，请先退出 Google 日历。"
+msgid "Sign out of Google Calendar before connecting your own Google Cloud project."
+msgstr "连接你自己的 Google Cloud 项目之前，请先退出 Google 日历。"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.signOut.name"
@@ -11462,8 +11462,8 @@ msgstr "同步时间块"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
-msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
-msgstr "将每日笔记中的时间块同步到Google 日历作为事件。需要在上方连接Google 日历。"
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export."
+msgstr "将每日笔记中的时间块作为事件同步到 Google 日历。需要你自己的 Google Cloud 项目；“使用 Google 账号登录”无法导出。"
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
@@ -11474,6 +11474,11 @@ msgstr "同步到Google 日历"
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.name"
 msgid "Sync trigger"
 msgstr "同步触发器"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.description"
+msgid "Sync your tasks to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export."
+msgstr "将你的任务作为事件同步到 Google 日历。需要你自己的 Google Cloud 项目；“使用 Google 账号登录”无法导出。"
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -12988,6 +12993,11 @@ msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "关闭"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.notConnectedDescription"
+msgid "To export, connect your own project under Google Calendar → Advanced: use your own Google Cloud project. Sign in with Google can’t export."
+msgstr "如需导出，请在“Google 日历 → 高级：使用你自己的 Google Cloud 项目”中连接你自己的项目。“使用 Google 账号登录”无法导出。"
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmLargeMessage"
@@ -13665,11 +13675,6 @@ msgstr "使用模板"
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "使用此密钥在接收应用中验证数据载荷。"
-
-#: src/settings/native/connections.ts
-msgctxt "settings.calendarService.ownApplication.name"
-msgid "Use your own Google application"
-msgstr "使用你自己的 Google 应用"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
