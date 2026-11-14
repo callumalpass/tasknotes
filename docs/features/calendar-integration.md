@@ -25,6 +25,7 @@ OAuth calendar integration requires creating an OAuth application with your cale
 - Events are fetched automatically every 15 minutes
 - Events are also fetched when local changes occur (task creation, updates, rescheduling)
 - Dragging calendar events to new dates/times updates the event in the calendar provider
+- Right-click a Google or Microsoft event and choose **Delete event** to delete it from that calendar after confirming. For a recurring event, only the occurrence you clicked is deleted. Events on calendars you can only view, and ICS subscription events, do not offer this option
 - Per-calendar visibility toggles allow selective display of calendars
 - Access tokens are automatically refreshed when expired
 - Globally disabled calendars are excluded from the combined event data, not just hidden in a view
