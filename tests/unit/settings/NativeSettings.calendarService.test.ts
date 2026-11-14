@@ -78,7 +78,7 @@ describe("Google Calendar sign-in settings", () => {
 		expect(shows(named([google], "Sign in with Google"))).toBe(true);
 		expect(named([google], "Sign out on this device")).toBeUndefined();
 		// Client ID, secret and the rest stay available, one level down.
-		const own = page([google], "Use your own Google application");
+		const own = page([google], "Advanced: use your own Google Cloud project");
 		expect(page([own], "Application credentials")).toBeDefined();
 
 		await press(named([google], "Sign in with Google"));
@@ -95,7 +95,7 @@ describe("Google Calendar sign-in settings", () => {
 
 	test("refuses a person's own application while signed in with Google", async () => {
 		const { definitions, authenticate } = fixture({ signedIn: true });
-		const own = page(definitions(), "Use your own Google application");
+		const own = page(definitions(), "Advanced: use your own Google Cloud project");
 
 		await press(named([own], "Connect Google Calendar"));
 
@@ -145,14 +145,34 @@ describe("Google Calendar sign-in settings", () => {
 		expect(hosted.signOut).toHaveBeenCalledTimes(1);
 	});
 
-	test("says on the export pages that export needs a person's own application", () => {
-		const signedOut = fixture();
-		const note = "Not available while signed in with Google";
-		expect(shows(named([page(signedOut.definitions(), "Export tasks to Google Calendar")], note))).toBe(false);
+	test("says on the export pages that export needs a person's own Google Cloud project", () => {
+		const note = "Needs your own Google Cloud project";
+		const notes = (items: SettingDefinitionItem[], title: string) =>
+			flattenSettings([page(items, title)]).filter(
+				(item): item is SettingDefinition =>
+					!("type" in item) && item.name === note && shows(item)
+			);
 
-		const signedIn = fixture({ signedIn: true });
-		const definitions = signedIn.definitions();
-		expect(shows(named([page(definitions, "Export tasks to Google Calendar")], note))).toBe(true);
-		expect(shows(named([page(definitions, "Export timeblocks to Google Calendar")], note))).toBe(true);
+		// Not connected at all: both export pages say what to set up and where.
+		const notConnected = fixture().definitions();
+		for (const title of ["Export tasks to Google Calendar", "Export timeblocks to Google Calendar"]) {
+			const shown = notes(notConnected, title);
+			expect(shown).toHaveLength(1);
+			expect(shown[0].desc).toContain("Advanced: use your own Google Cloud project");
+		}
+
+		// Signed in with Google: the note says that sign-in cannot export.
+		const signedIn = fixture({ signedIn: true }).definitions();
+		for (const title of ["Export tasks to Google Calendar", "Export timeblocks to Google Calendar"]) {
+			const shown = notes(signedIn, title);
+			expect(shown).toHaveLength(1);
+			expect(shown[0].desc).toContain("Sign in with Google can’t export");
+			expect(shown[0].desc).toContain("sign out of Google Calendar");
+		}
+
+		// Connected with their own project: no note.
+		const own = fixture({ ownConnected: true }).definitions();
+		expect(notes(own, "Export tasks to Google Calendar")).toHaveLength(0);
+		expect(notes(own, "Export timeblocks to Google Calendar")).toHaveLength(0);
 	});
 });

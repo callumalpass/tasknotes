@@ -60,7 +60,7 @@ Google Calendar can be connected with **Sign in with Google**, which needs no se
 
 **Sign in with Google** opens Google's sign-in page in your browser, then asks for the code the browser shows. Once signed in, the page shows **Calendars shown** (up to five), **Refresh calendar events**, **Sign out on this device**, and **Access and account**, where you can disconnect Google Calendar on every device or delete your calendar service account. Events are read through the TaskNotes Calendar service and are not saved in your vault. See [Sign in with Google](../calendar-setup.md#sign-in-with-google).
 
-**Use your own Google application** holds the settings for your own OAuth credentials. Exporting tasks and timeblocks to Google Calendar needs this connection. Only one of the two can be in use at a time.
+**Advanced: use your own Google Cloud project** holds the settings for OAuth credentials from a Google Cloud project you create. Exporting tasks and timeblocks to Google Calendar works only with this connection, not with Sign in with Google. Until it is connected, both export pages say so. Only one of the two connections can be in use at a time.
 
 Provide **Client ID** and **Client Secret** from Google Cloud Console, then use **Connect Google Calendar** to complete OAuth loopback authentication. **Disconnect** revokes account tokens while retaining the OAuth app credentials for reconnection. Use **Forget saved credentials** to remove the client ID and client secret.
 
@@ -68,7 +68,7 @@ The **Target calendar** setting used for exporting tasks to Google Calendar is a
 
 For timed task exports, **Default reminder** accepts one or more minute offsets separated by commas, such as `60, 1440`. All-day task exports use the target Google Calendar's default reminder settings.
 
-When connected with your own Google application, displays:
+When connected with your own Google Cloud project, displays:
 - Connected account email
 - Connection time
 - Last sync time

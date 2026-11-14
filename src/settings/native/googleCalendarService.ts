@@ -64,7 +64,7 @@ export function calendarServiceItems(
 			if (!hosted.isSignedIn()) {
 				setting.setDesc(
 					ownConnected()
-						? ctx.t(msg({ message: "Connected with your own Google application", context: "settings.calendarService.status.ownApplication" }))
+						? ctx.t(msg({ message: "Connected with your own Google Cloud project", context: "settings.calendarService.status.ownApplication" }))
 						: ctx.t(msg({ message: "Not connected", context: "settings.native.notConnected" }))
 				);
 				return;

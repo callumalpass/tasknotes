@@ -18,7 +18,7 @@ TaskNotes then shows your primary calendar and the calendars that are ticked in 
 - You can create events, and move, edit and delete events, on calendars you can write to. Calendars shared with you as read-only are shown but cannot be changed.
 - Exporting tasks and timeblocks to Google Calendar is not available when you sign in with Google. It needs your own OAuth credentials, described below. Task events you exported earlier appear as ordinary events.
 - Each device signs in separately. **Sign out on this device** leaves your other devices signed in. Under **Access and account**, **Disconnect Google Calendar** withdraws access on every device, and **Delete calendar service account** also removes what the service holds about you.
-- TaskNotes uses one Google connection at a time. Disconnect your own Google application before signing in with Google, and sign out before connecting your own.
+- TaskNotes uses one Google connection at a time. Disconnect your own Google Cloud project before signing in with Google, and sign out before connecting your own.
 
 ## Setup (Your Own OAuth Credentials)
 
@@ -32,7 +32,7 @@ To connect Microsoft Calendar, or to connect Google Calendar without the TaskNot
 
 *Video by [@antoneheyward](https://www.youtube.com/@antoneheyward)*
 
-In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Calendars & integrations -> Google Calendar -> Use your own Google application`) and select **Connect Google Calendar**.
+In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Calendars & integrations -> Google Calendar -> Advanced: use your own Google Cloud project`) and select **Connect Google Calendar**.
 
 If your Google OAuth app is still in testing mode, add the Google account you will connect with under **Google Auth Platform -> Audience -> Test users**. Otherwise Google may block sign-in with a 403 `access_denied` error saying the app has not completed verification.
 

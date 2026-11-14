@@ -1505,6 +1505,11 @@ msgctxt "views.basesCalendar.settings.groups.advanced"
 msgid "Advanced"
 msgstr "Дополнительно"
 
+#: src/settings/native/connections.ts
+msgctxt "settings.calendarService.ownApplication.name"
+msgid "Advanced: use your own Google Cloud project"
+msgstr "Дополнительно: собственный проект Google Cloud"
+
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.reminders.directions.after"
@@ -1938,11 +1943,6 @@ msgstr "Автоматически запускать рабочие сесси�
 msgctxt "settings.features.timeTracking.autoStopDesc"
 msgid "Automatically stop time tracking when a task is marked complete"
 msgstr "Автоматически останавливать учёт времени при отметке задачи как выполненной"
-
-#: src/settings/native/integrations.ts
-msgctxt "settings.integrations.googleCalendarExport.description"
-msgid "Automatically sync your tasks to Google Calendar as events. Requires Google Calendar to be connected above."
-msgstr "Автоматически синхронизируйте ваши задачи с Google Календарём как события. Требуется подключение Google Календаря выше."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncOnUpdate.description"
@@ -3125,8 +3125,8 @@ msgstr "Подключить Google Календарь"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.calendarService.ownApplication.description"
-msgid "Connect with credentials from your own Google Cloud project. Exporting tasks and timeblocks to Google Calendar needs this."
-msgstr "Подключитесь с учётными данными собственного проекта Google Cloud. Это нужно для экспорта задач и временных блоков в Google Календарь."
+msgid "Connect with OAuth credentials from a Google Cloud project you create. Exporting tasks and timeblocks to Google Calendar works only with this connection."
+msgstr "Подключитесь с учётными данными OAuth проекта Google Cloud, который вы создали сами. Экспорт задач и временных блоков в Google Календарь работает только через это подключение."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connected"
@@ -3135,8 +3135,8 @@ msgstr "Подключено"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.status.ownApplication"
-msgid "Connected with your own Google application"
-msgstr "Подключено через собственное приложение Google"
+msgid "Connected with your own Google Cloud project"
+msgstr "Подключено через собственный проект Google Cloud"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.connectedSince"
@@ -5483,11 +5483,6 @@ msgid "Exported {count} saved views to {filePath}"
 msgstr "Экспортировано {count} сохранённых представлений в {filePath}"
 
 #: src/settings/native/integrations.ts
-msgctxt "settings.calendarService.export.description"
-msgid "Exporting to Google Calendar needs your own Google application, connected under Google Calendar."
-msgstr "Для экспорта в Google Календарь нужно собственное приложение Google, подключённое в разделе Google Календарь."
-
-#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
 msgstr "Предоставляет инструменты TaskNotes через Model Context Protocol на конечной точке /mcp. Требуется включённый HTTP API."
@@ -7798,6 +7793,11 @@ msgctxt "views.basesCalendar.settings.dateNavigation.navigateToDateFromProperty"
 msgid "Navigate to date from property"
 msgstr "Перейти к дате из свойства"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.name"
+msgid "Needs your own Google Cloud project"
+msgstr "Нужен собственный проект Google Cloud"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.completionSubmenu.description"
 msgid "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu."
@@ -8391,11 +8391,6 @@ msgstr "Нет"
 msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "Обычный"
-
-#: src/settings/native/integrations.ts
-msgctxt "settings.calendarService.export.name"
-msgid "Not available while signed in with Google"
-msgstr "Недоступно, пока выполнен вход через Google"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -10911,6 +10906,11 @@ msgctxt "settings.calendarService.signIn.name"
 msgid "Sign in with Google"
 msgstr "Войти через Google"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.signedInDescription"
+msgid "Sign in with Google can’t export tasks or timeblocks. To export, sign out of Google Calendar, then connect your own project under Google Calendar → Advanced: use your own Google Cloud project."
+msgstr "Вход через Google не позволяет экспортировать задачи и временные блоки. Чтобы экспортировать, выйдите из Google Календаря, затем подключите собственный проект в разделе Google Календарь → Дополнительно: собственный проект Google Cloud."
+
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.waiting.description"
 msgid "Sign in with Google there, then enter the code it shows you here."
@@ -10933,8 +10933,8 @@ msgstr "Выйти"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.calendarService.ownApplication.signOutFirst"
-msgid "Sign out of Google Calendar before connecting your own Google application."
-msgstr "Выйдите из Google Календаря, прежде чем подключать собственное приложение Google."
+msgid "Sign out of Google Calendar before connecting your own Google Cloud project."
+msgstr "Выйдите из Google Календаря, прежде чем подключать собственный проект Google Cloud."
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.signOut.name"
@@ -11465,8 +11465,8 @@ msgstr "Синхронизировать временные блоки"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarTimeblockExport.description"
-msgid "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above."
-msgstr "Синхронизируйте временные блоки из ежедневных заметок с Google Календарём как события. Требуется подключение Google Календаря выше."
+msgid "Sync timeblocks from your daily notes to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export."
+msgstr "Синхронизируйте временные блоки из ежедневных заметок с Google Календарём как события. Нужен собственный проект Google Cloud; вход через Google не позволяет экспортировать."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.syncToGoogle"
@@ -11477,6 +11477,11 @@ msgstr "Синхронизировать с Google Календарём"
 msgctxt "settings.integrations.googleCalendarExport.syncTrigger.name"
 msgid "Sync trigger"
 msgstr "Триггер синхронизации"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.googleCalendarExport.description"
+msgid "Sync your tasks to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export."
+msgstr "Синхронизируйте задачи с Google Календарём как события. Нужен собственный проект Google Cloud; вход через Google не позволяет экспортировать."
 
 #: src/i18n/messages.ts
 #: src/ui/taskCardMetadata.ts
@@ -12991,6 +12996,11 @@ msgctxt "modals.unscheduledTasksSelector.instructions.dismiss"
 msgid "to dismiss"
 msgstr "для отмены"
 
+#: src/settings/native/integrations.ts
+msgctxt "settings.calendarService.export.notConnectedDescription"
+msgid "To export, connect your own project under Google Calendar → Advanced: use your own Google Cloud project. Sign in with Google can’t export."
+msgstr "Чтобы экспортировать, подключите собственный проект в разделе Google Календарь → Дополнительно: собственный проект Google Cloud. Вход через Google не позволяет экспортировать."
+
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 msgctxt "common.reorder.confirmLargeMessage"
@@ -13668,11 +13678,6 @@ msgstr "Использовать шаблон"
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "Используйте этот секрет для проверки данных в принимающем приложении."
-
-#: src/settings/native/connections.ts
-msgctxt "settings.calendarService.ownApplication.name"
-msgid "Use your own Google application"
-msgstr "Использовать собственное приложение Google"
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
