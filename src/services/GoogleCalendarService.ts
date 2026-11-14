@@ -313,6 +313,9 @@ export class GoogleCalendarService extends CalendarProvider {
 						description: calendar.description,
 						backgroundColor: calendar.backgroundColor,
 						primary: calendar.primary || false,
+						canEdit: calendar.accessRole
+							? calendar.accessRole === "owner" || calendar.accessRole === "writer"
+							: undefined,
 					});
 				}
 

@@ -4497,6 +4497,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "Délai en millisecondes avant d''afficher les suggestions"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirmButton"
+msgid "Delete"
+msgstr "Supprimer"
+
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 #: src/modals/TaskEditModal.ts
@@ -4536,10 +4541,21 @@ msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
 msgid "Delete"
 msgstr "Supprimer"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirm"
+msgid "Delete \"{title}\" from {provider}?"
+msgstr "Supprimer « {title} » de {provider} ?"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
 msgstr "Supprimer l''entrée"
+
+#: src/components/ICSEventContextMenu.ts
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent"
+msgid "Delete event"
+msgstr "Supprimer l’événement"
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
@@ -4613,6 +4629,11 @@ msgstr "Supprimer les tâches"
 msgctxt "notices.audit.deleteConfirm"
 msgid "Delete tasks ({count})? This action cannot be undone."
 msgstr "Supprimer les tâches ({count}) ? Cette action est irréversible."
+
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
+msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
+msgstr "Supprimer cette occurrence de « {title} » de {provider} ? Les autres occurrences sont conservées."
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
@@ -5407,6 +5428,11 @@ msgctxt "settings.taskProperties.properties.timeEstimate.description"
 msgid "Estimated minutes to complete the task. Used for time-blocking and workload planning. Displayed on task cards and calendar events."
 msgstr "Minutes estimées pour terminer la tâche. Utilisé pour la planification du temps et la gestion de la charge de travail. Affiché sur les cartes de tâches et les événements du calendrier."
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.notices.deleteSuccess"
+msgid "Event deleted"
+msgstr "Événement supprimé"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
 msgid "Event details copied as Markdown"
@@ -5940,6 +5966,11 @@ msgstr "Impossible de passer à la priorité suivante"
 msgctxt "notices.commands.statusCycleFailed"
 msgid "Failed to cycle task status"
 msgstr "Impossible de passer au statut suivant"
+
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.notices.deleteFailure"
+msgid "Failed to delete event: {message}"
+msgstr "Impossible de supprimer l’événement : {message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.deleteEvent display"
@@ -13618,6 +13649,7 @@ msgid "Untitled"
 msgstr "Sans titre"
 
 #: src/components/ICSEventContextMenu.ts
+#: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.markdown.titleFallback"
 msgid "Untitled event"
 msgstr "Événement sans titre"
