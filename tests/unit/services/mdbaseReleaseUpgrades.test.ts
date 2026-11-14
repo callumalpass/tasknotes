@@ -186,12 +186,14 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 			expect(record.status_behavior.cancelled.exclude_from_cycle).toBe(true);
 		}
 		expect(record.link_write_format).toBe("wikilink");
-		expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(
-			canonical(`schemas/tasknotes.task/${TASKNOTES_SPEC_VERSION}.schema.json`)
-		);
-		expect(files.get("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toBe(
-			canonical(`schemas/tasknotes.task.binding/${TASKNOTES_SPEC_VERSION}.schema.json`)
-		);
+		// The schemas belong to the tasknotes.task type pack. TaskNotes never
+		// creates them; a copy an earlier release wrote becomes the pack's bytes.
+		for (const [schema, resource] of [
+			["_schemas/tasknotes/tasknotes-task.schema.json", `schemas/tasknotes.task/${TASKNOTES_SPEC_VERSION}.schema.json`],
+			["_schemas/tasknotes/tasknotes-task-binding.schema.json", `schemas/tasknotes.task.binding/${TASKNOTES_SPEC_VERSION}.schema.json`],
+		]) {
+			expect(files.get(schema)).toBe(schema in before ? canonical(resource) : undefined);
+		}
 
 		for (const record of ["TaskNotes/Tasks/cancelled.md", "TaskNotes/Tasks/open.md", "paper.md"]) {
 			expect(files.get(record)).toBe(before[record]);
