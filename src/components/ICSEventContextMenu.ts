@@ -12,6 +12,8 @@ import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenu
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
 import { formatDateLabel } from "../utils/dateUtils";
+import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { deleteProviderEvent, getDeletingProvider } from "./providerEventDeletion";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/ICSEventContextMenu" });
 
@@ -157,6 +159,26 @@ export class ICSEventContextMenu {
 					}
 				})
 		);
+
+		// Delete event (connected Google/Microsoft calendars the account can edit)
+		if (getDeletingProvider(plugin, icsEvent)) {
+			this.menu.addSeparator();
+			this.menu.addItem((item) => {
+				item
+					.setTitle(this.t(msg({ message: "Delete event", context: "contextMenus.ics.deleteEvent" })))
+					.setIcon("trash")
+					.setWarning(true)
+					.onClick(async () => {
+						const deleted = await deleteProviderEvent({
+							plugin,
+							icsEvent,
+							confirm: (options) => showConfirmationModal(plugin.app, options),
+							notify: (message) => new Notice(message),
+						});
+						if (deleted) this.options.onUpdate?.();
+					});
+			});
+		}
 	}
 
 	private async createTaskFromEvent(): Promise<void> {

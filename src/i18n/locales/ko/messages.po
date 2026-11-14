@@ -4251,6 +4251,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "제안 표시 전 지연 시간 (밀리초)"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirmButton"
+msgid "Delete"
+msgstr "삭제"
+
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 #: src/modals/TaskEditModal.ts
@@ -4281,6 +4286,11 @@ msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
 msgid "Delete"
 msgstr "삭제"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirm"
+msgid "Delete \"{title}\" from {provider}?"
+msgstr "{provider}에서 \"{title}\"을(를) 삭제할까요?"
+
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteEntry"
@@ -4301,6 +4311,12 @@ msgstr "캘린더 서비스 계정 삭제"
 msgctxt "modals.timeEntryEditor.deleteEntry"
 msgid "Delete entry"
 msgstr "기록 삭제"
+
+#: src/components/ICSEventContextMenu.ts
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent"
+msgid "Delete event"
+msgstr "일정 삭제"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
@@ -4363,6 +4379,11 @@ msgstr "작업 삭제"
 msgctxt "notices.audit.deleteConfirm"
 msgid "Delete tasks ({count})? This action cannot be undone."
 msgstr "작업 {count}개를 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다."
+
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
+msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
+msgstr "{provider}에서 \"{title}\"의 이 일정만 삭제할까요? 다른 반복 일정은 유지됩니다."
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
@@ -5189,6 +5210,11 @@ msgctxt "keyboard key name"
 msgid "Esc"
 msgstr "Esc"
 
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.notices.deleteSuccess"
+msgid "Event deleted"
+msgstr "일정을 삭제했습니다"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyMarkdownSuccess"
 msgid "Event details copied as Markdown"
@@ -5702,6 +5728,11 @@ msgstr "다음 작업 우선순위로 변경하지 못했습니다"
 msgctxt "notices.commands.statusCycleFailed"
 msgid "Failed to cycle task status"
 msgstr "다음 작업 상태로 변경하지 못했습니다"
+
+#: src/components/providerEventDeletion.ts
+msgctxt "contextMenus.ics.notices.deleteFailure"
+msgid "Failed to delete event: {message}"
+msgstr "일정을 삭제하지 못했습니다: {message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.deleteEvent display"
@@ -13504,6 +13535,7 @@ msgid "Untitled"
 msgstr "제목 없음"
 
 #: src/components/ICSEventContextMenu.ts
+#: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.markdown.titleFallback"
 msgid "Untitled event"
 msgstr "제목 없는 이벤트"
