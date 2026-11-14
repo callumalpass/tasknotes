@@ -9,12 +9,15 @@ import {
 	TASKNOTES_MDBASE_TYPE_VERSION,
 	TASKNOTES_TASK_CONTRACT_VERSION,
 } from "@tasknotes/model/mdbase";
+import * as fs from "fs";
 import { TFile } from "obsidian";
+import * as path from "path";
 import YAML from "yaml";
 import { observeTranslation } from "../../helpers/real-i18n";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
+import { canonicalTaskNotesResources } from "../../../src/services/canonicalTaskNotesPack";
 import { appSettingsFromPluginSettings } from "../../../src/services/mdbaseCanonicalConfig";
 import {
 	DEFAULT_FIELD_MAPPING,
@@ -324,10 +327,41 @@ describe("MdbaseSpecService", () => {
 			await service.initialize();
 			expect(asObject(asObject(YAML.parse(files.get("mdbase.yaml")!)).settings).explicit_type_keys).toEqual([]);
 			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("contract_type: record");
-			expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toBeDefined();
+			// The schemas are tasknotes.task type-pack resources: an app installs them.
+			expect(files.has("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(false);
+			expect(files.has("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toBe(false);
 			const snapshot = new Map(files);
 			await new MdbaseSpecService(plugin).initialize();
 			expect(files).toEqual(snapshot);
+		});
+
+		it("updates schema files an earlier TaskNotes wrote but never creates or overwrites others", async () => {
+			const legacy = JSON.parse(
+				fs.readFileSync(path.join(__dirname, "../../fixtures/mdbase-upgrades/beta0-default.json"), "utf8")
+			).files as Record<string, string>;
+			const taskSchema = "_schemas/tasknotes/tasknotes-task.schema.json";
+			const bindingSchema = "_schemas/tasknotes/tasknotes-task-binding.schema.json";
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const files = installMemoryVault(plugin, {
+				"mdbase.yaml": 'spec_version: "0.3.0"\nsettings:\n  explicit_type_keys: []\n',
+				"_types/task.md": service.buildTaskTypeDef("0.3.0"),
+				[taskSchema]: legacy[taskSchema],
+			});
+			await service.initialize();
+			const current = canonicalTaskNotesResources.find(
+				({ source }) => source === `schemas/tasknotes.task/${TASKNOTES_TASK_CONTRACT_VERSION}.schema.json`
+			)?.document;
+			expect(current).toBeDefined();
+			expect(legacy[taskSchema]).not.toBe(current);
+			expect(files.get(taskSchema)).toBe(current);
+			expect(files.has(bindingSchema)).toBe(false);
+
+			const custom = '{"title":"Edited"}\n';
+			files.set(bindingSchema, custom);
+			await new MdbaseSpecService(plugin).initialize();
+			expect(files.get(taskSchema)).toBe(current);
+			expect(files.get(bindingSchema)).toBe(custom);
 		});
 
 		it("preserves foreign support resources without creating partial support files", async () => {
@@ -1502,8 +1536,7 @@ describe("MdbaseSpecService", () => {
 			expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("_types");
 			expect(files.get("_types/task.md")).toContain("contract: tasknotes.task");
 			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("kind: mdbase.contract");
-			expect(files.get("_schemas/tasknotes/tasknotes-task.schema.json")).toContain('"$schema"');
-			expect(files.get("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toContain('"profiles"');
+			expect([...files.keys()].some((path) => path.startsWith("_schemas/"))).toBe(false);
 		});
 
 		it("should create new files when they do not exist", async () => {
@@ -2066,13 +2099,8 @@ describe("MdbaseSpecService", () => {
 			expect(
 				plugin.app.vault.create.mock.calls.some(([path]: [string]) => path === taskPath)
 			).toBe(false);
-			expect([...files.keys()]).toEqual(
-				expect.arrayContaining([
-					"_contracts/tasknotes.task/0.3.0-rc.6.md",
-					"_schemas/tasknotes/tasknotes-task.schema.json",
-					"_schemas/tasknotes/tasknotes-task-binding.schema.json",
-				])
-			);
+			expect([...files.keys()]).toContain("_contracts/tasknotes.task/0.3.0-rc.6.md");
+			expect([...files.keys()].some((path) => path.startsWith("_schemas/"))).toBe(false);
 			const backupConfig = [...files.entries()].find(([path]) =>
 				path.endsWith("/mdbase.yaml.bak")
 			);
@@ -2277,7 +2305,7 @@ describe("MdbaseSpecService", () => {
 			expect(parseFrontmatter(files.get("_types/task.md") ?? "").kind).toBe("mdbase.type");
 
 			// A write killed while staging leaves its temporary file behind.
-			const stage = "_schemas/tasknotes/tasknotes-task.schema.json.tasknotes-stage-1-1-abc-def";
+			const stage = "_contracts/tasknotes.task/0.3.0-rc.6.md.tasknotes-stage-1-1-abc-def";
 			files.set(stage, "{}");
 			failRollback = false;
 			await new MdbaseSpecService(plugin).initialize();

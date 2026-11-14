@@ -128,6 +128,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed the TaskNotes app being unable to open a collection after TaskNotes set it up ("Something went wrong"). TaskNotes no longer creates the task and binding JSON Schema files in `_schemas/tasknotes/`: the contract already carries both schemas, and the files belong to the `tasknotes.task` type pack, which the app installs. A copy an earlier TaskNotes release wrote is updated to the pack's exact bytes, which the app accepts as soon as it has the matching mdbase fix; a copy you edited is left as it is.
+  - Thanks to @Lorite for reporting (tasknotes-app #436)
 - Prevented Obsidian freezing after saving a private calendar subscription's password in native settings. Thanks to @vbaz for requesting authenticated feeds and @WorldTeacher for the original implementation.
 - Fixed dropping a recurring task onto a completed Kanban status also completing the next occurrence when the task was completed elsewhere during the drag. Board refreshes now wait until the drag ends. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
 - Fixed dragging a card reversing the other cards in a Kanban column when manual order is sorted descending. Kanban now follows the configured sort direction, matching Task List. Columns already reordered under a descending sort will show their intended order once after updating; stored ranks are not rewritten when the view opens.

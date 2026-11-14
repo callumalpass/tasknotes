@@ -327,11 +327,8 @@ export class MdbaseSpecService {
 			legacyType.typeName,
 			contractsFolder
 		);
-		const support = new Map([
-			[resources.paths.contract, resources.contractDocument],
-			[resources.paths.taskSchema, resources.taskSchemaDocument],
-			[resources.paths.bindingSchema, resources.bindingSchemaDocument],
-		]);
+		const support = new Map([[resources.paths.contract, resources.contractDocument]]);
+		const schemaRefreshes = await this.legacySchemaRefreshes(resources);
 		for (const [path, intended] of support) {
 			if (await this.plugin.app.vault.adapter.exists(path) &&
 				await this.plugin.app.vault.adapter.read(path) !== intended &&
@@ -349,8 +346,7 @@ export class MdbaseSpecService {
 		const settingsResources = this.appSettingsResources(resources);
 		const managedPaths = [
 			resources.paths.contract,
-			resources.paths.taskSchema,
-			resources.paths.bindingSchema,
+			...schemaRefreshes.map(({ path }) => path),
 			legacyType.path,
 			...settingsResources.map(({ path }) => path),
 			APP_SETTINGS_RECORD_PATH,
@@ -377,8 +373,7 @@ export class MdbaseSpecService {
 		const recordSnapshot = snapshots.find(({ path }) => path === APP_SETTINGS_RECORD_PATH)?.content ?? null;
 		const recordContent = this.migratedRecordContent(recordSnapshot, YAML.parse(migratedConfig) as MdbaseYamlConfig);
 		const intendedWrites: FileSnapshot[] = [
-			{ path: resources.paths.taskSchema, content: resources.taskSchemaDocument },
-			{ path: resources.paths.bindingSchema, content: resources.bindingSchemaDocument },
+			...schemaRefreshes.map(({ path, content }) => ({ path, content })),
 			{ path: legacyType.path, content: resources.typeDocument },
 			{ path: resources.paths.contract, content: resources.contractDocument },
 			...settingsResources
@@ -406,11 +401,7 @@ export class MdbaseSpecService {
 				const progressEntry = progress.find((entry) => entry.path === intendedWrite.path);
 				if (!progressEntry) throw new Error(`Missing migration progress: ${intendedWrite.path}`);
 				progressEntry.content = intendedWrite.content;
-				if (
-					intendedWrite.path === resources.paths.contract ||
-					intendedWrite.path === resources.paths.taskSchema ||
-					intendedWrite.path === resources.paths.bindingSchema
-				) {
+				if (intendedWrite.path === resources.paths.contract) {
 					this.canonicalResourcePaths.add(intendedWrite.path);
 				}
 			}
@@ -780,12 +771,6 @@ export class MdbaseSpecService {
 		).type;
 		if (contract.kind !== "mdbase.contract" || contract.id !== "tasknotes.task") {
 			throw new Error("The generated TaskNotes data contract failed read-back validation.");
-		}
-		for (const schemaPath of [resources.paths.taskSchema, resources.paths.bindingSchema]) {
-			const schema = JSON.parse(await adapter.read(schemaPath)) as unknown;
-			if (!isRecord(schema) || schema.$schema !== "https://json-schema.org/draft/2020-12/schema") {
-				throw new Error(`The generated schema at ${schemaPath} failed read-back validation.`);
-			}
 		}
 		return { path: typePath, content, type: parsed.type };
 	}
@@ -1817,11 +1802,7 @@ export class MdbaseSpecService {
 	private async writeCanonicalSupportResources(
 		resources: TaskNotesMdbaseResources
 	): Promise<void> {
-		const entries = [
-			[resources.paths.contract, resources.contractDocument],
-			[resources.paths.taskSchema, resources.taskSchemaDocument],
-			[resources.paths.bindingSchema, resources.bindingSchemaDocument],
-		] as const;
+		const entries = [[resources.paths.contract, resources.contractDocument]] as const;
 		const previousWriteState = this.writeInProgress;
 		this.writeInProgress = true;
 		try {
@@ -1845,6 +1826,9 @@ export class MdbaseSpecService {
 				}
 				this.canonicalResourcePaths.add(path);
 			}
+			for (const { path, before, content } of await this.legacySchemaRefreshes(resources)) {
+				await this.writeFileIfUnchanged({ path, content: before }, content);
+			}
 			// The settings record's contracts, schemas and type. These are shared
 			// with TaskNotes App (and the contracts with mdbase Reader): a file
 			// already present, identical or not, is left as it is.
@@ -1855,6 +1839,30 @@ export class MdbaseSpecService {
 		} finally {
 			this.writeInProgress = previousWriteState;
 		}
+	}
+
+	/**
+	 * The standalone task and binding schemas. Both are inline in the
+	 * contract; the files belong to the tasknotes.task type pack, which an app
+	 * installs with a receipt, and a plain file at either path blocks that
+	 * setup. So TaskNotes never creates them. A copy an earlier TaskNotes wrote
+	 * is updated to the current document, which is the pack's own bytes, so
+	 * mdbase setup adopts it; any other content is left as it is.
+	 */
+	private async legacySchemaRefreshes(
+		resources: TaskNotesMdbaseResources
+	): Promise<{ path: string; before: string; content: string }[]> {
+		const refreshes = [];
+		for (const [path, content] of [
+			[resources.paths.taskSchema, resources.taskSchemaDocument],
+			[resources.paths.bindingSchema, resources.bindingSchemaDocument],
+		] as const) {
+			const before = await this.metadataIO.read(path);
+			if (before !== null && before !== content && isKnownLegacySupport(before)) {
+				refreshes.push({ path, before, content });
+			}
+		}
+		return refreshes;
 	}
 
 	private appSettingsResources(resources: TaskNotesMdbaseResources) {
@@ -2481,9 +2489,10 @@ function parseMigrationJournal(value: unknown): MigrationJournal {
 		DEFAULT_TYPES_FOLDER;
 	const contractsFolder = normalizeJournalFolder(migratedConfig.settings?.contracts_folder) ??
 		DEFAULT_CONTRACTS_FOLDER;
-	const requiredPaths = [
-		"mdbase.yaml",
-		`${typesFolder}/task.md`,
+	const requiredPaths = ["mdbase.yaml", `${typesFolder}/task.md`];
+	// Present when the migration updated a schema an earlier TaskNotes wrote,
+	// and in every journal from 5.0.0-beta.7 and earlier.
+	const schemaPaths = [
 		"_schemas/tasknotes/tasknotes-task.schema.json",
 		"_schemas/tasknotes/tasknotes-task-binding.schema.json",
 	];
@@ -2497,6 +2506,7 @@ function parseMigrationJournal(value: unknown): MigrationJournal {
 	const versionedContract = /^tasknotes\.task\/[^/]+\.md$/;
 	const allowed = (path: string) =>
 		requiredPaths.includes(path) ||
+		schemaPaths.includes(path) ||
 		path === legacyContract ||
 		settingsPaths.includes(path) ||
 		(path.startsWith(`${contractsFolder}/`) && versionedContract.test(path.slice(contractsFolder.length + 1)));
