@@ -95,7 +95,7 @@ test('grouped card drag still writes the target status', async () => {
   const card = page.locator(`.task-card[data-task-path="${folder}/Task 000.md"]`);
   const target = page.locator('.task-list-group > .task-group[data-group-key="done"]');
   await expect(card).toBeVisible();
-  await card.locator('.task-card__title').dragTo(target);
+  await card.locator('.task-card__title-text').dragTo(target);
   await expect.poll(() => page.evaluate(async path => {
     const app = (window as any).app;
     return app.vault.read(app.vault.getAbstractFileByPath(path));

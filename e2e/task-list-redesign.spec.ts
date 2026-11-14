@@ -101,6 +101,8 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await expect(group.locator('.task-group-toggle')).toHaveAttribute('aria-expanded', 'false');
     await group.locator('.task-group-toggle').click();
     await page.screenshot({ path: `test-results/list-redesign-${theme}-wide.png` });
+    const shortRow = items.locator(`.task-card[data-task-path="${folder}/Task 0.md"]`);
+    expect((await shortRow.boundingBox())!.height).toBeLessThanOrEqual(32);
     await page.evaluate(() => (window as any).app.workspace.leftSplit.expand());
     await page.screenshot({ path: `test-results/list-redesign-${theme}-sidebar.png` });
     const toolbar = page.locator('.workspace-leaf.mod-active .bases-toolbar');
@@ -110,6 +112,7 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await page.evaluate(() => (window as any).app.workspace.leftSplit.collapse());
     await setObsidianViewport(page, { width: 600, height: 800 });
     await page.screenshot({ path: `test-results/list-redesign-${theme}-pane.png` });
+    expect((await shortRow.boundingBox())!.height).toBeLessThan(50);
     await setObsidianViewport(page, { width: 430, height: 800 });
     await page.evaluate(() => {
       document.body.classList.add('is-mobile');
