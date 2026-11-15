@@ -97,15 +97,6 @@ export interface FilterQuery extends FilterGroup {
 	subgroupKey?: TaskGroupKey;
 }
 
-// A named, persistent configuration that encapsulates the entire state
-export interface SavedView {
-	id: string; // Unique ID for the view
-	name: string; // User-defined name (e.g., "High-Priority Work")
-	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
-	viewOptions?: { [key: string]: boolean }; // View-specific options (e.g., showOverdueOnToday, showNotes)
-	visibleProperties?: string[]; // Array of property IDs to display on task cards (e.g., ['due', 'priority', 'projects'])
-}
-
 // Property and operator definitions for the advanced filtering system
 export type FilterProperty =
 	// Placeholder for "Select..." option

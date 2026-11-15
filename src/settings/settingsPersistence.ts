@@ -288,7 +288,6 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		),
 		customStatuses: (loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses).map((status) => ({ ...status })),
 		customPriorities: (loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities).map((priority) => ({ ...priority })),
-		savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
 	};
 
 	return {

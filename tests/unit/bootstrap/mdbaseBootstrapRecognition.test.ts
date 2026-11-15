@@ -19,7 +19,6 @@ jest.mock("../../../src/utils/DependencyCache");
 jest.mock("../../../src/services/TaskService");
 jest.mock("../../../src/services/FilterService");
 jest.mock("../../../src/services/TaskStatsService");
-jest.mock("../../../src/services/ViewStateManager");
 jest.mock("../../../src/services/ProjectSubtasksService");
 jest.mock("../../../src/services/ExpandedProjectsService");
 jest.mock("../../../src/services/AutoArchiveService");
@@ -28,7 +27,6 @@ jest.mock("../../../src/utils/DragDropManager");
 jest.mock("../../../src/ui/StatusBarService");
 jest.mock("../../../src/ui/NotificationService");
 jest.mock("../../../src/services/ViewPerformanceService");
-jest.mock("../../../src/services/BasesFilterConverter");
 jest.mock("../../../src/services/ICSSubscriptionService");
 jest.mock("../../../src/services/ICSNoteService");
 

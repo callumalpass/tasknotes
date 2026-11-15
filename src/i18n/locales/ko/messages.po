@@ -1125,11 +1125,6 @@ msgctxt "settings.native.aCSSColorOrThemeVariable"
 msgid "A CSS color or theme variable."
 msgstr "CSS 색상 또는 테마 변수."
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite"
-msgid "A file named \"{fileName}\" already exists. Overwrite it?"
-msgstr "\"{fileName}\"이라는 파일이 이미 존재합니다. 덮어쓰시겠습니까?"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "A file named \"{name}\" already exists in the {destinationKind} folder \"{destinationFolder}\". Cannot move task to avoid overwriting existing file."
@@ -1500,11 +1495,6 @@ msgstr "일정"
 msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "aliases: {value1}"
 msgstr "별칭: {value1}"
-
-#: src/ui/FilterHeading.ts
-msgctxt "ui.filterHeading.allViewName"
-msgid "All"
-msgstr "모두"
 
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
@@ -3110,11 +3100,6 @@ msgctxt "commands.convertAllTasksInNote"
 msgid "Convert all tasks in note"
 msgstr "노트의 모든 작업 변환"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.description"
-msgid "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system."
-msgstr "TaskNotes v3의 모든 저장된 뷰를 여러 뷰가 포함된 단일 .base 파일로 변환합니다. v3 필터 구성을 새 베이스 시스템으로 마이그레이션하는 데 도움이 됩니다."
-
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.convertToTaskNote"
 msgid "Convert checkbox task to TaskNote"
@@ -4310,20 +4295,10 @@ msgctxt "settings.defaults.reminders.fields.direction"
 msgid "Direction:"
 msgstr "방향:"
 
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableDesc"
-msgid "Disable automatic indexing of note content for better performance"
-msgstr "더 나은 성능을 위해 노트 콘텐츠 자동 인덱싱 비활성화"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.mobileCalendar.disable.name"
 msgid "Disable calendar integrations on mobile"
 msgstr "모바일에서 캘린더 연동 비활성화"
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableName"
-msgid "Disable note indexing"
-msgstr "노트 인덱싱 비활성화"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.aliasExclusion.name"
@@ -4406,16 +4381,6 @@ msgstr "기본으로 완료된 시간 추적 기록 표시"
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
 msgid "Display currently tracked tasks in Obsidian''s status bar"
 msgstr "Obsidian 상태 표시줄에 현재 추적 중인 작업 표시"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
-msgid "Display due dates even for tasks that already have scheduled dates"
-msgstr "이미 예정일이 있는 작업의 마감일도 표시"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.description"
-msgid "Display events from ICS subscriptions by default"
-msgstr "기본으로 ICS 구독의 이벤트 표시"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.header"
@@ -4740,11 +4705,6 @@ msgstr "자동 내보내기 활성화"
 msgctxt "settings.features.debugLogging.enableName"
 msgid "Enable debug logging"
 msgstr "디버그 로그 사용"
-
-#: src/settings/native/properties.ts
-msgctxt "settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
-msgid "Enable fuzzy matching"
-msgstr "퍼지 매칭 활성화"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.enable.name"
@@ -5299,21 +5259,6 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
 msgid "Export timeblocks to Google Calendar"
 msgstr "Google 캘린더로 타임블록 내보내기"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
-msgid "Export v3 saved views to Bases"
-msgstr "V3 저장된 뷰를 베이스로 내보내기"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.buttonText"
-msgid "Export v3 views"
-msgstr "V3 뷰 내보내기"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
-msgid "Exported {count} saved views to {filePath}"
-msgstr "저장된 뷰 {count}개를 내보냈습니다. 파일: {filePath}"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
@@ -5572,11 +5517,6 @@ msgstr "작업을 실행하지 못했습니다: {message}"
 msgctxt "notices.exportTasksFailed"
 msgid "Failed to export tasks as ICS file"
 msgstr "ICS 파일로 작업 내보내기 실패"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.error"
-msgid "Failed to export views: {message}"
-msgstr "뷰 내보내기 실패: {message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.fetchCalendarEvents display"
@@ -5973,11 +5913,6 @@ msgstr "파일"
 msgctxt "modals.fileSelector.exists"
 msgid "File \"{path}\" already exists"
 msgstr "파일 \"{path}\"이(가) 이미 있습니다"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.fileExists"
-msgid "File already exists"
-msgstr "파일이 이미 존재합니다"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display"
@@ -7981,11 +7916,6 @@ msgstr "이 이벤트에 대한 관련 노트나 작업이 없습니다."
 msgctxt "modals.reminder.empty"
 msgid "No reminders set"
 msgstr "설정된 리마인더가 없습니다"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.noViews"
-msgid "No saved views to export"
-msgstr "내보낼 저장된 뷰가 없습니다"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.none"
@@ -10400,11 +10330,6 @@ msgctxt "settings.appearance.defaultEventVisibility.showDueDates.name"
 msgid "Show due dates"
 msgstr "마감일 표시"
 
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
-msgid "Show due dates when scheduled"
-msgstr "예정일이 있을 때 마감일 표시"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
@@ -10419,11 +10344,6 @@ msgstr "확장 가능한 하위 작업 표시"
 msgctxt "views.basesCalendar.settings.layout.showTimeGrid"
 msgid "Show hourly breakdown"
 msgstr "시간대 그리드 표시"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
-msgid "Show ICS events"
-msgstr "ICS 이벤트 표시"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"

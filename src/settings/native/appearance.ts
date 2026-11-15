@@ -292,20 +292,6 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 						save();
 					},
 				}),
-				ctx.toggle("calendarViewSettings.defaultShowDueWhenScheduled", {
-					name: translate(
-						msg({ message: "Show due dates when scheduled", context: "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name" })
-					),
-					desc: translate(
-						msg({ message: "Display due dates even for tasks that already have scheduled dates", context: "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description" })
-					),
-					getValue: () =>
-						plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowDueWhenScheduled = value;
-						save();
-					},
-				}),
 				ctx.toggle("calendarViewSettings.defaultShowTimeEntries", {
 					name: translate(
 						msg({ message: "Show time entries", context: "settings.appearance.defaultEventVisibility.showTimeEntries.name" })
@@ -329,19 +315,6 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					getValue: () => plugin.settings.calendarViewSettings.defaultShowRecurring,
 					setValue: async (value: boolean) => {
 						plugin.settings.calendarViewSettings.defaultShowRecurring = value;
-						save();
-					},
-				}),
-				ctx.toggle("calendarViewSettings.defaultShowICSEvents", {
-					name: translate(
-						msg({ message: "Show ICS events", context: "settings.appearance.defaultEventVisibility.showICSEvents.name" })
-					),
-					desc: translate(
-						msg({ message: "Display events from ICS subscriptions by default", context: "settings.appearance.defaultEventVisibility.showICSEvents.description" })
-					),
-					getValue: () => plugin.settings.calendarViewSettings.defaultShowICSEvents,
-					setValue: async (value: boolean) => {
-						plugin.settings.calendarViewSettings.defaultShowICSEvents = value;
 						save();
 					},
 				}),

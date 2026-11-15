@@ -60,7 +60,6 @@ import { FilterService } from "./services/FilterService";
 import { TaskStatsService } from "./services/TaskStatsService";
 import type { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
-import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
 import { formatDateForStorage, getTodayLocal } from "./utils/dateUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
@@ -187,7 +186,6 @@ export default class TaskNotesPlugin extends Plugin {
 	taskService: TaskService;
 	filterService: FilterService;
 	taskStatsService: TaskStatsService;
-	viewStateManager: ViewStateManager;
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
 	autoArchiveService: AutoArchiveService;
@@ -254,9 +252,6 @@ export default class TaskNotesPlugin extends Plugin {
 	// mdbase-spec generation service
 	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
 
-	// Bases filter converter for exporting saved views
-	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
-
 	// Event listener cleanup
 	taskUpdateListenerForEditor: unknown = null;
 	relationshipsReadingModeCleanup: (() => void) | null = null;
@@ -266,8 +261,6 @@ export default class TaskNotesPlugin extends Plugin {
 	initializationComplete = false;
 
 	// Migration state management
-	private migrationComplete = false;
-	private migrationPromise: Promise<void> | null = null;
 	private newInstall = false;
 	get isNewInstall(): boolean {
 		return this.newInstall;
@@ -390,9 +383,6 @@ export default class TaskNotesPlugin extends Plugin {
 
 		await initializePluginRuntime(this);
 		this.registerTaskNotesFileMenuActions();
-
-		// Start migration check early (before views can be opened)
-		this.migrationPromise = this.performEarlyMigrationCheck();
 
 		// Not awaited: if Bases has not loaded yet this schedules a retry timer,
 		// and initializeAfterLayoutReady attempts registration again.
@@ -568,33 +558,6 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
-	 * Perform early migration check and state preparation
-	 * This runs before any views can be opened to prevent race conditions
-	 */
-	private async performEarlyMigrationCheck(): Promise<void> {
-		try {
-			// Initialize saved views (handles migration if needed)
-			await this.viewStateManager.initializeSavedViews();
-
-			// Perform view state migration if needed (this is silent and fast)
-			if (this.viewStateManager.needsMigration()) {
-				await this.viewStateManager.performMigration();
-			}
-
-			// Migration check complete
-			this.migrationComplete = true;
-		} catch (error) {
-			tasknotesLogger.error("Error during early migration check:", {
-				category: "configuration",
-				operation: "early-migration-check",
-				error: error,
-			});
-			// Don't fail the entire plugin load due to migration check issues
-			this.migrationComplete = true;
-		}
-	}
-
-	/**
 	 * Check for version updates and show release notes if needed
 	 */
 	async checkForVersionUpdate(): Promise<void> {
@@ -685,20 +648,6 @@ export default class TaskNotesPlugin extends Plugin {
 
 		fragment.appendChild(link);
 		return fragment;
-	}
-
-	/**
-	 * Public method for views to wait for migration completion
-	 */
-	async waitForMigration(): Promise<void> {
-		if (this.migrationPromise) {
-			await this.migrationPromise;
-		}
-
-		// Additional safety check - wait until migration is marked complete
-		while (!this.migrationComplete) {
-			await new Promise((resolve) => window.setTimeout(resolve, 50));
-		}
 	}
 
 	// Methods for updating shared state and emitting events

@@ -1127,11 +1127,6 @@ msgctxt "settings.native.aCSSColorOrThemeVariable"
 msgid "A CSS color or theme variable."
 msgstr "Uma cor CSS ou variável do tema."
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite"
-msgid "A file named \"{fileName}\" already exists. Overwrite it?"
-msgstr "Um arquivo chamado \"{fileName}\" já existe. Sobrescrever?"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "A file named \"{name}\" already exists in the {destinationKind} folder \"{destinationFolder}\". Cannot move task to avoid overwriting existing file."
@@ -1502,11 +1497,6 @@ msgstr "Agenda"
 msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "aliases: {value1}"
 msgstr "aliases: {value1}"
-
-#: src/ui/FilterHeading.ts
-msgctxt "ui.filterHeading.allViewName"
-msgid "All"
-msgstr "Todos"
 
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
@@ -3112,11 +3102,6 @@ msgctxt "commands.convertAllTasksInNote"
 msgid "Convert all tasks in note"
 msgstr "Converter todas as tarefas na nota"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.description"
-msgid "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system."
-msgstr "Converta todas as suas visualizações salvas do TaskNotes v3 em um único arquivo .base com múltiplas visualizações. Isso ajuda a migrar suas configurações de filtro v3 para o novo sistema de Bases."
-
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.convertToTaskNote"
 msgid "Convert checkbox task to TaskNote"
@@ -4312,20 +4297,10 @@ msgctxt "settings.defaults.reminders.fields.direction"
 msgid "Direction:"
 msgstr "Direção:"
 
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableDesc"
-msgid "Disable automatic indexing of note content for better performance"
-msgstr "Desativar indexação automática do conteúdo das notas para melhor desempenho"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.mobileCalendar.disable.name"
 msgid "Disable calendar integrations on mobile"
 msgstr "Desativar integrações de calendário em dispositivos móveis"
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableName"
-msgid "Disable note indexing"
-msgstr "Desativar indexação de notas"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.aliasExclusion.name"
@@ -4408,16 +4383,6 @@ msgstr "Exibir entradas de registro de tempo concluídas por padrão"
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
 msgid "Display currently tracked tasks in Obsidian''s status bar"
 msgstr "Exibir tarefas atualmente rastreadas na barra de status do Obsidian"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
-msgid "Display due dates even for tasks that already have scheduled dates"
-msgstr "Exibir datas de vencimento mesmo para tarefas que já têm datas agendadas"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.description"
-msgid "Display events from ICS subscriptions by default"
-msgstr "Exibir eventos de inscrições ICS por padrão"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.header"
@@ -4742,11 +4707,6 @@ msgstr "Ativar exportação automática"
 msgctxt "settings.features.debugLogging.enableName"
 msgid "Enable debug logging"
 msgstr "Habilitar log de depuração"
-
-#: src/settings/native/properties.ts
-msgctxt "settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
-msgid "Enable fuzzy matching"
-msgstr "Ativar busca aproximada"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.enable.name"
@@ -5301,21 +5261,6 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
 msgid "Export timeblocks to Google Calendar"
 msgstr "Exportar blocos de tempo para o Google Agenda"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
-msgid "Export v3 saved views to Bases"
-msgstr "Exportar visualizações salvas V3 para Bases"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.buttonText"
-msgid "Export v3 views"
-msgstr "Exportar visualizações V3"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
-msgid "Exported {count} saved views to {filePath}"
-msgstr "Exportadas {count} visualizações salvas para {filePath}"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
@@ -5574,11 +5519,6 @@ msgstr "Não foi possível executar a ação: {message}"
 msgctxt "notices.exportTasksFailed"
 msgid "Failed to export tasks as ICS file"
 msgstr "Falha ao exportar tarefas como arquivo ICS"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.error"
-msgid "Failed to export views: {message}"
-msgstr "Falha ao exportar visualizações: {message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.fetchCalendarEvents display"
@@ -5975,11 +5915,6 @@ msgstr "Arquivo"
 msgctxt "modals.fileSelector.exists"
 msgid "File \"{path}\" already exists"
 msgstr "O arquivo \"{path}\" já existe"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.fileExists"
-msgid "File already exists"
-msgstr "O arquivo já existe"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display"
@@ -7983,11 +7918,6 @@ msgstr "Nenhuma nota ou tarefa relacionada encontrada para este evento."
 msgctxt "modals.reminder.empty"
 msgid "No reminders set"
 msgstr "Nenhum lembrete definido"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.noViews"
-msgid "No saved views to export"
-msgstr "Nenhuma visualização salva para exportar"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.none"
@@ -10402,11 +10332,6 @@ msgctxt "settings.appearance.defaultEventVisibility.showDueDates.name"
 msgid "Show due dates"
 msgstr "Mostrar datas de vencimento"
 
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
-msgid "Show due dates when scheduled"
-msgstr "Mostrar datas de vencimento quando agendadas"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
@@ -10421,11 +10346,6 @@ msgstr "Mostrar subtarefas expansíveis"
 msgctxt "views.basesCalendar.settings.layout.showTimeGrid"
 msgid "Show hourly breakdown"
 msgstr "Mostrar grade horária"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
-msgid "Show ICS events"
-msgstr "Mostrar eventos ICS"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"

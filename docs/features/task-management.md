@@ -86,7 +86,7 @@ Search behavior
 
 - Defaults: + search always includes file basename, title (via your field mapping), and aliases
 - |s flag: add more searchable fields on top of the defaults (e.g., file.path or a custom frontmatter key like customer)
-- Fuzzy: optional fuzzy matching can be enabled in settings for broader, multi‑word matches
+- Fuzzy: the project picker always matches fuzzily, so partial and multi‑word queries find projects
 
 Performance tips
 

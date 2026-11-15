@@ -35,3 +35,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Fixed Sign in with Google not appearing under Settings → Google Calendar. The page showed only "Advanced: use your own Google Cloud project" until something else made the settings rebuild.
+
+## Removed
+
+- Removed settings that had no effect: **Disable note indexing**, **Enable fuzzy matching** for project suggestions (the project picker always matches fuzzily), and **Show due dates when scheduled** and **Show ICS events** under calendar default event visibility. Each calendar view still shows or hides each calendar subscription in its own options. Saved values stay in `data.json` for devices still on 4.x. See [Removed settings](https://tasknotes.dev/migration-v4-to-v5/#removed-settings).
+- Removed **Export v3 saved views to Bases**. To convert TaskNotes v3 saved views, run the export in TaskNotes 4.x before upgrading. See [Upgrading from v3 to v4](https://tasknotes.dev/migration-v3-to-v4/#converting-saved-filter-views).

@@ -23,7 +23,6 @@ interface CacheSettingsSnapshot {
 	taskPropertyValue: string;
 	taskTag: string;
 	excludedFolders: string;
-	disableNoteIndexing: boolean;
 	storeTitleInFilename: boolean;
 	fieldMapping: TaskNotesSettings["fieldMapping"];
 }
@@ -245,7 +244,6 @@ export class SettingsLifecycleService {
 			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
-			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
 			storeTitleInFilename: this.plugin.settings.storeTitleInFilename,
 			fieldMapping: this.plugin.settings.fieldMapping,
 		};
@@ -256,7 +254,6 @@ export class SettingsLifecycleService {
 			current.taskPropertyValue !== this.previousCacheSettings.taskPropertyValue ||
 			current.taskTag !== this.previousCacheSettings.taskTag ||
 			current.excludedFolders !== this.previousCacheSettings.excludedFolders ||
-			current.disableNoteIndexing !== this.previousCacheSettings.disableNoteIndexing ||
 			current.storeTitleInFilename !== this.previousCacheSettings.storeTitleInFilename ||
 			JSON.stringify(current.fieldMapping) !==
 				JSON.stringify(this.previousCacheSettings.fieldMapping)
@@ -281,7 +278,6 @@ export class SettingsLifecycleService {
 			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
-			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
 			storeTitleInFilename: this.plugin.settings.storeTitleInFilename,
 			fieldMapping: JSON.parse(JSON.stringify(this.plugin.settings.fieldMapping)),
 		};

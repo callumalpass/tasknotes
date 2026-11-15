@@ -14,14 +14,20 @@ describe("Native settings navigation and search", () => {
 		expect(getStarterNoteContent()).toContain("Views & base files");
 	});
 
-	test("does not expose retired settings while retaining the persisted legacy alignment key", () => {
-		const { plugin, tab } = settingsFixture();
-		plugin.settings.viewsButtonAlignment = "left";
+	test("does not expose retired settings", () => {
+		const { tab } = settingsFixture();
 		const entries = flattenSettings(tab.getSettingDefinitions());
 		const keys = entries.flatMap(item => "control" in item && item.control ? [item.control.key] : []);
-		expect(keys).not.toContain("viewsButtonAlignment");
-		expect(keys).not.toContain("commandFileMapping.pomodoro-stats-base");
-		expect(plugin.settings.viewsButtonAlignment).toBe("left");
+		for (const retired of [
+			"viewsButtonAlignment",
+			"commandFileMapping.pomodoro-stats-base",
+			"disableNoteIndexing",
+			"projectAutosuggest.enableFuzzy",
+			"calendarViewSettings.defaultShowDueWhenScheduled",
+			"calendarViewSettings.defaultShowICSEvents",
+		]) {
+			expect(keys).not.toContain(retired);
+		}
 	});
 
 	test("uses inline groups for ordinary preferences while retaining substantial editors", () => {

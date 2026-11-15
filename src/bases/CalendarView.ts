@@ -255,7 +255,7 @@ export class CalendarView extends BasesViewBase {
 			// Events
 			showScheduled: calendarSettings.defaultShowScheduled,
 			showDue: calendarSettings.defaultShowDue,
-			showScheduledToDueSpan: calendarSettings.defaultShowScheduledToDueSpan,
+			showScheduledToDueSpan: false,
 			showRecurring: calendarSettings.defaultShowRecurring,
 			showCompletedRecurringInstances: true,
 			showSkippedRecurringInstances: true,
@@ -298,10 +298,12 @@ export class CalendarView extends BasesViewBase {
 			selectMirror: calendarSettings.selectMirror,
 			timeFormat: calendarSettings.timeFormat,
 			eventMinHeight: calendarSettings.eventMinHeight,
-			slotEventOverlap: calendarSettings.slotEventOverlap,
-			eventMaxStack: calendarSettings.eventMaxStack,
-			dayMaxEvents: calendarSettings.dayMaxEvents,
-			dayMaxEventRows: calendarSettings.dayMaxEventRows,
+			// Until a view sets them: timed events overlap, no stack limit, month days
+			// fit as many events as the cell holds, and no row limit.
+			slotEventOverlap: true,
+			eventMaxStack: null,
+			dayMaxEvents: true,
+			dayMaxEventRows: false,
 			locale: calendarSettings.locale,
 
 			// Property-based events

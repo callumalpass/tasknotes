@@ -65,7 +65,6 @@ type CalendarEventPayload = {
 	description?: string;
 	start: { date?: string; dateTime?: string; timeZone?: string };
 	end: { date?: string; dateTime?: string; timeZone?: string };
-	colorId?: string;
 	reminders?: {
 		useDefault: boolean;
 		overrides?: Array<{ method: string; minutes: number }>;
@@ -2579,10 +2578,6 @@ export class TaskCalendarSyncService {
 			event.description = this.buildEventDescription(task);
 		}
 
-		if (settings.eventColorId) {
-			event.colorId = settings.eventColorId;
-		}
-
 		// Determine which date field was used for the event (for reminder conversion)
 		let eventDateSource: "due" | "scheduled";
 		if (
@@ -2772,10 +2767,6 @@ export class TaskCalendarSyncService {
 
 		if (settings.includeDescription) {
 			event.description = this.buildEventDescription(task);
-		}
-
-		if (settings.eventColorId) {
-			event.colorId = settings.eventColorId;
 		}
 
 		const taskReminders = this.convertTaskRemindersToGoogleFormat(

@@ -174,7 +174,7 @@ function buildCalendarEventOptions(
 				type: "toggle",
 				key: "showScheduledToDueSpan",
 				displayName: t("layout.spanScheduledToDue"),
-				default: calendarSettings.defaultShowScheduledToDueSpan,
+				default: false,
 				shouldHide: () =>
 					!readBooleanOption(
 						config,
@@ -439,10 +439,7 @@ function buildCalendarDayCellOptions(
 			type: "slider",
 			key: "dayMaxEvents",
 			displayName: t("layout.dayMaxEvents"),
-			default:
-				typeof calendarSettings.dayMaxEvents === "number"
-					? calendarSettings.dayMaxEvents
-					: 0,
+			default: 0,
 			min: 0,
 			max: 20,
 			step: 1,
@@ -559,7 +556,7 @@ function buildCalendarAdvancedOptions(
 				type: "toggle",
 				key: "slotEventOverlap",
 				displayName: t("layout.slotEventOverlap"),
-				default: calendarSettings.slotEventOverlap,
+				default: true,
 				shouldHide: shouldHideTimeGridOption,
 			},
 			{
@@ -576,7 +573,7 @@ function buildCalendarAdvancedOptions(
 				type: "slider",
 				key: "eventMaxStack",
 				displayName: t("layout.eventMaxStack"),
-				default: calendarSettings.eventMaxStack ?? 0,
+				default: 0,
 				min: 0,
 				max: 10,
 				step: 1,
@@ -586,10 +583,7 @@ function buildCalendarAdvancedOptions(
 				type: "slider",
 				key: "dayMaxEventRows",
 				displayName: t("layout.dayMaxEventRows"),
-				default:
-					typeof calendarSettings.dayMaxEventRows === "number"
-						? calendarSettings.dayMaxEventRows
-						: 0,
+				default: 0,
 				min: 0,
 				max: 10,
 				step: 1,

@@ -67,7 +67,6 @@ test('a moved native annual occurrence should replace its rule placement, like a
   await page.evaluate(async ({ folder, prefix, nativePath, controlPath, basePath }) => {
     const app = (window as any).app;
     const plugin = app.plugins.plugins.tasknotes;
-    plugin.settings.enableGoogleCalendar = false;
     plugin.settings.googleCalendarExport.enabled = false;
     for (const [path, kind] of [[nativePath, 'native'], [controlPath, 'control']]) {
       await app.vault.create(path, `---
