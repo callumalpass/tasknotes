@@ -2330,3 +2330,21 @@
 .cm-content .cm-widgetBuffer {
     display: none;
 }
+
+.tn-virtual-scroller .virtual-scroller__spacer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+}
+
+.tn-virtual-scroller .virtual-scroller__content {
+    position: relative;
+}
+
+.tn-virtual-scroller .virtual-scroller__sample {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+}

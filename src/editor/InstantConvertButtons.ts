@@ -261,7 +261,7 @@ type ConvertButtonView = {
 
 function shouldSkipConvertButtonDecorations(view: ConvertButtonView): boolean {
 	const stateWithField = view.state as { field?: unknown };
-	if (!(view.dom instanceof HTMLElement) || typeof stateWithField.field !== "function") {
+	if (!view.dom?.instanceOf(HTMLElement) || typeof stateWithField.field !== "function") {
 		return false;
 	}
 

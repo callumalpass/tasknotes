@@ -107,7 +107,7 @@ export function showCoordinatedMenu(menu: CoordinatedMenu, event: UIEvent): void
 		}
 
 		const element = asElement(event.currentTarget);
-		if (element?.instanceOf?.(HTMLElement) || element instanceof HTMLElement) {
+		if (element?.instanceOf(HTMLElement)) {
 			menu.showAtPosition(
 				{
 					x: element.getBoundingClientRect().left,

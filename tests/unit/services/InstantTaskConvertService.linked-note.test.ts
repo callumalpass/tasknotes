@@ -203,6 +203,23 @@ describe("InstantTaskConvertService: task lines that link their note", () => {
 		expect(files.get(NOTE_PATH)).toBe(NOTE_CONTENT);
 	});
 
+	it.each([
+		"[[Skills/Live technical storytelling with diagrams|note]]",
+		"Review([[Skills/Live technical storytelling with diagrams| NOTE ]])",
+		"![[Other/Embedded|note]] [[Skills/Live technical storytelling with diagrams|note]]",
+		"![[Skills/Live technical storytelling with diagrams|note]] [[Skills/Live technical storytelling with diagrams#Review|note]]",
+	])("resolves a non-embedded linked note in %s", async (title) => {
+		const { plugin, service } = createHarness();
+
+		await (service as any).createTaskFile({ title, isCompleted: false }, "");
+
+		expect(plugin.taskService.createTask).not.toHaveBeenCalled();
+		expect(plugin.app.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+			"Skills/Live technical storytelling with diagrams",
+			"Inbox.md"
+		);
+	});
+
 	it("keeps the note's value and records the line when they disagree", async () => {
 		const { service, note } = createHarness(
 			{},

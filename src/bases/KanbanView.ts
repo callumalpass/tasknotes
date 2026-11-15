@@ -2249,7 +2249,8 @@ export class KanbanView extends BasesViewBase {
 
 		label.addEventListener("dragleave", (e: DragEvent) => {
 			if (!isSwimLaneDrag(e)) return;
-			if (!(e.relatedTarget instanceof Node && label.contains(e.relatedTarget))) {
+			const relatedTarget = e.relatedTarget as Node | null;
+			if (!(relatedTarget?.instanceOf?.(Node) && label.contains(relatedTarget))) {
 				label.classList.remove(dragoverClass);
 			}
 		});
@@ -3479,7 +3480,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Cancel any pending rAF
 			if (this.dragOverRafId) {
-				cancelAnimationFrame(this.dragOverRafId);
+				window.cancelAnimationFrame(this.dragOverRafId);
 				this.dragOverRafId = 0;
 			}
 

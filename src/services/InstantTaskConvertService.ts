@@ -48,7 +48,7 @@ interface ConvertedTaskFile {
 }
 
 // A task line can name its existing note with a link aliased "note", e.g. [[Skills/Review|note]].
-const LINKED_TASK_NOTE_PATTERN = /(?<!!)\[\[([^\]|]+)\|\s*note\s*\]\]/i;
+const LINKED_TASK_NOTE_PATTERN = /(?:^|[^!])(\[\[([^\]|]+)\|\s*note\s*\]\])/i;
 
 function frontmatterValueIncludes(existing: unknown, value: unknown): boolean {
 	const existingValues = (Array.isArray(existing) ? existing : [existing]).map(String);
@@ -978,7 +978,7 @@ export class InstantTaskConvertService {
 	 */
 	private findLinkedTaskNote(title: string): Nullable<{ file: TFile; link: string }> {
 		const match = title.match(LINKED_TASK_NOTE_PATTERN);
-		const linkpath = match?.[1].split("#")[0].trim();
+		const linkpath = match?.[2].split("#")[0].trim();
 		if (!match || !linkpath) {
 			return null;
 		}
@@ -988,7 +988,7 @@ export class InstantTaskConvertService {
 		if (!file || file.extension !== "md" || file.path === sourcePath) {
 			return null;
 		}
-		return { file, link: match[0] };
+		return { file, link: match[1] };
 	}
 
 	/**
