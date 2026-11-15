@@ -36,9 +36,7 @@ describe("ProjectSelectModal property filtering", () => {
 			i18n: createI18nService(),
 			settings: {
 				projectAutosuggest: {
-					enableFuzzy: false,
 					rows: [],
-					showAdvanced: false,
 					requiredTags: [],
 					includeFolders: [],
 					propertyKey: "type",

@@ -31,7 +31,7 @@ Obsidian Secret Storage is kept on each device and is not synced. After upgradin
 
 ## Settings are reorganized
 
-Settings now use Obsidian's native settings pages, navigation, and search. Individual settings can be found from Obsidian's settings search. The settings themselves are unchanged; they are grouped differently:
+Settings now use Obsidian's native settings pages, navigation, and search. Individual settings can be found from Obsidian's settings search. Apart from the [removed settings](#removed-settings), the settings are unchanged; they are grouped differently:
 
 | Page | Contains |
 | --- | --- |
@@ -44,6 +44,18 @@ Settings now use Obsidian's native settings pages, navigation, and search. Indiv
 | Advanced | Indexing, HTTP API, webhooks, and diagnostics |
 
 See [Settings](settings.md) for details of each page.
+
+### Removed settings
+
+These settings had no effect and are no longer shown:
+
+- **Disable note indexing** (Advanced)
+- **Enable fuzzy matching** for project suggestions. The project picker always matches fuzzily.
+- **Show due dates when scheduled** and **Show ICS events** under calendar default event visibility. Each calendar view shows or hides each calendar subscription in its own options.
+
+**Export v3 saved views to Bases** has also been removed. If you still have TaskNotes v3 saved views, export them in TaskNotes 4.x before upgrading; see [Upgrading from v3 to v4](migration-v3-to-v4.md#converting-saved-filter-views).
+
+Values saved for these settings stay in `data.json`, so devices still on 4.x keep them.
 
 ## Stable task IDs
 

@@ -158,8 +158,10 @@ describe("settings persistence helpers", () => {
 			useNativeMetadataCache: true,
 			enableBases: false,
 			calendarViewSettings: {
-				defaultShowScheduledToDueSpan: false,
-				eventMaxStack: null,
+				showWeekends: false,
+			},
+			googleCalendarExport: {
+				defaultReminderMinutes: null,
 			},
 		});
 
@@ -173,8 +175,8 @@ describe("settings persistence helpers", () => {
 		expect(
 			settings.nlpTriggers.triggers.find((trigger) => trigger.propertyId === "status")
 		).toMatchObject({ trigger: "/" });
-		expect(settings.calendarViewSettings.defaultShowScheduledToDueSpan).toBe(false);
-		expect(settings.calendarViewSettings.eventMaxStack).toBeNull();
+		expect(settings.calendarViewSettings.showWeekends).toBe(false);
+		expect(settings.googleCalendarExport.defaultReminderMinutes).toBeNull();
 		expect(settings.modalFieldsConfig?.fields.map((field) => field.id)).toEqual(
 			expect.arrayContaining(["title", "details", "contexts", "tags", "projects"])
 		);
@@ -238,6 +240,36 @@ describe("settings persistence helpers", () => {
 				pomodoroState: { isRunning: true },
 				unknownRuntimeKey: "preserve disk value",
 				tasksFolder: "Projects/Tasks",
+			})
+		);
+	});
+
+	it("keeps settings retired in v5 in data.json for devices still on v4", () => {
+		const loaded = {
+			viewsButtonAlignment: "left",
+			disableNoteIndexing: true,
+			savedViews: [{ id: "sv1", name: "My view" }],
+			projectAutosuggest: { ...DEFAULT_SETTINGS.projectAutosuggest, enableFuzzy: true },
+			calendarViewSettings: {
+				...DEFAULT_SETTINGS.calendarViewSettings,
+				defaultShowICSEvents: false,
+				eventMaxStack: 3,
+			},
+		};
+		const { settings } = buildSettingsFromLoadedData(loaded);
+		settings.tasksFolder = "Projects/Tasks";
+
+		expect(buildSettingsDataForSave(loaded, settings)).toEqual(
+			expect.objectContaining({
+				tasksFolder: "Projects/Tasks",
+				viewsButtonAlignment: "left",
+				disableNoteIndexing: true,
+				savedViews: [{ id: "sv1", name: "My view" }],
+				projectAutosuggest: expect.objectContaining({ enableFuzzy: true }),
+				calendarViewSettings: expect.objectContaining({
+					defaultShowICSEvents: false,
+					eventMaxStack: 3,
+				}),
 			})
 		);
 	});

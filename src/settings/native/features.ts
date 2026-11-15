@@ -596,15 +596,6 @@ export function featuresDefinitions(ctx: SettingsContext): SettingDefinitionGrou
 						save();
 					},
 				}),
-				ctx.toggle("disableNoteIndexing", {
-					name: translate(msg({ message: "Disable note indexing", context: "settings.features.indexing.disableName" })),
-					desc: translate(msg({ message: "Disable automatic indexing of note content for better performance", context: "settings.features.indexing.disableDesc" })),
-					getValue: () => plugin.settings.disableNoteIndexing,
-					setValue: async (value: boolean) => {
-						plugin.settings.disableNoteIndexing = value;
-						save();
-					},
-				}),
 				ctx.number("suggestionDebounceMs", {
 					name: translate(msg({ message: "Suggestion debounce", context: "settings.features.suggestions.debounceName" })),
 					desc: translate(msg({ message: "Delay in milliseconds before showing suggestions", context: "settings.features.suggestions.debounceDesc" })),

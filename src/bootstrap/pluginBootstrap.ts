@@ -22,7 +22,6 @@ import { DependencyCache } from "../utils/DependencyCache";
 import { TaskService } from "../services/TaskService";
 import { FilterService } from "../services/FilterService";
 import { TaskStatsService } from "../services/TaskStatsService";
-import { ViewStateManager } from "../services/ViewStateManager";
 import { ProjectSubtasksService } from "../services/ProjectSubtasksService";
 import { ExpandedProjectsService } from "../services/ExpandedProjectsService";
 import { AutoArchiveService } from "../services/AutoArchiveService";
@@ -174,7 +173,6 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 		plugin
 	);
 	plugin.taskStatsService = new TaskStatsService(plugin.cacheManager, plugin.statusManager);
-	plugin.viewStateManager = new ViewStateManager(plugin.app, plugin);
 	plugin.projectSubtasksService = new ProjectSubtasksService(plugin);
 	plugin.expandedProjectsService = new ExpandedProjectsService(plugin);
 	plugin.autoArchiveService = new AutoArchiveService(plugin);
@@ -185,9 +183,6 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 	plugin.statusBarService = new StatusBarService(plugin);
 	plugin.notificationService = new NotificationService(plugin);
 	plugin.viewPerformanceService = new ViewPerformanceService(plugin);
-
-	const { BasesFilterConverter } = await import("../services/BasesFilterConverter");
-	plugin.basesFilterConverter = new BasesFilterConverter(plugin);
 
 	plugin.icsSubscriptionService = new ICSSubscriptionService(plugin);
 	plugin.icsNoteService = new ICSNoteService(plugin);

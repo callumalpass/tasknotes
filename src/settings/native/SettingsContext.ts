@@ -29,7 +29,6 @@ export class SettingsContext {
 		archiveFolder: ["archive location", "directory"],
 		storeTitleInFilename: ["rename", "note name"],
 		enableNaturalLanguageInput: ["NLP", "quick capture", "parse dates"],
-		disableNoteIndexing: ["performance", "index", "cache"],
 	};
 	constructor(
 		readonly plugin: TaskNotesPlugin,

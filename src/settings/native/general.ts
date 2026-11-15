@@ -1,18 +1,9 @@
-import { uiData } from "../../i18n/dataText";
 import { msg } from "@lingui/core/macro";
 import { languagePackConfig } from "../../i18n/languagePackConfig";
-import { Notice, TFile } from "obsidian";
 import { MessageDescriptor } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
-import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import { hasUsablePropertyTaskIdentification } from "../../utils/taskIdentification";
-import {
-	createVaultFile,
-	createVaultFolder,
-	modifyVaultFile,
-} from "../../services/VaultMutationService";
-const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/GeneralTab" });
 import { SettingsContext } from "../native/SettingsContext";
 import type { SettingDefinitionGroup } from "obsidian";
 
@@ -437,136 +428,6 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 										await plugin.createDefaultBasesFiles({
 											overwriteExisting: true,
 										});
-									});
-								return button;
-							});
-					},
-				},
-				{
-					name: translate(msg({ message: "Export v3 saved views to Bases", context: "settings.integrations.basesIntegration.exportV3Views.name" })),
-					desc: translate(
-						msg({ message: "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system.", context: "settings.integrations.basesIntegration.exportV3Views.description" })
-					),
-					render: (setting) => {
-						setting
-							.setName(
-								translate(
-									msg({ message: "Export v3 saved views to Bases", context: "settings.integrations.basesIntegration.exportV3Views.name" })
-								)
-							)
-							.setDesc(
-								translate(
-									msg({ message: "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system.", context: "settings.integrations.basesIntegration.exportV3Views.description" })
-								)
-							)
-							.addButton((button) => {
-								button
-									.setButtonText(
-										translate(
-											msg({ message: "Export v3 views", context: "settings.integrations.basesIntegration.exportV3Views.buttonText" })
-										)
-									)
-									.onClick(async () => {
-										try {
-											const savedViews =
-												plugin.viewStateManager.getSavedViews();
-
-											if (savedViews.length === 0) {
-												new Notice(
-													translate(
-														msg({ message: "No saved views to export", context: "settings.integrations.basesIntegration.exportV3Views.noViews" })
-													)
-												);
-												return;
-											}
-
-											const basesContent =
-												plugin.basesFilterConverter.convertAllSavedViewsToBasesFile(
-													savedViews
-												);
-											const fileName = "all-saved-views.base";
-											const filePath = uiData(`TaskNotes/Views/${fileName}`, "Generated default Base path, not UI prose");
-
-											// Create folder if needed (check on-disk via adapter, not in-memory cache)
-											if (
-												!(await plugin.app.vault.adapter.exists(
-													"TaskNotes/Views"
-												))
-											) {
-												await createVaultFolder(
-													plugin.app,
-													"TaskNotes/Views"
-												);
-											}
-
-											// Handle file overwrite confirmation
-											const existingFile =
-												plugin.app.vault.getAbstractFileByPath(filePath);
-											if (existingFile) {
-												if (!(existingFile instanceof TFile)) {
-													throw new Error(
-														`${filePath} exists but is not a file`
-													);
-												}
-												const confirmed = await showConfirmationModal(
-													plugin.app,
-													{
-														title: translate(
-															msg({ message: "File already exists", context: "settings.integrations.basesIntegration.exportV3Views.fileExists" })
-														),
-														message: translate(
-															msg({ message: "A file named \"{fileName}\" already exists. Overwrite it?", context: "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite" }),
-															{ fileName }
-														),
-														isDestructive: false,
-													}
-												);
-												if (!confirmed) return;
-												await modifyVaultFile(
-													plugin.app,
-													existingFile,
-													basesContent
-												);
-											} else {
-												await createVaultFile(
-													plugin.app,
-													filePath,
-													basesContent
-												);
-											}
-
-											new Notice(
-												translate(
-													msg({ message: "Exported {count} saved views to {filePath}", context: "settings.integrations.basesIntegration.exportV3Views.success" }),
-													{
-														count: savedViews.length.toString(),
-														filePath,
-													}
-												)
-											);
-											await plugin.app.workspace.openLinkText(
-												filePath,
-												"",
-												true
-											);
-										} catch (error) {
-											tasknotesLogger.error(
-												"Error exporting all views to Bases:",
-												{
-													category: "provider",
-													operation: "exporting-all-views-bases",
-													error: error,
-												}
-											);
-											new Notice(
-												translate(
-													msg({ message: "Failed to export views: {message}", context: "settings.integrations.basesIntegration.exportV3Views.error" }),
-													{
-														message: error.message,
-													}
-												)
-											);
-										}
 									});
 								return button;
 							});

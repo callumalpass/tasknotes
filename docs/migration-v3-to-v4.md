@@ -33,7 +33,7 @@ When you first open TaskNotes v4:
 
 ### Converting Saved Filter Views
 
-If you had saved filter views in v3, you can export them to one `.base` file:
+If you had saved filter views in v3, TaskNotes 4.x can export them to one `.base` file. TaskNotes 5 no longer includes this export, so run it in 4.x before upgrading to 5:
 
 1. Go to **Settings → TaskNotes → General → Views & base files**.
 2. Find **Export v3 saved views to Bases**.
@@ -111,7 +111,7 @@ A dedicated modal for managing time entries:
 
 ### Missing Saved Views After Upgrade
 
-Saved views from v3 are preserved in settings. Use **Export v3 saved views to Bases** in **Settings → TaskNotes → General → Views & base files** to create the multi-view `.base` file.
+Saved views from v3 are preserved in settings. In TaskNotes 4.x, use **Export v3 saved views to Bases** in **Settings → TaskNotes → General → Views & base files** to create the multi-view `.base` file. TaskNotes 5 does not include this export.
 
 ### Filter Syntax Errors
 

@@ -641,7 +641,6 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			items.push(
 				filterPage(ctx, "projectAutosuggest", get, (value) => {
 					plugin.settings.projectAutosuggest = {
-						enableFuzzy: false,
 						rows: [],
 						...get(),
 						...value,
@@ -651,20 +650,6 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 					type: "page",
 					name: t(msg({ message: "Customize display", context: "settings.taskProperties.projectsCard.customizeDisplay" })),
 					items: [
-						ctx.toggle("projectAutosuggest.enableFuzzy", {
-							name: t(
-								msg({ message: "Enable fuzzy matching", context: "settings.appearance.projectAutosuggest.enableFuzzyMatching.name" })
-							),
-							getValue: () => get()?.enableFuzzy ?? false,
-							setValue: (enableFuzzy) => {
-								plugin.settings.projectAutosuggest = {
-									rows: [],
-									...get(),
-									enableFuzzy,
-								};
-								ctx.save();
-							},
-						}),
 						...[0, 1, 2].map((index) =>
 							ctx.text(`projectAutosuggest.rows.${index}`, {
 								name: ctx.t(msg({ message: "Display row {number}", context: "settings.native.displayRow" }), { number: index + 1 }),
@@ -672,7 +657,6 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 								getValue: () => get()?.rows[index] ?? "",
 								setValue: (value) => {
 									const config = {
-										enableFuzzy: false,
 										...get(),
 										rows: [...(get()?.rows ?? [])],
 									};

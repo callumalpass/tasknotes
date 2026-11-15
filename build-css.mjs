@@ -12,7 +12,6 @@ const CSS_FILES = [
     'styles/task-card-bem.css',      // TaskCard component with proper BEM scoping
     'styles/task-inline-widget.css', // Inline task widget for editor with proper BEM scoping
     'styles/note-card-bem.css',      // NoteCard component with proper BEM scoping
-    'styles/filter-heading.css',     // FilterHeading component with proper BEM scoping
     'styles/search-box.css',         // SearchBox component with proper BEM scoping
     'styles/modal-bem.css',          // Modal components with proper BEM scoping
     'styles/task-modal.css',         // Task dialog and action controls

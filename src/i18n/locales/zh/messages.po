@@ -1125,11 +1125,6 @@ msgctxt "settings.native.aCSSColorOrThemeVariable"
 msgid "A CSS color or theme variable."
 msgstr "CSS 颜色或主题变量。"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite"
-msgid "A file named \"{fileName}\" already exists. Overwrite it?"
-msgstr "名为\"{fileName}\"的文件已存在。是否覆盖？"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "A file named \"{name}\" already exists in the {destinationKind} folder \"{destinationFolder}\". Cannot move task to avoid overwriting existing file."
@@ -1500,11 +1495,6 @@ msgstr "日程"
 msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "aliases: {value1}"
 msgstr "aliases: {value1}"
-
-#: src/ui/FilterHeading.ts
-msgctxt "ui.filterHeading.allViewName"
-msgid "All"
-msgstr "全部"
 
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
@@ -3110,11 +3100,6 @@ msgctxt "commands.convertAllTasksInNote"
 msgid "Convert all tasks in note"
 msgstr "转换笔记中的所有任务"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.description"
-msgid "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system."
-msgstr "将你所有来自 TaskNotes v3 的已保存视图转换为包含多个视图的单个 .base 文件。这有助于将你的 v3 筛选器配置迁移到新的 Bases 系统。"
-
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.convertToTaskNote"
 msgid "Convert checkbox task to TaskNote"
@@ -4310,20 +4295,10 @@ msgctxt "settings.defaults.reminders.fields.direction"
 msgid "Direction:"
 msgstr "方向："
 
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableDesc"
-msgid "Disable automatic indexing of note content for better performance"
-msgstr "禁用笔记内容的自动索引以提高性能"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.mobileCalendar.disable.name"
 msgid "Disable calendar integrations on mobile"
 msgstr "在移动端禁用日历集成"
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableName"
-msgid "Disable note indexing"
-msgstr "禁用笔记索引"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.aliasExclusion.name"
@@ -4406,16 +4381,6 @@ msgstr "默认显示已完成的时间跟踪条目"
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
 msgid "Display currently tracked tasks in Obsidian''s status bar"
 msgstr "在Obsidian状态栏中显示当前跟踪的任务"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
-msgid "Display due dates even for tasks that already have scheduled dates"
-msgstr "即使对于已有计划日期的任务也显示截止日期"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.description"
-msgid "Display events from ICS subscriptions by default"
-msgstr "默认显示来自ICS订阅的事件"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.header"
@@ -4740,11 +4705,6 @@ msgstr "启用自动导出"
 msgctxt "settings.features.debugLogging.enableName"
 msgid "Enable debug logging"
 msgstr "启用调试日志"
-
-#: src/settings/native/properties.ts
-msgctxt "settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
-msgid "Enable fuzzy matching"
-msgstr "启用模糊匹配"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.enable.name"
@@ -5299,21 +5259,6 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
 msgid "Export timeblocks to Google Calendar"
 msgstr "将时间块导出到Google 日历"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
-msgid "Export v3 saved views to Bases"
-msgstr "将 v3 已保存视图导出到 Bases"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.buttonText"
-msgid "Export v3 views"
-msgstr "导出 v3 视图"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
-msgid "Exported {count} saved views to {filePath}"
-msgstr "已将 {count} 个已保存视图导出到 {filePath}"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
@@ -5572,11 +5517,6 @@ msgstr "无法执行操作：{message}"
 msgctxt "notices.exportTasksFailed"
 msgid "Failed to export tasks as ICS file"
 msgstr "导出任务为ICS文件失败"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.error"
-msgid "Failed to export views: {message}"
-msgstr "导出视图失败：{message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.fetchCalendarEvents display"
@@ -5973,11 +5913,6 @@ msgstr "文件"
 msgctxt "modals.fileSelector.exists"
 msgid "File \"{path}\" already exists"
 msgstr "文件“{path}”已存在"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.fileExists"
-msgid "File already exists"
-msgstr "文件已存在"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display"
@@ -7979,11 +7914,6 @@ msgstr "未找到与此事件相关的笔记或任务。"
 msgctxt "modals.reminder.empty"
 msgid "No reminders set"
 msgstr "未设置提醒"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.noViews"
-msgid "No saved views to export"
-msgstr "没有已保存视图可导出"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.none"
@@ -10398,11 +10328,6 @@ msgctxt "settings.appearance.defaultEventVisibility.showDueDates.name"
 msgid "Show due dates"
 msgstr "显示截止日期"
 
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
-msgid "Show due dates when scheduled"
-msgstr "有计划日期时仍显示截止日期"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
@@ -10417,11 +10342,6 @@ msgstr "显示可展开子任务"
 msgctxt "views.basesCalendar.settings.layout.showTimeGrid"
 msgid "Show hourly breakdown"
 msgstr "显示小时网格"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
-msgid "Show ICS events"
-msgstr "显示 ICS 事件"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"

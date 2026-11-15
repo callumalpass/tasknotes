@@ -157,7 +157,6 @@ A "Filters On" badge appears when any filters are configured.
 
 Configure project suggestion appearance:
 
-- **Enable fuzzy matching**: Allow typos and partial matches in project search
 - **Row 1, 2, 3**: Configure up to 3 lines of information for each project suggestion
 
 ### Tags

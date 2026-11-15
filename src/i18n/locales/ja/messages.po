@@ -1125,11 +1125,6 @@ msgctxt "settings.native.aCSSColorOrThemeVariable"
 msgid "A CSS color or theme variable."
 msgstr "CSS の色またはテーマ変数。"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.confirmOverwrite"
-msgid "A file named \"{fileName}\" already exists. Overwrite it?"
-msgstr "\"{fileName}\"という名前のファイルが既に存在します。上書きしますか？"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.toggleArchive display"
 msgid "A file named \"{name}\" already exists in the {destinationKind} folder \"{destinationFolder}\". Cannot move task to avoid overwriting existing file."
@@ -1500,11 +1495,6 @@ msgstr "アジェンダ"
 msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "aliases: {value1}"
 msgstr "別名: {value1}"
-
-#: src/ui/FilterHeading.ts
-msgctxt "ui.filterHeading.allViewName"
-msgid "All"
-msgstr "すべて"
 
 #: src/ui/ICSCard.ts
 msgctxt "ui.icsCard.allDay"
@@ -3110,11 +3100,6 @@ msgctxt "commands.convertAllTasksInNote"
 msgid "Convert all tasks in note"
 msgstr "ノート内のすべてのタスクを変換"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.description"
-msgid "Convert all your saved views from TaskNotes v3 into a single .base file with multiple views. This helps migrate your v3 filter configurations to the new Bases system."
-msgstr "TaskNotes v3 のすべての保存済みビューを、複数のビューを含む1つの .base ファイルに変換します。v3 のフィルター設定を Bases に移行できます。"
-
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.convertToTaskNote"
 msgid "Convert checkbox task to TaskNote"
@@ -4310,20 +4295,10 @@ msgctxt "settings.defaults.reminders.fields.direction"
 msgid "Direction:"
 msgstr "方向："
 
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableDesc"
-msgid "Disable automatic indexing of note content for better performance"
-msgstr "パフォーマンス向上のためノートコンテンツの自動インデックス作成を無効にする"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.mobileCalendar.disable.name"
 msgid "Disable calendar integrations on mobile"
 msgstr "モバイルでカレンダー連携を無効化"
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.indexing.disableName"
-msgid "Disable note indexing"
-msgstr "ノートインデックス作成を無効にする"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.aliasExclusion.name"
@@ -4406,16 +4381,6 @@ msgstr "完了した時間追跡エントリをデフォルトで表示"
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.description"
 msgid "Display currently tracked tasks in Obsidian''s status bar"
 msgstr "Obsidianのステータスバーに現在追跡中のタスクを表示"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.description"
-msgid "Display due dates even for tasks that already have scheduled dates"
-msgstr "既に予定日があるタスクでも期限日を表示"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.description"
-msgid "Display events from ICS subscriptions by default"
-msgstr "ICS購読からのイベントをデフォルトで表示"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.header"
@@ -4740,11 +4705,6 @@ msgstr "自動エクスポートを有効にする"
 msgctxt "settings.features.debugLogging.enableName"
 msgid "Enable debug logging"
 msgstr "デバッグログを有効化"
-
-#: src/settings/native/properties.ts
-msgctxt "settings.appearance.projectAutosuggest.enableFuzzyMatching.name"
-msgid "Enable fuzzy matching"
-msgstr "ファジーマッチングを有効にする"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.enable.name"
@@ -5299,21 +5259,6 @@ msgctxt "settings.integrations.googleCalendarTimeblockExport.header"
 msgid "Export timeblocks to Google Calendar"
 msgstr "タイムブロックをGoogleカレンダーにエクスポート"
 
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.name"
-msgid "Export v3 saved views to Bases"
-msgstr "V3保存ビューをBasesにエクスポート"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.buttonText"
-msgid "Export v3 views"
-msgstr "V3ビューをエクスポート"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
-msgid "Exported {count} saved views to {filePath}"
-msgstr "{count}個の保存ビューを{filePath}にエクスポートしました"
-
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
 msgid "Expose TaskNotes tools via Model Context Protocol at /mcp endpoint. Requires HTTP API to be enabled."
@@ -5572,11 +5517,6 @@ msgstr "アクションを実行できませんでした：{message}"
 msgctxt "notices.exportTasksFailed"
 msgid "Failed to export tasks as ICS file"
 msgstr "タスクのICSファイルエクスポートに失敗しました"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.error"
-msgid "Failed to export views: {message}"
-msgstr "ビューのエクスポートに失敗しました：{message}"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/GoogleCalendarService: GoogleCalendarService.fetchCalendarEvents display"
@@ -5973,11 +5913,6 @@ msgstr "ファイル"
 msgctxt "modals.fileSelector.exists"
 msgid "File \"{path}\" already exists"
 msgstr "ファイル「{path}」はすでに存在します"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.fileExists"
-msgid "File already exists"
-msgstr "ファイルが既に存在します"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/ICSSubscriptionService: ICSSubscriptionService.readLocalICSFile display"
@@ -7981,11 +7916,6 @@ msgstr "このイベントに関連するノートまたはタスクが見つか
 msgctxt "modals.reminder.empty"
 msgid "No reminders set"
 msgstr "リマインダーはありません"
-
-#: src/settings/native/general.ts
-msgctxt "settings.integrations.basesIntegration.exportV3Views.noViews"
-msgid "No saved views to export"
-msgstr "エクスポートする保存ビューがありません"
 
 #: src/services/filter-service/filterTaskGrouping.ts
 msgctxt "services.filter.groupLabels.scheduled.none"
@@ -10400,11 +10330,6 @@ msgctxt "settings.appearance.defaultEventVisibility.showDueDates.name"
 msgid "Show due dates"
 msgstr "期限日を表示"
 
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showDueWhenScheduled.name"
-msgid "Show due dates when scheduled"
-msgstr "予定がある場合も期限日を表示"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
@@ -10419,11 +10344,6 @@ msgstr "展開可能サブタスクを表示"
 msgctxt "views.basesCalendar.settings.layout.showTimeGrid"
 msgid "Show hourly breakdown"
 msgstr "時間グリッドを表示"
-
-#: src/settings/native/appearance.ts
-msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
-msgid "Show ICS events"
-msgstr "ICSイベントを表示"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"

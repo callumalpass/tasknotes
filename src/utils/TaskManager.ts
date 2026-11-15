@@ -1,5 +1,5 @@
 import { TFile, App, Events, EventRef, parseYaml } from "obsidian";
-import { TaskInfo, NoteInfo, EVENT_TASK_UPDATED } from "../types";
+import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { FieldMapper } from "../core/FieldMapper";
 import { normalizePriorityConfigValue, normalizeStatusConfigValue } from "../core/fieldMapping";
 import { getTodayString, formatDateForStorage, isBeforeDateSafe, getDatePart } from "./dateUtils";
@@ -44,7 +44,6 @@ export class TaskManager extends Events {
 	private taskTag: string;
 	private excludedFolders: string[];
 	private fieldMapper?: FieldMapper;
-	private disableNoteIndexing: boolean;
 	private storeTitleInFilename: boolean;
 
 	// Initialization state
@@ -79,7 +78,6 @@ export class TaskManager extends Events {
 		this.taskTag = settings.taskTag;
 		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
 		this.fieldMapper = fieldMapper;
-		this.disableNoteIndexing = settings.disableNoteIndexing;
 		this.storeTitleInFilename = settings.storeTitleInFilename;
 	}
 
@@ -916,41 +914,6 @@ export class TaskManager extends Events {
 	}
 
 	/**
-	 * Get notes for a specific date (just-in-time)
-	 */
-	async getNotesForDate(date: Date): Promise<NoteInfo[]> {
-		if (this.disableNoteIndexing) return [];
-
-		const notes: NoteInfo[] = [];
-		const dateStr = formatDateForStorage(date);
-		const files = this.app.vault.getMarkdownFiles();
-
-		for (const file of files) {
-			if (!this.isValidFile(file.path)) continue;
-
-			const metadata = this.app.metadataCache.getFileCache(file);
-			if (!metadata?.frontmatter) continue;
-
-			// Skip task files
-			if (this.isTaskFile(metadata.frontmatter)) continue;
-
-			// Check if note is associated with this date
-			const noteDate = metadata.frontmatter.date || metadata.frontmatter.scheduled;
-			if (noteDate === dateStr) {
-				notes.push({
-					path: file.path,
-					title: this.storeTitleInFilename
-						? file.basename
-						: metadata.frontmatter.title || file.basename,
-					tags: metadata.frontmatter.tags || [],
-				});
-			}
-		}
-
-		return notes;
-	}
-
-	/**
 	 * Compatibility method - same as getTaskInfo
 	 */
 	async getTaskByPath(path: string): Promise<TaskInfo | null> {
@@ -1160,7 +1123,6 @@ export class TaskManager extends Events {
 		this.settings = settings;
 		this.taskTag = settings.taskTag;
 		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
-		this.disableNoteIndexing = settings.disableNoteIndexing;
 		this.storeTitleInFilename = settings.storeTitleInFilename;
 		this.clearFilterIndexes();
 		this.filterIndexesBuilt = false;

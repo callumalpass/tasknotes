@@ -165,7 +165,7 @@ The Calendar View provides several display options that control what types of ev
 - **Show due**: Display tasks with due dates
 - **Show timeblocks**: Display time-blocking entries
 - **Show recurring**: Display recurring task events
-- **Show ICS events**: Display events from imported ICS calendars
+- **Calendar subscriptions**: Show or hide each ICS calendar subscription
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
 - **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.
