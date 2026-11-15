@@ -9,6 +9,7 @@ import { TaskActionCoordinator } from "../ui/TaskActionCoordinator";
 import { SettingsLifecycleService } from "../services/SettingsLifecycleService";
 import { unregisterBasesViews } from "../bases/registration";
 import {
+	initializeCalendarProviders,
 	initializeCoreServices,
 	registerRibbonIcons,
 	registerTaskNotesIcon,
@@ -30,6 +31,9 @@ export async function initializePluginRuntime(plugin: TaskNotesPlugin): Promise<
 	registerRibbonIcons(plugin);
 	plugin.commandRegistry.register();
 	registerCliHandlers(plugin);
+	// Obsidian stores the tab's definitions when it is added, and the Google
+	// Calendar page reads the calendar services, so they must exist first.
+	initializeCalendarProviders(plugin);
 	plugin.addSettingTab(new TaskNotesSettingTab(plugin.app, plugin));
 }
 

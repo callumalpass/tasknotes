@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Fixed Sign in with Google not appearing under Settings → Google Calendar. The page showed only "Advanced: use your own Google Cloud project" until something else made the settings rebuild.

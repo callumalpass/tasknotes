@@ -93,7 +93,6 @@ import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 import { addTaskToProject, assignTaskAsSubtask } from "./services/taskRelationshipActions";
 import {
 	initializeAfterLayoutReady,
-	initializeCalendarProviders,
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
@@ -395,7 +394,6 @@ export default class TaskNotesPlugin extends Plugin {
 		// Start migration check early (before views can be opened)
 		this.migrationPromise = this.performEarlyMigrationCheck();
 
-		initializeCalendarProviders(this);
 		// Not awaited: if Bases has not loaded yet this schedules a retry timer,
 		// and initializeAfterLayoutReady attempts registration again.
 		void registerBasesIntegration(this);
