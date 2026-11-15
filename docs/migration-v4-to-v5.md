@@ -132,7 +132,9 @@ TaskNotes additively includes `md` and `base` record extensions and Base include
 
 ### TaskNotes App setup is separate
 
-Metadata compatibility is not pack installation. TaskNotes does **not** create or stamp `mdbase.lock.yaml` or pack provenance. When connecting the App, approve its one-time **Set up and allow access** step: the engine assesses and installs or upgrades packs, including saved-view/Base contracts. An `install` or `upgrade` assessment before that consent is expected, even when the task contract is already current. Existing pack locks are retained until engine-approved setup.
+Metadata compatibility is not pack installation. TaskNotes does **not** create or stamp `mdbase.lock.yaml` or pack provenance. The first time TaskNotes App opens the collection, approve its one-time **Set up** step: the engine assesses and installs or upgrades packs, including saved-view/Base contracts. An `install` or `upgrade` assessment before that consent is expected, even when the task contract is already current. Existing pack locks are retained until engine-approved setup.
+
+That setup writes the task type whether or not type definitions are turned on in the plugin. Update TaskNotes to version 5 on every device that uses the vault first: a device still running TaskNotes 4 with **Generate mdbase type definitions** turned on can overwrite the type. See [Use TaskNotes App with your vault](guides/tasknotes-app.md).
 
 ### Check existing task records
 

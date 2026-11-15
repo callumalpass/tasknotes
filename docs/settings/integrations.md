@@ -15,7 +15,7 @@ Existing canonical type upgrades keep their role mappings, stable-ID role, archi
 
 Use **TaskNotes: Check collection** to list invalid task records without changing them. Missing creation dates can be filled from file creation time, and invalid statuses require an explicit replacement choice. Per-record and all-record repairs require confirmation and verified backups in `.tasknotes/migrations/`. Other errors remain for manual review. See [migration checks and App setup](../migration-v4-to-v5.md#check-existing-task-records).
 
-The plugin publishes compatible metadata but does not write pack locks or installation provenance. TaskNotes App's one-time **Set up and allow access** consent lets the engine install or upgrade packs, including saved-view/Base contracts.
+The plugin publishes compatible metadata but does not write pack locks or installation provenance. TaskNotes App's one-time **Set up** step lets the engine install or upgrade packs, including saved-view/Base contracts, whether or not this setting is on. Update TaskNotes to version 5 on every device that uses the vault before that step: TaskNotes 4 can overwrite the task type.
 
 ### Hide mdbase folders in the file explorer
 

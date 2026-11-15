@@ -31,10 +31,13 @@ Back up your vault before you start. See [Backup, restore, and removal](backup-r
 ## Set up
 
 1. In Obsidian, open **Settings → TaskNotes → TaskNotes App** and turn on **Turn on type definitions**. TaskNotes writes `mdbase.yaml` and the task type that TaskNotes App reads. New installs of TaskNotes 5 have this on already; vaults updated from TaskNotes 4 keep the setting they had. See [Integrations](../settings/integrations.md#mdbase).
-2. Install [mdbase Connect](https://mdbase.dev/downloads/) on the computer that has your vault, open it, and sign in or create an account.
+2. Install [mdbase Connect](https://mdbase.dev/downloads/) on the computer that has your vault and open it. Choose **Sign in with your browser**, sign in or create an account, then choose **Approve computer**.
 3. In mdbase Connect, choose **Add existing folder** and select your vault's folder. To find the folder, choose **Copy folder path** on the same settings page.
-4. Choose **Turn on sync**. mdbase Connect uploads the files in the folder. The folder stays where it is.
-5. Open TaskNotes App on the web, iPhone or Android, sign in with the same account, and choose the collection. The first time, TaskNotes App asks you to set up the collection and allow access.
+4. Open **Collections**, open the vault's **…** menu and choose **Turn on sync**, then choose **Turn on sync** again. mdbase Connect uploads the files in the folder and keeps them in sync. The folder stays where it is.
+5. Open TaskNotes App on the web, iPhone or Android, sign in with the same account, choose the collection and choose **Open TaskNotes**.
+6. The first time, TaskNotes App asks to set up the collection. Choose **Set up**, or **Continue** if nothing needs to change.
+
+**Before step 6,** update TaskNotes to version 5 on every device that uses the vault. TaskNotes App's setup writes the task type whether or not type definitions are turned on in Obsidian, and a device still running TaskNotes 4 with **Generate mdbase type definitions** turned on can overwrite it.
 
 After step 3, **Settings → TaskNotes → TaskNotes App** shows the vault as added to mdbase Connect.
 
