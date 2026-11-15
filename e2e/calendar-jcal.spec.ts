@@ -126,9 +126,12 @@ test('held calendar move retains original source, cancellation and persisted Und
     await appearance(1180, theme);
     await mode('day');
     const event = page.locator(`${root} .tnc-item--timed[data-task-path="${folder}/Scheduled.md"]`).filter({ hasText: 'Review release notes' }).first();
-    await event.scrollIntoViewIfNeeded();
-    const start = await event.boundingBox();
-    expect(start).not.toBeNull();
+    let start: { x: number; y: number; width: number; height: number } | null = null;
+    await expect(async () => {
+      await event.scrollIntoViewIfNeeded();
+      start = await event.boundingBox();
+      expect(start).not.toBeNull();
+    }).toPass({ timeout: 5000 });
     const begin = async () => {
       await page.mouse.move(start!.x + start!.width / 2, start!.y + 20);
       await page.mouse.down();
