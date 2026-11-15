@@ -1,3 +1,4 @@
+import { setTooltip } from "obsidian";
 import { renderEmptyState } from "../../ui/kit/emptyState";
 import type TaskNotesPlugin from "../../main";
 import { msg } from "@lingui/core/macro";
@@ -91,6 +92,6 @@ export function renderActivityChart(plugin: TaskNotesPlugin, container: HTMLElem
 
 		// Tooltip
 		const tooltip = uiText(msg({ message: "{date}: {duration}", context: "statistics daily time tooltip" }), { date: formatUIDate(new Date(day.date), "MMM d"), duration: uiDuration(Math.round(day.timeSpent)) });
-		bar.setAttribute("title", tooltip);
+		setTooltip(bar, tooltip);
 	}
 }

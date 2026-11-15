@@ -247,7 +247,7 @@ describe("TaskCard Component", () => {
 				const card = createTaskCard(task, mockPlugin, ["status", "due"], { layout });
 				const title = card.querySelector(".task-card__title-text");
 				expect(title?.textContent).toBe(task.title);
-				expect(title?.getAttribute("title")).toBe(task.title);
+				expect(title?.hasAttribute("title")).toBe(false);
 				const metadata = card.querySelector(".task-card__metadata");
 				expect(metadata?.closest(".task-card__title")).toBeNull();
 				if (layout === "inline") {

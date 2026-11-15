@@ -58,7 +58,6 @@ export function createNoteCard(
 		item.createSpan({
 			cls: "note-card__badge",
 			text: plugin.i18n.translate(msg({ message: "Daily", context: "ui.noteCard.dailyBadge" })),
-			attr: { title: plugin.i18n.translate(msg({ message: "Daily note", context: "ui.noteCard.dailyTooltip" })) },
 		});
 	}
 
@@ -110,7 +109,6 @@ export function createNoteCard(
 		contentContainer.createDiv({
 			cls: "note-card__metadata",
 			text: uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr }),
-			attr: { title: uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr }) },
 		});
 	}
 
@@ -118,7 +116,6 @@ export function createNoteCard(
 		contentContainer.createDiv({
 			cls: "note-card__metadata",
 			text: note.path,
-			attr: { title: uiText(msg({ message: "Path: {path}", context: "ui/NoteCard: createNoteCard title" }), { path: note.path }) },
 		});
 	}
 

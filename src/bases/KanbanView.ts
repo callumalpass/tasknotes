@@ -1608,8 +1608,9 @@ export class KanbanView extends BasesViewBase {
 		const explanation = unconfiguredValueLabel(groupKey);
 		const recovery = element.createEl("button", {
 			cls: "tn-btn tn-btn--ghost tn-btn--icon",
-			attr: { type: "button", "aria-label": uiText(msg({ message: "Task settings", context: "picker recovery action" })), "aria-description": explanation, title: explanation },
+			attr: { type: "button" },
 		});
+		setTooltip(recovery, `${explanation} · ${uiText(msg({ message: "Task settings", context: "picker recovery action" }))}`);
 		setIcon(recovery, "circle-help");
 		recovery.addEventListener("click", event => {
 			event.stopPropagation();
@@ -4369,7 +4370,6 @@ export class KanbanView extends BasesViewBase {
 		for (let index = 1; index < columns.length; index++) if (Math.abs(columns[index].getBoundingClientRect().left - left) < Math.abs(columns[closest].getBoundingClientRect().left - left)) closest = index;
 		select.value = keys[closest];
 		if (this.columnNav?.offsetWidth) this.activeNavigatorColumn = keys[closest];
-		select.title = labels[closest] ?? "";
 		this.previousColumn.disabled = closest === 0;
 		this.nextColumn.disabled = closest >= columns.length - 1;
 		this.previousColumn.setAttribute("aria-label", labels[Math.max(0, closest - 1)] ?? select.getAttribute("aria-label") ?? "");
@@ -4579,7 +4579,6 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private renderLinkAwareGroupTitle(container: HTMLElement, title: string): void {
-		container.title = title;
 		const app = this.app || this.plugin.app;
 		const linkServices: LinkServices = {
 			translate: this.plugin.i18n.translate.bind(this.plugin.i18n),

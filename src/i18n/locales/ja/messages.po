@@ -2763,16 +2763,6 @@ msgctxt "ui.audit.collapseAll"
 msgid "Collapse all groups and subgroups"
 msgstr "すべてのグループとサブグループを折りたたむ"
 
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Collapse card"
-msgstr "カードを折りたたむ"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Collapse card"
-msgstr "カードを折りたたむ"
-
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
@@ -3791,11 +3781,6 @@ msgstr "デイリー"
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "毎日（完了後）"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui.noteCard.dailyTooltip"
-msgid "Daily note"
-msgstr "デイリーノート"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
@@ -5210,16 +5195,6 @@ msgstr "すべてのグループを展開"
 msgctxt "ui.audit.expandAll"
 msgid "Expand all groups and subgroups"
 msgstr "すべてのグループとサブグループを展開"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Expand card"
-msgstr "カードを展開"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Expand card"
-msgstr "カードを展開"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
@@ -8907,11 +8882,6 @@ msgstr "ICS ファイルの保存先（保管庫のルートからの相対パ�
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
-msgid "Path: {path}"
-msgstr "パス: {path}"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui/NoteCard: createNoteCard title"
 msgid "Path: {path}"
 msgstr "パス: {path}"
 

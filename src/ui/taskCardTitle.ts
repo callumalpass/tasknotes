@@ -47,7 +47,6 @@ export function renderTaskCardTitleText(
 	};
 
 	renderTextWithLinks(container, getTaskCardTitleText(task, displayText), linkServices);
-	container.title = getTaskCardTitleText(task, displayText);
 }
 
 export function syncTaskCardTitleCompletion(card: HTMLElement, isCompleted: boolean): void {

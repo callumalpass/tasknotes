@@ -254,12 +254,6 @@ export class DateTimePickerModal extends Modal {
 						context: "modals.dateTimePicker.apply",
 					})
 				),
-				title: this.translate(
-					msg({
-						message: "Apply natural language date",
-						context: "modals.dateTimePicker.apply",
-					})
-				),
 			},
 		});
 		setIcon(applyButton, "wand");
@@ -309,12 +303,6 @@ export class DateTimePickerModal extends Modal {
 			attr: {
 				type: "button",
 				"aria-label": this.translate(
-					msg({
-						message: "Open native date picker",
-						context: "modals.dateTimePicker.nativePicker",
-					})
-				),
-				title: this.translate(
 					msg({
 						message: "Open native date picker",
 						context: "modals.dateTimePicker.nativePicker",
