@@ -42,7 +42,7 @@ import { CalendarBatchPreview } from "./calendarBatchPreview";
 import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR } from "../utils/clickHandlers";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
-import { Notice, Platform, TFile, setIcon } from "obsidian";
+import { Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
 import type { EventRef } from "obsidian";
 import {
 	CalendarRecreateNavigationState,
@@ -1431,6 +1431,7 @@ export class CalendarView extends BasesViewBase {
 			acceptNativeDrop: acceptsExternalTaskDrop,
 			onExternalDrop: (arg) => void this.handleExternalTaskDrop(arg),
 			itemDidMount: (arg) => this.handleEventDidMount(arg),
+			tooltip: (el, text) => setTooltip(el, text),
 			listItemContent: (arg) => this.renderListItem(arg),
 			...{
 				listEmptyContent: () => {
