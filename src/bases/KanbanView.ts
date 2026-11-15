@@ -4088,6 +4088,7 @@ export class KanbanView extends BasesViewBase {
 
 					// Single atomic write: groupBy + swimlane + sort_order
 					let changes: TaskMovementUndoChange[] = [];
+					let writtenModified: string | undefined;
 					await processVaultFrontMatter(this.plugin.app, file, (fm) => {
 						const before = structuredClone(fm);
 						applyKanbanTaskDropFrontmatterPlan(fm, dropPlan, {
@@ -4116,6 +4117,11 @@ export class KanbanView extends BasesViewBase {
 								statusDerivativePlan.dateModifiedValue;
 						}
 						changes = buildTaskMovementUndo(before, fm, this.plugin.fieldMapper.toUserField("dateModified"));
+						writtenModified = this.plugin.fieldMapper.mapFromFrontmatter(
+							fm,
+							path,
+							this.plugin.settings.storeTitleInFilename
+						).dateModified;
 					});
 					record(file, changes);
 					finishTaskUndo();
@@ -4160,6 +4166,8 @@ export class KanbanView extends BasesViewBase {
 									this.plugin.statusManager.isCompletedStatus(status),
 							});
 							if (sideEffectPlan) {
+								// The task cache keeps this snapshot until Obsidian reports the same dateModified.
+								sideEffectPlan.updatedTask.dateModified = writtenModified;
 								await this.plugin.taskService.applyPropertyChangeSideEffects(
 									file,
 									originalTask as TaskInfo,

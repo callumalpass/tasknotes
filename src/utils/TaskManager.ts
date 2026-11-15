@@ -1242,8 +1242,11 @@ export class TaskManager extends Events {
 			return;
 		}
 
+		// Every view reads this cache. A Bases view's entry holds live Obsidian objects
+		// that cannot be cloned, so it stays with the view that supplied it.
+		const { basesData: _basesData, ...task } = taskInfo;
 		this.pendingTaskInfoByPath.set(path, {
-			...taskInfo,
+			...task,
 			path,
 		});
 		filterIndexChanged = this.updateFilterIndexesFromTaskInfo(path, taskInfo);

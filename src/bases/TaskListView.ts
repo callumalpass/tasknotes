@@ -1920,6 +1920,7 @@ export class TaskListView extends BasesViewBase {
 						(await this.plugin.cacheManager.getTaskInfo(path));
 					let undoChanges: TaskMovementUndoChange[] = [];
 					let changes = plan.changes;
+					let writtenModified: string | undefined;
 					await processVaultFrontMatter(this.plugin.app, file, (frontmatter) => {
 						const before = structuredClone(frontmatter);
 						// Lists group by their whole value, so the source membership is what this
@@ -1956,6 +1957,7 @@ export class TaskListView extends BasesViewBase {
 							this.plugin.fieldMapper.toUserField("dateModified");
 						frontmatter[modifiedProperty] = getCurrentTimestamp();
 						undoChanges = buildTaskMovementUndo(before, frontmatter, modifiedProperty);
+						writtenModified = this.readDateModified(frontmatter, path);
 					});
 					let updatedTask = originalTask;
 					if (originalTask) {
@@ -1974,6 +1976,8 @@ export class TaskListView extends BasesViewBase {
 										this.getClearedTaskValue(property, file),
 								}) ?? updatedTask;
 						}
+						// The task cache keeps this snapshot until Obsidian reports the same dateModified.
+						updatedTask = { ...updatedTask, dateModified: writtenModified };
 						for (const change of changes) {
 							if (!change.groupByTaskProp) continue;
 							// Side effects (status, webhooks, archive) need the real values, not group labels.
@@ -2301,6 +2305,15 @@ export class TaskListView extends BasesViewBase {
 			property,
 			this.plugin.fieldMapper.lookupMappingKey(property.replace(/^(note\.|task\.)/, ""))
 		);
+	}
+
+	/** The dateModified the task cache will read back from this frontmatter. */
+	private readDateModified(frontmatter: Record<string, unknown>, path: string): string | undefined {
+		return this.plugin.fieldMapper.mapFromFrontmatter(
+			frontmatter,
+			path,
+			this.plugin.settings.storeTitleInFilename
+		).dateModified;
 	}
 
 	private getClearedTaskValue(property: string, file: TFile): unknown {
@@ -2822,6 +2835,7 @@ export class TaskListView extends BasesViewBase {
 			}
 
 			// Single atomic write: group property + sort_order + derivative fields
+			let writtenModified: string | undefined;
 			await processVaultFrontMatter(this.plugin.app, file, (fm) => {
 				const before = structuredClone(fm);
 				applyTaskListDropFrontmatterMutation({
@@ -2842,6 +2856,7 @@ export class TaskListView extends BasesViewBase {
 					getTimestamp: getCurrentTimestamp,
 				});
 				collect(file, before, fm);
+				writtenModified = this.readDateModified(fm, draggedPath);
 			});
 			if (receipts.length) {
 				const undo = createFileUndo(this.plugin, receipts);
@@ -2868,6 +2883,8 @@ export class TaskListView extends BasesViewBase {
 								this.getClearedTaskValue(property, file),
 						});
 						if (updatedTask) {
+							// The task cache keeps this snapshot until Obsidian reports the same dateModified.
+							updatedTask.dateModified = writtenModified;
 							await this.plugin.taskService.applyPropertyChangeSideEffects(
 								file,
 								originalTask,
