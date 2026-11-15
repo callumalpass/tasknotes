@@ -75,11 +75,11 @@ function triggerGroup(ctx: SettingsContext, id: string, fallback: string): Setti
 			ctx.text(`nlp.${id}.trigger`, {
 				name: t(msg({ message: "Trigger character:", context: "settings.taskProperties.propertyCard.triggerChar" })),
 				getValue: () => read()?.trigger ?? fallback,
-				setValue: (trigger) => change({ trigger }),
+				setValue: (trigger) => change({ trigger: trigger.trim() }),
 				validate: (value) =>
 					!value.trim()
 						? t(msg({ message: "Trigger cannot be empty", context: "settings.taskProperties.propertyCard.triggerEmpty" }))
-						: value.length > 10
+						: value.trim().length > 10
 							? t(msg({ message: "Trigger is too long (max 10 characters)", context: "settings.taskProperties.propertyCard.triggerTooLong" }))
 							: undefined,
 			}),
