@@ -36,6 +36,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed Google and Microsoft calendar event titles running underneath the calendar icon in the top-right corner of short events.
+
 ## Changed
 
 - Task card titles now use regular weight instead of medium, so task lists, Kanban boards and calendar list views read lighter. The smaller, muted metadata line still sets each title apart.

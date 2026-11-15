@@ -146,6 +146,7 @@ describe("calendarEventMount", () => {
 		expect(element.classList.contains("fc-event--has-related-note")).toBe(true);
 		expect(element.dataset.relatedNoteCount).toBe("2");
 		expect(element.querySelector(".fc-event-provider-icon")).not.toBeNull();
+		expect(element.classList.contains("has-provider-icon")).toBe(true);
 		const indicator = title.querySelector<HTMLElement>(".ics-related-note-indicator");
 		expect(indicator?.dataset.relatedNoteCount).toBe("2");
 		expect(indicator?.getAttribute("aria-label")).toBe("Related notes & tasks: 2");

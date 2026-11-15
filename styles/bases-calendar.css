@@ -731,6 +731,11 @@
     height: 12px;
 }
 
+/* Keep the title clear of the corner provider icon. */
+.advanced-calendar-view .tnc-item.has-provider-icon .tnc-item-title {
+    margin-inline-end: 12px;
+}
+
 .advanced-calendar-view .tnc-item .ics-related-note-indicator {
     margin-left: 4px;
 }
