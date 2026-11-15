@@ -770,6 +770,14 @@
    so the keyboard never shares the sheet with three rows of chips.
    ===================================================================== */
 
+body.is-mobile .tasknotes-plugin.minimalist-task-modal {
+    bottom: var(--keyboard-height, 0px);
+}
+
+body.is-mobile.mod-toolbar-open .tasknotes-plugin.minimalist-task-modal {
+    bottom: calc(var(--keyboard-height, 0px) + var(--mobile-toolbar-height, 0px));
+}
+
 body.is-mobile .tasknotes-plugin.minimalist-task-modal > .modal {
     max-width: 100%;
 }
@@ -819,11 +827,6 @@ body.is-mobile .tasknotes-plugin .tn-task-modal__details-toggle .action-icon__la
 body.is-mobile .tasknotes-plugin .action-icon:not(.tn-chip--property) {
     width: 40px;
     height: 40px;
-}
-
-body.is-mobile .tasknotes-plugin.minimalist-task-modal.is-mobile-keyboard-focused .modal-split-content {
-    padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
-    scroll-padding-bottom: calc(min(42vh, 320px) + env(safe-area-inset-bottom));
 }
 
 body.is-mobile .modal.mod-tasknotes .tn-task-modal__button-bar {

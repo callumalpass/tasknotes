@@ -41,6 +41,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed the mobile task composer opening behind the on-screen keyboard. The title, scrollable fields, and save controls now fit above the keyboard.
 - Added visible removal actions for nested entries in native list settings, including custom user fields, statuses, priorities, default reminders, calendar subscriptions, and webhooks. Existing confirmation and note-preservation behavior is unchanged.
 - (#2119) TaskNotes API tasks and events no longer expose internal Bases data, which could cause circular JSON errors in companion plugins.
   - Thanks to @chrabia for reporting this and @konstantinopolka for finding the cause
