@@ -31,3 +31,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Improved compatibility with Obsidian popout windows for context menus, editor controls, and Kanban drag feedback.
+- Removed an iOS-incompatible regular expression from linked-note task conversion while preserving embedded-note handling.
+
+## Changed
+
+- Updated Obsidian plugin guideline checks and included manifest and license validation in the strict lint checks.

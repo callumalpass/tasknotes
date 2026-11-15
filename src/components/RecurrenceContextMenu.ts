@@ -724,7 +724,7 @@ export class CustomRecurrenceModal extends Modal {
 			const template = this.translate(key, markers);
 			for (const part of template.split(/(\{\w+\})/g)) {
 				const control = controls[part.slice(1, -1)];
-				container.append(control ?? document.createTextNode(part));
+				container.append(control ?? container.doc.createTextNode(part));
 			}
 		};
 
