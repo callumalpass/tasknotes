@@ -183,7 +183,9 @@ test('mini-calendar titles lead while file identity and direct note access remai
     await expect(entry).toBeVisible();
     await shot(`mini-${theme}-${width}`);
     if (!baseline) {
-      await expect(entry).toHaveAttribute('title', `Review release notes\n${folder}/Scheduled.md`);
+      await expect(entry).not.toHaveAttribute('title');
+      await expect(entry.locator('.tn-picker__label')).toContainText('Review release notes');
+      await expect(entry).toHaveAttribute('data-entry-path', `${folder}/Scheduled.md`);
       expect(await entry.boundingBox().then(bounds => bounds!.height)).toBeGreaterThanOrEqual(40);
       const identity = entry.locator('.tn-picker__detail');
       await expect(identity).toHaveText('Scheduled');

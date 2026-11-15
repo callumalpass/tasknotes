@@ -170,7 +170,7 @@ for (const property of ['status', 'priority']) test(`unknown board ${property} k
   }, { folder, taskPath, property });
   const column = page.locator('.kanban-view__column[data-group="legacy-review"]');
   await expect(column.locator('.kanban-view__column-title')).toHaveText('legacy-review');
-  await column.getByRole('button', { name: 'Task settings', exact: true }).click();
+  await column.getByRole('button', { name: 'legacy-review (not configured) · Task settings', exact: true }).click();
   const settingsPage = await recoverySettings();
   const section = settingsPage.locator('.setting-group.mod-list:visible').last();
   await expect(section).toBeVisible();

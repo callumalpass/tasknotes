@@ -115,6 +115,7 @@ test('keyboard/touch collapse, locale stability, drag/drop and restart persisten
   await toggle('waiting').click();
   await page.evaluate(async () => {
     const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.settings.uiLanguage = 'de';
     await plugin.setUILanguage('de');
     await (window as any).app.workspace.activeLeaf.view.controller.view.render();
   });

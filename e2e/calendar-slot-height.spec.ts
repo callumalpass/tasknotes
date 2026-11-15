@@ -26,6 +26,8 @@ async function openCalendar(settings: Record<string, string | number | boolean> 
 		await host.workspace.getLeaf(true).openFile(file);
 	}, { path: BASE, settings });
 	await expect(app.page.locator('.tnc:visible .tnc-tg-body')).toBeVisible({ timeout: 15000 });
+	await expect.poll(() => app.page.locator('.tnc:visible .tnc-tg').evaluate(element =>
+		element.getAnimations().some(animation => animation.playState === 'running'))).toBe(false);
 }
 
 async function slotPixels(): Promise<number> {
