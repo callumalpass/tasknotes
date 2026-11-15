@@ -20,6 +20,8 @@ export interface ProviderCalendar {
 	description?: string;
 	backgroundColor?: string;
 	primary?: boolean;
+	/** False when the account can only read this calendar (e.g. shared or holiday calendars). */
+	canEdit?: boolean;
 }
 
 /**
@@ -177,6 +179,16 @@ export abstract class CalendarProvider extends EventEmitter {
 		const calendarId = icsEvent.subscriptionId.replace(`${this.providerId}-`, "");
 		const eventId = icsEvent.id.replace(`${this.providerId}-${calendarId}-`, "");
 		return { calendarId, eventId };
+	}
+
+	/**
+	 * Whether the user may delete this event from TaskNotes: the provider owns it and
+	 * its calendar is not known to be read-only.
+	 */
+	canDeleteEvent(icsEvent: ICSEvent): boolean {
+		if (!this.ownsEvent(icsEvent)) return false;
+		const { calendarId } = this.extractEventIds(icsEvent);
+		return findProviderCalendar(this.getAvailableCalendars(), calendarId)?.canEdit !== false;
 	}
 }
 

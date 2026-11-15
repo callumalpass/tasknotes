@@ -445,6 +445,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 					backgroundColor: cal.hexColor || undefined,
 					primary: cal.isDefaultCalendar || false,
 					isDefault: cal.isDefaultCalendar || false,
+					canEdit: cal.canEdit,
 				}));
 			}, "List calendars");
 		} catch (error) {
