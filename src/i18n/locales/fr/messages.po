@@ -946,9 +946,9 @@ msgstr "**Début :** {value1}"
 
 #: src/i18n/releaseNotesAnnouncement.ts
 msgctxt "release announcement Markdown"
-msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+msgid "**TaskNotes App: your tasks on the web, iPhone and Android.** It works with the same Markdown task notes as this plugin. [Open TaskNotes App]({token1}) · [Get it for iPhone]({token2}) · [Get it for Android]({token4}) · [Setup guide]({token3}). To use it with the tasks in this vault, see **Settings → TaskNotes → TaskNotes App**.\n"
 ""
-msgstr "**TaskNotes v5 bêta.** Utilisez vos tâches Markdown dans Obsidian et dans la nouvelle application TaskNotes. [Extension bêta]({token1}) · [Application web]({token2}) · [iOS]({token3}). Sauvegardez votre coffre avant d’essayer la bêta.\n"
+msgstr "**TaskNotes App : vos tâches sur le web, sur iPhone et sur Android.** Elle fonctionne avec les mêmes notes de tâches Markdown que ce plugin. [Ouvrir TaskNotes App]({token1}) · [Télécharger pour iPhone]({token2}) · [Télécharger pour Android]({token4}) · [Guide de configuration]({token3}). Pour l’utiliser avec les tâches de ce coffre, consultez **Paramètres → TaskNotes → TaskNotes App**.\n"
 ""
 
 #: src/components/ICSEventContextMenu.ts
@@ -1051,6 +1051,11 @@ msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1 heure avant"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.types.name"
+msgid "1. Turn on type definitions"
+msgstr "1. Activer les définitions de types"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twelveHour"
 msgid "12-hour (AM/PM)"
@@ -1076,6 +1081,11 @@ msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15 minutes avant"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.name"
+msgid "2. Install mdbase Connect"
+msgstr "2. Installer mdbase Connect"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
 msgid "24-hour"
@@ -1096,6 +1106,11 @@ msgctxt "settings.appearance.calendarView.customDayCount.placeholder"
 msgid "3"
 msgstr "3"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.name"
+msgid "3. Add this vault"
+msgstr "3. Ajouter ce coffre"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimatePlaceholder"
 msgid "30"
@@ -1105,6 +1120,11 @@ msgstr "30"
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
 msgid "30 minutes"
 msgstr "30 minutes"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step3.name"
+msgid "4. Open TaskNotes App"
+msgstr "4. Ouvrir TaskNotes App"
 
 #: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
@@ -1451,11 +1471,17 @@ msgctxt "modals.reminder.added"
 msgid "Added reminder: {description}"
 msgstr "Rappel ajouté : {description}"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.added"
+msgid "Added to mdbase Connect on a computer. Open TaskNotes App and sign in with the same account."
+msgstr "Ajouté à mdbase Connect sur un ordinateur. Ouvrez TaskNotes App et connectez-vous avec le même compte."
+
 #: src/services/taskRelationshipActions.ts
 msgctxt "contextMenus.task.organization.notices.addedToProject"
 msgid "Added to project: {project}"
 msgstr "Ajoutée au projet : {project}"
 
+#: src/settings/native/tasknotesApp.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.advanced"
 msgid "Advanced"
@@ -2539,6 +2565,11 @@ msgctxt "settings.integrations.oauth.checking"
 msgid "Checking connection…"
 msgstr "Vérification de la connexion…"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.checking"
+msgid "Checking…"
+msgstr "Vérification…"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
@@ -3156,6 +3187,11 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy filenames"
 msgstr "Copier les noms de fichiers"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.copy"
+msgid "Copy folder path"
+msgstr "Copier le chemin du dossier"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyLocation"
 msgid "Copy location"
@@ -3241,6 +3277,11 @@ msgstr "Principal"
 msgctxt "settings.taskProperties.sections.coreProperties"
 msgid "Core properties"
 msgstr "Propriétés principales"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.copyFailed"
+msgid "Could not copy the folder path"
+msgstr "Impossible de copier le chemin du dossier"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: buildTaskCreationDataFromCli display"
@@ -6061,6 +6102,11 @@ msgctxt "settings.general.folderManagement.header"
 msgid "Folder management"
 msgstr "Gestion des dossiers"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.copied"
+msgid "Folder path copied"
+msgstr "Chemin du dossier copié"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.archiveFolder.description"
 msgid "Folder to move tasks to when archived. Supports template variables like '{{year}}', '{{month}}', '{{priority}}', etc."
@@ -6148,11 +6194,6 @@ msgctxt "api/loadAPIEndpoints: loadAPIEndpoints display"
 msgid "General"
 msgstr "Général"
 
-#: src/settings/TaskNotesSettingTab.ts
-msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
-msgstr "Génère et maintient mdbase.yaml et les fichiers de types configurés lorsque vous modifiez les paramètres. Les nouvelles configurations utilisent _mdbase/types ; les coffres existants conservent leurs dossiers."
-
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
 msgid "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n"
@@ -6162,7 +6203,7 @@ msgstr "Générer des liens markdown ([text](path)) au lieu de wikilinks ([[link
 "\n"
 "⚠️ Nécessite le plugin ''obsidian-frontmatter-markdown-links'' pour fonctionner correctement."
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.name"
 msgid "Generate mdbase type definitions"
 msgstr "Générer les définitions de types mdbase"
@@ -6171,6 +6212,16 @@ msgstr "Générer les définitions de types mdbase"
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error"
 msgid "Generated link text is too long."
 msgstr "Le texte du lien généré est trop long."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.android.name"
+msgid "Get TaskNotes for Android"
+msgstr "Télécharger TaskNotes pour Android"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.iphone.name"
+msgid "Get TaskNotes for iPhone"
+msgstr "Télécharger TaskNotes pour iPhone"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.connect.description"
@@ -6353,7 +6404,7 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "Portée des étiquettes masquées"
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
 msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
 msgstr "Masque _mdbase, les dossiers de types et de contrats configurés, _settings et les dossiers de schémas mdbase. Leurs fichiers restent accessibles dans la recherche et le sélecteur rapide."
@@ -6378,7 +6429,7 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "Masquer les étiquettes d''identification sur les cartes de tâches"
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Masquer les dossiers mdbase dans l’explorateur de fichiers"
@@ -6468,6 +6519,11 @@ msgstr "Importer un fichier"
 msgctxt "recurrence detail months"
 msgid "in {months}"
 msgstr "en {months}"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.description"
+msgid "In mdbase Connect, choose Add existing folder and select this vault’s folder, then choose Turn on sync."
+msgstr "Dans mdbase Connect, choisissez « Ajouter un dossier existant », sélectionnez le dossier de ce coffre, puis choisissez « Activer la synchronisation »."
 
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
@@ -6578,6 +6634,11 @@ msgstr "Tâches dans les notes"
 msgctxt "commands.insertTaskNoteLink"
 msgid "Insert tasknote link"
 msgstr "Insérer un lien vers une note de tâche"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.description"
+msgid "Install the desktop app on the computer that has this vault, then sign in or create an account."
+msgstr "Installez l’application de bureau sur l’ordinateur qui contient ce coffre, puis connectez-vous ou créez un compte."
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.header"
@@ -6875,7 +6936,7 @@ msgctxt "views.basesCalendar.settings.groups.layout"
 msgid "Layout"
 msgstr "Mise en page"
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.learnMore"
 msgid "Learn more about mdbase-spec"
 msgstr "En savoir plus sur mdbase-spec"
@@ -8091,6 +8152,11 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "Normale"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.notAdded"
+msgid "Not added to mdbase Connect yet."
+msgstr "Pas encore ajouté à mdbase Connect."
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8368,6 +8434,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "Le {week} {day} de chaque mois"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.oneSync.description"
+msgid "Once mdbase Connect syncs this vault, stop syncing it with Obsidian Sync, iCloud, Dropbox or another service. Two services syncing the same folder can create conflicting copies."
+msgstr "Une fois que mdbase Connect synchronise ce coffre, arrêtez de le synchroniser avec Obsidian Sync, iCloud, Dropbox ou un autre service. Deux services qui synchronisent le même dossier peuvent créer des copies en conflit."
+
 #: src/bases/BasesViewBase.ts
 msgctxt "bases creation feedback"
 msgid "Open"
@@ -8566,6 +8637,11 @@ msgctxt "modals.actionPalette.openFile"
 msgid "Open task file"
 msgstr "Ouvrir le fichier de la tâche"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.openApp.name"
+msgid "Open TaskNotes App"
+msgstr "Ouvrir TaskNotes App"
+
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openTasksView"
@@ -8627,6 +8703,16 @@ msgstr "Note d’occurrence du {date} ouverte"
 msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
 msgid "Opening browser for {provider} authorization..."
 msgstr "Ouverture du navigateur pour autoriser {provider}..."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.android.description"
+msgid "Opens Google Play."
+msgstr "Ouvre Google Play."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.iphone.description"
+msgid "Opens the App Store."
+msgstr "Ouvre l’App Store."
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
@@ -8921,6 +9007,11 @@ msgstr "Indiquez une date et une heure pour le rappel absolu"
 msgctxt "settings.features.dataStorage.pluginData"
 msgid "Plugin data"
 msgstr "Données du plugin"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.description"
+msgid "Point your phone’s camera at the code for your phone."
+msgstr "Pointez l’appareil photo de votre téléphone vers le code correspondant."
 
 #: src/views/PomodoroView.ts
 #: src/views/stats/charts.ts
@@ -9247,6 +9338,16 @@ msgctxt "color name"
 msgid "Purple"
 msgstr "Violet"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.label"
+msgid "QR code for TaskNotes in the App Store"
+msgstr "Code QR de TaskNotes dans l’App Store"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.androidLabel"
+msgid "QR code for TaskNotes on Google Play"
+msgstr "Code QR de TaskNotes sur Google Play"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Quick (<30m)"
@@ -9271,6 +9372,11 @@ msgstr "Limite de requêtes dépassée. Réessayez plus tard."
 msgctxt "Bases data inspector"
 msgid "Raw data structure"
 msgstr "Structure des données brutes"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mdbaseMcp.name"
+msgid "Reach your tasks when Obsidian is closed"
+msgstr "Accéder à vos tâches quand Obsidian est fermé"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.calendars.readOnly"
@@ -9842,6 +9948,11 @@ msgctxt "common.saving"
 msgid "Saving..."
 msgstr "Enregistrement…"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.name"
+msgid "Scan to get the mobile app"
+msgstr "Scanner pour obtenir l’app mobile"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.scheduleFor"
 msgid "Schedule for {date}"
@@ -10236,6 +10347,11 @@ msgctxt "modals.actionPalette.scheduleDesc"
 msgid "Set the scheduled date to {date}"
 msgstr "Définir la date planifiée sur {date}"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.setUpTaskNotesApp"
+msgid "Set up TaskNotes App"
+msgstr "Configurer TaskNotes App"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.dueDate.descriptions.dateTime"
 msgid "Set when this task should be completed"
@@ -10245,6 +10361,11 @@ msgstr "Définir quand cette tâche doit être terminée"
 msgctxt "modals.scheduledDate.descriptions.dateTime"
 msgid "Set when you plan to work on this task"
 msgstr "Définir quand vous prévoyez de travailler sur cette tâche"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.guide.name"
+msgid "Setup guide"
+msgstr "Guide de configuration"
 
 #: src/ui/kit/keyHint.ts
 msgctxt "keyboard key name"
@@ -10536,6 +10657,11 @@ msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
 msgid "Sign in with Google, or connect a Google or Microsoft calendar using credentials from your own developer application."
 msgstr "Connectez-vous avec Google, ou connectez un calendrier Google ou Microsoft avec vos propres identifiants d’application OAuth."
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step3.description"
+msgid "Sign in with the same account and choose this vault."
+msgstr "Connectez-vous avec le même compte et choisissez ce coffre."
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
@@ -10812,6 +10938,11 @@ msgstr "Statut : {value}"
 msgctxt "settings.native.statuses"
 msgid "Statuses"
 msgstr "Statuts"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.guide.description"
+msgid "Step-by-step instructions on tasknotes.dev."
+msgstr "Instructions détaillées sur tasknotes.dev."
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.stop"
@@ -11566,6 +11697,17 @@ msgctxt "notices.interface.apiStarted"
 msgid "TaskNotes API started on port {port}"
 msgstr "API TaskNotes démarrée sur le port {port}"
 
+#: src/settings/native/tasknotesApp.ts
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.tasknotesApp.page.name"
+msgid "TaskNotes App"
+msgstr "TaskNotes App"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.intro.description"
+msgid "TaskNotes App works with the same Markdown task notes as this plugin. You can try it in your browser straight away, without an account. To use it with the tasks in this vault, sync the vault with mdbase Connect."
+msgstr "TaskNotes App fonctionne avec les mêmes notes de tâches Markdown que ce plugin. Vous pouvez l’essayer tout de suite dans votre navigateur, sans compte. Pour l’utiliser avec les tâches de ce coffre, synchronisez le coffre avec mdbase Connect."
+
 #: src/services/AutoExportService.ts
 msgctxt "services.autoExport.notices.exportFailed"
 msgid "TaskNotes auto export failed: {error}"
@@ -11821,6 +11963,11 @@ msgstr "Nom de la propriété dans l’en-tête YAML (ex. « category »)"
 msgctxt "services/HostedGoogleCalendarService: authorization expired"
 msgid "The Google authorization expired. Try again."
 msgstr "L’autorisation Google a expiré. Réessayez."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mdbaseMcp.description"
+msgid "The HTTP API and MCP server run only while Obsidian is open on this computer. To use your tasks from Claude and other AI apps at any time, sync this vault with mdbase Connect and add the mdbase MCP server."
+msgstr "L’API HTTP et le serveur MCP ne fonctionnent que lorsque Obsidian est ouvert sur cet ordinateur. Pour utiliser vos tâches depuis Claude et d’autres apps d’IA à tout moment, synchronisez ce coffre avec mdbase Connect et ajoutez le serveur MCP mdbase."
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
@@ -12174,6 +12321,11 @@ msgstr "cette liste non groupée"
 msgctxt "settings.native.duplicateValue"
 msgid "This value already exists."
 msgstr "Cette valeur existe déjà."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.name"
+msgid "This vault"
+msgstr "Ce coffre"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -12869,6 +13021,11 @@ msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder"
 msgid "type"
 msgstr "type-projet"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.typesOff"
+msgid "Type definitions are off. Turn them on in step 1."
+msgstr "Les définitions de types sont désactivées. Activez-les à l’étape 1."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.typeDesc"
 msgid "Type of notifications to show"
@@ -13199,6 +13356,11 @@ msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
 msgid "Use ICS event end time as task due date"
 msgstr "Utiliser l''heure de fin de l''événement ICS comme date d''échéance"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.setup.heading"
+msgid "Use it with this vault"
+msgstr "L’utiliser avec ce coffre"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
@@ -13213,6 +13375,11 @@ msgstr "Utiliser le type mdbase"
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
 msgid "Use occurrence note template"
 msgstr "Utiliser un modèle de note d''occurrence"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.oneSync.name"
+msgid "Use one sync service for this vault"
+msgstr "Utiliser un seul service de synchronisation pour ce coffre"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.taskProperties.projectsCard.useParentHeader"
@@ -13253,6 +13420,11 @@ msgstr "Utiliser un modèle"
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "Utilisez ce secret pour vérifier les données reçues dans l’application destinataire."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.page.description"
+msgid "Use your tasks on the web, iPhone and Android."
+msgstr "Utilisez vos tâches sur le web, sur iPhone et sur Android."
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
@@ -13652,6 +13824,11 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Durée de travail"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.types.description"
+msgid "Writes mdbase.yaml and the task type that TaskNotes App reads, and keeps them up to date as your settings change. Update TaskNotes on every device that uses this vault first: TaskNotes 4 can overwrite them."
+msgstr "Écrit mdbase.yaml et le type de tâche que lit TaskNotes App, et les tient à jour quand vos paramètres changent. Mettez d’abord à jour TaskNotes sur chaque appareil qui utilise ce coffre : TaskNotes 4 peut les écraser."
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
@@ -13742,6 +13919,11 @@ msgstr "Votre disposition personnalisée sera remplacée par la disposition par 
 msgctxt "services/HostedGoogleCalendarService: session ended"
 msgid "Your Google Calendar sign-in ended. Sign in again in TaskNotes settings."
 msgstr "Votre connexion à Google Agenda a pris fin. Reconnectez-vous dans les paramètres de TaskNotes."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.intro.name"
+msgid "Your tasks on the web, iPhone and Android"
+msgstr "Vos tâches sur le web, sur iPhone et sur Android"
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

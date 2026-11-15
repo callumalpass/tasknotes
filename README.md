@@ -3,7 +3,7 @@
 A task management plugin where each task is a separate Markdown note, and all views are powered by [Obsidian Bases](https://help.obsidian.md/bases).
 
 > [!NOTE]
-> **TaskNotes is also available in Beta on the web and iPhone.** [Open TaskNotes on the web](https://app.tasknotes.dev/) or [download it from the App Store](https://apps.apple.com/app/tasknotes/id6797168033).
+> **TaskNotes is also available in Beta on the web, iPhone and Android.** [Open TaskNotes on the web](https://app.tasknotes.dev/), [download it from the App Store](https://apps.apple.com/app/tasknotes/id6797168033) or [get it on Google Play](https://play.google.com/store/apps/details?id=dev.tasknotes.app). To use it with the tasks in your vault, sync the vault with [mdbase Connect](https://mdbase.dev/downloads/), which needs an mdbase Connect account. See [Use TaskNotes App with your vault](https://tasknotes.dev/guides/tasknotes-app/).
 
 <img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
 

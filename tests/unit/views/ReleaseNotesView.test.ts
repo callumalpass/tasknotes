@@ -78,13 +78,13 @@ describe("ReleaseNotesView", () => {
 		jest.mocked(MarkdownRenderer.render).mockClear();
 	});
 
-	it("renders one shared announcement after the version list", async () => {
+	it("renders one shared announcement above the version list", async () => {
 		const view = createView();
 		await view.onOpen();
 
 		expect(view.contentEl.querySelectorAll(".release-notes-announcement")).toHaveLength(1);
 		const announcement = view.contentEl.querySelector(".release-notes-announcement");
-		expect(announcement?.previousElementSibling?.className).toBe("release-notes-versions");
+		expect(announcement?.nextElementSibling?.className).toBe("release-notes-versions");
 		const calls = jest.mocked(MarkdownRenderer.render).mock.calls;
 		expect(calls).toHaveLength(1);
 		expect(calls[0][1]).toBe(releaseNotesAnnouncement);
@@ -92,12 +92,12 @@ describe("ReleaseNotesView", () => {
 		expect(calls[0][4]).toBe(view);
 	});
 
-	it("keeps the shared announcement compact without Android recruitment or stale stable-version claims", () => {
+	it("keeps the shared announcement compact without tester recruitment or stale stable-version claims", () => {
 		expect(releaseNotesAnnouncement.trim().split(/\n\s*\n/)).toHaveLength(1);
 		expect(releaseNotesAnnouncement.length).toBeLessThan(600);
-		expect(releaseNotesAnnouncement).toContain("Back up your vault");
-		expect(releaseNotesAnnouncement).not.toMatch(/Android|testers|Google Group|14 consecutive|4\.13|beta\.2/);
-		expect(releaseNotesAnnouncement.match(/\]\(https:/g)).toHaveLength(3);
+		expect(releaseNotesAnnouncement).toContain("Settings → TaskNotes → TaskNotes App");
+		expect(releaseNotesAnnouncement).not.toMatch(/testers|Google Group|14 consecutive|4\.13|beta\.2/);
+		expect(releaseNotesAnnouncement.match(/\]\(https:/g)).toHaveLength(4);
 	});
 
 	it("omits legacy beta callouts without changing other release content", async () => {

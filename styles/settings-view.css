@@ -1204,3 +1204,39 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 .tasknotes-settings__card-config-row--hidden {
     display: none;
 }
+
+/* TaskNotes App page: App Store QR code. Always dark modules on white so cameras
+   can read it in dark themes. */
+.modal.mod-settings .tn-app-qr-codes {
+    display: flex;
+    flex: none;
+    gap: var(--size-4-4);
+}
+
+.modal.mod-settings .tn-app-qr-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--size-4-1);
+}
+
+.modal.mod-settings .tn-app-qr {
+    width: 112px;
+    height: 112px;
+    flex: none;
+    border-radius: var(--radius-s);
+}
+
+.modal.mod-settings .tn-app-qr-caption {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smaller);
+}
+
+.modal.mod-settings .tn-app-qr__background {
+    fill: white;
+}
+
+.modal.mod-settings .tn-app-qr__modules {
+    stroke: black;
+    fill: none;
+}

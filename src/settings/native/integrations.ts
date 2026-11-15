@@ -7,6 +7,7 @@ import {
 	type SettingDefinitionPage,
 } from "obsidian";
 import { SettingsContext } from "./SettingsContext";
+import { MDBASE_MCP_URL } from "./tasknotesApp";
 import { formatDateLabel } from "../../utils/dateUtils";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { loadAPIEndpoints } from "../../api/loadAPIEndpoints";
@@ -427,6 +428,12 @@ export function apiDefinitions(ctx: SettingsContext): SettingDefinitionPage {
 		name: t(msg({ message: "HTTP API", context: "settings.integrations.httpApi.header" })),
 		visible: () => !Platform.isMobile,
 		items: [
+			{
+				name: t(msg({ message: "Reach your tasks when Obsidian is closed", context: "settings.integrations.httpApi.mdbaseMcp.name" })),
+				desc: t(msg({ message: "The HTTP API and MCP server run only while Obsidian is open on this computer. To use your tasks from Claude and other AI apps at any time, sync this vault with mdbase Connect and add the mdbase MCP server.", context: "settings.integrations.httpApi.mdbaseMcp.description" })),
+				aliases: ["mdbase", "claude", "mcp", "connector"],
+				action: () => window.open(MDBASE_MCP_URL, "_blank"),
+			},
 			ctx.field(s, "enableAPI", "enableAPI", t(msg({ message: "Enable HTTP API", context: "settings.integrations.httpApi.enable.name" })), {
 				desc: t(msg({ message: "Start local HTTP server for API access", context: "settings.integrations.httpApi.enable.description" })),
 			}),

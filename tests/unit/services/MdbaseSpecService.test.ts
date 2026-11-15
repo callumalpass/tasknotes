@@ -1765,6 +1765,23 @@ describe("MdbaseSpecService", () => {
 			expect(files.has("_mdbase/types/task.md")).toBe(true);
 			expect(files.has("mdbase.yaml")).toBe(true);
 		});
+
+		it("does not treat its own first setup writes as outside edits", async () => {
+			const plugin = createMockPlugin({ enableMdbaseSpec: true });
+			const files = installMemoryVault(plugin, {});
+			const service = new MdbaseSpecService(plugin);
+			const unguardedWrites: string[] = [];
+			const write = plugin.app.vault.adapter.write.getMockImplementation();
+			plugin.app.vault.adapter.write.mockImplementation((path: string, content: string) => {
+				if (!(service as any).writeInProgress) unguardedWrites.push(path);
+				return write(path, content);
+			});
+
+			await service.onSettingsChanged();
+
+			expect(files.has("mdbase.yaml")).toBe(true);
+			expect(unguardedWrites).toEqual([]);
+		});
 	});
 
 	describe("canonical v0.3 configuration", () => {

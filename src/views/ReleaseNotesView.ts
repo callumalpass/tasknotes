@@ -208,7 +208,8 @@ export class ReleaseNotesView extends ItemView {
 			starMessage.appendText(messageText);
 		}
 
-		// One shared announcement, independent of the bundled release versions.
+		// One shared announcement, independent of the bundled release versions,
+		// above them so people who just updated see it first.
 		const announcement = container.createEl("section", {
 			cls: "release-notes-announcement",
 		});
@@ -228,7 +229,7 @@ export class ReleaseNotesView extends ItemView {
 			const isExpanded = versionData.isCurrent || i === 0;
 			await this.createVersionSection(versionsContainer, versionData, isExpanded);
 		}
-		container.append(announcement, starMessage);
+		container.append(starMessage);
 
 		// Footer with link to all releases
 		const footer = container.createDiv({ cls: "release-notes-footer" });

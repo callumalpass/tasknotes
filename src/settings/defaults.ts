@@ -368,7 +368,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Default visible properties for inline task cards (more compact by default)
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
 	// Bases integration defaults
-	enableMdbaseSpec: false,
+	enableMdbaseSpec: true,
 	hideMdbaseFolders: true,
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)

@@ -945,9 +945,9 @@ msgstr "**시작:** {value1}"
 
 #: src/i18n/releaseNotesAnnouncement.ts
 msgctxt "release announcement Markdown"
-msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+msgid "**TaskNotes App: your tasks on the web, iPhone and Android.** It works with the same Markdown task notes as this plugin. [Open TaskNotes App]({token1}) · [Get it for iPhone]({token2}) · [Get it for Android]({token4}) · [Setup guide]({token3}). To use it with the tasks in this vault, see **Settings → TaskNotes → TaskNotes App**.\n"
 ""
-msgstr "**TaskNotes v5 베타.** Markdown 작업을 Obsidian과 새로운 TaskNotes 앱에서 사용하세요. [플러그인 베타]({token1}) · [웹 앱]({token2}) · [iOS]({token3}). 베타를 사용하기 전에 보관함을 백업하세요.\n"
+msgstr "**TaskNotes App: 웹, iPhone, Android에서 작업을 관리하세요.** 이 플러그인과 같은 Markdown 작업 노트로 작동합니다. [TaskNotes App 열기]({token1}) · [iPhone용 다운로드]({token2}) · [Android용 다운로드]({token4}) · [설정 가이드]({token3}). 이 보관함의 작업과 함께 사용하려면 **설정 → TaskNotes → TaskNotes App**을 확인하세요.\n"
 ""
 
 #: src/components/ICSEventContextMenu.ts
@@ -1050,6 +1050,11 @@ msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1시간 전"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.types.name"
+msgid "1. Turn on type definitions"
+msgstr "1. 유형 정의 켜기"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twelveHour"
 msgid "12-hour (AM/PM)"
@@ -1075,6 +1080,11 @@ msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15분 전"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.name"
+msgid "2. Install mdbase Connect"
+msgstr "2. mdbase Connect 설치"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
 msgid "24-hour"
@@ -1095,6 +1105,11 @@ msgctxt "settings.appearance.calendarView.customDayCount.placeholder"
 msgid "3"
 msgstr "3"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.name"
+msgid "3. Add this vault"
+msgstr "3. 이 보관함 추가"
+
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.timeEstimatePlaceholder"
 msgid "30"
@@ -1104,6 +1119,11 @@ msgstr "30"
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
 msgid "30 minutes"
 msgstr "30분"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step3.name"
+msgid "4. Open TaskNotes App"
+msgstr "4. TaskNotes App 열기"
 
 #: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
@@ -1450,11 +1470,17 @@ msgctxt "modals.reminder.added"
 msgid "Added reminder: {description}"
 msgstr "리마인더 추가 완료: {description}"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.added"
+msgid "Added to mdbase Connect on a computer. Open TaskNotes App and sign in with the same account."
+msgstr "컴퓨터에서 mdbase Connect에 추가되었습니다. TaskNotes App을 열고 같은 계정으로 로그인하세요."
+
 #: src/services/taskRelationshipActions.ts
 msgctxt "contextMenus.task.organization.notices.addedToProject"
 msgid "Added to project: {project}"
 msgstr "프로젝트에 추가됨: {project}"
 
+#: src/settings/native/tasknotesApp.ts
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.advanced"
 msgid "Advanced"
@@ -2538,6 +2564,11 @@ msgctxt "settings.integrations.oauth.checking"
 msgid "Checking connection…"
 msgstr "연결 확인 중…"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.checking"
+msgid "Checking…"
+msgstr "확인 중…"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
@@ -3155,6 +3186,11 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy filenames"
 msgstr "파일 이름 복사"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.copy"
+msgid "Copy folder path"
+msgstr "폴더 경로 복사"
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyLocation"
 msgid "Copy location"
@@ -3240,6 +3276,11 @@ msgstr "기본"
 msgctxt "settings.taskProperties.sections.coreProperties"
 msgid "Core properties"
 msgstr "핵심 속성"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.copyFailed"
+msgid "Could not copy the folder path"
+msgstr "폴더 경로를 복사하지 못했습니다"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/buildTaskCreationDataFromCli: buildTaskCreationDataFromCli display"
@@ -6060,6 +6101,11 @@ msgctxt "settings.general.folderManagement.header"
 msgid "Folder management"
 msgstr "폴더 관리"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.copied"
+msgid "Folder path copied"
+msgstr "폴더 경로를 복사했습니다"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.archiveFolder.description"
 msgid "Folder to move tasks to when archived. Supports template variables like '{{year}}', '{{month}}', '{{priority}}', etc."
@@ -6147,11 +6193,6 @@ msgctxt "api/loadAPIEndpoints: loadAPIEndpoints display"
 msgid "General"
 msgstr "일반"
 
-#: src/settings/TaskNotesSettingTab.ts
-msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
-msgstr "설정이 변경되면 mdbase.yaml과 설정된 유형 파일을 생성하고 갱신합니다. 새 설정에서는 _mdbase/types를 사용하며 기존 보관함은 원래 폴더를 유지합니다."
-
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
 msgid "Generate markdown links ([text](path)) instead of wikilinks ([[link]]) in frontmatter properties.\n"
@@ -6161,7 +6202,7 @@ msgstr "프론트매터 속성에서 위키링크 ([[link]]) 대신 마크다운
 "\n"
 "⚠️ 올바르게 작동하려면 ''obsidian-frontmatter-markdown-links'' 플러그인이 필요합니다."
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.name"
 msgid "Generate mdbase type definitions"
 msgstr "mdbase 유형 정의 생성"
@@ -6170,6 +6211,16 @@ msgstr "mdbase 유형 정의 생성"
 msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.replaceOriginalTaskLines error"
 msgid "Generated link text is too long."
 msgstr "생성된 링크 텍스트가 너무 깁니다."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.android.name"
+msgid "Get TaskNotes for Android"
+msgstr "Android용 TaskNotes 다운로드"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.iphone.name"
+msgid "Get TaskNotes for iPhone"
+msgstr "iPhone용 TaskNotes 다운로드"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.connect.description"
@@ -6352,7 +6403,7 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "숨길 태그 범위"
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
 msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
 msgstr "_mdbase, 설정된 유형 및 계약 폴더, _settings, mdbase 스키마 폴더를 숨깁니다. 해당 파일은 검색과 빠른 전환기에 계속 표시됩니다."
@@ -6377,7 +6428,7 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "작업 카드에서 식별 태그 숨기기"
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "파일 탐색기에서 mdbase 폴더 숨기기"
@@ -6467,6 +6518,11 @@ msgstr "파일 가져오기"
 msgctxt "recurrence detail months"
 msgid "in {months}"
 msgstr "{months}에"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.description"
+msgid "In mdbase Connect, choose Add existing folder and select this vault’s folder, then choose Turn on sync."
+msgstr "mdbase Connect에서 ‘기존 폴더 추가’를 선택해 이 보관함의 폴더를 고른 다음 ‘동기화 켜기’를 선택하세요."
 
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
@@ -6577,6 +6633,11 @@ msgstr "인라인 작업"
 msgctxt "commands.insertTaskNoteLink"
 msgid "Insert tasknote link"
 msgstr "TaskNote 링크 삽입"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.description"
+msgid "Install the desktop app on the computer that has this vault, then sign in or create an account."
+msgstr "이 보관함이 있는 컴퓨터에 데스크톱 앱을 설치한 다음 로그인하거나 계정을 만드세요."
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.header"
@@ -6874,7 +6935,7 @@ msgctxt "views.basesCalendar.settings.groups.layout"
 msgid "Layout"
 msgstr "레이아웃"
 
-#: src/settings/TaskNotesSettingTab.ts
+#: src/settings/native/tasknotesApp.ts
 msgctxt "settings.integrations.mdbaseSpec.learnMore"
 msgid "Learn more about mdbase-spec"
 msgstr "mdbase-spec에 대해 자세히 알아보기"
@@ -8090,6 +8151,11 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "보통"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.notAdded"
+msgid "Not added to mdbase Connect yet."
+msgstr "아직 mdbase Connect에 추가되지 않았습니다."
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8367,6 +8433,11 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth
 msgid "On the {week} {day} of each month"
 msgstr "매월 {week} {day}에"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.oneSync.description"
+msgid "Once mdbase Connect syncs this vault, stop syncing it with Obsidian Sync, iCloud, Dropbox or another service. Two services syncing the same folder can create conflicting copies."
+msgstr "mdbase Connect가 이 보관함을 동기화하면 Obsidian Sync, iCloud, Dropbox 등 다른 서비스로는 동기화하지 마세요. 두 서비스가 같은 폴더를 동기화하면 충돌한 사본이 생길 수 있습니다."
+
 #: src/bases/BasesViewBase.ts
 msgctxt "bases creation feedback"
 msgid "Open"
@@ -8565,6 +8636,11 @@ msgctxt "modals.actionPalette.openFile"
 msgid "Open task file"
 msgstr "작업 파일 열기"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.openApp.name"
+msgid "Open TaskNotes App"
+msgstr "TaskNotes App 열기"
+
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openTasksView"
@@ -8626,6 +8702,16 @@ msgstr "{date} 반복 항목 노트를 열었습니다"
 msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
 msgid "Opening browser for {provider} authorization..."
 msgstr "{provider} 인증을 위해 브라우저 여는 중..."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.android.description"
+msgid "Opens Google Play."
+msgstr "Google Play를 엽니다."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.iphone.description"
+msgid "Opens the App Store."
+msgstr "App Store를 엽니다."
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
@@ -8920,6 +9006,11 @@ msgstr "지정 시간 리마인더의 날짜와 시간을 모두 입력하세요
 msgctxt "settings.features.dataStorage.pluginData"
 msgid "Plugin data"
 msgstr "플러그인 데이터"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.description"
+msgid "Point your phone’s camera at the code for your phone."
+msgstr "휴대폰 카메라를 해당하는 코드에 비추세요."
 
 #: src/views/PomodoroView.ts
 #: src/views/stats/charts.ts
@@ -9246,6 +9337,16 @@ msgctxt "color name"
 msgid "Purple"
 msgstr "보라"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.label"
+msgid "QR code for TaskNotes in the App Store"
+msgstr "App Store의 TaskNotes QR 코드"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.androidLabel"
+msgid "QR code for TaskNotes on Google Play"
+msgstr "Google Play의 TaskNotes QR 코드"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
 msgid "Quick (<30m)"
@@ -9270,6 +9371,11 @@ msgstr "요청 한도를 초과했습니다. 나중에 다시 시도하세요."
 msgctxt "Bases data inspector"
 msgid "Raw data structure"
 msgstr "원시 데이터 구조"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mdbaseMcp.name"
+msgid "Reach your tasks when Obsidian is closed"
+msgstr "Obsidian이 닫혀 있어도 작업에 접근"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.calendars.readOnly"
@@ -9841,6 +9947,11 @@ msgctxt "common.saving"
 msgid "Saving..."
 msgstr "저장 중…"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.qr.name"
+msgid "Scan to get the mobile app"
+msgstr "스캔해서 모바일 앱 받기"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.scheduleFor"
 msgid "Schedule for {date}"
@@ -10235,6 +10346,11 @@ msgctxt "modals.actionPalette.scheduleDesc"
 msgid "Set the scheduled date to {date}"
 msgstr "예정일 설정: {date}"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.setUpTaskNotesApp"
+msgid "Set up TaskNotes App"
+msgstr "TaskNotes App 설정"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.dueDate.descriptions.dateTime"
 msgid "Set when this task should be completed"
@@ -10244,6 +10360,11 @@ msgstr "이 작업을 완료해야 하는 시간 설정"
 msgctxt "modals.scheduledDate.descriptions.dateTime"
 msgid "Set when you plan to work on this task"
 msgstr "이 작업을 수행할 시간 설정"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.guide.name"
+msgid "Setup guide"
+msgstr "설정 가이드"
 
 #: src/ui/kit/keyHint.ts
 msgctxt "keyboard key name"
@@ -10535,6 +10656,11 @@ msgctxt "settings.native.connectAGoogleOrMicrosoftCalendarUsingYourOwn"
 msgid "Sign in with Google, or connect a Google or Microsoft calendar using credentials from your own developer application."
 msgstr "Google 계정으로 로그인하거나 자신의 OAuth 앱 자격 증명으로 Google 또는 Microsoft 캘린더에 연결하세요."
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step3.description"
+msgid "Sign in with the same account and choose this vault."
+msgstr "같은 계정으로 로그인하고 이 보관함을 선택하세요."
+
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.steps.signIn"
 msgid "Sign in with your Google account and grant access"
@@ -10811,6 +10937,11 @@ msgstr "상태: {value}"
 msgctxt "settings.native.statuses"
 msgid "Statuses"
 msgstr "상태"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.guide.description"
+msgid "Step-by-step instructions on tasknotes.dev."
+msgstr "tasknotes.dev의 단계별 안내."
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.stop"
@@ -11565,6 +11696,17 @@ msgctxt "notices.interface.apiStarted"
 msgid "TaskNotes API started on port {port}"
 msgstr "TaskNotes API가 포트 {port}에서 시작되었습니다"
 
+#: src/settings/native/tasknotesApp.ts
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.tasknotesApp.page.name"
+msgid "TaskNotes App"
+msgstr "TaskNotes App"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.intro.description"
+msgid "TaskNotes App works with the same Markdown task notes as this plugin. You can try it in your browser straight away, without an account. To use it with the tasks in this vault, sync the vault with mdbase Connect."
+msgstr "TaskNotes App은 이 플러그인과 같은 Markdown 작업 노트로 작동합니다. 계정 없이 브라우저에서 바로 사용해 볼 수 있습니다. 이 보관함의 작업과 함께 사용하려면 mdbase Connect로 보관함을 동기화하세요."
+
 #: src/services/AutoExportService.ts
 msgctxt "services.autoExport.notices.exportFailed"
 msgid "TaskNotes auto export failed: {error}"
@@ -11820,6 +11962,11 @@ msgstr "프런트매터 속성 이름 (예: \"category\")"
 msgctxt "services/HostedGoogleCalendarService: authorization expired"
 msgid "The Google authorization expired. Try again."
 msgstr "Google 인증이 만료되었습니다. 다시 시도하세요."
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.mdbaseMcp.description"
+msgid "The HTTP API and MCP server run only while Obsidian is open on this computer. To use your tasks from Claude and other AI apps at any time, sync this vault with mdbase Connect and add the mdbase MCP server."
+msgstr "HTTP API와 MCP 서버는 이 컴퓨터에서 Obsidian이 열려 있는 동안에만 작동합니다. Claude 및 다른 AI 앱에서 언제든 작업을 사용하려면 mdbase Connect로 이 보관함을 동기화하고 mdbase MCP 서버를 추가하세요."
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.theTagsPropertyIsReservedByObsidian"
@@ -12173,6 +12320,11 @@ msgstr "그룹화되지 않은 이 목록"
 msgctxt "settings.native.duplicateValue"
 msgid "This value already exists."
 msgstr "이 값은 이미 존재합니다."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.name"
+msgid "This vault"
+msgstr "이 보관함"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
@@ -12868,6 +13020,11 @@ msgctxt "settings.appearance.projectAutosuggest.requiredPropertyKey.placeholder"
 msgid "type"
 msgstr "유형"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.typesOff"
+msgid "Type definitions are off. Turn them on in step 1."
+msgstr "유형 정의가 꺼져 있습니다. 1단계에서 켜세요."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.typeDesc"
 msgid "Type of notifications to show"
@@ -13198,6 +13355,11 @@ msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"
 msgid "Use ICS event end time as task due date"
 msgstr "ICS 이벤트 종료 시간을 작업 마감일로 사용"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.setup.heading"
+msgid "Use it with this vault"
+msgstr "이 보관함과 함께 사용"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.name"
 msgid "Use Markdown links in frontmatter"
@@ -13212,6 +13374,11 @@ msgstr "mdbase 유형 사용"
 msgctxt "settings.defaults.bodyTemplate.useOccurrenceBodyTemplate.name"
 msgid "Use occurrence note template"
 msgstr "회차 노트 템플릿 사용"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.oneSync.name"
+msgid "Use one sync service for this vault"
+msgstr "이 보관함에는 동기화 서비스를 하나만 사용"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.taskProperties.projectsCard.useParentHeader"
@@ -13252,6 +13419,11 @@ msgstr "템플릿 사용"
 msgctxt "settings.native.useThisSecretToVerifyPayloadsInTheReceiving"
 msgid "Use this secret to verify payloads in the receiving application."
 msgstr "수신 애플리케이션에서 페이로드를 검증할 때 이 비밀 키를 사용하세요."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.page.description"
+msgid "Use your tasks on the web, iPhone and Android."
+msgstr "웹, iPhone, Android에서 작업을 사용하세요."
 
 #: src/i18n/messages.ts
 msgctxt "settings.modalFields.manager.fieldTypes.user"
@@ -13651,6 +13823,11 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "작업 시간"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.types.description"
+msgid "Writes mdbase.yaml and the task type that TaskNotes App reads, and keeps them up to date as your settings change. Update TaskNotes on every device that uses this vault first: TaskNotes 4 can overwrite them."
+msgstr "mdbase.yaml과 TaskNotes App이 읽는 작업 유형을 작성하고, 설정이 바뀔 때마다 최신 상태로 유지합니다. 먼저 이 보관함을 사용하는 모든 기기에서 TaskNotes를 업데이트하세요. TaskNotes 4가 이 파일을 덮어쓸 수 있습니다."
+
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.calendar.yahoo"
 msgid "Yahoo Calendar"
@@ -13741,6 +13918,11 @@ msgstr "사용자 지정 필드 배치를 기본 배치로 바꿉니다."
 msgctxt "services/HostedGoogleCalendarService: session ended"
 msgid "Your Google Calendar sign-in ended. Sign in again in TaskNotes settings."
 msgstr "Google 캘린더 로그인이 종료되었습니다. TaskNotes 설정에서 다시 로그인하세요."
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.intro.name"
+msgid "Your tasks on the web, iPhone and Android"
+msgstr "웹, iPhone, Android에서 작업 관리"
 
 #: src/modals/taskModalUserFieldControls.ts
 #: src/settings/native/creation.ts

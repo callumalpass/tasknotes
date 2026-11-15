@@ -1433,6 +1433,9 @@ export class MdbaseSpecService {
 			}
 		}
 
+		// Restore rather than clear: this runs inside a larger metadata write, whose
+		// own files must not be read back as outside edits while it commits.
+		const previousWriteState = this.writeInProgress;
 		this.writeInProgress = true;
 		try {
 			await this.writeFileIfUnchanged(snapshot, content);
@@ -1442,7 +1445,7 @@ export class MdbaseSpecService {
 			this.requestReconciliation();
 			throw error;
 		} finally {
-			this.writeInProgress = false;
+			this.writeInProgress = previousWriteState;
 		}
 
 		const parsed = parseMdbaseTaskTypeDocument(content);

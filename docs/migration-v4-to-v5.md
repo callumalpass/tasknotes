@@ -16,7 +16,7 @@ If you are upgrading from a release earlier than 4.13.0, HTTP API and MCP client
 
 1. Your existing `data.json` settings are read and kept. New settings receive their defaults. If TaskNotes cannot read the settings or determine whether the file exists, startup stops rather than saving defaults over it. Resolve the storage or sync error and restart.
 2. The HTTP API token moves from `data.json` to Obsidian Secret Storage on that device. The last-seen and last-notified release versions move to per-device storage. These values are removed from `data.json` once they have been stored.
-3. If the mdbase integration is enabled, TaskNotes-generated mdbase v0.2 metadata is upgraded to v0.3. See [mdbase collections](#mdbase-collections).
+3. If the mdbase integration is enabled, TaskNotes-generated mdbase v0.2 metadata is upgraded to v0.3. Updating does not turn the integration on; it is on by default only for new installs. To use TaskNotes App, turn it on in **Settings → TaskNotes → TaskNotes App** after every device that uses the vault runs v5. See [mdbase collections](#mdbase-collections).
 
 Task notes are not rewritten during the upgrade.
 
@@ -41,6 +41,7 @@ Settings now use Obsidian's native settings pages, navigation, and search. Indiv
 | Appearance & interaction | Task cards, inline tasks, click behaviour, and view defaults |
 | Time & reminders | Notifications, time tracking, recurrence, Pomodoro, and timeblocking |
 | Calendars & integrations | Calendar accounts, subscriptions, task export, and interoperability |
+| TaskNotes App | TaskNotes App links and setup, and the mdbase integration settings |
 | Advanced | Indexing, HTTP API, webhooks, and diagnostics |
 
 See [Settings](settings.md) for details of each page.

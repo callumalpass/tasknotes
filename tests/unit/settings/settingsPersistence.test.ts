@@ -219,6 +219,12 @@ describe("settings persistence helpers", () => {
 		expect(shouldPersistMigratedSettings).toBe(false);
 	});
 
+	it("starts mdbase type definitions on for new installs only", () => {
+		expect(buildSettingsFromLoadedData(null).settings.enableMdbaseSpec).toBe(true);
+		expect(buildSettingsFromLoadedData({ enableMdbaseSpec: false } as any).settings.enableMdbaseSpec).toBe(false);
+		expect(buildSettingsFromLoadedData({ tasksFolder: "Tasks" } as any).settings.enableMdbaseSpec).toBe(false);
+	});
+
 	it("merges only known settings keys into saved data while preserving other persisted data", () => {
 		const settings = {
 			...DEFAULT_SETTINGS,

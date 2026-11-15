@@ -181,14 +181,6 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		}));
 	}
 
-	// Normalize accidental surrounding whitespace in configured frontmatter keys.
-	if (Array.isArray(migratedData.userFields)) {
-		migratedData.userFields = migratedData.userFields.map((field) => ({
-			...field,
-			key: typeof field.key === "string" ? field.key.trim() : field.key,
-		}));
-	}
-
 	// Migration: Initialize modal fields configuration if not present.
 	if (!migratedData.modalFieldsConfig) {
 		migratedData.modalFieldsConfig = initializeFieldConfig(undefined, migratedData.userFields);
@@ -196,6 +188,13 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 
 	// Bases integration is always enabled (issue #1187). The saved key is left for 4.x devices.
 	delete migratedData.enableBases;
+
+	// mdbase type definitions start on only for new installs. Existing settings keep
+	// them off, as earlier versions did, because a device still on 4.x can overwrite
+	// the v5 type; turning them on is a step in the TaskNotes App setup.
+	if (typeof migratedData.enableMdbaseSpec === "undefined") {
+		migratedData.enableMdbaseSpec = false;
+	}
 
 	// Migration: Update the unused legacy default custom filename template to the
 	// preferred double-brace syntax while preserving active custom templates.

@@ -5,6 +5,7 @@ import type { TranslatedCommandDefinition } from "./types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { CheckCollectionModal } from "../modals/CheckCollectionModal";
+import { openTaskNotesAppSettings } from "../settings/TaskNotesSettingTab";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Commands/TaskNotesCommands" });
 
@@ -350,6 +351,13 @@ export function createTaskNotesCommandDefinitions(
 				if (!frontmatter || !plugin.cacheManager.isTaskFile(frontmatter)) return false;
 				if (!checking) void syncCurrentTask(plugin);
 				return true;
+			},
+		},
+		{
+			id: "set-up-tasknotes-app",
+			nameKey: msg({ message: "Set up TaskNotes App", context: "commands.setUpTaskNotesApp" }),
+			callback: (ctx) => {
+				openTaskNotesAppSettings(ctx);
 			},
 		},
 		{
