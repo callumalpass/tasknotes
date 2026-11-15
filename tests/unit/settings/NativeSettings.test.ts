@@ -1,8 +1,51 @@
 import { Platform } from "obsidian";
 import { getStarterNoteContent } from "../../../src/bootstrap/starterNote";
-import { settingsFixture, flattenSettings, control, page } from "../../helpers/native-settings";
+import { settingsFixture, flattenSettings, control, page, list } from "../../helpers/native-settings";
 
 describe("Native settings navigation and search", () => {
+	test("mutable lists expose deletion in entry editors and plain rows", () => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.userFields = [
+			{ id: "effort", key: "effort", displayName: "Effort", type: "number" },
+		];
+		plugin.settings.taskCreationDefaults.defaultProjects = "[[Test project]]";
+		plugin.settings.taskCreationDefaults.defaultReminders = [
+			{
+				id: "reminder",
+				type: "relative",
+				relatedTo: "due",
+				offset: 1,
+				unit: "hours",
+				direction: "before",
+				description: "",
+			},
+		];
+		plugin.settings.webhooks = [
+			{
+				id: "hook",
+				url: "",
+				events: [],
+				active: false,
+				secret: "",
+				createdAt: "",
+				failureCount: 0,
+				successCount: 0,
+				corsHeaders: true,
+			},
+		];
+		const definitions = tab.getSettingDefinitions();
+		for (const heading of ["Statuses", "Priorities", "Custom user fields", "Reminders", "Webhooks"]) {
+			const entry = list(definitions, heading).items![0];
+			expect(entry).toMatchObject({ type: "page" });
+			const deleteAction = "items" in entry
+				? entry.items?.find((item) => "action" in item && item.name.startsWith("Delete "))
+				: undefined;
+			expect(deleteAction).toEqual(expect.objectContaining({ action: expect.any(Function) }));
+		}
+		const project = list(definitions, "Projects").items![0];
+		expect(project).toMatchObject({ name: "[[Test project]]" });
+		expect(list(definitions, "Projects").onDelete).toEqual(expect.any(Function));
+	});
 	test("starter routes name real native settings pages and groups", () => {
 		const { tab } = settingsFixture();
 		const definitions = tab.getSettingDefinitions();

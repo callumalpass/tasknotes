@@ -16,6 +16,41 @@ import { creationDefaults, filenameDefinitions, formDefinitions } from "./native
 import { apiDefinitions, calendarDefinitions } from "./native/integrations";
 import { tasknotesAppDefinitions } from "./native/tasknotesApp";
 
+function exposeListRemoval(items: SettingDefinitionItem[], ctx: SettingsContext): void {
+	for (const item of items) {
+		if (
+			"type" in item &&
+			item.type === "list" &&
+			"onDelete" in item &&
+			item.onDelete &&
+			item.items
+		) {
+			const list = item;
+			item.items = item.items.map((entry, index) =>
+				"type" in entry && entry.type === "page"
+					? {
+							...entry,
+							items: [
+								...(entry.items ?? []),
+								{
+									name: ctx.t(
+										msg({
+											message: "Delete {name}?",
+											context: "settings.native.deleteEntry",
+										}),
+										{ name: entry.name }
+									),
+									action: () => list.onDelete?.(index),
+								},
+							],
+						}
+					: entry
+			);
+		}
+		if ("items" in item && item.items) exposeListRemoval(item.items, ctx);
+	}
+}
+
 export function openTaskPropertySettings(plugin: TaskNotesPlugin, property: "status" | "priority"): void {
 	plugin.app.setting.open();
 	const tab = plugin.app.setting.openTabById(plugin.manifest.id);
@@ -191,6 +226,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				action: () => window.open("https://tasknotes.dev", "_blank"),
 			},
 		];
+		exposeListRemoval(definitions, ctx);
 		makePageNamesUnique(definitions);
 		preservePageNavigation(this.app, this, this.settingItems ?? [], definitions);
 		return definitions;
