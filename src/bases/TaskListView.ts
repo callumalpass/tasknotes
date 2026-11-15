@@ -18,7 +18,7 @@ import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, TFile, setIcon, type MenuItem } from "obsidian";
+import { Menu, Notice, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -118,6 +118,7 @@ import {
 	type TaskParentAssignmentState,
 } from "../services/taskParentAssignment";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
+import { openListPicker, type PickerItem } from "../ui/kit/listPicker";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -1439,132 +1440,80 @@ export class TaskListView extends BasesViewBase {
 		this.emptyDestinations = shelf;
 	}
 
+	/**
+	 * The movement handle's picker: the keyboard equivalent of dragging. Lists
+	 * Add as subtask, reordering within the current destination, then every
+	 * group the task can move to, searchable by name.
+	 */
 	private showTaskMovementMenu(task: TaskInfo, card: HTMLElement): void {
 		const source = this.elementDestinations.get(card) ?? {
 			groupKey: this.taskGroupKeys.get(task.path) ?? null,
 		};
-		const menu = new Menu();
-		menu.addItem((item) =>
-			item
-				.setTitle(
-					this.plugin.i18n.translate(
-						msg({ message: "Move task", context: "views.taskList.movement.handle" })
-					)
-				)
-				.setIsLabel(true)
+		const t = this.plugin.i18n.translate.bind(this.plugin.i18n);
+		const items: PickerItem[] = [];
+		const actions = new Map<string, () => void>();
+		const add = (item: PickerItem, icon: string, run: () => void) => {
+			items.push({ ...item, renderLeading: (host) => setIcon(host, icon) });
+			actions.set(item.id, run);
+		};
+		add(
+			{
+				id: "parent",
+				label: t(
+					msg({
+						message: "Add as subtask of…",
+						context: "views.taskList.movement.parentChoose",
+					})
+				),
+			},
+			"corner-down-right",
+			() => void this.showParentAssignmentSelector(task.path)
 		);
-		menu.addItem((item) =>
-			item
-				.setTitle(
-					this.plugin.i18n.translate(
-						msg({
-							message: "Add as subtask of…",
-							context: "views.taskList.movement.parentChoose",
-						})
-					)
-				)
-				.setIcon("corner-down-right")
-				.onClick(() => void this.showParentAssignmentSelector(task.path))
-		);
-		this.addReorderMenuItems(menu, task.path, source);
-		menu.addSeparator();
-		menu.addItem((item) =>
-			item
-				.setTitle(
-					this.plugin.i18n.translate(
-						msg({
-							message: "Move to a group",
-							context: "views.taskList.movement.moveTo",
-						})
-					)
-				)
-				.setIsLabel(true)
-		);
-		const move = (target: TaskListDestination) => () =>
-			void this.performTaskMovement(task.path, source, target, true, null);
-		const destinations = this.getAvailableMovementDestinations();
-		for (const destination of destinations.filter(
-			(target) => target.subGroupKey === undefined
-		)) {
-			const children = destinations.filter(
-				(target) =>
-					target.groupKey === destination.groupKey &&
-					target.subGroupKey !== undefined &&
-					this.planMovement(source, target, true).kind === "move"
+		for (const action of this.getReorderActions(task.path, source))
+			add({ id: action.id, label: action.label }, action.icon, action.run);
+		const group = t(msg({ message: "Move to a group", context: "views.taskList.movement.moveTo" }));
+		const available = this.getAvailableMovementDestinations();
+		// Each group, followed by its subgroups.
+		const destinations = available
+			.filter((target) => target.subGroupKey === undefined)
+			.flatMap((parent) => [
+				parent,
+				...available.filter(
+					(target) =>
+						target.groupKey === parent.groupKey && target.subGroupKey !== undefined
+				),
+			]);
+		for (const [index, destination] of destinations.entries()) {
+			if (this.planMovement(source, destination, true).kind !== "move") continue;
+			add(
+				{ id: `move:${index}`, label: this.movementDestinationLabel(destination), group },
+				"move-right",
+				() => void this.performTaskMovement(task.path, source, destination, true, null)
 			);
-			const canMove = this.planMovement(source, destination, true).kind === "move";
-			if (!canMove && children.length === 0) continue;
-			const label = this.movementDestinationLabel(destination);
-			// Obsidian's own organization menus use this native submenu API, but it is not
-			// part of the public typings, so fall back to flat items without it.
-			const createSubmenu = (item: MenuItem): { menu: Menu } | undefined => {
-				const setSubmenu = (item as unknown as { setSubmenu?: unknown }).setSubmenu;
-				return typeof setSubmenu === "function"
-					? { menu: (setSubmenu as (this: MenuItem) => Menu).call(item) }
-					: undefined;
-			};
-			if (children.length === 0) {
-				menu.addItem((item) =>
-					item.setTitle(label).setIcon("move-right").onClick(move(destination))
-				);
-				continue;
-			}
-			const created: { submenu?: Menu } = {};
-			menu.addItem((item) => {
-				item.setTitle(label).setIcon("move-right");
-				created.submenu = createSubmenu(item)?.menu;
-				if (!created.submenu && canMove) item.onClick(move(destination));
-			});
-			const parentMenu = created.submenu;
-			if (parentMenu) {
-				if (canMove)
-					parentMenu.addItem((child) =>
-						child
-							.setTitle(
-								this.plugin.i18n.translate(
-									msg({
-										message: "Keep current subgroup",
-										context: "views.taskList.movement.keepSubgroup",
-									})
-								)
-							)
-							.onClick(move(destination))
-					);
-				for (const target of children) {
-					parentMenu.addItem((child) =>
-						child
-							.setTitle(
-								this.movementValueLabel(target.subGroupKey ?? null, this.subGroupPropertyId)
-							)
-							.onClick(move(target))
-					);
-				}
-			} else {
-				for (const target of children) {
-					menu.addItem((item) =>
-						item
-							.setTitle(this.movementDestinationLabel(target))
-							.setIcon("move-right")
-							.onClick(move(target))
-					);
-				}
-			}
 		}
-		const rect =
-			card
-				.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR)
-				?.getBoundingClientRect() ?? card.getBoundingClientRect();
-		menu.showAtPosition({ x: rect.left, y: rect.bottom }, this.containerEl.ownerDocument);
+		const placeholder = t(msg({ message: "Move task", context: "views.taskList.movement.handle" }));
+		openListPicker({
+			anchor: card.querySelector<HTMLElement>(this.CARD_DRAG_HANDLE_SELECTOR) ?? card,
+			app: this.plugin.app,
+			items,
+			placeholder,
+			emptyText: t(msg({ message: "No matching actions", context: "interaction picker" })),
+			revealSelected: false,
+			onChoose: (item) => actions.get(item.id)?.(),
+		});
 	}
 
 	/** Keyboard equivalent of dragging within the current destination. */
-	private addReorderMenuItems(menu: Menu, path: string, source: TaskListDestination): void {
-		if (!this.shouldEnableManualReordering()) return;
+	private getReorderActions(
+		path: string,
+		source: TaskListDestination
+	): Array<{ id: string; label: string; icon: string; run: () => void }> {
+		if (!this.shouldEnableManualReordering()) return [];
 		const scope =
 			this.filterMovementSortScope(this.getVisibleSortScopePaths(source.groupKey), source) ??
 			[];
 		const index = scope.indexOf(path);
-		if (index < 0) return;
+		if (index < 0) return [];
 		const reorder = (neighbour: string, above: boolean) => () => {
 			this.reorderConfirmed = false;
 			void this.handleSortOrderDrop(
@@ -1577,31 +1526,26 @@ export class TaskListView extends BasesViewBase {
 				source
 			).finally(() => this.debouncedRefresh());
 		};
+		const actions: Array<{ id: string; label: string; icon: string; run: () => void }> = [];
 		if (index > 0)
-			menu.addItem((item) =>
-				item
-					.setTitle(
-						this.plugin.i18n.translate(
-							msg({ message: "Move up", context: "views.taskList.movement.moveUp" })
-						)
-					)
-					.setIcon("arrow-up")
-					.onClick(reorder(scope[index - 1], true))
-			);
+			actions.push({
+				id: "up",
+				label: this.plugin.i18n.translate(
+					msg({ message: "Move up", context: "views.taskList.movement.moveUp" })
+				),
+				icon: "arrow-up",
+				run: reorder(scope[index - 1], true),
+			});
 		if (index < scope.length - 1)
-			menu.addItem((item) =>
-				item
-					.setTitle(
-						this.plugin.i18n.translate(
-							msg({
-								message: "Move down",
-								context: "views.taskList.movement.moveDown",
-							})
-						)
-					)
-					.setIcon("arrow-down")
-					.onClick(reorder(scope[index + 1], false))
-			);
+			actions.push({
+				id: "down",
+				label: this.plugin.i18n.translate(
+					msg({ message: "Move down", context: "views.taskList.movement.moveDown" })
+				),
+				icon: "arrow-down",
+				run: reorder(scope[index + 1], false),
+			});
+		return actions;
 	}
 
 	private clearMovementPreview(): void {

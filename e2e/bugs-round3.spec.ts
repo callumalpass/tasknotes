@@ -308,3 +308,21 @@ for (const type of ['tasknotesTaskList', 'tasknotesKanban']) {
     await page.keyboard.press('Escape');
   });
 }
+
+test('deleting a timeblock from its menu happens at once and Undo restores the daily note', async () => {
+  await resetTimeblock();
+  const daily = () => page.evaluate(path => (window as any).app.vault.adapter.read(path), `${folder}/2026-11-13.md`);
+  const before = await daily();
+  const root = await openView('tasknotesCalendar');
+  const block = root.locator('.tnc-item[data-event-type="timeblock"]');
+  await expect(block).toBeVisible();
+  await block.click({ button: 'right' });
+  await page.locator('.menu .menu-item').filter({ hasText: 'Delete timeblock' }).click();
+  await expect(page.locator('.modal-container')).toHaveCount(0);
+  await expect.poll(daily).not.toContain('bugs-block');
+  await expect(block).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/r3-timeblock-deleted.png' });
+  await page.locator('.tn-toast__action').filter({ hasText: 'Undo' }).last().click();
+  await expect.poll(daily).toBe(before);
+  await expect(block).toBeVisible();
+});

@@ -50,12 +50,19 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Task List groups start closer to the toolbar, with less space above each group header.
 - Clicking a task's priority, due date or scheduled date opens the searchable picker in every view. Outside the Task List and Kanban views, such as in calendar list views and the task cards shown in notes, they opened an older menu.
 - Clicking a task's recurrence, on a task or in the task modal, opens a searchable picker with the same presets, **Custom recurrence...** and **Clear**, in place of a menu.
-- The date submenus in the task and batch right-click menus list their options in the date picker's order: **Pick date & time…** first, then quick dates, then the +/- day and week options, then weekdays and **Clear date**.
+- In the task and batch right-click menus, **Status**, **Priority**, **Tags**, **Due date**, **Scheduled date**, **Recurrence** and **Reminders** open the same searchable pickers as a task's own controls, next to the menu, in place of submenus. **Organization → Contexts** opens the contexts picker. In the batch menu, the +/- day and week options move each selected task's own date. For a recurring task, **Occurrence notes** is its own item in the task menu, no longer inside the Recurrence submenu.
 - Right-clicking a note that is not a task in a TaskNotes view or calendar shows a note menu with Open, Open in new tab, Open to the right, Convert to task, Rename, Obsidian's file items and Delete. It had only Obsidian's file items.
 - The task menu's **Note actions** submenu lists TaskNotes' items first with Obsidian's alongside them, adds **Open to the right**, and no longer repeats **Copy path** or offers a second **Show in file explorer**. **Delete** is last and shown in red.
-- The Recurrence submenu in the task right-click menu offers the same choices as the recurrence picker, including the after-completion presets, and a change can be undone from the notice that follows.
-- In the task modal, **Reminders** opens a searchable picker: quick reminders before the due and scheduled dates, with the ones already set ticked, then **Manage all reminders...** and **Clear all reminders**.
+- In the task modal and the task right-click menu, **Reminders** opens a searchable picker: quick reminders before the due and scheduled dates, with the ones already set ticked, then **Manage all reminders...** and **Clear all reminders**.
+- Deleting a task or note happens straight away, without a confirmation, and the notice that follows offers **Undo**, which puts the note back at the same path. This applies to the right-click menus, **Delete** in the task modal and the action palette, and deleting several selected tasks at once. The note still goes to the trash that Obsidian is set to use.
+- Deleting a timeblock from the calendar happens straight away, and **Undo** in the notice that follows restores it, unless the daily note has changed since.
+- **Postpone overdue scheduled tasks to today** no longer asks for confirmation. The notice that follows still offers **Undo**.
+- In the Task List, the **Move task** handle opens a searchable list in place of a menu: **Add as subtask of…**, **Move up** and **Move down**, then every group the task can move to, with subgroups listed as *Group / Subgroup*. Type a group's name to filter it.
 - Right-clicking works the same way in every view. Shift+right-click adds the task to the selection and opens the batch menu, and right-clicking any task while several are selected adds it to the selection and opens the batch menu. On the calendar, Shift+right-click did nothing extra, and only a task that was already selected opened the batch menu. Recurring tasks and tracked time on the calendar still open their own menu.
+
+## Removed
+
+- The batch right-click menu no longer has **Clear tags**. To remove tags from the selected tasks, untick them in the **Tags** picker.
 
 ## Fixed
 
@@ -63,3 +70,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Choosing an after-completion rule through **Custom recurrence...** in the task right-click menu saved the rule but not that it repeats after completion.
 - While editing a task, quick reminders and **Clear all reminders** were written to the note straight away, so cancelling the edit did not undo them. They are now saved with the rest of the task.
 - The status and priority pickers list values in the order shown in Settings. The priority picker could list them in reverse, for example with the default priorities it put **None** first and **High** last.
+- When tasks are identified by a tag, the tags picker no longer lists that tag, so it can no longer be unticked by mistake. Unticking it made the note stop being a task.

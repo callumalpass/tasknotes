@@ -18,7 +18,8 @@ import {
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { showConfirmationModal } from "./ConfirmationModal";
+import { UndoConflictError } from "../ui/kit/toast";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { openFileSelector } from "./FileSelectorModal";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import {
@@ -498,7 +499,7 @@ export class TimeblockInfoModal extends Modal {
 
 	private async handleDelete(): Promise<void> {
 		if (
-			await confirmAndDeleteTimeblock(
+			await deleteTimeblockWithUndo(
 				this.plugin,
 				this.originalTimeblock,
 				this.timeblockDate,
@@ -545,27 +546,36 @@ export function resolveTimeblockAttachments(
  * Asks to delete a timeblock, then removes it from its daily note. Used by the
  * timeblock modal and the timeblock's right-click menu.
  */
-export async function confirmAndDeleteTimeblock(
+/** Deletes a timeblock straight away and offers Undo, which puts the daily note back as it was. */
+export async function deleteTimeblockWithUndo(
 	plugin: TaskNotesPlugin,
 	timeblock: TimeBlock,
 	timeblockDate: string,
 	onChange?: () => void
 ): Promise<boolean> {
 	const translate = plugin.i18n.translate.bind(plugin.i18n);
-	const confirmed = await showConfirmationModal(plugin.app, {
-		title: translate(msg({ message: "Delete timeblock", context: "modals.timeblockInfo.deleteConfirmationTitle" })),
-		message: `${translate(msg({ message: "Are you sure you want to delete the timeblock \"{title}\"?", context: "modals.timeblockInfo.confirmDelete" }), { title: timeblock.title })} ${translate(msg({ message: "This action cannot be undone.", context: "common.cannotUndo" }))}`,
-		confirmText: translate(msg({ message: "Delete", context: "views.advancedCalendar.contextMenus.deleteButton" })),
-		cancelText: translate(msg({ message: "Cancel", context: "common.cancel" })),
-		isDestructive: true,
-	});
-	if (!confirmed) return false;
-	try {
-		await deleteTimeblockFromDailyNote(plugin.app, timeblockDate, timeblock);
+	const refresh = () => {
 		// Signal immediate update before triggering data change
 		onChange?.();
 		plugin.emitter.trigger("data-changed");
-		new Notice(translate(msg({ message: "Timeblock deleted", context: "notices.timeblockDeletedSuccess" })));
+	};
+	try {
+		const { file, before, after } = await deleteTimeblockFromDailyNote(plugin.app, timeblockDate, timeblock);
+		refresh();
+		showTaskUndo(
+			[
+				async () => {
+					if (plugin.app.vault.getAbstractFileByPath(file.path) !== file || (await plugin.app.vault.read(file)) !== after)
+						throw new UndoConflictError([file.path]);
+					await modifyVaultFile(plugin.app, file, before);
+					refresh();
+				},
+			],
+			false,
+			1,
+			plugin.app.vault,
+			`${translate(msg({ message: "Timeblock deleted", context: "notices.timeblockDeletedSuccess" }))} · ${timeblock.title}`
+		);
 		return true;
 	} catch (error) {
 		tasknotesLogger.error("Error deleting timeblock:", {
@@ -582,7 +592,7 @@ export async function deleteTimeblockFromDailyNote(
 	app: App,
 	timeblockDate: string,
 	timeblock: TimeBlock
-): Promise<void> {
+): Promise<{ file: TFile; before: string; after: string }> {
 	if (!appHasDailyNotesPluginLoaded()) {
 		throw new Error("Daily Notes plugin is not enabled");
 	}
@@ -641,4 +651,5 @@ export async function deleteTimeblockFromDailyNote(
 		: bodyContent.trim();
 
 	await modifyVaultFile(app, dailyNote, newContent);
+	return { file: dailyNote, before: content, after: await app.vault.read(dailyNote) };
 }

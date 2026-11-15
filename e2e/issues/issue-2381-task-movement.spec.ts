@@ -554,17 +554,16 @@ test("configured empty subgroups have explicit drop destinations", async () => {
 	expect((await frontmatter()).tasknotes_manual_order).toBe(sourceRank);
 });
 
-test("the movement handle exposes a keyboard-accessible group menu", async () => {
+test("the movement handle opens a searchable, keyboard-accessible group picker", async () => {
 	await openView();
 	const handle = card("Source").getByRole("button", { name: "Move task" });
 	await handle.focus();
 	await handle.press("Enter");
-	const group = instance.page.locator(".menu-item").filter({ hasText: /^Open$/ });
-	await expect(group).toBeVisible();
-	await group.hover();
-	const destination = instance.page.locator(".menu-item").filter({ hasText: /^Normal$/ });
-	await expect(destination).toBeVisible();
-	await destination.click();
+	await expect(instance.page.locator(".tn-picker__input")).toBeFocused();
+	await instance.page.keyboard.type("open / normal");
+	const destination = instance.page.locator(".tn-picker__row").filter({ hasText: /^Open \/ Normal$/ });
+	await expect(destination).toHaveCount(1);
+	await instance.page.keyboard.press("Enter");
 	await expect.poll(async () => (await frontmatter()).priority).toBe("normal");
 });
 
@@ -640,10 +639,10 @@ test("the keyboard menu reorders within the destination without moving propertie
 	await handle.focus();
 	await handle.press("Enter");
 	await expect(
-		instance.page.locator(".menu-item").filter({ hasText: /^Move down$/ })
+		instance.page.locator(".tn-picker__row").filter({ hasText: /^Move down$/ })
 	).toHaveCount(0);
 	await instance.page
-		.locator(".menu-item")
+		.locator(".tn-picker__row")
 		.filter({ hasText: /^Move up$/ })
 		.click();
 	await expect
@@ -749,7 +748,7 @@ test("the keyboard menu uses actual list memberships rather than joined labels",
 	await card("Source").getByRole("button", { name: "Move task" }).focus();
 	await instance.page.keyboard.press("Enter");
 	await instance.page
-		.locator(".menu-item")
+		.locator(".tn-picker__row")
 		.filter({ hasText: /^home, focus$/ })
 		.click();
 	await expect.poll(async () => (await frontmatter()).contexts).toEqual(["home", "focus"]);

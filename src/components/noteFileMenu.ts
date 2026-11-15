@@ -1,10 +1,9 @@
-import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { Menu, Notice, TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { renameVaultFile } from "../services/VaultMutationService";
-import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { deleteNotesWithUndo } from "../ui/noteDeletion";
 import { showTextInputModal } from "../modals/TextInputModal";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -202,37 +201,5 @@ async function deleteNote(
 	task: TaskInfo | undefined,
 	onUpdate?: () => void
 ): Promise<void> {
-	const t = plugin.i18n.translate.bind(plugin.i18n);
-	const confirmed = await showConfirmationModal(plugin.app, {
-		title: t(msg({ message: "Delete file", context: "contextMenus.task.deleteTitle" })),
-		message: t(
-			msg({ message: 'Are you sure you want to delete "{name}"?', context: "contextMenus.task.deleteMessage" }),
-			{ name: file.name }
-		),
-		confirmText: t(msg({ message: "Delete", context: "contextMenus.task.deleteConfirm" })),
-		cancelText: t(msg({ message: "Cancel", context: "common.cancel" })),
-		isDestructive: true,
-	});
-	if (!confirmed) return;
-	try {
-		if (task) await plugin.taskService.deleteTask(task);
-		else await plugin.app.fileManager.trashFile(file);
-		onUpdate?.();
-	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
-		tasknotesLogger.error("Error deleting note:", {
-			category: "persistence",
-			operation: "deleting-note",
-			error,
-		});
-		new Notice(
-			task
-				? t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), {
-						message: displayError(message),
-					})
-				: t(msg({ message: "Failed to delete note: {message}", context: "note menu delete failure" }), {
-						message: displayError(message),
-					})
-		);
-	}
+	await deleteNotesWithUndo(plugin, [{ file, task }], onUpdate);
 }

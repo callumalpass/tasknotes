@@ -1,13 +1,11 @@
 import { showToast } from "../../ui/kit/toast";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { changeTaskProperty, updateTaskProjectsWithUndo } from "../../ui/taskPropertyPickers";
+import { changeTaskProperty, openTaskPropertyPicker, updateTaskProjectsWithUndo } from "../../ui/taskPropertyPickers";
 import { Menu, TFile, type TAbstractFile } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TaskDependency, TaskInfo } from "../../types";
 import { addTaskToProject, assignTaskAsSubtask } from "../../services/taskRelationshipActions";
-import { showTextInputModal } from "../../modals/TextInputModal";
-import { TagSuggest } from "../../modals/taskModalSuggests";
 import { openTaskSelector } from "../../modals/TaskSelectorWithCreateModal";
 import { ProjectSelectModal } from "../../modals/ProjectSelectModal";
 import {
@@ -17,22 +15,9 @@ import {
 	normalizeDependencyEntry,
 } from "../../utils/dependencyUtils";
 import { generateLink } from "../../utils/linkUtils";
-import {
-	addTagsToList,
-	clearEditableTagsFromList,
-	getEditableTaskTags,
-	parseTaskTagInput,
-	removeTagsFromList,
-} from "../../utils/taskTagList";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import type { TaskContextMenuOptions } from "./types";
-import {
-	getSubmenu,
-	toMenuTitle,
-	addContextToList,
-	toggleContextInList,
-	normalizeContextList,
-} from "./helpers";
+import { getSubmenu, menuItemAnchor, toMenuTitle } from "./helpers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
 export class TaskRelationshipMenu {
@@ -410,8 +395,9 @@ export class TaskRelationshipMenu {
 				)
 			);
 			subItem.setIcon("at-sign");
-			const contextMenu = getSubmenu(subItem);
-			this.addContextMenuItems(contextMenu, task, plugin);
+			subItem.onClick((event) =>
+				void openTaskPropertyPicker(plugin, "contexts", [task], menuItemAnchor(subItem, event), this.options.onUpdate)
+			);
 		});
 
 		menu.addSeparator();
@@ -449,245 +435,6 @@ export class TaskRelationshipMenu {
 				void this.openSubtaskAssignmentSelector(task, plugin);
 			});
 		});
-	}
-
-	addContextMenuItems(menu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const currentContexts = normalizeContextList(task.contexts);
-		const contextOptions = this.getContextOptions(task, plugin);
-
-		menu.addItem((item) => {
-			item.setTitle(
-				this.t(
-					msg({
-						message: "Add context…",
-						context: "contextMenus.task.organization.addContext",
-					})
-				)
-			);
-			item.setIcon("plus");
-			item.onClick(() => {
-				this.menu.hide();
-				void this.openContextInput(task, plugin);
-			});
-		});
-
-		if (contextOptions.length > 0) {
-			menu.addSeparator();
-			for (const context of contextOptions) {
-				menu.addItem((item) => {
-					const selected = currentContexts.includes(context);
-					item.setTitle(
-						selected
-							? this.t(
-									msg({
-										message: "✓ {context}",
-										context: "contextMenus.task.organization.contextSelected",
-									}),
-									{
-										context,
-									}
-								)
-							: context
-					);
-					item.setIcon(selected ? "check" : "at-sign");
-					item.onClick(async () => {
-						await this.updateTaskContexts(
-							task,
-							plugin,
-							toggleContextInList(task.contexts, context)
-						);
-					});
-				});
-			}
-		}
-
-		if (currentContexts.length > 0) {
-			menu.addSeparator();
-			menu.addItem((item) => {
-				item.setTitle(
-					this.t(
-						msg({
-							message: "Clear contexts",
-							context: "contextMenus.task.organization.clearContexts",
-						})
-					)
-				);
-				item.setIcon("x");
-				item.onClick(async () => {
-					await this.updateTaskContexts(task, plugin, undefined);
-				});
-			});
-		}
-	}
-
-	getContextOptions(task: TaskInfo, plugin: TaskNotesPlugin): string[] {
-		const knownContexts = plugin.cacheManager.getAllContexts?.() ?? [];
-		const options = normalizeContextList([...knownContexts, ...(task.contexts ?? [])]);
-		return options.sort((a, b) => a.localeCompare(b));
-	}
-
-	async openContextInput(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {
-		const context = await showTextInputModal(plugin.app, {
-			title: this.t(
-				msg({
-					message: "Add context…",
-					context: "contextMenus.task.organization.addContext",
-				})
-			),
-			placeholder: this.t(
-				msg({
-					message: "context",
-					context: "contextMenus.task.organization.contextPlaceholder",
-				})
-			),
-			confirmText: this.t(msg({ message: "Confirm", context: "common.confirm" })),
-			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
-		});
-
-		if (!context) return;
-		await this.updateTaskContexts(task, plugin, addContextToList(task.contexts, context));
-	}
-
-	async updateTaskContexts(
-		task: TaskInfo,
-		plugin: TaskNotesPlugin,
-		contexts: string[] | undefined
-	): Promise<void> {
-		try {
-			await changeTaskProperty(plugin, [task], "contexts", contexts);
-			const updatedTask = await plugin.cacheManager.getTaskInfo(task.path);
-			if (updatedTask) Object.assign(task, updatedTask);
-			this.options.onUpdate?.();
-		} catch (error) {
-			tasknotesLogger.error("Failed to update task contexts:", {
-				category: "validation",
-				operation: "update-task-contexts",
-				error: error,
-			});
-			showToast({
-				message: this.t(
-					msg({
-						message: "Failed to update contexts",
-						context: "contextMenus.task.organization.notices.updateContextsFailed",
-					})
-				),
-			});
-		}
-	}
-
-	addTagOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const editableTags = getEditableTaskTags(task, plugin.settings);
-
-		submenu.addItem((item) => {
-			item.setTitle(
-				this.t(msg({ message: "Add tag…", context: "contextMenus.task.addTag" }))
-			);
-			item.setIcon("plus");
-			item.onClick(() => {
-				this.menu.hide();
-				void this.openTagInput(task, plugin, "add");
-			});
-		});
-
-		if (editableTags.length > 0) {
-			submenu.addSeparator();
-			for (const tag of editableTags) {
-				submenu.addItem((item) => {
-					item.setTitle(
-						this.t(
-							msg({
-								message: "Remove {tag}",
-								context: "contextMenus.task.removeTag",
-							}),
-							{ tag: `#${tag}` }
-						)
-					);
-					item.setIcon("x");
-					item.onClick(async () => {
-						await this.updateTaskTags(
-							task,
-							plugin,
-							removeTagsFromList(task.tags, [tag])
-						);
-					});
-				});
-			}
-
-			submenu.addSeparator();
-			submenu.addItem((item) => {
-				item.setTitle(
-					this.t(msg({ message: "Clear tags", context: "contextMenus.task.clearTags" }))
-				);
-				item.setIcon("eraser");
-				item.onClick(async () => {
-					await this.updateTaskTags(
-						task,
-						plugin,
-						clearEditableTagsFromList(task.tags, plugin.settings)
-					);
-				});
-			});
-		}
-	}
-
-	async openTagInput(
-		task: TaskInfo,
-		plugin: TaskNotesPlugin,
-		mode: "add" | "remove"
-	): Promise<void> {
-		const input = await showTextInputModal(plugin.app, {
-			title:
-				mode === "add"
-					? this.t(msg({ message: "Add tag…", context: "contextMenus.task.addTag" }))
-					: this.t(
-							msg({
-								message: "Remove tag…",
-								context: "contextMenus.task.removeTagInput",
-							})
-						),
-			placeholder: this.t(
-				msg({ message: "Tag or #tag", context: "contextMenus.task.tagPlaceholder" })
-			),
-			confirmText: this.t(msg({ message: "Confirm", context: "common.confirm" })),
-			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
-			onInputReady: (inputEl) => {
-				new TagSuggest(plugin.app, inputEl, plugin);
-			},
-		});
-
-		const tags = parseTaskTagInput(input);
-		if (tags.length === 0) return;
-
-		const nextTags =
-			mode === "add" ? addTagsToList(task.tags, tags) : removeTagsFromList(task.tags, tags);
-		await this.updateTaskTags(task, plugin, nextTags);
-	}
-
-	async updateTaskTags(
-		task: TaskInfo,
-		plugin: TaskNotesPlugin,
-		tags: string[] | undefined
-	): Promise<void> {
-		try {
-			await changeTaskProperty(plugin, [task], "tags", tags);
-			const updatedTask = await plugin.cacheManager.getTaskInfo(task.path);
-			if (updatedTask) Object.assign(task, updatedTask);
-			this.options.onUpdate?.();
-		} catch (error) {
-			tasknotesLogger.error("Failed to update task tags:", {
-				category: "validation",
-				operation: "update-task-tags",
-				error: error,
-			});
-			showToast({
-				message: this.t(
-					msg({
-						message: "Failed to update tags",
-						context: "contextMenus.task.notices.updateTagsFailed",
-					})
-				),
-			});
-		}
 	}
 
 	async openProjectSelector(task: TaskInfo, plugin: TaskNotesPlugin): Promise<void> {

@@ -1,6 +1,5 @@
 import { App, Menu } from "obsidian";
 import { DateContextMenu } from "../../../src/components/DateContextMenu";
-import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
 import { openTaskPropertyChoices } from "../../../src/ui/taskPropertyPickers";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
@@ -58,36 +57,27 @@ function createPlugin(): TaskNotesPlugin {
 }
 
 type DateField = "scheduled" | "due";
-type CardPath = "picker" | "task-menu";
 type Choice = { choose: () => Promise<void> };
 
-// Card controls in every view open the date picker; the task menu keeps a submenu.
+// Card controls and the task menu both open the date picker.
 async function openMenu(
-	path: CardPath,
 	task: TaskInfo,
 	field: DateField,
 	plugin: TaskNotesPlugin
 ): Promise<(label: string) => Choice> {
-	if (path === "picker") {
-		mockOpenListPicker.mockClear();
-		await openTaskPropertyChoices(plugin, field, [task], document.body, (value) =>
-			plugin.updateTaskProperty(task, field, typeof value === "function" ? value(task) : value)
-		);
-		const options = mockOpenListPicker.mock.calls[0][0] as {
-			items: { id: string; label: string }[];
-			onChoose: (item: { id: string; label: string }) => void;
-		};
-		return (label) => {
-			const item = options.items.find((entry) => entry.label === (label === "Clear date" ? "Clear" : label));
-			if (!item) throw new Error(`Missing picker item: ${label}`);
-			return { choose: async () => options.onChoose(item) };
-		};
-	}
-	new TaskContextMenu({ task, plugin, targetDate: new Date("2026-05-16T12:00:00") });
-	const root = menuMock.mock.results[0].value as MockMenu;
-	const parent = findItem(root, field === "due" ? "Due date" : "Scheduled date");
-	const submenu = parent.setSubmenu.mock.results[0].value as MockMenu;
-	return (label) => ({ choose: async () => findItem(submenu, label).onClick.mock.calls[0][0]() });
+	mockOpenListPicker.mockClear();
+	await openTaskPropertyChoices(plugin, field, [task], document.body, (value) =>
+		plugin.updateTaskProperty(task, field, typeof value === "function" ? value(task) : value)
+	);
+	const options = mockOpenListPicker.mock.calls[0][0] as {
+		items: { id: string; label: string }[];
+		onChoose: (item: { id: string; label: string }) => void;
+	};
+	return (label) => {
+		const item = options.items.find((entry) => entry.label === (label === "Clear date" ? "Clear" : label));
+		if (!item) throw new Error(`Missing picker item: ${label}`);
+		return { choose: async () => options.onChoose(item) };
+	};
 }
 
 const shifts = [
@@ -120,7 +110,7 @@ describe("#1894: relative date actions through card and menu callbacks", () => {
 		document.body.innerHTML = "";
 	});
 
-	describe.each<CardPath>(["picker", "task-menu"])("%s", (path) => {
+	describe("picker", () => {
 		describe.each<DateField>(["scheduled", "due"])("%s", (field) => {
 			it.each(
 				["2026-05-16", "2026-03-07", "2026-03-09", "2026-10-31", "2026-11-02"].flatMap(
@@ -132,7 +122,7 @@ describe("#1894: relative date actions through card and menu callbacks", () => {
 			)("$label from $date$time", async ({ date, time, label, days }) => {
 				const plugin = createPlugin();
 				const task = createTask(field, date + time);
-				const choose = await openMenu(path, task, field, plugin);
+				const choose = await openMenu(task, field, plugin);
 				await choose(label).choose();
 				expect(plugin.updateTaskProperty).toHaveBeenCalledTimes(1);
 				expect(plugin.updateTaskProperty).toHaveBeenCalledWith(
@@ -145,7 +135,7 @@ describe("#1894: relative date actions through card and menu callbacks", () => {
 			it("keeps absolute presets and clearing unchanged", async () => {
 				const plugin = createPlugin();
 				const task = createTask(field, "2026-05-16T21:37");
-				const choose = await openMenu(path, task, field, plugin);
+				const choose = await openMenu(task, field, plugin);
 				await choose("Tomorrow").choose();
 				expect(plugin.updateTaskProperty).toHaveBeenLastCalledWith(
 					task,

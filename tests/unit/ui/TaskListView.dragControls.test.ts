@@ -88,14 +88,8 @@ describe("TaskListView drag controls", () => {
 			expect(view.reorderConfirmed).toBe(false);
 		});
 		view.debouncedRefresh = jest.fn();
-		let action: (() => void) | undefined;
-		const item = {
-			setTitle: jest.fn().mockReturnThis(),
-			setIcon: jest.fn().mockReturnThis(),
-			onClick: jest.fn((callback) => { action = callback; }),
-		};
-		view.addReorderMenuItems({ addItem: (configure: (item: unknown) => void) => configure(item) }, "tasks/second.md", { groupKey: "open" });
-		action!();
+		const [action] = view.getReorderActions("tasks/second.md", { groupKey: "open" });
+		action.run();
 		await Promise.resolve();
 		expect(view.handleSortOrderDrop).toHaveBeenCalledTimes(1);
 	});

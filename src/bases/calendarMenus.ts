@@ -17,7 +17,7 @@ import { TFile } from "obsidian";
 import { ContextMenu } from "../components/ContextMenu";
 import { showCoordinatedMenu } from "../components/ContextMenuCoordinator";
 import {
-	confirmAndDeleteTimeblock,
+	deleteTimeblockWithUndo,
 	resolveTimeblockAttachments,
 	TimeblockInfoModal,
 } from "../modals/TimeblockInfoModal";
@@ -217,7 +217,7 @@ async function showTimeblockContextMenu(
 			.setTitle(t(msg({ message: "Delete timeblock", context: "modals.timeblockInfo.deleteButton" })))
 			.setIcon("trash")
 			.setWarning(true)
-			.onClick(() => void confirmAndDeleteTimeblock(plugin, loaded.timeblock, timeblockDate, onChange))
+			.onClick(() => void deleteTimeblockWithUndo(plugin, loaded.timeblock, timeblockDate, onChange))
 	);
 	showCoordinatedMenu(menu, jsEvent);
 }

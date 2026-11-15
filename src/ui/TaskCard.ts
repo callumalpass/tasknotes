@@ -29,7 +29,6 @@ import {
 import { createTaskCardContextMenuButton, openTaskMenu } from "./taskCardContextMenu";
 import { createTaskCardTitle, updateTaskCardTitle } from "./taskCardTitle";
 import { updateTaskCardStatusIndicatorVisuals } from "./taskCardCompletionState";
-export { showDeleteConfirmationModal } from "./taskCardDeletion";
 export { openTaskMenu, showTaskContextMenu } from "./taskCardContextMenu";
 
 // Property labels are resolved in taskCardProperties via getTaskCardPropertyLabel.

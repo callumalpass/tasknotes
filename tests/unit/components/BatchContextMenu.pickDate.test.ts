@@ -1,14 +1,12 @@
-import { App, Menu } from "obsidian";
+import { App } from "obsidian";
 import { BatchContextMenu } from "../../../src/components/BatchContextMenu";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
-import { DateTimePickerModal, type DateTimePickerOptions } from "../../../src/modals/DateTimePickerModal";
-import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+import { openTaskPropertyPicker } from "../../../src/ui/taskPropertyPickers";
 
-jest.mock("../../../src/ui/taskPropertyPickers", () => ({ changeTaskProperty: jest.fn() }));
-
-jest.mock("../../../src/modals/DateTimePickerModal", () => ({
-	DateTimePickerModal: jest.fn().mockImplementation(() => ({ open: jest.fn() })),
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	openTaskPropertyPicker: jest.fn(),
+	archiveTasksWithUndo: jest.fn(),
 }));
 
 type Item = Record<string, jest.Mock> | { type: string };
@@ -36,36 +34,13 @@ function setup() {
 
 beforeEach(() => jest.clearAllMocks());
 
-it.each(["scheduled", "due"] as const)("opens the shared picker with the %s date role and updates the captured selection", async role => {
-	const { paths, plugin, root } = setup();
-	const parent = find(root, role === "scheduled" ? "Scheduled date" : "Due date");
-	const submenu = parent.setSubmenu.mock.results[0].value as MockMenu;
-	find(submenu, "Pick date & time…").onClick.mock.calls[0][0]();
-	const options = (DateTimePickerModal as unknown as jest.Mock).mock.calls[0][1] as DateTimePickerOptions;
-	expect(options.dateRole).toBe(role);
-	// Selection changes elsewhere must not retarget an already-open picker.
-	paths.push("Tasks/Other.md");
-	options.onSelect("2026-12-14", "15:45");
-	await new Promise(resolve => setTimeout(resolve, 0));
-	expect(changeTaskProperty).toHaveBeenCalledTimes(1);
-	expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [{ path: "Tasks/One.md" }, { path: "Tasks/Two.md" }], role, "2026-12-14T15:45");
-});
-
-it("keeps a date-only choice date-only", async () => {
+it.each(["scheduled", "due"] as const)("opens the %s picker for the selected tasks and clears the selection only after a change", async role => {
 	const { plugin, root } = setup();
-	const submenu = find(root, "Scheduled date").setSubmenu.mock.results[0].value as MockMenu;
-	find(submenu, "Pick date & time…").onClick.mock.calls[0][0]();
-	const options = (DateTimePickerModal as unknown as jest.Mock).mock.calls[0][1] as DateTimePickerOptions;
-	options.onSelect("2026-12-14", null);
+	find(root, role === "scheduled" ? "Scheduled date" : "Due date").onClick.mock.calls[0][0]({ clientX: 40, clientY: 60 });
 	await new Promise(resolve => setTimeout(resolve, 0));
-	expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [{ path: "Tasks/One.md" }, { path: "Tasks/Two.md" }], "scheduled", "2026-12-14");
-});
-
-it("opening then cancelling the picker does not write or clear selection", () => {
-	const { plugin, root } = setup();
-	const submenu = find(root, "Due date").setSubmenu.mock.results[0].value as MockMenu;
-	find(submenu, "Pick date & time…").onClick.mock.calls[0][0]();
-	expect(plugin.taskService.updateProperty).not.toHaveBeenCalled();
-	expect(changeTaskProperty).not.toHaveBeenCalled();
+	const call = (openTaskPropertyPicker as jest.Mock).mock.calls[0];
+	expect(call.slice(0, 4)).toEqual([plugin, role, [{ path: "Tasks/One.md" }, { path: "Tasks/Two.md" }], { x: 40, y: 60 }]);
 	expect(plugin.taskSelectionService.clearSelection).not.toHaveBeenCalled();
+	call[4]();
+	expect(plugin.taskSelectionService.clearSelection).toHaveBeenCalled();
 });

@@ -13,7 +13,7 @@ import { TaskDependency, TaskInfo } from "../types";
 import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
 import { extractTaskInfo, calculateTotalTimeSpent, formatTime } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
-import { showConfirmationModal } from "./ConfirmationModal";
+import { deleteNotesWithUndo } from "../ui/noteDeletion";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates } from "./taskEditChanges";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
@@ -577,62 +577,9 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private async deleteTask(): Promise<void> {
-		const confirmed = await showConfirmationModal(this.app, {
-			title: this.t(
-				msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })
-			),
-			message: this.t(
-				msg({
-					message:
-						'Are you sure you want to delete "{title}"? This moves the task note to Obsidian trash.',
-					context: "modals.taskEdit.deleteConfirmation.message",
-				}),
-				{
-					title: this.task.title,
-				}
-			),
-			confirmText: this.t(
-				msg({
-					message: "Delete task",
-					context: "modals.taskEdit.deleteConfirmation.confirm",
-				})
-			),
-			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
-			isDestructive: true,
-		});
-
-		if (!confirmed) {
-			return;
-		}
-
-		try {
-			await this.plugin.taskService.deleteTask(this.task);
-			new Notice(
-				this.t(
-					msg({
-						message: 'Task deleted',
-						context: "modals.taskEdit.notices.deleteSuccess",
-					})
-				)
-			);
-			this.forceClose();
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			tasknotesLogger.error("Failed to delete task:", {
-				category: "persistence",
-				operation: "delete-task",
-				error: error,
-			});
-			new Notice(
-				this.t(
-					msg({
-						message: "Failed to delete task: {message}",
-						context: "modals.taskEdit.notices.deleteFailure",
-					}),
-					{ message: displayError(message) }
-				)
-			);
-		}
+		const file = this.app.vault.getAbstractFileByPath(this.task.path);
+		if (!(file instanceof TFile)) return;
+		if (await deleteNotesWithUndo(this.plugin, [{ file, task: this.task }])) this.forceClose();
 	}
 
 	protected getLeadingButtons(): TaskModalLeadingButton[] {

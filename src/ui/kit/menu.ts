@@ -1,6 +1,6 @@
-import type { Menu, MenuItem } from "obsidian";
+import type { MenuItem } from "obsidian";
 import { renderKeyHint, shouldShowKeyHints, TASK_KEYBOARD_MAP } from "./keyHint";
-import { priorityGlyphState, renderPriorityGlyph, unconfiguredValueLabel } from "./glyphs";
+import { priorityGlyphState, renderPriorityGlyph } from "./glyphs";
 import type { PriorityConfig } from "../../types";
 
 export function renderPriorityMenuGlyph(
@@ -38,18 +38,3 @@ export function renderTaskMenuKeyHint(
 	renderKeyHint(shortcut, TASK_KEYBOARD_MAP[action]);
 }
 
-export function renderUnconfiguredMenuValue(
-	menu: Menu,
-	value: string | undefined,
-	options: readonly { value: string }[]
-): void {
-	if (!value || options.some((option) => option.value === value)) return;
-	menu.addItem((item) =>
-		item
-			.setTitle(unconfiguredValueLabel(value))
-			.setIcon("badge-help")
-			.setChecked(true)
-			.setDisabled(true)
-	);
-	menu.addSeparator();
-}

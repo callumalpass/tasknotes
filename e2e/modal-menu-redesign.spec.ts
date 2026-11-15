@@ -318,12 +318,13 @@ test('native task menu groups every action and keeps keyboard hints aligned', as
   await expect(menu.locator('.menu-item-title').filter({ hasText: /^Note actions$/ })).toBeVisible();
   await expect(menu.locator('.menu-item-shortcut').filter({ hasText: /^E$/ })).toBeVisible();
   await page.screenshot({ path: 'test-results/modal-menu/task-menu.png' });
-  await menu.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Status$/ }) }).hover();
-  const statuses = page.locator('.menu').last();
-  await expect(statuses.locator('.menu-item')).toHaveCount(18);
+  await menu.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Status$/ }) }).click();
+  const statuses = page.locator('.tn-picker').last();
+  await expect(statuses.locator('.tn-picker__row')).toHaveCount(18);
   await expect(statuses.getByText('Awaiting cross-functional accessibility and localization review', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/modal-menu/status-menu.png' });
   await page.keyboard.press('Escape');
+  await expect(statuses).toHaveCount(0);
 });
 
 test('date, recurrence and reminder editors share the modal shell', async () => {
@@ -339,7 +340,7 @@ test('date, recurrence and reminder editors share the modal shell', async () => 
   await page.screenshot({ path: 'test-results/modal-menu/date-time.png', clip: (await editor.boundingBox())! });
   await page.keyboard.press('Escape');
   await composer.locator('[data-type="recurrence"]').click();
-  await page.locator('.menu-item-title').getByText('Custom recurrence...', { exact: true }).click();
+  await page.locator('.tn-picker').getByText('Custom recurrence...', { exact: true }).click();
   editor = page.locator('.modal.tn-modal').last();
   await expect(editor.locator('.mod-cta .tn-key-hint')).toBeVisible();
   await page.screenshot({ path: 'test-results/modal-menu/recurrence.png', clip: (await editor.boundingBox())! });
@@ -375,7 +376,7 @@ test('unknown workflow values remain visible and selectable menus preserve them'
   await page.keyboard.press('Escape');
 });
 
-test('project selector and delete confirmation retain native cancellation', async () => {
+test('project selector retains native cancellation and delete offers Undo', async () => {
   await page.evaluate(async taskPath => {
     const plugin = (window as any).app.plugins.plugins.tasknotes;
     plugin.openTaskEditModal(await plugin.cacheManager.getTaskInfo(taskPath));
@@ -392,12 +393,10 @@ test('project selector and delete confirmation retain native cancellation', asyn
   await expect(modal).toBeVisible();
   await modal.locator('.tn-task-modal__overflow-button').click();
   await page.locator('.menu').last().getByText('Delete', { exact: true }).click();
-  const confirmation = page.locator('.modal.tn-modal').last();
-  await expect(confirmation.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
-  await page.screenshot({ path: 'test-results/modal-menu/delete-confirmation.png', clip: (await confirmation.boundingBox())! });
-  await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
-  expect(await page.evaluate(taskPath => !!(window as any).app.vault.getAbstractFileByPath(taskPath), taskPath)).toBe(true);
-  await page.keyboard.press('Escape');
+  await expect(modal).toHaveCount(0);
+  await expect.poll(() => page.evaluate(taskPath => !!(window as any).app.vault.getAbstractFileByPath(taskPath), taskPath)).toBe(false);
+  await page.locator('.tn-toast__action').filter({ hasText: 'Undo' }).last().click();
+  await expect.poll(() => page.evaluate(taskPath => !!(window as any).app.vault.getAbstractFileByPath(taskPath), taskPath)).toBe(true);
 });
 
 test('documentation image shows the current filled composer', async () => {

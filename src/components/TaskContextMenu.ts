@@ -1,18 +1,19 @@
 import { renderPriorityMenuGlyph, renderTaskMenuKeyHint } from "../ui/kit/menu";
-import { changeTaskProperty, archiveTasksWithUndo } from "../ui/taskPropertyPickers";
+import { archiveTasksWithUndo, openTaskPropertyPicker, type TaskPickerProperty } from "../ui/taskPropertyPickers";
+import { openTaskRecurrencePicker } from "../ui/taskRecurrencePicker";
+import { openTaskReminderPicker } from "../ui/taskReminderPicker";
 import { TaskCompletionMenu } from "./task-context-menu/completion";
 import { TaskRelationshipMenu } from "./task-context-menu/relationships";
 import { TaskPropertyMenu } from "./task-context-menu/properties";
 import { TaskRecurrenceMenu } from "./task-context-menu/recurrence";
 import type { TaskContextMenuOptions } from "./task-context-menu/types";
-import { getSubmenu } from "./task-context-menu/helpers";
+import { getSubmenu, menuItemAnchor } from "./task-context-menu/helpers";
 import { displayError } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { Menu, Notice, Platform, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
-import { ReminderModal } from "../modals/ReminderModal";
 import { buildSubtaskCreationPrePopulatedValues } from "../services/taskRelationshipActions";
 import { addNoteFileActions } from "./noteFileMenu";
 import { ContextMenu } from "./ContextMenu";
@@ -23,11 +24,6 @@ import { downloadTaskICSFile, openCalendarURL } from "../ui/calendarExportAction
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 export type { TaskContextMenuOptions } from "./task-context-menu/types";
-export {
-	addContextToList,
-	removeContextFromList,
-	toggleContextInList,
-} from "./task-context-menu/helpers";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
 export class TaskContextMenu {
 	private menu: Menu;
@@ -91,126 +87,34 @@ export class TaskContextMenu {
 
 		this.menu.addSeparator();
 
-		this.menu.addItem((item) => {
-			renderTaskMenuKeyHint(item, "status");
-			item.setTitle(this.t(msg({ message: "Status", context: "contextMenus.task.status" })));
-			item.setIcon("circle");
+		const pickerItem = (
+			hint: Parameters<typeof renderTaskMenuKeyHint>[1],
+			title: string,
+			icon: string | null,
+			open: (anchor: { x: number; y: number }) => void
+		) =>
+			this.menu.addItem((item) => {
+				renderTaskMenuKeyHint(item, hint);
+				item.setTitle(title);
+				if (icon) item.setIcon(icon);
+				else
+					renderPriorityMenuGlyph(
+						item,
+						plugin.settings.customPriorities.find((priority) => priority.value === task.priority) ?? {
+							value: task.priority,
+						},
+						plugin.settings.customPriorities
+					);
+				item.onClick((event) => open(menuItemAnchor(item, event)));
+			});
+		const propertyPicker = (property: TaskPickerProperty) => (anchor: { x: number; y: number }) =>
+			void openTaskPropertyPicker(plugin, property, [task], anchor, this.options.onUpdate);
 
-			const submenu = getSubmenu(item);
-			this.properties.addStatusOptions(submenu, task, plugin);
-		});
-
-		this.menu.addItem((item) => {
-			renderTaskMenuKeyHint(item, "priority");
-			item.setTitle(
-				this.t(msg({ message: "Priority", context: "contextMenus.task.priority" }))
-			);
-			renderPriorityMenuGlyph(
-				item,
-				plugin.settings.customPriorities.find((priority) => priority.value === task.priority) ?? {
-					value: task.priority,
-				},
-				plugin.settings.customPriorities
-			);
-
-			const submenu = getSubmenu(item);
-			this.properties.addPriorityOptions(submenu, task, plugin);
-		});
-
-		this.menu.addItem((item) => {
-			renderTaskMenuKeyHint(item, "tags");
-			item.setTitle(this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })));
-			item.setIcon("tags");
-
-			const submenu = getSubmenu(item);
-			this.relationships.addTagOptions(submenu, task, plugin);
-		});
-
-		this.menu.addItem((item) => {
-			renderTaskMenuKeyHint(item, "due");
-			item.setTitle(
-				this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" }))
-			);
-			item.setIcon("calendar");
-
-			const submenu = getSubmenu(item);
-			this.properties.addDateOptions(
-				submenu,
-				task.due,
-				async (value: string | null) => {
-					try {
-						await changeTaskProperty(plugin, [task], "due", value || undefined);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("Error updating task due date:", {
-							category: "validation",
-							operation: "updating-task-due-date",
-							details: { taskPath: task.path },
-							error: errorMessage,
-						});
-						new Notice(
-							this.t(
-								msg({
-									message: "Failed to update task due date: {message}",
-									context: "contextMenus.task.notices.updateDueDateFailure",
-								}),
-								{
-									message: displayError(errorMessage),
-								}
-							)
-						);
-					}
-				},
-				() => {
-					void plugin.openDueDateModal(task);
-				}
-			);
-		});
-
-		this.menu.addItem((item) => {
-			renderTaskMenuKeyHint(item, "scheduled");
-			item.setTitle(
-				this.t(
-					msg({ message: "Scheduled date", context: "contextMenus.task.scheduledDate" })
-				)
-			);
-			item.setIcon("calendar-clock");
-
-			const submenu = getSubmenu(item);
-			this.properties.addDateOptions(
-				submenu,
-				task.scheduled,
-				async (value: string | null) => {
-					try {
-						await changeTaskProperty(plugin, [task], "scheduled", value || undefined);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("Error updating task scheduled date:", {
-							category: "validation",
-							operation: "updating-task-scheduled-date",
-							details: { taskPath: task.path },
-							error: errorMessage,
-						});
-						new Notice(
-							this.t(
-								msg({
-									message: "Failed to update task scheduled date: {message}",
-									context: "contextMenus.task.notices.updateScheduledFailure",
-								}),
-								{
-									message: displayError(errorMessage),
-								}
-							)
-						);
-					}
-				},
-				() => {
-					void plugin.openScheduledDateModal(task);
-				}
-			);
-		});
+		pickerItem("status", this.t(msg({ message: "Status", context: "contextMenus.task.status" })), "circle", propertyPicker("status"));
+		pickerItem("priority", this.t(msg({ message: "Priority", context: "contextMenus.task.priority" })), null, propertyPicker("priority"));
+		pickerItem("tags", this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })), "tags", propertyPicker("tags"));
+		pickerItem("due", this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" })), "calendar", propertyPicker("due"));
+		pickerItem("scheduled", this.t(msg({ message: "Scheduled date", context: "contextMenus.task.scheduledDate" })), "calendar-clock", propertyPicker("scheduled"));
 
 		this.properties.addCustomDateFieldMenuItems(task, plugin);
 
@@ -231,130 +135,22 @@ export class TaskContextMenu {
 				this.t(msg({ message: "Recurrence", context: "contextMenus.task.recurrence" }))
 			);
 			item.setIcon("refresh-ccw");
-
-			const submenu = getSubmenu(item);
-			const currentRecurrence =
-				typeof task.recurrence === "string" ? task.recurrence : undefined;
-			this.recurrence.addRecurrenceOptions(submenu, task, plugin);
-
-			if (currentRecurrence) {
-				this.recurrence.addOccurrencePolicyOptions(submenu, task, plugin);
-			}
+			item.onClick((event) =>
+				void openTaskRecurrencePicker(plugin, task, menuItemAnchor(item, event), this.options.onUpdate)
+			);
 		});
+		if (typeof task.recurrence === "string" && task.recurrence) {
+			this.recurrence.addOccurrencePolicyOptions(this.menu, task, plugin);
+		}
 
 		this.menu.addItem((item) => {
 			item.setTitle(
 				this.t(msg({ message: "Reminders", context: "contextMenus.task.reminders" }))
 			);
 			item.setIcon("bell");
-
-			const submenu = getSubmenu(item);
-
-			// Quick Add sections
-			this.recurrence.addQuickRemindersSection(
-				submenu,
-				task,
-				plugin,
-				"due",
-				this.t(
-					msg({
-						message: "Remind before due…",
-						context: "contextMenus.task.remindBeforeDue",
-					})
-				)
+			item.onClick((event) =>
+				void openTaskReminderPicker(plugin, task, menuItemAnchor(item, event), this.options.onUpdate)
 			);
-			this.recurrence.addQuickRemindersSection(
-				submenu,
-				task,
-				plugin,
-				"scheduled",
-				this.t(
-					msg({
-						message: "Remind before scheduled…",
-						context: "contextMenus.task.remindBeforeScheduled",
-					})
-				)
-			);
-
-			submenu.addSeparator();
-
-			// Manage reminders
-			submenu.addItem((subItem) => {
-				subItem.setTitle(
-					this.t(
-						msg({
-							message: "Manage all reminders…",
-							context: "contextMenus.task.manageReminders",
-						})
-					)
-				);
-				subItem.setIcon("settings");
-				subItem.onClick(() => {
-					const modal = new ReminderModal(plugin.app, plugin, task, (reminders) => {
-						void (async () => {
-							try {
-								await changeTaskProperty(
-									plugin, [task],
-									"reminders",
-									reminders.length > 0 ? reminders : undefined
-								);
-								this.options.onUpdate?.();
-							} catch (error) {
-								tasknotesLogger.error("Error updating reminders:", {
-									category: "persistence",
-									operation: "updating-reminders",
-									error: error,
-								});
-								new Notice(
-									this.t(
-										msg({
-											message: "Failed to update reminders",
-											context:
-												"contextMenus.task.notices.updateRemindersFailure",
-										})
-									)
-								);
-							}
-						})();
-					});
-					modal.open();
-				});
-			});
-
-			// Clear reminders (if any exist)
-			if (task.reminders && task.reminders.length > 0) {
-				submenu.addItem((subItem) => {
-					subItem.setTitle(
-						this.t(
-							msg({
-								message: "Clear all reminders",
-								context: "contextMenus.task.clearReminders",
-							})
-						)
-					);
-					subItem.setIcon("trash");
-					subItem.onClick(async () => {
-						try {
-							await changeTaskProperty(plugin, [task], "reminders", undefined);
-							this.options.onUpdate?.();
-						} catch (error) {
-							tasknotesLogger.error("Error clearing reminders:", {
-								category: "persistence",
-								operation: "clearing-reminders",
-								error: error,
-							});
-							new Notice(
-								this.t(
-									msg({
-										message: "Failed to clear reminders",
-										context: "contextMenus.task.notices.clearRemindersFailure",
-									})
-								)
-							);
-						}
-					});
-				});
-			}
 		});
 
 		this.menu.addItem((item) => {

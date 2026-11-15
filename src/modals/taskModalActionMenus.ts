@@ -1,11 +1,9 @@
 import type { MessageDescriptor } from "@lingui/core";
-import { msg } from "@lingui/core/macro";
-import { setIcon, type App } from "obsidian";
+import type { App } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskInfo } from "../types";
-import { openListPicker, type PickerItem } from "../ui/kit/listPicker";
-import { openTaskPropertyChoices, taskPropertyLabel } from "../ui/taskPropertyPickers";
-import { ReminderModal } from "./ReminderModal";
+import { openTaskPropertyChoices } from "../ui/taskPropertyPickers";
+import { openReminderChoices } from "../ui/taskReminderPicker";
 import { openRecurrenceChoices } from "../ui/taskRecurrencePicker";
 import type { PopoverHandle } from "../ui/kit/popover";
 
@@ -84,73 +82,16 @@ export function showTaskModalReminderPicker(
 	taskBase?: TaskInfo
 ): PopoverHandle {
 	const state = context.getState();
-	const t = context.translate;
-	const offsets = [
-		{ offset: "PT0M", label: t(msg({ message: "At time of event", context: "components.reminderContextMenu.quickReminders.atTime" })) },
-		{ offset: "-PT5M", label: t(msg({ message: "5 minutes before", context: "components.reminderContextMenu.quickReminders.fiveMinutesBefore" })) },
-		{ offset: "-PT15M", label: t(msg({ message: "15 minutes before", context: "components.reminderContextMenu.quickReminders.fifteenMinutesBefore" })) },
-		{ offset: "-PT1H", label: t(msg({ message: "1 hour before", context: "components.reminderContextMenu.quickReminders.oneHourBefore" })) },
-		{ offset: "-P1D", label: t(msg({ message: "1 day before", context: "components.reminderContextMenu.quickReminders.oneDayBefore" })) },
-	];
-	const quick = new Map<string, Reminder>();
-	const items: PickerItem[] = [];
-	for (const relatedTo of ["due", "scheduled"] as const) {
-		if (!(relatedTo === "due" ? state.dueDate : state.scheduledDate)) continue;
-		const group = taskPropertyLabel(relatedTo);
-		for (const { offset, label } of offsets) {
-			const id = `${relatedTo}:${offset}`;
-			quick.set(id, { id: "", type: "relative", relatedTo, offset, description: label });
-			items.push({
-				id,
-				label,
-				group,
-				keywords: group,
-				selected: state.reminders.some(
-					(reminder) =>
-						reminder.type === "relative" &&
-						reminder.relatedTo === relatedTo &&
-						reminder.offset === offset
-				),
-				renderLeading: (host) => setIcon(host, "bell"),
-			});
-		}
-	}
-	items.push({
-		id: "manage",
-		label: t(msg({ message: "Manage all reminders...", context: "components.reminderContextMenu.manageAllReminders" })),
-		renderLeading: (host) => setIcon(host, "settings"),
-	});
-	if (state.reminders.length) {
-		items.push({
-			id: "clear",
-			label: t(msg({ message: "Clear all reminders", context: "components.reminderContextMenu.clearAllReminders" })),
-			renderLeading: (host) => setIcon(host, "x"),
-		});
-	}
-	const setReminders = (reminders: Reminder[]) => {
-		context.setReminders(reminders);
-		context.onChange();
-	};
-	const label = t(msg({ message: "Reminders", context: "contextMenus.task.reminders" }));
-	return openListPicker({
+	return openReminderChoices({
+		plugin: context.plugin,
 		anchor,
-		app: context.app,
-		items,
-		revealSelected: false,
-		placeholder: label,
-		emptyText: label,
-		onChoose: (item) => {
-			const current = context.getState().reminders;
-			const reminder = quick.get(item.id);
-			if (reminder) setReminders([...current, { ...reminder, id: `rem_${Date.now()}` }]);
-			else if (item.id === "clear") setReminders([]);
-			else if (item.id === "manage")
-				new ReminderModal(
-					context.app,
-					context.plugin,
-					createTaskModalReminderDraft(context.getState(), taskBase),
-					setReminders
-				).open();
+		due: state.dueDate,
+		scheduled: state.scheduledDate,
+		getReminders: () => context.getState().reminders,
+		draft: () => createTaskModalReminderDraft(context.getState(), taskBase),
+		setReminders: (reminders) => {
+			context.setReminders(reminders);
+			context.onChange();
 		},
 	});
 }

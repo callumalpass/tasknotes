@@ -180,16 +180,10 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[Ошибка формулы]"
 
-#: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
 msgstr "{action} — успешно: {count}; ошибок: {failed}."
-
-#: src/components/BatchContextMenu.ts
-msgctxt "notices.audit.progress"
-msgid "{action} — tasks: {count}…"
-msgstr "{action} — задач: {count}…"
 
 #: src/ui/NotificationService.ts
 msgctxt "relative reminder notification"
@@ -281,6 +275,11 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncE
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
 msgstr "{count, plural, one {Не удалось обновить # календарь Microsoft. Первая ошибка: {label}: {message}} few {Не удалось обновить # календаря Microsoft. Первая ошибка: {label}: {message}} many {Не удалось обновить # календарей Microsoft. Первая ошибка: {label}: {message}} other {Не удалось обновить # календаря Microsoft. Первая ошибка: {label}: {message}}}"
 
+#: src/ui/noteDeletion.ts
+msgctxt "interaction feedback delete note"
+msgid "{count, plural, one {# note deleted} other {# notes deleted}}"
+msgstr "{count, plural, one {Удалена # заметка} few {Удалены # заметки} many {Удалено # заметок} other {Удалено # заметки}}"
+
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
@@ -290,6 +289,11 @@ msgstr "{count, plural, one {Установлено # напоминание} fe
 msgctxt "interaction feedback archive"
 msgid "{count, plural, one {# task archived} other {# tasks archived}}"
 msgstr "{count, plural, one {Архивирована # задача} few {Архивированы # задачи} many {Архивировано # задач} other {Архивировано # задачи}}"
+
+#: src/ui/noteDeletion.ts
+msgctxt "interaction feedback delete task"
+msgid "{count, plural, one {# task deleted} other {# tasks deleted}}"
+msgstr "{count, plural, one {Удалена # задача} few {Удалены # задачи} many {Удалено # задач} other {Удалено # задачи}}"
 
 #: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
@@ -1003,11 +1007,6 @@ msgctxt "modals.storageLocation.finalNote.migrate"
 msgid "⚠️ Make sure you have backups if needed. This change cannot be automatically undone."
 msgstr "⚠️ Убедитесь, что у вас есть резервные копии при необходимости. Это изменение нельзя автоматически отменить."
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.contextSelected"
-msgid "✓ {context}"
-msgstr "✓ {context}"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: completeInstances display"
 msgid "✓ {count, number} completed"
@@ -1044,23 +1043,13 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
 msgstr "09:00"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "За 1 день"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.oneDay"
-msgid "1 day before"
-msgstr "За 1 день"
-
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
-msgid "1 hour before"
-msgstr "За 1 час"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.oneHour"
 msgid "1 hour before"
 msgstr "За 1 час"
 
@@ -1084,13 +1073,8 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinute
 msgid "15 minutes"
 msgstr "15 минут"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
-msgid "15 minutes before"
-msgstr "За 15 минут"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.fifteenMinutes"
 msgid "15 minutes before"
 msgstr "За 15 минут"
 
@@ -1124,13 +1108,8 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes
 msgid "30 minutes"
 msgstr "30 минут"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
-msgid "5 minutes before"
-msgstr "За 5 минут"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.fiveMinutes"
 msgid "5 minutes before"
 msgstr "За 5 минут"
 
@@ -1220,7 +1199,6 @@ msgid "Access and account"
 msgstr "Доступ и аккаунт"
 
 #: src/bases/BasesViewBase.ts
-#: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
 msgstr "Ошибка действия: {action}"
@@ -1322,11 +1300,6 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "Добавить подписку на календарь"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.addContext"
-msgid "Add context…"
-msgstr "Добавить контекст…"
-
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
@@ -1408,12 +1381,6 @@ msgstr "Добавить подзадачу к текущей заметке"
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "Добавить подзадачи…"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.addTag"
-msgid "Add tag…"
-msgstr "Добавить тег…"
 
 #: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -1734,22 +1701,6 @@ msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "Архивировать эту задачу"
 
-#: src/components/noteFileMenu.ts
-msgctxt "contextMenus.task.deleteMessage"
-msgid "Are you sure you want to delete \"{name}\"?"
-msgstr "Вы уверены, что хотите удалить \"{name}\"?"
-
-#: src/modals/TaskEditModal.ts
-#: src/ui/taskCardDeletion.ts
-msgctxt "modals.taskEdit.deleteConfirmation.message"
-msgid "Are you sure you want to delete \"{title}\"? This moves the task note to Obsidian trash."
-msgstr "Вы уверены, что хотите удалить \"{title}\"? Заметка задачи будет перемещена в корзину Obsidian."
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.confirmDelete"
-msgid "Are you sure you want to delete the timeblock \"{title}\"?"
-msgstr "Удалить временной блок «{title}»?"
-
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
 msgid "At {date}"
@@ -1775,13 +1726,8 @@ msgctxt "modals.reminder.atScheduled"
 msgid "At the scheduled date"
 msgstr "В запланированную дату"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.atTime"
-msgid "At time of event"
-msgstr "Во время события"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "Во время события"
 
@@ -2026,11 +1972,6 @@ msgctxt "modals.reminder.beforeScheduled"
 msgid "Before scheduled date: {duration}"
 msgstr "До запланированной даты: {duration}"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.blocked"
-msgid "Blocked"
-msgstr "Заблокирована"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.blocked"
 msgid "Blocked"
@@ -2067,11 +2008,6 @@ msgstr "Заблокировано другими"
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
 msgstr "Заблокировано: "
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.blocking"
-msgid "Blocking"
-msgstr "Блокирует"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -2356,9 +2292,6 @@ msgstr "Показываемые календари"
 
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
-#: src/components/BatchContextMenu.ts
-#: src/components/noteFileMenu.ts
-#: src/components/task-context-menu/relationships.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2366,13 +2299,10 @@ msgstr "Показываемые календари"
 #: src/modals/PropertySelectorModal.ts
 #: src/modals/ReminderModal.ts
 #: src/modals/StorageLocationConfirmationModal.ts
-#: src/modals/TaskEditModal.ts
 #: src/modals/taskModalActionButtons.ts
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
-#: src/ui/TaskActionCoordinator.ts
-#: src/ui/taskCardDeletion.ts
 #: src/views/PomodoroStatsView.ts
 msgctxt "common.cancel"
 msgid "Cancel"
@@ -2621,11 +2551,6 @@ msgctxt "settings.integrations.oauth.checking"
 msgid "Checking connection…"
 msgstr "Проверка подключения…"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
-msgid "Checklist progress"
-msgstr "Прогресс чек-листа"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
@@ -2727,22 +2652,11 @@ msgctxt "interaction clear"
 msgid "Clear"
 msgstr "Очистить"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
 msgstr "Очистить все напоминания"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.clearReminders"
-msgid "Clear all reminders"
-msgstr "Очистить все напоминания"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.clearContexts"
-msgid "Clear contexts"
-msgstr "Очистить контексты"
-
-#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2755,20 +2669,10 @@ msgctxt "modals.dueDate.quickOptions.clearAriaLabel"
 msgid "Clear due date"
 msgstr "Очистить срок выполнения"
 
-#: src/components/BatchContextMenu.ts
-msgctxt "contextMenus.priority.clearPriority"
-msgid "Clear priority"
-msgstr "Очистить приоритет"
-
 #: src/main.ts
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
 msgstr "Удалить записи об экземплярах?"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.clearRecurrence"
-msgid "Clear recurrence"
-msgstr "Очистить повторение"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.scheduledDate.quickOptions.clearAriaLabel"
@@ -2795,12 +2699,6 @@ msgstr "Снять выделение"
 msgctxt "ui.audit.clearSelection"
 msgid "Clear selection"
 msgstr "Снять выделение"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.clearTags"
-msgid "Clear tags"
-msgstr "Очистить теги"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.clearTask"
@@ -2988,11 +2886,6 @@ msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "Завершено"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.completedDate"
-msgid "Completed date"
-msgstr "Дата завершения"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.completedDate"
 msgid "Completed date"
@@ -3088,12 +2981,6 @@ msgctxt "settings.features.dataStorage.description"
 msgid "Configure where Pomodoro session data is stored and how it''s managed."
 msgstr "Настройка места хранения данных сеансов Pomodoro и управления ими."
 
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "common.confirm"
-msgid "Confirm"
-msgstr "Подтвердить"
-
 #: src/modals/ConfirmationModal.ts
 msgctxt "modals/ConfirmationModal: ConfirmationModal confirmText"
 msgid "Confirm"
@@ -3161,11 +3048,6 @@ msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display"
 msgid "Content too long to process safely"
 msgstr "Содержимое слишком длинное для безопасной обработки"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.contextPlaceholder"
-msgid "context"
-msgstr "контекст"
-
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getListSuggestions display"
 msgid "Context"
@@ -3180,11 +3062,6 @@ msgstr "Контекст"
 msgctxt "modals.task.contextsPlaceholder"
 msgid "context1, context2"
 msgstr "контекст1, контекст2"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.contexts"
-msgid "Contexts"
-msgstr "Контексты"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
@@ -3376,11 +3253,6 @@ msgstr "Копировать URL"
 msgctxt "settings.modalFields.manager.fieldTypes.core"
 msgid "Core"
 msgstr "Основное"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.coreProperties"
-msgid "Core properties"
-msgstr "ОСНОВНЫЕ СВОЙСТВА"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.sections.coreProperties"
@@ -3676,11 +3548,6 @@ msgctxt "settings.native.createdOldestFirst"
 msgid "Created (oldest first)"
 msgstr "Создание (сначала старые)"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.createdDate"
-msgid "Created date"
-msgstr "Дата создания"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.dateCreated"
 msgid "Created date"
@@ -3806,11 +3673,6 @@ msgstr "Пользовательский шаблон имени файла ICS"
 msgctxt "settings.appearance.calendarView.defaultView.options.customMultiDay"
 msgid "Custom multi-day"
 msgstr "Пользовательский многодневный"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.customProperties"
-msgid "Custom properties"
-msgstr "ПОЛЬЗОВАТЕЛЬСКИЕ СВОЙСТВА"
 
 #: src/views/StatsView.ts
 msgctxt "views.stats.timeRanges.customRange"
@@ -4246,17 +4108,9 @@ msgctxt "contextMenus.ics.deleteEvent.confirmButton"
 msgid "Delete"
 msgstr "Удалить"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "contextMenus.task.delete"
-msgid "Delete"
-msgstr "Удалить"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/noteFileMenu.ts
-#: src/ui/taskCardDeletion.ts
-msgctxt "contextMenus.task.deleteConfirm"
 msgid "Delete"
 msgstr "Удалить"
 
@@ -4265,7 +4119,6 @@ msgctxt "settings/components/CardComponent: createDeleteHeaderButton tooltip"
 msgid "Delete"
 msgstr "Удалить"
 
-#: src/modals/TimeblockInfoModal.ts
 #: src/settings/native/properties.ts
 msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
@@ -4313,11 +4166,6 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "Удалять событие при удалении задачи"
 
-#: src/components/noteFileMenu.ts
-msgctxt "contextMenus.task.deleteTitle"
-msgid "Delete file"
-msgstr "Удалить файл"
-
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.recents.deleteAria"
 msgid "Delete Pomodoro session"
@@ -4348,14 +4196,7 @@ msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
 msgstr "Удалить подписку"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.deleteConfirmation.confirm"
-msgid "Delete task"
-msgstr "Удалить задачу"
-
 #: src/modals/TaskActionPaletteModal.ts
-#: src/modals/TaskEditModal.ts
-#: src/ui/taskCardDeletion.ts
 msgctxt "modals.taskEdit.deleteConfirmation.title"
 msgid "Delete task"
 msgstr "Удалить задачу"
@@ -4365,11 +4206,6 @@ msgctxt "notices.audit.deleteTitle"
 msgid "Delete tasks"
 msgstr "Удалить задачи"
 
-#: src/components/BatchContextMenu.ts
-msgctxt "notices.audit.deleteConfirm"
-msgid "Delete tasks ({count})? This action cannot be undone."
-msgstr "Удалить задачи ({count})? Это действие нельзя отменить."
-
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
 msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
@@ -4378,11 +4214,6 @@ msgstr "Удалить это повторение «{title}» из {provider}? 
 #: src/bases/calendarMenus.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
-msgid "Delete timeblock"
-msgstr "Удалить временной блок"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.deleteConfirmationTitle"
 msgid "Delete timeblock"
 msgstr "Удалить временной блок"
 
@@ -4714,11 +4545,6 @@ msgstr "Срок"
 msgctxt "ui.taskCard.labels.due"
 msgid "Due"
 msgstr "Срок"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.dueDate"
-msgid "Due date"
-msgstr "Срок выполнения"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -5501,11 +5327,6 @@ msgctxt "interaction shortcut"
 msgid "Extend selection"
 msgstr "Расширить выделение"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.notices.addReminderFailure"
-msgid "Failed to add reminder"
-msgstr "Не удалось добавить напоминание"
-
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.addFailed"
 msgid "Failed to add reminder. Please check your inputs."
@@ -5528,11 +5349,6 @@ msgstr "Не удалось добавить задачу в проект"
 msgctxt "notices.commands.batchConversionFailed"
 msgid "Failed to batch convert tasks. Please try again."
 msgstr "Не удалось преобразовать задачи пакетом. Попробуйте ещё раз."
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.clearRemindersFailure"
-msgid "Failed to clear reminders"
-msgstr "Не удалось очистить напоминания"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
@@ -5730,22 +5546,10 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.deleteEvent
 msgid "Failed to delete event: {message}"
 msgstr "Не удалось удалить событие: {message}"
 
-#: src/components/noteFileMenu.ts
-msgctxt "note menu delete failure"
-msgid "Failed to delete note: {message}"
-msgstr "Не удалось удалить заметку: {message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.deleteTask display"
 msgid "Failed to delete task: {errorMessage}"
 msgstr "Не удалось удалить задачу: {errorMessage}"
-
-#: src/components/noteFileMenu.ts
-#: src/modals/TaskEditModal.ts
-#: src/ui/taskCardDeletion.ts
-msgctxt "modals.taskEdit.notices.deleteFailure"
-msgid "Failed to delete task: {message}"
-msgstr "Не удалось удалить задачу: {message}"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockDeleteFailed"
@@ -6042,11 +5846,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "Не удалось сохранить пароль календаря"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.failed"
-msgid "Failed to show properties menu"
-msgstr "Не удалось показать меню свойств"
-
 #: src/bootstrap/pluginBootstrap.ts
 msgctxt "notices.interface.apiFailed"
 msgid "Failed to start TaskNotes API server. Check console for details."
@@ -6094,11 +5893,6 @@ msgid "Failed to update {field}: {message}"
 msgstr "Не удалось обновить {field}: {message}"
 
 #: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.notices.updateContextsFailed"
-msgid "Failed to update contexts"
-msgstr "Не удалось обновить контексты"
-
-#: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.updateFailed"
 msgid "Failed to update dependencies"
@@ -6120,16 +5914,10 @@ msgid "Failed to update recurring task"
 msgstr "Не удалось обновить повторяющуюся задачу"
 
 #: src/bases/taskListCardActions.ts
-#: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
 msgid "Failed to update reminders"
 msgstr "Не удалось обновить напоминания"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.notices.updateTagsFailed"
-msgid "Failed to update tags"
-msgstr "Не удалось обновить теги"
 
 #: src/main.ts
 msgctxt "notices.commands.taskUpdateFailed"
@@ -6141,20 +5929,10 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "Не удалось обновить выполнение задачи: {message}"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateDueDateFailure"
-msgid "Failed to update task due date: {message}"
-msgstr "Не удалось обновить срок выполнения задачи: {message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.updateProperty display"
 msgid "Failed to update task property: {errorMessage}"
 msgstr "Не удалось обновить свойство задачи: {errorMessage}"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateScheduledFailure"
-msgid "Failed to update task scheduled date: {message}"
-msgstr "Не удалось обновить запланированную дату задачи: {message}"
 
 #: src/main.ts
 msgctxt "notices.commands.statusFailed"
@@ -6162,7 +5940,6 @@ msgid "Failed to update task status"
 msgstr "Не удалось обновить статус задачи"
 
 #: src/bases/taskListCardActions.ts
-#: src/components/task-context-menu/properties.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
 msgid "Failed to update task status: {message}"
@@ -6174,7 +5951,6 @@ msgid "Failed to update task: {errorMessage}"
 msgstr "Не удалось обновить задачу: {errorMessage}"
 
 #: src/components/task-context-menu/completion.ts
-#: src/components/task-context-menu/properties.ts
 #: src/components/task-context-menu/recurrence.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.updateFailure"
@@ -7028,7 +6804,6 @@ msgctxt "settings.features.instantConvert.preserveCheckbox.name"
 msgid "Keep checkbox when converting"
 msgstr "Сохранять флажок при преобразовании"
 
-#: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
@@ -7397,15 +7172,10 @@ msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
 msgstr "Сохранять смещение срока выполнения в повторяющихся задачах"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.manageAllReminders"
 msgid "Manage all reminders..."
 msgstr "Управлять всеми напоминаниями..."
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.manageReminders"
-msgid "Manage all reminders…"
-msgstr "Управлять всеми напоминаниями…"
 
 #: src/bases/TaskListView.ts
 msgctxt "settings.taskProperties.properties.sortOrder.name"
@@ -7583,11 +7353,6 @@ msgctxt "settings.native.modifiedOldestFirst"
 msgid "Modified (oldest first)"
 msgstr "Изменение (сначала старые)"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.modifiedDate"
-msgid "Modified date"
-msgstr "Дата изменения"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.dateModified"
 msgid "Modified date"
@@ -7679,11 +7444,6 @@ msgctxt "modals.task.attachments.moveUpAriaLabel"
 msgid "Move {name} up"
 msgstr "Переместить {name} вверх"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponeConfirm"
-msgid "Move active overdue scheduled tasks to today ({today})? Tasks: {count}."
-msgstr "Перенести активные просроченные запланированные задачи на сегодня ({today})? Количество: {count}."
-
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
@@ -7717,6 +7477,11 @@ msgstr "Переместить задачу"
 msgctxt "modals.actionPalette.unarchiveDesc"
 msgid "Move task back to active tasks"
 msgstr "Вернуть задачу в активные"
+
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "action palette delete description"
+msgid "Move the task note to the trash"
+msgstr "Переместить заметку задачи в корзину"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -8146,6 +7911,7 @@ msgctxt "settings.native.noKeySet"
 msgid "No key set"
 msgstr "Ключ не задан"
 
+#: src/bases/TaskListView.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "interaction picker"
 msgid "No matching actions"
@@ -8992,11 +8758,6 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "Организация"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.organization"
-msgid "ORGANIZATION"
-msgstr "ОРГАНИЗАЦИЯ"
-
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
@@ -9153,18 +8914,12 @@ msgctxt "settings.features.performance.header"
 msgid "Performance & behavior"
 msgstr "Производительность и поведение"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.deleteDesc"
-msgid "Permanently delete this task"
-msgstr "Удалить эту задачу навсегда"
-
 #: src/components/task-context-menu/properties.ts
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "Выбрать дату {field}"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/ui/taskPropertyPickers.ts
@@ -9358,16 +9113,6 @@ msgctxt "settings.appearance.uiElements.subtaskChevronPosition.description"
 msgid "Position of expand/collapse chevrons in task cards"
 msgstr "Позиция шевронов раскрытия/свертывания в карточках задач"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postpone"
-msgid "Postpone"
-msgstr "Перенести"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponeTitle"
-msgid "Postpone overdue scheduled tasks"
-msgstr "Перенести просроченные запланированные задачи"
-
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.rolloverOverdueScheduledTasks"
 msgid "Postpone overdue scheduled tasks to today"
@@ -9443,11 +9188,6 @@ msgctxt "ui.filterBar.group.priority"
 msgid "Priority"
 msgstr "Приоритет"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.priorityDot"
-msgid "Priority dot"
-msgstr "Точка приоритета"
-
 #: src/i18n/messages.ts
 #: src/ui/taskCardPrimaryIndicators.ts
 msgctxt "ui.taskCard.priorityAriaLabel"
@@ -9483,11 +9223,6 @@ msgstr "Разбивка по проектам"
 msgctxt "settings.appearance.projectAutosuggest.requiredTags.placeholder"
 msgid "project, active, important"
 msgstr "проект, активный, важный"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.projects"
-msgid "Projects"
-msgstr "Проекты"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -9631,11 +9366,6 @@ msgstr "Последние сессии"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
 msgstr "Повторять от"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.recurrence"
-msgid "Recurrence"
-msgstr "Повторение"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -9825,16 +9555,6 @@ msgctxt "settings.general.releaseNotes.header"
 msgid "Release notes"
 msgstr "Примечания к выпуску"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.remindBeforeDue"
-msgid "Remind before due…"
-msgstr "Напомнить до срока выполнения…"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.remindBeforeScheduled"
-msgid "Remind before scheduled…"
-msgstr "Напомнить до запланированной даты…"
-
 #: src/i18n/dataSeedLabels.ts
 msgctxt "settings.defaults.reminders.defaultDescription"
 msgid "Reminder"
@@ -9867,7 +9587,7 @@ msgstr "Напоминание: {title}"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "Напоминания"
@@ -9892,11 +9612,6 @@ msgstr "Удаленный URL"
 msgctxt "modals.task.attachments.removeAriaLabel"
 msgid "Remove {name} from this task"
 msgstr "Убрать {name} из этой задачи"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.removeTag"
-msgid "Remove {tag}"
-msgstr "Удалить {tag}"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.description"
@@ -9937,12 +9652,6 @@ msgstr "Удалить проект"
 msgctxt "modals.task.organization.removeSubtaskTooltip"
 msgid "Remove subtask"
 msgstr "Удалить подзадачу"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.removeTagInput"
-msgid "Remove tag…"
-msgstr "Удалить тег…"
 
 #: src/modals/taskModalDependencies.ts
 msgctxt "modals.task.dependencies.removeTaskTooltip"
@@ -10217,11 +9926,6 @@ msgstr "Запланировано"
 msgctxt "ui.taskCard.labels.scheduled"
 msgid "Scheduled"
 msgstr "Запланировано"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.scheduledDate"
-msgid "Scheduled date"
-msgstr "Запланированная дата"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.scheduledDate"
@@ -10533,7 +10237,6 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "Служба не инициализирована - пожалуйста, перезапустите Obsidian"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
@@ -11169,11 +10872,6 @@ msgctxt "ui.filterBar.group.status"
 msgid "Status"
 msgstr "Статус"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
-msgid "Status dot"
-msgstr "Точка статуса"
-
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.markUnknownStatusColumn display"
 msgid "Status is not defined in TaskNotes settings"
@@ -11516,12 +11214,6 @@ msgctxt "settings.general.taskIdentification.identifyBy.options.tag"
 msgid "Tag"
 msgstr "Тег"
 
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.tagPlaceholder"
-msgid "Tag or #tag"
-msgstr "Тег или #тег"
-
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskTag.description"
 msgid "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters."
@@ -11531,11 +11223,6 @@ msgstr "Тег, который идентифицирует заметки ка�
 msgctxt "modals.task.tagsPlaceholder"
 msgid "tag1, tag2"
 msgstr "тег1, тег2"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.tags"
-msgid "Tags"
-msgstr "Теги"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -11705,19 +11392,9 @@ msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "Создание задач"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task deleted"
-msgstr "Задача удалена"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
 msgid "Task deleted"
-msgstr "Задача удалена"
-
-#: src/ui/taskCardDeletion.ts
-msgctxt "notices.interface.deleted"
-msgid "Task deleted successfully"
 msgstr "Задача удалена"
 
 #: src/cli/commands/captureCommand.ts
@@ -12250,11 +11927,6 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.th
 msgid "third"
 msgstr "третий"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "common.cannotUndo"
-msgid "This action cannot be undone."
-msgstr "Это действие нельзя отменить."
-
 #: src/services/HostedGoogleCalendarService.ts
 msgctxt "services/HostedGoogleCalendarService: too many events"
 msgid "This calendar has too many events to show."
@@ -12680,11 +12352,6 @@ msgstr "Записи времени сохранены"
 msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "Запись времени для задачи «{taskTitle}» создана ({duration} мин)"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.timeEstimate"
-msgid "Time estimate"
-msgstr "Оценка времени"
 
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.timeEstimate"
@@ -13209,11 +12876,6 @@ msgstr "Всего задач"
 msgctxt "views.stats.project.totalTime"
 msgid "Total time"
 msgstr "Общее время"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.totalTrackedTime"
-msgid "Total tracked time"
-msgstr "Общее отслеженное время"
 
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.totalTrackedTime"

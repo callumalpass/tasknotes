@@ -16,7 +16,6 @@ import {
   createTaskCard,
   updateTaskCard,
   showTaskContextMenu,
-  showDeleteConfirmationModal,
   TaskCardOptions,
   DEFAULT_TASK_CARD_OPTIONS
 } from '../../../src/ui/TaskCard';
@@ -1684,42 +1683,6 @@ describe("TaskCard Component", () => {
 
       expect(console.error).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining('Failed to create context menu'));
-    });
-  });
-
-  describe('showDeleteConfirmationModal', () => {
-    let task: TaskInfo;
-
-    beforeEach(() => {
-      task = TaskFactory.createTask({ title: 'Task to Delete' });
-    });
-
-    it('should create and show delete confirmation modal', async () => {
-      const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-
-      // Should create promise for deletion
-      expect(deletePromise).toBeInstanceOf(Promise);
-
-      // Simulate user confirming deletion
-      mockPlugin.taskService.deleteTask.mockResolvedValue(undefined);
-    });
-
-    it('should handle successful deletion', async () => {
-      mockPlugin.taskService.deleteTask.mockResolvedValue(undefined);
-
-      const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-
-      // Modal should be created - just verify the promise exists
-      expect(deletePromise).toBeInstanceOf(Promise);
-    });
-
-    it('should handle deletion errors', async () => {
-      mockPlugin.taskService.deleteTask.mockRejectedValue(new Error('Delete failed'));
-
-      const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-
-      // Modal should still be created - just verify the promise exists
-      expect(deletePromise).toBeInstanceOf(Promise);
     });
   });
 

@@ -180,16 +180,10 @@ msgctxt "ui/taskCardPropertyAccess: getTaskCardPropertyValue display"
 msgid "[Formula Error]"
 msgstr "[公式错误]"
 
-#: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
 msgctxt "notices.audit.result"
 msgid "{action} — successful: {count}; failed: {failed}."
 msgstr "{action} — 成功：{count}；失败：{failed}。"
-
-#: src/components/BatchContextMenu.ts
-msgctxt "notices.audit.progress"
-msgid "{action} — tasks: {count}…"
-msgstr "{action} — 任务数：{count}…"
 
 #: src/ui/NotificationService.ts
 msgctxt "relative reminder notification"
@@ -281,6 +275,11 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncE
 msgid "{count, plural, one {# Microsoft calendar failed to refresh. First error: {label}: {message}} other {# Microsoft calendars failed to refresh. First error: {label}: {message}}}"
 msgstr "{count, plural, other {# 个 Microsoft 日历刷新失败。首个错误：{label}：{message}}}"
 
+#: src/ui/noteDeletion.ts
+msgctxt "interaction feedback delete note"
+msgid "{count, plural, one {# note deleted} other {# notes deleted}}"
+msgstr "{count, plural, other {已删除 # 条笔记}}"
+
 #: src/modals/taskModalActionIconStates.ts
 msgctxt "task modal reminder count"
 msgid "{count, plural, one {# reminder set} other {# reminders set}}"
@@ -290,6 +289,11 @@ msgstr "{count, plural, other {已设置 # 条提醒}}"
 msgctxt "interaction feedback archive"
 msgid "{count, plural, one {# task archived} other {# tasks archived}}"
 msgstr "{count, plural, other {已归档 # 个任务}}"
+
+#: src/ui/noteDeletion.ts
+msgctxt "interaction feedback delete task"
+msgid "{count, plural, one {# task deleted} other {# tasks deleted}}"
+msgstr "{count, plural, other {已删除 # 个任务}}"
 
 #: src/components/BatchContextMenu.ts
 #: src/ui/taskPropertyPickers.ts
@@ -1000,11 +1004,6 @@ msgctxt "modals.storageLocation.finalNote.migrate"
 msgid "⚠️ Make sure you have backups if needed. This change cannot be automatically undone."
 msgstr "⚠️ 如果需要，请确保你有备份。此更改无法自动撤销。"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.contextSelected"
-msgid "✓ {context}"
-msgstr "✓ {context}"
-
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: completeInstances display"
 msgid "✓ {count, number} completed"
@@ -1041,23 +1040,13 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
 msgstr "09:00"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "提前1天"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.oneDay"
-msgid "1 day before"
-msgstr "提前1天"
-
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
-msgid "1 hour before"
-msgstr "提前1小时"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.oneHour"
 msgid "1 hour before"
 msgstr "提前1小时"
 
@@ -1081,13 +1070,8 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinute
 msgid "15 minutes"
 msgstr "15分钟"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
-msgid "15 minutes before"
-msgstr "提前15分钟"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.fifteenMinutes"
 msgid "15 minutes before"
 msgstr "提前15分钟"
 
@@ -1121,13 +1105,8 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes
 msgid "30 minutes"
 msgstr "30分钟"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
-msgid "5 minutes before"
-msgstr "提前5分钟"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.fiveMinutes"
 msgid "5 minutes before"
 msgstr "提前5分钟"
 
@@ -1217,7 +1196,6 @@ msgid "Access and account"
 msgstr "访问权限与账号"
 
 #: src/bases/BasesViewBase.ts
-#: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.failed"
 msgid "Action failed: {action}"
 msgstr "操作失败：{action}"
@@ -1319,11 +1297,6 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "添加日历订阅"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.addContext"
-msgid "Add context…"
-msgstr "添加上下文…"
-
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
@@ -1405,12 +1378,6 @@ msgstr "向当前笔记添加子任务"
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "添加子任务…"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.addTag"
-msgid "Add tag…"
-msgstr "添加标签…"
 
 #: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -1731,22 +1698,6 @@ msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "归档此任务"
 
-#: src/components/noteFileMenu.ts
-msgctxt "contextMenus.task.deleteMessage"
-msgid "Are you sure you want to delete \"{name}\"?"
-msgstr "你确定要删除\"{name}\"吗？"
-
-#: src/modals/TaskEditModal.ts
-#: src/ui/taskCardDeletion.ts
-msgctxt "modals.taskEdit.deleteConfirmation.message"
-msgid "Are you sure you want to delete \"{title}\"? This moves the task note to Obsidian trash."
-msgstr "确定要删除“{title}”吗？这会将任务笔记移到 Obsidian 回收站。"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.confirmDelete"
-msgid "Are you sure you want to delete the timeblock \"{title}\"?"
-msgstr "确定要删除时间块“{title}”吗？"
-
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
 msgid "At {date}"
@@ -1772,13 +1723,8 @@ msgctxt "modals.reminder.atScheduled"
 msgid "At the scheduled date"
 msgstr "在计划日期"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.quickReminders.atTime"
-msgid "At time of event"
-msgstr "在事件时间"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.quickReminders.atTime"
 msgid "At time of event"
 msgstr "在事件时间"
 
@@ -2023,11 +1969,6 @@ msgctxt "modals.reminder.beforeScheduled"
 msgid "Before scheduled date: {duration}"
 msgstr "计划日期前 {duration}"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.blocked"
-msgid "Blocked"
-msgstr "受阻"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.blocked"
 msgid "Blocked"
@@ -2064,11 +2005,6 @@ msgstr "受阻于"
 msgctxt "ui/taskCardProperties: blockedBy text"
 msgid "Blocked by: "
 msgstr "受阻于："
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.blocking"
-msgid "Blocking"
-msgstr "阻塞其他任务"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -2353,9 +2289,6 @@ msgstr "显示的日历"
 
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
-#: src/components/BatchContextMenu.ts
-#: src/components/noteFileMenu.ts
-#: src/components/task-context-menu/relationships.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2363,13 +2296,10 @@ msgstr "显示的日历"
 #: src/modals/PropertySelectorModal.ts
 #: src/modals/ReminderModal.ts
 #: src/modals/StorageLocationConfirmationModal.ts
-#: src/modals/TaskEditModal.ts
 #: src/modals/taskModalActionButtons.ts
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
-#: src/ui/TaskActionCoordinator.ts
-#: src/ui/taskCardDeletion.ts
 #: src/views/PomodoroStatsView.ts
 msgctxt "common.cancel"
 msgid "Cancel"
@@ -2618,11 +2548,6 @@ msgctxt "settings.integrations.oauth.checking"
 msgid "Checking connection…"
 msgstr "正在检查连接…"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.checklistProgress"
-msgid "Checklist progress"
-msgstr "清单进度"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.checklistProgress"
 msgid "Checklist progress"
@@ -2724,22 +2649,11 @@ msgctxt "interaction clear"
 msgid "Clear"
 msgstr "清除"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
 msgstr "清除所有提醒"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.clearReminders"
-msgid "Clear all reminders"
-msgstr "清除所有提醒"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.clearContexts"
-msgid "Clear contexts"
-msgstr "清除上下文"
-
-#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2752,20 +2666,10 @@ msgctxt "modals.dueDate.quickOptions.clearAriaLabel"
 msgid "Clear due date"
 msgstr "清除截止日期"
 
-#: src/components/BatchContextMenu.ts
-msgctxt "contextMenus.priority.clearPriority"
-msgid "Clear priority"
-msgstr "清除优先级"
-
 #: src/main.ts
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
 msgstr "清除已记录的实例？"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.clearRecurrence"
-msgid "Clear recurrence"
-msgstr "清除重复"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.scheduledDate.quickOptions.clearAriaLabel"
@@ -2792,12 +2696,6 @@ msgstr "清除选择"
 msgctxt "ui.audit.clearSelection"
 msgid "Clear selection"
 msgstr "清除选择"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.clearTags"
-msgid "Clear tags"
-msgstr "清除标签"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.clearTask"
@@ -2985,11 +2883,6 @@ msgctxt "views.stats.labels.completed"
 msgid "Completed"
 msgstr "已完成"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.completedDate"
-msgid "Completed date"
-msgstr "完成日期"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.completedDate"
 msgid "Completed date"
@@ -3085,12 +2978,6 @@ msgctxt "settings.features.dataStorage.description"
 msgid "Configure where Pomodoro session data is stored and how it''s managed."
 msgstr "配置番茄钟会话数据的存储位置和管理方式。"
 
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "common.confirm"
-msgid "Confirm"
-msgstr "确认"
-
 #: src/modals/ConfirmationModal.ts
 msgctxt "modals/ConfirmationModal: ConfirmationModal confirmText"
 msgid "Confirm"
@@ -3158,11 +3045,6 @@ msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskContent display"
 msgid "Content too long to process safely"
 msgstr "内容过长，无法安全处理"
 
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.contextPlaceholder"
-msgid "context"
-msgstr "上下文"
-
 #: src/editor/NLPCodeMirrorAutocomplete.ts
 msgctxt "editor/NLPCodeMirrorAutocomplete: getListSuggestions display"
 msgid "Context"
@@ -3177,11 +3059,6 @@ msgstr "上下文"
 msgctxt "modals.task.contextsPlaceholder"
 msgid "context1, context2"
 msgstr "上下文1，上下文2"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.contexts"
-msgid "Contexts"
-msgstr "上下文"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
@@ -3373,11 +3250,6 @@ msgstr "复制URL"
 msgctxt "settings.modalFields.manager.fieldTypes.core"
 msgid "Core"
 msgstr "核心"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.coreProperties"
-msgid "Core properties"
-msgstr "核心属性"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.sections.coreProperties"
@@ -3673,11 +3545,6 @@ msgctxt "settings.native.createdOldestFirst"
 msgid "Created (oldest first)"
 msgstr "创建时间（最早优先）"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.createdDate"
-msgid "Created date"
-msgstr "创建日期"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.dateCreated"
 msgid "Created date"
@@ -3803,11 +3670,6 @@ msgstr "自定义ICS文件名模板"
 msgctxt "settings.appearance.calendarView.defaultView.options.customMultiDay"
 msgid "Custom multi-day"
 msgstr "自定义多日"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.customProperties"
-msgid "Custom properties"
-msgstr "自定义属性"
 
 #: src/views/StatsView.ts
 msgctxt "views.stats.timeRanges.customRange"
@@ -4243,17 +4105,9 @@ msgctxt "contextMenus.ics.deleteEvent.confirmButton"
 msgid "Delete"
 msgstr "删除"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "contextMenus.task.delete"
-msgid "Delete"
-msgstr "删除"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/noteFileMenu.ts
-#: src/ui/taskCardDeletion.ts
-msgctxt "contextMenus.task.deleteConfirm"
 msgid "Delete"
 msgstr "删除"
 
@@ -4262,7 +4116,6 @@ msgctxt "settings/components/CardComponent: createDeleteHeaderButton tooltip"
 msgid "Delete"
 msgstr "删除"
 
-#: src/modals/TimeblockInfoModal.ts
 #: src/settings/native/properties.ts
 msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
@@ -4310,11 +4163,6 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "删除任务时删除事件"
 
-#: src/components/noteFileMenu.ts
-msgctxt "contextMenus.task.deleteTitle"
-msgid "Delete file"
-msgstr "删除文件"
-
 #: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.recents.deleteAria"
 msgid "Delete Pomodoro session"
@@ -4345,14 +4193,7 @@ msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
 msgstr "删除订阅"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.deleteConfirmation.confirm"
-msgid "Delete task"
-msgstr "删除任务"
-
 #: src/modals/TaskActionPaletteModal.ts
-#: src/modals/TaskEditModal.ts
-#: src/ui/taskCardDeletion.ts
 msgctxt "modals.taskEdit.deleteConfirmation.title"
 msgid "Delete task"
 msgstr "删除任务"
@@ -4362,11 +4203,6 @@ msgctxt "notices.audit.deleteTitle"
 msgid "Delete tasks"
 msgstr "删除任务"
 
-#: src/components/BatchContextMenu.ts
-msgctxt "notices.audit.deleteConfirm"
-msgid "Delete tasks ({count})? This action cannot be undone."
-msgstr "删除任务（{count} 个）？此操作无法撤销。"
-
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
 msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
@@ -4375,11 +4211,6 @@ msgstr "要从 {provider} 删除“{title}”的这一次重复吗？其他重�
 #: src/bases/calendarMenus.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
-msgid "Delete timeblock"
-msgstr "删除时间块"
-
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "modals.timeblockInfo.deleteConfirmationTitle"
 msgid "Delete timeblock"
 msgstr "删除时间块"
 
@@ -4710,11 +4541,6 @@ msgstr "截止日期"
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.due"
 msgid "Due"
-msgstr "截止日期"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.dueDate"
-msgid "Due date"
 msgstr "截止日期"
 
 #: src/components/BatchContextMenu.ts
@@ -5498,11 +5324,6 @@ msgctxt "interaction shortcut"
 msgid "Extend selection"
 msgstr "扩展选择"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.notices.addReminderFailure"
-msgid "Failed to add reminder"
-msgstr "添加提醒失败"
-
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.addFailed"
 msgid "Failed to add reminder. Please check your inputs."
@@ -5525,11 +5346,6 @@ msgstr "无法将任务添加到项目"
 msgctxt "notices.commands.batchConversionFailed"
 msgid "Failed to batch convert tasks. Please try again."
 msgstr "无法批量转换任务。请重试。"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.clearRemindersFailure"
-msgid "Failed to clear reminders"
-msgstr "清除提醒失败"
 
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
@@ -5727,22 +5543,10 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.deleteEvent
 msgid "Failed to delete event: {message}"
 msgstr "删除事件失败：{message}"
 
-#: src/components/noteFileMenu.ts
-msgctxt "note menu delete failure"
-msgid "Failed to delete note: {message}"
-msgstr "删除笔记失败：{message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.deleteTask display"
 msgid "Failed to delete task: {errorMessage}"
 msgstr "删除任务失败：{errorMessage}"
-
-#: src/components/noteFileMenu.ts
-#: src/modals/TaskEditModal.ts
-#: src/ui/taskCardDeletion.ts
-msgctxt "modals.taskEdit.notices.deleteFailure"
-msgid "Failed to delete task: {message}"
-msgstr "删除任务失败：{message}"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockDeleteFailed"
@@ -6039,11 +5843,6 @@ msgctxt "settings.integrations.subscriptionsList.notices.passwordSaveFailure"
 msgid "Failed to save the calendar password"
 msgstr "无法保存日历密码"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.failed"
-msgid "Failed to show properties menu"
-msgstr "显示属性菜单失败"
-
 #: src/bootstrap/pluginBootstrap.ts
 msgctxt "notices.interface.apiFailed"
 msgid "Failed to start TaskNotes API server. Check console for details."
@@ -6091,11 +5890,6 @@ msgid "Failed to update {field}: {message}"
 msgstr "更新 {field} 失败：{message}"
 
 #: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.organization.notices.updateContextsFailed"
-msgid "Failed to update contexts"
-msgstr "更新上下文失败"
-
-#: src/components/task-context-menu/relationships.ts
 #: src/modals/TaskModal.ts
 msgctxt "contextMenus.task.dependencies.notices.updateFailed"
 msgid "Failed to update dependencies"
@@ -6117,16 +5911,10 @@ msgid "Failed to update recurring task"
 msgstr "无法更新重复任务"
 
 #: src/bases/taskListCardActions.ts
-#: src/components/TaskContextMenu.ts
 #: src/ui/taskCardActions.ts
 msgctxt "contextMenus.task.notices.updateRemindersFailure"
 msgid "Failed to update reminders"
 msgstr "更新提醒失败"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.notices.updateTagsFailed"
-msgid "Failed to update tags"
-msgstr "更新标签失败"
 
 #: src/main.ts
 msgctxt "notices.commands.taskUpdateFailed"
@@ -6138,20 +5926,10 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "无法更新任务完成状态：{message}"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateDueDateFailure"
-msgid "Failed to update task due date: {message}"
-msgstr "更新任务截止日期失败：{message}"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.updateProperty display"
 msgid "Failed to update task property: {errorMessage}"
 msgstr "更新任务属性失败：{errorMessage}"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateScheduledFailure"
-msgid "Failed to update task scheduled date: {message}"
-msgstr "更新任务计划日期失败：{message}"
 
 #: src/main.ts
 msgctxt "notices.commands.statusFailed"
@@ -6159,7 +5937,6 @@ msgid "Failed to update task status"
 msgstr "无法更新任务状态"
 
 #: src/bases/taskListCardActions.ts
-#: src/components/task-context-menu/properties.ts
 #: src/ui/taskCardActions.ts
 msgctxt "notices.interface.statusFailed"
 msgid "Failed to update task status: {message}"
@@ -6171,7 +5948,6 @@ msgid "Failed to update task: {errorMessage}"
 msgstr "更新任务失败：{errorMessage}"
 
 #: src/components/task-context-menu/completion.ts
-#: src/components/task-context-menu/properties.ts
 #: src/components/task-context-menu/recurrence.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.notices.updateFailure"
@@ -7025,7 +6801,6 @@ msgctxt "settings.features.instantConvert.preserveCheckbox.name"
 msgid "Keep checkbox when converting"
 msgstr "转换时保留复选框"
 
-#: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
@@ -7394,14 +7169,9 @@ msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
 msgstr "在重复任务中保持截止日期偏移"
 
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "components.reminderContextMenu.manageAllReminders"
 msgid "Manage all reminders..."
-msgstr "管理所有提醒..."
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.manageReminders"
-msgid "Manage all reminders…"
 msgstr "管理所有提醒..."
 
 #: src/bases/TaskListView.ts
@@ -7580,11 +7350,6 @@ msgctxt "settings.native.modifiedOldestFirst"
 msgid "Modified (oldest first)"
 msgstr "修改时间（最早优先）"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.modifiedDate"
-msgid "Modified date"
-msgstr "修改日期"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.dateModified"
 msgid "Modified date"
@@ -7676,11 +7441,6 @@ msgctxt "modals.task.attachments.moveUpAriaLabel"
 msgid "Move {name} up"
 msgstr "上移 {name}"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponeConfirm"
-msgid "Move active overdue scheduled tasks to today ({today})? Tasks: {count}."
-msgstr "将逾期的未完成计划任务移至今天（{today}）？任务数：{count}。"
-
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.moveArchived.name"
 msgid "Move archived tasks to folder"
@@ -7714,6 +7474,11 @@ msgstr "移动任务"
 msgctxt "modals.actionPalette.unarchiveDesc"
 msgid "Move task back to active tasks"
 msgstr "将任务移回活动任务"
+
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "action palette delete description"
+msgid "Move the task note to the trash"
+msgstr "将任务笔记移到回收站"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -8143,6 +7908,7 @@ msgctxt "settings.native.noKeySet"
 msgid "No key set"
 msgstr "未设置键名"
 
+#: src/bases/TaskListView.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "interaction picker"
 msgid "No matching actions"
@@ -8989,11 +8755,6 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Organization"
 msgstr "组织"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.organization"
-msgid "ORGANIZATION"
-msgstr "组织"
-
 #: src/i18n/messages.ts
 msgctxt "modals.actionPalette.categories.other"
 msgid "Other"
@@ -9150,18 +8911,12 @@ msgctxt "settings.features.performance.header"
 msgid "Performance & behavior"
 msgstr "性能和行为"
 
-#: src/modals/TaskActionPaletteModal.ts
-msgctxt "modals.actionPalette.deleteDesc"
-msgid "Permanently delete this task"
-msgstr "永久删除此任务"
-
 #: src/components/task-context-menu/properties.ts
 #: src/modals/taskModalUserFieldControls.ts
 msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "选择{field}日期"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/ui/taskPropertyPickers.ts
@@ -9355,16 +9110,6 @@ msgctxt "settings.appearance.uiElements.subtaskChevronPosition.description"
 msgid "Position of expand/collapse chevrons in task cards"
 msgstr "任务卡片中子任务展开/折叠按钮的位置"
 
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postpone"
-msgid "Postpone"
-msgstr "推迟"
-
-#: src/ui/TaskActionCoordinator.ts
-msgctxt "notices.interface.postponeTitle"
-msgid "Postpone overdue scheduled tasks"
-msgstr "推迟逾期计划任务"
-
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.rolloverOverdueScheduledTasks"
 msgid "Postpone overdue scheduled tasks to today"
@@ -9440,11 +9185,6 @@ msgctxt "ui.filterBar.group.priority"
 msgid "Priority"
 msgstr "优先级"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.priorityDot"
-msgid "Priority dot"
-msgstr "优先级点"
-
 #: src/i18n/messages.ts
 #: src/ui/taskCardPrimaryIndicators.ts
 msgctxt "ui.taskCard.priorityAriaLabel"
@@ -9480,11 +9220,6 @@ msgstr "项目明细"
 msgctxt "settings.appearance.projectAutosuggest.requiredTags.placeholder"
 msgid "project, active, important"
 msgstr "项目，活动，重要"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.projects"
-msgid "Projects"
-msgstr "项目"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
@@ -9628,11 +9363,6 @@ msgstr "最近的会话"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
 msgstr "重复起点"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.recurrence"
-msgid "Recurrence"
-msgstr "重复"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -9822,16 +9552,6 @@ msgctxt "settings.general.releaseNotes.header"
 msgid "Release notes"
 msgstr "版本说明"
 
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.remindBeforeDue"
-msgid "Remind before due…"
-msgstr "截止日期前提醒…"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.remindBeforeScheduled"
-msgid "Remind before scheduled…"
-msgstr "计划日期前提醒…"
-
 #: src/i18n/dataSeedLabels.ts
 msgctxt "settings.defaults.reminders.defaultDescription"
 msgid "Reminder"
@@ -9864,7 +9584,7 @@ msgstr "提醒：{title}"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
-#: src/modals/taskModalActionMenus.ts
+#: src/ui/taskReminderPicker.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "提醒"
@@ -9889,11 +9609,6 @@ msgstr "远程URL"
 msgctxt "modals.task.attachments.removeAriaLabel"
 msgid "Remove {name} from this task"
 msgstr "从此任务中移除 {name}"
-
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.removeTag"
-msgid "Remove {tag}"
-msgstr "移除 {tag}"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.description"
@@ -9934,12 +9649,6 @@ msgstr "移除项目"
 msgctxt "modals.task.organization.removeSubtaskTooltip"
 msgid "Remove subtask"
 msgstr "移除子任务"
-
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.removeTagInput"
-msgid "Remove tag…"
-msgstr "移除标签…"
 
 #: src/modals/taskModalDependencies.ts
 msgctxt "modals.task.dependencies.removeTaskTooltip"
@@ -10213,11 +9922,6 @@ msgstr "计划日期"
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.scheduled"
 msgid "Scheduled"
-msgstr "计划日期"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.scheduledDate"
-msgid "Scheduled date"
 msgstr "计划日期"
 
 #: src/components/CustomRecurrenceModal.ts
@@ -10530,7 +10234,6 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "服务未初始化 - 请重启 Obsidian"
 
-#: src/components/BatchContextMenu.ts
 #: src/components/DateContextMenu.ts
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
@@ -11166,11 +10869,6 @@ msgctxt "ui.filterBar.group.status"
 msgid "Status"
 msgstr "状态"
 
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.statusDot"
-msgid "Status dot"
-msgstr "状态点"
-
 #: src/bases/KanbanView.ts
 msgctxt "bases/KanbanView: KanbanView.markUnknownStatusColumn display"
 msgid "Status is not defined in TaskNotes settings"
@@ -11513,12 +11211,6 @@ msgctxt "settings.general.taskIdentification.identifyBy.options.tag"
 msgid "Tag"
 msgstr "标签"
 
-#: src/components/BatchContextMenu.ts
-#: src/components/task-context-menu/relationships.ts
-msgctxt "contextMenus.task.tagPlaceholder"
-msgid "Tag or #tag"
-msgstr "标签或 #标签"
-
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskTag.description"
 msgid "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters."
@@ -11528,11 +11220,6 @@ msgstr "识别笔记为任务的标签（不含 #）。更改此设置后，现�
 msgctxt "modals.task.tagsPlaceholder"
 msgid "tag1, tag2"
 msgstr "标签1，标签2"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.tags"
-msgid "Tags"
-msgstr "标签"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -11702,19 +11389,9 @@ msgctxt "settings.features.taskCreation.header"
 msgid "Task creation"
 msgstr "任务创建"
 
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.deleteSuccess"
-msgid "Task deleted"
-msgstr "任务已删除"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.taskDeleted.label"
 msgid "Task deleted"
-msgstr "任务已删除"
-
-#: src/ui/taskCardDeletion.ts
-msgctxt "notices.interface.deleted"
-msgid "Task deleted successfully"
 msgstr "任务已删除"
 
 #: src/cli/commands/captureCommand.ts
@@ -12247,11 +11924,6 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.th
 msgid "third"
 msgstr "第三"
 
-#: src/modals/TimeblockInfoModal.ts
-msgctxt "common.cannotUndo"
-msgid "This action cannot be undone."
-msgstr "此操作无法撤销。"
-
 #: src/services/HostedGoogleCalendarService.ts
 msgctxt "services/HostedGoogleCalendarService: too many events"
 msgid "This calendar has too many events to show."
@@ -12677,11 +12349,6 @@ msgstr "时间记录已保存"
 msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "已为 {taskTitle} 创建时间记录（{duration} 分钟）"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.timeEstimate"
-msgid "Time estimate"
-msgstr "预估时长"
 
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.timeEstimate"
@@ -13206,11 +12873,6 @@ msgstr "任务总数"
 msgctxt "views.stats.project.totalTime"
 msgid "Total time"
 msgstr "总时间"
-
-#: src/ui/PropertyVisibilityDropdown.ts
-msgctxt "components.propertyVisibilityDropdown.properties.totalTrackedTime"
-msgid "Total tracked time"
-msgstr "累计跟踪时长"
 
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.totalTrackedTime"

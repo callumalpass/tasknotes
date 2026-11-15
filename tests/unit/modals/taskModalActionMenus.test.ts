@@ -29,6 +29,7 @@ jest.mock("../../../src/modals/ReminderModal", () => ({
 }));
 
 import type { Reminder, TaskInfo } from "../../../src/types";
+import { createI18nService } from "../../../src/i18n";
 import {
 	createTaskModalReminderDraft,
 	showTaskModalPropertyPicker,
@@ -56,7 +57,7 @@ function createHarness(overrides: Partial<TaskModalActionMenuState> = {}): {
 		...overrides,
 	};
 	const onChange = jest.fn();
-	const plugin = { settings: {} };
+	const plugin = { settings: {}, i18n: createI18nService() };
 	const context: TaskModalActionMenuContext = {
 		app: {} as TaskModalActionMenuContext["app"],
 		plugin,

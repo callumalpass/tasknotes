@@ -30,6 +30,7 @@ import { openListPicker, type PickerItem } from "./kit/listPicker";
 import type { PopoverHandle, PopoverOptions } from "./kit/popover";
 import { showToast, type ToastAction } from "./kit/toast";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { isTaskIdentificationTag } from "../utils/taskTagFiltering";
 import {
 	renderPriorityGlyph,
 	renderStatusGlyph,
@@ -464,7 +465,9 @@ export async function openTaskPropertyPicker(
 	plugin: TaskNotesPlugin,
 	property: TaskPickerProperty,
 	tasks: readonly TaskInfo[],
-	anchor: PopoverOptions["anchor"]
+	anchor: PopoverOptions["anchor"],
+	/** Runs after each change is written, such as to refresh a view. */
+	onChange?: () => void
 ): Promise<void> {
 	if (!tasks.length) return;
 	let changes = Promise.resolve();
@@ -474,7 +477,10 @@ export async function openTaskPropertyPicker(
 	const doc = "ownerDocument" in anchor ? anchor.ownerDocument : activeDocument;
 	if (doc.querySelector(".modal-container")) return;
 	const apply = (value: TaskPropertyChoice) => {
-		changes = changes.then(async () => { await changeTaskProperty(plugin, tasks, property, value, multiple ? feedback : undefined); });
+		changes = changes.then(async () => {
+			await changeTaskProperty(plugin, tasks, property, value, multiple ? feedback : undefined);
+			onChange?.();
+		});
 	};
 	await openTaskPropertyChoices(plugin, property, tasks, anchor, apply, () => {
 		if (!multiple) return;
@@ -661,6 +667,11 @@ export async function openTaskPropertyChoices(
 	if (blocked()) return;
 	const values = new Set(allTasks.flatMap((task) => task[property] ?? []));
 	for (const task of tasks) for (const value of task[property] ?? []) values.add(value);
+	// The tag that makes a note a task is not offered, so it cannot be removed here.
+	if (property === "tags" && plugin.settings.taskIdentificationMethod === "tag")
+		for (const value of values)
+			if (isTaskIdentificationTag(value, plugin.settings.taskTag, plugin.settings.hideIdentifyingTagsMode))
+				values.delete(value);
 	const toggle = (value: string, selected: boolean) =>
 		apply((task) => {
 			const previous = task[property] ?? [];

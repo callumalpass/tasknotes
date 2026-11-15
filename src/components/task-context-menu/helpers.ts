@@ -5,58 +5,6 @@ type SubmenuMenuItem = {
 	dom?: HTMLElement;
 	domEl?: HTMLElement;
 };
-export type TaskStatusOption = {
-	label: string;
-	value: string;
-	color?: string;
-	icon?: string;
-};
-function normalizeContextValue(value: string): string {
-	return value.trim();
-}
-export function normalizeContextList(contexts: string[] | undefined): string[] {
-	const seen = new Set<string>();
-	const normalized: string[] = [];
-
-	for (const context of contexts ?? []) {
-		if (typeof context !== "string") continue;
-		const value = normalizeContextValue(context);
-		if (!value || seen.has(value)) continue;
-		seen.add(value);
-		normalized.push(value);
-	}
-
-	return normalized;
-}
-export function addContextToList(
-	contexts: string[] | undefined,
-	context: string
-): string[] | undefined {
-	const value = normalizeContextValue(context);
-	const current = normalizeContextList(contexts);
-	if (!value) return current.length > 0 ? current : undefined;
-	if (current.includes(value)) return current;
-	return [...current, value];
-}
-export function removeContextFromList(
-	contexts: string[] | undefined,
-	context: string
-): string[] | undefined {
-	const value = normalizeContextValue(context);
-	const remaining = normalizeContextList(contexts).filter((entry) => entry !== value);
-	return remaining.length > 0 ? remaining : undefined;
-}
-export function toggleContextInList(
-	contexts: string[] | undefined,
-	context: string
-): string[] | undefined {
-	const value = normalizeContextValue(context);
-	const current = normalizeContextList(contexts);
-	if (!value) return current.length > 0 ? current : undefined;
-	return current.includes(value)
-		? removeContextFromList(current, value)
-		: addContextToList(current, value);
-}
 export function getSubmenu(item: MenuItem): Menu {
 	return (item as unknown as SubmenuMenuItem).setSubmenu();
 }
@@ -74,4 +22,15 @@ export function toMenuTitle(value: unknown, fallback = ""): string {
 			: "";
 	const trimmed = text.trim();
 	return trimmed.length > 0 ? trimmed : fallback;
+}
+/**
+ * Where to open a picker chosen from a menu item: over the item, which the
+ * menu removes as it closes, else at the pointer.
+ */
+export function menuItemAnchor(item: MenuItem, event: MouseEvent | KeyboardEvent): { x: number; y: number } {
+	const rect = getMenuItemElement(item)?.getBoundingClientRect();
+	if (rect && (rect.width || rect.height)) return { x: rect.left, y: rect.top };
+	if ("clientX" in event && (event.clientX || event.clientY)) return { x: event.clientX, y: event.clientY };
+	const selected = activeDocument.querySelector(".menu .menu-item.selected")?.getBoundingClientRect();
+	return selected ? { x: selected.left, y: selected.top } : { x: activeWindow.innerWidth / 3, y: activeWindow.innerHeight / 3 };
 }

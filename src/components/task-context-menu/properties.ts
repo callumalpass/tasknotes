@@ -1,5 +1,4 @@
 import { showToast } from "../../ui/kit/toast";
-import { configLabel } from "../../i18n/configLabels";
 import { changeTaskProperty } from "../../ui/taskPropertyPickers";
 import { displayError } from "../../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
@@ -11,9 +10,8 @@ import { DateContextMenu } from "../DateContextMenu";
 import { DateTimePickerModal } from "../../modals/DateTimePickerModal";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import type { UserMappedField } from "../../types/settings";
-import { renderUnconfiguredMenuValue, renderPriorityMenuGlyph } from "../../ui/kit/menu";
 import type { TaskContextMenuOptions } from "./types";
-import { getSubmenu, getMenuItemElement, toMenuTitle, type TaskStatusOption } from "./helpers";
+import { getSubmenu } from "./helpers";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
 export class TaskPropertyMenu {
@@ -24,101 +22,6 @@ export class TaskPropertyMenu {
 	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.options.plugin.i18n.translate(key, params);
 	}
-	addStatusOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const statusOptions = this.getStatusOptions(task, plugin);
-		renderUnconfiguredMenuValue(submenu, task.status, statusOptions);
-
-		statusOptions.forEach((option) => {
-			submenu.addItem((item) => {
-				const label = toMenuTitle(option.label, option.value);
-
-				// Use custom icon if configured, otherwise default to circle
-				item.setIcon(option.icon || "circle");
-
-				item.setTitle(label).setChecked(option.value === task.status);
-
-				item.onClick(async () => {
-					try {
-						await changeTaskProperty(plugin, [task], "status", option.value);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("Error updating task status:", {
-							category: "persistence",
-							operation: "updating-task-status",
-							details: { taskPath: task.path },
-							error: errorMessage,
-						});
-						showToast({ message: this.t(
-								msg({
-									message: "Failed to update task status: {message}",
-									context: "notices.interface.statusFailed",
-								}),
-								{
-									message: displayError(errorMessage),
-								}
-							) });
-					}
-				});
-
-				// Apply color directly to this item
-				const optionColor = option.color;
-				if (optionColor) {
-					window.setTimeout(() => {
-						const itemEl = getMenuItemElement(item);
-						if (itemEl) {
-							const iconEl = itemEl.querySelector(".menu-item-icon");
-							if (iconEl) {
-								(iconEl as HTMLElement).style.color = optionColor;
-							}
-						}
-					}, 10);
-				}
-			});
-		});
-	}
-
-	addPriorityOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
-		const priorityOptions = plugin.priorityManager.getPrioritiesByWeight();
-		renderUnconfiguredMenuValue(submenu, task.priority, priorityOptions);
-
-		priorityOptions.forEach((priority) => {
-			const value = toMenuTitle(priority.value);
-			if (!value) return;
-			const label = toMenuTitle(configLabel(priority), value);
-
-			submenu.addItem((item) => {
-				renderPriorityMenuGlyph(item, priority, priorityOptions);
-
-				item.setTitle(label).setChecked(value === task.priority);
-
-				item.onClick(async () => {
-					try {
-						await changeTaskProperty(plugin, [task], "priority", value);
-						this.options.onUpdate?.();
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("Error updating task priority:", {
-							category: "persistence",
-							operation: "updating-task-priority",
-							details: { taskPath: task.path },
-							error: errorMessage,
-						});
-						showToast({ message: this.t(
-								msg({
-									message: "Failed to update task: {message}",
-									context: "modals.taskEdit.notices.updateFailure",
-								}),
-								{
-									message: displayError(errorMessage),
-								}
-							) });
-					}
-				});
-			});
-		});
-	}
-
 	addDateOptions(
 		submenu: Menu,
 		currentValue: string | undefined,
@@ -340,29 +243,5 @@ export class TaskPropertyMenu {
 					}
 				) });
 		}
-	}
-	getStatusOptions(task: TaskInfo, plugin: TaskNotesPlugin) {
-		const statusConfigs = plugin.settings.customStatuses;
-		const statusOptions: TaskStatusOption[] = [];
-
-		// Use only the user-defined statuses from settings
-		if (statusConfigs && statusConfigs.length > 0) {
-			// Sort by order property
-			const sortedStatuses = [...statusConfigs].sort((a, b) => a.order - b.order);
-
-			// Show all statuses for all tasks (including recurring tasks)
-			sortedStatuses.forEach((status) => {
-				const value = toMenuTitle(status.value);
-				if (!value) return;
-				statusOptions.push({
-					label: toMenuTitle(configLabel(status), value),
-					value,
-					color: typeof status.color === "string" ? status.color : undefined,
-					icon: typeof status.icon === "string" ? status.icon : undefined,
-				});
-			});
-		}
-
-		return statusOptions;
 	}
 }

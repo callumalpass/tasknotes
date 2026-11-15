@@ -25,6 +25,7 @@ import { addTaskToProject } from "../services/taskRelationshipActions";
 import { openListPicker } from "../ui/kit/listPicker";
 import type { PopoverHandle } from "../ui/kit/popover";
 import { archiveTasksWithUndo, changeTaskProperty } from "../ui/taskPropertyPickers";
+import { deleteNotesWithUndo } from "../ui/noteDeletion";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskActionPaletteModal" });
 
@@ -426,18 +427,15 @@ export class TaskActionPaletteModal {
 			{
 				id: "delete-task",
 				title: this.plugin.i18n.translate(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })),
-				description: this.plugin.i18n.translate(msg({ message: "Permanently delete this task", context: "modals.actionPalette.deleteDesc" })),
+				description: this.plugin.i18n.translate(msg({ message: "Move the task note to the trash", context: "action palette delete description" })),
 				icon: "trash",
 				category: "other",
 				keywords: ["delete", "remove", "trash"],
 				isApplicable: () => true,
 				execute: async (task) => {
-					// Close the action palette first
 					this.close();
-
-					// Show confirmation and delete if confirmed
-					const { showDeleteConfirmationModal } = await import("../ui/TaskCard");
-					await showDeleteConfirmationModal(task, this.plugin);
+					const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+					if (file instanceof TFile) await deleteNotesWithUndo(this.plugin, [{ file, task }]);
 				},
 			}
 		);

@@ -181,7 +181,8 @@ export async function applyTaskRecurrence(
 export async function openTaskRecurrencePicker(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
-	anchor: PopoverOptions["anchor"]
+	anchor: PopoverOptions["anchor"],
+	onChange?: () => void
 ): Promise<void> {
 	const latest = (await plugin.cacheManager.getTaskInfo(task.path)) ?? task;
 	const doc = "ownerDocument" in anchor ? anchor.ownerDocument : activeDocument;
@@ -195,6 +196,6 @@ export async function openTaskRecurrencePicker(
 			scheduled: latest.scheduled,
 		},
 		anchor,
-		(value, nextAnchor) => void applyTaskRecurrence(plugin, latest, value, nextAnchor)
+		(value, nextAnchor) => void applyTaskRecurrence(plugin, latest, value, nextAnchor).then(onChange)
 	);
 }

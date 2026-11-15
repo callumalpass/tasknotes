@@ -7,7 +7,6 @@ import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { EVENT_DATA_CHANGED } from "../types";
 import { TimeEntryEditorModal } from "../modals/TimeEntryEditorModal";
-import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { getCurrentDateString } from "../core/date";
 import { getActiveTimeEntry } from "../utils/helpers";
@@ -299,20 +298,6 @@ export class TaskActionCoordinator {
 
 			if (candidates.length === 0) {
 				showNotice(this.plugin.i18n.translate(msg({ message: "No overdue scheduled tasks to postpone", context: "notices.interface.noOverdue" })));
-				return;
-			}
-
-			const confirmed = await showConfirmationModal(this.plugin.app, {
-				title: this.plugin.i18n.translate(msg({ message: "Postpone overdue scheduled tasks", context: "notices.interface.postponeTitle" })),
-				message: this.plugin.i18n.translate(msg({ message: "Move active overdue scheduled tasks to today ({today})? Tasks: {count}.", context: "notices.interface.postponeConfirm" }), {
-					count: candidates.length,
-					today,
-				}),
-				confirmText: this.plugin.i18n.translate(msg({ message: "Postpone", context: "notices.interface.postpone" })),
-				cancelText: this.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
-			});
-
-			if (!confirmed) {
 				return;
 			}
 
