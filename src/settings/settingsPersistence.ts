@@ -1,7 +1,11 @@
 import { normalizePath } from "obsidian";
 import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./defaults";
 import { hasMissingMigratedSettings } from "./settingsMigration";
-import type { TaskCreationDefaults, TaskNotesSettings } from "../types/settings";
+import type {
+	PropertyTriggerConfig,
+	TaskCreationDefaults,
+	TaskNotesSettings,
+} from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -208,6 +212,38 @@ function buildTaskCreationDefaults(
 	return defaults;
 }
 
+/**
+ * Resolves saved NLP triggers the way the settings tab displays them, so the parser uses
+ * what the user sees: built-in triggers missing from saved data take their defaults,
+ * surrounding whitespace is dropped, and an empty trigger falls back to its default.
+ */
+function normalizeNLPTriggers(
+	saved: PropertyTriggerConfig[] | undefined
+): PropertyTriggerConfig[] {
+	const defaults = new Map(DEFAULT_NLP_TRIGGERS.triggers.map((t) => [t.propertyId, t]));
+	const seen = new Set<string>();
+	const triggers: PropertyTriggerConfig[] = [];
+
+	for (const entry of Array.isArray(saved) ? saved : []) {
+		const propertyId = typeof entry?.propertyId === "string" ? entry.propertyId : "";
+		if (!propertyId || seen.has(propertyId)) continue;
+		seen.add(propertyId);
+		const trigger = typeof entry.trigger === "string" ? entry.trigger.trim() : "";
+		triggers.push({
+			propertyId,
+			trigger: trigger || defaults.get(propertyId)?.trigger || `${propertyId}:`,
+			enabled:
+				typeof entry.enabled === "boolean" ? entry.enabled : propertyId !== "priority",
+		});
+	}
+
+	for (const builtIn of DEFAULT_NLP_TRIGGERS.triggers) {
+		if (!seen.has(builtIn.propertyId)) triggers.push({ ...builtIn });
+	}
+
+	return triggers;
+}
+
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
 	const normalizedUserFieldPropertyKeys = Boolean(
 		data?.userFields?.some(
@@ -249,7 +285,7 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		nlpTriggers: {
 			...DEFAULT_SETTINGS.nlpTriggers,
 			...(loadedData?.nlpTriggers || {}),
-			triggers: loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
+			triggers: normalizeNLPTriggers(loadedData?.nlpTriggers?.triggers),
 		},
 		modalFieldsConfig: initializeFieldConfig(
 			loadedData?.modalFieldsConfig,

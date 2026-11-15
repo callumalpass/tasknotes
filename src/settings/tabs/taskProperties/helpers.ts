@@ -123,8 +123,8 @@ export function createNLPTriggerRows(
 	);
 	triggerInput.classList.add("tn-static-width-80px-8573bae3");
 	triggerInput.addEventListener("change", () => {
-		const value = triggerInput.value;
-		if (value.trim().length === 0) {
+		const value = triggerInput.value.trim();
+		if (value.length === 0) {
 			new Notice(translate(msg({ message: "Trigger cannot be empty", context: "settings.taskProperties.propertyCard.triggerEmpty" })));
 			return;
 		}
@@ -132,6 +132,7 @@ export function createNLPTriggerRows(
 			new Notice(translate(msg({ message: "Trigger is too long (max 10 characters)", context: "settings.taskProperties.propertyCard.triggerTooLong" })));
 			return;
 		}
+		triggerInput.value = value;
 		updateNLPTrigger(plugin, propertyId, { trigger: value }, defaultTrigger, save);
 	});
 	rows.push({
