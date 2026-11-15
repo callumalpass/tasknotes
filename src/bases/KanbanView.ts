@@ -258,10 +258,6 @@ export class KanbanView extends BasesViewBase {
 	private draggedFromSwimlane: string | null = null; // Track source swimlane for list property handling
 	private dropTargetPath: string | null = null; // Card-level drop position tracking
 	private pendingRender = false; // Deferred render while dragging
-	// Scroll state captured before the first of any overlapping renders. A render
-	// empties the board, so state read mid-render would record scroll positions of 0.
-	private scrollStateBeforeRender: unknown = null;
-	private activeScrollPreservingRenders = 0;
 	private dropAbove = true; // Whether drop is above or below target card
 	private dragOverRafId = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
@@ -411,7 +407,7 @@ export class KanbanView extends BasesViewBase {
 			this.debugLog("ON-DATA-UPDATED: normal render (no suppression active)");
 		}
 
-		void this.renderPreservingScroll().catch((error: unknown) => {
+		void this.render().catch((error: unknown) => {
 			tasknotesLogger.error(`[TaskNotes][${this.type}] Render error:`, {
 				category: "internal",
 				operation: "render-kanban-view",
@@ -419,28 +415,6 @@ export class KanbanView extends BasesViewBase {
 			});
 			this.renderError(error instanceof Error ? error : new Error(String(error)));
 		});
-	}
-
-	/**
-	 * Re-render the board and restore board, column and swimlane scroll positions
-	 * once the render has finished. Rendering empties the board, which resets its
-	 * scroll offsets, so the state must be captured before and restored after.
-	 */
-	private async renderPreservingScroll(): Promise<void> {
-		if (this.activeScrollPreservingRenders === 0) {
-			this.scrollStateBeforeRender = this.getEphemeralState();
-		}
-		const savedState = this.scrollStateBeforeRender;
-		this.activeScrollPreservingRenders++;
-		try {
-			await this.render();
-		} finally {
-			this.activeScrollPreservingRenders--;
-			if (this.activeScrollPreservingRenders === 0) {
-				this.scrollStateBeforeRender = null;
-			}
-			this.setEphemeralState(savedState);
-		}
 	}
 
 	/**
@@ -2384,7 +2358,8 @@ export class KanbanView extends BasesViewBase {
 
 		label.addEventListener("dragleave", (e: DragEvent) => {
 			if (!isSwimLaneDrag(e)) return;
-			if (!(e.relatedTarget instanceof Node && label.contains(e.relatedTarget))) {
+			const relatedTarget = e.relatedTarget as Node | null;
+			if (!(relatedTarget?.instanceOf?.(Node) && label.contains(relatedTarget))) {
 				label.classList.remove(dragoverClass);
 			}
 		});
@@ -2431,7 +2406,7 @@ export class KanbanView extends BasesViewBase {
 		if (!newOrder) return;
 
 		this.saveSwimLaneOrder(swimLanePropertyId, newOrder);
-		await this.renderPreservingScroll();
+		await this.render();
 	}
 
 	private setupColumnHeaderDragHandlers(header: HTMLElement): void {
@@ -2513,7 +2488,7 @@ export class KanbanView extends BasesViewBase {
 				await this.saveColumnOrder(groupBy, newOrder);
 
 				// Re-render
-				await this.renderPreservingScroll();
+				await this.render();
 			})();
 		});
 
@@ -2656,7 +2631,7 @@ export class KanbanView extends BasesViewBase {
 								newOrder.splice(dropIndex, 0, this.draggedColumnKey);
 
 								await this.saveColumnOrder(groupBy, newOrder);
-								await this.renderPreservingScroll();
+								await this.render();
 							}
 						}
 					}
@@ -3571,7 +3546,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Cancel any pending rAF
 			if (this.dragOverRafId) {
-				cancelAnimationFrame(this.dragOverRafId);
+				window.cancelAnimationFrame(this.dragOverRafId);
 				this.dragOverRafId = 0;
 			}
 
@@ -4444,7 +4419,7 @@ export class KanbanView extends BasesViewBase {
 					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 				});
 				this.updateDebounceTimer = null;
-				await this.renderPreservingScroll();
+				await this.render();
 			})();
 		}, 150);
 	}
@@ -4988,7 +4963,7 @@ export class KanbanView extends BasesViewBase {
 		const container = target.querySelector<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
 		if (!container || !isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) return;
 		if (this.dragOverRafId) {
-			cancelAnimationFrame(this.dragOverRafId);
+			window.cancelAnimationFrame(this.dragOverRafId);
 			this.dragOverRafId = 0;
 		}
 		if (container !== this.dragContainer) {

@@ -182,18 +182,27 @@ for (const theme of ['moonstone', 'obsidian'] as const) {
 		expect(contrast).toBeGreaterThanOrEqual(3);
 	});
 
-	test(`filled time-grid timeblocks keep on-accent text (${mode})`, async () => {
+	test(`tinted time-grid timeblocks keep normal text (${mode})`, async () => {
 		await page.evaluate((theme) => (window as any).app.changeTheme(theme), theme);
 		await openBase('timeGridDay');
+		await page.locator('.tnc:visible .tnc-tg').evaluate(async (grid) => {
+			await Promise.all(grid.getAnimations()
+				.filter((animation) => animation instanceof CSSAnimation && animation.animationName === 'tn-calendar-view-enter')
+				.map((animation) => animation.finished.catch(() => {})));
+		});
 		const title = page.locator('.tnc:visible .tnc-item--timed[data-event-type="timeblock"] .tnc-item-title');
 		await expect(title).toBeVisible();
-		const [color, onAccent] = await title.evaluate((el) => {
-			const probe = document.body.createDiv();
-			probe.style.color = 'var(--text-on-accent)';
+		const [color, normal] = await title.evaluate((el) => {
+			const probe = el.createDiv();
+			probe.style.color = 'var(--tn-text-normal)';
 			const expected = getComputedStyle(probe).color;
 			probe.remove();
 			return [getComputedStyle(el).color, expected];
 		});
-		expect(color).toBe(onAccent);
+		expect(color).toBe(normal);
+		expect(await titleContrast(
+			page,
+			'.tnc-item--timed[data-event-type="timeblock"] .tnc-item-title'
+		)).toBeGreaterThanOrEqual(3);
 	});
 }

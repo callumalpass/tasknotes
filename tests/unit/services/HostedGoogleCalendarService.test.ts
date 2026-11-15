@@ -184,6 +184,7 @@ describe("HostedGoogleCalendarService", () => {
 
 	afterEach(() => {
 		for (const source of sources.splice(0)) source.destroy();
+		activeDocument = document;
 	});
 
 	it("asks the service nothing until this device has signed in", async () => {
@@ -341,6 +342,46 @@ describe("HostedGoogleCalendarService", () => {
 		document.dispatchEvent(new Event("visibilitychange"));
 		clock.mockRestore();
 		await waitFor(() => source.getAllEvents().length === 1);
+	});
+
+	it("removes its visibility listener from the initializing document after focus moves", async () => {
+		const popoutDocument = document.implementation.createHTMLDocument("Popout");
+		const addListener = jest.spyOn(popoutDocument, "addEventListener");
+		const removeListener = jest.spyOn(popoutDocument, "removeEventListener");
+		const removeMainListener = jest.spyOn(document, "removeEventListener");
+		activeDocument = popoutDocument;
+		const { source } = await start();
+		const listener = addListener.mock.calls.find(([name]) => name === "visibilitychange")?.[1];
+		expect(listener).toEqual(expect.any(Function));
+
+		activeDocument = document;
+		source.destroy();
+
+		expect(removeListener).toHaveBeenCalledWith("visibilitychange", listener);
+		expect(removeMainListener).not.toHaveBeenCalledWith("visibilitychange", expect.any(Function));
+	});
+
+	it("uses the focused document's visibility when checking whether events are stale", async () => {
+		const { source, state } = await start();
+		const read = () => state.requests.filter(({ path }) => path.endsWith("/events")).length;
+		const before = read();
+		const popoutDocument = document.implementation.createHTMLDocument("Popout");
+		Object.defineProperty(popoutDocument, "visibilityState", { configurable: true, value: "hidden" });
+		activeDocument = popoutDocument;
+		const clock = jest.spyOn(Date, "now").mockReturnValue(
+			Date.now() + CALENDAR_SERVICE_CONSTANTS.REFRESH_INTERVAL_MS + 1
+		);
+		state.events.set(WORK, []);
+
+		document.dispatchEvent(new Event("visibilitychange"));
+		await Promise.resolve();
+		expect(read()).toBe(before);
+
+		Object.defineProperty(popoutDocument, "visibilityState", { configurable: true, value: "visible" });
+		document.dispatchEvent(new Event("visibilitychange"));
+		clock.mockRestore();
+		await waitFor(() => source.getAllEvents().length === 1);
+		expect(read()).toBeGreaterThan(before);
 	});
 
 	it("changes an event against the version it last read", async () => {

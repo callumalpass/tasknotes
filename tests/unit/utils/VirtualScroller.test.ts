@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { VirtualScroller } from "../../../src/utils/VirtualScroller";
 
 type TestItem = {
@@ -67,6 +69,9 @@ describe("VirtualScroller", () => {
 	});
 
 	it("keeps pinned drag sources connected outside the visible range and restores their layout", () => {
+		const stylesheet = document.createElement("style");
+		stylesheet.textContent = readFileSync(resolve(__dirname, "../../../styles/static-style-utilities.css"), "utf8");
+		document.head.appendChild(stylesheet);
 		const container = document.createElement("div");
 		container.style.overflowY = "auto";
 		Object.defineProperty(container, "clientHeight", { value: 40 });
@@ -80,23 +85,29 @@ describe("VirtualScroller", () => {
 		container.scrollTop = 240;
 		scroller.recalculate();
 		expect(source.isConnected).toBe(true);
-		expect(source.style.position).toBe("absolute");
+		expect(source.classList.contains("virtual-scroller__pinned")).toBe(true);
+		expect(source.style.position).toBe("");
+		expect(getComputedStyle(source).position).toBe("absolute");
 		expect(source.style.width).toBe("295px");
 		expect(parseFloat(source.style.top) + scroller.getState().offsetY).toBe(0);
 		expect(renderedKeys(container)).toContain("12");
 		container.scrollTop = 0;
 		scroller.recalculate();
 		expect(container.querySelector('[data-key="0"]')).toBe(source);
+		expect(source.classList.contains("virtual-scroller__pinned")).toBe(false);
 		expect(source.style.position).toBe("relative");
+		expect(getComputedStyle(source).position).toBe("relative");
 		expect(source.style.top).toBe("");
 		expect(source.style.width).toBe("295px");
 		container.scrollTop = 240;
 		scroller.recalculate();
 		scroller.setPinnedItemKeys([]);
 		expect(source.isConnected).toBe(false);
+		expect(source.classList.contains("virtual-scroller__pinned")).toBe(false);
 		expect(source.style.position).toBe("relative");
 		scroller.destroy();
 		container.remove();
+		stylesheet.remove();
 	});
 
 	it("includes container bottom padding in the spacer height", () => {

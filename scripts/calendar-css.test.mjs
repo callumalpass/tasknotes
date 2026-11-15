@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import stylelint from "stylelint";
 
 // A dependency upgrade must not silently leave the host stylesheet on an old
 // engine layout. Review/reapply the documented adaptations when this changes.
@@ -16,4 +17,10 @@ test("host calendar stylesheet tracks the pinned upstream engine and license", (
   assert.ok(host.replace(/[\s*]+/g, "").includes(upstreamHash));
   assert.deepEqual(readFileSync(new URL("../vendor/tasknotes-calendar/LICENSE", import.meta.url)),
     readFileSync(new URL("LICENSE", packageRoot)));
+});
+
+test("the pinned host calendar stylesheet passes strict CSS validation", async () => {
+  const result = await stylelint.lint({ files: "vendor/tasknotes-calendar/calendar.css" });
+  assert.equal(result.errored, false);
+  assert.deepEqual(result.results.flatMap(file => file.warnings), []);
 });

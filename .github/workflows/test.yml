@@ -2,9 +2,9 @@ name: Test Suite
 
 on:
   push:
-    branches: [ main, develop, v3-maintenance ]
+    branches: [ main, v5, develop, v3-maintenance ]
   pull_request:
-    branches: [ main, develop, v3-maintenance ]
+    branches: [ main, v5, develop, v3-maintenance ]
 
 jobs:
   bundle-size:
@@ -26,7 +26,7 @@ jobs:
       timeout-minutes: 5
 
     - name: Test bundle guard, dependency deduplication and maintained security patches
-      run: node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs scripts/braces-security.test.mjs scripts/dependency-security.test.mjs scripts/calendar-css.test.mjs
+      run: node --test scripts/check-bundle-size.test.mjs scripts/bundle-dependencies.test.mjs scripts/braces-security.test.mjs scripts/dependency-security.test.mjs scripts/calendar-css.test.mjs scripts/markdown-build.test.mjs scripts/verify-release-source.test.mjs
 
     - name: Build production plugin
       run: npm run build

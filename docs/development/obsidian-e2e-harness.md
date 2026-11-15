@@ -38,6 +38,26 @@ The harness logs the actual app-package version and verified vault path. It reje
 
 Unset `DISPLAY` to use Xvfb. Headless launches explicitly use X11 and disable GPU acceleration. Test profiles disable automatic updates and use `--password-store=basic` to avoid blocking on the desktop keyring. These profiles are only for disposable test data, not personal credentials or OAuth accounts.
 
+Native pointer suites (`drag-round9.spec.ts` and `kanban-redesign.spec.ts`) use
+XTest in the test runner itself. Give both the runner and Obsidian the same
+owned Xvfb display, large enough for the native window and its screen offset:
+
+```bash
+env -u DISPLAY xvfb-run -a -s '-screen 0 2400x1800x24' env \
+  TASKNOTES_E2E_REUSE_OBSIDIAN=0 \
+  TASKNOTES_E2E_VAULT_DIR="$TEST_VAULT" \
+  TASKNOTES_E2E_RUNTIME_DIR="$TEST_RUNTIME" \
+  TASKNOTES_E2E_USER_DATA_DIR="$TEST_PROFILE" \
+  TASKNOTES_E2E_REMOTE_DEBUGGING_PORT=19245 \
+  npm run e2e -- --project=obsidian --workers=1 \
+  e2e/drag-round9.spec.ts e2e/kanban-redesign.spec.ts
+```
+
+Allocate the vault, copied runtime, profile and port before running this command.
+Do not unset `DISPLAY` inside `xvfb-run`: the runner needs that value for XTest.
+The default Xvfb screen can clip pointer coordinates even when a CDP screenshot
+shows the complete viewport. Do not use the user's desktop display for this lane.
+
 `npm run e2e:launch` also uses an isolated profile for manual setup. It accepts the same vault/profile overrides. `TASKNOTES_E2E_RUNTIME_DIR` overrides the unpacked runtime for both launchers.
 
 Runtime-selection regression tests:

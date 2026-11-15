@@ -45,7 +45,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @chrabia for reporting this and @konstantinopolka for finding the cause
 - (#2524) Generated Bases formulas use `isEmpty()` so missing time entries show **Not started**. Existing, manually edited Base files are not replaced automatically. See [Default Base Templates](https://tasknotes.dev/views/default-base-templates/).
   - Thanks to @dsebastien for reporting this and proposing the fix
-- (#2527, #2528, #2529) Calendar timeblock text remains readable without its colour fill, timed events retain their time when there is room, and back-to-back events are not grouped as overlapping.
+- (#2527, #2528, #2529) Calendar timeblock text remains readable without its colour fill, long titles no longer push the time range outside short timed cards, and back-to-back events are not grouped as overlapping.
   - Thanks to @RumiaKitinari for reporting these issues
 - (#2531) Editing a Kanban card preserves the board's horizontal and vertical scroll positions.
   - Thanks to @petrabuchinger2025-code for reporting this
@@ -53,6 +53,15 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @jayhemnani9910 for contributing the fix
 - (#2542) Connected calendar views refresh after event deletion. Google meeting deletion does not send cancellation emails, and recurring deletion affects only the selected occurrence.
   - Thanks to @iantierney for requesting calendar event deletion
+- Improved compatibility with Obsidian popout windows for context menus, editor controls, and Kanban drag feedback.
+- Fixed tooltip dismissal, Google Calendar visibility refresh checks, and metadata-folder styling in popout windows.
+- Metadata folders stay hidden on first launch when a settings popout has focus.
+- Removed an iOS-incompatible regular expression from linked-note task conversion while preserving embedded-note handling.
+
+## Changed
+
+- Updated Obsidian plugin guideline checks and included manifest and license validation in the strict lint checks.
+- Reduced the plugin download size by compressing bundled release notes; the notes remain available offline and their text is unchanged.
 
 ## Security
 

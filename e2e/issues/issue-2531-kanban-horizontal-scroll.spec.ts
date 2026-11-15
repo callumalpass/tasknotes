@@ -53,8 +53,7 @@ test.afterAll(async () => {
   } finally { if (instance) await closeObsidian(instance); }
 });
 
-test('saving a card keeps the board and column scroll positions', async () => {
-  test.setTimeout(120_000);
+test('saving a card keeps the board and column scroll positions', async ({}, testInfo) => {
   const lastColumn = `.kanban-view__column[data-group="${lastLane}"]`;
   const scrollState = () => page.evaluate(lastColumn => {
     const board = document.querySelector('.kanban-view__board') as HTMLElement;
@@ -68,12 +67,6 @@ test('saving a card keeps the board and column scroll positions', async () => {
     board.scrollLeft = board.scrollWidth;
     const cards = document.querySelector(`${lastColumn} .kanban-view__cards`) as HTMLElement;
     cards.scrollTop = 300;
-    // Mark the current DOM so the test can tell when the board has re-rendered.
-    (window as any).__kanban2531Column = document.querySelector(lastColumn);
-    // Columns are added across several async steps. In a large vault the browser lays
-    // the board out between them; force that layout here so the test does not depend
-    // on render speed. Layout of a half-built board clamps its scrollLeft.
-    new MutationObserver(() => void board.scrollWidth).observe(board, { childList: true });
     return {
       left: Math.round(board.scrollLeft),
       maxLeft: board.scrollWidth - board.clientWidth,
@@ -92,14 +85,25 @@ test('saving a card keeps the board and column scroll positions', async () => {
     await plugin.openTaskEditModal(task);
   }, { folder, lastLane });
   const modal = page.locator('.modal.mod-tasknotes').last();
-  const title = modal.locator('textarea.title-input');
+  const title = modal.locator('.title-input[contenteditable="true"]');
   await expect(title).toBeVisible();
-  await title.fill(`${await title.inputValue()} edited`);
+  const editedTitle = `${await title.innerText()} edited`;
+  await title.fill(editedTitle);
   await modal.locator('.mod-cta').click();
   await expect(modal).toBeHidden();
 
-  await page.waitForFunction(() => !(window as any).__kanban2531Column?.isConnected);
+  await expect.poll(() => page.evaluate(async ({ folder, editedTitle }) => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    const tasks = await plugin.cacheManager.getAllTasks();
+    return tasks.find((task: { path: string; title: string }) =>
+      task.path.startsWith(`${folder}/`) && task.title === editedTitle)?.title;
+  }, { folder, editedTitle })).toBe(editedTitle);
   // Let any trailing data-update render and its restore frame settle.
   await page.waitForTimeout(1_000);
-  expect(await scrollState()).toEqual({ left: before.left, columnTop: before.columnTop });
+  const after = await scrollState();
+  await testInfo.attach('scroll-state', {
+    body: JSON.stringify({ before, after }), contentType: 'application/json',
+  });
+  await page.screenshot({ path: testInfo.outputPath('saved-board-scroll.png') });
+  expect(after).toEqual({ left: before.left, columnTop: before.columnTop });
 });

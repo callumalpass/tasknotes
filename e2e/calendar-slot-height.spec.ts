@@ -1,11 +1,11 @@
 import { test, expect, type CDPSession } from '@playwright/test';
-import { launchObsidian, closeObsidian, type ObsidianApp } from './obsidian';
+import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from './obsidian';
 
 // Real touch input against the isolated desktop host; this is not physical-mobile testing.
 let app: ObsidianApp;
 let cdp: CDPSession;
 let savedHeights: unknown;
-let viewport: { width: number; height: number } | null;
+let viewport: { width: number; height: number };
 let sidebars: { left: boolean; right: boolean };
 const BASE = 'TaskNotes/Views/e2e-calendar-slot-height.base';
 const KEY = 'tasknotes-calendar-pinched-slot-heights';
@@ -72,7 +72,10 @@ async function pinch(refresh = false): Promise<{ before: number; after: number }
 
 test.beforeAll(async () => {
 	app = await launchObsidian();
-	viewport = app.page.viewportSize();
+	viewport = await app.page.evaluate(() => {
+		const [width, height] = (window as any).require('electron').remote.getCurrentWindow().getContentSize();
+		return { width, height };
+	});
 	sidebars = await app.page.evaluate(() => {
 		const workspace = (window as any).app.workspace;
 		return { left: workspace.leftSplit.collapsed, right: workspace.rightSplit.collapsed };
@@ -104,8 +107,7 @@ test.afterEach(async () => {
 		workspace.rightSplit[right ? 'collapse' : 'expand']();
 	}, sidebars);
 	await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
-	if (viewport) await app.page.setViewportSize(viewport);
-	else await cdp.send('Emulation.clearDeviceMetricsOverride');
+	await setObsidianViewport(app.page, viewport);
 });
 
 test.afterAll(async () => {
@@ -156,7 +158,7 @@ test('disabling pinch leaves the configured grid height unchanged', async () => 
 });
 
 test('narrow weeks keep day navigation and collision stacks usable', async ({}, info) => {
-	await app.page.setViewportSize({ width: 430, height: 900 });
+	await setObsidianViewport(app.page, { width: 430, height: 900 });
 	await app.page.evaluate(() => {
 		const workspace = (window as any).app.workspace;
 		workspace.leftSplit.collapse();
@@ -174,9 +176,24 @@ test('narrow weeks keep day navigation and collision stacks usable', async ({}, 
 	const calendar = app.page.locator('.tnc:visible');
 	// Test a phone-width calendar, not an 80px sliver beside the file explorer.
 	await expect.poll(async () => (await calendar.boundingBox())!.width).toBeGreaterThan(330);
-	const navigation = calendar.locator('.tnc-tg-day-navigation');
+	await expect.poll(async () => (await calendar.boundingBox())!.width).toBeLessThanOrEqual(430);
+	const days = calendar.locator('.tnc-tg-head .tnc-dh');
+	await expect(days).toHaveCount(3);
+	const displayedDates = () => days.evaluateAll(elements => elements.map(element => element.getAttribute('data-date')));
+	const initialDates = await displayedDates();
+	const nextDates = initialDates.map(date => {
+		const next = new Date(`${date}T12:00:00Z`);
+		next.setUTCDate(next.getUTCDate() + 3);
+		return next.toISOString().slice(0, 10);
+	});
+	const navigation = calendar.locator('.tnc-toolbar-nav');
 	await expect(navigation).toBeVisible();
-	await expect(navigation.locator('button')).toHaveCount(7);
+	await expect(navigation.locator('.tnc-btn-prev')).toBeVisible();
+	await expect(navigation.locator('.tnc-btn-next')).toBeVisible();
+	await setObsidianViewport(app.page, { width: 360, height: 900 });
+	await expect.poll(async () => (await calendar.boundingBox())!.width).toBeGreaterThan(260);
+	await expect(days).toHaveCount(3);
+	await expect.poll(displayedDates).toEqual(initialDates);
 	const stack = calendar.locator('.tnc-more--collision');
 	await expect(stack).toHaveCount(1, { timeout: 10000 });
 	await expect(stack.locator('.tnc-collision-count')).toHaveText('3');
@@ -185,13 +202,18 @@ test('narrow weeks keep day navigation and collision stacks usable', async ({}, 
 	await expect(popover.locator('.tnc-item')).toHaveCount(3);
 	const box = (await popover.boundingBox())!;
 	expect(box.x).toBeGreaterThanOrEqual(0);
-	expect(box.x + box.width).toBeLessThanOrEqual(431);
+	expect(box.x + box.width).toBeLessThanOrEqual(361);
 	await app.page.screenshot({ path: info.outputPath('narrow-overlap.png') });
 	await popover.locator('.tnc-popover-close').click();
-	await navigation.locator('button').last().click();
-	await expect.poll(() => calendar.locator('.tnc-tg-scroll').evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
-	const lastDay = await calendar.locator('.tnc-tg-head .tnc-dh').last().boundingBox();
+	await navigation.locator('.tnc-btn-next').click();
+	await expect.poll(displayedDates).toEqual(nextDates);
+	await expect(stack).toHaveCount(0);
+	const lastDay = await days.last().boundingBox();
 	const scrollBox = (await calendar.locator('.tnc-tg-scroll').boundingBox())!;
 	expect(lastDay!.x + lastDay!.width).toBeLessThanOrEqual(scrollBox.x + scrollBox.width + 1);
 	await app.page.screenshot({ path: info.outputPath('narrow-navigation.png') });
+	await navigation.locator('.tnc-btn-prev').click();
+	await expect.poll(displayedDates).toEqual(initialDates);
+	await expect(stack).toHaveCount(1);
+	await expect(stack.locator('.tnc-collision-count')).toHaveText('3');
 });

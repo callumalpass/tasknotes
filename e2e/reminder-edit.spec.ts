@@ -40,7 +40,7 @@ test.describe('Reminder editing and settings card headers', () => {
 
     const taskModal = page.locator('.modal').filter({ has: page.locator('[data-type="reminders"]') });
     await taskModal.locator('[data-type="reminders"]').click();
-    await page.locator('.menu-item').filter({ hasText: 'Manage all reminders' }).click();
+    await page.locator('[role="option"][data-picker-id="manage"]').filter({ hasText: 'Manage all reminders' }).click();
 
     const reminderModal = page.locator('.tasknotes-reminder-modal');
     await expect(reminderModal.locator('.reminder-modal__reminder-card')).toHaveCount(1);

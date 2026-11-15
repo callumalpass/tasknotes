@@ -94,6 +94,32 @@ describe("Kanban render stability", () => {
 		expect(internals.renderFlat).toHaveBeenCalledTimes(3);
 	});
 
+	it("preserves scroll input received while refreshed task data is pending", async () => {
+		const { view, board, internals, task } = setupBoard();
+		await view.render();
+		board.scrollLeft = 25;
+		board.scrollTop = 40;
+		task.title = "Updated after a delayed refresh";
+		let finishRefresh!: (tasks: TaskInfo[]) => void;
+		jest.mocked(helpers.identifyTaskNotesFromBasesData).mockImplementationOnce(
+			() => new Promise(resolve => { finishRefresh = resolve; })
+		);
+		const render = internals.renderFlat.getMockImplementation();
+		internals.renderFlat.mockImplementation(async () => {
+			board.scrollLeft = 0;
+			board.scrollTop = 0;
+			await render();
+		});
+		const refreshed = view.render();
+		board.scrollLeft = 90;
+		board.scrollTop = 65;
+		finishRefresh([{ ...task }]);
+		await refreshed;
+		expect(board.textContent).toContain(task.title);
+		expect(board.scrollLeft).toBe(90);
+		expect(board.scrollTop).toBe(65);
+	});
+
 	it("applies changed property labels, sorting and plugin presentation settings", async () => {
 		const { view, internals } = setupBoard();
 		await view.render();

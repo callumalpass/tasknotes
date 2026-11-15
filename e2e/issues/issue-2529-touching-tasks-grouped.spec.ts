@@ -12,7 +12,7 @@ import { launchObsidian, closeObsidian } from '../obsidian';
 const TASKS = ['Issue 2529 A.md', 'Issue 2529 B.md'];
 const BASE = 'TaskNotes/Views/issue-2529.base';
 
-test('touching tasks stay full width at a compact slot height', async () => {
+test('touching tasks stay full width at a compact slot height', async ({}, testInfo) => {
 	const app = await launchObsidian();
 	const page = app.page;
 	try {
@@ -27,12 +27,26 @@ test('touching tasks stay full width at a compact slot height', async () => {
 			await w.app.vault.create(base, 'filters:\n  and:\n    - file.name.startsWith("Issue 2529 ")\nviews:\n  - type: tasknotesCalendar\n    name: Day\n    calendarView: timeGridDay\n    slotDuration: "00:30:00"\n    slotHeight: 8\n    scrollTime: 10:00:00\n    showTimeblocks: false\n');
 			await w.app.workspace.getLeaf('tab').openFile(w.app.vault.getAbstractFileByPath(base));
 		}, { tasks: TASKS, base: BASE });
-		const boxes = [];
 		for (const title of ['Issue 2529 A', 'Issue 2529 B']) {
 			const item = page.locator('.tnc:visible .tnc-item--timed', { hasText: title }).first();
 			await expect(item).toBeVisible();
-			boxes.push((await item.boundingBox())!);
 		}
+		await page.locator('.tnc:visible .tnc-tg').evaluate(async (grid) => {
+			await Promise.all(grid.getAnimations()
+				.filter((animation) => animation instanceof CSSAnimation && animation.animationName === 'tn-calendar-view-enter')
+				.map((animation) => animation.finished.catch(() => {})));
+		});
+		const items = page.locator('.tnc:visible .tnc-item--timed');
+		await expect(items).toHaveCount(2);
+		await expect(items).toContainText(['Issue 2529 A', 'Issue 2529 B']);
+		const boxes = await items.evaluateAll((elements) => elements.map((element) => {
+			const { x, y, width, height } = element.getBoundingClientRect();
+			return { x, y, width, height };
+		}));
+		await testInfo.attach('touching-task-geometry', {
+			body: JSON.stringify(boxes), contentType: 'application/json',
+		});
+		await page.screenshot({ path: testInfo.outputPath('touching-tasks.png') });
 		await expect(page.locator('.tnc:visible .tnc-more--stack')).toHaveCount(0);
 		expect(boxes[1].x).toBeCloseTo(boxes[0].x, 0);
 		expect(boxes[1].width).toBeCloseTo(boxes[0].width, 0);

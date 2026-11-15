@@ -165,7 +165,6 @@ test('deleting a timeblock keeps a frontmatter value containing ---', async () =
 	const page = app.page;
 	await timeblockItem(page, 'Fence existing').click();
 	await page.locator('.timeblock-info-modal .timeblock-delete-button').click();
-	await page.locator('.modal-button-container button.mod-warning', { hasText: 'Delete' }).click();
 	await expect(page.locator('.timeblock-info-modal')).toBeHidden();
 
 	await expect.poll(() => readNote(page)).toEqual({

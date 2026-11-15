@@ -330,13 +330,14 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async onload() {
-		const undoDocuments = new Set<Document>([document]);
+		const pluginDocument = activeDocument;
+		const undoDocuments = new Set<Document>([pluginDocument]);
 		this.app.workspace.iterateAllLeaves(leaf => undoDocuments.add(leaf.view.containerEl.ownerDocument));
 		for (const doc of undoDocuments) this.register(registerUndoKeyboard(doc.body, this.app.vault));
 		this.registerEvent(this.app.workspace.on("window-open", (_workspaceWindow, win) => {
 			this.register(registerUndoKeyboard(win.document.body, this.app.vault));
 		}));
-		this.registerDomEvent(document, "keydown", () => dismissTooltips(document), true);
+		this.registerDomEvent(pluginDocument, "keydown", () => dismissTooltips(pluginDocument), true);
 		this.registerEvent(this.app.workspace.on("active-leaf-change", () => {
 			dismissTooltips(activeDocument);
 		}));

@@ -2505,7 +2505,7 @@ export class TaskListView extends BasesViewBase {
 
 	private flushPendingInsertionSlot(clientYFallback: number): boolean {
 		if (this.dragOverRafId) {
-			cancelAnimationFrame(this.dragOverRafId);
+			window.cancelAnimationFrame(this.dragOverRafId);
 			this.dragOverRafId = 0;
 		}
 

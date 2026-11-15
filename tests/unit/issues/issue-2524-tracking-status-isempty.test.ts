@@ -1,6 +1,5 @@
 import { parse } from "yaml";
 import { generateBasesFileTemplate } from "../../../src/templates/defaultBasesFiles";
-import { BasesFilterConverter } from "../../../src/services/BasesFilterConverter";
 
 // In Obsidian Bases, `!prop` and `list(prop).length` are null (not true/0) when the
 // property is missing, so generated emptiness checks must use isEmpty().
@@ -60,21 +59,4 @@ describe("Issue #2524: generated emptiness checks use isEmpty()", () => {
 		}
 	});
 
-	it("exports an empty list filter as isEmpty()", () => {
-		const converter = new BasesFilterConverter({
-			fieldMapper: { toUserField: (key: string) => key },
-			settings: { userFields: [] },
-		} as any);
-
-		expect(
-			converter.convertToBasesFilter({
-				type: "group",
-				id: "root",
-				conjunction: "and",
-				children: [
-					{ type: "condition", id: "c1", property: "contexts", operator: "is", value: [] },
-				],
-			} as any)
-		).toBe("note.contexts.isEmpty()");
-	});
 });

@@ -59,8 +59,9 @@ export function mdbaseFolderCss(paths: string[]): string {
 
 /** CSS only: files remain available to search, the quick switcher and every other view. */
 export function installMdbaseFolderVisibility(plugin: TaskNotesPlugin): void {
-	const sheet = new CSSStyleSheet();
-	document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+	const ownerDocument = plugin.app.workspace.containerEl.ownerDocument;
+	const sheet = new (ownerDocument.defaultView?.CSSStyleSheet ?? CSSStyleSheet)();
+	ownerDocument.adoptedStyleSheets = [...ownerDocument.adoptedStyleSheets, sheet];
 	let revision = 0;
 	const refresh = async () => {
 		const current = ++revision;
@@ -106,7 +107,7 @@ export function installMdbaseFolderVisibility(plugin: TaskNotesPlugin): void {
 	plugin.registerEvent(plugin.emitter.on("settings-changed", update));
 	plugin.register(() => {
 		revision++;
-		document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
+		ownerDocument.adoptedStyleSheets = ownerDocument.adoptedStyleSheets.filter(
 			(entry) => entry !== sheet
 		);
 	});

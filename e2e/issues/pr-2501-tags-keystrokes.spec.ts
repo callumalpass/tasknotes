@@ -74,7 +74,7 @@ for (const mobile of [false, true]) {
       const modal = page.locator('.modal.mod-tasknotes');
       const primary = nlp
         ? modal.locator('.tn-task-modal__markdown-editor--nlp .cm-content').first()
-        : modal.locator('textarea.title-input');
+        : modal.locator('.tn-task-modal__markdown-editor--title .cm-content');
       await expect(primary).toBeFocused();
       await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
       await expect(modal).toHaveCount(0);

@@ -328,7 +328,6 @@
 .tasknotes-plugin .tnc-item--timed .tnc-item-title {
     flex: 0 1 auto;
     min-height: 0;
-    flex-shrink: 0;
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-medium);
 }

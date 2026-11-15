@@ -56,11 +56,12 @@ test("the compact announcement leaves release changes visible without recruiting
 			await expect(announcement.locator("p")).toHaveCount(1);
 			await expect(announcement.locator("h1, h2, h3, ol, ul")).toHaveCount(0);
 			expect(await announcement.locator("a").evaluateAll(links => links.map(link => link.getAttribute("href")))).toEqual([
-				"https://github.com/callumalpass/tasknotes/releases/tag/5.0.0-beta.6",
 				"https://app.tasknotes.dev/",
 				"https://apps.apple.com/app/tasknotes/id6797168033",
+				"https://play.google.com/store/apps/details?id=dev.tasknotes.app",
+				"https://tasknotes.dev/guides/tasknotes-app/",
 			]);
-			expect(await announcement.innerText()).not.toMatch(/Android|testers|Google Group|4\.13/);
+			expect(await announcement.innerText()).not.toMatch(/testers|Google Group|4\.13/);
 			const box = await announcement.boundingBox();
 			expect(box!.height).toBeLessThan(width === 430 ? 300 : 200);
 			const firstVersion = page.locator(".release-notes-version-header:visible").first();

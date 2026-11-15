@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 const tasks = [
+	["run", "test:lint-config"],
 	["run", "lint:ts"],
 	["run", "lint:review-types"],
 	["run", "lint:css"],

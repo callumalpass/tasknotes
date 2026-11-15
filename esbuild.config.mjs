@@ -6,6 +6,7 @@ import { resolve, join } from "path";
 import { homedir } from "os";
 import { createLanguagePackBuildPlugin } from "./scripts/lib/language-pack-build.mjs";
 import { linguiMacros } from "./scripts/lib/lingui-build.mjs";
+import { createMarkdownBuildPlugin } from "./scripts/lib/markdown-build.mjs";
 import catalogueGates from "./scripts/lib/catalogue-gates.cjs";
 
 const banner =
@@ -59,20 +60,6 @@ const copyToVaultPlugin = {
 	}
 };
 
-// Plugin to import markdown files as strings
-const markdownPlugin = {
-	name: 'markdown',
-	setup(build) {
-		build.onLoad({ filter: /\.md$/ }, async (args) => {
-			const text = readFileSync(args.path, 'utf8');
-			return {
-				contents: `export default ${JSON.stringify(text)}`,
-				loader: 'js',
-			};
-		});
-	}
-};
-
 const analysisName = process.env.TASKNOTES_BUNDLE_ANALYSIS;
 const analysisPlugin = {
 	name: "bundle-analysis",
@@ -118,7 +105,7 @@ const context = await esbuild.context({
 	// Avoid bulky Unicode escapes in translations; keep the bundle within Obsidian Sync's limit.
 	charset: "utf8",
 	plugins: [
-		markdownPlugin,
+		createMarkdownBuildPlugin({ production: prod }),
 		linguiMacros(),
 		...(analysisName ? [analysisPlugin] : []),
 		...(process.env.TASKNOTES_LANGUAGE_PACK_BASE_URL

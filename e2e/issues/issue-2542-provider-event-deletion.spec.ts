@@ -51,8 +51,8 @@ test.beforeAll(async () => {
 			];
 			override(provider, 'getAllEvents', () => events);
 			override(provider, 'getAvailableCalendars', () => [
-				{ id: 'fixture', summary: `${id} fixture`, canEdit: true },
-				{ id: 'readonly', summary: `${id} read-only`, canEdit: false },
+				{ id: 'fixture', summary: `${id} fixture`, canWrite: true },
+				{ id: 'readonly', summary: `${id} read-only`, canWrite: false },
 			]);
 			override(provider, 'refresh', async () => undefined);
 			override(provider, 'deleteEvent', async (calendarId: string, eventId: string) => {
@@ -121,12 +121,15 @@ test('Microsoft standalone event uses its provider and refreshes the view', asyn
 });
 
 test('known read-only provider calendars and ICS subscriptions have no delete action', async () => {
+	const before = await calls();
 	for (const title of ['google fixture read-only', 'microsoft fixture read-only', 'ICS fixture read-only']) {
 		await item(title).click({ button: 'right' });
 		await expect(instance.page.getByText('Show details', { exact: true })).toBeVisible();
 		await expect(instance.page.getByText('Delete event', { exact: true })).toHaveCount(0);
 		await instance.page.keyboard.press('Escape');
+		await expect(item(title)).toBeVisible();
 	}
+	expect(await calls()).toEqual(before);
 });
 
 test('provider rejection shows a failure notice and keeps the event', async () => {

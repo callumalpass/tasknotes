@@ -137,6 +137,7 @@ export class HostedGoogleCalendarService extends GoogleCalendarSource {
 	private lastRead = 0;
 	private lastManualRefresh = 0;
 	private staleCheck: number | null = null;
+	private visibilityDocument: Document | null = null;
 	private unsubscribe: (() => void) | null = null;
 	private wasSignedIn = false;
 	private authorizing = false;
@@ -176,7 +177,8 @@ export class HostedGoogleCalendarService extends GoogleCalendarSource {
 		this.unsubscribe ??= this.client.subscribe(() => this.sessionChanged());
 		if (this.staleCheck === null) {
 			this.staleCheck = window.setInterval(this.refreshIfStale, STALE_CHECK_MS);
-			document.addEventListener("visibilitychange", this.refreshIfStale);
+			this.visibilityDocument = activeDocument;
+			this.visibilityDocument.addEventListener("visibilitychange", this.refreshIfStale);
 		}
 		await this.resume();
 	}
@@ -203,7 +205,7 @@ export class HostedGoogleCalendarService extends GoogleCalendarSource {
 
 	/** Reads again only while Obsidian is on screen, and only once the last read has aged. */
 	private refreshIfStale = (): void => {
-		if (document.visibilityState !== "visible") return;
+		if (activeDocument.visibilityState !== "visible") return;
 		if (!this.isSignedIn()) {
 			// A start without a network leaves a stored session unresumed.
 			void this.resume();
@@ -494,7 +496,8 @@ export class HostedGoogleCalendarService extends GoogleCalendarSource {
 		this.reading?.abort();
 		if (this.staleCheck !== null) window.clearInterval(this.staleCheck);
 		this.staleCheck = null;
-		document.removeEventListener("visibilitychange", this.refreshIfStale);
+		this.visibilityDocument?.removeEventListener("visibilitychange", this.refreshIfStale);
+		this.visibilityDocument = null;
 		this.unsubscribe?.();
 		this.unsubscribe = null;
 		this.clearCache();

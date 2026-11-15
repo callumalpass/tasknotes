@@ -134,28 +134,18 @@ export class VirtualScroller<T> {
 
 		// Container should just be relative, parent handles overflow
 		this.container.classList.remove("tn-static-margin-top-12px-91e0f558");
-		this.container.classList.add("tn-static-position-relative-d461c96d");
+		this.container.classList.add("tn-virtual-scroller", "tn-static-position-relative-d461c96d");
 
 		// Create spacer to maintain scroll height
 		this.spacer = this.container.createDiv({
 			cls: "virtual-scroller__spacer",
 		});
-		this.spacer.style.cssText = `
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			pointer-events: none;
-		`;
 		this.updateSpacerHeight();
 
 		// Create content container for rendered items
 		this.contentContainer = this.container.createDiv({
 			cls: "virtual-scroller__content",
 		});
-		this.contentContainer.style.cssText = `
-			position: relative;
-		`;
 
 		// Find the actual scrolling container by walking up the DOM
 		this.scrollContainer = this.findScrollContainer(this.container);
@@ -174,11 +164,6 @@ export class VirtualScroller<T> {
 		const tempContainer = this.contentContainer.createDiv({
 			cls: "virtual-scroller__sample",
 		});
-		tempContainer.style.cssText = `
-			position: absolute;
-			visibility: hidden;
-			pointer-events: none;
-		`;
 
 		for (let i = 0; i < sampleSize; i++) {
 			const element = this.renderItem(this.items[i], i);
@@ -645,8 +630,9 @@ export class VirtualScroller<T> {
 					if (!this.pinnedItemStyles.has(key)) {
 						this.pinnedItemStyles.set(key, { position: element.style.position, top: element.style.top, width: element.style.width });
 					}
+					element.classList.add("virtual-scroller__pinned");
+					element.style.removeProperty("position");
 					element.setCssProps({
-						position: "absolute",
 						top: `${this.getItemPosition(pinnedIndex) - offsetY}px`,
 						width: width || element.style.width,
 					});
@@ -677,6 +663,7 @@ export class VirtualScroller<T> {
 	private restorePinnedItemStyle(key: string, element: HTMLElement): void {
 		const original = this.pinnedItemStyles.get(key);
 		if (!original) return;
+		element.classList.remove("virtual-scroller__pinned");
 		Object.assign(element.style, original);
 		this.pinnedItemStyles.delete(key);
 	}
@@ -951,10 +938,10 @@ export class VirtualScroller<T> {
 	 */
 	destroy(): void {
 		if (this.scrollRAF !== null) {
-			cancelAnimationFrame(this.scrollRAF);
+			window.cancelAnimationFrame(this.scrollRAF);
 		}
 		if (this.measurementRAF !== null) {
-			cancelAnimationFrame(this.measurementRAF);
+			window.cancelAnimationFrame(this.measurementRAF);
 		}
 		if (this.resizeObserver) {
 			this.resizeObserver.disconnect();

@@ -1,4 +1,5 @@
-import { mdbaseFolderCss, mdbaseHiddenFolders } from "../../../src/services/MdbaseFolderVisibility";
+import type TaskNotesPlugin from "../../../src/main";
+import { installMdbaseFolderVisibility, mdbaseFolderCss, mdbaseHiddenFolders } from "../../../src/services/MdbaseFolderVisibility";
 
 const folders =
 	(...paths: string[]) =>
@@ -102,5 +103,56 @@ describe("mdbase file explorer folders", () => {
 		);
 		expect(css).toContain("display: none !important");
 		expect(mdbaseFolderCss([])).toBe("");
+	});
+
+	it.each([false, true])("creates and removes its stylesheet in the workspace document when focus changes (startup focus elsewhere: %s)", (startupFocusElsewhere) => {
+		const frame = document.createElement("iframe");
+		document.body.appendChild(frame);
+		const ownerDocument = frame.contentDocument!;
+		const ownerWindow = ownerDocument.defaultView!;
+		const retainedSheet = new ownerWindow.CSSStyleSheet();
+		const sheet = new ownerWindow.CSSStyleSheet();
+		sheet.replaceSync = jest.fn();
+		ownerDocument.adoptedStyleSheets = [retainedSheet];
+		const createSheet = jest.spyOn(ownerWindow, "CSSStyleSheet").mockImplementation(() => sheet);
+		const otherFrame = document.createElement("iframe");
+		document.body.appendChild(otherFrame);
+		const otherDocument = otherFrame.contentDocument!;
+		const otherSheet = new otherDocument.defaultView!.CSSStyleSheet();
+		otherSheet.replaceSync = jest.fn();
+		const createOtherSheet = jest.spyOn(otherDocument.defaultView!, "CSSStyleSheet").mockImplementation(() => otherSheet);
+		otherDocument.adoptedStyleSheets = [retainedSheet];
+		const cleanups: (() => void)[] = [];
+		const plugin = {
+			settings: { hideMdbaseFolders: false },
+			app: {
+				workspace: { containerEl: ownerDocument.body },
+				vault: { on: jest.fn() },
+			},
+			emitter: { on: jest.fn() },
+			registerEvent: jest.fn(),
+			register: (cleanup: () => void) => cleanups.push(cleanup),
+		} as unknown as TaskNotesPlugin;
+		try {
+			activeDocument = startupFocusElsewhere ? otherDocument : ownerDocument;
+			installMdbaseFolderVisibility(plugin);
+			expect(createSheet).toHaveBeenCalledTimes(1);
+			expect(createOtherSheet).not.toHaveBeenCalled();
+			expect(ownerDocument.adoptedStyleSheets).toEqual([retainedSheet, sheet]);
+			expect(otherDocument.adoptedStyleSheets).toEqual([retainedSheet]);
+			expect(sheet.replaceSync).toHaveBeenCalledWith("");
+
+			activeDocument = otherDocument;
+			cleanups[0]();
+
+			expect(ownerDocument.adoptedStyleSheets).toEqual([retainedSheet]);
+			expect(otherDocument.adoptedStyleSheets).toEqual([retainedSheet]);
+		} finally {
+			activeDocument = document;
+			createSheet.mockRestore();
+			createOtherSheet.mockRestore();
+			frame.remove();
+			otherFrame.remove();
+		}
 	});
 });
