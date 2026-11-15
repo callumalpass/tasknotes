@@ -36,11 +36,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
-- Fixed Google and Microsoft calendar event titles running underneath the calendar icon in the top-right corner of short events.
-
 ## Changed
-
-- Updated TaskNotes App setup instructions to offer either the mdbase desktop app or the Obsidian sync plugin, with direct links to both. See [Use TaskNotes App with your vault](https://tasknotes.dev/guides/tasknotes-app/).
-- Task card titles now use regular weight instead of medium, so task lists, Kanban boards and calendar list views read lighter. The smaller, muted metadata line still sets each title apart.
 
 ## Security
