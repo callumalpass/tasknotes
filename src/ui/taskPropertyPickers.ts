@@ -29,6 +29,7 @@ import {
 import { openListPicker, type PickerItem } from "./kit/listPicker";
 import type { PopoverHandle, PopoverOptions } from "./kit/popover";
 import { showToast, type ToastAction } from "./kit/toast";
+import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import {
 	renderPriorityGlyph,
 	renderStatusGlyph,
@@ -36,6 +37,8 @@ import {
 	statusGlyphState,
 	unconfiguredValueLabel,
 } from "./kit/glyphs";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "UI/TaskPropertyPickers" });
 
 export type TaskPickerProperty =
 	| "status"
@@ -340,7 +343,13 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 						true
 					);
 			});
-		} catch {
+		} catch (error) {
+			tasknotesLogger.error("Failed to change task property:", {
+				category: "persistence",
+				operation: "change-task-property",
+				details: { taskPath: task.path, property: String(property) },
+				error,
+			});
 			failed = true;
 			failedTitles.push(task.title);
 			failedPaths.push(task.path);
@@ -435,7 +444,13 @@ export async function archiveTasksWithUndo(
 			if (!before || before.archived === archived) continue;
 			const receipt = await captureTaskUndo(plugin, before, () => plugin.taskService.toggleArchive(before));
 			if (receipt.undo) undo.push(receipt.undo);
-		} catch {
+		} catch (error) {
+			tasknotesLogger.error("Failed to archive task:", {
+				category: "persistence",
+				operation: "archive-task",
+				details: { taskPath: task.path },
+				error,
+			});
 			failed = true;
 			failedTitles.push(task.title);
 		}
