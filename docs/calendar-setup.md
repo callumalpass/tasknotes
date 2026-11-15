@@ -18,6 +18,8 @@ In [Google Cloud Console](https://console.cloud.google.com), create or select a 
 
 If your Google OAuth app is still in testing mode, add the Google account you will connect with under **Google Auth Platform -> Audience -> Test users**. Otherwise Google may block sign-in with a 403 `access_denied` error saying the app has not completed verification.
 
+Google expires the connection of an OAuth app in testing mode 7 days after you connect, so TaskNotes will ask you to reconnect about once a week. To keep the connection, open **Google Auth Platform -> Audience** and click **Publish app** to move it to **In production**. For a personal OAuth app you do not need to submit it for verification: when you next connect, Google shows a "Google hasn't verified this app" screen, where you can choose **Advanced** and continue to your app. Reconnect in TaskNotes after publishing, because connections made in testing mode keep their 7-day limit.
+
 ### Microsoft Calendar
 
 In [Azure Portal](https://portal.azure.com), create an App Registration for your Microsoft account type. TaskNotes currently uses Microsoft's `common` OAuth authority, so the app registration must allow the account type you plan to connect through that authority. Tenant-specific single-tenant authorities are not configurable yet.
@@ -68,3 +70,7 @@ Disconnect and reconnect to refresh OAuth tokens, then re-check provider-side ca
 **Connection lost after Obsidian restart**
 
 Tokens should persist between sessions. If reconnection is required each restart, check whether Obsidian Secret Storage is available and retaining secrets for the vault.
+
+**Google connection expires after about a week**
+
+If TaskNotes reports that the Google connection expired and you need to reconnect every few days, your Google OAuth app is probably in testing mode. Google limits connections from testing-mode apps to 7 days. Publish the app to **In production** as described in [Google Calendar](#google-calendar), then reconnect.

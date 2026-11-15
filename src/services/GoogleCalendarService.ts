@@ -73,6 +73,9 @@ export class GoogleCalendarService extends CalendarProvider {
 	private oauthService: OAuthService;
 	private baseUrl = "https://www.googleapis.com/calendar/v3";
 	private cache: Map<string, ICSEvent[]> = new Map();
+	// Calendars whose events are in the in-memory cache. Sync tokens are persisted, but the
+	// cache is not, so a saved token is only usable once this session has a full sync (#2243).
+	private cachedCalendarIds: Set<string> = new Set();
 	private refreshTimer: number | null = null;
 	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
@@ -341,7 +344,8 @@ export class GoogleCalendarService extends CalendarProvider {
 	async fetchCalendarEvents(
 		calendarId: string,
 		timeMin?: Date,
-		timeMax?: Date
+		timeMax?: Date,
+		options: { forceFullSync?: boolean } = {}
 	): Promise<{
 		events: GoogleCalendarEvent[];
 		isFullSync: boolean;
@@ -349,7 +353,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	}> {
 		try {
 			const token = await this.oauthService.getValidToken("google");
-			const syncToken = this.getSyncToken(calendarId);
+			const syncToken = options.forceFullSync ? undefined : this.getSyncToken(calendarId);
 
 			let allEvents: GoogleCalendarEvent[] = [];
 			let nextPageToken: string | undefined;
@@ -441,7 +445,7 @@ export class GoogleCalendarService extends CalendarProvider {
 					if (error.status === 410) {
 						await this.clearSyncToken(calendarId);
 						// Retry with full sync
-						return await this.fetchCalendarEvents(calendarId, timeMin, timeMax);
+						return await this.fetchCalendarEvents(calendarId, timeMin, timeMax, options);
 					}
 					throw error;
 				}
@@ -569,8 +573,12 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Fetch events from each enabled calendar
 			for (const calendarId of enabledCalendarIds) {
 				try {
-					const { events: googleEvents, isFullSync } =
-						await this.fetchCalendarEvents(calendarId);
+					const { events: googleEvents, isFullSync } = await this.fetchCalendarEvents(
+						calendarId,
+						undefined,
+						undefined,
+						{ forceFullSync: !this.cachedCalendarIds.has(calendarId) }
+					);
 
 					if (isFullSync) {
 						// Full sync: Replace all events from this calendar
@@ -585,6 +593,7 @@ export class GoogleCalendarService extends CalendarProvider {
 							.map((event) => this.convertToICSEvent(event, calendarId));
 
 						cachedEvents.push(...icsEvents);
+						this.cachedCalendarIds.add(calendarId);
 					} else {
 						// Incremental sync: Update cache with changes
 						for (const googleEvent of googleEvents) {
@@ -717,6 +726,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	clearCache(): void {
 		this.cache.clear();
+		this.cachedCalendarIds.clear();
 	}
 
 	/**
@@ -1122,6 +1132,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	destroy(): void {
 		this.stopRefreshTimer();
 		this.cache.clear();
+		this.cachedCalendarIds.clear();
 		this.removeAllListeners();
 	}
 }
