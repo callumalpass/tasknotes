@@ -632,7 +632,7 @@ export async function openTaskPropertyChoices(
 				const index = Number(item.id);
 				const option = dateOptions[index];
 				if (option.category === "increment") {
-					const delta = [1, -1, 7, -7][index];
+					const delta = option.days ?? 0;
 					apply((task) =>
 						task[property]
 							? (addDaysToDateTime(task[property], delta) ?? undefined)

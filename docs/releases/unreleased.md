@@ -36,6 +36,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2542) Google and Microsoft calendar events shown in TaskNotes calendar views can now be deleted from their right-click menu, after a confirmation. For a recurring event, only the clicked occurrence is deleted. The option is not shown for read-only calendars or ICS subscriptions. See [Calendar Integration](https://tasknotes.dev/features/calendar-integration/#synchronization-behavior).
   - Thanks to @iantierney for the request
+- Right-clicking a timeblock on the calendar opens a menu with **Edit timeblock**, **Open daily note**, an item to open each note linked to it, and **Delete timeblock**.
 
 ## Changed
 
@@ -46,3 +47,17 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Hovering an overdue or due-today date keeps its colour, and the highlight around a date is evenly padded. Hovering a tag, context or project underlines it instead of drawing a box behind it.
 - Done tasks show their priority, dates and properties faded, like their title.
 - Task List groups start closer to the toolbar, with less space above each group header.
+- Clicking a task's priority, due date or scheduled date opens the searchable picker in every view. Outside the Task List and Kanban views, such as in calendar list views and the task cards shown in notes, they opened an older menu.
+- Clicking a task's recurrence, on a task or in the task modal, opens a searchable picker with the same presets, **Custom recurrence...** and **Clear**, in place of a menu.
+- The date submenus in the task and batch right-click menus list their options in the date picker's order: **Pick date & time…** first, then quick dates, then the +/- day and week options, then weekdays and **Clear date**.
+- Right-clicking a note that is not a task in a TaskNotes view or calendar shows a note menu with Open, Open in new tab, Open to the right, Convert to task, Rename, Obsidian's file items and Delete. It had only Obsidian's file items.
+- The task menu's **Note actions** submenu lists TaskNotes' items first with Obsidian's alongside them, adds **Open to the right**, and no longer repeats **Copy path** or offers a second **Show in file explorer**. **Delete** is last and shown in red.
+- The Recurrence submenu in the task right-click menu offers the same choices as the recurrence picker, including the after-completion presets, and a change can be undone from the notice that follows.
+- In the task modal, **Reminders** opens a searchable picker: quick reminders before the due and scheduled dates, with the ones already set ticked, then **Manage all reminders...** and **Clear all reminders**.
+- Right-clicking works the same way in every view. Shift+right-click adds the task to the selection and opens the batch menu, and right-clicking any task while several are selected adds it to the selection and opens the batch menu. On the calendar, Shift+right-click did nothing extra, and only a task that was already selected opened the batch menu. Recurring tasks and tracked time on the calendar still open their own menu.
+
+## Fixed
+
+- Right-clicking a recurring task's Kanban card, outside its **⋯** button, acts on the card's occurrence. It acted on today's, so **Mark complete** could complete the wrong occurrence.
+- Choosing an after-completion rule through **Custom recurrence...** in the task right-click menu saved the rule but not that it repeats after completion.
+- While editing a task, quick reminders and **Clear all reminders** were written to the note straight away, so cancelling the edit did not undo them. They are now saved with the rest of the task.

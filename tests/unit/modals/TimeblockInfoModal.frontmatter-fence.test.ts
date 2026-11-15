@@ -1,6 +1,6 @@
 import { observeTranslation as mockObserveTranslation } from "../../helpers/real-i18n";
 import { App, parseYaml } from "obsidian";
-import { TimeblockInfoModal, TimeBlock } from "../../../src/modals/TimeblockInfoModal";
+import { deleteTimeblockFromDailyNote, TimeblockInfoModal, TimeBlock } from "../../../src/modals/TimeblockInfoModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 import { getDailyNote } from "obsidian-daily-notes-interface";
 
@@ -90,16 +90,7 @@ describe("TimeblockInfoModal frontmatter fence detection", () => {
 		const dailyNote = await app.vault.create("Daily/2026-05-16.md", dailyNoteContent());
 		(getDailyNote as jest.Mock).mockReturnValue(dailyNote);
 
-		const plugin = createMockPlugin();
-		const modal = new TimeblockInfoModal(
-			app,
-			plugin,
-			{ ...existingTimeblock },
-			new Date("2026-05-16"),
-			"2026-05-16"
-		);
-
-		await (modal as any).deleteTimeblockFromDailyNote();
+		await deleteTimeblockFromDailyNote(app, "2026-05-16", { ...existingTimeblock });
 
 		const finalContent = await app.vault.read(dailyNote);
 		expect(finalContent).toContain("description: Section A --- Section B");

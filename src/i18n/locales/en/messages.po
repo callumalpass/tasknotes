@@ -308,6 +308,7 @@ msgid "{count, plural, one {# task updated} other {# tasks updated}}"
 msgstr "{count, plural, one {# task updated} other {# tasks updated}}"
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "interaction property feedback"
 msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
 msgstr "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
@@ -1041,7 +1042,7 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
 msgstr "09:00"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "1 day before"
@@ -1051,7 +1052,7 @@ msgctxt "contextMenus.task.quickReminders.oneDay"
 msgid "1 day before"
 msgstr "1 day before"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1 hour before"
@@ -1081,7 +1082,7 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinute
 msgid "15 minutes"
 msgstr "15 minutes"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15 minutes before"
@@ -1121,7 +1122,7 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes
 msgid "30 minutes"
 msgstr "30 minutes"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
 msgid "5 minutes before"
 msgstr "5 minutes before"
@@ -1731,7 +1732,7 @@ msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "Archive this task"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
 msgid "Are you sure you want to delete \"{name}\"?"
 msgstr "Are you sure you want to delete \"{name}\"?"
@@ -1772,7 +1773,7 @@ msgctxt "modals.reminder.atScheduled"
 msgid "At the scheduled date"
 msgstr "At the scheduled date"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.atTime"
 msgid "At time of event"
 msgstr "At time of event"
@@ -2354,8 +2355,8 @@ msgstr "Calendars shown"
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/components/task-context-menu/relationships.ts
-#: src/components/TaskContextMenu.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2719,11 +2720,12 @@ msgid "Choose which version should become canonical. Using TaskNotes settings wr
 msgstr "Choose which version should become canonical. Using TaskNotes settings writes only the settings you changed; other fields in the file are kept."
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "interaction clear"
 msgid "Clear"
 msgstr "Clear"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
 msgstr "Clear all reminders"
@@ -3252,6 +3254,11 @@ msgctxt "commands.convertCurrentNoteToTask.name"
 msgid "Convert current note to task"
 msgstr "Convert current note to task"
 
+#: src/components/noteFileMenu.ts
+msgctxt "note menu convert"
+msgid "Convert to task"
+msgstr "Convert to task"
+
 #: src/editor/InstantConvertButtons.ts
 msgctxt "editor/InstantConvertButtons: ConvertButtonWidget.toDOM aria-label"
 msgid "Convert to tasknote"
@@ -3302,15 +3309,10 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy Markdown links"
 msgstr "Copy Markdown links"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.copyUrl"
 msgid "Copy Obsidian URL"
 msgstr "Copy Obsidian URL"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.copyPath"
-msgid "Copy path"
-msgstr "Copy path"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
@@ -3342,7 +3344,7 @@ msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
 msgid "Copy task links"
 msgstr "Copy task links"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.copyTitle"
 msgid "Copy task title"
@@ -3829,12 +3831,8 @@ msgid "Custom recurrence: {rule}"
 msgstr "Custom recurrence: {rule}"
 
 #: src/components/RecurrenceContextMenu.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "components.recurrenceContextMenu.customRecurrence"
-msgid "Custom recurrence..."
-msgstr "Custom recurrence..."
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "Custom recurrence..."
 
@@ -3895,11 +3893,6 @@ msgstr "Daily"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.daily"
-msgid "Daily"
-msgstr "Daily"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.daily"
 msgid "Daily"
 msgstr "Daily"
 
@@ -4258,14 +4251,14 @@ msgid "Delete"
 msgstr "Delete"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "contextMenus.task.delete"
 msgid "Delete"
 msgstr "Delete"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/ui/taskCardDeletion.ts
 msgctxt "contextMenus.task.deleteConfirm"
 msgid "Delete"
@@ -4324,7 +4317,7 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "Delete event on task delete"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.deleteTitle"
 msgid "Delete file"
 msgstr "Delete file"
@@ -4386,6 +4379,7 @@ msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
 msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
 msgstr "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
 
+#: src/bases/calendarMenus.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
 msgid "Delete timeblock"
@@ -4898,6 +4892,11 @@ msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "Edit time entries (select task)"
 
+#: src/bases/calendarMenus.ts
+msgctxt "calendar timeblock menu edit"
+msgid "Edit timeblock"
+msgstr "Edit timeblock"
+
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
 msgid "Edit timer duration"
@@ -5126,7 +5125,7 @@ msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
 msgid "Enter new name"
 msgstr "Enter new name"
@@ -5271,11 +5270,6 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "Events will no longer be sent to this endpoint."
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.everyTwoWeeks"
-msgid "Every 2 weeks"
-msgstr "Every 2 weeks"
-
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.everyTwoWeeksOn"
 msgid "Every 2 weeks on {day}"
@@ -5285,11 +5279,6 @@ msgstr "Every 2 weeks on {day}"
 msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "Every 3 days (after completion)"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.everyThreeMonths"
-msgid "Every 3 months"
-msgstr "Every 3 months"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.deleteAccount.confirmMessage"
@@ -5566,7 +5555,7 @@ msgid "Failed to copy to clipboard"
 msgstr "Failed to copy to clipboard"
 
 #: src/bases/BasesViewBase.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
@@ -5745,12 +5734,17 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.deleteEvent
 msgid "Failed to delete event: {message}"
 msgstr "Failed to delete event: {message}"
 
+#: src/components/noteFileMenu.ts
+msgctxt "note menu delete failure"
+msgid "Failed to delete note: {message}"
+msgstr "Failed to delete note: {message}"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.deleteTask display"
 msgid "Failed to delete task: {errorMessage}"
 msgstr "Failed to delete task: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 #: src/ui/taskCardDeletion.ts
 msgctxt "modals.taskEdit.notices.deleteFailure"
@@ -6022,7 +6016,7 @@ msgctxt "modals/ICSEventInfoModal: ICSEventInfoModal.refreshRelatedNotes errorMe
 msgid "Failed to refresh related notes"
 msgstr "Failed to refresh related notes"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.renameFailure"
 msgid "Failed to rename file"
 msgstr "Failed to rename file"
@@ -6124,18 +6118,6 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "Failed to update event: {message}"
 
-#: src/bases/taskListCardActions.ts
-#: src/ui/taskCardActions.ts
-msgctxt "notices.interface.priorityFailed"
-msgid "Failed to update priority"
-msgstr "Failed to update priority"
-
-#: src/bases/taskListCardActions.ts
-#: src/ui/taskCardActions.ts
-msgctxt "notices.interface.recurrenceFailed"
-msgid "Failed to update recurrence"
-msgstr "Failed to update recurrence"
-
 #: src/main.ts
 msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
@@ -6163,9 +6145,7 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "Failed to update task completion: {message}"
 
-#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
-#: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
 msgid "Failed to update task due date: {message}"
 msgstr "Failed to update task due date: {message}"
@@ -6176,13 +6156,6 @@ msgid "Failed to update task property: {errorMessage}"
 msgstr "Failed to update task property: {errorMessage}"
 
 #: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
-msgid "Failed to update task recurrence: {message}"
-msgstr "Failed to update task recurrence: {message}"
-
-#: src/bases/taskListCardActions.ts
-#: src/components/TaskContextMenu.ts
-#: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
 msgid "Failed to update task scheduled date: {message}"
 msgstr "Failed to update task scheduled date: {message}"
@@ -6266,11 +6239,6 @@ msgstr "File not found: {normalizedFilePath}"
 msgctxt "notices.interface.commandFileInvalid"
 msgid "File not found: {path}. Configure a valid file in the View Commands settings or create the default files."
 msgstr "File not found: {path}. Configure a valid file in the View Commands settings or create the default files."
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.copyPathSuccess"
-msgid "File path copied to clipboard"
-msgstr "File path copied to clipboard"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.metadata.file"
@@ -7425,7 +7393,7 @@ msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
 msgstr "Maintain due date offset in recurring tasks"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.manageAllReminders"
 msgid "Manage all reminders..."
 msgstr "Manage all reminders..."
@@ -8575,7 +8543,7 @@ msgctxt "services/OAuthService: OAuthService.waitForCallback display"
 msgid "OAuth timeout - authorization took too long"
 msgstr "OAuth timeout - authorization took too long"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URL copied to clipboard"
@@ -8721,11 +8689,12 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "Open"
 
-#: src/ui/taskCardContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "Open"
 
+#: src/bases/calendarMenus.ts
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.openAriaLabel"
 msgid "Open {name}"
@@ -8765,6 +8734,7 @@ msgctxt "settings/components/CardComponent: configureNativeThemeColorPicker disp
 msgid "Open color picker"
 msgstr "Open color picker"
 
+#: src/bases/calendarMenus.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openDailyNote"
 msgid "Open daily note"
@@ -8780,7 +8750,7 @@ msgctxt "notices.releaseAvailable.action"
 msgid "Open in community plugins"
 msgstr "Open in community plugins"
 
-#: src/ui/taskCardContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "Open in new tab"
@@ -8843,11 +8813,6 @@ msgstr "Open note"
 msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "Open note"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.openNoteInNewTab"
-msgid "Open note in new tab"
-msgstr "Open note in new tab"
 
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
@@ -8937,6 +8902,11 @@ msgstr "Open the Start Here guide"
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "Open the task file in the editor"
+
+#: src/components/noteFileMenu.ts
+msgctxt "note menu open split"
+msgid "Open to the right"
+msgstr "Open to the right"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
@@ -9665,6 +9635,7 @@ msgstr "Recurrence"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "Recurrence"
@@ -9850,20 +9821,10 @@ msgctxt "settings.general.releaseNotes.header"
 msgid "Release notes"
 msgstr "Release notes"
 
-#: src/components/ReminderContextMenu.ts
-msgctxt "components.reminderContextMenu.remindBeforeDue"
-msgid "Remind before due..."
-msgstr "Remind before due..."
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.remindBeforeDue"
 msgid "Remind before due…"
 msgstr "Remind before due…"
-
-#: src/components/ReminderContextMenu.ts
-msgctxt "components.reminderContextMenu.remindBeforeScheduled"
-msgid "Remind before scheduled..."
-msgstr "Remind before scheduled..."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.remindBeforeScheduled"
@@ -9902,6 +9863,7 @@ msgstr "Reminder: {title}"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "Reminders"
@@ -9999,17 +9961,17 @@ msgctxt "notices.timeblockAttachmentRemoved"
 msgid "Removed \"{fileName}\" from attachments"
 msgstr "Removed \"{fileName}\" from attachments"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.rename"
 msgid "Rename"
 msgstr "Rename"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.renameTitle"
 msgid "Rename file"
 msgstr "Rename file"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "Renamed to \"{name}\""
@@ -10756,11 +10718,6 @@ msgstr "Show hourly breakdown"
 msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
 msgid "Show ICS events"
 msgstr "Show ICS events"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.showInExplorer"
-msgid "Show in file explorer"
-msgstr "Show in file explorer"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"
@@ -11962,7 +11919,7 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateT
 msgid "Task title cannot be empty."
 msgstr "Task title cannot be empty."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.notices.copyTitleSuccess"
 msgid "Task title copied to clipboard"
@@ -13873,11 +13830,6 @@ msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "Weekdays"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.weekdays"
-msgid "Weekdays"
-msgstr "Weekdays"
-
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekdays"
 msgid "Weekdays"
@@ -13917,11 +13869,6 @@ msgstr "Weekly notes plugin is not enabled. Enable it in settings."
 msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "Weekly on {day}"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.weeklyOn"
-msgid "Weekly on {days}"
-msgstr "Weekly on {days}"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.descriptionPlaceholder"

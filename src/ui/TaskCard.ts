@@ -1,7 +1,6 @@
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
-import { BatchContextMenu } from "../components/BatchContextMenu";
 import { type TaskCardPresentationOptions } from "./taskCardPresentation";
 import { cleanupTaskCardMetadata, renderTaskCardMetadataLine } from "./taskCardMetadata";
 import {
@@ -27,11 +26,11 @@ import {
 	updateTaskCardSecondaryBadges,
 	type TaskCardSecondaryBadgeHandlers,
 } from "./taskCardSecondaryBadges";
-import { createTaskCardContextMenuButton, showTaskContextMenu } from "./taskCardContextMenu";
+import { createTaskCardContextMenuButton, openTaskMenu } from "./taskCardContextMenu";
 import { createTaskCardTitle, updateTaskCardTitle } from "./taskCardTitle";
 import { updateTaskCardStatusIndicatorVisuals } from "./taskCardCompletionState";
 export { showDeleteConfirmationModal } from "./taskCardDeletion";
-export { showTaskContextMenu } from "./taskCardContextMenu";
+export { openTaskMenu, showTaskContextMenu } from "./taskCardContextMenu";
 
 // Property labels are resolved in taskCardProperties via getTaskCardPropertyLabel.
 
@@ -282,29 +281,17 @@ export function createTaskCard(
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;
 				if (!path) return;
-				void showTaskContextMenu(e, path, plugin, targetDate, {
+				void openTaskMenu(e, path, plugin, targetDate, {
 					promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
 					occurrenceDate: opts.occurrenceDate,
 				});
 			},
-			createBatchContextMenu: (selectedPaths, onUpdate) =>
-				new BatchContextMenu({
-					plugin,
-					selectedPaths,
-					onUpdate,
-				}),
 		});
 
 	card.addEventListener("click", clickHandler);
 	card.addEventListener("auxclick", auxclickHandler);
 	card.addEventListener("dblclick", dblclickHandler);
-	card.addEventListener("contextmenu", (event: MouseEvent) => {
-		if (card.ownerDocument.body.classList.contains("is-mobile")) {
-			card.setAttribute("tabindex", "-1");
-			card.focus({ preventScroll: true });
-		}
-		contextmenuHandler(event);
-	});
+	card.addEventListener("contextmenu", contextmenuHandler);
 
 	if (opts.enableHoverPreview) {
 		card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));

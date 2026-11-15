@@ -1,17 +1,11 @@
 import { displayError } from "../../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
-import { uiLocale } from "../../i18n/runtime";
-import { recurrenceMonthlyOn, recurrenceYearlyOn } from "../../i18n/recurrence";
 import { msg } from "@lingui/core/macro";
 import { Menu, Notice } from "obsidian";
 import type { OccurrenceMaterializationMode, OccurrenceNextTrigger } from "@tasknotes/model";
 import TaskNotesPlugin from "../../main";
 import { TaskInfo } from "../../types";
-import {
-	buildWeekdaysOnlyRecurrenceRule,
-	getPluginCalendarLocale,
-	RecurrenceContextMenu,
-} from "../RecurrenceContextMenu";
+import { applyTaskRecurrence, recurrenceChoices } from "../../ui/taskRecurrencePicker";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import type { TaskContextMenuOptions } from "./types";
 import { getSubmenu } from "./helpers";
@@ -25,139 +19,39 @@ export class TaskRecurrenceMenu {
 	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.options.plugin.i18n.translate(key, params);
 	}
-	addRecurrenceOptions(
-		submenu: Menu,
-		currentValue: string | undefined,
-		onSelect: (value: string | null) => Promise<void>,
-		plugin: TaskNotesPlugin
-	): void {
-		const today = new Date();
-		const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-		const currentDay = dayNames[today.getDay()];
-		const currentDate = today.getDate();
-		const currentMonth = today.getMonth() + 1;
-		const calendarLocale = getPluginCalendarLocale(plugin);
-		const dayName = today.toLocaleDateString(uiLocale(), { weekday: "long" });
-
-		const formatDateForDTSTART = (date: Date): string => {
-			const year = date.getFullYear();
-			const month = String(date.getMonth() + 1).padStart(2, "0");
-			const day = String(date.getDate()).padStart(2, "0");
-			return `${year}${month}${day}`;
-		};
-
-		let todayDTSTART = formatDateForDTSTART(today);
-
-		const recurrenceOptions = [
+	/** The recurrence picker's choices, as a submenu. */
+	addRecurrenceOptions(submenu: Menu, task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const choices = recurrenceChoices(
+			plugin,
+			plugin.app,
 			{
-				label: this.t(msg({ message: "Daily", context: "modals.task.recurrence.daily" })),
-				value: `DTSTART:${todayDTSTART};FREQ=DAILY;INTERVAL=1`,
-				icon: "calendar-days",
+				recurrence: typeof task.recurrence === "string" ? task.recurrence : undefined,
+				anchor: task.recurrence_anchor,
+				scheduled: task.scheduled,
 			},
-			{
-				label: this.t(
-					msg({
-						message: "Weekly on {days}",
-						context: "modals.task.recurrence.weeklyOn",
-					}),
-					{ days: dayName }
-				),
-				value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=1;BYDAY=${currentDay}`,
-				icon: "calendar",
-			},
-			{
-				label: this.t(
-					msg({
-						message: "Every 2 weeks",
-						context: "modals.task.recurrence.everyTwoWeeks",
-					})
-				),
-				value: `DTSTART:${todayDTSTART};FREQ=WEEKLY;INTERVAL=2;BYDAY=${currentDay}`,
-				icon: "calendar",
-			},
-			{
-				label: recurrenceMonthlyOn(currentDate),
-				value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=${currentDate}`,
-				icon: "calendar-range",
-			},
-			{
-				label: this.t(
-					msg({
-						message: "Every 3 months",
-						context: "modals.task.recurrence.everyThreeMonths",
-					})
-				),
-				value: `DTSTART:${todayDTSTART};FREQ=MONTHLY;INTERVAL=3;BYMONTHDAY=${currentDate}`,
-				icon: "calendar-range",
-			},
-			{
-				label: recurrenceYearlyOn(currentMonth, currentDate),
-				value: `DTSTART:${todayDTSTART};FREQ=YEARLY;INTERVAL=1;BYMONTH=${currentMonth};BYMONTHDAY=${currentDate}`,
-				icon: "calendar-clock",
-			},
-			{
-				label: this.t(
-					msg({ message: "Weekdays", context: "modals.task.recurrence.weekdays" })
-				),
-				value: buildWeekdaysOnlyRecurrenceRule(todayDTSTART, calendarLocale),
-				icon: "briefcase",
-			},
-		];
-
-		recurrenceOptions.forEach((option) => {
-			submenu.addItem((item) => {
-				const isSelected = option.value === currentValue;
-				item.setTitle(isSelected ? `✓ ${option.label}` : option.label);
-				item.setIcon(option.icon);
-				item.onClick(() => {
-					void onSelect(option.value);
-				});
-			});
-		});
-
-		submenu.addSeparator();
-
-		// Custom recurrence option
-		submenu.addItem((item) => {
-			item.setTitle(
-				this.t(
-					msg({
-						message: "Custom recurrence...",
-						context: "contextMenus.task.customRecurrence",
-					})
-				)
-			);
-			item.setIcon("settings");
-			item.onClick(() => {
-				const recurrenceMenu = new RecurrenceContextMenu({
-					currentValue: typeof currentValue === "string" ? currentValue : undefined,
-					currentAnchor: this.options.task.recurrence_anchor || "scheduled",
-					scheduledDate: this.options.task.scheduled,
-					onSelect: (value) => {
-						void onSelect(value);
-					},
-					app: plugin.app,
-					plugin: plugin,
-				});
-				recurrenceMenu["showCustomRecurrenceModal"]();
-			});
-		});
-
-		// Clear option if there's a current value
-		if (currentValue) {
+			(value, anchor) => {
+				void applyTaskRecurrence(plugin, task, value, anchor).then(() =>
+					this.options.onUpdate?.()
+				);
+			}
+		);
+		for (const choice of choices) {
+			if (choice.id === "custom") submenu.addSeparator();
 			submenu.addItem((item) => {
 				item.setTitle(
-					this.t(
-						msg({
-							message: "Clear recurrence",
-							context: "contextMenus.task.clearRecurrence",
-						})
-					)
+					choice.id === "clear"
+						? this.t(
+								msg({
+									message: "Clear recurrence",
+									context: "contextMenus.task.clearRecurrence",
+								})
+							)
+						: choice.selected
+							? `✓ ${choice.label}`
+							: choice.label
 				);
-				item.setIcon("x");
-				item.onClick(() => {
-					void onSelect(null);
-				});
+				if (choice.icon) item.setIcon(choice.icon);
+				if (choice.id !== "current") item.onClick(choice.choose);
 			});
 		}
 	}

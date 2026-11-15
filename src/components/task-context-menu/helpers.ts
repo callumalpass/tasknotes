@@ -1,12 +1,9 @@
-import { Menu, TFile, type MenuItem } from "obsidian";
+import { Menu, type MenuItem } from "obsidian";
 
 type SubmenuMenuItem = {
 	setSubmenu(): Menu;
 	dom?: HTMLElement;
 	domEl?: HTMLElement;
-};
-export type FileExplorerView = {
-	revealInFolder(file: TFile): void;
 };
 export type TaskStatusOption = {
 	label: string;

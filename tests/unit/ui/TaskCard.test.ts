@@ -1098,12 +1098,15 @@ describe("TaskCard Component", () => {
 						setTitle: jest.fn().mockReturnThis(),
 						setIcon: jest.fn().mockReturnThis(),
 						onClick: jest.fn().mockReturnThis(),
+						setSection: jest.fn().mockReturnThis(),
+						setWarning: jest.fn().mockReturnThis(),
 					};
 					callback(mockItem);
 					return mockItem;
 				}),
 				addSeparator: jest.fn(),
 				showAtMouseEvent: jest.fn(),
+				showAtPosition: jest.fn(),
 			};
 
 			MockObsidian.Menu.mockImplementation(() => mockMenu);
@@ -1608,13 +1611,16 @@ describe("TaskCard Component", () => {
           const mockItem = {
             setTitle: jest.fn().mockReturnThis(),
             setIcon: jest.fn().mockReturnThis(),
-            onClick: jest.fn().mockReturnThis()
+            onClick: jest.fn().mockReturnThis(),
+            setSection: jest.fn().mockReturnThis(),
+            setWarning: jest.fn().mockReturnThis()
           };
           callback(mockItem);
           return mockItem;
         }),
         addSeparator: jest.fn(),
-        showAtMouseEvent: jest.fn()
+        showAtMouseEvent: jest.fn(),
+        showAtPosition: jest.fn()
       };
 
       MockObsidian.Menu.mockImplementation(() => mockMenu);

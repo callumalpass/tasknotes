@@ -308,6 +308,7 @@ msgid "{count, plural, one {# task updated} other {# tasks updated}}"
 msgstr "{count, plural, other {작업 #개 업데이트됨}}"
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "interaction property feedback"
 msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
 msgstr "{count, plural, other {작업 #개 업데이트됨}}: {property} → {value}"
@@ -1040,7 +1041,7 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
 msgstr "09:00"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "1일 전"
@@ -1050,7 +1051,7 @@ msgctxt "contextMenus.task.quickReminders.oneDay"
 msgid "1 day before"
 msgstr "1일 전"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1시간 전"
@@ -1080,7 +1081,7 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinute
 msgid "15 minutes"
 msgstr "15분"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15분 전"
@@ -1120,7 +1121,7 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes
 msgid "30 minutes"
 msgstr "30분"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
 msgid "5 minutes before"
 msgstr "5분 전"
@@ -1730,7 +1731,7 @@ msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "이 작업 보관"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
 msgid "Are you sure you want to delete \"{name}\"?"
 msgstr "\"{name}\"을(를) 삭제하시겠습니까?"
@@ -1771,7 +1772,7 @@ msgctxt "modals.reminder.atScheduled"
 msgid "At the scheduled date"
 msgstr "예정일에"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.atTime"
 msgid "At time of event"
 msgstr "이벤트 시간에"
@@ -2353,8 +2354,8 @@ msgstr "표시할 캘린더"
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/components/task-context-menu/relationships.ts
-#: src/components/TaskContextMenu.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2718,11 +2719,12 @@ msgid "Choose which version should become canonical. Using TaskNotes settings wr
 msgstr "기준으로 사용할 버전을 선택하세요. TaskNotes 설정을 사용하면 변경한 설정만 기록하며 파일의 다른 필드는 보존됩니다."
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "interaction clear"
 msgid "Clear"
 msgstr "지우기"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
 msgstr "모든 리마인더 지우기"
@@ -3251,6 +3253,11 @@ msgctxt "commands.convertCurrentNoteToTask.name"
 msgid "Convert current note to task"
 msgstr "현재 노트를 작업으로 변환"
 
+#: src/components/noteFileMenu.ts
+msgctxt "note menu convert"
+msgid "Convert to task"
+msgstr "작업으로 변환"
+
 #: src/editor/InstantConvertButtons.ts
 msgctxt "editor/InstantConvertButtons: ConvertButtonWidget.toDOM aria-label"
 msgid "Convert to tasknote"
@@ -3301,15 +3308,10 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy Markdown links"
 msgstr "Markdown 링크 복사"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.copyUrl"
 msgid "Copy Obsidian URL"
 msgstr "Obsidian URL 복사"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.copyPath"
-msgid "Copy path"
-msgstr "경로 복사"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
@@ -3341,7 +3343,7 @@ msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
 msgid "Copy task links"
 msgstr "작업 링크 복사"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.copyTitle"
 msgid "Copy task title"
@@ -3828,12 +3830,8 @@ msgid "Custom recurrence: {rule}"
 msgstr "사용자 지정 반복: {rule}"
 
 #: src/components/RecurrenceContextMenu.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "components.recurrenceContextMenu.customRecurrence"
-msgid "Custom recurrence..."
-msgstr "사용자 지정 반복..."
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "사용자 지정 반복..."
 
@@ -3894,11 +3892,6 @@ msgstr "매일"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.daily"
-msgid "Daily"
-msgstr "매일"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.daily"
 msgid "Daily"
 msgstr "매일"
 
@@ -4257,14 +4250,14 @@ msgid "Delete"
 msgstr "삭제"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "contextMenus.task.delete"
 msgid "Delete"
 msgstr "삭제"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/ui/taskCardDeletion.ts
 msgctxt "contextMenus.task.deleteConfirm"
 msgid "Delete"
@@ -4323,7 +4316,7 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "작업 삭제 시 이벤트 삭제"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.deleteTitle"
 msgid "Delete file"
 msgstr "파일 삭제"
@@ -4385,6 +4378,7 @@ msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
 msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
 msgstr "{provider}에서 \"{title}\"의 이 일정만 삭제할까요? 다른 반복 일정은 유지됩니다."
 
+#: src/bases/calendarMenus.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
 msgid "Delete timeblock"
@@ -4897,6 +4891,11 @@ msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "시간 기록 편집 (작업 선택)"
 
+#: src/bases/calendarMenus.ts
+msgctxt "calendar timeblock menu edit"
+msgid "Edit timeblock"
+msgstr "타임블록 편집"
+
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
 msgid "Edit timer duration"
@@ -5125,7 +5124,7 @@ msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "HTTP://, HTTPS://, webcal:// 또는 webcals:// URL을 입력하세요"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
 msgid "Enter new name"
 msgstr "새 이름 입력"
@@ -5270,11 +5269,6 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "이 엔드포인트로 더 이상 이벤트를 보내지 않습니다."
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.everyTwoWeeks"
-msgid "Every 2 weeks"
-msgstr "2주마다"
-
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.everyTwoWeeksOn"
 msgid "Every 2 weeks on {day}"
@@ -5284,11 +5278,6 @@ msgstr "2주마다 {day}"
 msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "3일마다 (완료 후)"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.everyThreeMonths"
-msgid "Every 3 months"
-msgstr "3개월마다"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.deleteAccount.confirmMessage"
@@ -5565,7 +5554,7 @@ msgid "Failed to copy to clipboard"
 msgstr "클립보드에 복사 실패"
 
 #: src/bases/BasesViewBase.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
@@ -5744,12 +5733,17 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.deleteEvent
 msgid "Failed to delete event: {message}"
 msgstr "이벤트를 삭제하지 못했습니다: {message}"
 
+#: src/components/noteFileMenu.ts
+msgctxt "note menu delete failure"
+msgid "Failed to delete note: {message}"
+msgstr "노트 삭제 실패: {message}"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.deleteTask display"
 msgid "Failed to delete task: {errorMessage}"
 msgstr "작업을 삭제하지 못했습니다: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 #: src/ui/taskCardDeletion.ts
 msgctxt "modals.taskEdit.notices.deleteFailure"
@@ -6021,7 +6015,7 @@ msgctxt "modals/ICSEventInfoModal: ICSEventInfoModal.refreshRelatedNotes errorMe
 msgid "Failed to refresh related notes"
 msgstr "관련 노트를 새로고침하지 못했습니다"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.renameFailure"
 msgid "Failed to rename file"
 msgstr "파일 이름 변경 실패"
@@ -6123,18 +6117,6 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "이벤트를 업데이트하지 못했습니다: {message}"
 
-#: src/bases/taskListCardActions.ts
-#: src/ui/taskCardActions.ts
-msgctxt "notices.interface.priorityFailed"
-msgid "Failed to update priority"
-msgstr "우선순위를 업데이트하지 못했습니다"
-
-#: src/bases/taskListCardActions.ts
-#: src/ui/taskCardActions.ts
-msgctxt "notices.interface.recurrenceFailed"
-msgid "Failed to update recurrence"
-msgstr "반복을 업데이트하지 못했습니다"
-
 #: src/main.ts
 msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
@@ -6162,9 +6144,7 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "작업 완료 상태를 업데이트하지 못했습니다: {message}"
 
-#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
-#: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
 msgid "Failed to update task due date: {message}"
 msgstr "작업 마감일 업데이트 실패: {message}"
@@ -6175,13 +6155,6 @@ msgid "Failed to update task property: {errorMessage}"
 msgstr "작업 속성을 업데이트하지 못했습니다: {errorMessage}"
 
 #: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
-msgid "Failed to update task recurrence: {message}"
-msgstr "작업 반복 업데이트 실패: {message}"
-
-#: src/bases/taskListCardActions.ts
-#: src/components/TaskContextMenu.ts
-#: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
 msgid "Failed to update task scheduled date: {message}"
 msgstr "작업 예정일 업데이트 실패: {message}"
@@ -6265,11 +6238,6 @@ msgstr "파일을 찾을 수 없습니다: {normalizedFilePath}"
 msgctxt "notices.interface.commandFileInvalid"
 msgid "File not found: {path}. Configure a valid file in the View Commands settings or create the default files."
 msgstr "파일을 찾을 수 없습니다: {path}. 뷰 명령 설정에서 올바른 파일을 지정하거나 기본 파일을 만드세요."
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.copyPathSuccess"
-msgid "File path copied to clipboard"
-msgstr "파일 경로가 클립보드에 복사되었습니다"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.metadata.file"
@@ -7424,7 +7392,7 @@ msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
 msgstr "반복 작업에서 마감일 오프셋 유지"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.manageAllReminders"
 msgid "Manage all reminders..."
 msgstr "모든 리마인더 관리..."
@@ -8574,7 +8542,7 @@ msgctxt "services/OAuthService: OAuthService.waitForCallback display"
 msgid "OAuth timeout - authorization took too long"
 msgstr "OAuth 시간 초과 - 인증에 너무 오래 걸렸습니다"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URL이 클립보드에 복사되었습니다"
@@ -8720,11 +8688,12 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "미완료"
 
-#: src/ui/taskCardContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "열기"
 
+#: src/bases/calendarMenus.ts
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.openAriaLabel"
 msgid "Open {name}"
@@ -8764,6 +8733,7 @@ msgctxt "settings/components/CardComponent: configureNativeThemeColorPicker disp
 msgid "Open color picker"
 msgstr "색상 선택기 열기"
 
+#: src/bases/calendarMenus.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openDailyNote"
 msgid "Open daily note"
@@ -8779,7 +8749,7 @@ msgctxt "notices.releaseAvailable.action"
 msgid "Open in community plugins"
 msgstr "커뮤니티 플러그인에서 열기"
 
-#: src/ui/taskCardContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "새 탭에서 열기"
@@ -8842,11 +8812,6 @@ msgstr "노트 열기"
 msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "노트 열기"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.openNoteInNewTab"
-msgid "Open note in new tab"
-msgstr "새 탭에서 노트 열기"
 
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
@@ -8936,6 +8901,11 @@ msgstr "'Start Here' 가이드 열기"
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "편집기에서 작업 파일 열기"
+
+#: src/components/noteFileMenu.ts
+msgctxt "note menu open split"
+msgid "Open to the right"
+msgstr "오른쪽에 열기"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
@@ -9664,6 +9634,7 @@ msgstr "반복"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "반복"
@@ -9849,20 +9820,10 @@ msgctxt "settings.general.releaseNotes.header"
 msgid "Release notes"
 msgstr "릴리스 노트"
 
-#: src/components/ReminderContextMenu.ts
-msgctxt "components.reminderContextMenu.remindBeforeDue"
-msgid "Remind before due..."
-msgstr "마감 전 리마인더..."
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.remindBeforeDue"
 msgid "Remind before due…"
 msgstr "마감 전 리마인더..."
-
-#: src/components/ReminderContextMenu.ts
-msgctxt "components.reminderContextMenu.remindBeforeScheduled"
-msgid "Remind before scheduled..."
-msgstr "예정 전 리마인더..."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.remindBeforeScheduled"
@@ -9901,6 +9862,7 @@ msgstr "리마인더: {title}"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "리마인더"
@@ -9998,17 +9960,17 @@ msgctxt "notices.timeblockAttachmentRemoved"
 msgid "Removed \"{fileName}\" from attachments"
 msgstr "\"{fileName}\"이(가) 첨부 파일에서 제거되었습니다"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.rename"
 msgid "Rename"
 msgstr "이름 변경"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.renameTitle"
 msgid "Rename file"
 msgstr "파일 이름 변경"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "\"{name}\"(으)로 이름이 변경되었습니다"
@@ -10755,11 +10717,6 @@ msgstr "시간대 그리드 표시"
 msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
 msgid "Show ICS events"
 msgstr "ICS 이벤트 표시"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.showInExplorer"
-msgid "Show in file explorer"
-msgstr "파일 탐색기에서 보기"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"
@@ -11961,7 +11918,7 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateT
 msgid "Task title cannot be empty."
 msgstr "작업 제목을 비워 둘 수 없습니다."
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.notices.copyTitleSuccess"
 msgid "Task title copied to clipboard"
@@ -13872,11 +13829,6 @@ msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "평일"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.weekdays"
-msgid "Weekdays"
-msgstr "평일"
-
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekdays"
 msgid "Weekdays"
@@ -13916,11 +13868,6 @@ msgstr "주간 노트 플러그인이 비활성화되어 있습니다. 설정에
 msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "매주 {day}"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.weeklyOn"
-msgid "Weekly on {days}"
-msgstr "매주 {days}"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.descriptionPlaceholder"

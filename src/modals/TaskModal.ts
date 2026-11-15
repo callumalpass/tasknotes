@@ -29,7 +29,7 @@ import {
 } from "./taskModalAttachments";
 import { fieldLabelForId } from "../i18n/fieldLabels";
 import { createVaultBinaryFile } from "../services/VaultMutationService";
-import { TaskDependency } from "../types";
+import type { TaskDependency, TaskInfo } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { generateLink } from "../utils/linkUtils";
@@ -87,8 +87,8 @@ import {
 } from "./taskModalActionState";
 import {
 	showTaskModalPropertyPicker,
-	showTaskModalRecurrenceContextMenu,
-	showTaskModalReminderContextMenu,
+	showTaskModalRecurrencePicker,
+	showTaskModalReminderPicker,
 	type TaskModalActionMenuContext,
 	type TaskModalActionMenuState,
 } from "./taskModalActionMenus";
@@ -891,7 +891,7 @@ export abstract class TaskModal extends Modal {
 					msg({ message: "Set reminders", context: "modals.task.actions.reminders" })
 				),
 				onClick: (_, event) => {
-					this.showReminderContextMenu(event);
+					this.showReminderPicker(event);
 				},
 				dataType: "reminders",
 				chip: true,
@@ -1405,11 +1405,17 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected showRecurrenceContextMenu(event: UIEvent): void {
-		showTaskModalRecurrenceContextMenu(this.getActionMenuContext(), event);
+		const anchor = event.currentTarget as HTMLElement | null;
+		if (!anchor) return;
+		this.propertyPicker?.close();
+		this.propertyPicker = showTaskModalRecurrencePicker(this.getActionMenuContext(), anchor);
 	}
 
-	protected showReminderContextMenu(event: UIEvent): void {
-		showTaskModalReminderContextMenu(this.getActionMenuContext(), event);
+	protected showReminderPicker(event: UIEvent, taskBase?: TaskInfo): void {
+		const anchor = event.currentTarget as HTMLElement | null;
+		if (!anchor) return;
+		this.propertyPicker?.close();
+		this.propertyPicker = showTaskModalReminderPicker(this.getActionMenuContext(), anchor, taskBase);
 	}
 
 	protected getActionMenuState(): TaskModalActionMenuState {

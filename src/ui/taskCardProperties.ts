@@ -1,21 +1,19 @@
 import { uiData } from "../i18n/dataText";
-import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
+import { openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiText } from "../i18n/runtime";
 import { uiNumber, formatUIDate } from "../i18n/formatters";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
-import { Notice, setIcon, setTooltip, TFile, type CachedMetadata } from "obsidian";
+import { setIcon, setTooltip, TFile, type CachedMetadata } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo } from "../types";
-import { DateContextMenu } from "../components/DateContextMenu";
 import { DEFAULT_INTERNAL_VISIBLE_PROPERTIES } from "../settings/defaults";
 import { calculateTotalTimeSpent, getFiniteRecurringInstanceCount } from "../utils/helpers";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 import {
 	formatDateTimeForDisplay,
 	getDatePart,
-	getTimePart,
 	getTodayLocal,
 	hasTimeComponent,
 	isOverdueTimeAware,
@@ -155,46 +153,7 @@ function attachDateClickHandler(
 	prepareInteractiveControl(span);
 	span.addEventListener("click", (event) => {
 		event.stopPropagation();
-		if (span.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
-			void tasksForPropertyAction(plugin, task).then((tasks) => openTaskPropertyPicker(plugin, dateType, tasks, span));
-			return;
-		}
-		const currentValue = dateType === "due" ? task.due : task.scheduled;
-		const menu = new DateContextMenu({
-			currentValue: getDatePart(currentValue || ""),
-			currentTime: getTimePart(currentValue || ""),
-			onSelect: (dateValue, timeValue) => {
-				void (async () => {
-					try {
-						let finalValue: string | undefined;
-						if (!dateValue) {
-							finalValue = undefined;
-						} else if (timeValue) {
-							finalValue = `${dateValue}T${timeValue}`;
-						} else {
-							finalValue = dateValue;
-						}
-						await changeTaskProperty(plugin, [task], dateType, finalValue);
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error(`Error updating ${dateType} date:`, {
-							category: "persistence",
-							operation: "updating",
-							details: { value: errorMessage },
-						});
-						const noticeKey =
-							dateType === "due"
-								? msg({ message: "Failed to update task due date: {message}", context: "contextMenus.task.notices.updateDueDateFailure" })
-								: msg({ message: "Failed to update task scheduled date: {message}", context: "contextMenus.task.notices.updateScheduledFailure" });
-						new Notice(plugin.i18n.translate(noticeKey, { message: errorMessage }));
-					}
-				})();
-			},
-			dateRole: dateType,
-			plugin,
-			app: plugin.app,
-		});
-		menu.show(event);
+		void tasksForPropertyAction(plugin, task).then((tasks) => openTaskPropertyPicker(plugin, dateType, tasks, span));
 	});
 }
 

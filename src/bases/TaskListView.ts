@@ -25,7 +25,7 @@ import { BasesViewBase } from "./BasesViewBase";
 import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewConfig";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
-import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
+import { createTaskCard, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
 import { KanbanDragPreview } from "./kanbanDragPreview";
@@ -4093,25 +4093,6 @@ export class TaskListView extends BasesViewBase {
 		}
 	}
 
-	private handleItemContextMenu = async (event: MouseEvent) => {
-		const context = this.getTaskContextFromEvent(event);
-		if (!context) return;
-		event.preventDefault();
-		event.stopPropagation();
-
-		// If multiple tasks are selected, show batch context menu
-		const selectionService = this.plugin.taskSelectionService;
-		if (selectionService && selectionService.getSelectionCount() > 1) {
-			// Ensure the right-clicked task is in the selection
-			if (!selectionService.isSelected(context.task.path)) {
-				selectionService.addToSelection(context.task.path);
-			}
-			this.showBatchContextMenu(event);
-			return;
-		}
-
-		await showTaskContextMenu(event, context.task.path, this.plugin, this.currentTargetDate);
-	};
 
 	private handleItemPointerOver = (event: PointerEvent) => {
 		if ("pointerType" in event && event.pointerType !== "mouse") {

@@ -19,7 +19,7 @@ import { BasesViewBase } from "./BasesViewBase";
 import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewConfig";
 import type { StatusConfig, TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData, type BasesDataItem } from "./helpers";
-import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
+import { createTaskCard, openTaskMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { groupKeyLabel, NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
@@ -3240,18 +3240,9 @@ export class KanbanView extends BasesViewBase {
 
 			if (this.longPressTimer || this.touchDragActive) return;
 
-			const selectionService = this.plugin.taskSelectionService;
-			if (selectionService && selectionService.getSelectionCount() > 1) {
-				// Ensure the right-clicked task is in the selection
-				if (!selectionService.isSelected(task.path)) {
-					selectionService.addToSelection(task.path);
-				}
-				this.showBatchContextMenu(e);
-				return;
-			}
-
-			// Show single task context menu
-			void showTaskContextMenu(e, task.path, this.plugin, new Date());
+			void openTaskMenu(e, task.path, this.plugin, getKanbanTaskActionDate(task), {
+				showBatchMenu: (menuEvent) => this.showBatchContextMenu(menuEvent),
+			});
 		});
 
 		cardWrapper.addEventListener("dragover", (e: DragEvent) => {
@@ -5006,20 +4997,6 @@ export class KanbanView extends BasesViewBase {
 		}
 	};
 
-	private handleBoardContextMenu = async (event: MouseEvent) => {
-		const context = this.getTaskContextFromEvent(event);
-		if (!context) return;
-		event.preventDefault();
-		event.stopPropagation();
-
-		const { showTaskContextMenu } = await import("../ui/TaskCard");
-		await showTaskContextMenu(
-			event,
-			context.task.path,
-			this.plugin,
-			getKanbanTaskActionDate(context.task)
-		);
-	};
 
 	private async handleCardAction(
 		action: string,

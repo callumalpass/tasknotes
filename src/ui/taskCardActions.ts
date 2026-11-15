@@ -3,8 +3,6 @@ import { msg } from "@lingui/core/macro";
 import { Notice } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
-import { PriorityContextMenu } from "../components/PriorityContextMenu";
-import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
 import { ReminderModal } from "../modals/ReminderModal";
 import { getEffectiveTaskStatus } from "../utils/helpers";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -14,6 +12,7 @@ import {
 	showTaskUndo,
 	changeTaskProperty,
 } from "./taskPropertyPickers";
+import { openTaskRecurrencePicker } from "./taskRecurrencePicker";
 import { completeRecurringTaskWithUndo } from "../services/task-service/recurringCompletionUndo";
 
 const statusWriteStates = new WeakMap<TaskNotesPlugin, Map<string, "pending" | "failed">>();
@@ -207,40 +206,9 @@ export function createPriorityClickHandler(
 	return (e: MouseEvent) => {
 		e.stopPropagation();
 		const anchor = e.currentTarget as HTMLElement;
-		if (anchor?.closest(".tn-tasknotesTaskList, .tn-tasknotesKanban")) {
-			void tasksForPropertyAction(plugin, task).then((tasks) =>
-				openTaskPropertyPicker(plugin, "priority", tasks, anchor)
-			);
-			return;
-		}
-		const menu = new PriorityContextMenu({
-			currentValue: task.priority,
-			onSelect: (newPriority) => {
-				void (async () => {
-					const logger = getTaskCardActionLogger(plugin);
-					try {
-						await changeTaskProperty(plugin, [task], "priority", newPriority);
-					} catch (error) {
-						logger.error("Error updating priority", {
-							category: "persistence",
-							operation: "update-priority",
-							details: { taskPath: task.path, newPriority },
-							error,
-						});
-						new Notice(
-							plugin.i18n.translate(
-								msg({
-									message: "Failed to update priority",
-									context: "notices.interface.priorityFailed",
-								})
-							)
-						);
-					}
-				})();
-			},
-			plugin,
-		});
-		menu.show(e);
+		void tasksForPropertyAction(plugin, task).then((tasks) =>
+			openTaskPropertyPicker(plugin, "priority", tasks, anchor)
+		);
 	};
 }
 
@@ -253,44 +221,7 @@ export function createRecurrenceClickHandler(
 ): (e: MouseEvent) => void {
 	return (e: MouseEvent) => {
 		e.stopPropagation();
-		const menu = new RecurrenceContextMenu({
-			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
-			currentAnchor: task.recurrence_anchor || "scheduled",
-			scheduledDate: task.scheduled,
-			onSelect: (newRecurrence, anchor) => {
-				void (async () => {
-					const logger = getTaskCardActionLogger(plugin);
-					try {
-						await plugin.updateTaskProperty(
-							task,
-							"recurrence",
-							newRecurrence || undefined
-						);
-						if (anchor !== undefined) {
-							await plugin.updateTaskProperty(task, "recurrence_anchor", anchor);
-						}
-					} catch (error) {
-						logger.error("Error updating recurrence", {
-							category: "persistence",
-							operation: "update-recurrence",
-							details: { taskPath: task.path, newRecurrence, anchor },
-							error,
-						});
-						new Notice(
-							plugin.i18n.translate(
-								msg({
-									message: "Failed to update recurrence",
-									context: "notices.interface.recurrenceFailed",
-								})
-							)
-						);
-					}
-				})();
-			},
-			app: plugin.app,
-			plugin,
-		});
-		menu.show(e);
+		void openTaskRecurrencePicker(plugin, task, e.currentTarget as HTMLElement);
 	};
 }
 

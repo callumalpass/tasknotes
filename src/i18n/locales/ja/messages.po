@@ -308,6 +308,7 @@ msgid "{count, plural, one {# task updated} other {# tasks updated}}"
 msgstr "{count, plural, other {# 件のタスクを更新しました}}"
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "interaction property feedback"
 msgid "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}"
 msgstr "{count, plural, other {# 件のタスクを更新しました}}：{property} → {value}"
@@ -1040,7 +1041,7 @@ msgctxt "settings.appearance.timeSettings.initialScrollTime.placeholder"
 msgid "09:00"
 msgstr "09:00"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneDayBefore"
 msgid "1 day before"
 msgstr "1日前"
@@ -1050,7 +1051,7 @@ msgctxt "contextMenus.task.quickReminders.oneDay"
 msgid "1 day before"
 msgstr "1日前"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.oneHourBefore"
 msgid "1 hour before"
 msgstr "1時間前"
@@ -1080,7 +1081,7 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.fifteenMinute
 msgid "15 minutes"
 msgstr "15分"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.fifteenMinutesBefore"
 msgid "15 minutes before"
 msgstr "15分前"
@@ -1120,7 +1121,7 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes
 msgid "30 minutes"
 msgstr "30分"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.fiveMinutesBefore"
 msgid "5 minutes before"
 msgstr "5分前"
@@ -1730,7 +1731,7 @@ msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "このタスクをアーカイブ"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.deleteMessage"
 msgid "Are you sure you want to delete \"{name}\"?"
 msgstr "\"{name}\"を削除してもよろしいですか？"
@@ -1771,7 +1772,7 @@ msgctxt "modals.reminder.atScheduled"
 msgid "At the scheduled date"
 msgstr "予定の日時"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.quickReminders.atTime"
 msgid "At time of event"
 msgstr "イベント時刻に"
@@ -2353,8 +2354,8 @@ msgstr "表示するカレンダー"
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/components/BatchContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/components/task-context-menu/relationships.ts
-#: src/components/TaskContextMenu.ts
 #: src/modals/CalendarEventCreationModal.ts
 #: src/modals/CheckCollectionModal.ts
 #: src/modals/DateTimePickerModal.ts
@@ -2718,11 +2719,12 @@ msgid "Choose which version should become canonical. Using TaskNotes settings wr
 msgstr "正規のバージョンにするものを選択してください。TaskNotes の設定を使用すると、変更した設定のみを書き込み、ファイル内の他のフィールドは保持されます。"
 
 #: src/ui/taskPropertyPickers.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "interaction clear"
 msgid "Clear"
 msgstr "クリア"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.clearAllReminders"
 msgid "Clear all reminders"
 msgstr "すべてのリマインダーをクリア"
@@ -3251,6 +3253,11 @@ msgctxt "commands.convertCurrentNoteToTask.name"
 msgid "Convert current note to task"
 msgstr "現在のノートをタスクに変換"
 
+#: src/components/noteFileMenu.ts
+msgctxt "note menu convert"
+msgid "Convert to task"
+msgstr "タスクに変換"
+
 #: src/editor/InstantConvertButtons.ts
 msgctxt "editor/InstantConvertButtons: ConvertButtonWidget.toDOM aria-label"
 msgid "Convert to tasknote"
@@ -3301,15 +3308,10 @@ msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy Markdown links"
 msgstr "Markdown リンクをコピー"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.copyUrl"
 msgid "Copy Obsidian URL"
 msgstr "Obsidian URLをコピー"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.copyPath"
-msgid "Copy path"
-msgstr "パスをコピー"
 
 #: src/components/BatchContextMenu.ts
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
@@ -3341,7 +3343,7 @@ msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
 msgid "Copy task links"
 msgstr "タスクのリンクをコピー"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.copyTitle"
 msgid "Copy task title"
@@ -3828,12 +3830,8 @@ msgid "Custom recurrence: {rule}"
 msgstr "カスタムの繰り返し: {rule}"
 
 #: src/components/RecurrenceContextMenu.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "components.recurrenceContextMenu.customRecurrence"
-msgid "Custom recurrence..."
-msgstr "カスタム繰り返し..."
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "contextMenus.task.customRecurrence"
 msgid "Custom recurrence..."
 msgstr "カスタム繰り返し..."
 
@@ -3894,11 +3892,6 @@ msgstr "毎日"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.daily"
-msgid "Daily"
-msgstr "毎日"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.daily"
 msgid "Daily"
 msgstr "毎日"
 
@@ -4257,14 +4250,14 @@ msgid "Delete"
 msgstr "削除"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 msgctxt "contextMenus.task.delete"
 msgid "Delete"
 msgstr "削除"
 
 #: src/components/BatchContextMenu.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/ui/taskCardDeletion.ts
 msgctxt "contextMenus.task.deleteConfirm"
 msgid "Delete"
@@ -4323,7 +4316,7 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "タスク削除時にイベントを削除"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.deleteTitle"
 msgid "Delete file"
 msgstr "ファイル削除"
@@ -4385,6 +4378,7 @@ msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
 msgid "Delete this occurrence of \"{title}\" from {provider}? Other occurrences are kept."
 msgstr "{provider} から「{title}」のこの回だけを削除しますか？ほかの回は残ります。"
 
+#: src/bases/calendarMenus.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.deleteButton"
 msgid "Delete timeblock"
@@ -4897,6 +4891,11 @@ msgctxt "commands.editTimeEntries"
 msgid "Edit time entries (select task)"
 msgstr "時間エントリを編集（タスクを選択）"
 
+#: src/bases/calendarMenus.ts
+msgctxt "calendar timeblock menu edit"
+msgid "Edit timeblock"
+msgstr "タイムブロックを編集"
+
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.timer.editLabel"
 msgid "Edit timer duration"
@@ -5125,7 +5124,7 @@ msgctxt "settings/components/CardComponent: createCardUrlInput display"
 msgid "Enter an HTTP://, HTTPS://, webcal://, or webcals:// URL"
 msgstr "HTTP://、HTTPS://、webcal://、webcals:// のいずれかの URL を入力"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.renamePlaceholder"
 msgid "Enter new name"
 msgstr "新しい名前を入力"
@@ -5270,11 +5269,6 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "このエンドポイントにはイベントが送信されなくなります。"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.everyTwoWeeks"
-msgid "Every 2 weeks"
-msgstr "2週間ごと"
-
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.everyTwoWeeksOn"
 msgid "Every 2 weeks on {day}"
@@ -5284,11 +5278,6 @@ msgstr "隔週{day}"
 msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "3日ごと（完了後）"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.everyThreeMonths"
-msgid "Every 3 months"
-msgstr "3か月ごと"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.deleteAccount.confirmMessage"
@@ -5565,7 +5554,7 @@ msgid "Failed to copy to clipboard"
 msgstr "クリップボードへのコピーに失敗しました"
 
 #: src/bases/BasesViewBase.ts
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
@@ -5744,12 +5733,17 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.deleteEvent
 msgid "Failed to delete event: {message}"
 msgstr "イベントの削除に失敗しました: {message}"
 
+#: src/components/noteFileMenu.ts
+msgctxt "note menu delete failure"
+msgid "Failed to delete note: {message}"
+msgstr "ノートの削除に失敗しました: {message}"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.deleteTask display"
 msgid "Failed to delete task: {errorMessage}"
 msgstr "タスクの削除に失敗しました: {errorMessage}"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskEditModal.ts
 #: src/ui/taskCardDeletion.ts
 msgctxt "modals.taskEdit.notices.deleteFailure"
@@ -6021,7 +6015,7 @@ msgctxt "modals/ICSEventInfoModal: ICSEventInfoModal.refreshRelatedNotes errorMe
 msgid "Failed to refresh related notes"
 msgstr "関連ノートの更新に失敗しました"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.renameFailure"
 msgid "Failed to rename file"
 msgstr "ファイルの名前変更に失敗しました"
@@ -6123,18 +6117,6 @@ msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.updateEvent
 msgid "Failed to update event: {message}"
 msgstr "イベントの更新に失敗しました: {message}"
 
-#: src/bases/taskListCardActions.ts
-#: src/ui/taskCardActions.ts
-msgctxt "notices.interface.priorityFailed"
-msgid "Failed to update priority"
-msgstr "優先度を更新できませんでした"
-
-#: src/bases/taskListCardActions.ts
-#: src/ui/taskCardActions.ts
-msgctxt "notices.interface.recurrenceFailed"
-msgid "Failed to update recurrence"
-msgstr "繰り返しを更新できませんでした"
-
 #: src/main.ts
 msgctxt "notices.commands.recurringUpdateFailed"
 msgid "Failed to update recurring task"
@@ -6162,9 +6144,7 @@ msgctxt "contextMenus.task.completion.completeFailure"
 msgid "Failed to update task completion: {message}"
 msgstr "タスクの完了状態を更新できませんでした: {message}"
 
-#: src/bases/taskListCardActions.ts
 #: src/components/TaskContextMenu.ts
-#: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateDueDateFailure"
 msgid "Failed to update task due date: {message}"
 msgstr "タスク期限日の更新に失敗しました：{message}"
@@ -6175,13 +6155,6 @@ msgid "Failed to update task property: {errorMessage}"
 msgstr "タスクのプロパティを更新できませんでした: {errorMessage}"
 
 #: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.updateRecurrenceFailure"
-msgid "Failed to update task recurrence: {message}"
-msgstr "タスク繰り返しの更新に失敗しました：{message}"
-
-#: src/bases/taskListCardActions.ts
-#: src/components/TaskContextMenu.ts
-#: src/ui/taskCardProperties.ts
 msgctxt "contextMenus.task.notices.updateScheduledFailure"
 msgid "Failed to update task scheduled date: {message}"
 msgstr "タスク予定日の更新に失敗しました：{message}"
@@ -6265,11 +6238,6 @@ msgstr "ファイルが見つかりません: {normalizedFilePath}"
 msgctxt "notices.interface.commandFileInvalid"
 msgid "File not found: {path}. Configure a valid file in the View Commands settings or create the default files."
 msgstr "ファイルが見つかりません：{path}。ビューコマンドの設定で有効なファイルを指定するか、既定のファイルを作成してください。"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.notices.copyPathSuccess"
-msgid "File path copied to clipboard"
-msgstr "ファイルパスをクリップボードにコピーしました"
 
 #: src/modals/TaskEditModal.ts
 msgctxt "modals.taskEdit.metadata.file"
@@ -7424,7 +7392,7 @@ msgctxt "settings.features.recurring.maintainOffsetName"
 msgid "Maintain due date offset in recurring tasks"
 msgstr "繰り返しタスクで期限日オフセットを維持"
 
-#: src/components/ReminderContextMenu.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "components.reminderContextMenu.manageAllReminders"
 msgid "Manage all reminders..."
 msgstr "すべてのリマインダーを管理..."
@@ -8574,7 +8542,7 @@ msgctxt "services/OAuthService: OAuthService.waitForCallback display"
 msgid "OAuth timeout - authorization took too long"
 msgstr "OAuth がタイムアウトしました。認証に時間がかかりすぎました"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
 msgid "Obsidian URL copied to clipboard"
 msgstr "Obsidian URLをクリップボードにコピーしました"
@@ -8720,11 +8688,12 @@ msgctxt "settings/defaults: defaults label"
 msgid "Open"
 msgstr "未着手"
 
-#: src/ui/taskCardContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "ui.audit.open"
 msgid "Open"
 msgstr "開く"
 
+#: src/bases/calendarMenus.ts
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.openAriaLabel"
 msgid "Open {name}"
@@ -8764,6 +8733,7 @@ msgctxt "settings/components/CardComponent: configureNativeThemeColorPicker disp
 msgid "Open color picker"
 msgstr "色選択を開く"
 
+#: src/bases/calendarMenus.ts
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.contextMenu.openDailyNote"
 msgid "Open daily note"
@@ -8779,7 +8749,7 @@ msgctxt "notices.releaseAvailable.action"
 msgid "Open in community plugins"
 msgstr "コミュニティプラグインで開く"
 
-#: src/ui/taskCardContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "ui.audit.openNewTab"
 msgid "Open in new tab"
 msgstr "新しいタブで開く"
@@ -8842,11 +8812,6 @@ msgstr "ノートを開く"
 msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "ノートを開く"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.openNoteInNewTab"
-msgid "Open note in new tab"
-msgstr "ノートを新しいタブで開く"
 
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
@@ -8936,6 +8901,11 @@ msgstr "「Start Here」ガイドを開く"
 msgctxt "modals.actionPalette.openFileDesc"
 msgid "Open the task file in the editor"
 msgstr "タスクのファイルをエディターで開く"
+
+#: src/components/noteFileMenu.ts
+msgctxt "note menu open split"
+msgid "Open to the right"
+msgstr "右側に開く"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openToday"
@@ -9664,6 +9634,7 @@ msgstr "繰り返し"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
+#: src/ui/taskRecurrencePicker.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "繰り返し"
@@ -9849,20 +9820,10 @@ msgctxt "settings.general.releaseNotes.header"
 msgid "Release notes"
 msgstr "リリースノート"
 
-#: src/components/ReminderContextMenu.ts
-msgctxt "components.reminderContextMenu.remindBeforeDue"
-msgid "Remind before due..."
-msgstr "期限前にリマインド..."
-
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.remindBeforeDue"
 msgid "Remind before due…"
 msgstr "期限前にリマインド…"
-
-#: src/components/ReminderContextMenu.ts
-msgctxt "components.reminderContextMenu.remindBeforeScheduled"
-msgid "Remind before scheduled..."
-msgstr "予定前にリマインド..."
 
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.remindBeforeScheduled"
@@ -9901,6 +9862,7 @@ msgstr "リマインダー: {title}"
 
 #: src/components/TaskContextMenu.ts
 #: src/modals/taskModalActionIconStates.ts
+#: src/modals/taskModalActionMenus.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "リマインダー"
@@ -9998,17 +9960,17 @@ msgctxt "notices.timeblockAttachmentRemoved"
 msgid "Removed \"{fileName}\" from attachments"
 msgstr "\"{fileName}\"を添付ファイルから削除しました"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.rename"
 msgid "Rename"
 msgstr "名前変更"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.renameTitle"
 msgid "Rename file"
 msgstr "ファイル名変更"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.renameSuccess"
 msgid "Renamed to \"{name}\""
 msgstr "\"{name}\"に名前変更しました"
@@ -10755,11 +10717,6 @@ msgstr "時間グリッドを表示"
 msgctxt "settings.appearance.defaultEventVisibility.showICSEvents.name"
 msgid "Show ICS events"
 msgstr "ICSイベントを表示"
-
-#: src/components/TaskContextMenu.ts
-msgctxt "contextMenus.task.showInExplorer"
-msgid "Show in file explorer"
-msgstr "ファイルエクスプローラーで表示"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.overlays.taskLinkToggle.description"
@@ -11961,7 +11918,7 @@ msgctxt "services/InstantTaskConvertService: InstantTaskConvertService.validateT
 msgid "Task title cannot be empty."
 msgstr "タスクのタイトルは空にできません。"
 
-#: src/components/TaskContextMenu.ts
+#: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "contextMenus.task.notices.copyTitleSuccess"
 msgid "Task title copied to clipboard"
@@ -13872,11 +13829,6 @@ msgctxt "contextMenus.date.weekdaysLabel"
 msgid "Weekdays"
 msgstr "平日"
 
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.weekdays"
-msgid "Weekdays"
-msgstr "平日"
-
 #: src/i18n/recurrence.ts
 msgctxt "recurrence weekdays"
 msgid "Weekdays"
@@ -13916,11 +13868,6 @@ msgstr "ウィークリーノートのプラグインが無効です。設定で
 msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "毎週{day}"
-
-#: src/components/task-context-menu/recurrence.ts
-msgctxt "modals.task.recurrence.weeklyOn"
-msgid "Weekly on {days}"
-msgstr "毎週{days}"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.descriptionPlaceholder"

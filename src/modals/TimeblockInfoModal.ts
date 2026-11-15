@@ -18,6 +18,7 @@ import {
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { showConfirmationModal } from "./ConfirmationModal";
 import { openFileSelector } from "./FileSelectorModal";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import {
@@ -250,19 +251,10 @@ export class TimeblockInfoModal extends Modal {
 	}
 
 	private async initializeAttachments(): Promise<void> {
-		if (!this.timeblock.attachments) return;
-
-		// Convert attachment strings back to TAbstractFile objects
-		for (const attachmentPath of this.timeblock.attachments) {
-			// Remove wikilink brackets if present
-			const cleanPath = attachmentPath.replace(/^\[\[|\]\]$/g, "");
-			const linkpath = parseLinktext(cleanPath.split("|")[0]).path;
-			const file =
-				this.app.metadataCache.getFirstLinkpathDest(linkpath, "") ??
-				this.app.vault.getAbstractFileByPath(cleanPath);
-			if (file && !this.attachmentLinks.has(file.path)) {
+		for (const { file, link } of resolveTimeblockAttachments(this.app, this.timeblock)) {
+			if (!this.attachmentLinks.has(file.path)) {
 				this.selectedAttachments.push(file);
-				this.attachmentLinks.set(file.path, attachmentPath);
+				this.attachmentLinks.set(file.path, link);
 			}
 		}
 	}
@@ -505,183 +497,16 @@ export class TimeblockInfoModal extends Modal {
 	}
 
 	private async handleDelete(): Promise<void> {
-		// Show confirmation dialog
-		const confirmed = await this.showDeleteConfirmation();
-		if (!confirmed) return;
-
-		try {
-			await this.deleteTimeblockFromDailyNote();
-
-			// Signal immediate update before triggering data change
-			this.onChange?.();
-
-			// Refresh calendar views
-			this.plugin.emitter.trigger("data-changed");
-
-			new Notice(
-				this.translate(msg({ message: "Timeblock deleted", context: "notices.timeblockDeletedSuccess" }))
-			);
+		if (
+			await confirmAndDeleteTimeblock(
+				this.plugin,
+				this.originalTimeblock,
+				this.timeblockDate,
+				this.onChange
+			)
+		) {
 			this.close();
-		} catch (error) {
-			tasknotesLogger.error("Error deleting timeblock:", {
-				category: "internal",
-				operation: "deleting-timeblock",
-				error: error,
-			});
-			new Notice(this.translate(msg({ message: "Failed to delete timeblock. Check console for details.", context: "notices.timeblockDeleteFailed" })));
 		}
-	}
-
-	private async showDeleteConfirmation(): Promise<boolean> {
-		return new Promise((resolve) => {
-			const modal = new Modal(this.app);
-			modal.titleEl.setText(this.translate(msg({ message: "Delete timeblock", context: "modals.timeblockInfo.deleteConfirmationTitle" })));
-
-			const content = modal.contentEl;
-			content.createEl("p", {
-				text: this.translate(msg({ message: "Are you sure you want to delete the timeblock \"{title}\"?", context: "modals.timeblockInfo.confirmDelete" }), {
-					title: this.timeblock.title,
-				}),
-			});
-			content.createEl("p", {
-				text: this.translate(msg({ message: "This action cannot be undone.", context: "common.cannotUndo" })),
-				cls: "mod-warning",
-			});
-
-			const buttonContainer = content.createDiv({ cls: "modal-button-container" });
-			buttonContainer.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			buttonContainer.classList.add("tn-static-display-flex-75816cae");
-			buttonContainer.classList.remove(
-				"tn-static-justify-content-center-03c4bb6f",
-				"tn-static-justify-content-space-between-a562f4fd"
-			);
-			buttonContainer.classList.add("tn-static-justify-content-flex-end-455f8cca");
-			buttonContainer.classList.remove(
-				"tn-static-display-flex-8bb39979",
-				"tn-static-gap-0-5rem-ce2fca4d",
-				"tn-static-gap-10px-f3d7ce77",
-				"tn-static-gap-12px-ed7b3d87",
-				"tn-static-gap-6px-f0abc1db"
-			);
-			buttonContainer.classList.add("tn-static-gap-8px-33fcd4c3");
-			buttonContainer.classList.remove(
-				"tn-static-font-size-12px-b0cc7e05",
-				"tn-static-margin-top-0-5rem-3dc98b5e",
-				"tn-static-margin-top-0-d462248a",
-				"tn-static-margin-top-12px-91e0f558",
-				"tn-static-margin-top-16px-1b0f4999",
-				"tn-static-margin-top-1rem-2239d6d5",
-				"tn-static-margin-top-30px-2fbbbcd4",
-				"tn-static-margin-top-4px-96ad6099",
-				"tn-static-margin-top-8px-8a77e5a3",
-				"tn-static-margin-top-8px-f4f01e68"
-			);
-			buttonContainer.classList.add("tn-static-margin-top-20px-a26bda7d");
-
-			const cancelBtn = buttonContainer.createEl("button", {
-				text: this.translate(msg({ message: "Cancel", context: "common.cancel" })),
-			});
-			cancelBtn.addEventListener("click", () => {
-				modal.close();
-				resolve(false);
-			});
-
-			const deleteBtn = buttonContainer.createEl("button", {
-				text: this.translate(msg({ message: "Delete", context: "views.advancedCalendar.contextMenus.deleteButton" })),
-				cls: "mod-warning",
-			});
-			deleteBtn.addEventListener("click", () => {
-				modal.close();
-				resolve(true);
-			});
-
-			modal.open();
-
-			// Focus the cancel button by default for safety
-			window.setTimeout(() => cancelBtn.focus(), 50);
-		});
-	}
-
-	private async deleteTimeblockFromDailyNote(): Promise<void> {
-		if (!appHasDailyNotesPluginLoaded()) {
-			throw new Error("Daily Notes plugin is not enabled");
-		}
-
-		// Get daily note for the date
-		const dateStr = this.timeblockDate;
-		const dailyNoteMoment = getDailyNoteMoment(dateStr, "YYYY-MM-DD");
-		const allDailyNotes = getAllDailyNotes();
-		const dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
-
-		if (!dailyNote) {
-			throw new Error("Daily note not found");
-		}
-
-		// Read current content
-		const content = await this.app.vault.read(dailyNote);
-
-		// Parse existing frontmatter
-		let frontmatter: Record<string, unknown> = {};
-		const info = getFrontMatterInfo(content);
-		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
-
-		if (info.exists) {
-			try {
-				frontmatter = parseFrontmatterRecord(info.frontmatter);
-			} catch (error) {
-				tasknotesLogger.error("Error parsing existing frontmatter:", {
-					category: "validation",
-					operation: "parsing-existing-frontmatter",
-					error: error,
-				});
-				frontmatter = {};
-			}
-		}
-
-		// Remove the specific timeblock from the array
-		if (frontmatter.timeblocks && Array.isArray(frontmatter.timeblocks)) {
-			const index = frontmatter.timeblocks.findIndex(
-				(tb: TimeBlock) =>
-					tb.id === this.originalTimeblock.id ||
-					(tb.title === this.originalTimeblock.title &&
-						tb.startTime === this.originalTimeblock.startTime &&
-						tb.endTime === this.originalTimeblock.endTime)
-			);
-
-			if (index >= 0) {
-				frontmatter.timeblocks.splice(index, 1);
-
-				// If no timeblocks left, remove the property entirely
-				if (frontmatter.timeblocks.length === 0) {
-					delete frontmatter.timeblocks;
-				}
-			} else {
-				throw new Error("Timeblock not found in daily note");
-			}
-		} else {
-			throw new Error("No timeblocks found in daily note");
-		}
-
-		// Convert frontmatter back to YAML
-		const newFrontmatterText =
-			Object.keys(frontmatter).length > 0 ? stringifyYaml(frontmatter) : "";
-
-		// Reconstruct file content
-		const newContent = newFrontmatterText
-			? `---\n${newFrontmatterText}---\n${bodyContent}`
-			: bodyContent.trim();
-
-		// Write back to file
-		await modifyVaultFile(this.app, dailyNote, newContent);
 	}
 
 	onClose() {
@@ -694,4 +519,126 @@ export class TimeblockInfoModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
+}
+
+/** The files a timeblock's attachment links point to, with the links as written. */
+export function resolveTimeblockAttachments(
+	app: App,
+	timeblock: TimeBlock
+): Array<{ file: TAbstractFile; link: string }> {
+	const resolved: Array<{ file: TAbstractFile; link: string }> = [];
+	for (const link of timeblock.attachments ?? []) {
+		// Remove wikilink brackets if present
+		const cleanPath = link.replace(/^\[\[|\]\]$/g, "");
+		const linkpath = parseLinktext(cleanPath.split("|")[0]).path;
+		const file =
+			app.metadataCache.getFirstLinkpathDest(linkpath, "") ??
+			app.vault.getAbstractFileByPath(cleanPath);
+		if (file && !resolved.some((entry) => entry.file.path === file.path)) {
+			resolved.push({ file, link });
+		}
+	}
+	return resolved;
+}
+
+/**
+ * Asks to delete a timeblock, then removes it from its daily note. Used by the
+ * timeblock modal and the timeblock's right-click menu.
+ */
+export async function confirmAndDeleteTimeblock(
+	plugin: TaskNotesPlugin,
+	timeblock: TimeBlock,
+	timeblockDate: string,
+	onChange?: () => void
+): Promise<boolean> {
+	const translate = plugin.i18n.translate.bind(plugin.i18n);
+	const confirmed = await showConfirmationModal(plugin.app, {
+		title: translate(msg({ message: "Delete timeblock", context: "modals.timeblockInfo.deleteConfirmationTitle" })),
+		message: `${translate(msg({ message: "Are you sure you want to delete the timeblock \"{title}\"?", context: "modals.timeblockInfo.confirmDelete" }), { title: timeblock.title })} ${translate(msg({ message: "This action cannot be undone.", context: "common.cannotUndo" }))}`,
+		confirmText: translate(msg({ message: "Delete", context: "views.advancedCalendar.contextMenus.deleteButton" })),
+		cancelText: translate(msg({ message: "Cancel", context: "common.cancel" })),
+		isDestructive: true,
+	});
+	if (!confirmed) return false;
+	try {
+		await deleteTimeblockFromDailyNote(plugin.app, timeblockDate, timeblock);
+		// Signal immediate update before triggering data change
+		onChange?.();
+		plugin.emitter.trigger("data-changed");
+		new Notice(translate(msg({ message: "Timeblock deleted", context: "notices.timeblockDeletedSuccess" })));
+		return true;
+	} catch (error) {
+		tasknotesLogger.error("Error deleting timeblock:", {
+			category: "internal",
+			operation: "deleting-timeblock",
+			error: error,
+		});
+		new Notice(translate(msg({ message: "Failed to delete timeblock. Check console for details.", context: "notices.timeblockDeleteFailed" })));
+		return false;
+	}
+}
+
+export async function deleteTimeblockFromDailyNote(
+	app: App,
+	timeblockDate: string,
+	timeblock: TimeBlock
+): Promise<void> {
+	if (!appHasDailyNotesPluginLoaded()) {
+		throw new Error("Daily Notes plugin is not enabled");
+	}
+
+	const dailyNote = getDailyNote(getDailyNoteMoment(timeblockDate, "YYYY-MM-DD"), getAllDailyNotes());
+	if (!dailyNote) {
+		throw new Error("Daily note not found");
+	}
+
+	const content = await app.vault.read(dailyNote);
+	let frontmatter: Record<string, unknown> = {};
+	const info = getFrontMatterInfo(content);
+	const bodyContent = info.exists ? content.slice(info.contentStart) : content;
+
+	if (info.exists) {
+		try {
+			frontmatter = parseFrontmatterRecord(info.frontmatter);
+		} catch (error) {
+			tasknotesLogger.error("Error parsing existing frontmatter:", {
+				category: "validation",
+				operation: "parsing-existing-frontmatter",
+				error: error,
+			});
+			frontmatter = {};
+		}
+	}
+
+	// Remove the specific timeblock from the array
+	if (frontmatter.timeblocks && Array.isArray(frontmatter.timeblocks)) {
+		const index = frontmatter.timeblocks.findIndex(
+			(tb: TimeBlock) =>
+				tb.id === timeblock.id ||
+				(tb.title === timeblock.title &&
+					tb.startTime === timeblock.startTime &&
+					tb.endTime === timeblock.endTime)
+		);
+
+		if (index >= 0) {
+			frontmatter.timeblocks.splice(index, 1);
+
+			// If no timeblocks left, remove the property entirely
+			if (frontmatter.timeblocks.length === 0) {
+				delete frontmatter.timeblocks;
+			}
+		} else {
+			throw new Error("Timeblock not found in daily note");
+		}
+	} else {
+		throw new Error("No timeblocks found in daily note");
+	}
+
+	const newFrontmatterText =
+		Object.keys(frontmatter).length > 0 ? stringifyYaml(frontmatter) : "";
+	const newContent = newFrontmatterText
+		? `---\n${newFrontmatterText}---\n${bodyContent}`
+		: bodyContent.trim();
+
+	await modifyVaultFile(app, dailyNote, newContent);
 }

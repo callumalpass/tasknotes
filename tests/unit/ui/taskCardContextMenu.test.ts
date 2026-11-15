@@ -5,8 +5,17 @@ import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
 	createTaskCardContextMenuButton,
+	openTaskMenu,
 	showTaskContextMenu,
 } from "../../../src/ui/taskCardContextMenu";
+const mockBatchShow = jest.fn();
+const mockBatchContextMenu = jest.fn();
+jest.mock("../../../src/components/BatchContextMenu", () => ({
+	BatchContextMenu: jest.fn().mockImplementation((options) => {
+		mockBatchContextMenu(options);
+		return { show: mockBatchShow };
+	}),
+}));
 jest.mock("../../../src/components/TaskContextMenu", () => ({
 	TaskContextMenu: jest.fn().mockImplementation((options) => ({
 		options,
@@ -34,6 +43,10 @@ function createPlugin(task: TaskInfo | null = createTask()): TaskNotesPlugin {
 		app: {
 			vault: {
 				getAbstractFileByPath: jest.fn(() => null),
+				getName: jest.fn(() => "Vault"),
+			},
+			metadataCache: {
+				getFileCache: jest.fn(() => null),
 			},
 			workspace: {
 				trigger: jest.fn(),
@@ -45,6 +58,7 @@ function createPlugin(task: TaskInfo | null = createTask()): TaskNotesPlugin {
 		},
 		cacheManager: {
 			getTaskInfo: jest.fn(async () => task),
+			isTaskFile: jest.fn(() => false),
 		},
 	} as unknown as TaskNotesPlugin;
 }
@@ -177,7 +191,19 @@ describe("taskCardContextMenu", () => {
 			file,
 			"tasknotes-bases-view"
 		);
-		expect(Menu).toHaveBeenCalled();
+		const menu = (Menu as unknown as jest.Mock).mock.results[0].value as {
+			items: { setTitle?: jest.Mock }[];
+		};
+		const titles = menu.items.map((item) => item.setTitle?.mock.calls[0]?.[0]).filter(Boolean);
+		expect(titles).toEqual([
+			"Open",
+			"Open in new tab",
+			"Open to the right",
+			"Convert to task",
+			"Rename",
+			"Copy Obsidian URL",
+			"Delete",
+		]);
 	});
 
 	it("logs and notifies when creating the context menu fails", async () => {
@@ -198,5 +224,68 @@ describe("taskCardContextMenu", () => {
 			error
 		);
 		expect(Notice).toHaveBeenCalledWith("Failed to create context menu: Cache error");
+	});
+
+	describe("openTaskMenu", () => {
+		function withSelection(paths: string[], active = paths.length > 0) {
+			const selected = new Set(paths);
+			let mode = active;
+			const plugin = createPlugin();
+			(plugin as unknown as { taskSelectionService: unknown }).taskSelectionService = {
+				getSelectionCount: () => selected.size,
+				getSelectedPaths: () => [...selected],
+				isSelected: (path: string) => selected.has(path),
+				addToSelection: (path: string) => selected.add(path),
+				clearSelection: () => selected.clear(),
+				isSelectionModeActive: () => mode,
+				enterSelectionMode: () => {
+					mode = true;
+				},
+				exitSelectionMode: () => {
+					mode = false;
+				},
+			};
+			return { plugin, selected, isActive: () => mode };
+		}
+		const rightClick = (init: MouseEventInit = {}) =>
+			new MouseEvent("contextmenu", { button: 2, cancelable: true, ...init });
+
+		it("opens the view's batch menu for a task joining a multi-selection", async () => {
+			const { plugin, selected } = withSelection(["Tasks/a.md", "Tasks/b.md"]);
+			const showBatchMenu = jest.fn();
+			await openTaskMenu(rightClick(), "Tasks/task.md", plugin, new Date(), { showBatchMenu });
+			expect(showBatchMenu).toHaveBeenCalledTimes(1);
+			expect(selected.has("Tasks/task.md")).toBe(true);
+			expect(TaskContextMenu).not.toHaveBeenCalled();
+		});
+
+		it("starts a batch with Shift+right-click, but not with Shift+F10", async () => {
+			const { plugin, selected, isActive } = withSelection([]);
+			await openTaskMenu(rightClick({ shiftKey: true }), "Tasks/task.md", plugin, new Date());
+			expect(isActive()).toBe(true);
+			expect(mockBatchContextMenu).toHaveBeenCalledWith(
+				expect.objectContaining({ selectedPaths: ["Tasks/task.md"] })
+			);
+			expect(mockBatchShow).toHaveBeenCalled();
+
+			selected.clear();
+			const keyboard = new MouseEvent("contextmenu", { button: 0, shiftKey: true, cancelable: true });
+			await openTaskMenu(keyboard, "Tasks/task.md", plugin, new Date());
+			expect(TaskContextMenu).toHaveBeenCalledTimes(1);
+		});
+
+		it("leaves selection mode for a single task's menu, unless the task cannot join a batch", async () => {
+			const kept = withSelection(["Tasks/a.md", "Tasks/b.md"]);
+			await openTaskMenu(rightClick(), "Tasks/task.md", kept.plugin, new Date(), { canBatch: false });
+			expect(kept.selected.size).toBe(2);
+			expect(kept.isActive()).toBe(true);
+			expect(TaskContextMenu).toHaveBeenCalledTimes(1);
+
+			const left = withSelection(["Tasks/task.md"]);
+			await openTaskMenu(rightClick(), "Tasks/task.md", left.plugin, new Date());
+			expect(left.selected.size).toBe(0);
+			expect(left.isActive()).toBe(false);
+			expect(TaskContextMenu).toHaveBeenCalledTimes(2);
+		});
 	});
 });

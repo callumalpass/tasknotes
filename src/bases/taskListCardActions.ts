@@ -1,17 +1,15 @@
 import { uiText } from "../i18n/runtime";
 import { displayError } from "../i18n/runtime";
-import { changeTaskProperty, openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
+import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
 import { createStatusCycleHandler } from "../ui/taskCardActions";
 import { msg } from "@lingui/core/macro";
 import { Notice, TFile, type App } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { showTaskContextMenu } from "../ui/TaskCard";
-import { DateContextMenu } from "../components/DateContextMenu";
-import { PriorityContextMenu } from "../components/PriorityContextMenu";
-import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
+import { openTaskRecurrencePicker } from "../ui/taskRecurrencePicker";
 import { ReminderModal } from "../modals/ReminderModal";
-import { getDatePart, getTimePart, parseDateToUTC } from "../utils/dateUtils";
+import { getDatePart, parseDateToUTC } from "../utils/dateUtils";
 import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -52,10 +50,7 @@ export class TaskListCardActions {
 			})(event);
 			return;
 		}
-		if (
-			taskView &&
-			(property === "priority" || property === "due" || property === "scheduled")
-		) {
+		if (property === "priority" || property === "due" || property === "scheduled") {
 			await openTaskPropertyPicker(
 				this.context.plugin,
 				property,
@@ -68,11 +63,8 @@ export class TaskListCardActions {
 			case "toggle-status":
 				await this.handleToggleStatus(task, event);
 				return;
-			case "priority-menu":
-				this.showPriorityMenu(task, event);
-				return;
 			case "recurrence-menu":
-				this.showRecurrenceMenu(task, event);
+				await openTaskRecurrencePicker(this.context.plugin, task, target);
 				return;
 			case "reminder-menu":
 				this.showReminderModal(task);
@@ -85,12 +77,8 @@ export class TaskListCardActions {
 					this.getTaskActionDate(task)
 				);
 				return;
+			case "priority-menu":
 			case "edit-date":
-				await this.openDateContextMenu(
-					task,
-					target.dataset.tnDateType as "due" | "scheduled" | undefined,
-					event
-				);
 				return;
 			case "toggle-subtasks":
 				await this.toggleSubtasks(task, target);
@@ -145,76 +133,6 @@ export class TaskListCardActions {
 		return this.context.getTargetDate();
 	}
 
-	private showPriorityMenu(task: TaskInfo, event: MouseEvent): void {
-		const menu = new PriorityContextMenu({
-			currentValue: task.priority,
-			onSelect: (newPriority) => {
-				void (async () => {
-					try {
-						await changeTaskProperty(this.context.plugin, [task], "priority", newPriority);
-					} catch (error) {
-						tasknotesLogger.error(
-							"[TaskNotes][TaskListView] Failed to update priority",
-							{ category: "validation", operation: "update-priority", error: error }
-						);
-						new Notice(
-							this.context.plugin.i18n.translate(
-								msg({
-									message: "Failed to update priority",
-									context: "notices.interface.priorityFailed",
-								})
-							)
-						);
-					}
-				})();
-			},
-			plugin: this.context.plugin,
-		});
-		menu.show(event);
-	}
-
-	private showRecurrenceMenu(task: TaskInfo, event: MouseEvent): void {
-		const menu = new RecurrenceContextMenu({
-			currentValue: typeof task.recurrence === "string" ? task.recurrence : undefined,
-			currentAnchor: task.recurrence_anchor || "scheduled",
-			scheduledDate: task.scheduled,
-			onSelect: (newRecurrence: string | null, anchor?: "scheduled" | "completion") => {
-				void (async () => {
-					try {
-						await this.context.plugin.updateTaskProperty(
-							task,
-							"recurrence",
-							newRecurrence || undefined
-						);
-						if (anchor !== undefined) {
-							await this.context.plugin.updateTaskProperty(
-								task,
-								"recurrence_anchor",
-								anchor
-							);
-						}
-					} catch (error) {
-						tasknotesLogger.error(
-							"[TaskNotes][TaskListView] Failed to update recurrence",
-							{ category: "validation", operation: "update-recurrence", error: error }
-						);
-						new Notice(
-							this.context.plugin.i18n.translate(
-								msg({
-									message: "Failed to update recurrence",
-									context: "notices.interface.recurrenceFailed",
-								})
-							)
-						);
-					}
-				})();
-			},
-			app: this.context.plugin.app,
-			plugin: this.context.plugin,
-		});
-		menu.show(event);
-	}
-
 	private showReminderModal(task: TaskInfo): void {
 		const modal = new ReminderModal(
 			this.context.plugin.app,
@@ -250,63 +168,6 @@ export class TaskListCardActions {
 			}
 		);
 		modal.open();
-	}
-
-	private async openDateContextMenu(
-		task: TaskInfo,
-		dateType: "due" | "scheduled" | undefined,
-		event: MouseEvent
-	): Promise<void> {
-		if (!dateType) return;
-		const currentValue = dateType === "due" ? task.due : task.scheduled;
-		const menu = new DateContextMenu({
-			currentValue: getDatePart(currentValue || ""),
-			currentTime: getTimePart(currentValue || ""),
-			onSelect: (dateValue, timeValue) => {
-				void (async () => {
-					try {
-						let finalValue: string | undefined;
-						if (!dateValue) {
-							finalValue = undefined;
-						} else if (timeValue) {
-							finalValue = `${dateValue}T${timeValue}`;
-						} else {
-							finalValue = dateValue;
-						}
-						await changeTaskProperty(this.context.plugin, [task], dateType, finalValue);
-					} catch (error) {
-						const message = error instanceof Error ? error.message : String(error);
-						tasknotesLogger.error("[TaskNotes][TaskListView] Failed to update date", {
-							category: "validation",
-							operation: "update-date",
-							details: { taskPath: task.path, dateType },
-							error: message,
-						});
-						new Notice(
-							this.context.plugin.i18n.translate(
-								dateType === "due"
-									? msg({
-											message: "Failed to update task due date: {message}",
-											context:
-												"contextMenus.task.notices.updateDueDateFailure",
-										})
-									: msg({
-											message:
-												"Failed to update task scheduled date: {message}",
-											context:
-												"contextMenus.task.notices.updateScheduledFailure",
-										}),
-								{ message }
-							)
-						);
-					}
-				})();
-			},
-			dateRole: dateType,
-			plugin: this.context.plugin,
-			app: this.context.getApp() || this.context.plugin.app,
-		});
-		menu.show(event);
 	}
 
 	private async handleCardClick(task: TaskInfo, event: MouseEvent): Promise<void> {

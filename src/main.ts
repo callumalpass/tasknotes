@@ -1459,7 +1459,14 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice(this.i18n.translate(msg({ message: "No active file to convert", context: "commands.convertCurrentNoteToTask.noActiveFile" })));
 			return;
 		}
+		await this.convertNoteToTask(activeFile);
+	}
 
+	/**
+	 * Convert a note to a task by adding required task frontmatter.
+	 * Opens the task edit modal pre-populated with the note's existing data.
+	 */
+	async convertNoteToTask(activeFile: TFile): Promise<void> {
 		// Check if this note is already a task
 		const existingTask = await this.cacheManager.getTaskInfo(activeFile.path);
 		if (existingTask) {

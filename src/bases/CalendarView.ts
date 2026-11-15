@@ -2238,11 +2238,6 @@ export class CalendarView extends BasesViewBase {
 
 	/** Right-click, the context-menu key or Shift+F10 on an event. */
 	private handleEventContextMenu(arg: ItemPointerArg<CalendarEventProps>): void {
-		const path = arg.item.data?.taskInfo?.path;
-		if (path && isCalendarBatchTarget(arg.item.data) && this.plugin.taskSelectionService?.isSelected(path)) {
-			this.showBatchContextMenu(toMouseEvent(arg.jsEvent, arg.el));
-			return;
-		}
 		handleCalendarEventContextMenu(this.getMenuContext(), arg);
 	}
 
@@ -2251,6 +2246,7 @@ export class CalendarView extends BasesViewBase {
 			plugin: this.plugin,
 			expectImmediateUpdate: () => this.expectImmediateUpdate(),
 			refresh: () => this.refreshCalendarWithFreshData(),
+			showBatchMenu: (event) => this.showBatchContextMenu(event),
 		};
 	}
 

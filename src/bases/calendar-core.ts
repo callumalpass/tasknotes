@@ -847,6 +847,20 @@ export async function handleTimeblockResize(
 	}
 }
 
+/** Reads a calendar timeblock as its daily note now holds it. */
+export async function loadTimeblock(
+	timeblock: TimeBlock,
+	eventDate: Date,
+	plugin: TaskNotesPlugin
+): Promise<{ timeblock: TimeBlock; dailyNote: TFile } | null> {
+	if (!timeblock.id) return null;
+	const dailyNote = getDailyNote(getWindowMoment(eventDate), getAllDailyNotes());
+	if (!dailyNote) return null;
+	const latest = extractTimeblocksFromNote(await plugin.app.vault.read(dailyNote), dailyNote.path)
+		.find((candidate) => candidate.id === timeblock.id);
+	return latest ? { timeblock: latest, dailyNote } : null;
+}
+
 /**
  * Show timeblock info modal
  */
@@ -857,11 +871,7 @@ export async function showTimeblockInfoModal(
 	plugin: TaskNotesPlugin,
 	onChange?: () => void
 ): Promise<void> {
-	if (!timeblock.id) return;
-	const dailyNote = getDailyNote(getWindowMoment(eventDate), getAllDailyNotes());
-	if (!dailyNote) return;
-	const latest = extractTimeblocksFromNote(await plugin.app.vault.read(dailyNote), dailyNote.path)
-		.find((candidate) => candidate.id === timeblock.id);
+	const latest = (await loadTimeblock(timeblock, eventDate, plugin))?.timeblock;
 	if (!latest) return;
 	const modal = new TimeblockInfoModal(
 		plugin.app,

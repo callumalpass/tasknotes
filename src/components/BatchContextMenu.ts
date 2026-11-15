@@ -298,21 +298,7 @@ export class BatchContextMenu {
 
 		const dateOptions = dateContextMenu.getDateOptions();
 
-		// Basic date options only (skip increment options as they don't work correctly for batch)
-		const basicOptions = dateOptions.filter(
-			(option: DateOption) => option.category === "basic"
-		);
-		for (const option of basicOptions) {
-			submenu.addItem((item) => {
-				if (option.icon) item.setIcon(option.icon);
-				item.setTitle(option.label);
-				item.onClick(async () => {
-					await this.batchUpdateProperty(dateType, option.value ?? undefined);
-				});
-			});
-		}
-
-		submenu.addSeparator();
+		// Same order as the date picker: pick first, then quick dates.
 		submenu.addItem((item) => {
 			item.setTitle(this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
 			item.setIcon("calendar");
@@ -327,6 +313,21 @@ export class BatchContextMenu {
 				}).open();
 			});
 		});
+		submenu.addSeparator();
+
+		// Basic date options only (skip increment options as they don't work correctly for batch)
+		const basicOptions = dateOptions.filter(
+			(option: DateOption) => option.category === "basic"
+		);
+		for (const option of basicOptions) {
+			submenu.addItem((item) => {
+				if (option.icon) item.setIcon(option.icon);
+				item.setTitle(option.label);
+				item.onClick(async () => {
+					await this.batchUpdateProperty(dateType, option.value ?? undefined);
+				});
+			});
+		}
 
 		// Clear date option
 		submenu.addSeparator();

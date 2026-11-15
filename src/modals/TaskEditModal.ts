@@ -16,7 +16,6 @@ import { stringifyUnknown } from "../utils/stringUtils";
 import { showConfirmationModal } from "./ConfirmationModal";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates } from "./taskEditChanges";
-import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
 import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
 import {
@@ -158,10 +157,9 @@ export class TaskEditModal extends TaskModal {
 		);
 	}
 
-	protected showReminderContextMenu(event: MouseEvent): void {
-		// Override parent method to use the actual task with its path
-		// Update the task object with current form values before showing menu
-		showTaskModalReminderContextMenu(this.getActionMenuContext(), event, this.task);
+	protected showReminderPicker(event: UIEvent): void {
+		// The reminder modal edits a draft of the task being edited
+		super.showReminderPicker(event, this.task);
 	}
 
 	private async refreshTaskData(): Promise<void> {

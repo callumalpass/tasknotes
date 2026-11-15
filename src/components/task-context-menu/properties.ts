@@ -137,71 +137,14 @@ export class TaskPropertyMenu {
 		});
 
 		const dateOptions = dateContextMenu.getDateOptions();
+		const selectedTitle = (label: string, value: string | null) =>
+			value === currentValue
+				? this.t(msg({ message: "✓ {label}", context: "contextMenus.date.selected" }), {
+						label,
+					})
+				: label;
 
-		const incrementOptions = dateOptions.filter((option) => option.category === "increment");
-		if (incrementOptions.length > 0) {
-			incrementOptions.forEach((option) => {
-				submenu.addItem((item) => {
-					if (option.icon) item.setIcon(option.icon);
-					item.setTitle(option.label);
-					item.onClick(() => {
-						void onSelect(option.value);
-					});
-				});
-			});
-			submenu.addSeparator();
-		}
-
-		const basicOptions = dateOptions.filter((option) => option.category === "basic");
-		basicOptions.forEach((option) => {
-			submenu.addItem((item) => {
-				if (option.icon) item.setIcon(option.icon);
-				const isSelected = option.value === currentValue;
-				const title = isSelected
-					? this.t(msg({ message: "✓ {label}", context: "contextMenus.date.selected" }), {
-							label: option.label,
-						})
-					: option.label;
-				item.setTitle(title);
-				item.onClick(() => {
-					void onSelect(option.value);
-				});
-			});
-		});
-
-		const weekdayOptions = dateOptions.filter((option) => option.category === "weekday");
-		if (weekdayOptions.length > 0) {
-			submenu.addSeparator();
-			submenu.addItem((item) => {
-				item.setTitle(
-					this.t(msg({ message: "Weekdays", context: "contextMenus.date.weekdaysLabel" }))
-				);
-				item.setIcon("calendar");
-				const weekdaySubmenu = getSubmenu(item);
-				weekdayOptions.forEach((option) => {
-					weekdaySubmenu.addItem((subItem) => {
-						const isSelected = option.value === currentValue;
-						const title = isSelected
-							? this.t(
-									msg({
-										message: "✓ {label}",
-										context: "contextMenus.date.selected",
-									}),
-									{ label: option.label }
-								)
-							: option.label;
-						subItem.setTitle(title);
-						subItem.setIcon("calendar");
-						subItem.onClick(() => {
-							void onSelect(option.value);
-						});
-					});
-				});
-			});
-		}
-
-		submenu.addSeparator();
-
+		// Same order as the date picker: pick, quick dates, increments, weekdays, clear.
 		submenu.addItem((item) => {
 			item.setTitle(
 				options.pickDateTitle ??
@@ -215,8 +158,55 @@ export class TaskPropertyMenu {
 			item.setIcon("calendar");
 			item.onClick(onCustomDate);
 		});
+		submenu.addSeparator();
+
+		for (const option of dateOptions.filter((entry) => entry.category === "basic")) {
+			submenu.addItem((item) => {
+				if (option.icon) item.setIcon(option.icon);
+				item.setTitle(selectedTitle(option.label, option.value));
+				item.onClick(() => {
+					void onSelect(option.value);
+				});
+			});
+		}
+
+		const incrementOptions = dateOptions.filter((option) => option.category === "increment");
+		if (incrementOptions.length > 0) {
+			submenu.addSeparator();
+			for (const option of incrementOptions) {
+				submenu.addItem((item) => {
+					if (option.icon) item.setIcon(option.icon);
+					item.setTitle(option.label);
+					item.onClick(() => {
+						void onSelect(option.value);
+					});
+				});
+			}
+		}
+
+		const weekdayOptions = dateOptions.filter((option) => option.category === "weekday");
+		if (weekdayOptions.length > 0) {
+			submenu.addSeparator();
+			submenu.addItem((item) => {
+				item.setTitle(
+					this.t(msg({ message: "Weekdays", context: "contextMenus.date.weekdaysLabel" }))
+				);
+				item.setIcon("calendar");
+				const weekdaySubmenu = getSubmenu(item);
+				for (const option of weekdayOptions) {
+					weekdaySubmenu.addItem((subItem) => {
+						subItem.setTitle(selectedTitle(option.label, option.value));
+						subItem.setIcon("calendar");
+						subItem.onClick(() => {
+							void onSelect(option.value);
+						});
+					});
+				}
+			});
+		}
 
 		if (currentValue) {
+			submenu.addSeparator();
 			submenu.addItem((item) => {
 				item.setTitle(
 					this.t(msg({ message: "Clear date", context: "contextMenus.date.clearDate" }))

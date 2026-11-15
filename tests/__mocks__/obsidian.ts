@@ -989,6 +989,7 @@ export const Menu = jest.fn().mockImplementation(() => {
         setIcon: jest.fn().mockReturnThis(),
         onClick: jest.fn().mockReturnThis(),
         setSection: jest.fn().mockReturnThis(),
+        setWarning: jest.fn().mockReturnThis(),
         setDisabled: jest.fn().mockReturnThis(),
         setChecked: jest.fn().mockReturnThis(),
         setSubmenu: jest.fn().mockImplementation(() => Menu()),

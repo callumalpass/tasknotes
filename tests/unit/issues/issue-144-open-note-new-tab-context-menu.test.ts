@@ -108,7 +108,7 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		menuMock.mockClear();
 	});
 
-	it("adds an Open note in new tab action under More in the task context menu", async () => {
+	it("adds an Open in new tab action under Note actions in the task context menu", async () => {
 		const plugin = createPlugin();
 		await plugin.app.vault.create("Tasks/open-new-tab.md", "");
 
@@ -119,7 +119,7 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		});
 
 		const menu = getTopLevelMenu();
-		const newTabItem = findMenuTitle(menu, "Open note in new tab");
+		const newTabItem = findMenuTitle(menu, "Open in new tab");
 
 		expect(newTabItem).toBeDefined();
 

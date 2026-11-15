@@ -1,38 +1,39 @@
 import { observeTranslation as mockObserveTranslation } from "../../helpers/real-i18n";
 const mockOpenChoices = jest.fn();
 
-const mockRecurrenceShow = jest.fn();
-let mockRecurrenceOptions: any;
-const mockRecurrenceContextMenu = jest.fn().mockImplementation((options) => {
-	mockRecurrenceOptions = options;
-	return { show: mockRecurrenceShow };
-});
+const mockOpenRecurrenceChoices = jest.fn();
 
-const mockReminderShow = jest.fn();
+const mockOpenListPicker = jest.fn();
+const mockReminderModalOpen = jest.fn();
 let mockReminderArgs: any[];
-const mockReminderContextMenu = jest.fn().mockImplementation((...args) => {
+const mockReminderModal = jest.fn().mockImplementation((...args) => {
 	mockReminderArgs = args;
-	return { show: mockReminderShow };
+	return { open: mockReminderModalOpen };
 });
 
 jest.mock("../../../src/ui/taskPropertyPickers", () => ({
 	openTaskPropertyChoices: mockOpenChoices,
+	taskPropertyLabel: (property: string) => (property === "due" ? "Due date" : "Scheduled date"),
 }));
 
-jest.mock("../../../src/components/RecurrenceContextMenu", () => ({
-	RecurrenceContextMenu: mockRecurrenceContextMenu,
+jest.mock("../../../src/ui/kit/listPicker", () => ({
+	openListPicker: (options: unknown) => mockOpenListPicker(options),
 }));
 
-jest.mock("../../../src/components/ReminderContextMenu", () => ({
-	ReminderContextMenu: mockReminderContextMenu,
+jest.mock("../../../src/ui/taskRecurrencePicker", () => ({
+	openRecurrenceChoices: mockOpenRecurrenceChoices,
+}));
+
+jest.mock("../../../src/modals/ReminderModal", () => ({
+	ReminderModal: mockReminderModal,
 }));
 
 import type { Reminder, TaskInfo } from "../../../src/types";
 import {
 	createTaskModalReminderDraft,
 	showTaskModalPropertyPicker,
-	showTaskModalRecurrenceContextMenu,
-	showTaskModalReminderContextMenu,
+	showTaskModalRecurrencePicker,
+	showTaskModalReminderPicker,
 	type TaskModalActionMenuContext,
 	type TaskModalActionMenuState,
 } from "../../../src/modals/taskModalActionMenus";
@@ -92,7 +93,6 @@ function createHarness(overrides: Partial<TaskModalActionMenuState> = {}): {
 describe("taskModalActionMenus", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
-		mockRecurrenceOptions = undefined;
 		mockReminderArgs = [];
 	});
 
@@ -124,41 +124,63 @@ describe("taskModalActionMenus", () => {
 	});
 
 	it("updates recurrence values and preserves the anchor when no new anchor is supplied", () => {
-		const event = new MouseEvent("click");
+		const anchor = document.createElement("button");
 		const { context, getState, onChange, plugin } = createHarness({
 			recurrenceRule: "FREQ=DAILY",
 			recurrenceAnchor: "scheduled",
 			scheduledDate: "2026-05-19",
 		});
 
-		showTaskModalRecurrenceContextMenu(context, event);
+		showTaskModalRecurrencePicker(context, anchor);
 
-		expect(mockRecurrenceContextMenu).toHaveBeenCalledWith({
-			currentValue: "FREQ=DAILY",
-			currentAnchor: "scheduled",
-			scheduledDate: "2026-05-19",
-			onSelect: expect.any(Function),
-			app: context.app,
+		expect(mockOpenRecurrenceChoices).toHaveBeenCalledWith(
 			plugin,
-		});
-		expect(mockRecurrenceShow).toHaveBeenCalledWith(event);
+			context.app,
+			{ recurrence: "FREQ=DAILY", anchor: "scheduled", scheduled: "2026-05-19" },
+			anchor,
+			expect.any(Function)
+		);
+		const apply = mockOpenRecurrenceChoices.mock.calls[0][4];
 
-		mockRecurrenceOptions.onSelect(null);
+		apply(undefined);
 		expect(getState()).toEqual(
 			expect.objectContaining({ recurrenceRule: "", recurrenceAnchor: "scheduled" })
 		);
 
-		mockRecurrenceOptions.onSelect("FREQ=WEEKLY", "completion");
+		apply("FREQ=WEEKLY", "completion");
 		expect(getState()).toEqual(
 			expect.objectContaining({ recurrenceRule: "FREQ=WEEKLY", recurrenceAnchor: "completion" })
 		);
 		expect(onChange).toHaveBeenCalledTimes(2);
 	});
 
-	it("builds reminder menu draft tasks from modal state and keeps edit task identity", () => {
-		const trigger = document.createElement("button");
-		const event = new MouseEvent("click");
-		Object.defineProperty(event, "target", { value: trigger });
+	it("adds quick reminders for the dates the draft has, and clears them", () => {
+		const existing: Reminder = { id: "r1", type: "relative", relatedTo: "due", offset: "-PT15M" };
+		const { context, getState, onChange } = createHarness({
+			dueDate: "2026-05-20",
+			reminders: [existing],
+		});
+
+		showTaskModalReminderPicker(context, document.createElement("button"));
+
+		const { items, onChoose } = mockOpenListPicker.mock.calls[0][0];
+		// No scheduled date, so only due-date reminders are offered
+		expect(items.map((item: { id: string }) => item.id)).toEqual([
+			"due:PT0M", "due:-PT5M", "due:-PT15M", "due:-PT1H", "due:-P1D", "manage", "clear",
+		]);
+		expect(items.find((item: { id: string }) => item.id === "due:-PT15M").selected).toBe(true);
+
+		onChoose(items[3]);
+		expect(getState().reminders).toEqual([
+			existing,
+			expect.objectContaining({ type: "relative", relatedTo: "due", offset: "-PT1H" }),
+		]);
+		onChoose(items.find((item: { id: string }) => item.id === "clear"));
+		expect(getState().reminders).toEqual([]);
+		expect(onChange).toHaveBeenCalledTimes(2);
+	});
+
+	it("opens the reminder modal on a draft of the edited task, keeping its identity", () => {
 		const reminder: Reminder = { id: "r1", type: "absolute", date: "2026-05-19" };
 		const { context, getState, onChange, plugin } = createHarness({
 			title: "Updated title",
@@ -177,11 +199,13 @@ describe("taskModalActionMenus", () => {
 			reminders: [],
 		} as TaskInfo;
 
-		showTaskModalReminderContextMenu(context, event, taskBase);
+		showTaskModalReminderPicker(context, document.createElement("button"), taskBase);
+		const { items, onChoose } = mockOpenListPicker.mock.calls[0][0];
+		onChoose(items.find((item: { id: string }) => item.id === "manage"));
 
-		expect(mockReminderContextMenu).toHaveBeenCalledTimes(1);
-		expect(mockReminderArgs[0]).toBe(plugin);
-		expect(mockReminderArgs[1]).toEqual({
+		expect(mockReminderModal).toHaveBeenCalledTimes(1);
+		expect(mockReminderArgs[1]).toBe(plugin);
+		expect(mockReminderArgs[2]).toEqual({
 			...taskBase,
 			title: "Updated title",
 			status: "done",
@@ -190,11 +214,10 @@ describe("taskModalActionMenus", () => {
 			scheduled: "2026-05-19",
 			reminders: [reminder],
 		});
-		expect(mockReminderArgs[2]).toBe(trigger);
-		expect(mockReminderShow).toHaveBeenCalledWith(event);
+		expect(mockReminderModalOpen).toHaveBeenCalled();
 
 		const updatedReminder: Reminder = { id: "r2", type: "relative", offset: "-PT5M" };
-		mockReminderArgs[3]({ ...taskBase, reminders: [updatedReminder] });
+		mockReminderArgs[3]([updatedReminder]);
 
 		expect(getState().reminders).toEqual([updatedReminder]);
 		expect(onChange).toHaveBeenCalledTimes(1);
