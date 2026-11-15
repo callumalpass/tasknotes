@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { autocompletion, type CompletionSource } from "@codemirror/autocomplete";
+import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import type {
@@ -72,14 +72,25 @@ function setup(nlpEnterToSubmit: boolean) {
 const views: EditorView[] = [];
 
 /** A real CodeMirror view behind the editor's completion helpers, after typing text. */
-async function typedEditor(source: CompletionSource, interactionDelay?: number) {
+async function typedEditor(
+	source: CompletionSource,
+	interactionDelay?: number,
+	until: "active" | "pending" = "active"
+) {
 	const view = new EditorView({
 		state: EditorState.create({ extensions: [autocompletion({ override: [source], interactionDelay })] }),
 		parent: document.body,
 	});
 	views.push(view);
 	view.dispatch({ changes: { from: 0, insert: "Buy milk" }, selection: { anchor: 8 }, userEvent: "input.type" });
-	await new Promise((resolve) => setTimeout(resolve, 250));
+	// Wait for the completion state rather than a fixed delay, which a loaded test run can outlast.
+	const deadline = Date.now() + 5000;
+	while (completionStatus(view.state) !== until && Date.now() < deadline) {
+		await new Promise((resolve) => setTimeout(resolve, 10));
+	}
+	expect(completionStatus(view.state)).toBe(until);
+	// CodeMirror refuses to accept a suggestion for interactionDelay (75 ms by default) after it opens.
+	await new Promise((resolve) => setTimeout(resolve, 150));
 	const editor = Object.create(RealEditor.prototype, { editor: { value: { cm: view } } }) as EditorType;
 	return { view, editor };
 }
@@ -106,7 +117,7 @@ describe("TaskCreationModal NLP input: Enter to submit", () => {
 
 	it("saves on Enter right after typing while a completion query is still pending", async () => {
 		const { options, submit } = setup(true);
-		const { editor } = await typedEditor(() => new Promise(() => undefined));
+		const { editor } = await typedEditor(() => new Promise(() => undefined), undefined, "pending");
 		expect(options.onEnter?.(editor, false, false)).toBe(true);
 		expect(submit).toHaveBeenCalledWith(false);
 	});

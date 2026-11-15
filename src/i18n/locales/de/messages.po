@@ -2376,7 +2376,7 @@ msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.cancel"
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -2654,12 +2654,12 @@ msgctxt "settings.appearance.displayFormatting.dateFormat.description"
 msgid "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately."
 msgstr "Wähle die Datumsanzeige in TaskNotes. Gespeicherte Datumswerte und eigene Bases-Formeln bleiben unverändert. Das Zeitformat wird separat eingestellt."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
 msgid "Choose how to repeat monthly"
 msgstr "Wählen Sie, wie monatlich wiederholt werden soll"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrenceDesc"
 msgid "Choose how to repeat yearly"
 msgstr "Wählen Sie, wie jährlich wiederholt werden soll"
@@ -2669,7 +2669,7 @@ msgctxt "views.pomodoro.buttons.chooseTask"
 msgid "Choose task..."
 msgstr "Aufgabe wählen..."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc"
 msgid "Choose when the recurrence should end"
 msgstr "Wählen Sie, wann die Wiederholung enden soll"
@@ -2762,11 +2762,6 @@ msgstr "Priorität löschen"
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
 msgstr "Aufgezeichnete Instanzen löschen?"
-
-#: src/components/RecurrenceContextMenu.ts
-msgctxt "components.recurrenceContextMenu.clearRecurrence"
-msgid "Clear recurrence"
-msgstr "Wiederholung löschen"
 
 #: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.clearRecurrence"
@@ -3051,7 +3046,7 @@ msgctxt "views.pomodoroStats.stats.completion"
 msgid "Completion"
 msgstr "Abschluss"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
 msgstr "Abschlussdatum"
@@ -3820,7 +3815,7 @@ msgctxt "views.stats.timeRanges.customRange"
 msgid "Custom range"
 msgstr "Benutzerdefinierter Bereich"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
 msgstr "Benutzerdefinierte Wiederholung"
@@ -3830,7 +3825,6 @@ msgctxt "recurrence custom rule"
 msgid "Custom recurrence: {rule}"
 msgstr "Benutzerdefinierte Wiederholung: {rule}"
 
-#: src/components/RecurrenceContextMenu.ts
 #: src/ui/taskRecurrencePicker.ts
 msgctxt "components.recurrenceContextMenu.customRecurrence"
 msgid "Custom recurrence..."
@@ -3886,12 +3880,12 @@ msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "Status der aktuellen Aufgabe wechseln"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
 msgid "Daily"
 msgstr "Täglich"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "Täglich"
@@ -3906,7 +3900,7 @@ msgctxt "ui.noteCard.dailyBadge"
 msgid "Daily"
 msgstr "Täglich"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "Täglich (nach Abschluss)"
@@ -4052,7 +4046,7 @@ msgctxt "settings.defaults.reminders.units.days"
 msgid "days"
 msgstr "Tage"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "Wochentage"
@@ -4989,12 +4983,12 @@ msgctxt "settings.integrations.subscriptionsList.labels.enabled"
 msgid "Enabled:"
 msgstr "Aktiviert:"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences"
 msgid "End after {count} occurrences"
 msgstr "Nach {count} Vorkommen beenden"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endCondition"
 msgid "End condition"
 msgstr "Endbedingung"
@@ -5014,7 +5008,7 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.endDateProperty"
 msgid "End date property (optional)"
 msgstr "Enddatumseigenschaft (optional)"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endOnDate"
 msgid "End on {date}"
 msgstr "Am {date} beenden"
@@ -5270,12 +5264,12 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "An diesen Endpunkt werden keine Ereignisse mehr gesendet."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.everyTwoWeeksOn"
 msgid "Every 2 weeks on {day}"
 msgstr "Alle 2 Wochen am {day}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "Alle 3 Tage (nach Abschluss)"
@@ -5285,7 +5279,7 @@ msgctxt "settings.calendarService.deleteAccount.confirmMessage"
 msgid "Every device is signed out and the service’s access to Google Calendar is withdrawn. Your events in Google Calendar are not changed. This cannot be undone."
 msgstr "Alle Geräte werden abgemeldet und der Zugriff des Dienstes auf Google Kalender wird entzogen. Ihre Termine in Google Kalender werden nicht geändert. Dies kann nicht rückgängig gemacht werden."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
 msgid "Every x days/weeks/months/years"
 msgstr "Alle X Tage/Wochen/Monate/Jahre"
@@ -6296,7 +6290,7 @@ msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
 msgstr "Filter aktiv"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
 msgid "first"
 msgstr "ersten"
@@ -6391,12 +6385,12 @@ msgctxt "settings.native.formFields"
 msgid "Form fields"
 msgstr "Formularfelder"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
 msgid "fourth"
 msgstr "vierten"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequency"
 msgid "Frequency"
 msgstr "Häufigkeit"
@@ -6872,7 +6866,7 @@ msgctxt "views.pomodoroStats.recents.status.interrupted"
 msgid "Interrupted"
 msgstr "Unterbrochen"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
 msgstr "Intervall"
@@ -7069,7 +7063,7 @@ msgctxt "settings.features.nlp.language.description"
 msgid "Language for natural language processing patterns and date parsing"
 msgstr "Sprache für natürliche Sprachverarbeitungsmuster und Datumsanalyse"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
 msgid "last"
 msgstr "letzten"
@@ -7099,7 +7093,7 @@ msgctxt "views/StatsView: StatsView.renderProjectStats display"
 msgid "Last activity: {value1}"
 msgstr "Letzte Aktivität: {value1}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "Letzter Tag"
@@ -7626,7 +7620,7 @@ msgctxt "views.basesCalendar.hints.month"
 msgid "Month view"
 msgstr "Monatsansicht"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
 msgid "Monthly"
 msgstr "Monatlich"
@@ -7636,12 +7630,12 @@ msgctxt "settings.defaults.options.monthly"
 msgid "Monthly"
 msgstr "Monatlich"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.monthlyAfterCompletion"
 msgid "Monthly (after completion)"
 msgstr "Monatlich (nach Abschluss)"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "Monatliche Wiederholung"
@@ -7652,7 +7646,7 @@ msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "Weitere Aktionen"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 #: src/modals/TaskModal.ts
 msgctxt "task modal field disclosure"
 msgid "More fields"
@@ -7800,7 +7794,7 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.description"
 msgid "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu."
 msgstr "Zeigen Sie die Aktionen zum Abschließen und Überspringen in einem Untermenü des Aufgaben-Kontextmenüs. Deaktivieren Sie diese Option, um sie direkt im Menü anzuzeigen."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.neverEnds"
 msgid "Never ends"
 msgstr "Endet nie"
@@ -8646,22 +8640,22 @@ msgctxt "recurrence detail weekdays"
 msgid "on {days}"
 msgstr "Wochentage: {days}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
 msgid "On {month} {day} each year"
 msgstr "Am {month} {day} jedes Jahr"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth"
 msgid "On day {day} of each month"
 msgstr "Am Tag {day} jeden Monat"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfYear"
 msgid "On the {week} {day} of {month} each year"
 msgstr "Am {week} {day} von {month} jedes Jahr"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth"
 msgid "On the {week} {day} of each month"
 msgstr "Am {week} {day} jeden Monat"
@@ -9621,7 +9615,7 @@ msgctxt "views.pomodoroStats.sections.recent"
 msgid "Recent sessions"
 msgstr "Aktuelle Sitzungen"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
 msgstr "Wiederholen ab"
@@ -10160,7 +10154,7 @@ msgctxt "common.save"
 msgid "Save"
 msgstr "Speichern"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.save"
 msgid "Save"
 msgstr "Speichern"
@@ -10217,7 +10211,7 @@ msgctxt "components.propertyVisibilityDropdown.properties.scheduledDate"
 msgid "Scheduled date"
 msgstr "Planungsdatum"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.scheduledDate"
 msgid "Scheduled date"
 msgstr "Planungsdatum"
@@ -10314,7 +10308,7 @@ msgctxt "modals.task.attachments.pickerPlaceholder"
 msgid "Search vault files to attach..."
 msgstr "Vault-Dateien zum Anhängen durchsuchen..."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
 msgid "second"
 msgstr "zweiten"
@@ -10420,7 +10414,7 @@ msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions placeholder"
 msgid "Select property to use as title"
 msgstr "Eigenschaft für den Titel auswählen"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc"
 msgid "Select specific days (for weekly recurrence)"
 msgstr "Bestimmte Tage auswählen (für wöchentliche Wiederholung)"
@@ -11023,7 +11017,7 @@ msgctxt "settings.native.splitLayoutOnWideScreens"
 msgid "Split layout on wide screens"
 msgstr "Geteiltes Layout auf breiten Bildschirmen"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
 msgid "Start date"
 msgstr "Startdatum"
@@ -11069,7 +11063,7 @@ msgctxt "views.pomodoro.buttons.startShortBreak"
 msgid "Start short break"
 msgstr "Kurze Pause starten"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTime"
 msgid "Start time"
 msgstr "Startzeit"
@@ -12199,7 +12193,7 @@ msgctxt "settings.appearance.calendarView.defaultView.description"
 msgid "The calendar view shown when opening the calendar tab"
 msgstr "Die Kalenderansicht, die beim Öffnen des Kalendertabs angezeigt wird"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDateDesc"
 msgid "The date when the recurrence pattern begins"
 msgstr "Das Datum, an dem das Wiederholungsmuster beginnt"
@@ -12229,7 +12223,7 @@ msgctxt "collectionCheck.repairChanged"
 msgid "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again."
 msgstr "Der Aufgabentyp oder die zulässigen Statuswerte haben sich geändert, oder die vorgeschlagene Reparatur ist nicht mehr gültig. Es wurde nichts repariert; prüfe die Sammlung erneut."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc"
 msgid "The time when recurring instances should appear (optional)"
 msgstr "Die Zeit, zu der wiederkehrende Instanzen erscheinen sollen (optional)"
@@ -12239,7 +12233,7 @@ msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
 msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
 msgstr "Der Wert, der eine Notiz als Aufgabe identifiziert (z.B. \"task\"). Leer lassen, um jede Notiz mit dieser Eigenschaft unabhängig von ihrem Wert als Aufgabe zu behandeln."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
 msgid "third"
 msgstr "dritten"
@@ -13833,7 +13827,7 @@ msgctxt "recurrence weekdays"
 msgid "Weekdays"
 msgstr "Wochentage"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "Nur Wochentage"
@@ -13843,7 +13837,7 @@ msgctxt "recurrence weekends"
 msgid "Weekends"
 msgstr "Am Wochenende"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
 msgid "Weekly"
 msgstr "Wöchentlich"
@@ -13853,7 +13847,7 @@ msgctxt "settings.defaults.options.weekly"
 msgid "Weekly"
 msgstr "Wöchentlich"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weeklyAfterCompletion"
 msgid "Weekly (after completion)"
 msgstr "Wöchentlich (nach Abschluss)"
@@ -13863,7 +13857,7 @@ msgctxt "notices.audit.weeklyDisabled"
 msgid "Weekly notes plugin is not enabled. Enable it in settings."
 msgstr "Das Plugin für Wochennotizen ist deaktiviert. Aktivieren Sie es in den Einstellungen."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "Wöchentlich am {day}"
@@ -13979,7 +13973,7 @@ msgctxt "settings.integrations.webhooks.events.recurringCompleted.description"
 msgid "When recurring task instances complete"
 msgstr "Wenn wiederkehrende Aufgabeninstanzen abgeschlossen werden"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFromDesc"
 msgid "When should the next occurrence be calculated?"
 msgstr "Wann soll das nächste Vorkommen berechnet werden?"
@@ -14085,7 +14079,7 @@ msgctxt "views.basesCalendar.hints.year"
 msgid "Year view"
 msgstr "Jahresansicht"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
 msgid "Yearly"
 msgstr "Jährlich"
@@ -14100,7 +14094,7 @@ msgctxt "recurrence yearly date"
 msgid "Yearly on {date}"
 msgstr "Jährlich am {date}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
 msgid "Yearly recurrence"
 msgstr "Jährliche Wiederholung"

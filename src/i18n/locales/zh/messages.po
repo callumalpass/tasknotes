@@ -2375,7 +2375,7 @@ msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "取消"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.cancel"
 msgid "Cancel"
 msgstr "取消"
@@ -2653,12 +2653,12 @@ msgctxt "settings.appearance.displayFormatting.dateFormat.description"
 msgid "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately."
 msgstr "选择 TaskNotes 中的日期显示方式。已存储的日期和自定义 Bases 公式保持不变。时间格式单独设置。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
 msgid "Choose how to repeat monthly"
 msgstr "选择如何每月重复"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrenceDesc"
 msgid "Choose how to repeat yearly"
 msgstr "选择如何每年重复"
@@ -2668,7 +2668,7 @@ msgctxt "views.pomodoro.buttons.chooseTask"
 msgid "Choose task..."
 msgstr "选择任务..."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc"
 msgid "Choose when the recurrence should end"
 msgstr "选择重复何时结束"
@@ -2761,11 +2761,6 @@ msgstr "清除优先级"
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
 msgstr "清除已记录的实例？"
-
-#: src/components/RecurrenceContextMenu.ts
-msgctxt "components.recurrenceContextMenu.clearRecurrence"
-msgid "Clear recurrence"
-msgstr "清除重复"
 
 #: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.clearRecurrence"
@@ -3050,7 +3045,7 @@ msgctxt "views.pomodoroStats.stats.completion"
 msgid "Completion"
 msgstr "完成率"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
 msgstr "完成日期"
@@ -3819,7 +3814,7 @@ msgctxt "views.stats.timeRanges.customRange"
 msgid "Custom range"
 msgstr "自定义范围"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
 msgstr "自定义重复"
@@ -3829,7 +3824,6 @@ msgctxt "recurrence custom rule"
 msgid "Custom recurrence: {rule}"
 msgstr "自定义重复规则：{rule}"
 
-#: src/components/RecurrenceContextMenu.ts
 #: src/ui/taskRecurrencePicker.ts
 msgctxt "components.recurrenceContextMenu.customRecurrence"
 msgid "Custom recurrence..."
@@ -3885,12 +3879,12 @@ msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "重复当前任务状态"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
 msgid "Daily"
 msgstr "每日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "每日"
@@ -3905,7 +3899,7 @@ msgctxt "ui.noteCard.dailyBadge"
 msgid "Daily"
 msgstr "每日笔记"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "每日（完成后）"
@@ -4051,7 +4045,7 @@ msgctxt "settings.defaults.reminders.units.days"
 msgid "days"
 msgstr "天"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "每周重复日期"
@@ -4988,12 +4982,12 @@ msgctxt "settings.integrations.subscriptionsList.labels.enabled"
 msgid "Enabled:"
 msgstr "已启用："
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences"
 msgid "End after {count} occurrences"
 msgstr "重复 {count} 次后结束"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endCondition"
 msgid "End condition"
 msgstr "结束条件"
@@ -5013,7 +5007,7 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.endDateProperty"
 msgid "End date property (optional)"
 msgstr "结束日期属性（可选）"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endOnDate"
 msgid "End on {date}"
 msgstr "在{date}结束"
@@ -5269,12 +5263,12 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "将不再向此端点发送事件。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.everyTwoWeeksOn"
 msgid "Every 2 weeks on {day}"
 msgstr "每2周{day}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "每3天（完成后）"
@@ -5284,7 +5278,7 @@ msgctxt "settings.calendarService.deleteAccount.confirmMessage"
 msgid "Every device is signed out and the service’s access to Google Calendar is withdrawn. Your events in Google Calendar are not changed. This cannot be undone."
 msgstr "所有设备都会退出登录，并撤销该服务对 Google 日历的访问权限。你在 Google 日历中的日程不会改变。此操作无法撤销。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
 msgid "Every x days/weeks/months/years"
 msgstr "每隔几天、几周、几个月或几年重复"
@@ -6295,7 +6289,7 @@ msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
 msgstr "筛选器开启"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
 msgid "first"
 msgstr "第一"
@@ -6390,12 +6384,12 @@ msgctxt "settings.native.formFields"
 msgid "Form fields"
 msgstr "表单字段"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
 msgid "fourth"
 msgstr "第四"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequency"
 msgid "Frequency"
 msgstr "频率"
@@ -6871,7 +6865,7 @@ msgctxt "views.pomodoroStats.recents.status.interrupted"
 msgid "Interrupted"
 msgstr "已中断"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
 msgstr "间隔"
@@ -7068,7 +7062,7 @@ msgctxt "settings.features.nlp.language.description"
 msgid "Language for natural language processing patterns and date parsing"
 msgstr "自然语言处理模式和日期解析的语言"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
 msgid "last"
 msgstr "最后"
@@ -7098,7 +7092,7 @@ msgctxt "views/StatsView: StatsView.renderProjectStats display"
 msgid "Last activity: {value1}"
 msgstr "上次活动：{value1}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "最后一天"
@@ -7625,7 +7619,7 @@ msgctxt "views.basesCalendar.hints.month"
 msgid "Month view"
 msgstr "月视图"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
 msgid "Monthly"
 msgstr "每月"
@@ -7635,12 +7629,12 @@ msgctxt "settings.defaults.options.monthly"
 msgid "Monthly"
 msgstr "每月"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.monthlyAfterCompletion"
 msgid "Monthly (after completion)"
 msgstr "每月（完成后）"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "每月重复"
@@ -7651,7 +7645,7 @@ msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "更多操作"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 #: src/modals/TaskModal.ts
 msgctxt "task modal field disclosure"
 msgid "More fields"
@@ -7799,7 +7793,7 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.description"
 msgid "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu."
 msgstr "在任务右键菜单的子菜单中显示完成和跳过操作。关闭后，这些操作将直接显示在菜单中。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.neverEnds"
 msgid "Never ends"
 msgstr "永不结束"
@@ -8645,22 +8639,22 @@ msgctxt "recurrence detail weekdays"
 msgid "on {days}"
 msgstr "{days}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
 msgid "On {month} {day} each year"
 msgstr "每年{month}{day}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth"
 msgid "On day {day} of each month"
 msgstr "每月{day}日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfYear"
 msgid "On the {week} {day} of {month} each year"
 msgstr "每年{month}第{week}个{day}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth"
 msgid "On the {week} {day} of each month"
 msgstr "每月第{week}个{day}"
@@ -9620,7 +9614,7 @@ msgctxt "views.pomodoroStats.sections.recent"
 msgid "Recent sessions"
 msgstr "最近的会话"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
 msgstr "重复起点"
@@ -10159,7 +10153,7 @@ msgctxt "common.save"
 msgid "Save"
 msgstr "保存"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.save"
 msgid "Save"
 msgstr "保存"
@@ -10216,7 +10210,7 @@ msgctxt "components.propertyVisibilityDropdown.properties.scheduledDate"
 msgid "Scheduled date"
 msgstr "计划日期"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.scheduledDate"
 msgid "Scheduled date"
 msgstr "计划日期"
@@ -10313,7 +10307,7 @@ msgctxt "modals.task.attachments.pickerPlaceholder"
 msgid "Search vault files to attach..."
 msgstr "搜索要附加的仓库文件..."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
 msgid "second"
 msgstr "第二"
@@ -10419,7 +10413,7 @@ msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions placeholder"
 msgid "Select property to use as title"
 msgstr "选择用作标题的属性"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc"
 msgid "Select specific days (for weekly recurrence)"
 msgstr "选择每周重复的日期"
@@ -11022,7 +11016,7 @@ msgctxt "settings.native.splitLayoutOnWideScreens"
 msgid "Split layout on wide screens"
 msgstr "宽屏分栏布局"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
 msgid "Start date"
 msgstr "开始日期"
@@ -11068,7 +11062,7 @@ msgctxt "views.pomodoro.buttons.startShortBreak"
 msgid "Start short break"
 msgstr "开始短休息"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTime"
 msgid "Start time"
 msgstr "开始时间"
@@ -12198,7 +12192,7 @@ msgctxt "settings.appearance.calendarView.defaultView.description"
 msgid "The calendar view shown when opening the calendar tab"
 msgstr "打开日历选项卡时显示的日历视图"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDateDesc"
 msgid "The date when the recurrence pattern begins"
 msgstr "重复模式开始的日期"
@@ -12228,7 +12222,7 @@ msgctxt "collectionCheck.repairChanged"
 msgid "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again."
 msgstr "任务类型或允许的状态值已更改，或者建议的修复已不再有效。未修复任何记录；请重新检查集合。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc"
 msgid "The time when recurring instances should appear (optional)"
 msgstr "重复实例应出现的时间（可选）"
@@ -12238,7 +12232,7 @@ msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
 msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
 msgstr "用于识别任务笔记的值（例如 \"task\"）。留空则将所有具有此属性的笔记视为任务，无论其值为何。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
 msgid "third"
 msgstr "第三"
@@ -13832,7 +13826,7 @@ msgctxt "recurrence weekdays"
 msgid "Weekdays"
 msgstr "工作日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "仅工作日"
@@ -13842,7 +13836,7 @@ msgctxt "recurrence weekends"
 msgid "Weekends"
 msgstr "每个周末"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
 msgid "Weekly"
 msgstr "每周"
@@ -13852,7 +13846,7 @@ msgctxt "settings.defaults.options.weekly"
 msgid "Weekly"
 msgstr "每周"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weeklyAfterCompletion"
 msgid "Weekly (after completion)"
 msgstr "每周（完成后）"
@@ -13862,7 +13856,7 @@ msgctxt "notices.audit.weeklyDisabled"
 msgid "Weekly notes plugin is not enabled. Enable it in settings."
 msgstr "每周笔记插件未启用。请在设置中启用。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "每周{day}"
@@ -13978,7 +13972,7 @@ msgctxt "settings.integrations.webhooks.events.recurringCompleted.description"
 msgid "When recurring task instances complete"
 msgstr "重复任务实例完成时"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFromDesc"
 msgid "When should the next occurrence be calculated?"
 msgstr "下次重复应何时计算？"
@@ -14084,7 +14078,7 @@ msgctxt "views.basesCalendar.hints.year"
 msgid "Year view"
 msgstr "年视图"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
 msgid "Yearly"
 msgstr "每年"
@@ -14099,7 +14093,7 @@ msgctxt "recurrence yearly date"
 msgid "Yearly on {date}"
 msgstr "每年 {date}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
 msgid "Yearly recurrence"
 msgstr "每年重复"

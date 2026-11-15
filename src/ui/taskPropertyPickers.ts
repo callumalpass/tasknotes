@@ -511,8 +511,8 @@ export async function openTaskPropertyChoices(
 	if (property === "status" || property === "priority") {
 		const configs =
 			property === "status"
-				? plugin.statusManager.getAllStatuses()
-				: plugin.priorityManager.getAllPriorities();
+				? plugin.statusManager.getStatusesByOrder()
+				: plugin.priorityManager.getPrioritiesByWeight();
 		items = configs.map((config) => ({
 			id: config.value,
 			label: configLabel(config),

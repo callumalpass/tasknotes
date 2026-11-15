@@ -836,7 +836,7 @@ export abstract class TaskModal extends Modal {
 					msg({ message: "Set status", context: "modals.task.actions.status" })
 				),
 				onClick: (_, event) => {
-					this.showStatusContextMenu(event);
+					this.showStatusPicker(event);
 				},
 				dataType: "status",
 				chip: true,
@@ -847,7 +847,7 @@ export abstract class TaskModal extends Modal {
 					msg({ message: "Set priority", context: "modals.task.actions.priority" })
 				),
 				onClick: (_, event) => {
-					this.showPriorityContextMenu(event);
+					this.showPriorityPicker(event);
 				},
 				dataType: "priority",
 				chip: true,
@@ -858,7 +858,7 @@ export abstract class TaskModal extends Modal {
 					msg({ message: "Set due date", context: "modals.task.actions.due" })
 				),
 				onClick: (_, event) => {
-					this.showDateContextMenu(event, "due");
+					this.showDatePicker(event, "due");
 				},
 				dataType: "due-date",
 				chip: true,
@@ -869,7 +869,7 @@ export abstract class TaskModal extends Modal {
 					msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" })
 				),
 				onClick: (_, event) => {
-					this.showDateContextMenu(event, "scheduled");
+					this.showDatePicker(event, "scheduled");
 				},
 				dataType: "scheduled-date",
 				chip: true,
@@ -880,7 +880,7 @@ export abstract class TaskModal extends Modal {
 					msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })
 				),
 				onClick: (_, event) => {
-					this.showRecurrenceContextMenu(event);
+					this.showRecurrencePicker(event);
 				},
 				dataType: "recurrence",
 				chip: true,
@@ -1392,19 +1392,19 @@ export abstract class TaskModal extends Modal {
 		else this.propertyPicker = picker;
 	}
 
-	protected showDateContextMenu(event: UIEvent, type: "due" | "scheduled"): void {
+	protected showDatePicker(event: UIEvent, type: "due" | "scheduled"): void {
 		void this.showPropertyPicker(event, type);
 	}
 
-	protected showStatusContextMenu(event: UIEvent): void {
+	protected showStatusPicker(event: UIEvent): void {
 		void this.showPropertyPicker(event, "status");
 	}
 
-	protected showPriorityContextMenu(event: UIEvent): void {
+	protected showPriorityPicker(event: UIEvent): void {
 		void this.showPropertyPicker(event, "priority");
 	}
 
-	protected showRecurrenceContextMenu(event: UIEvent): void {
+	protected showRecurrencePicker(event: UIEvent): void {
 		const anchor = event.currentTarget as HTMLElement | null;
 		if (!anchor) return;
 		this.propertyPicker?.close();

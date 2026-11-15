@@ -1,4 +1,4 @@
-import { buildCustomRecurrenceRule, buildRecurrenceOptions, CustomRecurrenceRuleInput } from "../../../src/components/RecurrenceContextMenu";
+import { buildCustomRecurrenceRule, buildRecurrenceOptions, CustomRecurrenceRuleInput } from "../../../src/components/CustomRecurrenceModal";
 import { buildRecurringTaskCompletePlan } from "../../../src/services/task-service/taskRecurringPlanning";
 import { updateDTSTARTInRecurrenceRule } from "../../../src/core/recurrence";
 import type { TaskInfo } from "../../../src/types";

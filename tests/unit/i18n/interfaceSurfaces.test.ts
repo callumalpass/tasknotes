@@ -6,7 +6,7 @@ import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
-import { CustomRecurrenceModal } from "../../../src/components/RecurrenceContextMenu";
+import { CustomRecurrenceModal } from "../../../src/components/CustomRecurrenceModal";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import { getAvailableProperties } from "../../../src/utils/propertyHelpers";
@@ -226,7 +226,7 @@ it("keeps audited notice and setting-label call sites marked for translation", (
 		"settings/native/integrations.ts",
 		"settings/native/features.ts",
 		"settings/native/appearance.ts",
-		"components/RecurrenceContextMenu.ts",
+		"components/CustomRecurrenceModal.ts",
 	]) {
 		const source = fs.readFileSync(path.resolve(__dirname, "../../../src", file), "utf8");
 		expect({ file, notices: source.match(/new Notice\(\s*["'`]/g) }).toEqual({

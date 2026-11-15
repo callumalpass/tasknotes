@@ -2375,7 +2375,7 @@ msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.cancel"
 msgid "Cancel"
 msgstr "キャンセル"
@@ -2653,12 +2653,12 @@ msgctxt "settings.appearance.displayFormatting.dateFormat.description"
 msgid "Choose how dates appear throughout TaskNotes. Stored dates and custom Bases formulas are unchanged. Time format is set separately."
 msgstr "TaskNotes全体の日付表示を選択します。保存された日付と独自のBases数式は変更されません。時刻の表示形式は別に設定します。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrenceDesc"
 msgid "Choose how to repeat monthly"
 msgstr "月次繰り返し方法を選択"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrenceDesc"
 msgid "Choose how to repeat yearly"
 msgstr "年次繰り返し方法を選択"
@@ -2668,7 +2668,7 @@ msgctxt "views.pomodoro.buttons.chooseTask"
 msgid "Choose task..."
 msgstr "タスクを選択..."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc"
 msgid "Choose when the recurrence should end"
 msgstr "繰り返しの終了時期を選択"
@@ -2761,11 +2761,6 @@ msgstr "優先度をクリア"
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
 msgstr "記録済みの繰り返し回を消去しますか？"
-
-#: src/components/RecurrenceContextMenu.ts
-msgctxt "components.recurrenceContextMenu.clearRecurrence"
-msgid "Clear recurrence"
-msgstr "繰り返しをクリア"
 
 #: src/components/task-context-menu/recurrence.ts
 msgctxt "contextMenus.task.clearRecurrence"
@@ -3050,7 +3045,7 @@ msgctxt "views.pomodoroStats.stats.completion"
 msgid "Completion"
 msgstr "完了"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
 msgstr "完了日"
@@ -3819,7 +3814,7 @@ msgctxt "views.stats.timeRanges.customRange"
 msgid "Custom range"
 msgstr "カスタム範囲"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
 msgstr "カスタム繰り返し"
@@ -3829,7 +3824,6 @@ msgctxt "recurrence custom rule"
 msgid "Custom recurrence: {rule}"
 msgstr "カスタムの繰り返し: {rule}"
 
-#: src/components/RecurrenceContextMenu.ts
 #: src/ui/taskRecurrencePicker.ts
 msgctxt "components.recurrenceContextMenu.customRecurrence"
 msgid "Custom recurrence..."
@@ -3885,12 +3879,12 @@ msgctxt "commands.cycleCurrentTaskStatus"
 msgid "Cycle current task status"
 msgstr "現在のタスクのステータスを切り替え"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.daily"
 msgid "Daily"
 msgstr "毎日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "毎日"
@@ -3905,7 +3899,7 @@ msgctxt "ui.noteCard.dailyBadge"
 msgid "Daily"
 msgstr "デイリー"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "毎日（完了後）"
@@ -4051,7 +4045,7 @@ msgctxt "settings.defaults.reminders.units.days"
 msgid "days"
 msgstr "日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeek"
 msgid "Days of week"
 msgstr "曜日"
@@ -4988,12 +4982,12 @@ msgctxt "settings.integrations.subscriptionsList.labels.enabled"
 msgid "Enabled:"
 msgstr "有効："
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endAfterOccurrences"
 msgid "End after {count} occurrences"
 msgstr "{count}回後に終了"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endCondition"
 msgid "End condition"
 msgstr "終了条件"
@@ -5013,7 +5007,7 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.endDateProperty"
 msgid "End date property (optional)"
 msgstr "終了日プロパティ（オプション）"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endOnDate"
 msgid "End on {date}"
 msgstr "{date}に終了"
@@ -5269,12 +5263,12 @@ msgctxt "settings.native.eventsWillNoLongerBeSentToThisEndpoint"
 msgid "Events will no longer be sent to this endpoint."
 msgstr "このエンドポイントにはイベントが送信されなくなります。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.everyTwoWeeksOn"
 msgid "Every 2 weeks on {day}"
 msgstr "隔週{day}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.every3DaysAfterCompletion"
 msgid "Every 3 days (after completion)"
 msgstr "3日ごと（完了後）"
@@ -5284,7 +5278,7 @@ msgctxt "settings.calendarService.deleteAccount.confirmMessage"
 msgid "Every device is signed out and the service’s access to Google Calendar is withdrawn. Your events in Google Calendar are not changed. This cannot be undone."
 msgstr "すべての端末でログアウトされ、サービスのGoogleカレンダーへのアクセス権が取り消されます。Googleカレンダー上の予定は変更されません。この操作は元に戻せません。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.intervalDesc"
 msgid "Every x days/weeks/months/years"
 msgstr "X日/週/月/年ごと"
@@ -6295,7 +6289,7 @@ msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
 msgstr "フィルター有効"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.first"
 msgid "first"
 msgstr "第1"
@@ -6390,12 +6384,12 @@ msgctxt "settings.native.formFields"
 msgid "Form fields"
 msgstr "フォームのフィールド"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
 msgid "fourth"
 msgstr "第4"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequency"
 msgid "Frequency"
 msgstr "頻度"
@@ -6873,7 +6867,7 @@ msgctxt "views.pomodoroStats.recents.status.interrupted"
 msgid "Interrupted"
 msgstr "中断"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
 msgstr "間隔"
@@ -7070,7 +7064,7 @@ msgctxt "settings.features.nlp.language.description"
 msgid "Language for natural language processing patterns and date parsing"
 msgstr "自然言語処理パターンと日付解析の言語"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.last"
 msgid "last"
 msgstr "最終"
@@ -7100,7 +7094,7 @@ msgctxt "views/StatsView: StatsView.renderProjectStats display"
 msgid "Last activity: {value1}"
 msgstr "最終活動: {value1}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
 msgstr "月末"
@@ -7627,7 +7621,7 @@ msgctxt "views.basesCalendar.hints.month"
 msgid "Month view"
 msgstr "月表示"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
 msgid "Monthly"
 msgstr "毎月"
@@ -7637,12 +7631,12 @@ msgctxt "settings.defaults.options.monthly"
 msgid "Monthly"
 msgstr "毎月"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.monthlyAfterCompletion"
 msgid "Monthly (after completion)"
 msgstr "毎月（完了後）"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "月次繰り返し"
@@ -7653,7 +7647,7 @@ msgctxt "modals.task.buttons.moreActions"
 msgid "More actions"
 msgstr "その他の操作"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 #: src/modals/TaskModal.ts
 msgctxt "task modal field disclosure"
 msgid "More fields"
@@ -7801,7 +7795,7 @@ msgctxt "settings.appearance.taskCards.completionSubmenu.description"
 msgid "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu."
 msgstr "完了とスキップの操作をタスクのコンテキストメニュー内のサブメニューに表示します。無効にすると、メニューに直接表示されます。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.neverEnds"
 msgid "Never ends"
 msgstr "終了しない"
@@ -8647,22 +8641,22 @@ msgctxt "recurrence detail weekdays"
 msgid "on {days}"
 msgstr "{days} に"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDateOfYear"
 msgid "On {month} {day} each year"
 msgstr "毎年{month}{day}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onDayOfMonth"
 msgid "On day {day} of each month"
 msgstr "毎月{day}日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfYear"
 msgid "On the {week} {day} of {month} each year"
 msgstr "毎年{month}の{week}{day}曜日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.onTheWeekOfMonth"
 msgid "On the {week} {day} of each month"
 msgstr "毎月{week}{day}曜日"
@@ -9622,7 +9616,7 @@ msgctxt "views.pomodoroStats.sections.recent"
 msgid "Recent sessions"
 msgstr "最近のセッション"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
 msgstr "繰り返しの基準"
@@ -10161,7 +10155,7 @@ msgctxt "common.save"
 msgid "Save"
 msgstr "保存"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.save"
 msgid "Save"
 msgstr "保存"
@@ -10218,7 +10212,7 @@ msgctxt "components.propertyVisibilityDropdown.properties.scheduledDate"
 msgid "Scheduled date"
 msgstr "予定日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.scheduledDate"
 msgid "Scheduled date"
 msgstr "予定日"
@@ -10315,7 +10309,7 @@ msgctxt "modals.task.attachments.pickerPlaceholder"
 msgid "Search vault files to attach..."
 msgstr "添付する保管庫のファイルを検索..."
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.second"
 msgid "second"
 msgstr "第2"
@@ -10421,7 +10415,7 @@ msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions placeholder"
 msgid "Select property to use as title"
 msgstr "タイトルに使用するプロパティを選択"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.daysOfWeekDesc"
 msgid "Select specific days (for weekly recurrence)"
 msgstr "特定の曜日を選択（週次繰り返し用）"
@@ -11024,7 +11018,7 @@ msgctxt "settings.native.splitLayoutOnWideScreens"
 msgid "Split layout on wide screens"
 msgstr "広い画面で分割表示"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
 msgid "Start date"
 msgstr "開始日"
@@ -11070,7 +11064,7 @@ msgctxt "views.pomodoro.buttons.startShortBreak"
 msgid "Start short break"
 msgstr "短い休憩を開始"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTime"
 msgid "Start time"
 msgstr "開始時刻"
@@ -12200,7 +12194,7 @@ msgctxt "settings.appearance.calendarView.defaultView.description"
 msgid "The calendar view shown when opening the calendar tab"
 msgstr "カレンダータブを開く際に表示されるカレンダービュー"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDateDesc"
 msgid "The date when the recurrence pattern begins"
 msgstr "繰り返しパターンが始まる日付"
@@ -12230,7 +12224,7 @@ msgctxt "collectionCheck.repairChanged"
 msgid "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again."
 msgstr "タスクの型または使用可能なステータスが変更されたか、提案された修復が無効になりました。修復は行われていません。コレクションをもう一度確認してください。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startTimeDesc"
 msgid "The time when recurring instances should appear (optional)"
 msgstr "繰り返しの各回を表示する時刻（任意）"
@@ -12240,7 +12234,7 @@ msgctxt "settings.general.taskIdentification.taskPropertyValue.description"
 msgid "The value that identifies a note as a task (e.g., \"task\"). Leave empty to treat every note that has this property as a task, whatever its value."
 msgstr "ノートをタスクとして識別する値（例：\"task\"）。空欄にすると、値に関係なく、このプロパティを持つすべてのノートをタスクとして扱います。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.third"
 msgid "third"
 msgstr "第3"
@@ -13834,7 +13828,7 @@ msgctxt "recurrence weekdays"
 msgid "Weekdays"
 msgstr "平日"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weekdaysOnly"
 msgid "Weekdays only"
 msgstr "平日のみ"
@@ -13844,7 +13838,7 @@ msgctxt "recurrence weekends"
 msgid "Weekends"
 msgstr "毎週末"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.weekly"
 msgid "Weekly"
 msgstr "毎週"
@@ -13854,7 +13848,7 @@ msgctxt "settings.defaults.options.weekly"
 msgid "Weekly"
 msgstr "毎週"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weeklyAfterCompletion"
 msgid "Weekly (after completion)"
 msgstr "毎週（完了後）"
@@ -13864,7 +13858,7 @@ msgctxt "notices.audit.weeklyDisabled"
 msgid "Weekly notes plugin is not enabled. Enable it in settings."
 msgstr "ウィークリーノートのプラグインが無効です。設定で有効にしてください。"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.weeklyOn"
 msgid "Weekly on {day}"
 msgstr "毎週{day}"
@@ -13980,7 +13974,7 @@ msgctxt "settings.integrations.webhooks.events.recurringCompleted.description"
 msgid "When recurring task instances complete"
 msgstr "繰り返しタスクの各回が完了したとき"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFromDesc"
 msgid "When should the next occurrence be calculated?"
 msgstr "次の発生をいつから計算しますか？"
@@ -14086,7 +14080,7 @@ msgctxt "views.basesCalendar.hints.year"
 msgid "Year view"
 msgstr "年表示"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.yearly"
 msgid "Yearly"
 msgstr "毎年"
@@ -14101,7 +14095,7 @@ msgctxt "recurrence yearly date"
 msgid "Yearly on {date}"
 msgstr "毎年{date}"
 
-#: src/components/RecurrenceContextMenu.ts
+#: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.yearlyRecurrence"
 msgid "Yearly recurrence"
 msgstr "年次繰り返し"

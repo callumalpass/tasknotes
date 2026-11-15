@@ -61,3 +61,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Right-clicking a recurring task's Kanban card, outside its **⋯** button, acts on the card's occurrence. It acted on today's, so **Mark complete** could complete the wrong occurrence.
 - Choosing an after-completion rule through **Custom recurrence...** in the task right-click menu saved the rule but not that it repeats after completion.
 - While editing a task, quick reminders and **Clear all reminders** were written to the note straight away, so cancelling the edit did not undo them. They are now saved with the rest of the task.
+- The status and priority pickers list values in the order shown in Settings. The priority picker could list them in reverse, for example with the default priorities it put **None** first and **High** last.

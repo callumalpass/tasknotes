@@ -8,8 +8,6 @@ import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting } from "obsidian";
 import { MessageDescriptor } from "../i18n";
 import TaskNotesPlugin from "../main";
-import { ContextMenu } from "./ContextMenu";
-import { showCoordinatedMenu } from "./ContextMenuCoordinator";
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 
 export interface RecurrenceOption {
@@ -17,15 +15,6 @@ export interface RecurrenceOption {
 	value: string;
 	icon?: string;
 	anchor?: "scheduled" | "completion"; // NEW: Determines if recurrence is from scheduled date or completion date
-}
-
-export interface RecurrenceContextMenuOptions {
-	currentValue?: string;
-	currentAnchor?: "scheduled" | "completion";
-	scheduledDate?: string; // Task's scheduled date to extract time from
-	onSelect: (value: string | null, anchor?: "scheduled" | "completion") => void;
-	app: App;
-	plugin: TaskNotesPlugin;
 }
 
 export interface CustomRecurrenceRuleInput {
@@ -507,117 +496,6 @@ export function getMonthDayOptions(lastDayLabel = "Last day"): MonthDayOption[] 
 			text: lastDayLabel,
 		},
 	];
-}
-
-export class RecurrenceContextMenu {
-	private menu: ContextMenu;
-	private options: RecurrenceContextMenuOptions;
-	private translate: (key: MessageDescriptor, vars?: Record<string, string>) => string;
-
-	constructor(options: RecurrenceContextMenuOptions) {
-		this.menu = new ContextMenu();
-		this.options = options;
-		this.translate = options.plugin.i18n.translate.bind(options.plugin.i18n);
-		this.buildMenu();
-	}
-
-	private buildMenu(): void {
-		const recurrenceOptions = this.getRecurrenceOptions();
-
-		// Add quick recurrence options
-		recurrenceOptions.forEach((option) => {
-			// Handle separator
-			if (option.label.startsWith("─")) {
-				this.menu.addSeparator();
-				return;
-			}
-
-			this.menu.addItem((item) => {
-				let title = option.label;
-
-				if (option.icon) {
-					item.setIcon(option.icon);
-				}
-
-				// Highlight current selection with visual indicator
-				if (option.value === this.options.currentValue) {
-					title = `✓ ${option.label}`;
-				}
-
-				item.setTitle(title);
-
-				item.onClick(async () => {
-					const anchorValue = option.anchor || "scheduled";
-					this.options.onSelect(option.value, anchorValue);
-				});
-			});
-		});
-
-		// Add separator before custom options
-		this.menu.addSeparator();
-
-		// Add custom recurrence option
-		this.menu.addItem((item) => {
-			item.setTitle(
-				this.translate(
-					msg({
-						message: "Custom recurrence...",
-						context: "components.recurrenceContextMenu.customRecurrence",
-					})
-				)
-			);
-			item.setIcon("settings");
-			item.onClick(async () => {
-				this.showCustomRecurrenceModal();
-			});
-		});
-
-		// Add clear option if there's a current value
-		if (this.options.currentValue) {
-			this.menu.addItem((item) => {
-				item.setTitle(
-					this.translate(
-						msg({
-							message: "Clear recurrence",
-							context: "components.recurrenceContextMenu.clearRecurrence",
-						})
-					)
-				);
-				item.setIcon("x");
-				item.onClick(async () => {
-					this.options.onSelect(null);
-				});
-			});
-		}
-	}
-
-	private getRecurrenceOptions(): RecurrenceOption[] {
-		return buildRecurrenceOptions({
-			currentValue: this.options.currentValue,
-			scheduledDate: this.options.scheduledDate,
-			calendarLocale: getPluginCalendarLocale(this.options.plugin),
-			translate: this.translate,
-		});
-	}
-
-	private showCustomRecurrenceModal(): void {
-		new CustomRecurrenceModal(
-			this.options.app,
-			this.options.currentValue || "",
-			this.options.currentAnchor || "scheduled",
-			this.options.scheduledDate,
-			this.options.plugin,
-			(result, anchor) => {
-				if (result) {
-					this.options.onSelect(result, anchor);
-				}
-			}
-		).open();
-	}
-
-	public show(event: UIEvent): void {
-		showCoordinatedMenu(this.menu, event);
-	}
 }
 
 export class CustomRecurrenceModal extends Modal {

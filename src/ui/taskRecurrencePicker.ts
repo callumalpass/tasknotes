@@ -8,7 +8,7 @@ import {
 	buildRecurrenceOptions,
 	CustomRecurrenceModal,
 	getPluginCalendarLocale,
-} from "../components/RecurrenceContextMenu";
+} from "../components/CustomRecurrenceModal";
 import { openListPicker } from "./kit/listPicker";
 import type { PopoverHandle, PopoverOptions } from "./kit/popover";
 import { changeTaskProperty, showTaskUndo, type TaskUndoFeedback } from "./taskPropertyPickers";

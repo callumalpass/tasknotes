@@ -2,7 +2,7 @@ import {
 	buildWeekdaysOnlyRecurrenceRule,
 	getOrderedRecurrenceWeekdays,
 	getWeekdayOnlyRRuleCodes,
-} from "../../../src/components/RecurrenceContextMenu";
+} from "../../../src/components/CustomRecurrenceModal";
 
 describe("Issue #782: recurrence weekdays respect locale and first-day settings", () => {
 	it("keeps the default weekdays-only rule as Monday through Friday for US-style locales", () => {
