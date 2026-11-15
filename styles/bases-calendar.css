@@ -1151,10 +1151,6 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     color: var(--tn-text-faint);
 }
 
-.tasknotes-plugin .ics-card__related-note-indicator {
-    margin-inline-start: var(--tn-space-1);
-}
-
 .tasknotes-plugin .tn-calendar-agenda-strip :is(.tnc-strip-nav, .tnc-strip-today, .tnc-strip-title, .tnc-btn) {
     min-width: var(--tn-touch-target);
     min-height: var(--tn-touch-target);

@@ -42,6 +42,7 @@
 
 .tasknotes-plugin .ics-card__related-note-indicator {
     color: var(--tn-text-muted);
+    margin-inline-start: var(--tn-space-1);
 }
 
 /* Timeblock Events */
