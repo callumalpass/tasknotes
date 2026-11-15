@@ -741,7 +741,6 @@ export class MiniCalendarView extends BasesViewBase {
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--prev tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
 				"aria-label": this.plugin.i18n.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
-				title: this.plugin.i18n.translate(msg({ message: "Previous month", context: "modals.taskEdit.previousMonth" })),
 			},
 		});
 		setIcon(prevButton, "chevron-left");
@@ -758,7 +757,6 @@ export class MiniCalendarView extends BasesViewBase {
 			cls: "mini-calendar-view__nav-button mini-calendar-view__nav-button--next tn-btn tn-btn--icon tn-btn--ghost",
 			attr: {
 				"aria-label": this.plugin.i18n.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
-				title: this.plugin.i18n.translate(msg({ message: "Next month", context: "components.dateContextMenu.nextMonth" })),
 			},
 		});
 		setIcon(nextButton, "chevron-right");
@@ -770,7 +768,6 @@ export class MiniCalendarView extends BasesViewBase {
 			cls: "mini-calendar-view__today-button tn-btn tn-btn--ghost tn-btn--sm",
 			attr: {
 				"aria-label": this.plugin.i18n.translate(msg({ message: "Go to today", context: "views.basesCalendar.hints.today" })),
-				title: this.plugin.i18n.translate(msg({ message: "Go to today", context: "views.basesCalendar.hints.today" })),
 			},
 		});
 		todayButton.addEventListener("click", () => this.navigateToToday());
@@ -1043,7 +1040,7 @@ export class MiniCalendarView extends BasesViewBase {
 			return;
 		}
 		for (const entry of [...entries].sort((first, second) => calendarEntryMinute(first) - calendarEntryMinute(second) || first.title.localeCompare(second.title))) {
-			const button = section.createEl("button", { cls: "mini-calendar-view__entry tn-btn tn-btn--ghost", attr: { type: "button", title: `${entry.title}\n${entry.path}` } });
+			const button = section.createEl("button", { cls: "mini-calendar-view__entry tn-btn tn-btn--ghost", attr: { type: "button" } });
 			button.dataset.entryPath = entry.path;
 			renderCalendarEntry(button, entry, this.plugin, "mini-calendar-view__entry-content");
 			button.addEventListener("click", () => this.openCalendarEntry(entry));
@@ -1749,7 +1746,7 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 
 function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNotesPlugin, className = "note-selector-modal__suggestion"): void {
 	const container = host.createDiv({ cls: `${className} tn-picker__row` });
-	const title = container.createDiv({ cls: "note-selector-modal__title tn-picker__label", text: note.title, attr: { title: note.title } });
+	const title = container.createDiv({ cls: "note-selector-modal__title tn-picker__label", text: note.title });
 	const task = note.kind === "note" ? plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
 	if (task) title.prepend(createTaskGlyphs(host.ownerDocument, task, plugin));
 	if (className === "mini-calendar-view__entry-content" && calendarEntryMinute(note) >= 0) {
@@ -1760,7 +1757,7 @@ function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNot
 		const identity = className === "mini-calendar-view__entry-content" && note.kind === "note"
 			? note.path.split("/").pop()?.replace(/\.md$/, "") || subtitle
 			: subtitle;
-		if (identity !== note.title) container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: identity, attr: { title: subtitle } });
+		if (identity !== note.title) container.createDiv({ cls: "note-selector-modal__path tn-picker__detail", text: identity });
 	}
 }
 

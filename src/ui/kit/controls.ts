@@ -1,7 +1,6 @@
 export interface SegmentOption<T extends string> {
 	value: T;
 	label: string;
-	title?: string;
 }
 
 export interface SegmentedControl<T extends string> {
@@ -31,7 +30,7 @@ export function createSegmentedControl<T extends string>(
 		const button = el.createEl("button", {
 			cls: "tn-segmented__item",
 			text: segment.label,
-			attr: { role: "tab", title: segment.title ?? segment.label },
+			attr: { role: "tab" },
 		});
 		button.addEventListener("click", () => {
 			setValue(segment.value);

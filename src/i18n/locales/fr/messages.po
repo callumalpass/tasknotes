@@ -2764,16 +2764,6 @@ msgctxt "ui.audit.collapseAll"
 msgid "Collapse all groups and subgroups"
 msgstr "Réduire tous les groupes et sous-groupes"
 
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Collapse card"
-msgstr "Réduire la carte"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Collapse card"
-msgstr "Réduire la carte"
-
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
@@ -3792,11 +3782,6 @@ msgstr "Quotidien"
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "Quotidien (après achèvement)"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui.noteCard.dailyTooltip"
-msgid "Daily note"
-msgstr "Note quotidienne"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
@@ -5201,16 +5186,6 @@ msgstr "Déplier tous les groupes"
 msgctxt "ui.audit.expandAll"
 msgid "Expand all groups and subgroups"
 msgstr "Développer tous les groupes et sous-groupes"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Expand card"
-msgstr "Développer la carte"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Expand card"
-msgstr "Développer la carte"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
@@ -8903,11 +8878,6 @@ msgstr "Chemin où le fichier ICS sera sauvegardé (relatif à la racine du coff
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
-msgid "Path: {path}"
-msgstr "Chemin : {path}"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui/NoteCard: createNoteCard title"
 msgid "Path: {path}"
 msgstr "Chemin : {path}"
 

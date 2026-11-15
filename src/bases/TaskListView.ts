@@ -1053,12 +1053,6 @@ export class TaskListView extends BasesViewBase {
 				msg({ message: "Move task", context: "views.taskList.movement.handle" })
 			)
 		);
-		handle.setAttribute(
-			"title",
-			this.plugin.i18n.translate(
-				msg({ message: "Move task", context: "views.taskList.movement.handle" })
-			)
-		);
 		setIcon(handle, "grip-vertical");
 		handle.addEventListener("click", (event) => {
 			event.preventDefault();

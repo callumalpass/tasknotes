@@ -2764,16 +2764,6 @@ msgctxt "ui.audit.collapseAll"
 msgid "Collapse all groups and subgroups"
 msgstr "Contraer todos los grupos y subgrupos"
 
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Collapse card"
-msgstr "Contraer tarjeta"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Collapse card"
-msgstr "Contraer tarjeta"
-
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
@@ -3792,11 +3782,6 @@ msgstr "Diario"
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "Diario (después de completar)"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui.noteCard.dailyTooltip"
-msgid "Daily note"
-msgstr "Nota diaria"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
@@ -5201,16 +5186,6 @@ msgstr "Expandir todos los grupos"
 msgctxt "ui.audit.expandAll"
 msgid "Expand all groups and subgroups"
 msgstr "Expandir todos los grupos y subgrupos"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Expand card"
-msgstr "Expandir tarjeta"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Expand card"
-msgstr "Expandir tarjeta"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
@@ -8903,11 +8878,6 @@ msgstr "Ruta donde se guardará el archivo ICS (relativo a la raíz de la bóved
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
-msgid "Path: {path}"
-msgstr "Ruta: {path}"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui/NoteCard: createNoteCard title"
 msgid "Path: {path}"
 msgstr "Ruta: {path}"
 

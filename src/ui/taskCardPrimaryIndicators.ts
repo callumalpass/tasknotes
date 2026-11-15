@@ -1,5 +1,4 @@
 import { configLabel } from "../i18n/configLabels";
-import { keyLabel } from "./kit/keyHint";
 import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -122,7 +121,7 @@ export function configureStatusIndicator(
 	statusDot.addClass("task-card__status-dot--icon");
 	const label = statusConfig ? configLabel(statusConfig) : unconfiguredValueLabel(statusValue);
 	statusDot.setAttribute("aria-label", label);
-	statusDot.setAttribute("title", `${label} · ${keyLabel("S")}`);
+	statusDot.setAttribute("aria-keyshortcuts", "S");
 	statusDot.empty();
 	if (statusConfig?.icon) {
 		delete statusDot.dataset.tnGlyph;
@@ -230,20 +229,13 @@ export function configurePriorityIndicator(
 		? configLabel(priorityConfig)
 		: (priorityValue ? unconfiguredValueLabel(priorityValue) : "") ||
 			plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
-	priorityDot.setAttribute(
-		"aria-label",
-		plugin.i18n.translate(
-			msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }),
-			{
-				label,
-			}
-		)
+	const priorityLabel = plugin.i18n.translate(
+		msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }),
+		{ label }
 	);
 	priorityDot.replaceChildren();
-	priorityDot.setAttribute(
-		"title",
-		`${priorityDot.getAttribute("aria-label")} · ${keyLabel("P")}`
-	);
+	priorityDot.setAttribute("aria-label", priorityLabel);
+	priorityDot.setAttribute("aria-keyshortcuts", "P");
 	priorityDot.classList.add("task-card__priority-dot--icon");
 
 	if (priorityConfig?.icon) {

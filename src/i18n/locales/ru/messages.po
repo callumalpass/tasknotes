@@ -2766,16 +2766,6 @@ msgctxt "ui.audit.collapseAll"
 msgid "Collapse all groups and subgroups"
 msgstr "Свернуть все группы и подгруппы"
 
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Collapse card"
-msgstr "Свернуть карточку"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Collapse card"
-msgstr "Свернуть карточку"
-
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
 msgid "Collapse subgroups"
@@ -3794,11 +3784,6 @@ msgstr "Ежедневно"
 msgctxt "components.recurrenceContextMenu.dailyAfterCompletion"
 msgid "Daily (after completion)"
 msgstr "Ежедневно (после завершения)"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui.noteCard.dailyTooltip"
-msgid "Daily note"
-msgstr "Ежедневная заметка"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockInDailyNote display"
@@ -5203,16 +5188,6 @@ msgstr "Развернуть все группы"
 msgctxt "ui.audit.expandAll"
 msgid "Expand all groups and subgroups"
 msgstr "Развернуть все группы и подгруппы"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: createCard display"
-msgid "Expand card"
-msgstr "Развернуть карточку"
-
-#: src/settings/components/CardComponent.ts
-msgctxt "settings/components/CardComponent: setCardCollapsed display"
-msgid "Expand card"
-msgstr "Развернуть карточку"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.showGroupHeaderContextMenu display"
@@ -8903,11 +8878,6 @@ msgstr "Путь, где будет сохранен файл ICS (относи�
 
 #: src/bases/helpers.ts
 msgctxt "Bases data inspector"
-msgid "Path: {path}"
-msgstr "Путь: {path}"
-
-#: src/ui/NoteCard.ts
-msgctxt "ui/NoteCard: createNoteCard title"
 msgid "Path: {path}"
 msgstr "Путь: {path}"
 
