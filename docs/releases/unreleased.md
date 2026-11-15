@@ -34,6 +34,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed the layout of calendar subscription events and timeblocks in the calendar's List view. Their titles wrapped into a narrow column and their icons dropped below the text. They now use the same row layout as tasks: the icon sits where a task shows its status, the title spans the row, and the time, location and calendar name sit on the line below. Timeblocks use their calendar colour and show their time without a background.
 - Fixed Sign in with Google not appearing under Settings → Google Calendar. The page showed only "Advanced: use your own Google Cloud project" until something else made the settings rebuild.
 
 ## Removed

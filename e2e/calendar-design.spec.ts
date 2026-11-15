@@ -208,8 +208,14 @@ test('public view buttons share kit styles across themes and narrow panes', asyn
           await expect(calendar.locator('.task-card__metadata-date--due svg').first()).toBeVisible();
           await expect(calendar.locator('.tn-calendar-list-stamp[data-event-type="scheduled"]').first()).toContainText('08:00');
           await expect(calendar.locator('.task-card__metadata-date--overdue').first()).toBeVisible();
-          await expect(calendar.locator('.timeblock-card__time')).toHaveText('13:00 - 14:00');
+          await expect(calendar.locator('.timeblock-card__time')).toHaveText('13:00 – 14:00');
           await expect(calendar.locator('.timeblock-card__attachments')).toContainText('1 attachment');
+          const timeblockLead = await calendar.locator('.task-card--timeblock').first().evaluate(card => {
+            const icon = card.querySelector('.timeblock-card__icon')!.getBoundingClientRect();
+            const title = card.querySelector('.task-card__title-text')!.getBoundingClientRect();
+            return { beside: icon.right <= title.left, sameRow: icon.top < title.bottom && title.top < icon.bottom };
+          });
+          expect(timeblockLead).toEqual({ beside: true, sameRow: true });
           if (narrowAgenda) {
             await calendar.locator('.tnc-strip-title').click();
             await expect(calendar.locator('.tnc-strip-title')).toHaveAttribute('aria-expanded', 'true');

@@ -1392,19 +1392,28 @@ body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__pri
     grid-row: 2;
 }
 
-/* Calendar property events show a file icon where tasks show their status. */
-body .tasknotes-plugin .task-card .property-event-card__icon {
+/* Calendar list events show their kind's icon where tasks show their status:
+   a file for property events, a calendar for feed events and a clock for timeblocks. */
+body .tasknotes-plugin .task-card :is(.property-event-card__icon, .ics-card__icon, .timeblock-card__icon) {
     display: inline-flex;
     grid-column: 1;
     grid-row: 1;
+    align-self: start;
+    justify-self: start;
     align-items: center;
     justify-content: center;
+    min-width: var(--tn-board-control-size, var(--tn-touch-target));
+    min-height: var(--tn-board-control-size, var(--tn-touch-target));
+    color: var(--current-status-color, var(--tn-text-muted));
+}
+
+body .tasknotes-plugin .task-card .property-event-card__icon {
     color: var(--tn-text-faint);
 }
 
-.tasknotes-plugin .property-event-card__icon svg {
-    width: var(--icon-s);
-    height: var(--icon-s);
+.tasknotes-plugin :is(.property-event-card__icon, .ics-card__icon, .timeblock-card__icon) svg {
+    width: var(--tn-status-glyph);
+    height: var(--tn-status-glyph);
 }
 
 body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata {

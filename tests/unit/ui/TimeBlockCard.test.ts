@@ -18,7 +18,7 @@ describe("timeblock calendar cards", () => {
 		const date = new Date("2026-11-04T13:00:00");
 		const card = createTimeBlockCard(timeblock, plugin, { eventDate: date, originalDate: "2026-11-04" });
 		expect(card.querySelector(".task-card__title")?.textContent).toBe("Focus time");
-		expect(card.querySelector(".tn-chip.timeblock-card__time")?.textContent).toBe("13:00 - 14:00");
+		expect(card.querySelector(".timeblock-card__time")?.textContent).toBe("13:00 – 14:00");
 		expect(card.querySelector(".task-card__description")?.textContent).toBe(timeblock.description);
 		expect(card.querySelector(".timeblock-card__attachments")?.textContent).toBe("1 attachment");
 		card.click();

@@ -686,19 +686,6 @@
     opacity: 1;
 }
 
-.tasknotes-plugin .timeblock-card__icon,
-.tasknotes-plugin .timeblock-card__attachments svg {
-    display: inline-flex;
-    width: var(--tn-glyph-size);
-    height: var(--tn-glyph-size);
-    flex: none;
-    color: var(--current-status-color, var(--tn-text-muted));
-}
-
-.tasknotes-plugin .timeblock-card__time {
-    font-variant-numeric: tabular-nums;
-}
-
 .tasknotes-plugin .task-card--timeblock .task-card__description {
     margin-top: var(--tn-space-1);
     color: var(--tn-text-muted);
@@ -1095,9 +1082,77 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     padding: 0;
 }
 
-/* Property events have no list-entry wrapper, so they carry its padding. */
-.tasknotes-plugin #bases-calendar .tn-calendar-list-card .task-card--property-event {
+/* Event cards have no list-entry wrapper, so they carry its padding and stay as tall as task rows. */
+.tasknotes-plugin #bases-calendar .tn-calendar-list-card :is(.task-card--property-event, .task-card--ics, .task-card--timeblock) {
+    min-height: calc(var(--tn-task-row-height) + 2 * var(--tn-space-half));
     padding: var(--tn-space-half) var(--tn-space-2);
+}
+
+/* A timeblock's description sits below the main row, so it is indented to the title column by hand. */
+.tasknotes-plugin #bases-calendar .tn-calendar-list-card .task-card--timeblock .task-card__description {
+    margin-top: 0;
+    padding-inline-start: var(--tn-touch-target);
+    padding-block-end: var(--tn-space-1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin #bases-calendar .tn-calendar-list-card .task-card--timeblock .task-card__description {
+        padding-inline-start: calc(var(--tn-control-sm) + var(--tn-space-1));
+    }
+}
+
+/* Event metadata reads like a task's: times match the list stamp, the rest is muted text. */
+.tasknotes-plugin .tn-calendar-list-card :is(.task-card--ics, .task-card--timeblock) .task-card__metadata {
+    color: var(--tn-text-metadata);
+}
+
+.tasknotes-plugin .tn-calendar-list-card :is(.ics-card__time, .timeblock-card__time) {
+    display: flex;
+    align-items: center;
+    min-height: var(--tn-control-sm);
+    font-size: var(--tn-type-2xs);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin :is(.ics-card__location, .timeblock-card__attachments) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    min-width: 0;
+}
+
+.tasknotes-plugin .ics-card__location-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tasknotes-plugin :is(.ics-card__meta-icon, .timeblock-card__attachments > span:first-child) {
+    display: inline-flex;
+    flex: none;
+}
+
+.tasknotes-plugin :is(.ics-card__meta-icon, .timeblock-card__attachments > span:first-child) svg {
+    width: var(--tn-glyph-size);
+    height: var(--tn-glyph-size);
+}
+
+.tasknotes-plugin .ics-card__source {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    white-space: nowrap;
+}
+
+/* Feed metadata is free text (a location, a calendar name), so a faint dot keeps the parts apart. */
+.tasknotes-plugin .task-card--ics .task-card__metadata > :not(:first-child)::before {
+    content: "·";
+    color: var(--tn-text-faint);
+}
+
+.tasknotes-plugin .ics-card__related-note-indicator {
+    margin-inline-start: var(--tn-space-1);
 }
 
 .tasknotes-plugin .tn-calendar-agenda-strip :is(.tnc-strip-nav, .tnc-strip-today, .tnc-strip-title, .tnc-btn) {

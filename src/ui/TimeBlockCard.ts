@@ -25,9 +25,14 @@ export function createTimeBlockCard(
 	const opts = { ...DEFAULT_TIMEBLOCK_CARD_OPTIONS, ...options };
 	const card = activeWindow.createDiv({ cls: "task-card task-card--timeblock" });
 	card.dataset.key = `timeblock-${timeblock.id}`;
-	card.style.setProperty("--current-status-color", timeblock.color || "var(--text-muted)");
+	// Same colour the timeblock has in the grid views.
+	card.style.setProperty(
+		"--current-status-color",
+		timeblock.color || plugin.settings?.calendarViewSettings?.defaultTimeblockColor || "var(--text-muted)"
+	);
 	const mainRow = card.createDiv({ cls: "task-card__main-row" });
 	const icon = mainRow.createSpan({ cls: "timeblock-card__icon" });
+	icon.setAttribute("aria-hidden", "true");
 	setIcon(icon, "clock");
 	const content = mainRow.createDiv({ cls: "task-card__content" });
 	content.createDiv({ cls: "task-card__title" }).createSpan({
@@ -35,13 +40,15 @@ export function createTimeBlockCard(
 		text: timeblock.title || uiText(msg({ message: "Timeblock", context: "ui/TimeBlockCard: createTimeBlockCard display" })),
 	});
 	const metadata = content.createDiv({ cls: "task-card__metadata" });
-	metadata.createSpan({ cls: "tn-chip timeblock-card__time", text: `${timeblock.startTime} - ${timeblock.endTime}` });
+	metadata.createSpan({ cls: "timeblock-card__time", text: `${timeblock.startTime} – ${timeblock.endTime}` });
 	if (opts.showDescription && timeblock.description) {
 		card.createDiv({ cls: "task-card__description", text: timeblock.description });
 	}
 	if (opts.showAttachments && timeblock.attachments && timeblock.attachments.length > 0) {
-		const attachments = metadata.createSpan({ cls: "tn-chip timeblock-card__attachments" });
-		setIcon(attachments.createSpan(), "paperclip");
+		const attachments = metadata.createSpan({ cls: "timeblock-card__attachments" });
+		const attachmentIcon = attachments.createSpan();
+		attachmentIcon.setAttribute("aria-hidden", "true");
+		setIcon(attachmentIcon, "paperclip");
 		attachments.createSpan({ text: uiText(msg({ message: "{count, plural, one {# attachment} other {# attachments}}", context: "timeblock attachment count" }), { count: timeblock.attachments.length }) });
 	}
 	card.addEventListener("click", () => {
