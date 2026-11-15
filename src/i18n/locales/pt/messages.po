@@ -4161,6 +4161,7 @@ msgstr "Excluir “{title}” de {provider}?"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
 msgstr "Excluir {name}?"

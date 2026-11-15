@@ -41,6 +41,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Added visible removal actions for nested entries in native list settings, including custom user fields, statuses, priorities, default reminders, calendar subscriptions, and webhooks. Existing confirmation and note-preservation behavior is unchanged.
 - (#2119) TaskNotes API tasks and events no longer expose internal Bases data, which could cause circular JSON errors in companion plugins.
   - Thanks to @chrabia for reporting this and @konstantinopolka for finding the cause
 - (#2524) Generated Bases formulas use `isEmpty()` so missing time entries show **Not started**. Existing, manually edited Base files are not replaced automatically. See [Default Base Templates](https://tasknotes.dev/views/default-base-templates/).

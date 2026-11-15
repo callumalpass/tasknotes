@@ -4159,6 +4159,7 @@ msgstr "要从 {provider} 删除“{title}”吗？"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
 msgstr "删除 {name}？"

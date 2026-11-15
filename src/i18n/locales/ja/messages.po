@@ -4159,6 +4159,7 @@ msgstr "{provider} から「{title}」を削除しますか？"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/properties.ts
+#: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.native.deleteEntry"
 msgid "Delete {name}?"
 msgstr "{name} を削除しますか？"
