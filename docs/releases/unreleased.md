@@ -34,11 +34,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
-- Improved compatibility with Obsidian popout windows for context menus, editor controls, and Kanban drag feedback.
-- Removed an iOS-incompatible regular expression from linked-note task conversion while preserving embedded-note handling.
 - (#2555) Natural language parsing now uses the NLP triggers shown in settings. Previously, if saved settings had no project trigger, an empty one, or one with surrounding spaces, settings showed `+` as enabled, but text like `+Admin` was not added to projects and stayed in the task title. Trigger characters entered in settings are now saved without surrounding spaces.
   - Thanks to @jdhauck for reporting
-
-## Changed
-
-- Updated Obsidian plugin guideline checks and included manifest and license validation in the strict lint checks.
