@@ -6438,8 +6438,8 @@ msgstr "일반"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr "설정 변경에 따라 보관함 루트에 mdbase 유형 파일(mdbase.yaml 및 _types/task.md)을 생성하고 관리합니다."
+msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
+msgstr "설정이 변경되면 mdbase.yaml과 설정된 유형 파일을 생성하고 갱신합니다. 새 설정에서는 _mdbase/types를 사용하며 기존 보관함은 원래 폴더를 유지합니다."
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
@@ -6641,6 +6641,11 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "숨길 태그 범위"
 
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
+msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
+msgstr "_mdbase, 설정된 유형 및 계약 폴더, _settings, mdbase 스키마 폴더를 숨깁니다. 해당 파일은 검색과 빠른 전환기에 계속 표시됩니다."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
@@ -6660,6 +6665,11 @@ msgstr "빈 스윔레인 숨기기"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "작업 카드에서 식별 태그 숨기기"
+
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
+msgid "Hide mdbase folders in the file explorer"
+msgstr "파일 탐색기에서 mdbase 폴더 숨기기"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"

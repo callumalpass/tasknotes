@@ -6438,8 +6438,8 @@ msgstr "常规"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr "随设置的更改，在仓库根目录生成并维护 mdbase 类型文件（mdbase.yaml 和 _types/task.md）。"
+msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
+msgstr "随设置更改生成和维护 mdbase.yaml 及已配置的类型文件。新建配置使用 _mdbase/types；现有仓库保留原来的文件夹。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
@@ -6639,6 +6639,11 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "隐藏标签范围"
 
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
+msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
+msgstr "隐藏 _mdbase、已配置的类型和契约文件夹、_settings 以及 mdbase 架构文件夹。其中的文件仍会显示在搜索和快速切换中。"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
@@ -6658,6 +6663,11 @@ msgstr "隐藏空泳道"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "在任务卡片中隐藏识别标签"
+
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
+msgid "Hide mdbase folders in the file explorer"
+msgstr "在文件列表中隐藏 mdbase 文件夹"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"

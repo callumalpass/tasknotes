@@ -6439,8 +6439,8 @@ msgstr "Generale"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr "Genera e mantieni i file di tipo mdbase (mdbase.yaml e _types/task.md) nella radice della cassaforte al variare delle impostazioni."
+msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
+msgstr "Genera e aggiorna mdbase.yaml e i file dei tipi configurati quando modifichi le impostazioni. Le nuove configurazioni usano _mdbase/types; i vault esistenti mantengono le proprie cartelle."
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
@@ -6642,6 +6642,11 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "Ambito delle etichette nascoste"
 
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
+msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
+msgstr "Nasconde _mdbase, le cartelle configurate per tipi e contratti, _settings e le cartelle degli schemi mdbase. I loro file continuano ad apparire nella ricerca e nella selezione rapida."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
@@ -6661,6 +6666,11 @@ msgstr "Nascondi righe vuote"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "Nascondi etichette identificative nelle schede delle attività"
+
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
+msgid "Hide mdbase folders in the file explorer"
+msgstr "Nascondi cartelle mdbase nell’esplora file"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"

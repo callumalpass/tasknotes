@@ -6438,8 +6438,8 @@ msgstr "一般"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr "設定の変更に合わせて、保管庫のルートに mdbase 型ファイル（mdbase.yaml と _types/task.md）を生成し、維持します。"
+msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
+msgstr "設定の変更に合わせて mdbase.yaml と設定された型ファイルを生成・更新します。新規セットアップでは _mdbase/types を使用し、既存の保管庫では元のフォルダーを維持します。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
@@ -6641,6 +6641,11 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "非表示にするタグの範囲"
 
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
+msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
+msgstr "_mdbase、設定された型とコントラクトのフォルダー、_settings、mdbase のスキーマフォルダーを非表示にします。これらのファイルは検索とクイックスイッチャーには引き続き表示されます。"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
@@ -6660,6 +6665,11 @@ msgstr "空のスイムレーンを非表示"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "タスクカードで識別タグを非表示"
+
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
+msgid "Hide mdbase folders in the file explorer"
+msgstr "ファイルエクスプローラーで mdbase フォルダーを非表示にする"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"

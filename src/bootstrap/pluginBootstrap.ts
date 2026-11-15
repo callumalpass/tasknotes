@@ -13,6 +13,7 @@ import {
 } from "../types";
 import { RequestDeduplicator, PredictivePrefetcher } from "../utils/RequestDeduplicator";
 import { DOMReconciler, UIStateManager } from "../utils/DOMReconciler";
+import { installMdbaseFolderVisibility } from "../services/MdbaseFolderVisibility";
 import { FieldMapper } from "../services/FieldMapper";
 import { StatusManager } from "../services/StatusManager";
 import { PriorityManager } from "../services/PriorityManager";
@@ -394,6 +395,7 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		}
 
 		plugin.injectCustomStyles();
+		installMdbaseFolderVisibility(plugin);
 		registerActiveViews(plugin);
 		registerEditorIntegrations(plugin);
 

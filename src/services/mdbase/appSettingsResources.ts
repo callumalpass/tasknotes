@@ -1,8 +1,13 @@
-import { TASKNOTES_SETTINGS_PATH, TASKNOTES_SETTINGS_TYPE } from "@tasknotes/model/settings";
+import { TASKNOTES_SETTINGS_PATH, TASKNOTES_SETTINGS_TYPE, TASKNOTES_SETTINGS_APP, TASKNOTES_SETTINGS_TYPE_VERSION, legacyAppSettingsPath } from "@tasknotes/model/settings";
 import { canonicalTaskNotesResources } from "../canonicalTaskNotesPack";
 
 /** The TaskNotes settings record, relative to the collection root. */
 export const APP_SETTINGS_RECORD_PATH = TASKNOTES_SETTINGS_PATH;
+export const LEGACY_APP_SETTINGS_RECORD_PATH = legacyAppSettingsPath(TASKNOTES_SETTINGS_APP);
+
+export function isAppSettingsRecordPath(path: string): boolean {
+	return path === APP_SETTINGS_RECORD_PATH || path === LEGACY_APP_SETTINGS_RECORD_PATH;
+}
 
 export type AppSettingsSupportResource = {
 	path: string;
@@ -30,7 +35,7 @@ export function appSettingsSchemasFolder(contractsFolder: string): string {
 
 /**
  * The settings contracts, their schemas and the tasknotes-settings type, laid
- * out as the tasknotes.task 0.3.0-rc.19 pack installs them.
+ * out as the tasknotes.task 0.3.0-rc.21 pack installs them.
  */
 export function appSettingsSupportResources(
 	contractsFolder: string,
@@ -38,18 +43,24 @@ export function appSettingsSupportResources(
 ): AppSettingsSupportResource[] {
 	const schemas = appSettingsSchemasFolder(contractsFolder);
 	return [
-		...CONTRACTS.flatMap((id) => [
-			{ path: `${schemas}/${id}/1.0.0.schema.json`, content: document(`schemas/${id}/1.0.0.schema.json`), seed: false },
-			{ path: `${contractsFolder}/${id}/1.0.0.md`, content: document(`contracts/${id}/1.0.0.md`), seed: false },
-		]),
-		{ path: `${typesFolder}/${TASKNOTES_SETTINGS_TYPE}.md`, content: document("types/tasknotes-settings/1.md"), seed: true },
+		...canonicalTaskNotesResources
+			.filter(({ source }) => CONTRACTS.some((id) =>
+				source.startsWith(`schemas/${id}/`) || source.startsWith(`contracts/${id}/`)))
+			.map(({ source, document: content }) => ({
+				path: source.startsWith("schemas/")
+					? `${schemas}/${source.slice("schemas/".length)}`
+					: `${contractsFolder}/${source.slice("contracts/".length)}`,
+				content,
+				seed: false,
+			})),
+		{ path: `${typesFolder}/${TASKNOTES_SETTINGS_TYPE}.md`, content: document(`types/tasknotes-settings/${TASKNOTES_SETTINGS_TYPE_VERSION}.md`), seed: true },
 	];
 }
 
 /** Whether a path is one the settings support resources or record may occupy. */
 export function isAppSettingsMetadataPath(path: string, contractsFolder: string, typesFolder: string): boolean {
 	return (
-		path === APP_SETTINGS_RECORD_PATH ||
+		isAppSettingsRecordPath(path) ||
 		appSettingsSupportResources(contractsFolder, typesFolder).some((resource) => resource.path === path)
 	);
 }

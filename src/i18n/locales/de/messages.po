@@ -6439,8 +6439,8 @@ msgstr "Allgemein"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.integrations.mdbaseSpec.enable.description"
-msgid "Generate and maintain mdbase type files (mdbase.yaml and _types/task.md) at the vault root as your settings change."
-msgstr "mdbase-Typdateien (mdbase.yaml und _types/task.md) im Stammordner des Vaults erzeugen und bei Einstellungsänderungen pflegen."
+msgid "Generate and maintain mdbase.yaml and the configured type files as your settings change. New setups use _mdbase/types; existing vaults keep their folders."
+msgstr "mdbase.yaml und die konfigurierten Typdateien bei Einstellungsänderungen erstellen und pflegen. Neue Einrichtungen verwenden _mdbase/types; bestehende Vaults behalten ihre Ordner."
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.useMarkdownLinks.description"
@@ -6640,6 +6640,11 @@ msgctxt "settings.general.taskIdentification.hideIdentifyingTagsMode.name"
 msgid "Hidden tag scope"
 msgstr "Umfang der ausgeblendeten Tags"
 
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.description"
+msgid "Hide _mdbase, configured type and contract folders, _settings, and mdbase schema folders. Their files still appear in search and the quick switcher."
+msgstr "_mdbase, konfigurierte Typ- und Vertragsordner, _settings und mdbase-Schemaordner ausblenden. Ihre Dateien erscheinen weiterhin in der Suche und im Schnellwechsler."
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.overdue.hideCompletedName"
 msgid "Hide completed tasks from overdue"
@@ -6659,6 +6664,11 @@ msgstr "Leere Swimlanes ausblenden"
 msgctxt "settings.general.taskIdentification.hideIdentifyingTags.name"
 msgid "Hide identification tags in task cards"
 msgstr "Identifikations-Tags in Aufgabenkarten ausblenden"
+
+#: src/settings/TaskNotesSettingTab.ts
+msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
+msgid "Hide mdbase folders in the file explorer"
+msgstr "mdbase-Ordner im Datei-Explorer ausblenden"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"

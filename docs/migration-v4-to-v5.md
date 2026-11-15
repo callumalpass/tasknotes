@@ -55,9 +55,27 @@ Existing tasks without an `id` remain valid and are not changed. Path-based inte
 
 If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract (version 0.3.0-rc.6) used by TaskNotes App and other compatible tools. It is the same contract, byte for byte, that TaskNotes App installs, so the plugin and the app can share a collection. Tasks can list assignees as links to person notes; the property is optional.
 
+### mdbase metadata folders
+
+When TaskNotes first creates `mdbase.yaml`, including a v4 to v5 upgrade without
+an existing config, it explicitly uses `_mdbase/types/` and `_mdbase/contracts/`.
+Contract schemas live beside them in `_mdbase/schemas/` (and pack task schemas in
+`_mdbase/_schemas/tasknotes/`). `_mdbase/README.md` explains the folder; an existing
+README is never overwritten.
+
+A vault that already has `mdbase.yaml` keeps its configured folders. A config
+without folder settings still uses the spec defaults `_types/` and `_contracts/`.
+No existing metadata is moved. New settings records use `_mdbase/settings/`; existing records in `_settings/` stay there.
+
+**Hide mdbase folders in the file explorer** is on by default under Calendars &
+integrations. Turn it off to browse these folders; their files remain available
+in search and the quick switcher. See [Integrations](settings/integrations.md).
+
 ### TaskNotes settings record
 
-Collection-wide TaskNotes behaviour is stored in `_settings/dev.tasknotes.md`, a settings record that TaskNotes App reads and writes too. It holds natural-language capture triggers, body templates for new tasks and occurrences, whether archiving moves the file and where to, whether completing a task stops its timer, whether recurring tasks uncheck body checkboxes, the link format written to frontmatter, and per-status next status, cycle exclusion and auto-archive settings. Everything else, such as property mappings, statuses, priorities and filename rules, stays in the task type.
+Collection-wide TaskNotes behaviour is stored in `_mdbase/settings/dev.tasknotes.md` (or an existing `_settings/dev.tasknotes.md`), a settings record that TaskNotes App reads and writes too. It holds natural-language capture triggers, body templates for new tasks and occurrences, whether archiving moves the file and where to, whether completing a task stops its timer, whether recurring tasks uncheck body checkboxes, the link format written to frontmatter, and per-status next status, cycle exclusion and auto-archive settings. Everything else, such as property mappings, statuses, priorities and filename rules, stays in the task type.
+
+TaskNotes reads the new path first, then the legacy path, and saves to the path it read. When neither exists, it creates the record at `_mdbase/settings/dev.tasknotes.md`. It never moves a record.
 
 TaskNotes creates the record when it upgrades a collection: from your saved settings for a v4 collection, or from the earlier task type for a 5.0 beta or TaskNotes App collection. This happens in the same backed-up step as the task type upgrade. If the record already exists, TaskNotes keeps every setting it holds and adds only the ones the upgrade moved. TaskNotes also starts the record from your settings when it creates a new collection.
 
@@ -65,7 +83,7 @@ Outside those upgrades, opening a vault never creates or changes the record. A s
 
 Editing the record changes these settings in TaskNotes; changing them in TaskNotes writes only the changed fields to the record, creating it if needed. Other fields and the note body are kept. If both changed, TaskNotes asks which to keep. A record written by a newer settings version is used as written and not changed.
 
-If another file in `_settings/` also claims to be the TaskNotes collection settings record (`app: dev.tasknotes` and `scope: collection`), such as a sync conflict copy named `dev.tasknotes (conflicted copy).md`, TaskNotes shows a notice naming those files. It keeps using `_settings/dev.tasknotes.md` and does not change, merge or delete the others. Copy any settings you want to keep into `_settings/dev.tasknotes.md`, then delete the other files.
+If another file in `_mdbase/settings/` or `_settings/` also claims to be the TaskNotes collection settings record (`app: dev.tasknotes` and `scope: collection`), such as a sync conflict copy named `dev.tasknotes (conflicted copy).md`, TaskNotes shows a notice naming those files. It keeps using the resolved record and does not change, merge or delete the others. Copy any settings you want to keep into the record named in the notice, then delete the other files.
 
 When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. Generated formats from 4.3.2 through 4.18.0 are recognized using their historical writers and your saved settings (including a legacy single user field, and user field names with surrounding spaces), including BOM/CRLF formatting and reordered YAML mapping keys. Exact historical output containing v4's invalid unquoted status values can also be regenerated safely from those settings. The original bytes of `mdbase.yaml`, the task type and replaced support resources are kept under `.tasknotes/migrations/`; task notes are never rewritten.
 

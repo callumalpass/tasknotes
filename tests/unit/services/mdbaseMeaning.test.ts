@@ -92,7 +92,7 @@ describe("migration meaning preservation", () => {
 		expect(after.implements[0].fields).toEqual({ ...before.implements[0].fields, assignees: "assignees" });
 		// rc.6 moves app behaviour out of the binding into the settings record, unchanged.
 		expect(after.implements[0].binding).toEqual(withoutTaskNotesAppSettings(before.implements[0].binding));
-		const record = readAppSettingsFrontmatter(h.files.get("_settings/dev.tasknotes.md")!)!;
+		const record = readAppSettingsFrontmatter(h.files.get("_mdbase/settings/dev.tasknotes.md")!)!;
 		expect(record).toMatchObject(taskNotesAppSettingsFromLegacyBinding(before.implements[0].binding));
 		expect(after.implements[0].fields.id).toBe("uid");
 		expect(after.implements[0].binding.archive.archived_tag).toBe("cold");

@@ -60,7 +60,7 @@ mtn init ~/tasks
 mtn config --set collectionPath=~/tasks
 ```
 
-This generates `mdbase.yaml`, `_types/task.md`, and a `tasks/` folder with sensible defaults (statuses: open, in-progress, done, cancelled; priorities: low, normal, high, urgent).
+This generates `mdbase.yaml`, the task type (at `_mdbase/types/task.md` in new TaskNotes plugin setups), and a `tasks/` folder with sensible defaults (statuses: open, in-progress, done, cancelled; priorities: low, normal, high, urgent).
 
 ## Creating tasks
 
@@ -85,7 +85,7 @@ mtn create "Water plants every monday #home"
 | Recurrence | `every day`, `weekly`, `every monday` | Recurrence rule |
 | Estimate | `~30m`, `~2h` | Time estimate |
 
-The NLP parser reads your collection's status and priority enum values from `_types/task.md`, so any custom values you define there are automatically recognized.
+The NLP parser reads your collection's status and priority enum values from the configured task type (`_mdbase/types/task.md` in new TaskNotes plugin setups; older vaults keep their existing path, typically `_types/task.md`), so any custom values you define there are automatically recognized.
 
 ## Querying tasks
 
