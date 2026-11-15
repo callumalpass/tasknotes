@@ -166,8 +166,13 @@ export class MiniCalendarView extends BasesViewBase {
 		this.readViewOptions();
 		// Call parent onload which sets up container and listeners
 		super.onload();
-		if (this.plugin.icsSubscriptionService) {
-			this.register(this.plugin.icsSubscriptionService.on("data-changed", () => {
+		for (const provider of [
+			this.plugin.icsSubscriptionService,
+			this.plugin.googleCalendarService,
+			this.plugin.microsoftCalendarService,
+		]) {
+			if (!provider) continue;
+			this.register(provider.on("data-changed", () => {
 				if (this.rootElement?.isConnected) void this.render();
 			}));
 		}

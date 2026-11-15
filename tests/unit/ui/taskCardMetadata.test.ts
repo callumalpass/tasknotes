@@ -95,6 +95,10 @@ describe("taskCardMetadata", () => {
 		jest.clearAllMocks();
 	});
 
+	afterEach(() => {
+		jest.useRealTimers();
+	});
+
 	describe("date metadata state classes", () => {
 		beforeEach(() => {
 			jest.useFakeTimers();
@@ -222,6 +226,8 @@ describe("taskCardMetadata", () => {
 	});
 
 	it("shows an occurrence's own date read-only instead of the series' date controls", () => {
+		// Keep the fixed Nov 15 occurrence outside Today/Tomorrow formatting.
+		jest.useFakeTimers({ now: new Date("2026-11-01T12:00:00Z") });
 		const plugin = createPlugin();
 		const { card, metadataLine } = createMetadataHost();
 

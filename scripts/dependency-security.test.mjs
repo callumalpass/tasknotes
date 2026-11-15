@@ -96,6 +96,20 @@ test("installed model/SDK/Jest consumers resolve to the maintained forks", () =>
   assert.equal(require("deepmerge/package.json").name, "@tasknotes/deepmerge");
 });
 
+test("MCP Hono dependencies resolve only to the patched pinned releases", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  const lock = JSON.parse(readFileSync(new URL("../package-lock.json", import.meta.url), "utf8"));
+  for (const [name, version] of [["hono", "4.13.16"], ["@hono/node-server", "2.1.6"]]) {
+    assert.equal(pkg.overrides[name], version);
+    const installed = JSON.parse(readFileSync(new URL(`../node_modules/${name}/package.json`, import.meta.url), "utf8"));
+    assert.equal(installed.version, version);
+    const entries = Object.entries(lock.packages).filter(([path]) =>
+      path === `node_modules/${name}` || path.endsWith(`/node_modules/${name}`));
+    assert.ok(entries.length > 0);
+    for (const [, dependency] of entries) assert.equal(dependency.version, version);
+  }
+});
+
 test("documentation tooling pins every Zod consumer to the maintained fork", () => {
   const pkg = JSON.parse(readFileSync(new URL("../docs-builder/package.json", import.meta.url), "utf8"));
   const lock = JSON.parse(readFileSync(new URL("../docs-builder/package-lock.json", import.meta.url), "utf8"));
