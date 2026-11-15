@@ -1082,8 +1082,8 @@ msgstr "15分前"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.step1.name"
-msgid "2. Install mdbase Connect"
-msgstr "2. mdbase Connect をインストール"
+msgid "2. Choose a sync option"
+msgstr "2. 同期方法を選ぶ"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
@@ -4316,6 +4316,16 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "説明："
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.desktop"
+msgid "Desktop app"
+msgstr "デスクトップアプリ"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.description"
+msgid "Desktop app: add this vault’s folder and turn on sync. Obsidian plugin: follow the setup steps in the plugin to sync this vault."
+msgstr "デスクトップアプリ：この保管庫のフォルダを追加し、同期を有効にします。Obsidianプラグイン：プラグインのセットアップ手順に従って、この保管庫を同期します。"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderDesc"
 msgid "Destination folder (leave empty for vault root)"
@@ -6525,11 +6535,6 @@ msgctxt "recurrence detail months"
 msgid "in {months}"
 msgstr "{months} に"
 
-#: src/settings/native/tasknotesApp.ts
-msgctxt "settings.tasknotesApp.step2.description"
-msgid "In mdbase Connect, choose Add existing folder and select this vault’s folder, then choose Turn on sync."
-msgstr "mdbase Connect で「既存のフォルダーを追加」を選び、この保管庫のフォルダーを選択してから「同期をオンにする」を選びます。"
-
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "In progress"
@@ -6642,8 +6647,8 @@ msgstr "taskNoteリンクを挿入"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.step1.description"
-msgid "Install the desktop app on the computer that has this vault, then sign in or create an account."
-msgstr "この保管庫があるコンピューターにデスクトップアプリをインストールし、ログインするかアカウントを作成します。"
+msgid "Install either the mdbase desktop app or the mdbase sync plugin for Obsidian. Sign in or create an account; you only need one of them."
+msgstr "mdbaseのデスクトップアプリ、またはObsidian用のmdbase同期プラグインをインストールしてください。ログインするかアカウントを作成します。両方をインストールする必要はありません。"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.header"
@@ -8157,11 +8162,6 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "標準"
 
-#: src/settings/native/tasknotesApp.ts
-msgctxt "settings.tasknotesApp.status.notAdded"
-msgid "Not added to mdbase Connect yet."
-msgstr "まだ mdbase Connect に追加されていません。"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8313,6 +8313,11 @@ msgstr "OAuth リスナーの待受ポートを取得できませんでした"
 msgctxt "services/OAuthService: OAuthService.waitForCallback display"
 msgid "OAuth timeout - authorization took too long"
 msgstr "OAuth がタイムアウトしました。認証に時間がかかりすぎました"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.plugin"
+msgid "Obsidian plugin"
+msgstr "Obsidianプラグイン"
 
 #: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
@@ -13375,6 +13380,11 @@ msgstr "新しいタスクでアクティブノートを使用:"
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "ボディテンプレートを使用"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.notAdded"
+msgid "Use either sync option below."
+msgstr "以下のいずれかの方法で同期できます。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"

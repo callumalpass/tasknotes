@@ -38,4 +38,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Updated TaskNotes App setup instructions to offer either the mdbase desktop app or the Obsidian sync plugin, with direct links to both. See [Use TaskNotes App with your vault](https://tasknotes.dev/guides/tasknotes-app/).
+
 ## Security

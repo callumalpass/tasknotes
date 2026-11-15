@@ -1083,8 +1083,8 @@ msgstr "15 minuti prima"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.step1.name"
-msgid "2. Install mdbase Connect"
-msgstr "2. Installa mdbase Connect"
+msgid "2. Choose a sync option"
+msgstr "2. Scegli un’opzione di sincronizzazione"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
@@ -4317,6 +4317,16 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "Descrizione:"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.desktop"
+msgid "Desktop app"
+msgstr "App desktop"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.description"
+msgid "Desktop app: add this vault’s folder and turn on sync. Obsidian plugin: follow the setup steps in the plugin to sync this vault."
+msgstr "App desktop: aggiungi la cartella di questo vault e attiva la sincronizzazione. Plugin di Obsidian: segui i passaggi di configurazione del plugin per sincronizzare questo vault."
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderDesc"
 msgid "Destination folder (leave empty for vault root)"
@@ -6526,11 +6536,6 @@ msgctxt "recurrence detail months"
 msgid "in {months}"
 msgstr "mesi: {months}"
 
-#: src/settings/native/tasknotesApp.ts
-msgctxt "settings.tasknotesApp.step2.description"
-msgid "In mdbase Connect, choose Add existing folder and select this vault’s folder, then choose Turn on sync."
-msgstr "In mdbase Connect, scegli «Aggiungi cartella esistente», seleziona la cartella di questo vault, poi scegli «Attiva sincronizzazione»."
-
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "In progress"
@@ -6643,8 +6648,8 @@ msgstr "Inserisci collegamento a un’attività TaskNotes"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.step1.description"
-msgid "Install the desktop app on the computer that has this vault, then sign in or create an account."
-msgstr "Installa l’app desktop sul computer che contiene questo vault, poi accedi o crea un account."
+msgid "Install either the mdbase desktop app or the mdbase sync plugin for Obsidian. Sign in or create an account; you only need one of them."
+msgstr "Installa l’app desktop mdbase oppure il plugin di sincronizzazione mdbase per Obsidian. Accedi o crea un account; basta una delle due opzioni."
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.header"
@@ -8158,11 +8163,6 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "Normale"
 
-#: src/settings/native/tasknotesApp.ts
-msgctxt "settings.tasknotesApp.status.notAdded"
-msgid "Not added to mdbase Connect yet."
-msgstr "Non ancora aggiunto a mdbase Connect."
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8314,6 +8314,11 @@ msgstr "Il listener OAuth non ha reso disponibile la porta assegnata."
 msgctxt "services/OAuthService: OAuthService.waitForCallback display"
 msgid "OAuth timeout - authorization took too long"
 msgstr "Timeout OAuth: l’autorizzazione ha richiesto troppo tempo"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.plugin"
+msgid "Obsidian plugin"
+msgstr "Plugin di Obsidian"
 
 #: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
@@ -13376,6 +13381,11 @@ msgstr "Usa nota attiva per le nuove attività:"
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "Usa modello per il contenuto dell’attività"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.notAdded"
+msgid "Use either sync option below."
+msgstr "Usa una delle due opzioni di sincronizzazione qui sotto."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"

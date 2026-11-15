@@ -1082,8 +1082,8 @@ msgstr "15분 전"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.step1.name"
-msgid "2. Install mdbase Connect"
-msgstr "2. mdbase Connect 설치"
+msgid "2. Choose a sync option"
+msgstr "2. 동기화 방법 선택"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.displayFormatting.timeFormat.options.twentyFourHour"
@@ -4316,6 +4316,16 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "설명:"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.desktop"
+msgid "Desktop app"
+msgstr "데스크톱 앱"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step2.description"
+msgid "Desktop app: add this vault’s folder and turn on sync. Obsidian plugin: follow the setup steps in the plugin to sync this vault."
+msgstr "데스크톱 앱: 이 보관함의 폴더를 추가하고 동기화를 켜세요. Obsidian 플러그인: 플러그인의 설정 단계에 따라 이 보관함을 동기화하세요."
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderDesc"
 msgid "Destination folder (leave empty for vault root)"
@@ -6525,11 +6535,6 @@ msgctxt "recurrence detail months"
 msgid "in {months}"
 msgstr "{months}에"
 
-#: src/settings/native/tasknotesApp.ts
-msgctxt "settings.tasknotesApp.step2.description"
-msgid "In mdbase Connect, choose Add existing folder and select this vault’s folder, then choose Turn on sync."
-msgstr "mdbase Connect에서 ‘기존 폴더 추가’를 선택해 이 보관함의 폴더를 고른 다음 ‘동기화 켜기’를 선택하세요."
-
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "In progress"
@@ -6642,8 +6647,8 @@ msgstr "TaskNote 링크 삽입"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.step1.description"
-msgid "Install the desktop app on the computer that has this vault, then sign in or create an account."
-msgstr "이 보관함이 있는 컴퓨터에 데스크톱 앱을 설치한 다음 로그인하거나 계정을 만드세요."
+msgid "Install either the mdbase desktop app or the mdbase sync plugin for Obsidian. Sign in or create an account; you only need one of them."
+msgstr "mdbase 데스크톱 앱 또는 Obsidian용 mdbase 동기화 플러그인 중 하나를 설치하세요. 로그인하거나 계정을 만드세요. 둘 중 하나만 있으면 됩니다."
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.header"
@@ -8157,11 +8162,6 @@ msgctxt "settings/defaults: defaults label"
 msgid "Normal"
 msgstr "보통"
 
-#: src/settings/native/tasknotesApp.ts
-msgctxt "settings.tasknotesApp.status.notAdded"
-msgid "Not added to mdbase Connect yet."
-msgstr "아직 mdbase Connect에 추가되지 않았습니다."
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "Not Blocked"
@@ -8313,6 +8313,11 @@ msgstr "OAuth 리스너가 바인딩된 포트를 제공하지 않았습니다"
 msgctxt "services/OAuthService: OAuthService.waitForCallback display"
 msgid "OAuth timeout - authorization took too long"
 msgstr "OAuth 시간 초과 - 인증에 너무 오래 걸렸습니다"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.step1.plugin"
+msgid "Obsidian plugin"
+msgstr "Obsidian 플러그인"
 
 #: src/components/noteFileMenu.ts
 msgctxt "contextMenus.task.notices.copyUrlSuccess"
@@ -13375,6 +13380,11 @@ msgstr "새 작업에서 활성 노트 사용:"
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "본문 템플릿 사용"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.status.notAdded"
+msgid "Use either sync option below."
+msgstr "아래 두 가지 동기화 방법 중 하나를 사용하세요."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.useICSEndAsDue.name"

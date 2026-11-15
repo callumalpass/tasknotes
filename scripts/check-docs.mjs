@@ -145,7 +145,7 @@ for (const file of markdownFiles) {
 			!raw ||
 			raw.startsWith("#") ||
 			raw.startsWith("/") ||
-			/^(?:https?:|mailto:|data:)/.test(raw)
+			/^(?:https?:|mailto:|data:|obsidian:\/\/)/.test(raw)
 		) {
 			continue;
 		}

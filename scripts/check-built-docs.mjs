@@ -115,6 +115,7 @@ for (const file of htmlFiles) {
 			!href ||
 			href.startsWith("mailto:") ||
 			href.startsWith("tel:") ||
+			href.startsWith("obsidian://") ||
 			href.startsWith("javascript:") ||
 			href.startsWith("http://") ||
 			href.startsWith("https://") ||

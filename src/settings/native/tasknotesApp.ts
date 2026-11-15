@@ -14,6 +14,7 @@ export const TASKNOTES_APP_URL = "https://app.tasknotes.dev/";
 export const TASKNOTES_APP_STORE_URL = APP_STORE_QR.url;
 export const TASKNOTES_GOOGLE_PLAY_URL = GOOGLE_PLAY_QR.url;
 export const MDBASE_CONNECT_DOWNLOADS_URL = "https://mdbase.dev/downloads/";
+export const MDBASE_SYNC_PLUGIN_URL = "obsidian://show-plugin?id=mdbase-sync";
 export const MDBASE_MCP_URL = "https://mdbase.dev/apps/mcp/";
 export const TASKNOTES_APP_GUIDE_URL = "https://tasknotes.dev/guides/tasknotes-app/";
 
@@ -128,7 +129,7 @@ export function tasknotesAppDefinitions(ctx: SettingsContext): SettingDefinition
 								setting.setDesc(
 									added
 										? t(msg({ message: "Added to mdbase Connect on a computer. Open TaskNotes App and sign in with the same account.", context: "settings.tasknotesApp.status.added" }))
-										: t(msg({ message: "Not added to mdbase Connect yet.", context: "settings.tasknotesApp.status.notAdded" }))
+										: t(msg({ message: "Use either sync option below.", context: "settings.tasknotesApp.status.notAdded" }))
 								);
 							},
 							() => setting.setDesc("")
@@ -150,14 +151,25 @@ export function tasknotesAppDefinitions(ctx: SettingsContext): SettingDefinition
 					],
 				},
 				{
-					name: t(msg({ message: "2. Install mdbase Connect", context: "settings.tasknotesApp.step1.name" })),
-					desc: t(msg({ message: "Install the desktop app on the computer that has this vault, then sign in or create an account.", context: "settings.tasknotesApp.step1.description" })),
-					aliases: ["download", "desktop app"],
-					action: () => open(MDBASE_CONNECT_DOWNLOADS_URL),
+					name: t(msg({ message: "2. Choose a sync option", context: "settings.tasknotesApp.step1.name" })),
+					desc: t(msg({ message: "Install either the mdbase desktop app or the mdbase sync plugin for Obsidian. Sign in or create an account; you only need one of them.", context: "settings.tasknotesApp.step1.description" })),
+					aliases: ["download", "desktop app", "obsidian plugin", "mdbase-sync"],
+					render: (setting) => {
+						setting.addButton((button) =>
+							button
+								.setButtonText(t(msg({ message: "Desktop app", context: "settings.tasknotesApp.step1.desktop" })))
+								.onClick(() => open(MDBASE_CONNECT_DOWNLOADS_URL))
+						);
+						setting.addButton((button) =>
+							button
+								.setButtonText(t(msg({ message: "Obsidian plugin", context: "settings.tasknotesApp.step1.plugin" })))
+								.onClick(() => open(MDBASE_SYNC_PLUGIN_URL))
+						);
+					},
 				},
 				{
 					name: t(msg({ message: "3. Add this vault", context: "settings.tasknotesApp.step2.name" })),
-					desc: t(msg({ message: "In mdbase Connect, choose Add existing folder and select this vault’s folder, then choose Turn on sync.", context: "settings.tasknotesApp.step2.description" })),
+					desc: t(msg({ message: "Desktop app: add this vault’s folder and turn on sync. Obsidian plugin: follow the setup steps in the plugin to sync this vault.", context: "settings.tasknotesApp.step2.description" })),
 					render: (setting) => {
 						if (!folder) return;
 						setting.descEl.createDiv().createEl("code", { text: uiData(folder, "Vault folder path on this computer") });
