@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Added visible removal actions for nested entries in native list settings, including custom user fields, statuses, priorities, default reminders, calendar subscriptions, and webhooks. Existing confirmation and note-preservation behavior is unchanged. Thanks to Callum for reporting.
