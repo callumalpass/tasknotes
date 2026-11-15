@@ -141,6 +141,7 @@ export function decorateCalendarIcsEventElement({
 		iconEl.setAttribute("aria-hidden", "true");
 		setIcon(iconEl, "calendar");
 		element.appendChild(iconEl);
+		element.classList.add("has-provider-icon");
 	}
 
 	const titleEl = element.querySelector(".tnc-item-title");

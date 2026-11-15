@@ -10,9 +10,11 @@ import {
 } from "./obsidian";
 
 let instance: ObsidianApp;
+let originalMobile: boolean;
 
 test.beforeAll(async () => {
 	instance = await launchObsidian();
+	originalMobile = await instance.page.evaluate(() => document.body.classList.contains("is-mobile"));
 });
 
 test.afterAll(async () => {
@@ -23,6 +25,16 @@ test.afterAll(async () => {
 			delete (window as any).__tasknotesSetupOpen;
 			delete (window as any).__tasknotesSetupUrls;
 		});
+		const mobile = await instance.page.evaluate(() => document.body.classList.contains("is-mobile"));
+		if (mobile !== originalMobile) {
+			await Promise.all([
+				instance.page.waitForEvent("framenavigated"),
+				instance.page.evaluate((originalMobile) => (window as any).app.emulateMobile(originalMobile), originalMobile),
+			]);
+			await instance.page.waitForFunction(() =>
+				(window as any).app?.plugins?.plugins?.tasknotes?.initializationComplete === true
+			);
+		}
 	} finally {
 		await closeObsidian(instance);
 	}

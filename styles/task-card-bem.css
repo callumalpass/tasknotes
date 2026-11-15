@@ -65,7 +65,7 @@
     flex: 1 1 auto;
     min-width: 0;
     font-size: var(--tn-type-md);
-    font-weight: var(--tn-font-weight-medium);
+    font-weight: var(--tn-font-weight-normal);
     line-height: 1.4;
     color: var(--tn-text-normal);
     margin: 0;
