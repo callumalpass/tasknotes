@@ -38,4 +38,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Task card titles now use regular weight instead of medium, so task lists, Kanban boards and calendar list views read lighter. The smaller, muted metadata line still sets each title apart.
+
 ## Security
