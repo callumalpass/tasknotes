@@ -1,4 +1,8 @@
 import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+jest.mock("../../../src/ui/taskMutationUndo", () => ({
+	captureTaskUndo: async (_plugin: unknown, _task: unknown, operation: () => Promise<unknown>) => ({ task: await operation() }),
+}));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ showTaskUndo: jest.fn() }));
 import { TaskEditModal } from "../../../src/modals/TaskEditModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 import type { App } from "obsidian";

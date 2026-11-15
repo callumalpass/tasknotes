@@ -1,4 +1,4 @@
-import { uiLocale } from "../i18n/runtime";
+import { applyModalShell } from "../ui/kit/modal";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice, TAbstractFile, TFile } from "obsidian";
@@ -10,6 +10,7 @@ import { SafeAsync } from "../utils/safeAsync";
 import { MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
+import { formatDateLabel } from "../utils/dateUtils";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ICSEventInfoModal" });
 
@@ -25,6 +26,7 @@ export class ICSEventInfoModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, icsEvent: ICSEvent, subscriptionName?: string) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.icsEvent = icsEvent;
 		this.subscriptionName = subscriptionName;
@@ -66,15 +68,12 @@ export class ICSEventInfoModal extends Modal {
 				? this.icsEvent.start + "T00:00:00"
 				: this.icsEvent.start;
 		const startDate = new Date(startDateStr);
-		const dateFormatter = new Intl.DateTimeFormat(uiLocale(), {
-			dateStyle: "full",
-			...(this.icsEvent.allDay ? {} : { timeStyle: "short" as const, hour12: this.plugin.settings.calendarViewSettings.timeFormat === "12" }),
-		});
-		let dateText = dateFormatter.format(startDate);
+		const formatEventDate = (date: Date) => formatDateLabel(date, this.plugin.settings, "PPPP", !this.icsEvent.allDay);
+		let dateText = formatEventDate(startDate);
 		if (!this.icsEvent.allDay && this.icsEvent.end) {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.end) ? this.icsEvent.end + "T00:00:00" : this.icsEvent.end;
 			const endDate = new Date(endDateStr);
-			if (Number.isFinite(endDate.getTime()) && endDate >= startDate) dateText = dateFormatter.formatRange(startDate, endDate);
+			if (Number.isFinite(endDate.getTime()) && endDate >= startDate) dateText = `${dateText} – ${formatEventDate(endDate)}`;
 		}
 
 		new Setting(contentEl)

@@ -83,8 +83,8 @@ describe("Issue #1348: task modal title layout", () => {
 	it("keeps the modal polish scoped to title and context/tag text fields", () => {
 		const css = readRepoFile("styles/task-modal.css");
 
-		expect(css).toContain(".tasknotes-plugin .title-input");
-		expect(css).toContain(".tasknotes-plugin .title-input-detailed");
-		expect(css).toContain("max-height: calc((var(--font-ui-large) * 1.4 * 3)");
+		expect(css).toContain(".tasknotes-plugin textarea.title-input");
+		expect(css).toContain("textarea.title-input-detailed");
+		expect(css).toContain("--tn-title-line");
 	});
 });

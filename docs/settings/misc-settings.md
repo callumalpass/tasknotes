@@ -39,12 +39,3 @@ Controls chevron placement for expandable subtasks.
 - Right (default)
 - Left (matches group chevrons)
 
-## Disable Note Indexing
-
-Disables indexing of non-task notes to reduce indexing overhead in large vaults.
-
-Trade-off:
-
-- Task workflows remain available.
-- Features that rely on non-task note indexing (for example note/date lookups used by note-oriented UI elements) will have reduced functionality.
-- Plugin reload/restart is recommended after changing this setting.

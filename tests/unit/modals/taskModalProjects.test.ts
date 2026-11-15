@@ -224,7 +224,7 @@ describe("taskModalProjects", () => {
 		});
 
 		expect(container.querySelectorAll(".task-project-item")).toHaveLength(2);
-		expect(container.querySelector(".task-card__project-link")?.textContent).toBe("Alpha.md");
+		expect(container.querySelector(".task-card__project-link")?.textContent).toBe("Alpha");
 		expect(container.querySelector(".task-project-path")?.textContent).toBe(
 			"Projects/Alpha.md"
 		);
@@ -253,5 +253,17 @@ describe("taskModalProjects", () => {
 		});
 
 		expect(container.textContent).toBe("");
+	});
+});
+
+describe("NLP projects in the creation modal", () => {
+	it("writes a resolved wikilink project with the configured link format", () => {
+		const project = file("Projects/Project C.md");
+		const context = {
+			...createContext([], { "Project C": project }),
+			formatLink: (target: TFile) => `[${target.basename}](Projects/Project%20C.md)`,
+		};
+		const items = addTaskModalProjectItemsFromStrings([], ["[[Project C]]"], context);
+		expect(getTaskModalProjectsValue(items)).toBe("[Project C](Projects/Project%20C.md)");
 	});
 });

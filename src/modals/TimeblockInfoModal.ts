@@ -1,4 +1,5 @@
-import { uiLocale } from "../i18n/runtime";
+import { applyModalShell, createModalComposer, createModalTimeField, createModalColorField, renderModalSubmitHint } from "../ui/kit/modal";
+import { createTaskModalTitleTextarea, resizeTaskModalTitleTextarea } from "./taskModalTitleInput";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import {
@@ -11,11 +12,14 @@ import {
 	stringifyYaml,
 	TFile,
 	setTooltip,
+	setIcon,
 	getFrontMatterInfo,
 	parseLinktext,
 	moment as obsidianMoment,
 } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { UndoConflictError } from "../ui/kit/toast";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { openFileSelector } from "./FileSelectorModal";
 import { openTaskSelector } from "./TaskSelectorWithCreateModal";
 import {
@@ -23,9 +27,8 @@ import {
 	getAllDailyNotes,
 	appHasDailyNotesPluginLoaded,
 } from "obsidian-daily-notes-interface";
-import { formatDateForStorage } from "../utils/dateUtils";
-import { colorValueToInputValue, normalizeThemeColor } from "../utils/themeColors";
-import { configureThemeColorInput } from "../settings/components/CardComponent";
+import { formatDateForStorage, formatDateLabel } from "../utils/dateUtils";
+import { normalizeThemeColor } from "../utils/themeColors";
 import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { modifyVaultFile } from "../services/VaultMutationService";
 import { TaskInfo } from "../types";
@@ -71,7 +74,7 @@ export class TimeblockInfoModal extends Modal {
 	private translate: (key: MessageDescriptor, variables?: InterpolationValues) => string;
 
 	// Form fields
-	private titleInput: HTMLInputElement;
+	private titleInput: HTMLTextAreaElement;
 	private descriptionInput: HTMLTextAreaElement;
 	private colorInput: HTMLInputElement;
 
@@ -94,6 +97,7 @@ export class TimeblockInfoModal extends Modal {
 		onChange?: () => void
 	) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.timeblock = { ...timeblock }; // Create a copy for editing
 		this.originalTimeblock = timeblock; // Keep original for comparison
@@ -117,60 +121,29 @@ export class TimeblockInfoModal extends Modal {
 		};
 		this.containerEl.addEventListener("keydown", this.keyboardHandler);
 
-		new Setting(contentEl)
-			.setName(this.translate(msg({ message: "Edit timeblock", context: "modals.timeblockInfo.editHeading" })))
-			.setHeading();
-
-		// Date and time display (read-only)
-		const dateDisplay = contentEl.createDiv({ cls: "timeblock-date-display" });
-		dateDisplay.createEl("strong", {
-			text: this.translate(msg({ message: "Date & time: ", context: "modals.timeblockInfo.dateTimeLabel" })),
+		const { body, properties, footer } = createModalComposer(this);
+		this.titleInput = createTaskModalTitleTextarea({ container: body, className: "tn-modal__title", value: this.timeblock.title || "",
+			placeholder: this.translate(msg({ message: "e.g., Deep work session", context: "modals.timeblockInfo.titlePlaceholder" })),
+			onChange: () => this.validateForm(),
 		});
-		const dateText = uiText(msg({ message: "{value1} from {startTime} to {endTime}", context: "modals/TimeblockInfoModal: TimeblockInfoModal.onOpen display" }), { value1: this.eventDate.toLocaleDateString(uiLocale()), startTime: this.timeblock.startTime, endTime: this.timeblock.endTime });
-		dateDisplay.createSpan({ text: dateText });
-
-		// Title field (editable)
-		new Setting(contentEl)
-			.setName(this.translate(msg({ message: "Title", context: "modals.timeblockInfo.titleLabel" })))
-			.setDesc(this.translate(msg({ message: "Title for your timeblock", context: "modals.timeblockInfo.titleDesc" })))
-			.addText((text) => {
-				this.titleInput = text.inputEl;
-				text.setPlaceholder(this.translate(msg({ message: "e.g., Deep work session", context: "modals.timeblockInfo.titlePlaceholder" })))
-					.setValue(this.timeblock.title || "")
-					.onChange(() => this.validateForm());
-			});
-
-		// Description (editable)
-		new Setting(contentEl)
-			.setName(this.translate(msg({ message: "Description", context: "modals.timeblockInfo.descriptionLabel" })))
-			.setDesc(this.translate(msg({ message: "Optional description for the timeblock", context: "modals.timeblockInfo.descriptionDesc" })))
-			.addTextArea((text) => {
-				this.descriptionInput = text.inputEl;
-				text.setPlaceholder(
-					this.translate(msg({ message: "Focus on new features, no interruptions", context: "modals.timeblockInfo.descriptionPlaceholder" }))
-				).setValue(this.timeblock.description || "");
-				this.descriptionInput.rows = 3;
-			});
-
-		// Color (editable)
-		new Setting(contentEl)
-			.setName(this.translate(msg({ message: "Color", context: "modals.timeblockInfo.colorLabel" })))
-			.setDesc(this.translate(msg({ message: "Optional color for the timeblock", context: "modals.timeblockInfo.colorDesc" })))
-			.addText((text) => {
-				this.colorInput = text.inputEl;
-				text.setPlaceholder(
-					this.translate(msg({ message: "#3b82f6", context: "modals.timeblockInfo.colorPlaceholder" }))
-				).setValue(
-					colorValueToInputValue(
-						this.timeblock.color ||
-							this.plugin.settings.calendarViewSettings.defaultTimeblockColor
-					)
-				);
-				configureThemeColorInput(this.colorInput);
-			});
+		this.titleInput.setAttribute("aria-label", this.translate(msg({ message: "Title", context: "modals.timeblockInfo.titleLabel" })));
+		body.prepend(this.titleInput);
+		this.titleInput.ownerDocument.defaultView?.requestAnimationFrame(() => resizeTaskModalTitleTextarea(this.titleInput));
+		this.descriptionInput = body.createEl("textarea", { cls: "tn-modal__description", attr: {
+			"aria-label": this.translate(msg({ message: "Description", context: "modals.timeblockInfo.descriptionLabel" })),
+			placeholder: this.translate(msg({ message: "Optional description for the timeblock", context: "modals.timeblockInfo.descriptionDesc" })),
+		} });
+		this.descriptionInput.value = this.timeblock.description || "";
+		properties.before(this.descriptionInput);
+		properties.createSpan({ cls: "tn-chip", text: formatDateLabel(this.eventDate, this.plugin.settings) });
+		const startTime = createModalTimeField(properties, this.translate(msg({ message: "Start time", context: "modals.timeblockCreation.startTimeLabel" })), this.timeblock.startTime, this.plugin.settings.calendarViewSettings.timeFormat, () => {});
+		const endTime = createModalTimeField(properties, this.translate(msg({ message: "End time", context: "modals.timeblockCreation.endTimeLabel" })), this.timeblock.endTime, this.plugin.settings.calendarViewSettings.timeFormat, () => {});
+		for (const field of [startTime, endTime]) field.parentElement?.querySelectorAll("select").forEach(select => select.disabled = true);
+		this.colorInput = createModalColorField(properties, this.translate(msg({ message: "Color", context: "modals.timeblockInfo.colorLabel" })), this.timeblock.color || this.plugin.settings.calendarViewSettings.defaultTimeblockColor);
+		this.titleInput.focus();
 
 		// Attachments (editable)
-		new Setting(contentEl)
+		new Setting(body)
 			.setName(this.translate(msg({ message: "Attachments", context: "modals.timeblockInfo.attachmentsLabel" })))
 			.setDesc(this.translate(msg({ message: "Files or notes linked to this timeblock", context: "modals.timeblockInfo.attachmentsDesc" })))
 			.addButton((button) => {
@@ -203,48 +176,15 @@ export class TimeblockInfoModal extends Modal {
 			});
 
 		// Attachments list container
-		this.attachmentsList = contentEl.createDiv({ cls: "timeblock-attachments-list" });
+		this.attachmentsList = body.createDiv({ cls: "timeblock-attachments-list" });
 
 		// Initialize attachments from timeblock
 		await this.initializeAttachments();
 		this.renderAttachmentsList();
 
 		// Buttons
-		const buttonContainer = contentEl.createDiv({ cls: "timeblock-modal-buttons" });
-		buttonContainer.classList.remove(
-			"tn-static-display-block-2a1b75c9",
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		buttonContainer.classList.add("tn-static-display-flex-75816cae");
-		buttonContainer.classList.remove(
-			"tn-static-justify-content-center-03c4bb6f",
-			"tn-static-justify-content-flex-end-455f8cca"
-		);
-		buttonContainer.classList.add("tn-static-justify-content-space-between-a562f4fd");
-		buttonContainer.classList.remove(
-			"tn-static-align-items-baseline-4b95b5c7",
-			"tn-static-align-items-flex-start-0486f781"
-		);
-		buttonContainer.classList.add("tn-static-align-items-center-7c619740");
-		buttonContainer.classList.remove(
-			"tn-static-font-size-12px-b0cc7e05",
-			"tn-static-margin-top-0-5rem-3dc98b5e",
-			"tn-static-margin-top-0-d462248a",
-			"tn-static-margin-top-12px-91e0f558",
-			"tn-static-margin-top-16px-1b0f4999",
-			"tn-static-margin-top-1rem-2239d6d5",
-			"tn-static-margin-top-30px-2fbbbcd4",
-			"tn-static-margin-top-4px-96ad6099",
-			"tn-static-margin-top-8px-8a77e5a3",
-			"tn-static-margin-top-8px-f4f01e68"
-		);
-		buttonContainer.classList.add("tn-static-margin-top-20px-a26bda7d");
+		const buttonContainer = footer;
+		buttonContainer.addClass("timeblock-modal-buttons");
 
 		// Delete button (left side)
 		const deleteButton = buttonContainer.createEl("button", {
@@ -286,6 +226,7 @@ export class TimeblockInfoModal extends Modal {
 			text: this.translate(msg({ message: "Save changes", context: "modals.timeblockInfo.saveButton" })),
 			cls: "mod-cta timeblock-save-button",
 		});
+		renderModalSubmitHint(saveButton);
 		saveButton.addEventListener("click", () => {
 			void this.handleSave();
 		});
@@ -311,19 +252,10 @@ export class TimeblockInfoModal extends Modal {
 	}
 
 	private async initializeAttachments(): Promise<void> {
-		if (!this.timeblock.attachments) return;
-
-		// Convert attachment strings back to TAbstractFile objects
-		for (const attachmentPath of this.timeblock.attachments) {
-			// Remove wikilink brackets if present
-			const cleanPath = attachmentPath.replace(/^\[\[|\]\]$/g, "");
-			const linkpath = parseLinktext(cleanPath.split("|")[0]).path;
-			const file =
-				this.app.metadataCache.getFirstLinkpathDest(linkpath, "") ??
-				this.app.vault.getAbstractFileByPath(cleanPath);
-			if (file && !this.attachmentLinks.has(file.path)) {
+		for (const { file, link } of resolveTimeblockAttachments(this.app, this.timeblock)) {
+			if (!this.attachmentLinks.has(file.path)) {
 				this.selectedAttachments.push(file);
-				this.attachmentLinks.set(file.path, attachmentPath);
+				this.attachmentLinks.set(file.path, link);
 			}
 		}
 	}
@@ -448,9 +380,9 @@ export class TimeblockInfoModal extends Modal {
 			// Remove button
 			const removeBtn = attachmentItem.createEl("button", {
 				cls: "timeblock-attachment-remove",
-				text: "×",
 			});
 			setTooltip(removeBtn, uiText(msg({ message: "Remove attachment", context: "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display" })), { placement: "top" });
+			setIcon(removeBtn, "x");
 			removeBtn.addEventListener("click", (e) => {
 				e.stopPropagation();
 				this.removeAttachment(file);
@@ -488,7 +420,7 @@ export class TimeblockInfoModal extends Modal {
 			// Refresh calendar views
 			this.plugin.emitter.trigger("data-changed");
 
-			new Notice(this.translate(msg({ message: "Timeblock \"{title}\" updated successfully", context: "notices.timeblockUpdatedSuccess" }), { title }));
+			new Notice(this.translate(msg({ message: "Timeblock saved", context: "notices.timeblockUpdatedSuccess" })));
 			this.close();
 		} catch (error) {
 			tasknotesLogger.error("Error updating timeblock:", {
@@ -566,183 +498,16 @@ export class TimeblockInfoModal extends Modal {
 	}
 
 	private async handleDelete(): Promise<void> {
-		// Show confirmation dialog
-		const confirmed = await this.showDeleteConfirmation();
-		if (!confirmed) return;
-
-		try {
-			await this.deleteTimeblockFromDailyNote();
-
-			// Signal immediate update before triggering data change
-			this.onChange?.();
-
-			// Refresh calendar views
-			this.plugin.emitter.trigger("data-changed");
-
-			new Notice(
-				this.translate(msg({ message: "Timeblock \"{title}\" deleted successfully", context: "notices.timeblockDeletedSuccess" }), { title: this.timeblock.title })
-			);
+		if (
+			await deleteTimeblockWithUndo(
+				this.plugin,
+				this.originalTimeblock,
+				this.timeblockDate,
+				this.onChange
+			)
+		) {
 			this.close();
-		} catch (error) {
-			tasknotesLogger.error("Error deleting timeblock:", {
-				category: "internal",
-				operation: "deleting-timeblock",
-				error: error,
-			});
-			new Notice(this.translate(msg({ message: "Failed to delete timeblock. Check console for details.", context: "notices.timeblockDeleteFailed" })));
 		}
-	}
-
-	private async showDeleteConfirmation(): Promise<boolean> {
-		return new Promise((resolve) => {
-			const modal = new Modal(this.app);
-			modal.titleEl.setText(this.translate(msg({ message: "Delete timeblock", context: "modals.timeblockInfo.deleteConfirmationTitle" })));
-
-			const content = modal.contentEl;
-			content.createEl("p", {
-				text: this.translate(msg({ message: "Are you sure you want to delete the timeblock \"{title}\"?", context: "modals.timeblockInfo.confirmDelete" }), {
-					title: this.timeblock.title,
-				}),
-			});
-			content.createEl("p", {
-				text: this.translate(msg({ message: "This action cannot be undone.", context: "common.cannotUndo" })),
-				cls: "mod-warning",
-			});
-
-			const buttonContainer = content.createDiv({ cls: "modal-button-container" });
-			buttonContainer.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			buttonContainer.classList.add("tn-static-display-flex-75816cae");
-			buttonContainer.classList.remove(
-				"tn-static-justify-content-center-03c4bb6f",
-				"tn-static-justify-content-space-between-a562f4fd"
-			);
-			buttonContainer.classList.add("tn-static-justify-content-flex-end-455f8cca");
-			buttonContainer.classList.remove(
-				"tn-static-display-flex-8bb39979",
-				"tn-static-gap-0-5rem-ce2fca4d",
-				"tn-static-gap-10px-f3d7ce77",
-				"tn-static-gap-12px-ed7b3d87",
-				"tn-static-gap-6px-f0abc1db"
-			);
-			buttonContainer.classList.add("tn-static-gap-8px-33fcd4c3");
-			buttonContainer.classList.remove(
-				"tn-static-font-size-12px-b0cc7e05",
-				"tn-static-margin-top-0-5rem-3dc98b5e",
-				"tn-static-margin-top-0-d462248a",
-				"tn-static-margin-top-12px-91e0f558",
-				"tn-static-margin-top-16px-1b0f4999",
-				"tn-static-margin-top-1rem-2239d6d5",
-				"tn-static-margin-top-30px-2fbbbcd4",
-				"tn-static-margin-top-4px-96ad6099",
-				"tn-static-margin-top-8px-8a77e5a3",
-				"tn-static-margin-top-8px-f4f01e68"
-			);
-			buttonContainer.classList.add("tn-static-margin-top-20px-a26bda7d");
-
-			const cancelBtn = buttonContainer.createEl("button", {
-				text: this.translate(msg({ message: "Cancel", context: "common.cancel" })),
-			});
-			cancelBtn.addEventListener("click", () => {
-				modal.close();
-				resolve(false);
-			});
-
-			const deleteBtn = buttonContainer.createEl("button", {
-				text: this.translate(msg({ message: "Delete", context: "views.advancedCalendar.contextMenus.deleteButton" })),
-				cls: "mod-warning",
-			});
-			deleteBtn.addEventListener("click", () => {
-				modal.close();
-				resolve(true);
-			});
-
-			modal.open();
-
-			// Focus the cancel button by default for safety
-			window.setTimeout(() => cancelBtn.focus(), 50);
-		});
-	}
-
-	private async deleteTimeblockFromDailyNote(): Promise<void> {
-		if (!appHasDailyNotesPluginLoaded()) {
-			throw new Error("Daily Notes plugin is not enabled");
-		}
-
-		// Get daily note for the date
-		const dateStr = this.timeblockDate;
-		const dailyNoteMoment = getDailyNoteMoment(dateStr, "YYYY-MM-DD");
-		const allDailyNotes = getAllDailyNotes();
-		const dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
-
-		if (!dailyNote) {
-			throw new Error("Daily note not found");
-		}
-
-		// Read current content
-		const content = await this.app.vault.read(dailyNote);
-
-		// Parse existing frontmatter
-		let frontmatter: Record<string, unknown> = {};
-		const info = getFrontMatterInfo(content);
-		const bodyContent = info.exists ? content.slice(info.contentStart) : content;
-
-		if (info.exists) {
-			try {
-				frontmatter = parseFrontmatterRecord(info.frontmatter);
-			} catch (error) {
-				tasknotesLogger.error("Error parsing existing frontmatter:", {
-					category: "validation",
-					operation: "parsing-existing-frontmatter",
-					error: error,
-				});
-				frontmatter = {};
-			}
-		}
-
-		// Remove the specific timeblock from the array
-		if (frontmatter.timeblocks && Array.isArray(frontmatter.timeblocks)) {
-			const index = frontmatter.timeblocks.findIndex(
-				(tb: TimeBlock) =>
-					tb.id === this.originalTimeblock.id ||
-					(tb.title === this.originalTimeblock.title &&
-						tb.startTime === this.originalTimeblock.startTime &&
-						tb.endTime === this.originalTimeblock.endTime)
-			);
-
-			if (index >= 0) {
-				frontmatter.timeblocks.splice(index, 1);
-
-				// If no timeblocks left, remove the property entirely
-				if (frontmatter.timeblocks.length === 0) {
-					delete frontmatter.timeblocks;
-				}
-			} else {
-				throw new Error("Timeblock not found in daily note");
-			}
-		} else {
-			throw new Error("No timeblocks found in daily note");
-		}
-
-		// Convert frontmatter back to YAML
-		const newFrontmatterText =
-			Object.keys(frontmatter).length > 0 ? stringifyYaml(frontmatter) : "";
-
-		// Reconstruct file content
-		const newContent = newFrontmatterText
-			? `---\n${newFrontmatterText}---\n${bodyContent}`
-			: bodyContent.trim();
-
-		// Write back to file
-		await modifyVaultFile(this.app, dailyNote, newContent);
 	}
 
 	onClose() {
@@ -755,4 +520,136 @@ export class TimeblockInfoModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 	}
+}
+
+/** The files a timeblock's attachment links point to, with the links as written. */
+export function resolveTimeblockAttachments(
+	app: App,
+	timeblock: TimeBlock
+): Array<{ file: TAbstractFile; link: string }> {
+	const resolved: Array<{ file: TAbstractFile; link: string }> = [];
+	for (const link of timeblock.attachments ?? []) {
+		// Remove wikilink brackets if present
+		const cleanPath = link.replace(/^\[\[|\]\]$/g, "");
+		const linkpath = parseLinktext(cleanPath.split("|")[0]).path;
+		const file =
+			app.metadataCache.getFirstLinkpathDest(linkpath, "") ??
+			app.vault.getAbstractFileByPath(cleanPath);
+		if (file && !resolved.some((entry) => entry.file.path === file.path)) {
+			resolved.push({ file, link });
+		}
+	}
+	return resolved;
+}
+
+/**
+ * Asks to delete a timeblock, then removes it from its daily note. Used by the
+ * timeblock modal and the timeblock's right-click menu.
+ */
+/** Deletes a timeblock straight away and offers Undo, which puts the daily note back as it was. */
+export async function deleteTimeblockWithUndo(
+	plugin: TaskNotesPlugin,
+	timeblock: TimeBlock,
+	timeblockDate: string,
+	onChange?: () => void
+): Promise<boolean> {
+	const translate = plugin.i18n.translate.bind(plugin.i18n);
+	const refresh = () => {
+		// Signal immediate update before triggering data change
+		onChange?.();
+		plugin.emitter.trigger("data-changed");
+	};
+	try {
+		const { file, before, after } = await deleteTimeblockFromDailyNote(plugin.app, timeblockDate, timeblock);
+		refresh();
+		showTaskUndo(
+			[
+				async () => {
+					if (plugin.app.vault.getAbstractFileByPath(file.path) !== file || (await plugin.app.vault.read(file)) !== after)
+						throw new UndoConflictError([file.path]);
+					await modifyVaultFile(plugin.app, file, before);
+					refresh();
+				},
+			],
+			false,
+			1,
+			plugin.app.vault,
+			`${translate(msg({ message: "Timeblock deleted", context: "notices.timeblockDeletedSuccess" }))} · ${timeblock.title}`
+		);
+		return true;
+	} catch (error) {
+		tasknotesLogger.error("Error deleting timeblock:", {
+			category: "internal",
+			operation: "deleting-timeblock",
+			error: error,
+		});
+		new Notice(translate(msg({ message: "Failed to delete timeblock. Check console for details.", context: "notices.timeblockDeleteFailed" })));
+		return false;
+	}
+}
+
+export async function deleteTimeblockFromDailyNote(
+	app: App,
+	timeblockDate: string,
+	timeblock: TimeBlock
+): Promise<{ file: TFile; before: string; after: string }> {
+	if (!appHasDailyNotesPluginLoaded()) {
+		throw new Error("Daily Notes plugin is not enabled");
+	}
+
+	const dailyNote = getDailyNote(getDailyNoteMoment(timeblockDate, "YYYY-MM-DD"), getAllDailyNotes());
+	if (!dailyNote) {
+		throw new Error("Daily note not found");
+	}
+
+	const content = await app.vault.read(dailyNote);
+	let frontmatter: Record<string, unknown> = {};
+	const info = getFrontMatterInfo(content);
+	const bodyContent = info.exists ? content.slice(info.contentStart) : content;
+
+	if (info.exists) {
+		try {
+			frontmatter = parseFrontmatterRecord(info.frontmatter);
+		} catch (error) {
+			tasknotesLogger.error("Error parsing existing frontmatter:", {
+				category: "validation",
+				operation: "parsing-existing-frontmatter",
+				error: error,
+			});
+			frontmatter = {};
+		}
+	}
+
+	// Remove the specific timeblock from the array
+	if (frontmatter.timeblocks && Array.isArray(frontmatter.timeblocks)) {
+		const index = frontmatter.timeblocks.findIndex(
+			(tb: TimeBlock) =>
+				tb.id === timeblock.id ||
+				(tb.title === timeblock.title &&
+					tb.startTime === timeblock.startTime &&
+					tb.endTime === timeblock.endTime)
+		);
+
+		if (index >= 0) {
+			frontmatter.timeblocks.splice(index, 1);
+
+			// If no timeblocks left, remove the property entirely
+			if (frontmatter.timeblocks.length === 0) {
+				delete frontmatter.timeblocks;
+			}
+		} else {
+			throw new Error("Timeblock not found in daily note");
+		}
+	} else {
+		throw new Error("No timeblocks found in daily note");
+	}
+
+	const newFrontmatterText =
+		Object.keys(frontmatter).length > 0 ? stringifyYaml(frontmatter) : "";
+	const newContent = newFrontmatterText
+		? `---\n${newFrontmatterText}---\n${bodyContent}`
+		: bodyContent.trim();
+
+	await modifyVaultFile(app, dailyNote, newContent);
+	return { file: dailyNote, before: content, after: await app.vault.read(dailyNote) };
 }

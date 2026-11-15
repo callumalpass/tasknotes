@@ -1,36 +1,58 @@
-/* ================================================
-   STATISTICS VIEW - BEM STRUCTURE
-   ================================================ */
+.tasknotes-plugin :is(.stats-view__overview-grid, .pomodoro-stats-view__overview-grid).tn-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--tn-space-2) var(--tn-space-4);
+}
 
-/* Statistics View Container - Root Block */
-.tasknotes-plugin .stats-view {
-    padding: var(--tn-spacing-lg);
+.tasknotes-plugin :is(.stats-view__overview-grid, .pomodoro-stats-view__overview-grid).tn-metrics > div {
+    min-width: 0;
+    padding-block: var(--tn-space-2);
+    gap: var(--tn-space-half);
+}
+
+.tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics :is(.pomodoro-stats-view__overview-value, .pomodoro-stats-view__overview-label) {
+    order: 0;
+    text-align: start;
+}
+
+.tasknotes-plugin :is(.stats-view__refresh-button, .pomodoro-stats-view__refresh-button, .pomodoro-stats-view__bases-help, .pomodoro-stats-view__session-delete-button, .stats-view__filter-disclosure > summary) {
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+}
+
+.tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child {
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--tn-space-1);
+}
+
+@container (min-width: 760px) {
+    .tasknotes-plugin .stats-view__overview-grid.tn-metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .tasknotes-plugin .pomodoro-stats-view__overview-grid.tn-metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.tasknotes-plugin.stats-view {
+    padding: var(--tn-space-3);
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xl);
+    gap: var(--tn-space-3);
     height: 100%;
-    overflow-y: auto;
+    overflow-y: auto; container-type: inline-size; min-width: 0;
 }
 
-/* ================================================
-   STATS VIEW HEADER
-   ================================================ */
-
-/* Stats Header Container */
 .tasknotes-plugin .stats-view__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--tn-border-color);
-    padding-bottom: var(--tn-spacing-md);
-}
-
-.tasknotes-plugin .stats-view__title {
-    font-size: var(--tn-font-size-xl);
-    font-weight: var(--tn-font-weight-semibold);
-    color: var(--tn-text-normal);
-    margin: 0;
+    padding-bottom: var(--tn-space-2);
 }
 
 .tasknotes-plugin .stats-view__refresh-button {
@@ -38,23 +60,36 @@
     color: var(--tn-text-normal);
     border: none;
     box-shadow: none;
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
 }
 
-.tasknotes-plugin .stats-view__refresh-button:hover {
-    background: var(--tn-interactive-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .stats-view__refresh-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
 }
-
-/* ================================================
-   STATS VIEW SECTIONS
-   ================================================ */
-
-/* Section Container */
 .tasknotes-plugin .stats-view__section {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
+}
+
+.tasknotes-plugin .stats-view__filter-disclosure {
+    display: block;
+    border-bottom: 1px solid var(--tn-hairline);
+    padding-bottom: 0;
+}
+
+.tasknotes-plugin .stats-view__filter-disclosure > summary {
+    color: var(--text-muted);
+    cursor: var(--cursor-link, pointer);
+    font-size: var(--tn-type-sm);
+    width: fit-content;
+}
+
+.tasknotes-plugin .stats-view__filter-disclosure[open] > summary {
+    margin-bottom: var(--tn-space-3);
 }
 
 .tasknotes-plugin .stats-view__section .setting-item {
@@ -64,459 +99,257 @@
 }
 
 .tasknotes-plugin .stats-view__section .setting-item-name {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
-    margin-bottom: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-space-1);
 }
 
-/* ================================================
-   OVERVIEW GRID
-   ================================================ */
-
-/* Overview Grid Layout */
 .tasknotes-plugin .stats-view__overview-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--tn-spacing-md);
-    margin-top: var(--tn-spacing-sm);
+    margin-top: var(--tn-space-1);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .tasknotes-plugin .stats-view__overview-label {
-    font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-medium);
+    font-size: var(--tn-type-sm);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--tn-font-weight-normal);
     color: var(--tn-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-/* ================================================
-   STATS GRID
-   ================================================ */
-
-/* Stats Grid Layout */
 .tasknotes-plugin .stats-view__stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: var(--tn-spacing-md);
-    margin-top: var(--tn-spacing-sm);
+    margin-top: var(--tn-space-1);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-/* Stat Card */
 .tasknotes-plugin .stats-view__stat-card {
-    background: var(--tn-background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-md);
-    padding: var(--tn-spacing-md);
-    text-align: center;
-    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--tn-space-4);
+    padding: var(--tn-space-2) 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    min-height: 0;
+    text-align: start;
 }
 
-.tasknotes-plugin .stats-view__stat-card:hover {
-    border-color: var(--tn-accent-color);
-}
-
-/* Stat Values */
 .tasknotes-plugin .stats-view__stat-value {
-    font-size: var(--tn-font-size-xl);
-    font-weight: var(--tn-font-weight-bold);
-    color: var(--tn-text-normal);
-    margin-bottom: var(--tn-spacing-xs);
     line-height: 1.2;
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: 0;
+    order: 2;
+    text-align: end;
 }
 
 .tasknotes-plugin .stats-view__stat-label {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-sm);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--tn-font-weight-normal);
     color: var(--tn-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-/* ================================================
-   PROJECT STATS
-   ================================================ */
-
-/* Projects Container */
 .tasknotes-plugin .stats-view__projects {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--tn-spacing-md);
-    margin-top: var(--tn-spacing-sm);
+    margin-top: var(--tn-space-1);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-/* Project Header */
 .tasknotes-plugin .stats-view__project-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-space-1);
 }
 
 .tasknotes-plugin .stats-view__project-name {
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-semibold);
     color: var(--tn-text-normal);
 }
 
-/* Project Content Grid */
 .tasknotes-plugin .stats-view__project-content-grid {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--tn-spacing-md);
-    align-items: center;
+    gap: var(--tn-space-4);
+    align-items: start;
+    grid-template-columns: minmax(80px, auto) minmax(0, 1fr);
 }
 
-/* Progress Circle */
 .tasknotes-plugin .stats-view__progress-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--tn-spacing-xs);
-    padding: var(--tn-spacing-sm);
-}
-
-.tasknotes-plugin .stats-view__progress-circle-svg {
-    transform: rotate(-90deg);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.tasknotes-plugin .stats-view__progress-circle-bg {
-    fill: none;
-    stroke: var(--background-modifier-border);
-    stroke-width: 4;
-    opacity: 0.3;
-}
-
-.tasknotes-plugin .stats-view__progress-circle-fg {
-    fill: none;
-    stroke: var(--interactive-accent);
-    stroke-width: 4;
-    stroke-linecap: round;
-    transition: stroke-width 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
-    filter: brightness(1.1);
-    opacity: 1;
-}
-
-/* Hover effect for progress circle */
-.tasknotes-plugin .stats-view__project-item:hover .stats-view__progress-circle-fg {
-    stroke-width: 5;
-    filter: brightness(1.2) saturate(1.1);
-}
-
-.tasknotes-plugin .stats-view__progress-circle-text {
-    font-size: 14px;
-    font-weight: var(--tn-font-weight-bold);
-    fill: var(--tn-text-normal);
-    transform: rotate(90deg);
-    transform-origin: center;
-    text-anchor: middle;
-    dominant-baseline: central;
+    gap: var(--tn-space-half);
+    padding: var(--tn-space-1);
 }
 
 .tasknotes-plugin .stats-view__progress-label {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     font-weight: var(--tn-font-weight-medium);
     text-align: center;
 }
 
-/* Stats Container */
 .tasknotes-plugin .stats-view__stats-container {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
-/* Project Stats Container */
 .tasknotes-plugin .stats-view__project-stats {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
 }
 
-/* Individual Project Stat */
 .tasknotes-plugin .stats-view__project-stat {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
-    background: var(--tn-background-primary);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    border-radius: var(--tn-border-radius-sm);
-    border: 1px solid var(--tn-border-color);
+    background: transparent;
+    padding: 0;
+    border: none;
     white-space: nowrap;
 }
 
-/* ================================================
-   NO DATA STATE
-   ================================================ */
-
-.tasknotes-plugin .stats-view__no-data {
-    text-align: center;
-    padding: var(--tn-spacing-xl);
-    color: var(--tn-text-muted);
-    font-style: italic;
-}
-
-/* More Projects Indicator */
-.tasknotes-plugin .stats-view__more-projects {
-    text-align: center;
-    color: var(--tn-text-muted);
-    font-style: italic;
-    padding: var(--tn-spacing-sm);
-    border-top: 1px solid var(--tn-border-color);
-    margin-top: var(--tn-spacing-sm);
-}
-
-/* ================================================
-   RESPONSIVE DESIGN
-   ================================================ */
-
-/* Mobile adjustments */
-@media (max-width: 768px) {
-    .tasknotes-plugin .stats-view {
-        padding: var(--tn-spacing-md);
-        gap: var(--tn-spacing-lg);
+@container (max-width: 768px) {
+    .tasknotes-plugin.stats-view {
+        padding: var(--tn-space-2);
+        gap: var(--tn-space-3);
     }
-    
+
     .tasknotes-plugin .stats-view__overview-grid {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: var(--tn-spacing-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
     }
-    
+
     .tasknotes-plugin .stats-view__stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: var(--tn-spacing-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
     }
-    
+
     .tasknotes-plugin .stats-view__project-stats {
         flex-direction: column;
-        gap: var(--tn-spacing-sm);
+        gap: var(--tn-space-1);
     }
 }
-
-/* ================================================
-   DARK MODE ADJUSTMENTS
-   ================================================ */
 
 .theme-dark .tasknotes-plugin .stats-view__overview-card,
 .theme-dark .tasknotes-plugin .stats-view__stat-card,
 .theme-dark .tasknotes-plugin .stats-view__project-item {
-    background: var(--tn-background-secondary);
     border-color: var(--tn-border-color);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    padding: var(--tn-space-4) 0;
+    overflow: visible;
 }
 
-.theme-dark .tasknotes-plugin .stats-view__project-stat {
-    background: var(--tn-background-modifier-border);
-}
-
-/* ================================================
-   PROGRESS BARS
-   ================================================ */
-
-.tasknotes-plugin .stats-view__progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--tn-background-modifier-border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: var(--tn-spacing-xs);
-    position: relative;
-}
-
-.tasknotes-plugin .stats-view__progress-fill {
-    height: 100%;
-    background: var(--tn-accent-color);
-    border-radius: 4px;
-    transition: width 0.6s ease-out;
-    position: relative;
-}
-
-/* ================================================
-   VISUAL ENHANCEMENTS
-   ================================================ */
-
-/* Enhanced cards with gradients */
 .tasknotes-plugin .stats-view__overview-card {
-    background: var(--tn-background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-lg);
-    padding: var(--tn-spacing-lg);
-    text-align: center;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     position: relative;
     overflow: hidden;
-}
-
-.tasknotes-plugin .stats-view__overview-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--tn-accent-color);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.tasknotes-plugin .stats-view__overview-card:hover::before {
-    opacity: 1;
-}
-
-.tasknotes-plugin .stats-view__overview-card:hover {
-    border-color: var(--tn-accent-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--tn-space-4);
+    padding: var(--tn-space-3) 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    min-height: 0;
+    text-align: start;
 }
 
 .tasknotes-plugin .stats-view__overview-value {
-    font-size: var(--tn-font-size-xxl);
-    font-weight: var(--tn-font-weight-bold);
-    color: var(--tn-accent-color);
-    margin-bottom: var(--tn-spacing-xs);
     line-height: 1.2;
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: 0;
+    order: 2;
+    text-align: end;
 }
 
-/* Enhanced project items */
 .tasknotes-plugin .stats-view__project-item {
-    background: var(--tn-background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-lg);
-    padding: var(--tn-spacing-lg);
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
     position: relative;
-    overflow: hidden;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    padding: var(--tn-space-4) 0;
+    overflow: visible;
 }
 
-/* Special styling for "No Project" items */
 .tasknotes-plugin .stats-view__project-item--no-project {
-    background: var(--tn-background-secondary);
-    border: 1px dashed var(--tn-text-muted);
-    opacity: 0.8;
+    color: var(--tn-text-muted);
 }
 
-.tasknotes-plugin .stats-view__project-item--no-project::before {
-    background: var(--tn-text-muted);
-    opacity: 0.3;
+@media (hover: hover) {
+    .tasknotes-plugin .stats-view__project-item--no-project:hover:not(:disabled):not([aria-disabled="true"]) {
+        opacity: 1;
+    }
 }
-
-.tasknotes-plugin .stats-view__project-item--no-project:hover {
-    border-color: var(--tn-text-muted);
-    opacity: 1;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
 .tasknotes-plugin .stats-view__project-item--no-project .stats-view__project-name {
     color: var(--tn-text-muted);
     font-style: italic;
 }
 
-
 .tasknotes-plugin .stats-view__project-item--no-project .stats-view__time-bar-fill {
     background: var(--tn-text-muted);
 }
 
-.tasknotes-plugin .stats-view__project-item--no-project .stats-view__progress-circle-fg {
-    stroke: var(--color-base-60);
-}
-
-.tasknotes-plugin .stats-view__project-item::before {
-    content: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--tn-accent-color);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.tasknotes-plugin .stats-view__project-item:hover::before {
-    opacity: 1;
-}
-
-.tasknotes-plugin .stats-view__project-item:hover {
-    border-color: var(--tn-accent-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Time visualization bars */
 .tasknotes-plugin .stats-view__time-bar {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-sm);
-    margin: var(--tn-spacing-xs) 0;
+    gap: var(--tn-space-1);
+    margin: var(--tn-space-half) 0;
+}
+
+.tasknotes-plugin .stats-view__time-bar-heading {
+    color: var(--tn-text-metadata);
+    font-size: var(--tn-type-xs);
+    font-weight: var(--tn-font-weight-medium);
 }
 
 .tasknotes-plugin .stats-view__time-bar-visual {
     flex: 1;
     height: 6px;
-    background: var(--tn-background-modifier-border);
-    border-radius: 3px;
+    background: var(--background-modifier-border);
+    border-radius: var(--tn-radius-sm);
     overflow: hidden;
     position: relative;
 }
 
 .tasknotes-plugin .stats-view__time-bar-fill {
     height: 100%;
-    background: var(--tn-accent-color);
-    border-radius: 3px;
+    background: var(--tn-interactive-accent);
+    border-radius: var(--tn-radius-sm);
     transition: width 0.8s ease-out;
 }
 
 .tasknotes-plugin .stats-view__time-bar-label {
-    font-size: var(--tn-font-size-xs);
+    font-size: var(--tn-type-2xs);
     color: var(--tn-text-muted);
     white-space: nowrap;
     min-width: 60px;
     text-align: right;
-}
-
-/* Insight cards */
-.tasknotes-plugin .stats-view__insight-card {
-    background: var(--tn-accent-color);
-    color: var(--text-on-accent);
-    border-radius: var(--tn-border-radius-lg);
-    padding: var(--tn-spacing-lg);
-    margin: var(--tn-spacing-md) 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.tasknotes-plugin .stats-view__insight-card::before {
-    content: none;
-}
-
-.tasknotes-plugin .stats-view__insight-title {
-    font-weight: var(--tn-font-weight-bold);
-    margin-bottom: var(--tn-spacing-xs);
-}
-
-.tasknotes-plugin .stats-view__insight-text {
-    font-size: var(--tn-font-size-sm);
-    opacity: 0.9;
-}
-
-/* ================================================
-   LOADING STATE
-   ================================================ */
-
-.tasknotes-plugin .stats-view__loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--tn-spacing-xl);
-    color: var(--tn-text-muted);
-}
-
-.tasknotes-plugin .stats-view__loading::before {
-    content: '';
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--tn-border-color);
-    border-top-color: var(--tn-accent-color);
-    border-radius: 50%;
-    margin-right: var(--tn-spacing-sm);
-    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -525,152 +358,138 @@
     }
 }
 
-/* ================================================
-   FILTER CONTROLS
-   ================================================ */
-
 .tasknotes-plugin .stats-view__filters {
-    margin-top: var(--tn-spacing-sm);
+    margin-top: var(--tn-space-1);
 }
 
 .tasknotes-plugin .stats-view__filter-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--tn-spacing-md);
+    gap: var(--tn-space-2);
     align-items: end;
 }
 
 .tasknotes-plugin .stats-view__filter-item {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
 }
 
 .tasknotes-plugin .stats-view__filter-label {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
 }
 
-.tasknotes-plugin .stats-view__filter-select,
 .tasknotes-plugin .stats-view__filter-input {
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-space-1);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-sm);
-    background: var(--tn-background-primary);
+    border-radius: var(--tn-radius-sm);
+    background: var(--background-primary);
     color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
 }
 
-.tasknotes-plugin .stats-view__filter-select:focus,
 .tasknotes-plugin .stats-view__filter-input:focus {
     outline: none;
-    border-color: var(--tn-accent-color);
-    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.2);
+    border-color: var(--tn-interactive-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+}
+
+.tasknotes-plugin .stats-view__header .setting-item {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.tasknotes-plugin .stats-view__overview-grid,
+.tasknotes-plugin .stats-view__stats-grid {
+    max-width: none;
+}
+
+.tasknotes-plugin .stats-view__period-summary {
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+    margin: var(--tn-space-2) 0;
 }
 
 .tasknotes-plugin .stats-view__custom-dates {
     grid-column: 1 / -1;
     display: flex;
-    gap: var(--tn-spacing-md);
-    margin-top: var(--tn-spacing-sm);
+    gap: var(--tn-space-2);
+    margin-top: var(--tn-space-1);
+}
+
+.tasknotes-plugin .stats-view__custom-dates:empty {
+    display: none;
 }
 
 .tasknotes-plugin .stats-view__date-input-container {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     flex: 1;
 }
 
 .tasknotes-plugin .stats-view__date-label {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
 }
 
 .tasknotes-plugin .stats-view__date-input {
-    padding: var(--tn-spacing-sm);
+    padding: var(--tn-space-1);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-sm);
-    background: var(--tn-background-primary);
+    border-radius: var(--tn-radius-sm);
+    background: var(--background-primary);
     color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
 }
 
 .tasknotes-plugin .stats-view__filter-buttons {
     display: flex;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     align-items: end;
 }
 
 .tasknotes-plugin .stats-view__filter-button {
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    padding: var(--tn-space-1) var(--tn-space-2);
     border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-sm);
-    background: var(--tn-background-primary);
+    border-radius: var(--tn-radius-sm);
+    background: var(--background-primary);
     color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     cursor: var(--cursor-link, pointer);
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.tasknotes-plugin .stats-view__filter-button:hover {
-    background: var(--tn-interactive-hover);
+@media (hover: hover) {
+    .tasknotes-plugin .stats-view__filter-button:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover);
+    }
 }
-
-.tasknotes-plugin .stats-view__filter-button--reset {
-    border-color: var(--color-red);
-    color: var(--color-red);
-}
-
-.tasknotes-plugin .stats-view__filter-button--reset:hover {
-    background: var(--color-red);
-    color: var(--text-on-accent);
-}
-
-/* ================================================
-   INTERACTIVE ELEMENTS
-   ================================================ */
-
-/* Clickable project items */
 .tasknotes-plugin .stats-view__project-item--clickable {
     cursor: var(--cursor-link, pointer);
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.tasknotes-plugin .stats-view__project-item--clickable:hover {
-    background: var(--tn-interactive-hover);
-}
-
 .tasknotes-plugin .stats-view__click-indicator {
-    font-size: var(--tn-font-size-lg);
+    font-size: var(--tn-type-sm);
     color: var(--tn-text-muted);
     opacity: 0;
     transition: opacity 0.2s ease;
 }
 
-.tasknotes-plugin .stats-view__project-item--clickable:hover .stats-view__click-indicator {
-    opacity: 1;
+@media (hover: hover) {
+    .tasknotes-plugin .stats-view__project-item--clickable:hover:not(:disabled):not([aria-disabled="true"]) .stats-view__click-indicator {
+        opacity: 1;
+    }
 }
-
-/* ================================================
-   SPARKLINES & TRENDS
-   ================================================ */
-
 .tasknotes-plugin .stats-view__trend-container {
-    margin: var(--tn-spacing-sm) 0;
-    padding: var(--tn-spacing-sm);
-    background: var(--tn-background-modifier-border);
-    border-radius: var(--tn-border-radius-sm);
-}
-
-.tasknotes-plugin .stats-view__trend-label {
-    font-size: var(--tn-font-size-xs);
-    color: var(--tn-text-muted);
-    margin-bottom: var(--tn-spacing-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin: var(--tn-space-1) 0;
+    padding: var(--tn-space-1);
+    background: var(--background-modifier-border);
+    border-radius: var(--tn-radius-sm);
 }
 
 .tasknotes-plugin .stats-view__sparkline {
@@ -680,14 +499,9 @@
 .tasknotes-plugin .stats-view__sparkline-svg {
     width: 100%;
     height: 100%;
-    color: var(--tn-accent-color);
+    color: var(--tn-interactive-accent);
 }
 
-/* ================================================
-   MODAL STYLES
-   ================================================ */
-
-/* Modal styles - no plugin scope needed since modals are appended to document.body */
 .stats-view__modal-backdrop {
     position: fixed;
     top: 0;
@@ -699,12 +513,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--tn-spacing-lg, 16px);
+    padding: var(--tn-space-3, 16px);
 }
 
 .stats-view__modal {
-    background: var(--tn-background-primary, var(--background-primary));
-    border-radius: var(--tn-border-radius-lg, 8px);
+    background: var(--background-primary, var(--background-primary));
+    border-radius: var(--tn-radius-lg);
     max-width: 800px;
     max-height: 80vh;
     width: 100%;
@@ -717,12 +531,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--tn-spacing-lg, 16px);
+    padding: var(--tn-space-3, 16px);
     border-bottom: 1px solid var(--tn-border-color, var(--background-modifier-border));
 }
 
 .stats-view__modal-title {
-    font-size: var(--tn-font-size-lg, 18px);
+    font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-bold, 600);
     color: var(--tn-text-normal, var(--text-normal));
 }
@@ -730,83 +544,86 @@
 .stats-view__modal-close {
     background: none;
     border: none;
-    font-size: var(--tn-font-size-xl, 20px);
+    font-size: var(--tn-type-sm);
     color: var(--tn-text-muted, var(--text-muted));
     cursor: var(--cursor-link, pointer);
-    padding: var(--tn-spacing-xs, 4px);
-    border-radius: var(--tn-border-radius-sm, 4px);
+    padding: var(--tn-space-half, 4px);
+    border-radius: var(--tn-radius-sm);
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.stats-view__modal-close:hover {
-    background: var(--tn-interactive-hover, var(--interactive-hover));
-    color: var(--tn-text-normal, var(--text-normal));
+@media (hover: hover) {
+    .stats-view__modal-close:hover:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--tn-interactive-hover, var(--interactive-hover));
+        color: var(--tn-text-normal, var(--text-normal));
+    }
 }
-
 .stats-view__modal-content {
-    padding: var(--tn-spacing-lg, 16px);
+    padding: var(--tn-space-3, 16px);
     overflow-y: auto;
     flex: 1;
 }
 
-/* ================================================
-   DRILL-DOWN CONTENT
-   ================================================ */
-
-/* Drill-down styles - no plugin scope needed since content is in modal */
 .stats-view__drilldown-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: var(--tn-spacing-md, 12px);
-    margin-bottom: var(--tn-spacing-xl, 24px);
+    margin-bottom: var(--tn-space-4, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .stats-view__drilldown-card {
-    background: var(--tn-background-secondary, var(--background-secondary));
-    border: 1px solid var(--tn-border-color, var(--background-modifier-border));
-    border-radius: var(--tn-border-radius-md, 6px);
-    padding: var(--tn-spacing-md, 12px);
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--tn-space-4);
+    padding: var(--tn-space-3) 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
+    min-height: 0;
+    text-align: start;
 }
 
 .stats-view__drilldown-value {
-    font-size: var(--tn-font-size-xl, 20px);
-    font-weight: var(--tn-font-weight-bold, 600);
-    color: var(--tn-accent-color, var(--interactive-accent));
-    margin-bottom: var(--tn-spacing-xs, 4px);
+    font-size: var(--tn-type-lg);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    margin-bottom: 0;
+    order: 2;
+    text-align: end;
 }
 
 .stats-view__drilldown-label {
-    font-size: var(--tn-font-size-sm, 12px);
-    color: var(--tn-text-muted, var(--text-muted));
+    font-size: var(--tn-type-sm);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--tn-font-weight-normal);
+    color: var(--tn-text-muted);
 }
 
 .stats-view__drilldown-section {
-    margin-bottom: var(--tn-spacing-xl, 24px);
+    margin-bottom: var(--tn-space-4, 24px);
 }
 
 .stats-view__drilldown-heading {
-    font-size: var(--tn-font-size-md, 14px);
+    font-size: var(--tn-type-xs);
     font-weight: var(--tn-font-weight-semibold, 500);
     color: var(--tn-text-normal, var(--text-normal));
-    margin-bottom: var(--tn-spacing-md, 12px);
-    padding-bottom: var(--tn-spacing-xs, 4px);
+    margin-bottom: var(--tn-space-2, 12px);
+    padding-bottom: var(--tn-space-half, 4px);
     border-bottom: 1px solid var(--tn-border-color, var(--background-modifier-border));
 }
 
-/* ================================================
-   ACTIVITY CHART
-   ================================================ */
-
-/* Activity chart styles - no plugin scope needed since content is in modal */
 .stats-view__bar-chart {
     display: flex;
     align-items: end;
     gap: 2px;
     height: 50px;
-    padding: var(--tn-spacing-sm, 8px);
-    background: var(--tn-background-secondary, var(--background-secondary));
-    border-radius: var(--tn-border-radius-sm, 4px);
+    padding: var(--tn-space-1, 8px);
+    background: var(--background-secondary, var(--background-secondary));
+    border-radius: var(--tn-radius-sm);
     overflow-x: auto;
 }
 
@@ -818,105 +635,97 @@
 
 .stats-view__bar {
     width: 6px;
-    background: linear-gradient(to top, var(--tn-accent-color, var(--interactive-accent)), var(--color-accent-2, var(--tn-accent-color, var(--interactive-accent))));
-    border-radius: 1px 1px 0 0;
+    background: linear-gradient(to top, var(--tn-interactive-accent, var(--interactive-accent)), var(--color-accent-2, var(--tn-interactive-accent, var(--interactive-accent))));
+    border-radius: var(--tn-radius-xs) var(--tn-radius-xs) var(--tn-radius-none) var(--tn-radius-none);
     min-height: 1px;
     transition: opacity 0.2s ease;
 }
 
-.stats-view__bar:hover {
-    opacity: 0.7;
+@media (hover: hover) {
+    .stats-view__bar:hover:not(:disabled):not([aria-disabled="true"]) {
+        opacity: 0.7;
+    }
 }
-
-/* ================================================
-   TASK LISTS IN DRILL-DOWN
-   ================================================ */
-
-.tasknotes-plugin .stats-view__recent-tasks,
 .tasknotes-plugin .stats-view__task-list {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     max-height: 400px;
     overflow-y: auto;
 }
 
-.tasknotes-plugin .stats-view__recent-task {
-    background: var(--tn-background-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-border-radius-sm);
-    padding: var(--tn-spacing-sm);
-    cursor: var(--cursor-link, pointer);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.tasknotes-plugin .stats-view__recent-task:hover {
-    border-color: var(--tn-accent-color);
-    background: var(--tn-interactive-hover);
-}
-
-.tasknotes-plugin .stats-view__task-title {
-    font-size: var(--tn-font-size-sm);
-    font-weight: var(--tn-font-weight-medium);
-    color: var(--tn-text-normal);
-    margin-bottom: var(--tn-spacing-xs);
-}
-
-.tasknotes-plugin .stats-view__task-meta {
-    font-size: var(--tn-font-size-xs);
-    color: var(--tn-text-muted);
-}
-
-/* Section headers and task filters */
 .tasknotes-plugin .stats-view__section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
+}
+
+.tasknotes-plugin .stats-view__section > .setting-item-heading .setting-item-name {
+    color: var(--tn-text-normal);
+    font-size: var(--tn-type-md);
+    font-weight: var(--tn-font-weight-semibold);
 }
 
 .tasknotes-plugin .stats-view__task-filters {
     display: flex;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
 }
 
 .tasknotes-plugin .stats-view__task-count {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-type-xs);
     color: var(--tn-text-muted);
-    margin-bottom: var(--tn-spacing-sm);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    background: var(--tn-background-modifier-border);
-    border-radius: var(--tn-border-radius-sm);
+    margin-bottom: var(--tn-space-1);
+    padding: var(--tn-space-half) var(--tn-space-1);
+    background: var(--background-modifier-border);
+    border-radius: var(--tn-radius-sm);
     text-align: center;
 }
-
-/* ================================================
-   RESPONSIVE ENHANCEMENTS
-   ================================================ */
 
 @media (max-width: 768px) {
     .tasknotes-plugin .stats-view__overview-card,
     .tasknotes-plugin .stats-view__project-item {
-        padding: var(--tn-spacing-md);
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--tn-hairline);
+        border-radius: var(--tn-radius-none);
+        padding: var(--tn-space-2) 0;
+        overflow: visible;
     }
-    
+
     .tasknotes-plugin .stats-view__time-bar-label {
         min-width: 50px;
     }
-    
+
     .tasknotes-plugin .stats-view__filter-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .tasknotes-plugin .stats-view__custom-dates {
         flex-direction: column;
     }
-    
+
     .tasknotes-plugin .stats-view__filter-buttons {
         justify-content: stretch;
     }
-    
+
     .tasknotes-plugin .stats-view__filter-button {
         flex: 1;
     }
+}
+
+body.is-mobile .tasknotes-plugin.stats-view button,
+body.is-mobile .tasknotes-plugin.stats-view select,
+body.is-mobile .tasknotes-plugin.stats-view input { min-height: var(--tn-touch-target); }
+
+.tasknotes-plugin .stats-view__completion-value { font-size: var(--tn-type-xl); font-weight: var(--tn-font-weight-medium); color: var(--tn-text-normal); }
+
+@container (max-width: 420px) {
+.tasknotes-plugin .stats-view__project-content-grid { grid-template-columns: minmax(0, 1fr); }
+.tasknotes-plugin .stats-view__filter-grid { grid-template-columns: minmax(0, 1fr); }
+.tasknotes-plugin .stats-view__custom-dates { flex-wrap: wrap; }
+}
+.tasknotes-plugin .stats-view__section--empty .stats-view__period-summary {
+    margin: 0;
+    color: var(--tn-text-metadata);
 }

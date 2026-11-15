@@ -44,7 +44,7 @@ function makeView(storedTask: () => TaskInfo) {
 				fieldMapping: { sortOrder: "sort_order" },
 			},
 			taskService: { applyPropertyChangeSideEffects: jest.fn() },
-			statusManager: { isCompletedStatus: (status: string) => status === "done" },
+			statusManager: { isCompletedStatus: (status: string) => status === "done", getStatusConfig: () => undefined },
 			toggleRecurringTaskComplete,
 		} as any
 	);

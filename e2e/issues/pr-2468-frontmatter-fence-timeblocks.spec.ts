@@ -135,7 +135,7 @@ test('creating a timeblock keeps a frontmatter value containing ---', async () =
 
 	await page.locator('.menu-item', { hasText: 'Create timeblock' }).click();
 	const modal = page.locator('.modal', { has: page.locator('.timeblock-create-button') });
-	await modal.locator('input[type="text"]').first().fill('Fence created');
+	await modal.locator('textarea:not(.tn-modal__description)').fill('Fence created');
 	await modal.locator('.timeblock-create-button').click();
 	await expect(modal).toBeHidden();
 
@@ -150,7 +150,7 @@ test('editing a timeblock keeps a frontmatter value containing ---', async () =>
 	const page = app.page;
 	await timeblockItem(page, 'Fence existing').click();
 	const modal = page.locator('.timeblock-info-modal');
-	await modal.locator('input[type="text"]').first().fill('Fence edited');
+	await modal.locator('textarea:not(.tn-modal__description)').fill('Fence edited');
 	await modal.locator('.timeblock-save-button').click();
 	await expect(modal).toBeHidden();
 

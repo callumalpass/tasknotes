@@ -1,3 +1,6 @@
+import { fieldLabel } from "../ui/kit/modal";
+import { captureTaskUndo } from "../ui/taskMutationUndo";
+import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Modal lifecycle initializes required controls before event handlers run. */
@@ -10,10 +13,9 @@ import { TaskDependency, TaskInfo } from "../types";
 import { formatTimestampForDisplay, getCurrentTimestamp } from "../utils/dateUtils";
 import { extractTaskInfo, calculateTotalTimeSpent, formatTime } from "../utils/helpers";
 import { stringifyUnknown } from "../utils/stringUtils";
-import { showConfirmationModal } from "./ConfirmationModal";
+import { deleteNotesWithUndo } from "../ui/noteDeletion";
 import { createCompletionsCalendarSection } from "./taskEditCompletions";
 import { BlockingUpdates } from "./taskEditChanges";
-import { showTaskModalReminderContextMenu } from "./taskModalActionMenus";
 import { buildTaskEditChangesFromModalState } from "./taskEditChangeState";
 import { buildTaskEditFormStateFromTask } from "./taskEditFormState";
 import {
@@ -34,7 +36,6 @@ export interface TaskEditOptions {
 
 export class TaskEditModal extends TaskModal {
 	protected readonly mode = "edit";
-	protected isExpanded = true;
 	private task: TaskInfo;
 	private options: TaskEditOptions;
 	// Changed from Set to array for consistency with other state management
@@ -110,7 +111,10 @@ export class TaskEditModal extends TaskModal {
 		this.form.values.recurrenceRule = formState.recurrenceRule;
 		this.form.values.recurrenceAnchor = formState.recurrenceAnchor;
 		this.form.values.reminders = formState.reminders;
-		this.attachmentEntries = createLinkedAttachmentEntries(this.task.attachments, this.task.path);
+		this.attachmentEntries = createLinkedAttachmentEntries(
+			this.task.attachments,
+			this.task.path
+		);
 		this.form.values.details = formState.details;
 		this.originalDetails = formState.originalDetails;
 		this.form.values.userFields = formState.userFields;
@@ -131,12 +135,31 @@ export class TaskEditModal extends TaskModal {
 			.map((item) => item.path!);
 		this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
 		this.unresolvedBlockingEntries = [];
+
+		// Values stay on show: fields start hidden only when there is nothing in them.
+		this.isExpanded = this.hasDisclosedFieldValues();
 	}
 
-	protected showReminderContextMenu(event: MouseEvent): void {
-		// Override parent method to use the actual task with its path
-		// Update the task object with current form values before showing menu
-		showTaskModalReminderContextMenu(this.getActionMenuContext(), event, this.task);
+	private hasDisclosedFieldValues(): boolean {
+		const { contexts, tags, timeEstimate, userFields } = this.form.values;
+		// The identifying tag is on every tag-based task, so it says nothing about this one.
+		const identifyingTag = this.plugin.settings.taskTag;
+		const hasOwnTags = tags
+			.split(",")
+			.some((tag) => tag.trim() && tag.trim() !== identifyingTag);
+		return (
+			Boolean(contexts || hasOwnTags || timeEstimate) ||
+			Object.values(userFields).some((value) => value !== undefined && value !== null && value !== "") ||
+			this.selectedSubtaskFiles.length > 0 ||
+			this.blockedByItems.length > 0 ||
+			this.blockingItems.length > 0 ||
+			this.attachmentEntries.length > 0
+		);
+	}
+
+	protected showReminderPicker(event: UIEvent): void {
+		// The reminder modal edits a draft of the task being edited
+		super.showReminderPicker(event, this.task);
 	}
 
 	private async refreshTaskData(): Promise<void> {
@@ -222,19 +245,30 @@ export class TaskEditModal extends TaskModal {
 	}
 
 	private createMetadataSection(container: HTMLElement): void {
-		const metadataContainer = container.createEl("details", { cls: "metadata-container" });
+		const metadataContainer = container.createEl("details", {
+			cls: "metadata-container tn-modal__disclosure",
+		});
 
 		const metadataLabel = metadataContainer.createEl("summary", { cls: "detail-label" });
-		metadataLabel.textContent = this.t(msg({ message: "Task information", context: "modals.taskEdit.sections.taskInfo" }));
+		metadataLabel.textContent = this.t(
+			msg({ message: "Task information", context: "modals.taskEdit.sections.taskInfo" })
+		);
 
 		const metadataContent = metadataContainer.createDiv("metadata-content");
+
+		const timeFormat = this.plugin.settings.calendarViewSettings?.timeFormat ?? "24";
 
 		// Total tracked time
 		const totalTimeSpent = calculateTotalTimeSpent(this.task.timeEntries || []);
 		if (totalTimeSpent > 0) {
 			this.createMetadataItem(
 				metadataContent,
-				this.t(msg({ message: "Total tracked time:", context: "modals.taskEdit.metadata.totalTrackedTime" })),
+				this.t(
+					msg({
+						message: "Total tracked time:",
+						context: "modals.taskEdit.metadata.totalTrackedTime",
+					})
+				),
 				formatTime(totalTimeSpent)
 			);
 		}
@@ -244,7 +278,7 @@ export class TaskEditModal extends TaskModal {
 			this.createMetadataItem(
 				metadataContent,
 				this.t(msg({ message: "Created:", context: "modals.taskEdit.metadata.created" })),
-				formatTimestampForDisplay(this.task.dateCreated)
+				formatTimestampForDisplay(this.task.dateCreated, undefined, timeFormat, this.plugin.settings.dateDisplayFormat)
 			);
 		}
 
@@ -253,7 +287,7 @@ export class TaskEditModal extends TaskModal {
 			this.createMetadataItem(
 				metadataContent,
 				this.t(msg({ message: "Modified:", context: "modals.taskEdit.metadata.modified" })),
-				formatTimestampForDisplay(this.task.dateModified)
+				formatTimestampForDisplay(this.task.dateModified, undefined, timeFormat, this.plugin.settings.dateDisplayFormat)
 			);
 		}
 
@@ -269,7 +303,7 @@ export class TaskEditModal extends TaskModal {
 
 	private createMetadataItem(container: HTMLElement, key: string, value: string): void {
 		const item = container.createDiv("metadata-item");
-		item.createSpan("metadata-key").textContent = `${key} `;
+		item.createSpan("metadata-key").textContent = fieldLabel(key);
 		item.createSpan("metadata-value").textContent = value;
 	}
 
@@ -278,6 +312,7 @@ export class TaskEditModal extends TaskModal {
 			return { status: "failed" };
 		}
 
+		const undo: Array<() => Promise<unknown>> = [];
 		try {
 			const changes = this.getChanges({ includeConversionWrite: true });
 			const hasBlockingChanges =
@@ -288,15 +323,28 @@ export class TaskEditModal extends TaskModal {
 
 			if (this.unresolvedBlockingEntries.length > 0 && !hasBlockingChanges) {
 				new Notice(
-					this.t(msg({ message: "Could not resolve: {entries}", context: "modals.taskEdit.notices.blockingUnresolved" }), {
-						entries: this.unresolvedBlockingEntries.join(", "),
-					})
+					this.t(
+						msg({
+							message: "Could not resolve: {entries}",
+							context: "modals.taskEdit.notices.blockingUnresolved",
+						}),
+						{
+							entries: this.unresolvedBlockingEntries.join(", "),
+						}
+					)
 				);
 				this.unresolvedBlockingEntries = [];
 			}
 
 			if (!hasTaskChanges && !hasBlockingChanges && !hasSubtaskChanges) {
-				new Notice(this.t(msg({ message: "No changes to save", context: "modals.taskEdit.notices.noChanges" })));
+				new Notice(
+					this.t(
+						msg({
+							message: "No changes to save",
+							context: "modals.taskEdit.notices.noChanges",
+						})
+					)
+				);
 				return { status: "saved" };
 			}
 
@@ -311,7 +359,9 @@ export class TaskEditModal extends TaskModal {
 
 			if (hasTaskChanges) {
 				try {
-					updatedTask = await this.plugin.taskService.updateTask(this.task, changes);
+					const receipt = await captureTaskUndo(this.plugin, this.task, () => this.plugin.taskService.updateTask(this.task, changes));
+					if (receipt.task) updatedTask = receipt.task;
+					if (receipt.undo) undo.push(receipt.undo);
 				} catch (error) {
 					// Don't leave imported files behind if the task wasn't updated.
 					await imported?.rollback();
@@ -332,7 +382,12 @@ export class TaskEditModal extends TaskModal {
 					updatedTask,
 					this.pendingBlockingUpdates.added,
 					this.pendingBlockingUpdates.removed,
-					this.pendingBlockingUpdates.raw
+					this.pendingBlockingUpdates.raw,
+					async (task, updates) => {
+						const receipt = await captureTaskUndo(this.plugin, task, () => this.plugin.taskService.updateTask(task, updates));
+						if (receipt.undo) undo.push(receipt.undo);
+						return receipt.task;
+					}
 				);
 
 				const refreshed = await this.plugin.cacheManager.getTaskInfo(updatedTask.path);
@@ -343,14 +398,20 @@ export class TaskEditModal extends TaskModal {
 			}
 
 			if (hasSubtaskChanges) {
-				await this.applySubtaskChanges(updatedTask);
+				await this.applySubtaskChanges(updatedTask, undo);
 			}
 
 			if (this.unresolvedBlockingEntries.length > 0) {
 				new Notice(
-					this.t(msg({ message: "Could not resolve: {entries}", context: "modals.taskEdit.notices.blockingUnresolved" }), {
-						entries: this.unresolvedBlockingEntries.join(", "),
-					})
+					this.t(
+						msg({
+							message: "Could not resolve: {entries}",
+							context: "modals.taskEdit.notices.blockingUnresolved",
+						}),
+						{
+							entries: this.unresolvedBlockingEntries.join(", "),
+						}
+					)
 				);
 			}
 
@@ -358,12 +419,15 @@ export class TaskEditModal extends TaskModal {
 				this.options.onTaskUpdated(updatedTask);
 			}
 
-			if (hasTaskChanges) {
-				new Notice(
-					this.t(msg({ message: "Task \"{title}\" updated successfully", context: "modals.taskEdit.notices.updateSuccess" }), { title: updatedTask.title })
+			if (hasTaskChanges || hasBlockingChanges || hasSubtaskChanges) {
+				showTaskUndo(undo, false, 1, this.app.vault,
+					this.t(
+						msg({
+							message: 'Task saved',
+							context: "modals.taskEdit.notices.updateSuccess",
+						})
+					)
 				);
-			} else if (hasBlockingChanges) {
-				new Notice(this.t(msg({ message: "Dependencies updated", context: "modals.taskEdit.notices.dependenciesUpdateSuccess" })));
 			}
 
 			this.pendingBlockingUpdates = { added: [], removed: [], raw: {} };
@@ -376,7 +440,15 @@ export class TaskEditModal extends TaskModal {
 				error: error,
 			});
 			const message = error instanceof Error && error.message ? error.message : String(error);
-			new Notice(this.t(msg({ message: "Failed to update task: {message}", context: "modals.taskEdit.notices.updateFailure" }), { message: displayError(message) }));
+			showTaskUndo(undo, true, undo.length, this.app.vault,
+				`${this.task.title} · ${this.t(
+					msg({
+						message: "Failed to update task: {message}",
+						context: "modals.taskEdit.notices.updateFailure",
+					}),
+					{ message: displayError(message) }
+				)}`
+			);
 			return { status: "failed" };
 		}
 	}
@@ -444,7 +516,15 @@ export class TaskEditModal extends TaskModal {
 			const file = this.app.vault.getAbstractFileByPath(this.task.path);
 
 			if (!(file instanceof TFile)) {
-				new Notice(this.t(msg({ message: "Could not find task file: {path}", context: "modals.taskEdit.notices.fileMissing" }), { path: this.task.path }));
+				new Notice(
+					this.t(
+						msg({
+							message: "Could not find task file: {path}",
+							context: "modals.taskEdit.notices.fileMissing",
+						}),
+						{ path: this.task.path }
+					)
+				);
 				return;
 			}
 
@@ -461,7 +541,14 @@ export class TaskEditModal extends TaskModal {
 				operation: "open-task-note",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to open task note", context: "modals.taskEdit.notices.openNoteFailure" })));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to open task note",
+						context: "modals.taskEdit.notices.openNoteFailure",
+					})
+				)
+			);
 		}
 	}
 
@@ -469,7 +556,7 @@ export class TaskEditModal extends TaskModal {
 		if (!(await this.resolveUnsavedChanges())) return;
 
 		try {
-			const updatedTask = await this.plugin.taskService.toggleArchive(this.task);
+			const updatedTask = await this.plugin.toggleTaskArchive(this.task);
 
 			// Update the task reference
 			this.task = updatedTask;
@@ -479,13 +566,6 @@ export class TaskEditModal extends TaskModal {
 				this.options.onTaskUpdated(updatedTask);
 			}
 
-			// Show success message
-			const actionKey = updatedTask.archived
-				? msg({ message: "archived", context: "modals.taskEdit.archiveAction.archived" })
-				: msg({ message: "unarchived", context: "modals.taskEdit.archiveAction.unarchived" });
-			const actionText = this.t(actionKey);
-			new Notice(this.t(msg({ message: "Task {action} successfully", context: "modals.taskEdit.notices.archiveSuccess" }), { action: actionText }));
-
 			this.forceClose();
 		} catch (error) {
 			tasknotesLogger.error("Failed to archive task:", {
@@ -493,45 +573,22 @@ export class TaskEditModal extends TaskModal {
 				operation: "archive-task",
 				error: error,
 			});
-			new Notice(this.t(msg({ message: "Failed to archive task", context: "modals.taskEdit.notices.archiveFailure" })));
 		}
 	}
 
 	private async deleteTask(): Promise<void> {
-		const confirmed = await showConfirmationModal(this.app, {
-			title: this.t(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.title" })),
-			message: this.t(msg({ message: "Are you sure you want to delete \"{title}\"? This moves the task note to Obsidian trash.", context: "modals.taskEdit.deleteConfirmation.message" }), {
-				title: this.task.title,
-			}),
-			confirmText: this.t(msg({ message: "Delete task", context: "modals.taskEdit.deleteConfirmation.confirm" })),
-			cancelText: this.t(msg({ message: "Cancel", context: "common.cancel" })),
-			isDestructive: true,
-		});
-
-		if (!confirmed) {
-			return;
-		}
-
-		try {
-			await this.plugin.taskService.deleteTask(this.task);
-			new Notice(this.t(msg({ message: "Task \"{title}\" deleted successfully", context: "modals.taskEdit.notices.deleteSuccess" }), { title: this.task.title }));
-			this.forceClose();
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			tasknotesLogger.error("Failed to delete task:", {
-				category: "persistence",
-				operation: "delete-task",
-				error: error,
-			});
-			new Notice(this.t(msg({ message: "Failed to delete task: {message}", context: "modals.taskEdit.notices.deleteFailure" }), { message: displayError(message) }));
-		}
+		const file = this.app.vault.getAbstractFileByPath(this.task.path);
+		if (!(file instanceof TFile)) return;
+		if (await deleteNotesWithUndo(this.plugin, [{ file, task: this.task }])) this.forceClose();
 	}
 
 	protected getLeadingButtons(): TaskModalLeadingButton[] {
 		return [
 			{
-				className: "tn-task-modal__open-note-button",
-				text: this.t(msg({ message: "Open note", context: "modals.task.buttons.openNote" })),
+				className: "tn-btn tn-btn--ghost tn-task-modal__open-note-button",
+				text: this.t(
+					msg({ message: "Open note", context: "modals.task.buttons.openNote" })
+				),
 				onClick: () => {
 					void this.openTaskNote();
 				},
@@ -543,8 +600,15 @@ export class TaskEditModal extends TaskModal {
 		return [
 			{
 				title: this.task.archived
-					? this.t(msg({ message: "Unarchive", context: "modals.taskEdit.buttons.unarchive" }))
-					: this.t(msg({ message: "Archive", context: "modals.taskEdit.buttons.archive" })),
+					? this.t(
+							msg({
+								message: "Unarchive",
+								context: "modals.taskEdit.buttons.unarchive",
+							})
+						)
+					: this.t(
+							msg({ message: "Archive", context: "modals.taskEdit.buttons.archive" })
+						),
 				icon: "archive",
 				onClick: () => {
 					void this.archiveTask();
@@ -592,10 +656,11 @@ export class TaskEditModal extends TaskModal {
 		return hasTaskEditSubtaskChanges(this.initialSubtaskFiles, this.selectedSubtaskFiles);
 	}
 
-	protected async applySubtaskChanges(task: TaskInfo): Promise<void> {
+	protected async applySubtaskChanges(task: TaskInfo, undo: Array<() => Promise<unknown>> = []): Promise<void> {
 		const currentTaskFile = this.app.vault.getAbstractFileByPath(task.path);
 		if (!(currentTaskFile instanceof TFile)) return;
 
+		const failedPaths: string[] = [];
 		const result = await applyTaskEditSubtaskChanges({
 			parentTaskFile: currentTaskFile,
 			selectedSubtaskFiles: this.selectedSubtaskFiles,
@@ -603,16 +668,21 @@ export class TaskEditModal extends TaskModal {
 			getTaskInfo: (path) => this.plugin.cacheManager.getTaskInfo(path),
 			buildProjectReference: (parentTaskFile, subtaskPath) =>
 				this.buildProjectReference(parentTaskFile, subtaskPath),
-			updateTaskProjects: (subtaskInfo, updatedProjects) =>
-				this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects),
-			onAddError: (error) => {
+			updateTaskProjects: async (subtaskInfo, updatedProjects) => {
+				const receipt = await captureTaskUndo(this.plugin, subtaskInfo, () => this.plugin.updateTaskProperty(subtaskInfo, "projects", updatedProjects, { suppressNotice: true }));
+				if (receipt.undo) undo.push(receipt.undo);
+				return receipt.task;
+			},
+			onAddError: (error, file) => {
+				failedPaths.push(file.path);
 				tasknotesLogger.error("Failed to add subtask relation:", {
 					category: "persistence",
 					operation: "add-subtask-relation",
 					error: error,
 				});
 			},
-			onRemoveError: (error) => {
+			onRemoveError: (error, file) => {
+				failedPaths.push(file.path);
 				tasknotesLogger.error("Failed to remove subtask relation:", {
 					category: "persistence",
 					operation: "remove-subtask-relation",
@@ -622,6 +692,7 @@ export class TaskEditModal extends TaskModal {
 		});
 
 		this.initialSubtaskFiles = result.nextInitialSubtaskFiles;
+		if (failedPaths.length) throw new Error(failedPaths.join(", "));
 	}
 }
 

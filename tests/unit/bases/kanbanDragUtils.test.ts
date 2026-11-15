@@ -209,6 +209,29 @@ describe("kanbanDragUtils", () => {
 		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(false);
 	});
 
+	it("shows an insertion marker in an empty cell without adding layout space", () => {
+		const cards = document.createElement("div");
+		updateKanbanDropMarker(cards, [], 0);
+		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(true);
+		expect(cards.style.getPropertyValue("--tn-kanban-drop-top")).toBe("0px");
+		expect(cards.childElementCount).toBe(0);
+		clearKanbanDropMarkers(cards);
+		expect(cards.style.getPropertyValue("--tn-kanban-drop-top")).toBe("");
+	});
+
+	it("anchors append markers to the last card rather than a tall scrolled container", () => {
+		const cards = document.createElement("div");
+		const last = createCard("Tasks/a.md");
+		cards.appendChild(last);
+		cards.scrollTop = 80;
+		jest.spyOn(cards, "getBoundingClientRect").mockReturnValue({ top: 100 } as DOMRect);
+		jest.spyOn(last, "getBoundingClientRect").mockReturnValue({ bottom: 240 } as DOMRect);
+		updateKanbanDropMarker(cards, [last], 1);
+		expect(cards.style.getPropertyValue("--tn-kanban-drop-top")).toBe("220px");
+		updateKanbanDropMarker(cards, [last], 0);
+		expect(cards.style.getPropertyValue("--tn-kanban-drop-top")).toBe("");
+	});
+
 	it("appends dragged cards into an empty target container for optimistic cross-column drops", () => {
 		const source = document.createElement("div");
 		const target = document.createElement("div");

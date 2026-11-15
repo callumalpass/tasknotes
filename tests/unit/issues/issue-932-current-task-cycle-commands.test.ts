@@ -6,6 +6,13 @@ import TaskNotesPlugin from "../../../src/main";
 import { createTaskNotesCommandDefinitions } from "../../../src/commands/taskNotesCommands";
 import type { TaskInfo } from "../../../src/types";
 import { App, TFile } from "../../helpers/obsidian-runtime";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+}));
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
@@ -84,6 +91,8 @@ describe("Issue #932: current task status and priority cycle commands", () => {
 		expect(plugin.app.workspace.getActiveFile).toHaveBeenCalledTimes(1);
 		expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
 		expect(plugin.statusManager.getNextStatus).toHaveBeenCalledWith("open");
+		expect(jest.mocked(changeTaskProperty).mock.calls[0][0]).toBe(plugin);
+		expect(jest.mocked(changeTaskProperty).mock.calls[0].slice(1)).toEqual([[task], "status", "in-progress"]);
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "in-progress");
 	});
 
@@ -96,6 +105,8 @@ describe("Issue #932: current task status and priority cycle commands", () => {
 		expect(plugin.app.workspace.getActiveFile).toHaveBeenCalledTimes(1);
 		expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
 		expect(plugin.priorityManager.getNextPriority).toHaveBeenCalledWith("normal");
+		expect(jest.mocked(changeTaskProperty).mock.calls[0][0]).toBe(plugin);
+		expect(jest.mocked(changeTaskProperty).mock.calls[0].slice(1)).toEqual([[task], "priority", "high"]);
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "priority", "high");
 	});
 

@@ -34,6 +34,7 @@ export function createNLPHighlight(getSpans: (text: string) => ParsedSpan[]): Ex
 				span.end,
 				Decoration.mark({
 					class: `tn-nlp-highlight tn-nlp-highlight--${span.kind}`,
+					attributes: { spellcheck: "false" },
 				})
 			);
 			lastEnd = span.end;

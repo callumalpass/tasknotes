@@ -50,6 +50,8 @@ const GOOGLE_CALENDAR_SYNC_QUEUE_KEY = "googleCalendarSyncQueue";
 
 /** Persistent plugin-data key for the last task state known to match Google Calendar */
 const GOOGLE_CALENDAR_FINGERPRINTS_KEY = "googleCalendarTaskFingerprints";
+const GOOGLE_CALENDAR_RECONCILIATION_INITIALIZED_KEY =
+	"googleCalendarExternalReconciliationInitialized";
 
 /** Delay between queued Google Calendar recovery retry attempts */
 const RECOVERY_QUEUE_RETRY_DELAY_MS = 60000;
@@ -63,7 +65,6 @@ type CalendarEventPayload = {
 	description?: string;
 	start: { date?: string; dateTime?: string; timeZone?: string };
 	end: { date?: string; dateTime?: string; timeZone?: string };
-	colorId?: string;
 	reminders?: {
 		useDefault: boolean;
 		overrides?: Array<{ method: string; minutes: number }>;
@@ -178,13 +179,15 @@ export class TaskCalendarSyncService {
 				assertConnectionGenerationCurrent: (generation) =>
 					this.assertConnectionGenerationCurrent(generation),
 				deleteOrQueueEvent: (notePath, timeblockId, calendarId, eventId, generation) =>
-					this.deleteOrQueueCalendarEvent(notePath, calendarId, eventId, generation, {
+					this.deleteOrQueueCalendarEvent(notePath, calendarId, eventId, generation, undefined, {
 						timeblockId,
 					}),
-				queueEventDeletion: (notePath, timeblockId, calendarId, eventId, error) =>
-					this.queueCalendarDeletion(notePath, calendarId, eventId, error, false, {
+				queueEventDeletion: async (notePath, timeblockId, calendarId, eventId, error) => {
+					const connectionId = await this.getGoogleConnectionId().catch(() => undefined);
+					await this.queueCalendarDeletion(notePath, calendarId, eventId, connectionId, error, false, {
 						timeblockId,
-					}),
+					});
+				},
 				renameQueuedEventDeletions: (oldPath, newPath) =>
 					this.mutateDeletionQueue((queue) => {
 						let changed = false;
@@ -449,10 +452,35 @@ export class TaskCalendarSyncService {
 		return !!settings?.enabled && !!settings?.targetCalendarId && isConnected;
 	}
 
-	private getDeletionQueueKey(
+	private getCalendarEventKey(
 		item: Pick<PendingGoogleCalendarDeletion, "calendarId" | "eventId">
 	): string {
 		return `${item.calendarId}::${item.eventId}`;
+	}
+
+	private getDeletionQueueKey(
+		item: Pick<PendingGoogleCalendarDeletion, "calendarId" | "eventId" | "connectionId">
+	): string {
+		return `${item.connectionId ?? "legacy"}::${this.getCalendarEventKey(item)}`;
+	}
+
+	private async getGoogleConnectionId(
+		expectedConnectionGeneration?: number
+	): Promise<string | undefined> {
+		if (expectedConnectionGeneration !== undefined) {
+			await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
+		}
+		const oauthService = this.plugin.oauthService as
+			| { getConnection?: (provider: "google") => Promise<{ connectionId?: string } | null> }
+			| undefined;
+		if (!oauthService?.getConnection) {
+			return "untracked-runtime-connection";
+		}
+		const connection = await oauthService.getConnection("google");
+		if (expectedConnectionGeneration !== undefined) {
+			await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
+		}
+		return connection?.connectionId;
 	}
 
 	private getEventIndexTaskCalendarKey(
@@ -583,6 +611,20 @@ export class TaskCalendarSyncService {
 			data[GOOGLE_CALENDAR_FINGERPRINTS_KEY] = Object.fromEntries(map.entries());
 			await this.plugin.saveData(data);
 		});
+	}
+
+	private async isExternalReconciliationInitialized(): Promise<boolean> {
+		const data = (await this.plugin.loadData()) as Record<string, unknown> | null;
+		return data?.[GOOGLE_CALENDAR_RECONCILIATION_INITIALIZED_KEY] === true;
+	}
+
+	private async markExternalReconciliationInitialized(): Promise<void> {
+		const data = await this.plugin.loadPluginDataForSafeWrite(
+			"mark-google-calendar-external-reconciliation-initialized"
+		);
+		if (!data || data[GOOGLE_CALENDAR_RECONCILIATION_INITIALIZED_KEY] === true) return;
+		data[GOOGLE_CALENDAR_RECONCILIATION_INITIALIZED_KEY] = true;
+		await this.plugin.saveData(data);
 	}
 
 	private getCalendarRelevantFingerprint(task: TaskInfo): string {
@@ -737,16 +779,18 @@ export class TaskCalendarSyncService {
 	private async upsertEventIndex(
 		taskPath: string,
 		calendarId: string,
-		eventId: string
+		eventId: string,
+		connectionId?: string
 	): Promise<void> {
 		const index = await this.getEventIndex();
-		const key = this.getDeletionQueueKey({ calendarId, eventId });
+		const key = this.getCalendarEventKey({ calendarId, eventId });
 		const matchingEntries = index.filter(
 			(item) =>
-				this.getDeletionQueueKey(item) === key &&
+				this.getCalendarEventKey(item) === key &&
 				item.taskPath === taskPath &&
 				item.calendarId === calendarId &&
-				item.eventId === eventId
+				item.eventId === eventId &&
+				item.connectionId === connectionId
 		);
 		const replacedEntries = index.filter(
 			(item) =>
@@ -756,7 +800,7 @@ export class TaskCalendarSyncService {
 		);
 		const filteredIndex = index.filter(
 			(item) =>
-				this.getDeletionQueueKey(item) !== key &&
+				this.getCalendarEventKey(item) !== key &&
 				!(item.taskPath === taskPath && item.calendarId === calendarId)
 		);
 
@@ -772,6 +816,7 @@ export class TaskCalendarSyncService {
 			taskPath,
 			calendarId,
 			eventId,
+			connectionId,
 			updatedAt: Date.now(),
 		});
 
@@ -781,7 +826,9 @@ export class TaskCalendarSyncService {
 			const deleted = await this.deleteOrQueueCalendarEvent(
 				item.taskPath,
 				item.calendarId,
-				item.eventId
+				item.eventId,
+				undefined,
+				item.connectionId ?? null
 			);
 			if (!deleted) {
 				tasknotesLogger.warn(
@@ -801,10 +848,18 @@ export class TaskCalendarSyncService {
 		}
 	}
 
-	private async removeEventIndexForEvent(calendarId: string, eventId: string): Promise<void> {
+	private async removeEventIndexForEvent(
+		calendarId: string,
+		eventId: string,
+		connectionId?: string
+	): Promise<void> {
 		const index = await this.getEventIndex();
-		const key = this.getDeletionQueueKey({ calendarId, eventId });
-		const filteredIndex = index.filter((item) => this.getDeletionQueueKey(item) !== key);
+		const key = this.getCalendarEventKey({ calendarId, eventId });
+		const filteredIndex = index.filter(
+			(item) =>
+				this.getCalendarEventKey(item) !== key ||
+				(connectionId !== undefined && item.connectionId !== connectionId)
+		);
 
 		if (filteredIndex.length !== index.length) {
 			await this.saveEventIndex(filteredIndex);
@@ -842,8 +897,12 @@ export class TaskCalendarSyncService {
 		});
 	}
 
-	private async removeFromDeletionQueue(calendarId: string, eventId: string): Promise<void> {
-		const key = this.getDeletionQueueKey({ calendarId, eventId });
+	private async removeFromDeletionQueue(
+		calendarId: string,
+		eventId: string,
+		connectionId: string
+	): Promise<void> {
+		const key = this.getDeletionQueueKey({ calendarId, eventId, connectionId });
 		await this.mutateDeletionQueue((queue) => {
 			const updatedQueue = queue.filter((item) => this.getDeletionQueueKey(item) !== key);
 			return updatedQueue.length === queue.length ? null : updatedQueue;
@@ -854,12 +913,13 @@ export class TaskCalendarSyncService {
 		taskPath: string,
 		calendarId: string,
 		eventId: string,
+		connectionId: string | undefined,
 		error?: unknown,
 		attempted = false,
 		owner: { timeblockId?: string } = {}
 	): Promise<void> {
 		const now = Date.now();
-		const key = this.getDeletionQueueKey({ calendarId, eventId });
+		const key = this.getDeletionQueueKey({ calendarId, eventId, connectionId });
 		const lastError = error ? getErrorMessage(error) : undefined;
 
 		await this.mutateDeletionQueue((queue) => {
@@ -888,6 +948,7 @@ export class TaskCalendarSyncService {
 					...(owner.timeblockId ? { timeblockId: owner.timeblockId } : {}),
 					calendarId,
 					eventId,
+					connectionId,
 					createdAt: now,
 					attempts: attempted ? 1 : 0,
 					lastAttemptAt: attempted ? now : undefined,
@@ -902,6 +963,7 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		eventId: string,
 		expectedConnectionGeneration?: number,
+		expectedConnectionId?: string | null,
 		owner: { timeblockId?: string } = {}
 	): Promise<boolean> {
 		// "Delete event on task delete" only governs task events.
@@ -909,11 +971,27 @@ export class TaskCalendarSyncService {
 			return true;
 		}
 
+		const connectionGeneration =
+			expectedConnectionGeneration ?? this.getConnectionGeneration();
+		const indexedEntry = (await this.getEventIndex()).find(
+			(item) =>
+				item.calendarId === calendarId &&
+				item.eventId === eventId &&
+				item.taskPath === taskPath
+		);
+		const connectionId =
+			expectedConnectionId === null
+				? undefined
+				: expectedConnectionId ??
+					indexedEntry?.connectionId ??
+					(await this.getGoogleConnectionId(connectionGeneration).catch(() => undefined));
+
 		if (!this.isDeletionQueueReady()) {
 			await this.queueCalendarDeletion(
 				taskPath,
 				calendarId,
 				eventId,
+				connectionId,
 				new Error("Google Calendar sync is not ready"),
 				false,
 				owner
@@ -921,9 +999,11 @@ export class TaskCalendarSyncService {
 			return false;
 		}
 
-		const connectionGeneration =
-			expectedConnectionGeneration ?? this.getConnectionGeneration();
 		try {
+			const activeConnectionId = await this.getGoogleConnectionId(connectionGeneration);
+			if (!connectionId || activeConnectionId !== connectionId) {
+				throw new Error("Google Calendar account changed before event cleanup");
+			}
 			await this.withGoogleRateLimit(async () => {
 				await this.assertConnectionGenerationCurrent(connectionGeneration);
 				return this.googleCalendarService.deleteEvent(
@@ -932,11 +1012,11 @@ export class TaskCalendarSyncService {
 					connectionGeneration
 				);
 			});
-			await this.removeFromDeletionQueue(calendarId, eventId);
+			await this.removeFromDeletionQueue(calendarId, eventId, connectionId);
 			return true;
 		} catch (error: unknown) {
-			if (isAlreadyDeletedError(error)) {
-				await this.removeFromDeletionQueue(calendarId, eventId);
+			if (connectionId && isAlreadyDeletedError(error)) {
+				await this.removeFromDeletionQueue(calendarId, eventId, connectionId);
 				return true;
 			}
 
@@ -946,7 +1026,15 @@ export class TaskCalendarSyncService {
 				details: { value: taskPath },
 				error: error,
 			});
-			await this.queueCalendarDeletion(taskPath, calendarId, eventId, error, true, owner);
+			await this.queueCalendarDeletion(
+				taskPath,
+				calendarId,
+				eventId,
+				connectionId,
+				error,
+				true,
+				owner
+			);
 			return false;
 		}
 	}
@@ -983,7 +1071,7 @@ export class TaskCalendarSyncService {
 			return;
 		}
 		await this.clearTaskEventIdIfMatching(item, connectionGeneration);
-		await this.removeEventIndexForEvent(item.calendarId, item.eventId);
+		await this.removeEventIndexForEvent(item.calendarId, item.eventId, item.connectionId);
 	}
 
 	private async isQueuedDeletionStillNeeded(
@@ -1050,9 +1138,10 @@ export class TaskCalendarSyncService {
 			let baselineTasks = 0;
 			let createdTasks = 0;
 
-			// An empty fingerprint map means this vault was never reconciled: every task is
-			// unknown, so baseline all of them instead of flooding the calendar on first run.
-			const isFirstReconciliation = fingerprints.size === 0;
+			// A durable marker distinguishes a genuinely new integration from an already
+			// reconciled vault that currently has no tasks or fingerprints.
+			const isFirstReconciliation =
+				fingerprints.size === 0 && !(await this.isExternalReconciliationInitialized());
 
 			for (const task of tasks) {
 				activeTaskPaths.add(task.path);
@@ -1130,6 +1219,7 @@ export class TaskCalendarSyncService {
 			if (changed) {
 				await this.saveCalendarFingerprints(fingerprints);
 			}
+			await this.markExternalReconciliationInitialized();
 		});
 	}
 
@@ -1209,11 +1299,12 @@ export class TaskCalendarSyncService {
 			const eventIndexByEvent = new Map<string, GoogleCalendarEventIndexEntry>();
 			const nextIndexByTaskCalendar = new Map<string, GoogleCalendarEventIndexEntry>();
 			const replacedEntries: GoogleCalendarEventIndexEntry[] = [];
+			const currentConnectionId = await this.getGoogleConnectionId().catch(() => undefined);
 			let linkedTasks = 0;
 			let indexChanged = false;
 
 			for (const item of index) {
-				const eventKey = this.getDeletionQueueKey(item);
+				const eventKey = this.getCalendarEventKey(item);
 				const taskCalendarKey = this.getEventIndexTaskCalendarKey(item);
 
 				if (eventIndexByEvent.has(eventKey) || nextIndexByTaskCalendar.has(taskCalendarKey)) {
@@ -1232,7 +1323,7 @@ export class TaskCalendarSyncService {
 				}
 
 				linkedTasks++;
-				const key = this.getDeletionQueueKey({
+				const key = this.getCalendarEventKey({
 					calendarId: targetCalendarId,
 					eventId,
 				});
@@ -1265,6 +1356,10 @@ export class TaskCalendarSyncService {
 					taskPath: task.path,
 					calendarId: targetCalendarId,
 					eventId,
+					connectionId:
+						existingEventEntry?.connectionId ??
+						existingTaskEntry?.connectionId ??
+						currentConnectionId,
 					updatedAt: existingEventEntry?.updatedAt || existingTaskEntry?.updatedAt || Date.now(),
 				};
 				nextIndexByTaskCalendar.set(taskCalendarKey, nextEntry);
@@ -1278,7 +1373,7 @@ export class TaskCalendarSyncService {
 
 			let queuedDeletions = 0;
 			for (const item of nextIndexByTaskCalendar.values()) {
-				const activeTask = activeTasksByEvent.get(this.getDeletionQueueKey(item));
+				const activeTask = activeTasksByEvent.get(this.getCalendarEventKey(item));
 				if (activeTask && this.isTaskCalendarEligible(activeTask)) {
 					continue;
 				}
@@ -1288,6 +1383,7 @@ export class TaskCalendarSyncService {
 					activeTask?.path || item.taskPath,
 					item.calendarId,
 					item.eventId,
+					item.connectionId,
 					activeTask
 						? new Error("Indexed task no longer meets calendar sync criteria")
 						: new Error("Indexed task file no longer exists")
@@ -1298,7 +1394,9 @@ export class TaskCalendarSyncService {
 				const deleted = await this.deleteOrQueueCalendarEvent(
 					item.taskPath,
 					item.calendarId,
-					item.eventId
+					item.eventId,
+					undefined,
+					item.connectionId ?? null
 				);
 				if (!deleted) {
 					tasknotesLogger.warn(
@@ -1415,7 +1513,7 @@ export class TaskCalendarSyncService {
 	async processDeletionQueue(): Promise<{ deleted: number; failed: number; remaining: number }> {
 		return this.profileAsync("processDeletionQueue", async () => {
 			const results = { deleted: 0, failed: 0, remaining: 0 };
-			const queue = await this.getDeletionQueue();
+			let queue = await this.getDeletionQueue();
 			this.profileGauge("processDeletionQueue.queueLength", queue.length);
 
 			if (queue.length === 0) {
@@ -1426,6 +1524,19 @@ export class TaskCalendarSyncService {
 				results.remaining = queue.length;
 				this.profileGauge("processDeletionQueue.remaining", results.remaining);
 				return results;
+			}
+
+			if (queue.some((item) => !item.connectionId)) {
+				const legacyConnectionId = await this.getGoogleConnectionId();
+				if (legacyConnectionId) {
+					await this.mutateDeletionQueue((currentQueue) =>
+						currentQueue.map((item) => ({
+							...item,
+							connectionId: item.connectionId ?? legacyConnectionId,
+						}))
+					);
+					queue = await this.getDeletionQueue();
+				}
 			}
 
 			const dedupedQueue = new Map<string, PendingGoogleCalendarDeletion>();
@@ -1450,6 +1561,13 @@ export class TaskCalendarSyncService {
 						: await this.isQueuedDeletionStillNeeded(item);
 					if (!deletionStillNeeded) {
 						continue;
+					}
+
+					const activeConnectionId = await this.getGoogleConnectionId(connectionGeneration);
+					if (!item.connectionId || item.connectionId !== activeConnectionId) {
+						throw new Error(
+							"Queued Google Calendar deletion belongs to a different connection"
+						);
 					}
 
 					await this.withGoogleRateLimit(async () => {
@@ -1848,7 +1966,8 @@ export class TaskCalendarSyncService {
 		const targetCalendarId =
 			calendarId || this.plugin.settings.googleCalendarExport.targetCalendarId;
 		if (targetCalendarId) {
-			await this.upsertEventIndex(taskPath, targetCalendarId, eventId);
+			const connectionId = await this.getGoogleConnectionId(expectedConnectionGeneration);
+			await this.upsertEventIndex(taskPath, targetCalendarId, eventId, connectionId);
 		}
 	}
 
@@ -2459,10 +2578,6 @@ export class TaskCalendarSyncService {
 			event.description = this.buildEventDescription(task);
 		}
 
-		if (settings.eventColorId) {
-			event.colorId = settings.eventColorId;
-		}
-
 		// Determine which date field was used for the event (for reminder conversion)
 		let eventDateSource: "due" | "scheduled";
 		if (
@@ -2564,6 +2679,7 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		expectedConnectionGeneration: number
 	): Promise<string> {
+		const connectionId = await this.getGoogleConnectionId(expectedConnectionGeneration);
 		const createdEvent = await this.withGoogleRateLimit(async () => {
 			await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
 			return this.googleCalendarService.createEvent(
@@ -2592,7 +2708,13 @@ export class TaskCalendarSyncService {
 				expectedConnectionGeneration
 			);
 		} catch (error) {
-			await this.queueCalendarDeletion(task.path, calendarId, eventId, error);
+			await this.queueCalendarDeletion(
+				task.path,
+				calendarId,
+				eventId,
+				connectionId,
+				error
+			);
 			throw error;
 		}
 		return eventId;
@@ -2645,10 +2767,6 @@ export class TaskCalendarSyncService {
 
 		if (settings.includeDescription) {
 			event.description = this.buildEventDescription(task);
-		}
-
-		if (settings.eventColorId) {
-			event.colorId = settings.eventColorId;
 		}
 
 		const taskReminders = this.convertTaskRemindersToGoogleFormat(
@@ -2752,17 +2870,21 @@ export class TaskCalendarSyncService {
 			return;
 		}
 
-		const createPromise = this.withGoogleRateLimit(async () => {
-			await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
-			return this.googleCalendarService.createEvent(
-				targetCalendarId,
-				{
-					...eventData,
-					isAllDay: !!eventData.start.date,
-				},
+		const createPromise = (async () => {
+			const connectionId = await this.getGoogleConnectionId(
 				expectedConnectionGeneration
 			);
-		}).then(async (createdEvent) => {
+			const createdEvent = await this.withGoogleRateLimit(async () => {
+				await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
+				return this.googleCalendarService.createEvent(
+					targetCalendarId,
+					{
+						...eventData,
+						isAllDay: !!eventData.start.date,
+					},
+					expectedConnectionGeneration
+				);
+			});
 			const prefix = `google-${targetCalendarId}-`;
 			const eventId = createdEvent.id.startsWith(prefix)
 				? createdEvent.id.slice(prefix.length)
@@ -2781,11 +2903,17 @@ export class TaskCalendarSyncService {
 					expectedConnectionGeneration
 				);
 			} catch (error) {
-				await this.queueCalendarDeletion(task.path, targetCalendarId, eventId, error);
+				await this.queueCalendarDeletion(
+					task.path,
+					targetCalendarId,
+					eventId,
+					connectionId,
+					error
+				);
 				throw error;
 			}
 			return eventId;
-		});
+		})();
 		TaskCalendarSyncService.pendingExceptionEventCreates.set(
 			createCacheKey,
 			createPromise

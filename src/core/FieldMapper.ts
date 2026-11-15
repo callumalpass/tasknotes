@@ -90,7 +90,13 @@ export class FieldMapper {
 		taskTag?: string,
 		storeTitleInFilename?: boolean
 	): Record<string, unknown> {
-		return mapTaskToFrontmatter(this.mapping, taskData, taskTag, storeTitleInFilename, this.userFields);
+		return mapTaskToFrontmatter(
+			this.mapping,
+			taskData,
+			taskTag,
+			storeTitleInFilename,
+			this.userFields
+		);
 	}
 
 	/**
@@ -172,15 +178,6 @@ export class FieldMapper {
 	 */
 	toUserFields(internalFields: (keyof FieldMapping)[]): string[] {
 		return toUserFields(this.mapping, internalFields);
-	}
-
-	/**
-	 * @deprecated Use lookupMappingKey() instead for clarity about what is returned
-	 * Convert user's property name back to internal field name
-	 * This is the reverse of toUserField()
-	 */
-	fromUserField(userPropertyName: string): keyof FieldMapping | null {
-		return this.lookupMappingKey(userPropertyName);
 	}
 
 	/**

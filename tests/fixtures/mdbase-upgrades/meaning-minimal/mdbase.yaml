@@ -1,0 +1,20 @@
+spec_version: 0.3.0
+name: TaskNotes
+description: Task collection managed by TaskNotes for Obsidian
+settings:
+  types_folder: _types
+  contracts_folder: _contracts
+  record_extensions:
+    - md
+  validation: warn
+  explicit_type_keys:
+    - mdbase_type
+  id_field: id
+  exclude:
+    - _types
+  default_strict: false
+x-legacy-v0.2:
+  tasknotes_metadata_migration:
+    source_spec_version: 0.2.0
+    source_type_path: _types/task.md
+    coercion_compatible_schema: true

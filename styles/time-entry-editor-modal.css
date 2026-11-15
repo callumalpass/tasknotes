@@ -206,15 +206,6 @@
     border-color: var(--interactive-accent);
 }
 
-.time-entry-editor-modal__duration-info {
-    margin-top: var(--size-4-1);
-    padding: var(--size-4-1) var(--size-4-2);
-    background: var(--background-primary-alt);
-    border-radius: var(--radius-s);
-    font-size: var(--font-ui-small);
-    color: var(--text-muted);
-}
-
 /* =====================================================================
    FOOTER
    ===================================================================== */

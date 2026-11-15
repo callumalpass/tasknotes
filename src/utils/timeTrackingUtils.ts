@@ -106,7 +106,7 @@ export function computeActiveTimeSessions(
 
 			activeSessions.push({
 				task: {
-					id: task.path,
+					id: task.id ?? task.path,
 					title: task.title,
 					status: task.status,
 					priority: task.priority,
@@ -298,7 +298,7 @@ export function computeTaskTimeData(
 
 	return {
 		task: {
-			id: task.path,
+			id: task.id ?? task.path,
 			title: task.title,
 			status: task.status,
 			priority: task.priority,

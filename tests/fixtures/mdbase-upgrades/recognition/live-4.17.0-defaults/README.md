@@ -1,0 +1,1 @@
+Exact before-migration metadata and saved settings written by the shipped TaskNotes 4.17.0 release build (GitHub release asset) in an isolated Obsidian 1.15.0 profile, captured by the v4-to-v5 upgrade fuzzer (scripts/upgrade-fuzz). Device-local values (API token, release bookkeeping) and legacy OAuth keys were removed from settings.json. Do not edit captured files.

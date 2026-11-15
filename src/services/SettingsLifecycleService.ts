@@ -7,6 +7,7 @@ import { EVENT_TASK_UPDATED } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
+import { reportSettingsMetadataResult } from "./mdbase/metadataFailureNotices";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/SettingsLifecycleService" });
 
@@ -22,7 +23,6 @@ interface CacheSettingsSnapshot {
 	taskPropertyValue: string;
 	taskTag: string;
 	excludedFolders: string;
-	disableNoteIndexing: boolean;
 	storeTitleInFilename: boolean;
 	fieldMapping: TaskNotesSettings["fieldMapping"];
 }
@@ -76,7 +76,25 @@ export class SettingsLifecycleService {
 		try {
 			while (this.saveSettingsRequested) {
 				this.saveSettingsRequested = false;
+				let mdbaseSyncError: unknown = null;
+				try {
+					const mdbaseSync = this.plugin.mdbaseSpecService?.onSettingsChanged();
+					if (mdbaseSync !== undefined) {
+						await mdbaseSync;
+					}
+				} catch (error) {
+					mdbaseSyncError = error;
+					tasknotesLogger.error(
+						"Could not synchronize settings with the canonical mdbase type:",
+						{
+							category: "configuration",
+							operation: "canonical-mdbase-settings-sync",
+							error,
+						}
+					);
+				}
 				await this.plugin.saveSettingsDataOnly();
+				reportSettingsMetadataResult(this.plugin, mdbaseSyncError);
 
 				if (this.saveSettingsRequested) {
 					continue;
@@ -124,14 +142,22 @@ export class SettingsLifecycleService {
 		}
 
 		this.plugin.statusBarService?.updateVisibility();
-		void this.plugin.mdbaseSpecService?.onSettingsChanged();
 		this.plugin.filterService?.refreshFilterOptions();
 		this.plugin.notifyDataChanged();
 		this.plugin.emitter.trigger("settings-changed", this.plugin.settings);
 	}
 
 	async onExternalSettingsChange(): Promise<void> {
-		await this.plugin.loadSettings();
+		await this.plugin.loadSettings(true);
+		await this.plugin.mdbaseSpecService?.reloadCanonicalSettingsFromDisk();
+		this.applyEffectiveSettings();
+	}
+
+	async onCanonicalSettingsChanged(): Promise<void> {
+		this.applyEffectiveSettings();
+	}
+
+	private applyEffectiveSettings(): void {
 		this.plugin.apiService?.syncWebhookSettings?.();
 
 		this.plugin.fieldMapper?.updateMapping(this.plugin.settings.fieldMapping);
@@ -218,7 +244,6 @@ export class SettingsLifecycleService {
 			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
-			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
 			storeTitleInFilename: this.plugin.settings.storeTitleInFilename,
 			fieldMapping: this.plugin.settings.fieldMapping,
 		};
@@ -229,7 +254,6 @@ export class SettingsLifecycleService {
 			current.taskPropertyValue !== this.previousCacheSettings.taskPropertyValue ||
 			current.taskTag !== this.previousCacheSettings.taskTag ||
 			current.excludedFolders !== this.previousCacheSettings.excludedFolders ||
-			current.disableNoteIndexing !== this.previousCacheSettings.disableNoteIndexing ||
 			current.storeTitleInFilename !== this.previousCacheSettings.storeTitleInFilename ||
 			JSON.stringify(current.fieldMapping) !==
 				JSON.stringify(this.previousCacheSettings.fieldMapping)
@@ -254,7 +278,6 @@ export class SettingsLifecycleService {
 			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
-			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
 			storeTitleInFilename: this.plugin.settings.storeTitleInFilename,
 			fieldMapping: JSON.parse(JSON.stringify(this.plugin.settings.fieldMapping)),
 		};

@@ -1,8 +1,9 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
-import { formatUIDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { formatDateLabel, formatTime } from "../utils/dateUtils";
 import {
 	CalendarProvider,
 	ProviderCalendar,
@@ -60,6 +61,7 @@ export class CalendarEventCreationModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: CalendarEventCreationOptions) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.options = options;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
@@ -73,7 +75,8 @@ export class CalendarEventCreationModal extends Modal {
 
 		for (const provider of registry.getAllProviders()) {
 			for (const calendar of provider.getAvailableCalendars()) {
-				entries.push({ provider, calendar });
+				// A calendar shared for reading only cannot take a new event.
+				if (calendar.canWrite !== false) entries.push({ provider, calendar });
 			}
 		}
 		return entries;
@@ -103,8 +106,8 @@ export class CalendarEventCreationModal extends Modal {
 			text: this.translate(msg({ message: "Date & time: ", context: "modals.calendarEventCreation.dateTimeLabel" })),
 		});
 		const dateText = this.options.allDay
-			? formatUIDate(this.options.start, "PPP")
-			: `${formatUIDate(this.options.start, "PPP p")} – ${formatUIDate(this.options.end, "p")}`;
+			? formatDateLabel(this.options.start, this.plugin.settings, "PPP")
+			: `${formatDateLabel(this.options.start, this.plugin.settings, "PPP", true)} – ${formatTime(this.options.end, this.plugin.settings.calendarViewSettings.timeFormat)}`;
 		dateDisplay.createSpan({ text: dateText });
 
 		// Title

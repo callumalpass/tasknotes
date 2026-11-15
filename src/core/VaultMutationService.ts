@@ -7,7 +7,14 @@ type FrontmatterMutationApp = {
 			update: (frontmatter: Record<string, unknown>) => void
 		): Promise<void>;
 	};
+	vault?: {
+		adapter?: { read?(path: string): Promise<string> };
+		process(file: TFile, update: (content: string) => string): Promise<string>;
+	};
 };
+
+/** A byte order mark before the opening frontmatter fence. */
+const BOM_BEFORE_FRONTMATTER = /^\uFEFF+(?=---\r?\n)/;
 
 type FileContentMutationApp = {
 	vault: {
@@ -54,6 +61,15 @@ export async function processVaultFrontMatterWithinMutation(
 	file: TFile,
 	update: (frontmatter: Record<string, unknown>) => void
 ): Promise<void> {
+	// Obsidian reads frontmatter after a byte order mark, but processFrontMatter does
+	// not find it there: it adds a second block above, which hides the task's
+	// properties in the body. Drop the mark first so the existing block is edited.
+	// vault.read() hides the mark, so check the raw file.
+	const vault = app.vault;
+	const raw = vault?.adapter?.read ? await vault.adapter.read(file.path) : "";
+	if (vault && BOM_BEFORE_FRONTMATTER.test(raw)) {
+		await vault.process(file, (content) => content.replace(BOM_BEFORE_FRONTMATTER, ""));
+	}
 	await app.fileManager.processFrontMatter(file, update);
 }
 

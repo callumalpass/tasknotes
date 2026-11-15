@@ -34,7 +34,7 @@ tags:
 
 ## 3. Choose task identification
 
-Open **Settings → TaskNotes → General**.
+Open **Settings → TaskNotes → Task files**.
 
 - Choose **Tag** if every task contains one identifying tag, such as `task`.
 - Choose **Property** if a property/value pair identifies tasks, such as `type: task`.
@@ -44,7 +44,7 @@ Task identification controls indexing and every generated Base filter. Confirm i
 
 ## 4. Map properties
 
-Open **Settings → TaskNotes → Task properties** and map TaskNotes fields to the names already used in your notes. Avoid creating two properties for one concept, such as both `due` and `deadline`.
+Open **Settings → TaskNotes → Properties** and map TaskNotes fields to the names already used in your notes. Avoid creating two properties for one concept, such as both `due` and `deadline`.
 
 Start with title, status, priority, due, scheduled, projects, contexts, and recurrence. Use the [property types reference](../settings/property-types-reference.md) to check value shapes.
 
@@ -56,7 +56,7 @@ If the note is not recognized, use the [troubleshooting decision tree](../troubl
 
 ## 6. Generate views from the final mapping
 
-Open **Settings → TaskNotes → General → Views & base files** and create or update the default Base files. Generated filters and columns use the current task identifier and field mapping.
+Open **Settings → TaskNotes → Appearance & interaction → Views & base files** and create or update the default Base files. Generated filters and columns use the current task identifier and field mapping.
 
 The update action replaces configured default Base files. Copy any customized Base to a new filename before updating it.
 

@@ -68,10 +68,37 @@ describe("defaultBasesFiles", () => {
 				expect(base.formulas.isOverdue).toContain(`status != ${literal}`);
 				if (command === "open-tasks-view") {
 					const notBlocked = base.views.find((view: any) => view.name === "Not Blocked");
-					expect(notBlocked.filters.and[0].or[0].and).toContain(`status != ${literal}`);
-					expect(notBlocked.filters.and[1].or[1]).toContain(`.properties.status != ${literal}`);
+					expect(notBlocked.filters.and[1].or[0].and).toContain(`status != ${literal}`);
+					expect(notBlocked.filters.and[2].or[1]).toContain(`.properties.status != ${literal}`);
 				}
 			}
+		}
+	);
+
+	it("lands on Today and includes an active undated, project-free Inbox and archive history", () => {
+		const { parse } = require("yaml");
+		const base = parse(generateBasesFileTemplate("open-tasks-view", createMockPlugin({
+			fieldMapping: { archiveTag: "history/archived" },
+		}) as any));
+		expect(base.views[0].name).toBe("Today");
+		for (const name of ["Today", "Overdue", "This Week", "Unscheduled", "Inbox", "Not Blocked"]) {
+			const view = base.views.find((view: any) => view.name === name);
+			expect(view.filters.and).toContain('file.hasTag("history/archived") != true');
+		}
+		const inbox = base.views.find((view: any) => view.name === "Inbox");
+		expect(inbox.filters.and).toEqual(expect.arrayContaining([
+			"projects.isEmpty()", "due.isEmpty()", "scheduled.isEmpty()",
+		]));
+		expect(inbox.filters.and.some((filter: any) => filter.or)).toBe(true);
+		expect(base.views.find((view: any) => view.name === "Archived").filters.and)
+			.toContain('file.hasTag("history/archived")');
+		expect(base.filters.and).not.toContain('file.hasTag("history/archived") != true');
+	});
+
+	it.each(["open-kanban-view", "open-calendar-view", "open-advanced-calendar-view", "open-agenda-view"])(
+		"excludes archived tasks in %s", (commandId) => {
+			expect(generateBasesFileTemplate(commandId, createMockPlugin() as any))
+				.toContain('file.hasTag("archived") != true');
 		}
 	);
 
@@ -163,7 +190,7 @@ describe("defaultBasesFiles", () => {
 		const dependencyFileExpression = 'file(if(value.isType("object"), value.uid, value))';
 		const dependencyLinkExpression = `${dependencyFileExpression}.asLink()`;
 
-		expect(parse(tasksTemplate).views.find((view: any) => view.name === "Not Blocked").filters.and[1].or[1]).toBe(
+		expect(parse(tasksTemplate).views.find((view: any) => view.name === "Not Blocked").filters.and[2].or[1]).toBe(
 			`list(blockedBy).filter(${dependencyFileExpression}.properties.status != "done").isEmpty()`
 		);
 		expect(relationshipsTemplate).toContain(
@@ -182,7 +209,9 @@ describe("defaultBasesFiles", () => {
 
 		expect(parse(template).formulas.dueIn).toContain('if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
 		expect(parse(template).properties["formula.dueIn"].displayName).toBe("Due in");
-		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
+		const order = parse(template).views[0].order;
+		expect(order[order.indexOf("due") + 1]).toBe("formula.dueIn");
+		expect(order).not.toContain("file.name");
 		expect(template).toContain('calendarView: "listWeek"');
 		expect(template).toContain("listDayCount: 7");
 		expect(template).toContain("showOverdueOnToday: true");
@@ -468,17 +497,7 @@ describe("defaultBasesFiles", () => {
 		expect(boost("2026-04-28T09:00:00Z")).toBeGreaterThan(boost("2026-04-28T17:00:00Z"));
 	});
 
-	it("generates a Pomodoro statistics Base from daily-note Pomodoro frontmatter", () => {
-		const template = generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any);
-
-		expect(template).toContain("# Pomodoro statistics");
-		expect(template).toContain('file.hasProperty("pomodoros")');
-		expect(template).toContain('note["pomodoros"]');
-		expect(template).toContain('name: "Daily"');
-		expect(template).toContain('name: "Monthly"');
-		expect(template).toContain("groupBy:\n      property: formula.pomodoroMonth");
-		expect(template).toContain("formula.completedPomos: Sum");
-		expect(template).toContain("formula.focusMinutes: Sum");
-		expect(template).not.toContain('file.hasTag("task")');
+	it("does not generate retired Pomodoro statistics Bases", () => {
+		expect(generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any)).toBe("");
 	});
 });

@@ -332,6 +332,27 @@ describe("taskUpdatePlanning", () => {
 		expect(result.finalTags).toEqual([]);
 	});
 
+	it("persists and protects the task's stable ID during frontmatter updates", () => {
+		const frontmatter: Record<string, unknown> = {};
+
+		applyTaskUpdateFrontmatterChange({
+			frontmatter,
+			originalTask: createTask({ id: "stable-task-id" }),
+			updates: {
+				id: "replacement-id",
+				customFrontmatter: { id: "custom-replacement-id" },
+			},
+			recurrenceUpdates: {},
+			dateModified: "2026-05-19T09:00:00.000Z",
+			fieldMapper: createFieldMapper(),
+			taskIdentification: { method: "tag", tag: "task" },
+			storeTitleInFilename: false,
+			updateCompletedDateInFrontmatter: jest.fn(),
+		});
+
+		expect(frontmatter.id).toBe("stable-task-id");
+	});
+
 	it("clears contexts and blockedBy when an update explicitly sets them to empty arrays", () => {
 		const frontmatter: Record<string, unknown> = {
 			title: "Old",
@@ -413,8 +434,8 @@ describe("taskUpdatePlanning", () => {
 
 	it("builds the returned task state from the same planned mutation", () => {
 		const updated = buildUpdatedTaskFromPlan({
-			originalTask: createTask({ completedDate: undefined }),
-			updates: { status: "done", details: "A\r\nB" },
+			originalTask: createTask({ id: "stable-task-id", completedDate: undefined }),
+			updates: { id: "replacement-id", status: "done", details: "A\r\nB" },
 			recurrenceUpdates: { scheduled: "2026-05-20" },
 			newPath: "Tasks/renamed.md",
 			dateModified: "2026-05-19T09:00:00.000Z",
@@ -425,6 +446,7 @@ describe("taskUpdatePlanning", () => {
 		});
 
 		expect(updated).toMatchObject({
+			id: "stable-task-id",
 			status: "done",
 			scheduled: "2026-05-20",
 			path: "Tasks/renamed.md",

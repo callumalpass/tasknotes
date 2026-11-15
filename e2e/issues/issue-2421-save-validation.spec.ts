@@ -35,10 +35,17 @@ for (const mode of ["creation", "edit"] as const) {
 					}
 				}, mode);
 				const modal = page.locator(".modal.mod-tasknotes");
-				const title = modal.locator("textarea.title-input, textarea.title-input-detailed");
+				const title = modal.locator(".title-input, textarea.title-input-detailed");
+				const details = modal.locator(".tn-task-modal__markdown-editor--details .cm-content");
+				const titleValue = () =>
+					title.evaluate(
+						(element: HTMLTextAreaElement) => element.value ?? element.textContent
+					);
 				await expect(title).toBeVisible();
-				await modal.locator(".cm-content").fill("Preserve these details");
+				await details.fill("Preserve these details");
+				await title.click();
 				await title.fill(failure === "validation" ? "   " : "Unsaved title");
+				expect(await titleValue()).toBe(failure === "validation" ? "   " : "Unsaved title");
 				if (failure === "write") {
 					await page.evaluate((mode) => {
 						const service = (window as any).app.plugins.plugins.tasknotes.taskService;
@@ -53,7 +60,7 @@ for (const mode of ["creation", "edit"] as const) {
 					}, mode);
 				}
 				try {
-					const save = modal.getByRole("button", { name: "Save", exact: true });
+					const save = modal.getByRole("button", { name: mode === "creation" ? "Create task" : "Save", exact: true });
 					if (action === "button") await save.click();
 					else if (action === "keyboard") await title.press("Control+Enter");
 					else {
@@ -67,17 +74,15 @@ for (const mode of ["creation", "edit"] as const) {
 						failure === "validation"
 							? modal.locator(".tn-task-modal__field-error").filter({ hasText: /title/i })
 							: page
-									.locator(".notice")
+									.locator(".tn-toast, .notice")
 									.filter({ hasText: /Issue 2421 simulated write failure/ })
 									.last()
 					).toBeVisible();
 					await expect(modal).toBeVisible();
-					await expect(title).toHaveValue(
+					expect(await titleValue()).toBe(
 						failure === "validation" ? "   " : "Unsaved title"
 					);
-					await expect(modal.locator(".cm-content")).toContainText(
-						"Preserve these details"
-					);
+					await expect(details).toContainText("Preserve these details");
 					await expect(save).toBeEnabled();
 				} finally {
 					await page.evaluate(() => {
@@ -86,7 +91,7 @@ for (const mode of ["creation", "edit"] as const) {
 					});
 				}
 				await title.fill(`Issue 2421 corrected ${mode} ${action} ${failure}`);
-				await modal.getByRole("button", { name: "Save", exact: true }).click();
+				await modal.getByRole("button", { name: mode === "creation" ? "Create task" : "Save", exact: true }).click();
 				await expect(modal).toHaveCount(0);
 			});
 		}

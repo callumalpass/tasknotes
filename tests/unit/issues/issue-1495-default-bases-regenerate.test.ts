@@ -18,6 +18,9 @@ function createPlugin(taskTag: string): TaskNotesPlugin {
 		commandFileMapping,
 	};
 
+	plugin.workspaceNavigationService = {
+		repairOpenBasesLeaves: jest.fn().mockResolvedValue(undefined),
+	} as never;
 	plugin.fieldMapper = {
 		toUserField: jest.fn((key: keyof typeof DEFAULT_SETTINGS.fieldMapping) => {
 			return DEFAULT_SETTINGS.fieldMapping[key] ?? key;
@@ -53,6 +56,7 @@ describe("issue #1495 - default Bases files after changing task tag", () => {
 
 		const updatedResult = await plugin.ensureBasesViewFiles({ overwriteExisting: true });
 		expect(updatedResult.updated).toContain(tasksBasePath);
+		expect(plugin.workspaceNavigationService.repairOpenBasesLeaves).toHaveBeenLastCalledWith(updatedResult.updated);
 		const updatedContent = await readVaultFile(plugin, tasksBasePath);
 		expect(updatedContent).toContain('file.hasTag("todo")');
 		expect(updatedContent).not.toContain('file.hasTag("task")');

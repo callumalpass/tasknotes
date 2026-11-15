@@ -1,5 +1,4 @@
-import { observeTranslation as mockObserveTranslation } from "../../helpers/real-i18n";
-import { renderUserFieldsSection } from "../../../src/settings/tabs/taskProperties/userFieldsCard";
+import { settingsFixture, control } from "../../helpers/native-settings";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { buildSettingsDataForSave, buildSettingsFromLoadedData } from "../../../src/settings/settingsPersistence";
 import { NaturalLanguageParser } from "../../../src/services/NaturalLanguageParser";
@@ -22,31 +21,23 @@ describe("capture custom field keys", () => {
 		const saved = buildSettingsDataForSave(null, data);
 		expect((saved.userFields as typeof data.userFields)[0].key).toBe("reference");
 	});
-	it("trims settings edits before saving, rejects empty/colliding keys and recovers", () => {
-		const plugin = { settings: settings() };
-		plugin.settings.userFields.push({ ...field, id: "other", key: "other" });
-		const container = document.createElement("div");
-		const save = jest.fn();
-		renderUserFieldsSection(container, plugin as never, save, mockObserveTranslation());
-		const input = container.querySelector<HTMLInputElement>('input[placeholder="property-name"]')!;
-		const update = (value: string) => {
-			input.value = value;
-			input.dispatchEvent(new Event("input", { bubbles: true }));
-		};
-		update("  changed  ");
+	it("trims native settings edits before saving, rejects empty/colliding keys and recovers", async () => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.userFields = [{ ...field }, { ...field, id: "other", key: "other" }];
+		const definitions = tab.getSettingDefinitions();
+		const key = "userFields.reference.key";
+		expect(control(definitions, key).control.validate?.("  changed  ")).toBeUndefined();
+		await tab.setControlValue(key, "  changed  ");
 		expect(plugin.settings.userFields[0].key).toBe("changed");
-		expect(save).toHaveBeenCalledTimes(1);
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
 		for (const invalid of ["   ", " OTHER ", " title ", "tags"]) {
-			update(invalid);
+			await expect(tab.setControlValue(key, invalid)).rejects.toThrow();
 			expect(plugin.settings.userFields[0].key).toBe("changed");
-			expect(input.validity.valid).toBe(false);
-			expect(input.getAttribute("aria-invalid")).toBe("true");
-			expect(save).toHaveBeenCalledTimes(1);
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
 		}
-		update("  recovered  ");
+		await tab.setControlValue(key, "  recovered  ");
 		expect(plugin.settings.userFields[0].key).toBe("recovered");
-		expect(input.validity.valid).toBe(true);
-		expect(save).toHaveBeenCalledTimes(2);
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
 	});
 });
 

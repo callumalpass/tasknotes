@@ -1,4 +1,8 @@
 import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+jest.mock("../../../src/ui/taskMutationUndo", () => ({
+	captureTaskUndo: async (_plugin: unknown, _task: unknown, operation: () => Promise<unknown>) => ({ task: await operation() }),
+}));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ showTaskUndo: jest.fn() }));
 /**
  * TaskEditModal Unsaved Changes Tests
  *
@@ -287,6 +291,21 @@ describe('TaskEditModal - Unsaved Changes Detection', () => {
   });
 
   describe('User confirmation choices', () => {
+    it('coalesces the complete submit lifecycle, not only the write', async () => {
+      modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
+      let finishSave!: (outcome: { status: 'saved' }) => void;
+      const save = jest.spyOn(modal, 'handleSave').mockImplementation(() => new Promise(resolve => { finishSave = resolve; }));
+      const close = jest.spyOn(modal, 'forceClose');
+      const after = jest.spyOn(modal as any, 'afterSubmit');
+      const first = (modal as any).submit();
+      const second = (modal as any).submit();
+      finishSave({ status: 'saved' });
+      await Promise.all([first, second]);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(close).toHaveBeenCalledTimes(1);
+      expect(after).toHaveBeenCalledTimes(1);
+    });
+
     it('should save and close when user confirms save', async () => {
       modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
       initializeModalFields(modal, mockTask);

@@ -27,6 +27,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 			],
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			getNextStatus: jest.fn(() => "In Progress"),
 			getStatusConfig: jest.fn((status: string) => ({
 				id: status,
@@ -135,7 +136,7 @@ describe("taskCardCompletionState", () => {
 		expect(card.classList.contains("task-card--priority-high")).toBe(false);
 		expect(card.classList.contains("task-card--status-open")).toBe(true);
 		expect(card.classList.contains("task-card--priority-normal")).toBe(true);
-		expect(statusDot.style.borderColor).toBe("rgb(18, 52, 86)");
+		expect(card.style.getPropertyValue("--current-status-color")).toBe("#123456");
 		expect(card.style.getPropertyValue("--current-status-color")).toBe("#123456");
 	});
 });

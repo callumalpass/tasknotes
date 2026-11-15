@@ -2,15 +2,13 @@ import { displayError } from "../i18n/runtime";
 import type { MessageSuffix } from "../i18n/concepts";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
-import { Menu, Notice, TFile, setIcon, setTooltip } from "obsidian";
+import { Notice, TFile, setIcon, setTooltip } from "obsidian";
+import { BatchContextMenu } from "../components/BatchContextMenu";
+import { showNoteContextMenu } from "../components/noteFileMenu";
 import { TaskContextMenu } from "../components/TaskContextMenu";
 import type TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { prepareInteractiveControl } from "./taskCardIndicators";
-
-type MenuWithItems = {
-	items?: unknown[];
-};
 
 export interface TaskCardContextMenuButtonOptions {
 	mainRow: HTMLElement;
@@ -64,15 +62,75 @@ export function createTaskCardContextMenuButton(
 	return contextIcon;
 }
 
+export interface TaskMenuOptions {
+	promoteOccurrenceControls?: boolean;
+	occurrenceDate?: Date;
+	/** Runs after a menu action changes the task; refreshes the TaskNotes views by default. */
+	onUpdate?: () => void;
+}
+
+export interface OpenTaskMenuOptions extends TaskMenuOptions {
+	/** Whether the task can join a batch menu; calendar events that are not plain dates cannot. */
+	canBatch?: boolean;
+	/** The view's own batch menu; by default a batch menu that refreshes the TaskNotes views. */
+	showBatchMenu?: (event: MouseEvent) => void;
+}
+
 /**
- * Show context menu for task card.
+ * Opens the menu for a right-clicked task, the same way in every view: the
+ * batch menu for Shift+right-click or a task in a multi-selection, otherwise
+ * the task menu for `targetDate`, which leaves selection mode. A task that
+ * cannot join a batch gets its own menu and leaves the selection alone.
+ */
+export async function openTaskMenu(
+	event: MouseEvent,
+	taskPath: string,
+	plugin: TaskNotesPlugin,
+	targetDate: Date,
+	options: OpenTaskMenuOptions = {}
+): Promise<void> {
+	event.preventDefault();
+	event.stopPropagation();
+	const selection = plugin.taskSelectionService;
+	if (selection && options.canBatch !== false) {
+		// A keyboard context menu (Shift+F10) reports Shift but no mouse button.
+		const extend = event.shiftKey && event.button === 2;
+		if (extend || selection.getSelectionCount() > 1) {
+			if (extend && !selection.isSelectionModeActive()) selection.enterSelectionMode();
+			if (!selection.isSelected(taskPath)) selection.addToSelection(taskPath);
+			if (options.showBatchMenu) options.showBatchMenu(event);
+			else
+				new BatchContextMenu({
+					plugin,
+					selectedPaths: selection.getSelectedPaths(),
+					onUpdate: () => plugin.app.workspace.trigger("tasknotes:refresh-views"),
+				}).show(event);
+			return;
+		}
+		if (selection.isSelectionModeActive()) {
+			selection.clearSelection();
+			selection.exitSelectionMode();
+		}
+	}
+	const target = event.target as HTMLElement | null;
+	const card = target && typeof target.closest === "function" ? target.closest<HTMLElement>(".task-card") : null;
+	if (card?.ownerDocument.body.classList.contains("is-mobile")) {
+		if (!card.hasAttribute("tabindex")) card.tabIndex = -1;
+		card.focus({ preventScroll: true });
+	}
+	await showTaskContextMenu(event, taskPath, plugin, targetDate, options);
+}
+
+/**
+ * Show the task menu for a task, without batch handling; right-clicks go
+ * through `openTaskMenu`.
  */
 export async function showTaskContextMenu(
 	event: MouseEvent,
 	taskPath: string,
 	plugin: TaskNotesPlugin,
 	targetDate: Date,
-	options: { promoteOccurrenceControls?: boolean; occurrenceDate?: Date } = {}
+	options: TaskMenuOptions = {}
 ): Promise<void> {
 	const file = plugin.app.vault.getAbstractFileByPath(taskPath);
 	const showFileMenuFallback = () => {
@@ -88,16 +146,39 @@ export async function showTaskContextMenu(
 			return;
 		}
 
-		const contextMenu = new TaskContextMenu({
+		const contextOptions = {
 			task,
 			plugin,
 			targetDate,
 			occurrenceDate: options.occurrenceDate,
 			promoteOccurrenceControls: options.promoteOccurrenceControls,
-			onUpdate: () => {
-				plugin.app.workspace.trigger("tasknotes:refresh-views");
-			},
-		});
+			onUpdate:
+				options.onUpdate ??
+				(() => {
+					plugin.app.workspace.trigger("tasknotes:refresh-views");
+				}),
+		};
+		const target = event.target as HTMLElement | null;
+		const row = target && typeof target.closest === "function"
+			? target.closest<HTMLElement>(".tn-tasknotesTaskList .task-card")
+			: null;
+		let onHide: (() => void) | undefined;
+		if (row?.ownerDocument.body.classList.contains("is-mobile")) {
+			const list = row.closest(".tn-tasknotesTaskList");
+			onHide = () => {
+				const document = row.ownerDocument;
+				document.defaultView?.requestAnimationFrame(() => {
+					if (
+						!row.isConnected ||
+						(document.activeElement !== document.body && document.activeElement !== list) ||
+						document.querySelector(".menu")
+					) return;
+					if (!row.hasAttribute("tabindex")) row.tabIndex = -1;
+					row.focus({ preventScroll: true });
+				});
+			};
+		}
+		const contextMenu = new TaskContextMenu({ ...contextOptions, onHide });
 
 		contextMenu.show(event);
 	} catch (error) {
@@ -116,32 +197,5 @@ export async function showTaskContextMenu(
 }
 
 function showFileContextMenu(event: MouseEvent, file: TFile, plugin: TaskNotesPlugin): void {
-	const menu = new Menu();
-
-	let populated = false;
-	try {
-		plugin.app.workspace.trigger("file-menu", menu, file, "tasknotes-bases-view");
-		populated = ((menu as MenuWithItems).items?.length ?? 0) > 0;
-	} catch {
-		populated = false;
-	}
-
-	if (!populated) {
-		menu.addItem((item) => {
-			item.setTitle(plugin.i18n.translate(msg({ message: "Open", context: "ui.audit.open" })));
-			item.setIcon("file-text");
-			item.onClick(() => {
-				void plugin.app.workspace.getLeaf(false).openFile(file);
-			});
-		});
-		menu.addItem((item) => {
-			item.setTitle(plugin.i18n.translate(msg({ message: "Open in new tab", context: "ui.audit.openNewTab" })));
-			item.setIcon("external-link");
-			item.onClick(() => {
-				void plugin.app.workspace.openLinkText(file.path, "", true);
-			});
-		});
-	}
-
-	menu.showAtMouseEvent(event);
+	showNoteContextMenu({ x: event.clientX, y: event.clientY }, file, plugin, "tasknotes-bases-view");
 }

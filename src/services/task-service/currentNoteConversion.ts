@@ -3,6 +3,7 @@ import type { TaskCreationDefaults, TaskNotesSettings } from "../../types/settin
 import { getCurrentTimestamp } from "../../utils/dateUtils";
 import { calculateDefaultDateTime } from "../../utils/helpers";
 import { stringifyUnknownArray } from "../../utils/stringUtils";
+import { generateUuidV4 } from "../../utils/uuid";
 
 type CurrentNoteConversionSettings = Pick<
 	TaskNotesSettings,
@@ -20,6 +21,7 @@ export interface CurrentNoteConversionFieldMapper {
 
 export interface CurrentNoteConversionAdapters {
 	calculateDefaultDateTime?: typeof calculateDefaultDateTime;
+	generateUuid?: typeof generateUuidV4;
 }
 
 export interface CurrentNoteConversionInput {
@@ -59,6 +61,7 @@ export function buildCurrentNoteConversionTaskInfo({
 		);
 
 	return {
+		id: (adapters.generateUuid ?? generateUuidV4)(),
 		path,
 		title:
 			(mappedFrontmatter

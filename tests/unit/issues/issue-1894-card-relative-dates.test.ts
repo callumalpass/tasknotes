@@ -1,15 +1,22 @@
 import { App, Menu } from "obsidian";
 import { DateContextMenu } from "../../../src/components/DateContextMenu";
-import { TaskContextMenu } from "../../../src/components/TaskContextMenu";
-import { TaskListView } from "../../../src/bases/TaskListView";
-import { handleKanbanCardAction } from "../../../src/bases/kanbanCardActions";
-import { renderPropertyMetadata } from "../../../src/ui/taskCardProperties";
+import { openTaskPropertyChoices } from "../../../src/ui/taskPropertyPickers";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 
 // Exercise real calendar arithmetic, not the global date-fns mock.
 jest.mock("date-fns", () => jest.requireActual("../../../node_modules/date-fns"));
+const mockOpenListPicker = jest.fn((options: unknown) => ({ options, close: jest.fn() }));
+jest.mock("../../../src/ui/kit/listPicker", () => ({
+	openListPicker: (options: unknown) => mockOpenListPicker(options),
+}));
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: async (plugin: TaskNotesPlugin, tasks: TaskInfo[], property: keyof TaskInfo, value: unknown) => {
+		for (const task of tasks) await plugin.updateTaskProperty(task, property, value);
+	},
+}));
 
 type MockMenuItem = Record<string, jest.Mock>;
 type MockMenu = { items: (MockMenuItem | { type: string })[] };
@@ -50,52 +57,27 @@ function createPlugin(): TaskNotesPlugin {
 }
 
 type DateField = "scheduled" | "due";
-type CardPath = "metadata" | "task-list" | "kanban" | "task-menu";
+type Choice = { choose: () => Promise<void> };
 
+// Card controls and the task menu both open the date picker.
 async function openMenu(
-	path: CardPath,
 	task: TaskInfo,
 	field: DateField,
 	plugin: TaskNotesPlugin
-): Promise<MockMenu> {
-	const firstMenu = menuMock.mock.results.length;
-	const event = new MouseEvent("click", { bubbles: true });
-	if (path === "metadata") {
-		const container = document.body.createDiv();
-		const element = renderPropertyMetadata(container, field, task, plugin);
-		if (!element) throw new Error(`Missing ${field} metadata`);
-		element.dispatchEvent(event);
-	} else if (path === "kanban") {
-		const target = document.body.createSpan();
-		target.dataset.tnDateType = field;
-		await handleKanbanCardAction({
-			action: "edit-date",
-			task,
-			target,
-			event,
-			plugin,
-			app: plugin.app,
-		});
-	} else if (path === "task-list") {
-		// Invoke the real delegated card handler without starting a Bases controller.
-		const view = Object.create(TaskListView.prototype) as TaskListView;
-		Object.assign(view, { plugin, app: plugin.app });
-		await (
-			view as unknown as {
-				openDateContextMenu(
-					task: TaskInfo,
-					field: DateField,
-					event: MouseEvent
-				): Promise<void>;
-			}
-		).openDateContextMenu(task, field, event);
-	} else {
-		new TaskContextMenu({ task, plugin, targetDate: new Date("2026-05-16T12:00:00") });
-		const root = menuMock.mock.results[firstMenu].value as MockMenu;
-		const parent = findItem(root, field === "due" ? "Due date" : "Scheduled date");
-		return parent.setSubmenu.mock.results[0].value as MockMenu;
-	}
-	return menuMock.mock.results[firstMenu].value as MockMenu;
+): Promise<(label: string) => Choice> {
+	mockOpenListPicker.mockClear();
+	await openTaskPropertyChoices(plugin, field, [task], document.body, (value) =>
+		plugin.updateTaskProperty(task, field, typeof value === "function" ? value(task) : value)
+	);
+	const options = mockOpenListPicker.mock.calls[0][0] as {
+		items: { id: string; label: string }[];
+		onChoose: (item: { id: string; label: string }) => void;
+	};
+	return (label) => {
+		const item = options.items.find((entry) => entry.label === (label === "Clear date" ? "Clear" : label));
+		if (!item) throw new Error(`Missing picker item: ${label}`);
+		return { choose: async () => options.onChoose(item) };
+	};
 }
 
 const shifts = [
@@ -128,7 +110,7 @@ describe("#1894: relative date actions through card and menu callbacks", () => {
 		document.body.innerHTML = "";
 	});
 
-	describe.each<CardPath>(["metadata", "task-list", "kanban", "task-menu"])("%s", (path) => {
+	describe("picker", () => {
 		describe.each<DateField>(["scheduled", "due"])("%s", (field) => {
 			it.each(
 				["2026-05-16", "2026-03-07", "2026-03-09", "2026-10-31", "2026-11-02"].flatMap(
@@ -140,8 +122,8 @@ describe("#1894: relative date actions through card and menu callbacks", () => {
 			)("$label from $date$time", async ({ date, time, label, days }) => {
 				const plugin = createPlugin();
 				const task = createTask(field, date + time);
-				const menu = await openMenu(path, task, field, plugin);
-				await findItem(menu, label).onClick.mock.calls[0][0]();
+				const choose = await openMenu(task, field, plugin);
+				await choose(label).choose();
 				expect(plugin.updateTaskProperty).toHaveBeenCalledTimes(1);
 				expect(plugin.updateTaskProperty).toHaveBeenCalledWith(
 					task,
@@ -153,14 +135,14 @@ describe("#1894: relative date actions through card and menu callbacks", () => {
 			it("keeps absolute presets and clearing unchanged", async () => {
 				const plugin = createPlugin();
 				const task = createTask(field, "2026-05-16T21:37");
-				const menu = await openMenu(path, task, field, plugin);
-				await findItem(menu, "Tomorrow").onClick.mock.calls[0][0]();
+				const choose = await openMenu(task, field, plugin);
+				await choose("Tomorrow").choose();
 				expect(plugin.updateTaskProperty).toHaveBeenLastCalledWith(
 					task,
 					field,
 					expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)
 				);
-				await findItem(menu, "Clear date").onClick.mock.calls[0][0]();
+				await choose("Clear date").choose();
 				expect(plugin.updateTaskProperty).toHaveBeenLastCalledWith(task, field, undefined);
 			});
 		});

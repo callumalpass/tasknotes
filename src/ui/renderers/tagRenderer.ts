@@ -4,6 +4,7 @@ import { stringifyUnknown } from "../../utils/stringUtils";
 import { renderTextWithLinks, type LinkServices } from "./linkRenderer";
 
 export interface TagServices {
+	showHashPrefix?: boolean;
 	onTagClick?: (tag: string, event: MouseEvent | KeyboardEvent) => void | Promise<void>;
 	linkServices?: LinkServices;
 }
@@ -17,7 +18,7 @@ export function renderTag(container: HTMLElement, tag: string, services?: TagSer
 
 	const el = container.createEl("a", {
 		cls: "tag",
-		text: normalized,
+		text: services?.showHashPrefix === false ? normalized.slice(1) : normalized,
 		attr: {
 			href: normalized,
 			role: "button",

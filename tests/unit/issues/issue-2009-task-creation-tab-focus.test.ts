@@ -12,6 +12,7 @@ jest.mock("../../../src/editor/EmbeddableMarkdownEditor", () => ({
 			value: "",
 			editor: {
 				cm: {
+					contentDOM: document.createElement("div"),
 					focus: jest.fn(),
 					scrollDOM: { scrollTop: 0 },
 				},
@@ -49,7 +50,7 @@ function createPlugin(app: App): any {
 			calendarViewSettings: {},
 		},
 		i18n: {
-			translate: (key: string) => key,
+			translate: (key: unknown) => String(key),
 		},
 	};
 }
@@ -69,14 +70,13 @@ describe("Issue #2009: task creation NLP editor Tab focus", () => {
 		const app = MockObsidian.createMockApp() as unknown as App;
 		const modal = new TaskCreationModal(app, createPlugin(app));
 		const previousButton = document.createElement("button");
-		const titleInput = document.createElement("textarea");
+		const focusDetails = jest.fn();
 		previousButton.focus = jest.fn();
-		titleInput.focus = jest.fn();
-		titleInput.className = "title-input-detailed";
 
 		modal.contentEl.append(previousButton);
-		modal.modalEl.append(modal.contentEl, titleInput);
+		modal.modalEl.append(modal.contentEl);
 		(modal as any).isExpanded = true;
+		(modal as any).detailsMarkdownEditor = { editor: { cm: { focus: focusDetails } } };
 		(modal as any).createNaturalLanguageInput(modal.contentEl);
 
 		mockEditorInstances[0].container.classList.add("tn-task-modal__markdown-editor--nlp");
@@ -85,7 +85,7 @@ describe("Issue #2009: task creation NLP editor Tab focus", () => {
 
 		expect(editorOptions.onTab?.(editor, false)).toBe(true);
 		jest.advanceTimersByTime(50);
-		expect(titleInput.focus).toHaveBeenCalledTimes(1);
+		expect(focusDetails).toHaveBeenCalledTimes(1);
 
 		expect(editorOptions.onTab?.(editor, true)).toBe(true);
 		jest.advanceTimersByTime(50);

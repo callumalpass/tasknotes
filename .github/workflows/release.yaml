@@ -88,4 +88,5 @@ jobs:
             main.js
             manifest.json
             styles.css
+          prerelease: ${{ contains(env.VERSION, '-') }}
           draft: true

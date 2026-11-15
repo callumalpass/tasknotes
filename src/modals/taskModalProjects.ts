@@ -1,6 +1,6 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { App, setTooltip, TFile } from "obsidian";
+import { App, setIcon, setTooltip, TFile } from "obsidian";
 import { renderProjectLinks, type LinkServices } from "../ui/renderers/linkRenderer";
 import { generateLinkWithDisplay, parseLinkToPath } from "../utils/linkUtils";
 
@@ -15,6 +15,8 @@ export interface TaskModalProjectStringContext {
 	sourcePath: string;
 	getMarkdownFiles: () => readonly TFile[];
 	resolveLink: (linkPath: string, sourcePath: string) => unknown;
+	/** When set, a project that resolves to a note is written with this link. */
+	formatLink?: (file: TFile) => string;
 }
 
 export interface RenderTaskModalProjectsListOptions {
@@ -143,7 +145,8 @@ export function renderTaskModalProjectsList({
 	};
 
 	for (const item of items) {
-		const projectItem = listEl.createDiv({ cls: "task-project-item" });
+		const projectItem = listEl.createDiv({ cls: "task-project-item tn-chip" });
+		setIcon(projectItem.createSpan({ cls: "tn-task-modal__project-icon" }), "folder");
 
 		if (item.unresolved) {
 			projectItem.addClass("task-project-item--unresolved");
@@ -157,20 +160,27 @@ export function renderTaskModalProjectsList({
 				app,
 				item.file,
 				sourcePath,
-				item.file.name
+				item.file.basename
 			);
 			renderProjectLinksWithoutPrefix(nameEl, [projectAsWikilink], linkServices);
 
 			if (item.file.path !== item.file.name) {
 				infoEl.createDiv({ cls: "task-project-path", text: item.file.path });
 			}
+			setTooltip(nameEl, item.file.path, { placement: "top" });
 		} else {
 			nameEl.textContent = item.name;
 			setTooltip(
 				nameEl,
-				translate(msg({ message: "Could not resolve: {entries}", context: "contextMenus.task.dependencies.notices.unresolved" }), {
-					entries: item.name,
-				}),
+				translate(
+					msg({
+						message: "Could not resolve: {entries}",
+						context: "contextMenus.task.dependencies.notices.unresolved",
+					}),
+					{
+						entries: item.name,
+					}
+				),
 				{ placement: "top" }
 			);
 		}
@@ -179,9 +189,21 @@ export function renderTaskModalProjectsList({
 			cls: "task-project-remove",
 			text: "×",
 		});
-		setTooltip(removeBtn, translate(msg({ message: "Remove project", context: "modals.task.projectsRemoveTooltip" })), {
-			placement: "top",
-		});
+		removeBtn.setAttribute(
+			"aria-label",
+			translate(
+				msg({ message: "Remove project", context: "modals.task.projectsRemoveTooltip" })
+			)
+		);
+		setTooltip(
+			removeBtn,
+			translate(
+				msg({ message: "Remove project", context: "modals.task.projectsRemoveTooltip" })
+			),
+			{
+				placement: "top",
+			}
+		);
 		removeBtn.addEventListener("click", () => {
 			onRemove(item);
 		});
@@ -209,7 +231,7 @@ function createTaskModalProjectItemFromWikiLink(
 ): TaskModalProjectItem {
 	const file = context.resolveLink(parseLinkToPath(projectString), context.sourcePath);
 	if (file instanceof TFile) {
-		return createTaskModalProjectItemFromFile(file, projectString);
+		return createTaskModalProjectItemFromFile(file, context.formatLink?.(file) ?? projectString);
 	}
 
 	return {
@@ -227,7 +249,7 @@ function createTaskModalProjectItemFromMarkdownLink(
 	const linkPath = parseLinkToPath(projectString);
 	const file = context.resolveLink(linkPath, context.sourcePath);
 	if (file instanceof TFile) {
-		return createTaskModalProjectItemFromFile(file, projectString);
+		return createTaskModalProjectItemFromFile(file, context.formatLink?.(file) ?? projectString);
 	}
 
 	return {
@@ -249,7 +271,7 @@ function createTaskModalProjectItemFromPlainText(
 		return {
 			file: matchingFile,
 			name: matchingFile.basename,
-			link: `[[${matchingFile.basename}]]`,
+			link: context.formatLink?.(matchingFile) ?? `[[${matchingFile.basename}]]`,
 		};
 	}
 

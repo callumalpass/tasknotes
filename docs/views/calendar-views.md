@@ -26,7 +26,7 @@ The Mini Calendar displays a month-based view that shows which days contain task
 
 - **Date Navigation**: Click any date to open a fuzzy selector modal showing all notes associated with that date
 - **Keyboard Navigation**: Navigate the calendar using arrow keys and select dates with Enter
-- **Heatmap Styling**: Visual indicators show the density of tasks or notes on each day
+- **Date Density**: Small marks beneath dates show the density of tasks or notes without filling the cells. Today keeps the strong accent mark independently of the selected date.
 - **Configurable Date Property**: Set which date property to track (not limited to tasks - can display any dated notes based on configured property)
 - **Month Navigation**: Browse forward and backward through months to view historical and future task distribution
 Mini Calendar is commonly used as an entry view: select a date, then open Task List, Agenda, or Calendar for execution.
@@ -39,7 +39,7 @@ The Calendar View provides multiple view modes (month, week, day, year, list, an
 
 Use **Ctrl/Cmd-click** to select individual task markers, or **Shift-click** to select a range. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
 
-Open **Task options** in the toolbar, or right-click a selected marker, to change the selected tasks together. **Scheduled date** and **Due date** offer quick dates and **Pick date & time…** for any date with an optional time. This assigns the same value to every selected task; choosing a date without a time makes that property date-only. Cancel leaves the tasks unchanged.
+Open **Task options** in the toolbar, or right-click a selected marker, to change the selected tasks together. **Scheduled date** and **Due date** open the date picker, with quick dates, +/- day and week options and **Pick date & time…** for any date with an optional time. A date assigns the same value to every selected task, and the +/- options move each task's own date; choosing a date without a time makes that property date-only. Dismissing the picker leaves the tasks unchanged.
 
 Drag a selected marker to move the group while keeping relative dates and local times:
 
@@ -55,13 +55,19 @@ The focused marker's Alt+arrow keyboard move also moves the selected group. Resi
 
 The Calendar View supports the following view modes:
 
-- **Month**: Month grid showing all-day and timed events
+- **Month**: Month grid showing all-day and timed events. By default, clicking a day opens the creation menu and clicking a date number opens the daily note. Turn on **Show selected day panel** in the view options to select a day and list its tasks, with **Add task** for that date.
+
+Busy timed columns collapse overlapping appointments into a labelled stack when there is not enough room to read them side by side. Open the stack to access its appointments without widening the whole week. At narrow widths, day buttons above the grid reveal offscreen dates; **Today** also brings the current day into view. Overflow lists stay within the visible calendar pane and scroll vertically. All-day bars use single-line ellipsis in the grid, while overflow rows wrap their titles.
 - **Week**: Week view with hourly time slots for detailed scheduling
 - **Day**: Single day view with hourly breakdown
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
 - **Custom Days**: Configurable multi-day view (2-10 days)
 View modes can be switched within a single `.base` file based on planning horizon (day, week, month, year, or custom range).
+
+The view switch shows full names when there is room and short labels in narrow panes. A week view temporarily opens as a list below 640px unless you explicitly choose a view in that pane. This automatic adjustment does not change the `.base` file, and widening the pane restores the week view.
+
+Constrained calendar blocks prioritize the task title over glyphs and time labels; hover for the full details. Due markers use a flag and dotted edge to distinguish a deadline from the same task's scheduled placement. List entries retain their event times and label deadlines separately. Recurring projections remain available through the date's **+ more** chooser on crowded days.
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|
@@ -159,7 +165,7 @@ The Calendar View provides several display options that control what types of ev
 - **Show due**: Display tasks with due dates
 - **Show timeblocks**: Display time-blocking entries
 - **Show recurring**: Display recurring task events
-- **Show ICS events**: Display events from imported ICS calendars
+- **Calendar subscriptions**: Show or hide each ICS calendar subscription
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
 - **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.

@@ -33,13 +33,13 @@ function createOAuthService(): OAuthService {
 	} as unknown as OAuthService;
 }
 
-function mockCalendarResponses(): void {
+function mockCalendarResponses(backgroundColor = PRIMARY_CALENDAR.backgroundColor): void {
 	const requestMock = requestUrl as jest.MockedFunction<typeof requestUrl>;
 	requestMock.mockReset();
 	requestMock
 		.mockResolvedValueOnce({
 			status: 200,
-			json: { items: [PRIMARY_CALENDAR] },
+			json: { items: [{ ...PRIMARY_CALENDAR, backgroundColor }] },
 			text: "",
 			arrayBuffer: new ArrayBuffer(0),
 			headers: {},
@@ -72,6 +72,20 @@ describe("Google primary calendar alias", () => {
 
 		const [event] = service.getAllEvents();
 		expect(event.color).toBe("#16a765");
+	});
+
+	it("uses the refreshed primary calendar color during incremental sync", async () => {
+		mockCalendarResponses();
+		const service = new GoogleCalendarService(createPlugin(["primary"]), createOAuthService());
+		await service.refreshAllCalendars();
+
+		mockCalendarResponses("#f4511e");
+		await service.refreshAllCalendars();
+
+		expect(service.getAllEvents()[0].color).toBe("#f4511e");
+		expect(jest.mocked(requestUrl).mock.calls[1][0]).toEqual(
+			expect.objectContaining({ url: expect.stringContaining("syncToken=next-sync-token") })
+		);
 	});
 
 	it("keeps alias-configured event ids stable", async () => {

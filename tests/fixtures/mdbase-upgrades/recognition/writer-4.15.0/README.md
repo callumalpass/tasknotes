@@ -1,0 +1,1 @@
+Exact historical writer output from shipped 4.15.0 source (`MdbaseSpecService.buildTaskTypeDef` and `buildMdbaseYaml`, run at tag 4.15.0 with a `FieldMapper`), using the current default settings to isolate writer shape. 4.15.0 added the `recurrence_original_date` role field (#2396); the writer is unchanged through 4.18.0. No task records were present.

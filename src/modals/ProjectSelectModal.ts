@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import {
 	App,
@@ -29,6 +30,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 
 	constructor(app: App, plugin: TaskNotesPlugin, onChoose: (file: TAbstractFile) => void) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.onChoose = onChoose;
 		this.setPlaceholder(this.plugin.i18n.translate(msg({ message: "Type to search for project notes...", context: "modals.projectSelector.placeholder" })));
@@ -247,9 +249,12 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 				fileData,
 				parseDisplayFieldsRow
 			);
-			for (const line of metadataRows) {
-				const metaEl = container.createDiv({ cls: "project-meta" });
-				metaEl.textContent = line;
+			// One quiet line of details, like the quick switcher; skip rows that only repeat the name.
+			const details = metadataRows.filter(
+				(line) => line !== file.basename && !line.endsWith(`: ${file.basename}`)
+			);
+			if (details.length > 0) {
+				container.createDiv({ cls: "project-meta", text: details.join(" · ") });
 			}
 		} catch (error) {
 			tasknotesLogger.error("Error rendering project suggestion:", {

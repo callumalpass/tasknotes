@@ -69,7 +69,7 @@ describe("PR 2089: project suggestion entry points", () => {
 	function setup() {
 		const plugin = createCompletionPlugin({ settings: { projectAutosuggest: {
 			propertyKey: "status", propertyValue: '!containsAny("archived", "done")',
-			requiredTags: [], includeFolders: [], rows: [], enableFuzzy: false,
+			requiredTags: [], includeFolders: [], rows: [],
 		} } });
 		createMarkdownFile("Projects/Active.md", { status: "active" });
 		createMarkdownFile("Projects/Archived.md", { status: "archived" });

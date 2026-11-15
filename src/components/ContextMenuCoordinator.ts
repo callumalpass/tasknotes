@@ -74,7 +74,12 @@ export function getContextMenuTrigger(event: UIEvent): Element | null {
 	return target?.closest(TRIGGER_SELECTOR) ?? target;
 }
 
-function showWithTrigger(menu: CoordinatedMenu, trigger: Element | null, show: () => void): void {
+function showWithTrigger(
+	menu: CoordinatedMenu,
+	trigger: Element | null,
+	show: () => void,
+	onHide?: () => void
+): void {
 	if (trigger && activeMenu && activeTrigger === trigger) {
 		// Same trigger activated again: toggle the menu closed.
 		closeActiveContextMenu();
@@ -89,6 +94,7 @@ function showWithTrigger(menu: CoordinatedMenu, trigger: Element | null, show: (
 			activeMenu = null;
 			activeTrigger = null;
 		}
+		onHide?.();
 	});
 	show();
 }
@@ -99,7 +105,11 @@ function showWithTrigger(menu: CoordinatedMenu, trigger: Element | null, show: (
  * Mouse events show the menu at the cursor; keyboard events anchor the menu
  * below the event's current target.
  */
-export function showCoordinatedMenu(menu: CoordinatedMenu, event: UIEvent): void {
+export function showCoordinatedMenu(
+	menu: CoordinatedMenu,
+	event: UIEvent,
+	onHide?: () => void
+): void {
 	showWithTrigger(menu, getContextMenuTrigger(event), () => {
 		if (isMouseEvent(event)) {
 			menu.showAtMouseEvent(event);
@@ -116,7 +126,7 @@ export function showCoordinatedMenu(menu: CoordinatedMenu, event: UIEvent): void
 				element.ownerDocument
 			);
 		}
-	});
+	}, onHide);
 }
 
 /**
@@ -124,7 +134,11 @@ export function showCoordinatedMenu(menu: CoordinatedMenu, event: UIEvent): void
  * The element doubles as the trigger, so showing at the same element again
  * toggles the menu closed.
  */
-export function showCoordinatedMenuAtElement(menu: CoordinatedMenu, element: HTMLElement): void {
+export function showCoordinatedMenuAtElement(
+	menu: CoordinatedMenu,
+	element: HTMLElement,
+	onHide?: () => void
+): void {
 	showWithTrigger(menu, element, () => {
 		menu.showAtPosition(
 			{
@@ -133,5 +147,5 @@ export function showCoordinatedMenuAtElement(menu: CoordinatedMenu, element: HTM
 			},
 			element.ownerDocument
 		);
-	});
+	}, onHide);
 }

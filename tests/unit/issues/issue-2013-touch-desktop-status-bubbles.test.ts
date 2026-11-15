@@ -43,10 +43,7 @@ describe("Issue #2013: touch-capable desktop task-card indicators", () => {
 			"body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot"
 		);
 		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__status-dot\s*\{[^}]*width:\s*var\(--tn-mobile-task-card-indicator-size\);[^}]*height:\s*var\(--tn-mobile-task-card-indicator-size\);/s
-		);
-		expect(css).toMatch(
-			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\):not\(\.task-card--layout-compact\) \.task-card__priority-dot\s*\{[^}]*width:\s*var\(--tn-mobile-task-card-indicator-size\);[^}]*height:\s*var\(--tn-mobile-task-card-indicator-size\);/s
+			/body\.is-mobile \.tasknotes-plugin \.task-card:not\(\.task-card--layout-inline\) :is\(\.task-card__status-dot, \.task-card__priority-dot,[^}]*min-width:\s*var\(--tn-touch-target\);[^}]*min-height:\s*var\(--tn-touch-target\);/s
 		);
 	});
 });

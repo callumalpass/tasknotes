@@ -5,24 +5,34 @@ import {
 	createRecurrenceClickHandler,
 	createReminderClickHandler,
 	createStatusCycleHandler,
+	syncTaskCardWriteState,
 } from "../../../src/ui/taskCardActions";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
-import { PriorityContextMenu } from "../../../src/components/PriorityContextMenu";
-import { RecurrenceContextMenu } from "../../../src/components/RecurrenceContextMenu";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
+import { changeTaskProperty, openTaskPropertyPicker } from "../../../src/ui/taskPropertyPickers";
+import { openTaskRecurrencePicker } from "../../../src/ui/taskRecurrencePicker";
 
-jest.mock("../../../src/components/PriorityContextMenu", () => ({
-	PriorityContextMenu: jest.fn().mockImplementation((options) => ({
-		options,
-		show: jest.fn(),
-	})),
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+	showTaskUndo: jest.fn(),
+	tasksForPropertyAction: jest.fn(async (_plugin, task) => [task]),
+	openTaskPropertyPicker: jest.fn(async () => undefined),
 }));
 
-jest.mock("../../../src/components/RecurrenceContextMenu", () => ({
-	RecurrenceContextMenu: jest.fn().mockImplementation((options) => ({
-		options,
-		show: jest.fn(),
+jest.mock("../../../src/ui/taskRecurrencePicker", () => ({
+	...jest.requireActual("../../../src/ui/taskRecurrencePicker"),
+	openTaskRecurrencePicker: jest.fn(async () => undefined),
+}));
+
+jest.mock("../../../src/services/task-service/recurringCompletionUndo", () => ({
+	...jest.requireActual("../../../src/services/task-service/recurringCompletionUndo"),
+	completeRecurringTaskWithUndo: jest.fn(async (plugin, task, date) => ({
+		updatedTask: await plugin.toggleRecurringTaskComplete(task, date),
+		changed: true,
+		undo: jest.fn(async () => true),
 	})),
 }));
 
@@ -61,6 +71,9 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 		cacheManager: {
 			getTaskInfo: jest.fn(async () => task),
 		},
+		taskService: {
+			resolveRecurringTaskActionDate: jest.fn(async (_task, date) => date),
+		},
 		updateTaskProperty: jest.fn(async (updatedTask, property, value) => ({
 			...updatedTask,
 			[property]: value,
@@ -74,8 +87,7 @@ function createPlugin(overrides: Partial<TaskNotesPlugin> = {}): TaskNotesPlugin
 }
 
 async function flushAsyncHandlers(): Promise<void> {
-	await Promise.resolve();
-	await Promise.resolve();
+	await new Promise(resolve => setTimeout(resolve, 0));
 }
 
 describe("taskCardActions", () => {
@@ -98,6 +110,7 @@ describe("taskCardActions", () => {
 		await flushAsyncHandlers();
 
 		expect(stopPropagation).toHaveBeenCalled();
+		expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [task], "status", "done");
 		expect(plugin.cacheManager.getTaskInfo).toHaveBeenCalledWith("Tasks/Test.md");
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
 		expect(updateStatusVisuals).toHaveBeenCalledWith(
@@ -105,6 +118,52 @@ describe("taskCardActions", () => {
 			"done",
 			true
 		);
+	});
+
+	it("keeps failed-save feedback when the shared mutation path returns no changed task", async () => {
+		jest.mocked(changeTaskProperty).mockResolvedValueOnce([]);
+		const card = document.createElement("div");
+		card.className = "task-card";
+		const status = card.createSpan({ cls: "task-card__status-dot" });
+		const handler = createStatusCycleHandler({ task, plugin: createPlugin(), targetDate: new Date(), updateStatusVisuals: jest.fn() });
+		handler({ target: status, stopPropagation: jest.fn(), shiftKey: false } as unknown as MouseEvent);
+		await flushAsyncHandlers();
+		expect(card.classList.contains("task-card--write-failed")).toBe(true);
+		expect(card.classList.contains("task-card--pending")).toBe(false);
+		expect(status.hasAttribute("aria-disabled")).toBe(false);
+	});
+
+	it("disables the actual delegated status control while writing and restores it after failure", async () => {
+		let rejectWrite!: (reason: Error) => void;
+		const plugin = createPlugin({ updateTaskProperty: jest.fn(() => new Promise((_resolve, reject) => { rejectWrite = reject; })) } as unknown as Partial<TaskNotesPlugin>);
+		const card = document.createElement("div");
+		card.className = "task-card";
+		const status = card.createSpan({ cls: "task-card__status-dot" });
+		const icon = status.createSpan();
+		const handler = createStatusCycleHandler({ task, plugin, targetDate: new Date(), updateStatusVisuals: jest.fn() });
+		const event = { target: icon, currentTarget: document.body, stopPropagation: jest.fn(), shiftKey: false } as unknown as MouseEvent;
+		handler(event);
+		await flushAsyncHandlers();
+		expect(status.getAttribute("aria-busy")).toBe("true");
+		expect(status.getAttribute("aria-disabled")).toBe("true");
+		handler(event);
+		expect(plugin.updateTaskProperty).toHaveBeenCalledTimes(1);
+		const replacement = document.createElement("div");
+		replacement.className = "task-card";
+		replacement.dataset.taskPath = task.path;
+		const replacementStatus = replacement.createDiv({ cls: "task-card__main-row" }).createSpan({ cls: "task-card__status-dot" });
+		document.body.append(replacement);
+		syncTaskCardWriteState(replacement, plugin, task.path);
+		expect(replacementStatus.getAttribute("aria-disabled")).toBe("true");
+		rejectWrite(new Error("Write denied"));
+		await flushAsyncHandlers();
+		expect(replacement.classList.contains("task-card--write-failed")).toBe(true);
+		expect(replacementStatus.hasAttribute("aria-disabled")).toBe(false);
+		replacement.remove();
+		expect(card.classList.contains("task-card--pending")).toBe(false);
+		expect(card.classList.contains("task-card--write-failed")).toBe(true);
+		expect(status.hasAttribute("aria-busy")).toBe(false);
+		expect(status.hasAttribute("aria-disabled")).toBe(false);
 	});
 
 	it("uses the previous status when shift-clicking the status indicator", async () => {
@@ -236,42 +295,27 @@ describe("taskCardActions", () => {
 		});
 	});
 
-	it("wires priority menu selections to priority writes", async () => {
+	it("opens the priority picker from a card in any view", async () => {
 		const plugin = createPlugin();
-		const handler = createPriorityClickHandler(task, plugin);
-
-		handler({ stopPropagation: jest.fn() } as unknown as MouseEvent);
-		const menuOptions = (PriorityContextMenu as jest.Mock).mock.calls[0][0];
-		menuOptions.onSelect("high");
+		const anchor = document.createElement("span");
+		createPriorityClickHandler(task, plugin)({
+			stopPropagation: jest.fn(),
+			currentTarget: anchor,
+		} as unknown as MouseEvent);
 		await flushAsyncHandlers();
 
-		expect(menuOptions.currentValue).toBe("normal");
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "priority", "high");
+		expect(openTaskPropertyPicker).toHaveBeenCalledWith(plugin, "priority", [task], anchor);
 	});
 
-	it("wires recurrence menu selections to recurrence and anchor writes", async () => {
+	it("opens the recurrence picker from a card", () => {
 		const plugin = createPlugin();
-		const handler = createRecurrenceClickHandler(
-			{ ...task, recurrence: "FREQ=DAILY", recurrence_anchor: "scheduled" },
-			plugin
-		);
+		const anchor = document.createElement("span");
+		createRecurrenceClickHandler(task, plugin)({
+			stopPropagation: jest.fn(),
+			currentTarget: anchor,
+		} as unknown as MouseEvent);
 
-		handler({ stopPropagation: jest.fn() } as unknown as MouseEvent);
-		const menuOptions = (RecurrenceContextMenu as jest.Mock).mock.calls[0][0];
-		menuOptions.onSelect("FREQ=WEEKLY", "due");
-		await flushAsyncHandlers();
-
-		expect(menuOptions.currentValue).toBe("FREQ=DAILY");
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(
-			expect.objectContaining({ path: task.path }),
-			"recurrence",
-			"FREQ=WEEKLY"
-		);
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(
-			expect.objectContaining({ path: task.path }),
-			"recurrence_anchor",
-			"due"
-		);
+		expect(openTaskRecurrencePicker).toHaveBeenCalledWith(plugin, task, anchor);
 	});
 
 	it("wires reminder modal saves to reminder writes", async () => {

@@ -116,6 +116,31 @@ describe('GoogleCalendarService', () => {
 			);
 		});
 
+		test('discards a calendar list that finishes after the OAuth connection changes', async () => {
+			let connectionGeneration = 1;
+			let resolveRequest!: (value: Awaited<ReturnType<typeof requestUrl>>) => void;
+			mockOAuthService.getConnectionGeneration = jest.fn(() => connectionGeneration);
+			mockRequestUrl.mockReturnValueOnce(
+				new Promise((resolve) => {
+					resolveRequest = resolve;
+				}) as ReturnType<typeof requestUrl>
+			);
+
+			const pendingList = service.listCalendars();
+			await Promise.resolve();
+			connectionGeneration = 2;
+			resolveRequest({
+				status: 200,
+				json: mockCalendarList,
+				text: '',
+				arrayBuffer: new ArrayBuffer(0),
+				headers: {}
+			});
+
+			await expect(pendingList).rejects.toThrow('connection changed');
+			expect((service as any).calendarColors.size).toBe(0);
+		});
+
 		test.each([
 			['user-set name', 'Running', 'Running'],
 			['missing override', undefined, 'Original Calendar'],
@@ -875,6 +900,18 @@ describe('GoogleCalendarService', () => {
 			// Test that getCached Events returns an array
 			const cachedEvents = service.getCachedEvents();
 			expect(Array.isArray(cachedEvents)).toBe(true);
+		});
+
+		test('clears cached calendars and events after the OAuth connection changes', () => {
+			let connectionGeneration = 0;
+			mockOAuthService.getConnectionGeneration = jest.fn(() => connectionGeneration);
+			(service as any).availableCalendars = [{ id: 'primary', summary: 'Account A' }];
+			(service as any).cache.set('all', [{ id: 'account-a-event' }]);
+
+			connectionGeneration = 1;
+
+			expect(service.getAvailableCalendars()).toEqual([]);
+			expect(service.getAllEvents()).toEqual([]);
 		});
 
 		test('should respect manual refresh rate limit', async () => {

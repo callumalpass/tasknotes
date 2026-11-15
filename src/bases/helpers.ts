@@ -91,13 +91,9 @@ function toOptionalNumber(value: unknown): number | undefined {
 	return undefined;
 }
 
-function toOccurrenceMaterializationMode(
-	value: unknown
-): Optional<OccurrenceMaterializationMode> {
+function toOccurrenceMaterializationMode(value: unknown): Optional<OccurrenceMaterializationMode> {
 	const mode = toOptionalString(value);
-	return mode === "manual" || mode === "on_completion" || mode === "rolling"
-		? mode
-		: undefined;
+	return mode === "manual" || mode === "on_completion" || mode === "rolling" ? mode : undefined;
 }
 
 function toOccurrenceNextTrigger(value: unknown): Optional<OccurrenceNextTrigger> {
@@ -139,7 +135,7 @@ export function mapBasesPropertyToTaskCardProperty(
 ): string {
 	// Delegate to PropertyMappingService if available (preferred path)
 	if (plugin) {
-		const mapper = new PropertyMappingService(plugin, plugin.fieldMapper);
+		const mapper = new PropertyMappingService(plugin.fieldMapper);
 		return mapper.basesToTaskCardProperty(propId);
 	}
 
@@ -354,7 +350,10 @@ export function createTaskInfoFromBasesData(
 			plugin
 		);
 	} else {
-		return enrichTaskInfoFromCache(createTaskInfoFromProperties(props, basesItem, plugin), plugin);
+		return enrichTaskInfoFromCache(
+			createTaskInfoFromProperties(props, basesItem, plugin),
+			plugin
+		);
 	}
 }
 

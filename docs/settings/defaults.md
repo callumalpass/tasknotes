@@ -1,46 +1,21 @@
-# Defaults & Templates Settings
+# Task defaults
 
-!!! note "Settings Reorganization"
-    Default value settings have been moved to the [Task Properties](task-properties.md) tab. Each property card now contains its own default value configuration alongside other property-specific settings.
+Open **Settings → TaskNotes → Task creation → Defaults** to set initial values for new tasks:
 
+- Status and priority
+- Due and scheduled dates and times
+- Contexts, tags, and projects
+- Time estimate and recurrence
+- Reminders
 
-## Where to Find Default Settings
+Defaults apply when a task is created. Changing them does not update existing tasks. Custom-property defaults remain on each property's detail page under **Properties**.
 
-Default values for task properties are now configured within each property's card in the **Task Properties** tab:
+## Templates and filenames
 
-| Setting | Location |
-|---------|----------|
-| Default status | Task Properties → Status card |
-| Default priority | Task Properties → Priority card |
-| Default due date | Task Properties → Due Date card |
-| Default scheduled date | Task Properties → Scheduled Date card |
-| Default contexts | Task Properties → Contexts card |
-| Default tags | Task Properties → Tags card |
-| Default projects | Task Properties → Projects card |
-| Default time estimate | Task Properties → Time Estimate card |
-| Default recurrence | Task Properties → Recurrence card |
-| Default reminders | Task Properties → Reminders card |
+Body templates and materialized-occurrence note templates are under **Task creation → Templates**. Filename patterns, including occurrence filename patterns, are under **Task files → Filenames**.
 
-## Body Template
+See [Task files and templates](task-defaults.md) for template variables and folder behaviour.
 
-Body template settings are in the **Features** tab:
+## Inline creation and conversion
 
-- **Use body template**: Use a template file for task body content.
-- **Body template file**: Path to template file for task body content. Supports template variables like `{{title}}`, `{{date}}`, `{{time}}`, `{{priority}}`, `{{status}}`, etc.
-- **Use occurrence note template**: Use a separate fallback template for materialized occurrence notes when the recurring task does not set `occurrence_template`.
-- **Occurrence note template file**: Path to the fallback template file for materialized occurrence notes. Parent task `occurrence_template` values take priority.
-
-## Instant Task Conversion
-
-Instant task conversion settings are in the **Features** tab:
-
-- **Use task defaults on instant convert**: Apply default task settings when converting text to tasks instantly.
-
-The **Convert current note to task** command also uses the configured default scheduled date when the note being converted does not already have `scheduled` frontmatter. Set the Scheduled Date default to **None** to leave converted notes unscheduled.
-
-## Related Documentation
-
-- [Task Properties Settings](task-properties.md) - Configure property keys, defaults, and NLP triggers
-- [Task Defaults](task-defaults.md) - Folder management, filename templates, and archive settings
-- [General Settings](general.md) - Task identification and storage settings
-- [Features Settings](features.md) - Inline tasks and conversion settings
+Inline task behaviour is under **Appearance & interaction**. The folder for inline-created tasks is under **Task files**. Inline conversion uses the same task filename configuration as other creation flows.

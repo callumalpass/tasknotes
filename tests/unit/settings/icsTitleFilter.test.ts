@@ -1,14 +1,12 @@
-import { App } from "obsidian";
-import type TaskNotesPlugin from "../../../src/main";
-import type { ICSSubscription } from "../../../src/types";
-import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
-import { renderIntegrationsTab } from "../../../src/settings/tabs/integrationsTab";
+import { settingsFixture, control } from "../../helpers/native-settings";
 import { observeTranslation } from "../../helpers/real-i18n";
+import { subscriptionList } from "../../../src/settings/native/connections";
+import type { ICSSubscription } from "../../../src/types";
 
 describe.each(["en", "de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"])(
 	"ICS title filter settings in %s",
 	locale => {
-		it("renders translated copy, defaults older settings, and saves edits and clearing", async () => {
+		it("uses translated copy, defaults older settings, and saves edits and clearing", async () => {
 			let subscription: ICSSubscription = {
 				id: "calendar", name: "My calendar", type: "remote",
 				url: "https://example.com/calendar.ics", enabled: true,
@@ -24,47 +22,75 @@ describe.each(["en", "de", "es", "fr", "it", "ja", "ko", "pt", "ru", "zh"])(
 					subscription = { ...subscription, ...updates };
 				}),
 			};
-			const save = jest.fn();
-			const translate = observeTranslation(locale);
-			const plugin = {
-				app: new App(),
-				googleCalendarService: {
-					on: jest.fn(() => jest.fn()),
-					getCalendars: jest.fn().mockResolvedValue([]),
-				},
-				settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-				i18n: { translate },
-				icsSubscriptionService: service,
-			} as unknown as TaskNotesPlugin;
-			const container = document.createElement("div");
-			renderIntegrationsTab(container, plugin, save);
-			const input = () => container.querySelector<HTMLInputElement>("input[aria-label]")!;
-			expect(input()).not.toBeNull();
-			expect(input().value).toBe("");
-			expect(input().title).toBe(input().placeholder);
-			expect(input().placeholder.length).toBeGreaterThan(10);
-			const label = input().getAttribute("aria-label");
-			expect(container.textContent).toContain(label);
+			const { plugin, ctx } = settingsFixture();
+			plugin.i18n = { ...plugin.i18n, translate: observeTranslation(locale) } as never;
+			plugin.icsSubscriptionService = service as never;
+
+			const definitions = [subscriptionList(ctx)];
+			const filterKey = "subscription.calendar.filter";
+			const filter = control(definitions, filterKey);
+			expect(ctx.read(filterKey)).toBe("");
+			expect(String(filter.desc).length).toBeGreaterThan(10);
 			if (locale !== "en") {
-				expect(label).not.toBe("Title contains:");
-				expect(input().placeholder).not.toBe("Case-insensitive text, not regex; empty shows all events");
+				expect(filter.name).not.toBe("Title contains:");
+				expect(filter.desc).not.toBe("Case-insensitive text, not regex; empty shows all events");
 			}
 			expect(service.updateSubscription).not.toHaveBeenCalled();
 
 			// User-entered syntax is plain data in every interface language.
-			input().value = "/Meeting/g";
-			input().dispatchEvent(new Event("change"));
-			await Promise.resolve();
+			await ctx.write(filterKey, "/Meeting/g");
 			expect(service.updateSubscription).toHaveBeenLastCalledWith("calendar", { filter: "/Meeting/g" });
-			expect(save).toHaveBeenCalledTimes(1);
-			expect(input().value).toBe("/Meeting/g");
+			expect(ctx.read(filterKey)).toBe("/Meeting/g");
 
-			input().value = "";
-			input().dispatchEvent(new Event("change"));
-			await Promise.resolve();
+			await ctx.write(filterKey, "");
 			expect(service.updateSubscription).toHaveBeenLastCalledWith("calendar", { filter: "" });
-			expect(save).toHaveBeenCalledTimes(2);
-			expect(input().value).toBe("");
+			expect(ctx.read(filterKey)).toBe("");
 		});
 	}
 );
+
+describe("ICS subscription authentication settings", () => {
+	function authFixture(overrides: Partial<ICSSubscription> = {}) {
+		let subscription: ICSSubscription = {
+			id: "calendar", name: "My calendar", type: "remote",
+			url: "https://example.com/calendar.ics", enabled: true,
+			color: "#3788d8", refreshInterval: 60, ...overrides,
+		};
+		const service = {
+			getSubscriptions: () => [subscription],
+			getLastFetched: () => undefined,
+			getLastError: () => undefined,
+			hasPassword: () => false,
+			isPasswordStorageAvailable: () => true,
+			setPassword: jest.fn().mockResolvedValue(undefined),
+			updateSubscription: jest.fn(async (_id: string, updates: Partial<ICSSubscription>) => {
+				subscription = { ...subscription, ...updates };
+			}),
+		};
+		const { plugin, ctx } = settingsFixture();
+		plugin.icsSubscriptionService = service as never;
+		return { ctx, service, definitions: [subscriptionList(ctx)] };
+	}
+
+	it("keeps the credentials hidden until HTTP Basic is chosen", async () => {
+		const { ctx, service, definitions } = authFixture();
+		const username = control(definitions, "subscription.calendar.username");
+		expect(ctx.read("subscription.calendar.authType")).toBe("none");
+		expect((username as { visible?: () => boolean }).visible?.()).toBe(false);
+
+		await ctx.write("subscription.calendar.authType", "basic");
+		expect(service.updateSubscription).toHaveBeenLastCalledWith("calendar", { authType: "basic" });
+		expect((username as { visible?: () => boolean }).visible?.()).toBe(true);
+
+		await ctx.write("subscription.calendar.username", "  alex ");
+		expect(service.updateSubscription).toHaveBeenLastCalledWith("calendar", { username: "alex" });
+	});
+
+	it("never offers credentials for local calendars", () => {
+		const { definitions } = authFixture({ type: "local", authType: "basic" });
+		const authType = control(definitions, "subscription.calendar.authType");
+		const username = control(definitions, "subscription.calendar.username");
+		expect((authType.control as { disabled?: () => boolean }).disabled?.()).toBe(true);
+		expect((username as { visible?: () => boolean }).visible?.()).toBe(false);
+	});
+});

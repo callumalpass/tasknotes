@@ -235,6 +235,7 @@ export function updateKanbanDropMarker(
 	insertionIndex: number
 ): void {
 	cardsContainer.classList.remove("kanban-view__cards--drop-marker-end");
+	cardsContainer.style.removeProperty("--tn-kanban-drop-top");
 	for (const card of visibleCards) {
 		card.classList.remove("kanban-view__card-wrapper--drop-marker");
 	}
@@ -245,7 +246,12 @@ export function updateKanbanDropMarker(
 		return;
 	}
 
-	if (visibleCards.length > 0 && insertionIndex >= visibleCards.length) {
+	if (insertionIndex >= visibleCards.length) {
+		const lastCard = visibleCards[visibleCards.length - 1];
+		const top = lastCard
+			? lastCard.getBoundingClientRect().bottom - cardsContainer.getBoundingClientRect().top + cardsContainer.scrollTop
+			: 0;
+		cardsContainer.style.setProperty("--tn-kanban-drop-top", `${top}px`);
 		cardsContainer.classList.add("kanban-view__cards--drop-marker-end");
 	}
 }
@@ -256,6 +262,7 @@ export function clearKanbanDropMarkers(root: ParentNode): void {
 			"kanban-view__card-wrapper--drop-marker",
 			"kanban-view__cards--drop-marker-end"
 		);
+		(root as HTMLElement).style.removeProperty("--tn-kanban-drop-top");
 	}
 
 	root
@@ -266,6 +273,7 @@ export function clearKanbanDropMarkers(root: ParentNode): void {
 	root
 		.querySelectorAll<HTMLElement>(".kanban-view__cards--drop-marker-end")
 		.forEach((container) => {
+			container.style.removeProperty("--tn-kanban-drop-top");
 			container.classList.remove("kanban-view__cards--drop-marker-end");
 		});
 }

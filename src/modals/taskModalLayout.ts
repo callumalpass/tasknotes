@@ -10,5 +10,5 @@ export function setTaskModalDetailsCollapsed(
 	collapsed: boolean
 ): void {
 	detailsContainer.classList.toggle(COLLAPSED_CLASS, collapsed);
-	splitRightColumn?.classList.toggle(COLLAPSED_CLASS, collapsed);
+	splitRightColumn?.classList.remove(COLLAPSED_CLASS);
 }

@@ -7,19 +7,14 @@ import {
 	type TaskInfo,
 } from "../../types";
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
-import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
+import { resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { buildTaskInfoFromMappedTask } from "../../utils/taskInfoAssembly";
 import { getRecurringTaskActionDate } from "./taskRecurringPlanning";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionUndo" });
-import {
-	applyTaskMovementUndo,
-	type TaskMovementUndoChange,
-} from "../../bases/taskMovementUndo";
-import {
-	withVaultFileMutation,
-	processVaultFileWithinMutation,
-} from "../VaultMutationService";
+import { applyTaskMovementUndo, type TaskMovementUndoChange } from "../../bases/taskMovementUndo";
+import { withVaultFileMutation, processVaultFileWithinMutation } from "../VaultMutationService";
 
 // Only completion-owned fields are reversible. Never capture unrelated edits made
 // while the completion is awaiting metadata or an external integration.
@@ -41,7 +36,7 @@ const completionFields = [
 	"occurrence_date",
 ] as const;
 
-function mappingKey(field: typeof completionFields[number]): keyof FieldMapping {
+function mappingKey(field: (typeof completionFields)[number]): keyof FieldMapping {
 	if (field === "recurrence_anchor") return "recurrenceAnchor";
 	if (field === "recurrence_original_date") return "recurrenceOriginalDate";
 	if (field === "complete_instances") return "completeInstances";
@@ -55,7 +50,9 @@ export function readCompletionContent(content: string): {
 	frontmatter: Record<string, unknown>;
 	body: string;
 } {
-	const { frontmatter, body } = splitFrontmatterAndBody(content);
+	const match = /^---[\t ]*\r?\n([\s\S]*?)\r?\n---[\t ]*(?:\r?\n|$)/.exec(content);
+	const frontmatter = match?.[1] ?? null;
+	const body = match ? content.slice(match[0].length) : content;
 	const parsed: unknown = frontmatter === null ? {} : parseYaml(frontmatter);
 	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
 		throw new Error("Invalid task frontmatter");
@@ -78,13 +75,15 @@ export function buildCompletionContentUndo(
 	const previous = readCompletionContent(before);
 	const next = readCompletionContent(after);
 	return {
-		changes: properties.filter(property => property !== modifiedProperty).map(property => ({
-			property,
-			before: structuredClone(previous.frontmatter[property]),
-			after: structuredClone(next.frontmatter[property]),
-			hadBefore: Object.prototype.hasOwnProperty.call(previous.frontmatter, property),
-			hadAfter: Object.prototype.hasOwnProperty.call(next.frontmatter, property),
-		})),
+		changes: properties
+			.filter((property) => property !== modifiedProperty)
+			.map((property) => ({
+				property,
+				before: structuredClone(previous.frontmatter[property]),
+				after: structuredClone(next.frontmatter[property]),
+				hadBefore: Object.prototype.hasOwnProperty.call(previous.frontmatter, property),
+				hadAfter: Object.prototype.hasOwnProperty.call(next.frontmatter, property),
+			})),
 		beforeBody: previous.body,
 		afterBody: next.body,
 	};
@@ -117,6 +116,7 @@ export async function completeRecurringTaskWithUndo(
 	options: RecurringCompletionOptions = {}
 ): Promise<{
 	updatedTask: TaskInfo;
+	occurrenceDate: string;
 	completed: boolean;
 	changed: boolean;
 	undo: () => Promise<boolean>;
@@ -134,11 +134,17 @@ export async function completeRecurringTaskWithUndo(
 		occurrence = await service.materializeOccurrence(parent, identityDate);
 	}
 	const tasks = occurrence ? [parent, occurrence] : [parent];
-	const before = await Promise.all(tasks.map(async taskInfo => {
-		const file = plugin.app.vault.getAbstractFileByPath(taskInfo.path);
-		if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
-		return { file, taskInfo: structuredClone(taskInfo), content: await plugin.app.vault.read(file) };
-	}));
+	const before = await Promise.all(
+		tasks.map(async (taskInfo) => {
+			const file = plugin.app.vault.getAbstractFileByPath(taskInfo.path);
+			if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
+			return {
+				file,
+				taskInfo: structuredClone(taskInfo),
+				content: await plugin.app.vault.read(file),
+			};
+		})
+	);
 	const parentTransition: { original?: TaskInfo; updated?: TaskInfo } = {};
 	const result = await service.toggleRecurringTaskCompleteWithOccurrenceNotes(
 		parent,
@@ -151,43 +157,81 @@ export async function completeRecurringTaskWithUndo(
 	);
 	const updatedTask = result.path === parent.path ? result : parentTransition.updated || parent;
 	const modifiedProperty = plugin.fieldMapper.toUserField("dateModified");
-	const properties = completionFields.map(field => plugin.fieldMapper.toUserField(mappingKey(field)));
-	const entries = await Promise.all(before.map(async previous => {
-		const nextTask = previous.file.path === result.path ? result : updatedTask;
-		const afterContent = await plugin.app.vault.read(previous.file);
-		const undo = buildCompletionContentUndo(previous.content, afterContent, properties, modifiedProperty);
-		// A receipt must match the operation's authoritative task state, not any
-		// edits arriving while it awaited metadata/webhooks. Otherwise fail closed.
-		const matchesTask = (content: string, expected: TaskInfo): boolean => {
-			const actual = plugin.fieldMapper.mapFromFrontmatter(
-				readCompletionContent(content).frontmatter, previous.file.path);
-			return completionFields.every(field => {
-				const normalize = (value: unknown) => value == null ||
-					(Array.isArray(value) && value.length === 0) ? undefined : value;
-				return JSON.stringify(normalize(actual[field])) === JSON.stringify(normalize(expected[field]));
-			});
-		};
-		const originalTask = previous.file.path === parent.path && occurrence
-			? parentTransition.original : previous.taskInfo;
-		let safe = !!originalTask && matchesTask(previous.content, originalTask) && matchesTask(afterContent, nextTask);
-		if (undo.beforeBody !== undo.afterBody) {
-			// Only the known checkbox-reset transformation belongs to completion.
-			// An intervening arbitrary body edit must never be rolled back.
-			safe = safe && plugin.settings.resetCheckboxesOnRecurrence &&
-				resetMarkdownCheckboxes(undo.beforeBody).content.trimEnd() === undo.afterBody.trimEnd();
-		}
-		return { ...previous, nextTask, undo, safe, changed: afterContent !== previous.content };
-	}));
+	const properties = completionFields.map((field) =>
+		plugin.fieldMapper.toUserField(mappingKey(field))
+	);
+	const entries = await Promise.all(
+		before.map(async (previous) => {
+			const nextTask = previous.file.path === result.path ? result : updatedTask;
+			const afterContent = await plugin.app.vault.read(previous.file);
+			const undo = buildCompletionContentUndo(
+				previous.content,
+				afterContent,
+				properties,
+				modifiedProperty
+			);
+			// A receipt must match the operation's authoritative task state, not any
+			// edits arriving while it awaited metadata/webhooks. Otherwise fail closed.
+			const matchesTask = (content: string, expected: TaskInfo): boolean => {
+				// Receipts must use the same defaults as TaskManager. A missing YAML
+				// status is a valid open task, not a concurrent change.
+				const actual = buildTaskInfoFromMappedTask({
+					path: previous.file.path,
+					mappedTask: plugin.fieldMapper.mapFromFrontmatter(
+						readCompletionContent(content).frontmatter,
+						previous.file.path
+					),
+					defaultTaskStatus: plugin.settings.defaultTaskStatus,
+					isBlocked: false,
+					blockingTasks: [],
+				});
+				return completionFields.every((field) => {
+					const normalize = (value: unknown) =>
+						value == null || (Array.isArray(value) && value.length === 0)
+							? undefined
+							: value;
+					return (
+						JSON.stringify(normalize(actual[field])) ===
+						JSON.stringify(normalize(expected[field]))
+					);
+				});
+			};
+			const originalTask =
+				previous.file.path === parent.path && occurrence
+					? parentTransition.original
+					: previous.taskInfo;
+			let safe =
+				!!originalTask &&
+				matchesTask(previous.content, originalTask) &&
+				matchesTask(afterContent, nextTask);
+			if (undo.beforeBody !== undo.afterBody) {
+				// Only the known checkbox-reset transformation belongs to completion.
+				// An intervening arbitrary body edit must never be rolled back.
+				safe =
+					safe &&
+					plugin.settings.resetCheckboxesOnRecurrence &&
+					resetMarkdownCheckboxes(undo.beforeBody).content.trimEnd() ===
+						undo.afterBody.trimEnd();
+			}
+			return { ...previous, nextTask, undo, safe, changed: afterContent !== previous.content };
+		})
+	);
 	const completed = occurrence
 		? plugin.statusManager.isCompletedStatus(result.status)
 		: (updatedTask.complete_instances ?? []).some(day => !parent.complete_instances?.includes(day));
+	const previousDays = parent.complete_instances ?? [];
+	const updatedDays = updatedTask.complete_instances ?? [];
+	const changedDay = completed
+		? updatedDays.find(day => !previousDays.includes(day))
+		: previousDays.find(day => !updatedDays.includes(day));
 	let used = false;
 	return {
 		updatedTask,
+		occurrenceDate: occurrence?.occurrence_date ?? changedDay ?? formatDateForStorage(identityDate),
 		completed,
 		changed: entries.some(entry => entry.changed),
 		undo: async () => {
-			if (used || entries.some(entry => !entry.safe)) return false;
+			if (used || entries.some((entry) => !entry.safe)) return false;
 			used = true;
 			const syncUpdates: { current: TaskInfo; restored: TaskInfo }[] = [];
 			// Lock both parent and occurrence in stable order. Validate every receipt
@@ -199,15 +243,28 @@ export async function completeRecurringTaskWithUndo(
 				}
 				const timestamp = getCurrentTimestamp();
 				for (const entry of entries) {
-					if (plugin.app.vault.getAbstractFileByPath(entry.file.path) !== entry.file) return false;
-					if (restoreCompletionContent(await plugin.app.vault.read(entry.file),
-						entry.undo, modifiedProperty, timestamp) === null) return false;
+					if (plugin.app.vault.getAbstractFileByPath(entry.file.path) !== entry.file)
+						return false;
+					if (
+						restoreCompletionContent(
+							await plugin.app.vault.read(entry.file),
+							entry.undo,
+							modifiedProperty,
+							timestamp
+						) === null
+					)
+						return false;
 				}
 				const written: typeof entries = [];
 				try {
 					for (const entry of entries) {
-						await processVaultFileWithinMutation(plugin.app, entry.file, content => {
-							const restored = restoreCompletionContent(content, entry.undo, modifiedProperty, timestamp);
+						await processVaultFileWithinMutation(plugin.app, entry.file, (content) => {
+							const restored = restoreCompletionContent(
+								content,
+								entry.undo,
+								modifiedProperty,
+								timestamp
+							);
 							if (restored === null) throw new Error("Task changed during undo");
 							return restored;
 						});
@@ -218,56 +275,90 @@ export async function completeRecurringTaskWithUndo(
 					// if a later file fails, without replacing any intervening edits.
 					for (const entry of written.reverse()) {
 						const reverse: CompletionContentUndo = {
-							changes: entry.undo.changes.map(change => ({
-								...change, before: change.after, after: change.before,
-								hadBefore: change.hadAfter, hadAfter: change.hadBefore,
+							changes: entry.undo.changes.map((change) => ({
+								...change,
+								before: change.after,
+								after: change.before,
+								hadBefore: change.hadAfter,
+								hadAfter: change.hadBefore,
 							})),
-							beforeBody: entry.undo.afterBody, afterBody: entry.undo.beforeBody,
+							beforeBody: entry.undo.afterBody,
+							afterBody: entry.undo.beforeBody,
 						};
-						await processVaultFileWithinMutation(plugin.app, entry.file, content => {
-							const restored = restoreCompletionContent(content, reverse, modifiedProperty, getCurrentTimestamp());
-							if (restored === null) throw new Error("Task changed during Undo rollback");
+						await processVaultFileWithinMutation(plugin.app, entry.file, (content) => {
+							const restored = restoreCompletionContent(
+								content,
+								reverse,
+								modifiedProperty,
+								getCurrentTimestamp()
+							);
+							if (restored === null)
+								throw new Error("Task changed during Undo rollback");
 							return restored;
 						});
 					}
 					throw error;
 				}
 				for (const entry of entries) {
-					const current = (await plugin.cacheManager.getTaskInfo(entry.file.path)) || entry.nextTask;
-					const restoredContent = readCompletionContent(await plugin.app.vault.read(entry.file));
+					const current =
+						(await plugin.cacheManager.getTaskInfo(entry.file.path)) || entry.nextTask;
+					const restoredContent = readCompletionContent(
+						await plugin.app.vault.read(entry.file)
+					);
 					const restoredTask = {
 						...current,
-						...plugin.fieldMapper.mapFromFrontmatter(restoredContent.frontmatter, entry.file.path),
+						...plugin.fieldMapper.mapFromFrontmatter(
+							restoredContent.frontmatter,
+							entry.file.path
+						),
 						dateModified: timestamp,
 						details: restoredContent.body.trimEnd(),
 					};
 					// mapFromFrontmatter may omit absent fields. Clear only those that
 					// this receipt restored to absence in the persisted frontmatter.
 					for (const field of completionFields) {
-						if (!Object.prototype.hasOwnProperty.call(restoredContent.frontmatter,
-							plugin.fieldMapper.toUserField(mappingKey(field)))) {
+						if (
+							!Object.prototype.hasOwnProperty.call(
+								restoredContent.frontmatter,
+								plugin.fieldMapper.toUserField(mappingKey(field))
+							)
+						) {
 							Object.assign(restoredTask, { [field]: undefined });
 						}
 					}
-					plugin.cacheManager.updateTaskInfoInCache(entry.file.path, restoredTask);
-					syncUpdates.push({ current, restored: restoredTask });
+					const assembledTask = buildTaskInfoFromMappedTask({
+						path: entry.file.path,
+						mappedTask: restoredTask,
+						defaultTaskStatus: plugin.settings.defaultTaskStatus,
+						isBlocked: current.isBlocked ?? false,
+						blockingTasks: current.blocking ?? [],
+					});
+					plugin.cacheManager.updateTaskInfoInCache(entry.file.path, assembledTask);
+					syncUpdates.push({ current, restored: assembledTask });
 				}
 				return true;
 			};
 			const restored = await lock(0);
 			for (const update of syncUpdates) {
 				plugin.emitter.trigger(EVENT_TASK_UPDATED, {
-					path: update.restored.path, originalTask: update.current, updatedTask: update.restored,
+					path: update.restored.path,
+					originalTask: update.current,
+					updatedTask: update.restored,
 				});
 			}
 			// Calendar sync can itself write metadata through the mutation queue.
 			// Never await it while holding either task file's lock.
 			if (restored && plugin.taskCalendarSyncService?.isEnabled()) {
 				for (const update of syncUpdates) {
-					void plugin.taskCalendarSyncService.updateTaskInCalendar(update.restored, update.current)
-						.catch(error => tasknotesLogger.warn("Calendar sync after Undo failed", {
-							category: "provider", operation: "recurring-completion-undo-calendar", error,
-						}));
+					void plugin.taskCalendarSyncService
+						.updateTaskInCalendar(update.restored, update.current)
+						.catch((error) =>
+							tasknotesLogger.warn("Calendar sync after Undo failed", {
+								category: "provider",
+								operation: "recurring-completion-undo-calendar",
+								error,
+							})
+						);
 				}
 			}
 			return restored;

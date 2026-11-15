@@ -20,6 +20,25 @@ jest.mock("../../../src/utils/templateProcessor", () => ({
 }));
 
 describe("task creation attachments", () => {
+	it("publishes the written task without waiting for native metadata indexing", async () => {
+		const mockPlugin = PluginFactory.createMockPlugin();
+		const indexing = jest.fn(() => new Promise<void>(() => {}));
+		Object.assign(mockPlugin.cacheManager, { waitForFreshTaskData: indexing });
+		const service = new TaskCreationService({
+			runtime: mockPlugin,
+			applyTaskCreationDefaults: jest.fn(async (taskData) => taskData),
+			applyTemplate: jest.fn(async () => ({ frontmatter: {}, body: "" })),
+			processFolderTemplate: jest.fn((folderTemplate) => folderTemplate),
+			sanitizeTitleForFilename: jest.fn((input) => input),
+			sanitizeTitleForStorage: jest.fn((input) => input),
+		});
+		await service.createTask({ title: "Available immediately" }, { applyDefaults: false });
+		expect(indexing).not.toHaveBeenCalled();
+		expect(mockPlugin.cacheManager.updateTaskInfoInCache).toHaveBeenCalledWith(
+			"Tasks/with-attachments.md", expect.objectContaining({ title: "Available immediately" })
+		);
+	});
+
 	it("writes attachment links chosen in the create modal to the new task's frontmatter", async () => {
 		const mockPlugin = PluginFactory.createMockPlugin();
 		const service = new TaskCreationService({

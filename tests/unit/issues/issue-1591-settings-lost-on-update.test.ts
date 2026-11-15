@@ -9,6 +9,12 @@ function createPlugin(options: { dataFileExists: boolean; version?: string }) {
 				exists: jest.fn().mockResolvedValue(options.dataFileExists),
 			},
 		},
+		secretStorage: {
+			getSecret: jest.fn(() => null),
+			setSecret: jest.fn(),
+		},
+		loadLocalStorage: jest.fn(() => null),
+		saveLocalStorage: jest.fn(),
 	} as any;
 
 	const plugin = new TaskNotesPlugin(app);

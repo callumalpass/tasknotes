@@ -1,14 +1,11 @@
 import type { MessageDescriptor } from "@lingui/core";
-import { msg } from "@lingui/core/macro";
 import type { App } from "obsidian";
-import { PriorityContextMenu } from "../components/PriorityContextMenu";
-import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
-import { ReminderContextMenu } from "../components/ReminderContextMenu";
-import { StatusContextMenu } from "../components/StatusContextMenu";
 import type TaskNotesPlugin from "../main";
 import type { Reminder, TaskInfo } from "../types";
-import { combineDateAndTime, getDatePart, getTimePart } from "../utils/dateUtils";
-import { DateTimePickerModal } from "./DateTimePickerModal";
+import { openTaskPropertyChoices } from "../ui/taskPropertyPickers";
+import { openReminderChoices } from "../ui/taskReminderPicker";
+import { openRecurrenceChoices } from "../ui/taskRecurrencePicker";
+import type { PopoverHandle } from "../ui/kit/popover";
 
 export type TaskModalDateMenuType = "due" | "scheduled";
 type RecurrenceAnchor = "scheduled" | "completion";
@@ -37,99 +34,66 @@ export interface TaskModalActionMenuContext {
 	onChange: () => void;
 }
 
-export function showTaskModalDateContextMenu(
+export function showTaskModalPropertyPicker(
 	context: TaskModalActionMenuContext,
-	type: TaskModalDateMenuType
-): void {
-	const currentValue = getDateValue(context.getState(), type);
-	const modal = new DateTimePickerModal(context.app, {
-		currentDate: currentValue ? getDatePart(currentValue) : undefined,
-		currentTime: currentValue ? getTimePart(currentValue) : undefined,
-		title: getDateMenuTitle(context, type),
-		dateRole: type,
-		plugin: context.plugin,
-		onSelect: (value: string | null, time: string | null) => {
-			context.setDate(type, getSelectedDateValue(value, time));
-			context.onChange();
-		},
+	property: "status" | "priority" | TaskModalDateMenuType,
+	anchor: HTMLElement
+): Promise<PopoverHandle | undefined> {
+	const draft = () => createTaskModalReminderDraft(context.getState());
+	return openTaskPropertyChoices(context.plugin, property, [draft()], anchor, (choice) => {
+		const value = typeof choice === "function" ? choice(draft()) : choice;
+		if (typeof value !== "string" && value !== undefined) return;
+		if (property === "status") context.setStatus(value ?? "");
+		else if (property === "priority") context.setPriority(value ?? "");
+		else context.setDate(property, value ?? "");
+		context.onChange();
 	});
-
-	modal.open();
 }
 
-export function showTaskModalStatusContextMenu(
+export function showTaskModalRecurrencePicker(
 	context: TaskModalActionMenuContext,
-	event: UIEvent
-): void {
-	const menu = new StatusContextMenu({
-		currentValue: context.getState().status,
-		onSelect: (value) => {
-			context.setStatus(value);
-			context.onChange();
-		},
-		plugin: context.plugin,
-	});
-
-	menu.show(event);
-}
-
-export function showTaskModalPriorityContextMenu(
-	context: TaskModalActionMenuContext,
-	event: UIEvent
-): void {
-	const menu = new PriorityContextMenu({
-		currentValue: context.getState().priority,
-		onSelect: (value) => {
-			context.setPriority(value);
-			context.onChange();
-		},
-		plugin: context.plugin,
-	});
-
-	menu.show(event);
-}
-
-export function showTaskModalRecurrenceContextMenu(
-	context: TaskModalActionMenuContext,
-	event: UIEvent
-): void {
+	anchor: HTMLElement
+): PopoverHandle {
 	const state = context.getState();
-	const menu = new RecurrenceContextMenu({
-		currentValue: state.recurrenceRule,
-		currentAnchor: state.recurrenceAnchor,
-		scheduledDate: state.scheduledDate,
-		onSelect: (value, anchor) => {
-			context.setRecurrence(value || "", anchor);
-			context.onChange();
-		},
-		app: context.app,
-		plugin: context.plugin,
-	});
-
-	menu.show(event);
-}
-
-export function showTaskModalReminderContextMenu(
-	context: TaskModalActionMenuContext,
-	event: UIEvent,
-	taskBase?: TaskInfo
-): void {
-	const menu = new ReminderContextMenu(
+	return openRecurrenceChoices(
 		context.plugin,
-		createTaskModalReminderDraft(context.getState(), taskBase),
-		event.target as HTMLElement,
-		(updatedTask: TaskInfo) => {
-			context.setReminders(updatedTask.reminders || []);
+		context.app,
+		{
+			recurrence: state.recurrenceRule,
+			anchor: state.recurrenceAnchor,
+			scheduled: state.scheduledDate,
+		},
+		anchor,
+		(value, recurrenceAnchor) => {
+			context.setRecurrence(value || "", recurrenceAnchor);
 			context.onChange();
 		}
 	);
-
-	menu.show(event);
 }
 
-export function getSelectedDateValue(value: string | null, time: string | null): string {
-	if (!value) return "";
-	return time ? combineDateAndTime(value, time) : value;
+/**
+ * The reminder picker: quick reminders relative to the due and scheduled
+ * dates, then the reminder modal and Clear. Reminders already set are ticked.
+ * Changes stay in the modal until it is saved.
+ */
+export function showTaskModalReminderPicker(
+	context: TaskModalActionMenuContext,
+	anchor: HTMLElement,
+	taskBase?: TaskInfo
+): PopoverHandle {
+	const state = context.getState();
+	return openReminderChoices({
+		plugin: context.plugin,
+		anchor,
+		due: state.dueDate,
+		scheduled: state.scheduledDate,
+		getReminders: () => context.getState().reminders,
+		draft: () => createTaskModalReminderDraft(context.getState(), taskBase),
+		setReminders: (reminders) => {
+			context.setReminders(reminders);
+			context.onChange();
+		},
+	});
 }
 
 export function createTaskModalReminderDraft(
@@ -147,20 +111,4 @@ export function createTaskModalReminderDraft(
 		archived: taskBase?.archived || false,
 		reminders: state.reminders,
 	};
-}
-
-function getDateValue(
-	state: TaskModalActionMenuState,
-	type: TaskModalDateMenuType
-): string {
-	return type === "due" ? state.dueDate : state.scheduledDate;
-}
-
-function getDateMenuTitle(
-	context: TaskModalActionMenuContext,
-	type: TaskModalDateMenuType
-): string {
-	return type === "due"
-		? context.translate(msg({ message: "Set due date", context: "modals.task.dateMenu.dueTitle" }))
-		: context.translate(msg({ message: "Set scheduled date", context: "modals.task.dateMenu.scheduledTitle" }));
 }

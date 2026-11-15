@@ -46,6 +46,8 @@ Materialized occurrence notes add two system fields to the occurrence note:
 - **Date-only**: `DTSTART:20250804;FREQ=DAILY`
 - **Date and time**: `DTSTART:20250804T090000Z;FREQ=DAILY`
 
+Standard multiline rules are also supported, with `DTSTART` and `RRULE` on separate lines. Updating a completion anchor changes the date without discarding the existing clock, timezone parameters, or `RRULE`, `RDATE` and `EXDATE` lines. Date-only anchors remain date-only.
+
 ## Recurring Task Due Date
 
 When a recurring task is completed, `scheduled` advances to the next occurrence. By default, `due` does not change.
@@ -143,7 +145,7 @@ Leaving the global template empty preserves the existing filename behavior. Task
 
 ### Occurrence Note Policies
 
-Each recurring parent has an **Occurrence notes** submenu under its recurrence menu:
+Right-click a recurring parent and open **Occurrence notes** to choose its policy:
 
 - **Create manually**: occurrence notes are only created by explicit action.
 - **Create next after completion**: after you complete a materialized occurrence note, TaskNotes creates the next occurrence note.

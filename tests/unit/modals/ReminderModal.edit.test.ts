@@ -22,6 +22,7 @@ async function openModal(reminders: Reminder[]) {
 	const app = MockObsidian.createMockApp() as unknown as App;
 	const plugin = {
 		app,
+		settings: { dateDisplayFormat: "default", calendarViewSettings: { timeFormat: "24" } },
 		i18n: createI18nService(),
 		emitter: { trigger: jest.fn() },
 		cacheManager: { getTaskInfo: jest.fn().mockResolvedValue(null) },

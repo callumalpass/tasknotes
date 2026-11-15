@@ -5,6 +5,12 @@ import { EventNotFoundError } from "../../../src/services/errors";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
 const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {}) => {
+	const connectionId = "google-connection-a";
+	for (const key of ["googleCalendarDeletionQueue", "googleCalendarEventIndex"]) {
+		for (const item of pluginData[key] ?? []) {
+			if (!("connectionId" in item)) item.connectionId = connectionId;
+		}
+	}
 	const basePlugin = PluginFactory.createMockPlugin();
 	const plugin = PluginFactory.createMockPlugin({
 		settings: {
@@ -45,6 +51,10 @@ const createPlugin = (pluginData: Record<string, any> = {}, calendarSettings = {
 	plugin.priorityManager = {
 		...plugin.priorityManager,
 		getPriorityConfig: jest.fn().mockReturnValue(null),
+	};
+	plugin.oauthService = {
+		...plugin.oauthService,
+		getConnection: jest.fn().mockResolvedValue({ connectionId }),
 	};
 
 	return plugin;
@@ -181,6 +191,66 @@ describe("Google Calendar deletion retry queue", () => {
 		const result = await syncService.processDeletionQueue();
 
 		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
+		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
+	});
+
+	it("retains queued cleanup when it belongs to a different Google connection", async () => {
+		const pluginData = {
+			googleCalendarDeletionQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/account-a.md",
+					calendarId: "primary",
+					eventId: "account-a-event",
+					connectionId: "google-connection-a",
+					createdAt: 1,
+					attempts: 0,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		plugin.oauthService.getConnection = jest
+			.fn()
+			.mockResolvedValue({ connectionId: "google-connection-b" });
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processDeletionQueue();
+
+		expect(result).toEqual({ deleted: 0, failed: 1, remaining: 1 });
+		expect(googleCalendarService.deleteEvent).not.toHaveBeenCalled();
+		expect(pluginData.googleCalendarDeletionQueue).toEqual([
+			expect.objectContaining({
+				connectionId: "google-connection-a",
+				lastError: "Queued Google Calendar deletion belongs to a different connection",
+			}),
+		]);
+	});
+
+	it("binds a legacy queued cleanup to the current Google connection once", async () => {
+		const pluginData = {
+			googleCalendarDeletionQueue: [
+				{
+					taskPath: "TaskNotes/Tasks/legacy.md",
+					calendarId: "primary",
+					eventId: "legacy-event",
+					connectionId: undefined,
+					createdAt: 1,
+					attempts: 0,
+				},
+			],
+		};
+		const plugin = createPlugin(pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		const result = await syncService.processDeletionQueue();
+
+		expect(result).toEqual({ deleted: 1, failed: 0, remaining: 0 });
+		expect(googleCalendarService.deleteEvent).toHaveBeenCalledWith(
+			"primary",
+			"legacy-event",
+			expect.any(Number)
+		);
 		expect(pluginData.googleCalendarDeletionQueue).toEqual([]);
 	});
 

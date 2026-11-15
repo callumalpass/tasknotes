@@ -110,7 +110,7 @@ test.describe('Issue #2413: missed reminders on startup', () => {
 			const day = due.toDateString() === new Date().toDateString()
 				? '' : 'on ' + due.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ';
 			return 'Missed standup is due ' + day + 'at '
-				+ due.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+				+ due.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: plugin.settings.calendarViewSettings.timeFormat === '12' });
 		`);
 		await expect(notice).toContainText(/Missed reminder \(.+\): /);
 		await expect(notice).toContainText(expectedDue);

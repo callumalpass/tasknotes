@@ -13,6 +13,13 @@ function localDate(offsetDays = 0): string {
 	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** v5 cards show relative labels within a week and keep the full date in the tooltip. */
+async function expectCardDate(chip: Locator, date: string): Promise<void> {
+	await expect
+		.poll(async () => `${await chip.textContent()} ${(await chip.getAttribute("aria-label")) ?? ""}`)
+		.toContain(shortDate(date));
+}
+
 function shortDate(date: string): string {
 	return new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
 		month: "short",
@@ -92,7 +99,7 @@ test("a projected occurrence shows its own date and its chip cannot edit the ser
 
 	const projected = card("Weekly review", "recurring");
 	const chip = projected.locator(".task-card__metadata-date--scheduled");
-	await expect(chip).toContainText(shortDate(projectedOccurrence));
+	await expectCardDate(chip, projectedOccurrence);
 	await expect(chip).not.toHaveAttribute("data-tn-action", "edit-date");
 
 	// The click reaches the card, as anywhere else on it, not a date menu.
@@ -105,9 +112,7 @@ test("a projected occurrence shows its own date and its chip cannot edit the ser
 
 	// Control: the pending occurrence's chip still moves it.
 	const pending = card("Weekly review", "scheduled");
-	await expect(pending.locator(".task-card__metadata-date--scheduled")).toContainText(
-		shortDate(nextOccurrence)
-	);
+	await expectCardDate(pending.locator(".task-card__metadata-date--scheduled"), nextOccurrence);
 	await pending.locator(".task-card__metadata-date--scheduled").click();
 	await page.getByText("Tomorrow", { exact: true }).click();
 	await expect.poll(async () => (await frontmatter("Weekly review")).scheduled).toBe(localDate(1));
@@ -140,9 +145,7 @@ test("a timed daily series with matching dates does not look overdue on later ro
 	await expect(rows).toHaveCount(4);
 	for (const [index, offset] of [[1, 1], [2, 2], [3, 3]]) {
 		const row = rows.nth(index);
-		await expect(row.locator(".task-card__metadata-date--scheduled")).toContainText(
-			shortDate(localDate(offset))
-		);
+		await expectCardDate(row.locator(".task-card__metadata-date--scheduled"), localDate(offset));
 		await expect(row.locator(".task-card__metadata-date--scheduled")).toContainText(/19:00|7:00/);
 		await expect(row.locator(".task-card__metadata-date--past")).toHaveCount(0);
 		await expect(row.locator(".task-card__metadata-date--overdue")).toHaveCount(0);
@@ -157,7 +160,5 @@ test("a projected occurrence leaves out the series' due date", async () => {
 	await agendaWithRecurringTask("Due series", `due: ${due}\n`);
 
 	await expect(card("Due series", "recurring").locator(".task-card__metadata-date--due")).toHaveCount(0);
-	await expect(card("Due series", "scheduled").locator(".task-card__metadata-date--due")).toContainText(
-		shortDate(due)
-	);
+	await expectCardDate(card("Due series", "scheduled").locator(".task-card__metadata-date--due"), due);
 });

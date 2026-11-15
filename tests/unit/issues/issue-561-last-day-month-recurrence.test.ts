@@ -9,7 +9,7 @@ import {
 	buildCustomRecurrenceRule,
 	getMonthDayOptions,
 	type CustomRecurrenceRuleInput,
-} from "../../../src/components/RecurrenceContextMenu";
+} from "../../../src/components/CustomRecurrenceModal";
 import { generateRecurringInstances } from "../../../src/core/recurrence";
 
 function buildRule(overrides: Partial<CustomRecurrenceRuleInput>): string {

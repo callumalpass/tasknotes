@@ -31,6 +31,7 @@ test('creates, updates and deletes a Google event as a timeblock is added, edite
         deleteEvent: google.deleteEvent,
         getConnectionGeneration: google.getConnectionGeneration,
         isConnectionGenerationCurrent: google.isConnectionGenerationCurrent,
+        getConnection: plugin.oauthService.getConnection,
         settings: { ...plugin.settings.googleCalendarExport },
       },
     };
@@ -38,6 +39,7 @@ test('creates, updates and deletes a Google event as a timeblock is added, edite
     // No real OAuth session in the test vault; report a stable connection.
     google.getConnectionGeneration = () => 1;
     google.isConnectionGenerationCurrent = async () => true;
+    plugin.oauthService.getConnection = async () => ({ connectionId: 'e2e-timeblock-974' });
     google.getAvailableCalendars = () => [{ id: 'team-e2e@group.calendar.google.com', summary: 'E2E' }];
     google.createEvent = async (calendarId: string, event: any) => {
       calls.push({ op: 'create', calendarId, summary: event.summary, start: event.start.dateTime });
@@ -129,6 +131,7 @@ test('creates, updates and deletes a Google event as a timeblock is added, edite
         google.deleteEvent = saved.deleteEvent;
         google.getConnectionGeneration = saved.getConnectionGeneration;
         google.isConnectionGenerationCurrent = saved.isConnectionGenerationCurrent;
+        plugin.oauthService.getConnection = saved.getConnection;
         plugin.settings.googleCalendarExport = saved.settings;
       }
       const file = w.app.vault.getAbstractFileByPath(note);

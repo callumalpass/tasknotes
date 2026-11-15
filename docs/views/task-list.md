@@ -159,7 +159,7 @@ Drag a task into another group or subgroup to update its grouping properties. Th
 - A highlighted destination previews the properties that will change. An insertion line means manual reordering instead.
 - Collapsed headers remain drop targets. While dragging, **Other destinations** offers configured empty status/priority groups and an empty value.
 - Moving a recurring task to a status marked **Completed** completes the occurrence shown on its row, as its checkbox does, instead of setting the task to that status. Other property changes in the move are not applied. If that occurrence has since been completed, skipped or rescheduled, the move changes nothing and a notice says so. See [Recurring Tasks](../features/recurring-tasks.md#completion-tracking).
-- Use the **Move task** handle to open a destination menu without dragging. When the view is sorted by manual order, the menu also offers **Move up** and **Move down** within the current group. On touch screens, tap the handle for the menu, or drag from it so ordinary row gestures remain available for scrolling. A touch move only applies after the handle has actually moved; lifting your finger in place does nothing.
+- Use the **Move task** handle to move a task without dragging. It opens a searchable list with **Add as subtask of…**, then every group the task can move to, with subgroups listed as *Group / Subgroup*. Type to filter it, for example by a group's name. When the view is sorted by manual order, the list also offers **Move up** and **Move down** within the current group. On touch screens, tap the handle for the menu, or drag from it so ordinary row gestures remain available for scrolling. A touch move only applies after the handle has actually moved; lifting your finger in place does nothing.
 - Press Escape, or release the task back on its own row, to cancel. Holding a dragged task near the view's top or bottom edge scrolls the list.
 - Grouping by a list property such as contexts, projects, or tags groups by the whole list. Moving a task to another such group replaces its list with that group's values, and the preview shows the values before and after, for example `contexts: work, call → home, focus`. If a group's values cannot be determined from its notes' properties (for example, a tag group that only comes from inline tags), the move is blocked rather than guessed.
 
@@ -294,15 +294,13 @@ The Task List View provides interaction with tasks through clicking and context 
 - **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> General` in click-action controls)
 - **Right-click on a task**: Opens a context menu with actions:
   - Mark as complete
-  - Change priority
-  - Change status
-  - Edit dates
-  - Delete task
+  - Change status, priority, tags, dates, recurrence and reminders. Each opens the same searchable picker as the task's own controls.
+  - Delete task. The task note moves to the trash straight away, and the notice that follows offers **Undo**.
   - And more
 
 Context menu availability depends on your TaskNotes settings and task properties.
 
-For batch date changes in Task List or Kanban, Ctrl/Cmd-click individual task cards to toggle selection, or Shift-click to select a range, then right-click a selected card. Modifier-clicks on task-card bodies select tasks rather than opening their source notes; links and other card controls keep their own actions. **Scheduled date** and **Due date** include **Pick date & time…**, alongside the quick-date options. Choosing a date and optional time assigns that same value to each selected task. A date-only choice removes the time from that property; cancelling the picker changes nothing.
+For batch date changes in Task List or Kanban, Ctrl/Cmd-click individual task cards to toggle selection, or Shift-click to select a range, then right-click a selected card. Modifier-clicks on task-card bodies select tasks rather than opening their source notes; links and other card controls keep their own actions. **Status**, **Priority**, **Tags**, **Due date** and **Scheduled date** open the same pickers as a single task's. A date assigns that same value to each selected task, and the +/- day and week options move each task's own date. A date-only choice removes the time from that property; dismissing the picker changes nothing. Each change, and **Delete**, can be undone from the notice that follows.
 
 ## Virtual Scrolling
 

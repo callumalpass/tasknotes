@@ -36,6 +36,7 @@ Current capabilities:
 - `extensions.read`
 - `extensions.register`
 - `tasks.read`
+- `tasks.lookup-id`
 - `tasks.write`
 - `tasks.delete`
 - `tasks.move`
@@ -201,13 +202,23 @@ const operators = api.catalog.filterOperators();
 
 ## Tasks
 
-All paths are vault-relative Markdown file paths.
+All paths are vault-relative Markdown file paths. New tasks created or converted by TaskNotes v5
+receive a UUID in the standard `id` frontmatter field. That ID remains unchanged when a task file
+moves or is renamed, while `path` continues to identify the task's current location. Existing tasks
+without an ID remain valid and are not migrated automatically.
+
+The `id` field is part of the shared TaskNotes model, so compatible mdbase clients can continue to
+create and mutate TaskNotes task files. TaskNotes reads their IDs directly rather than deriving an
+ID from the file path. IDs should be unique; path-based operations continue to work if a duplicate
+is introduced, but `getById()` rejects the ambiguous lookup with `duplicate_task_id`.
 
 | Method                                                                            | Description                                                                                                                     |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `api.tasks.get(path)`                                                             | Returns a task by path, or `null` when no task is cached at that path.                                                          |
+| `api.tasks.getByPath(path)`                                                       | Returns a task by its current path, or `null`.                                                                                  |
+| `api.tasks.getById(id)`                                                           | Returns the single task with a stable ID, `null` if absent, or throws `duplicate_task_id` if the ID is ambiguous.               |
+| `api.tasks.get(path)`                                                             | Deprecated alias of `getByPath(path)`.                                                                                          |
 | `api.tasks.list(query?)`                                                          | Returns all tasks, or tasks matching a runtime task query. Prefer `api.query.tasks()` when count and grouping metadata matters. |
-| `api.tasks.create(taskData, context?)`                                            | Creates a task using the normal TaskNotes creation service.                                                                     |
+| `api.tasks.create(taskData, context?)`                                            | Creates a task using the normal TaskNotes creation service and assigns a fresh UUID.                                            |
 | `api.tasks.update(path, patch, context?)`                                         | Updates one or more task fields using the normal TaskNotes update service.                                                      |
 | `api.tasks.delete(path, context?)`                                                | Deletes the task file through TaskNotes' delete service.                                                                        |
 | `api.tasks.complete(path, options?, context?)`                                    | Marks a task complete.                                                                                                          |
@@ -491,6 +502,7 @@ Event payloads have this shape:
 {
   event: "task.status.changed",
   timestamp: "2026-06-01T09:00:00.000Z",
+  taskId: "cf2a42c1-c62f-429c-b17c-341e8bf03f4a",
   taskPath: "Tasks/Review automation design.md",
   task: { /* current task */ },
   before: { /* task before change */ },
@@ -515,7 +527,8 @@ Event payloads have this shape:
 }
 ```
 
-Events caused outside the runtime API may not include `context`, `source`, `correlationId`, or `reason`.
+`taskId` is omitted for legacy tasks that do not have stable IDs. Events caused outside the runtime
+API may not include `context`, `source`, `correlationId`, or `reason`.
 
 Example automation-style listener:
 

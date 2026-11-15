@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import { Modal, App, setIcon } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -28,6 +29,7 @@ export class DeviceCodeModal extends Modal {
 		onCancel: () => void
 	) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.deviceCode = deviceCode;
 		this.onCancel = onCancel;

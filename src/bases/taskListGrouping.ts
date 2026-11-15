@@ -44,6 +44,44 @@ export type TaskListHeaderItem = TaskListPrimaryHeaderItem | TaskListSubHeaderIt
 export type TaskListRenderItem = TaskListHeaderItem | TaskListTaskItem;
 export type TaskListVirtualItem = TaskInfo | TaskListRenderItem;
 
+export type TaskListGroupComparator = (property: string, left: string, right: string) => number;
+
+export function reconcileTaskListGroups(
+	groups: readonly TaskListGroup[],
+	tasks: readonly TaskInfo[],
+	field: "status" | "priority",
+	groupKey: (key: unknown) => string
+): TaskListGroup[] {
+	const entries = new Map(groups.flatMap(group => group.entries.map(entry => [entry.file?.path, entry] as const)));
+	const reconciled = new Map(groups.map(group => [groupKey(group.key), { ...group, entries: [] as TaskListGroupEntry[] }]));
+	for (const task of tasks) {
+		const entry = entries.get(task.path);
+		if (!entry) continue;
+		const value = task[field] ?? null;
+		const key = stringifyTaskListGroupValue(value);
+		let group = reconciled.get(key);
+		if (!group) {
+			group = { key: value, entries: [] };
+			reconciled.set(key, group);
+		}
+		group.entries.push(entry);
+	}
+	return Array.from(reconciled.values());
+}
+
+export function orderTaskListGroups(
+	groups: readonly TaskListGroup[],
+	property: string,
+	compare: TaskListGroupComparator
+): TaskListGroup[] {
+	return [...groups].sort((left, right) =>
+		compare(
+			property,
+			stringifyTaskListGroupValue(left.key),
+			stringifyTaskListGroupValue(right.key)
+		)
+	);
+}
 
 type BasesDisplayValue = {
 	constructor?: { name?: string };
@@ -116,7 +154,8 @@ export function stringifyTaskListGroupValue(value: unknown): string {
 export function groupTasksByTaskListSubProperty(
 	tasks: readonly TaskInfo[],
 	propertyId: string,
-	pathToProps: ReadonlyMap<string, Record<string, unknown>>
+	pathToProps: ReadonlyMap<string, Record<string, unknown>>,
+	compare?: TaskListGroupComparator
 ): Map<string, TaskInfo[]> {
 	const subGroups = new Map<string, TaskInfo[]>();
 
@@ -129,7 +168,9 @@ export function groupTasksByTaskListSubProperty(
 		subGroups.set(subKey, subTasks);
 	}
 
-	return subGroups;
+	return compare
+		? new Map([...subGroups].sort(([left], [right]) => compare(propertyId, left, right)))
+		: subGroups;
 }
 
 export function buildTaskListGroupedScopePaths(
@@ -174,6 +215,7 @@ export function buildTaskListGroupedRenderItems(options: {
 	collapsedGroups: ReadonlySet<string>;
 	collapsedSubGroups: ReadonlySet<string>;
 	convertGroupKeyToString: (key: unknown) => string;
+	compareGroupKeys?: TaskListGroupComparator;
 }): TaskListRenderItem[] {
 	const items: TaskListRenderItem[] = [];
 
@@ -200,7 +242,8 @@ export function buildTaskListGroupedRenderItems(options: {
 			const subGroups = groupTasksByTaskListSubProperty(
 				groupTasks,
 				options.subGroupPropertyId,
-				options.pathToProps
+				options.pathToProps,
+				options.compareGroupKeys
 			);
 
 			for (const [subKey, subTasks] of subGroups) {

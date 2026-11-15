@@ -1,3 +1,4 @@
+import { applyModalShell } from "../ui/kit/modal";
 import type { MessageDescriptor } from "@lingui/core";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
@@ -14,6 +15,7 @@ export class StorageLocationConfirmationModal extends Modal {
 
 	constructor(plugin: TaskNotesPlugin, hasExistingData: boolean) {
 		super(plugin.app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.hasExistingData = hasExistingData;
 	}

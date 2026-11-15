@@ -151,7 +151,8 @@ describe('Issue #1318: Wikilink alias support for inline tasks', () => {
                 expect.stringContaining('[[Meeting with the marketing team|mtg]]'),
                 'mtg', // displayText should be the alias
                 undefined,
-                undefined
+                undefined,
+                true
             );
         });
 
@@ -215,7 +216,8 @@ describe('Issue #1318: Wikilink alias support for inline tasks', () => {
                 expect.stringContaining('[[Meeting with the marketing team]]'),
                 undefined, // No displayText - will use task.title
                 undefined,
-                undefined
+                undefined,
+                true
             );
         });
     });

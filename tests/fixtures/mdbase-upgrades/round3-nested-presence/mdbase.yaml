@@ -1,0 +1,6 @@
+spec_version: 0.3.0
+x-obsidian:
+  bases:
+    include:
+      - TaskNotes/Views/**/*.base
+settings: { record_extensions: [ md, base ] }

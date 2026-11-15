@@ -52,10 +52,12 @@ function createLifecyclePlugin(saveSettingsDataOnly: jest.Mock): any {
 			updateConfiguredValues: jest.fn(),
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			updateStatuses: jest.fn(),
 			isCompletedStatus: jest.fn(),
 		},
 		priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 			updatePriorities: jest.fn(),
 		},
 		cacheManager: { updateConfig: jest.fn() },
@@ -136,6 +138,26 @@ describe("settings save coalescing", () => {
 		expect(plugin.cacheManager.updateConfig).toHaveBeenCalledTimes(1);
 		expect(plugin.notifyDataChanged).toHaveBeenCalledTimes(1);
 		expect(plugin.emitter.trigger).toHaveBeenCalledTimes(1);
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith("settings-changed", plugin.settings);
+	});
+
+	it("persists TaskNotes settings when canonical mdbase synchronization fails", async () => {
+		const saveSettingsDataOnly = jest.fn().mockResolvedValue(undefined);
+		const plugin = createLifecyclePlugin(saveSettingsDataOnly);
+		plugin.mdbaseSpecService.onSettingsChanged.mockRejectedValue(
+			new Error("read-only filesystem")
+		);
+		const service = new SettingsLifecycleService(plugin);
+
+		await service.saveSettings();
+
+		expect(saveSettingsDataOnly).toHaveBeenCalledTimes(1);
+		expect(plugin.emitter.trigger).toHaveBeenCalledWith(
+			"user-notice",
+			expect.objectContaining({
+				message: expect.stringContaining("could not synchronize"),
+			})
+		);
 		expect(plugin.emitter.trigger).toHaveBeenCalledWith("settings-changed", plugin.settings);
 	});
 });

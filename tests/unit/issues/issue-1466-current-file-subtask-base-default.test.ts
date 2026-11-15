@@ -47,6 +47,9 @@ function createMockPlugin(activeFile: { path: string; basename: string; extensio
 			fileManager: {
 				generateMarkdownLink: (file: { basename: string }) => `[[${file.basename}]]`,
 			},
+			metadataCache: {
+				fileToLinktext: (file: { basename: string }) => file.basename,
+			},
 		},
 		fieldMapper: {
 			toUserField: (field: string) => field,

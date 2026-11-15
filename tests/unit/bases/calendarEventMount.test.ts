@@ -32,6 +32,9 @@ function createPlugin(overrides: Record<string, unknown> = {}) {
 				timeFormat: "HH:mm",
 			},
 		},
+		fieldMapper: {
+			isPropertyForField: (property: string, field: string) => property === field || property === `note.${field}`,
+		},
 		...overrides,
 	} as any;
 }
@@ -48,6 +51,43 @@ function createEvent(extendedProps: Record<string, unknown>): CalendarEventApi {
 }
 
 describe("calendarEventMount", () => {
+	it("omits only the date represented by the agenda gutter and its redundant countdown", () => {
+		const task = createTask({ scheduled: "2026-05-19T10:30", due: "2026-05-20" });
+		for (const eventType of ["scheduled", "due", "timeEntry"]) {
+			const createCard = jest.fn(() => document.createElement("div"));
+			createCalendarListEventCard({
+				event: createEvent({ taskInfo: task, eventType }),
+				plugin: createPlugin(),
+				visibleProperties: ["note.scheduled", "due", "formula.dueIn", "tags"],
+				basesEntryByPath: new Map(),
+				buildTaskCardOptions: (options) => options as any,
+				factories: { createTaskCard: createCard as any },
+			});
+			expect(createCard.mock.calls[0][2]).toEqual(eventType === "scheduled"
+				? ["due", "tags"] : eventType === "due" ? ["note.scheduled", "tags"] : ["note.scheduled", "due", "tags"]);
+		}
+	});
+	it("keeps countdown-only configurations and custom date mappings intact", () => {
+		const createCard = jest.fn(() => document.createElement("div"));
+		createCalendarListEventCard({
+			event: createEvent({ taskInfo: createTask(), eventType: "due" }),
+			plugin: createPlugin({ fieldMapper: { isPropertyForField: (property: string, field: string) => property === `note.custom_${field}` } }),
+			visibleProperties: ["note.custom_due", "note.custom_scheduled", "formula.score"],
+			basesEntryByPath: new Map(),
+			buildTaskCardOptions: options => options as any,
+			factories: { createTaskCard: createCard as any },
+		});
+		expect(createCard.mock.calls[0][2]).toEqual(["note.custom_scheduled", "formula.score"]);
+		createCalendarListEventCard({
+			event: createEvent({ taskInfo: createTask(), eventType: "scheduled" }),
+			plugin: createPlugin(),
+			visibleProperties: ["formula.dueIn", "formula.score"],
+			basesEntryByPath: new Map(),
+			buildTaskCardOptions: options => options as any,
+			factories: { createTaskCard: createCard as any },
+		});
+		expect(createCard.mock.calls[1][2]).toEqual(["formula.dueIn", "formula.score"]);
+	});
 	it("enriches list-view task cards with Bases formula and file values", () => {
 		const getValue = jest.fn((propertyId: string) => {
 			if (propertyId === "file.ctime") return { data: "2026-05-18T00:00:00" };

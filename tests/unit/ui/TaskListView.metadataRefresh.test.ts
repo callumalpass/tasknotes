@@ -49,6 +49,11 @@ describe("TaskListView metadata refresh", () => {
 		document.body.innerHTML = "";
 	});
 
+	it("keeps a cleared priority empty instead of applying the creation default", () => {
+		view.plugin.settings.defaultTaskPriority = "custom-default";
+		expect(view.getClearedTaskValue("priority", { basename: "Task" })).toBe("");
+	});
+
 	it.each(["renderFlatNormal", "renderFlatVirtual"])(
 		"%s refreshes added, replaced and cleared metadata without changing path or order",
 		async (renderMethod) => {

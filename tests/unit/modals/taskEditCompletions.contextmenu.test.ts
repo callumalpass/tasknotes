@@ -149,6 +149,25 @@ describe("Completion calendar month consistency (issue #2306)", () => {
 	});
 });
 
+describe("Editor review: ISO completion month identity", () => {
+	it.each(["2026-09-01", "2026-01-31"])("keeps the ISO heading on the selected month: %s", (date) => {
+		const plugin = createPlugin();
+		plugin.settings.dateDisplayFormat = "iso";
+		const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: [date] }), plugin);
+		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe(date.slice(0, 7));
+		expect(container.querySelector('.recurring-calendar__day:not(.recurring-calendar__day--faded)')?.getAttribute("data-occurrence-date")).toBe(`${date.slice(0, 7)}-01`);
+	});
+
+	it("keeps the ISO heading on February after navigating from January 31", () => {
+		const plugin = createPlugin();
+		plugin.settings.dateDisplayFormat = "iso";
+		const container = renderCompletionsCalendar(createRecurringTask({ complete_instances: ["2026-01-31"] }), plugin);
+		container.querySelector<HTMLButtonElement>('[aria-label="Next month"]')?.click();
+		expect(container.querySelector(".recurring-calendar__month")?.textContent).toBe("2026-02");
+		expect(container.querySelectorAll(".recurring-calendar__day:not(.recurring-calendar__day--faded)")).toHaveLength(28);
+	});
+});
+
 describe("Task edit completions calendar occurrence context menu", () => {
 	beforeEach(() => {
 		menuMock.mockClear();

@@ -37,13 +37,19 @@ npm install -g mdbase-tasknotes
 
 ### Using an existing TaskNotes vault
 
-If you already use TaskNotes with mdbase spec generation enabled (Settings → Integrations → Enable mdbase spec), point `mtn` at your vault root:
+If you already use TaskNotes with canonical mdbase configuration enabled
+(Settings → Integrations → Use canonical mdbase configuration), point `mtn` at
+your vault root:
 
 ```bash
 mtn config --set collectionPath=/path/to/your/vault
 ```
 
-The plugin generates `mdbase.yaml` and `_types/task.md` automatically — `mtn` reads these to understand your task schema, including your custom statuses and priorities.
+The plugin creates `mdbase.yaml`, the `tasknotes.task` contract and schemas,
+and an implementing TaskNotes type when the integration is enabled. The type
+binding then becomes the portable source of truth: both TaskNotes and `mtn`
+read it for field mappings, custom statuses, priorities, and task behavior,
+while portable settings changes made in TaskNotes are written back to it.
 
 ### Creating a standalone collection
 
@@ -54,7 +60,7 @@ mtn init ~/tasks
 mtn config --set collectionPath=~/tasks
 ```
 
-This generates `mdbase.yaml`, `_types/task.md`, and a `tasks/` folder with sensible defaults (statuses: open, in-progress, done, cancelled; priorities: low, normal, high, urgent).
+This generates `mdbase.yaml`, the task type (at `_mdbase/types/task.md` in new TaskNotes plugin setups), and a `tasks/` folder with sensible defaults (statuses: open, in-progress, done, cancelled; priorities: low, normal, high, urgent).
 
 ## Creating tasks
 
@@ -79,7 +85,7 @@ mtn create "Water plants every monday #home"
 | Recurrence | `every day`, `weekly`, `every monday` | Recurrence rule |
 | Estimate | `~30m`, `~2h` | Time estimate |
 
-The NLP parser reads your collection's status and priority enum values from `_types/task.md`, so any custom values you define there are automatically recognized.
+The NLP parser reads your collection's status and priority enum values from the configured task type (`_mdbase/types/task.md` in new TaskNotes plugin setups; older vaults keep their existing path, typically `_types/task.md`), so any custom values you define there are automatically recognized.
 
 ## Querying tasks
 

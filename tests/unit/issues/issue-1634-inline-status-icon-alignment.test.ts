@@ -9,13 +9,13 @@ import * as path from "path";
 
 function readStylesheet(): string {
 	return fs.readFileSync(
-		path.resolve(__dirname, "../../../styles/task-card-bem.css"),
+		path.resolve(__dirname, "../../../styles/task-inline-widget.css"),
 		"utf8"
 	);
 }
 
 describe("Issue #1634: inline custom status icon alignment", () => {
-	it("sizes inline status-icon SVGs to the inline status-dot box", () => {
+	it("centres inline status icons at the shared glyph size inside their hit targets", () => {
 		const css = readStylesheet();
 
 		const inlineDotSelector =
@@ -31,13 +31,15 @@ describe("Issue #1634: inline custom status icon alignment", () => {
 			css.indexOf(inlineDotSelector)
 		);
 		expect(css).toMatch(
-			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__status-dot\s*\{[^}]*width:\s*0\.85em;[^}]*height:\s*0\.85em;/s
+			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__status-dot\s*\{[^}]*width:\s*var\(--tn-glyph\);[^}]*height:\s*var\(--tn-glyph\);/s
 		);
 		expect(css).toMatch(
 			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__status-dot--icon\s*\{[^}]*display:\s*inline-flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s
 		);
 		expect(css).toMatch(
-			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__status-dot--icon svg\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s
+			/\.tasknotes-plugin \.task-card--layout-inline \.task-card__status-dot--icon svg:not\(\.tn-glyph\)\s*\{[^}]*width:\s*var\(--tn-glyph\);[^}]*height:\s*var\(--tn-glyph\);/s
 		);
+		const kit = fs.readFileSync(path.resolve(__dirname, "../../../styles/kit.css"), "utf8");
+		expect(kit).toMatch(/\.tn-glyph\s*\{[^}]*width:\s*var\(--tn-glyph\);[^}]*height:\s*var\(--tn-glyph\);/s);
 	});
 });

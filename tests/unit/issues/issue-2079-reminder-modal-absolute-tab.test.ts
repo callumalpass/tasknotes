@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import type { App } from "obsidian";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
+import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import type { TaskInfo } from "../../../src/types";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 
@@ -70,7 +71,7 @@ describe("Issue #2079: Reminder modal absolute tab visibility", () => {
 		const css = readRepoFile("styles/reminder-modal.css");
 
 		expect(css).toMatch(
-			/\.tasknotes-plugin \.relative-fields\.reminder-modal__fields--hidden,\s*\.tasknotes-plugin \.absolute-fields\.reminder-modal__fields--hidden\s*\{[^}]*display:\s*none;/s
+			/\.tasknotes-plugin \.reminder-modal__fields--hidden\s*\{[^}]*display:\s*none;/s
 		);
 		expect(css).not.toMatch(
 			/\.tasknotes-plugin \.absolute-fields\s*\{\s*display:\s*none;\s*\}/

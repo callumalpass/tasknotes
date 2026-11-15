@@ -11,6 +11,7 @@ import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
+import { formatDateLabel } from "../utils/dateUtils";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
 import { deleteProviderEvent, getDeletingProvider } from "./providerEventDeletion";
 
@@ -310,9 +311,12 @@ export class ICSEventContextMenu {
 		const timeFormatter = new Intl.DateTimeFormat(locale, {
 			hour: "numeric",
 			minute: "2-digit",
+			hour12: this.options.plugin.settings.calendarViewSettings.timeFormat === "12",
 		});
 
-		let dateText = dateFormatter.format(startDate);
+		let dateText = this.options.plugin.settings.dateDisplayFormat === "iso"
+			? formatDateLabel(startDate, this.options.plugin.settings)
+			: dateFormatter.format(startDate);
 		if (!icsEvent.allDay) {
 			dateText += this.t(msg({ message: " at {time}", context: "contextMenus.ics.markdown.at" }), {
 				time: timeFormatter.format(startDate),

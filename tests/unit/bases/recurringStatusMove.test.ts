@@ -1,4 +1,5 @@
-import { Notice } from "obsidian";
+import { showToast } from "../../../src/ui/kit/toast";
+jest.mock("../../../src/ui/kit/toast", () => ({ showToast: jest.fn() }));
 import {
 	completeOccurrenceForStatusMove,
 	getShownOccurrence,
@@ -77,9 +78,9 @@ describe("recurring status moves", () => {
 		await expect(move()).resolves.toBe(true);
 
 		expect(plugin.toggleRecurringTaskComplete).not.toHaveBeenCalled();
-		expect(Notice).toHaveBeenCalledWith(
-			"That occurrence was already completed, skipped or rescheduled."
-		);
+		expect(showToast).toHaveBeenCalledWith({
+			message: "That occurrence was already completed, skipped or rescheduled."
+		});
 	});
 
 	it("does not complete the next occurrence when the shown one was skipped elsewhere", async () => {

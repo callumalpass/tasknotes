@@ -2,15 +2,6 @@ import { TFile } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 
-interface BatchContextMenuAdapter {
-	show(event: MouseEvent): void;
-}
-
-type BatchContextMenuFactory = (
-	selectedPaths: string[],
-	onUpdate: () => void
-) => BatchContextMenuAdapter;
-
 export interface ClickHandlerOptions {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
@@ -19,8 +10,8 @@ export interface ClickHandlerOptions {
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
 	/** A view can consume selection before standalone card navigation runs. */
 	onSelectionClick?: (e: MouseEvent) => boolean;
-	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
-	createBatchContextMenu?: BatchContextMenuFactory;
+	/** Opens the menu for a right-click; `openTaskMenu` handles batch selection. */
+	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>;
 	navigationSubpath?: string;
 }
 
@@ -50,7 +41,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		onDoubleClick,
 		contextMenuHandler,
 		onSelectionClick,
-		createBatchContextMenu,
 		navigationSubpath,
 	} = options;
 	const clickExcludeSelector = excludeSelector
@@ -202,47 +192,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 	const handleContextMenu = async (e: MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation(); // Prevent event from bubbling to parent cards
-
-		const selectionService = plugin.taskSelectionService;
-
-		// Shift+right-click adds to selection and opens batch context menu
-		if (e.shiftKey && selectionService) {
-			if (!selectionService.isSelectionModeActive()) {
-				selectionService.enterSelectionMode();
-			}
-			if (!selectionService.isSelected(task.path)) {
-				selectionService.addToSelection(task.path);
-			}
-
-			// Show batch context menu if we have selections
-			if (selectionService.getSelectionCount() > 0) {
-				const menu = createBatchContextMenu?.(selectionService.getSelectedPaths(), () => {});
-				menu?.show(e);
-			}
-			return;
-		}
-
-		// Check if multiple tasks are selected - show batch context menu
-		if (selectionService && selectionService.getSelectionCount() > 1) {
-			// Ensure the right-clicked task is in the selection
-			if (!selectionService.isSelected(task.path)) {
-				selectionService.addToSelection(task.path);
-			}
-
-			// Import and show batch context menu
-			const menu = createBatchContextMenu?.(selectionService.getSelectedPaths(), () => {
-				// Views will refresh via events
-			});
-			menu?.show(e);
-			return;
-		}
-
-		// Opening a single-task context menu exits selection mode
-		if (selectionService?.isSelectionModeActive()) {
-			selectionService.clearSelection();
-			selectionService.exitSelectionMode();
-		}
-
 		if (contextMenuHandler) {
 			await contextMenuHandler(e);
 		}

@@ -1,0 +1,1 @@
+Exact before-migration metadata and saved settings captured by the matrix tester in isolated Obsidian 1.13.7, profile 4.13.7-punctuation. Task files copied from its retained vault; tester verified every task byte unchanged by migration. See migration matrix report for capture provenance. Do not edit captured files.

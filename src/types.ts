@@ -97,15 +97,6 @@ export interface FilterQuery extends FilterGroup {
 	subgroupKey?: TaskGroupKey;
 }
 
-// A named, persistent configuration that encapsulates the entire state
-export interface SavedView {
-	id: string; // Unique ID for the view
-	name: string; // User-defined name (e.g., "High-Priority Work")
-	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
-	viewOptions?: { [key: string]: boolean }; // View-specific options (e.g., showOverdueOnToday, showNotes)
-	visibleProperties?: string[]; // Array of property IDs to display on task cards (e.g., ['due', 'priority', 'projects'])
-}
-
 // Property and operator definitions for the advanced filtering system
 export type FilterProperty =
 	// Placeholder for "Select..." option
@@ -454,7 +445,7 @@ export interface TaskDependency {
 }
 
 export interface TaskInfo {
-	id?: string; // Task identifier (typically same as path for API consistency)
+	id?: string; // Stable task identity from frontmatter. Legacy tasks may omit it.
 	title: string;
 	status: string;
 	priority: string;
@@ -721,9 +712,9 @@ export interface FieldMapping {
 	dateModified: string;
 	recurrence: string; // RFC 5545 recurrence rule string
 	recurrenceAnchor: string; // User-configurable property name for recurrence_anchor field
+	recurrenceOriginalDate?: string; // Optional so settings saved before this field existed keep working; defaults to recurrence_original_date
 	recurrenceParent: string;
 	occurrenceDate: string;
-	recurrenceOriginalDate?: string; // Optional so settings saved before this field existed keep working; defaults to recurrence_original_date
 	occurrenceMaterialization: string;
 	occurrenceNextTrigger: string;
 	occurrenceTemplate: string;
@@ -937,6 +928,7 @@ export interface PendingGoogleCalendarDeletion {
 	timeblockId?: string;
 	calendarId: string;
 	eventId: string;
+	connectionId?: string;
 	createdAt: number;
 	attempts: number;
 	lastAttemptAt?: number;
@@ -947,6 +939,7 @@ export interface GoogleCalendarEventIndexEntry {
 	taskPath: string;
 	calendarId: string;
 	eventId: string;
+	connectionId?: string;
 	updatedAt: number;
 }
 
@@ -996,6 +989,7 @@ export interface OAuthTokens {
 export interface OAuthConnection {
 	provider: OAuthProvider;
 	tokens: OAuthTokens;
+	connectionId?: string;
 	userEmail?: string; // Optional user identifier
 	connectedAt: string; // ISO timestamp
 	lastRefreshed?: string; // ISO timestamp

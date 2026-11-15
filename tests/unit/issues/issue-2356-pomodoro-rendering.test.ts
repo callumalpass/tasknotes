@@ -13,13 +13,11 @@ type ViewInternals = {
 	updateTimer(seconds: number): void;
 	timerDisplay: HTMLElement;
 	sessionMetaDisplay: HTMLElement;
-	progressCircle: SVGCircleElement;
 	statusDisplay: HTMLElement;
 	startButton: HTMLButtonElement;
 	pauseButton: HTMLButtonElement;
 	stopButton: HTMLButtonElement;
 	taskCardContainer: HTMLElement;
-	currentCircumference: number;
 };
 
 function fixture() {
@@ -87,9 +85,6 @@ function fixture() {
 		internals[key] = document.createElement("button");
 		root.append(internals[key]);
 	}
-	internals.progressCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-	root.append(internals.progressCircle);
-	internals.currentCircumference = 100;
 	const tick = () =>
 		callbacks.get(EVENT_POMODORO_TICK)?.({
 			session: state.currentSession,
@@ -132,9 +127,6 @@ describe("Issue #2356: economical Pomodoro rendering", () => {
 		tick();
 		expect(timer).toHaveBeenCalledTimes(1);
 		expect(internals.timerDisplay.textContent).toBe("01:59");
-		expect(Number(internals.progressCircle.getAttribute("stroke-dashoffset"))).toBeCloseTo(
-			(100 * 119) / 120
-		);
 		expect(observer.takeRecords()).toHaveLength(0);
 		observer.disconnect();
 	});

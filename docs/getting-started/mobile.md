@@ -6,6 +6,10 @@ description: What is shared between TaskNotes desktop and mobile, and which inte
 
 TaskNotes task files, Base files, settings, and most commands work on Obsidian mobile. Sync the complete vault, including `.base` files and `.obsidian/plugins/tasknotes/data.json`, when you want the same configuration on every device.
 
+## TaskNotes App
+
+TaskNotes App is a separate app for the web, iPhone and Android that works with the same task notes. To use it with your vault, sync the vault with mdbase Connect from a computer. Use one sync service per vault: a vault synced with mdbase Connect should not also be synced with Obsidian Sync, iCloud or another service, and Obsidian mobile cannot sync through mdbase Connect. See [Use TaskNotes App with your vault](../guides/tasknotes-app.md).
+
 ## Before opening TaskNotes
 
 1. Install an Obsidian mobile version compatible with the current [TaskNotes requirement](../reference/compatibility.md).
@@ -19,13 +23,13 @@ TaskNotes task files, Base files, settings, and most commands work on Obsidian m
 | --- | --- |
 | HTTP API and MCP server | Desktop only. The HTTP API settings section is hidden on mobile. |
 | Calendar integrations | Available, with an option to disable calendar integration on mobile when startup time or provider behavior is a problem. |
-| Settings layout | Uses the same six tabs. Desktop-only controls are omitted where they cannot run. |
+| Settings layout | Uses the same native settings pages. Desktop-only controls are omitted where they cannot run. |
 | Keyboard commands | Commands remain available in the command palette; desktop key bindings may not have a mobile equivalent. |
 | Wide views | Calendar, Kanban, and large tables may require horizontal scrolling or a narrower Base configuration. |
 
 ## A practical mobile setup
 
-- Keep task cards compact under **Settings → Appearance and UI**.
+- Keep task cards compact under **Settings → TaskNotes → Appearance & interaction**.
 - Limit visible Base columns and calendar event layers.
 - Increase remote calendar refresh intervals when mobile networking or battery use matters.
 - Use the task creation modal or command palette for predictable capture.

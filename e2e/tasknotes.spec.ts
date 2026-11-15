@@ -1,5 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
-import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette, openTaskNotesSettings, closeObsidianSettings } from './obsidian';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { launchObsidian, closeObsidian, ObsidianApp, runCommand, openCommandPalette, openTaskNotesSettings, selectTaskNotesSettingsTab, closeObsidianSettings, revealTaskNotesSetting, nativeSettingRow } from './obsidian';
 
 let app: ObsidianApp;
 let isInitialized = false;
@@ -489,7 +491,7 @@ test.describe('Settings', () => {
 
     const settingsPage = await openTaskNotesSettings(page);
     try {
-      await expect(settingsPage.locator('.tasknotes-settings')).toBeVisible();
+      await expect(settingsPage.locator('.vertical-tab-content:visible .setting-group').first()).toBeVisible();
       await settingsPage.screenshot({ path: 'test-results/screenshots/tasknotes-settings.png' });
     } finally {
       await closeObsidianSettings(page, settingsPage);
@@ -1003,22 +1005,18 @@ test.describe('Keyboard Navigation', () => {
     const page = getPage();
 
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(1000);
-
-    // Wait for calendar to be visible
-    const calendarContainer = page.locator('.tnc').first();
-    if (await calendarContainer.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await calendarContainer.click();
-      await page.waitForTimeout(300);
-
-      // Navigate with arrow keys (if supported)
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: 'test-results/screenshots/calendar-keyboard-nav.png' });
-    } else {
-      // Calendar not visible, just capture the current state
-      await page.screenshot({ path: 'test-results/screenshots/calendar-keyboard-nav.png' });
-    }
+    const calendar = page.locator('.workspace-leaf.mod-active .advanced-calendar-view');
+    await expect(calendar).toBeVisible();
+    const title = calendar.locator('.tnc-title');
+    await expect(title).not.toBeEmpty();
+    const originalTitle = await title.innerText();
+    await calendar.focus();
+    await expect(calendar).toBeFocused();
+    await page.keyboard.press('n');
+    await expect(title).not.toHaveText(originalTitle);
+    await page.keyboard.press('p');
+    await expect(title).toHaveText(originalTitle);
+    await page.screenshot({ path: 'test-results/screenshots/calendar-keyboard-nav.png' });
   });
 });
 
@@ -1305,20 +1303,27 @@ test.describe('Task Quick Add', () => {
     const page = getPage();
 
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(500);
+    const calendar = page.locator('.workspace-leaf.mod-active #bases-calendar > .tnc');
+    await expect(calendar).toBeVisible();
 
-    // Find a day cell and double-click to create task
-    const dayCell = page.locator('.tnc-dg-day').first();
-    if (await dayCell.isVisible()) {
-      // Items are drawn over the cells; click the empty bottom edge of the day.
-      const cellBox = await dayCell.boundingBox();
-      await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
-      await page.waitForTimeout(500);
-      await page.screenshot({ path: 'test-results/screenshots/quick-add-from-calendar.png' });
+    await page.evaluate(() => {
+      const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
+      view.calendar.changeView('month');
+    });
+    await expect.poll(() => page.evaluate(() =>
+      (window as any).app.workspace.getMostRecentLeaf().view.controller.view.viewOptions.showMonthDayPanel
+    )).toBe(false);
 
-      // Close any modal that opened
-      await page.keyboard.press('Escape');
-    }
+    const dayCell = calendar.locator('.tnc-dg-day').first();
+    await expect(dayCell).toBeVisible();
+    // Items are drawn over the cells; click the empty bottom edge of the day.
+    const cellBox = await dayCell.boundingBox();
+    await dayCell.dblclick({ position: { x: 8, y: Math.max(4, (cellBox?.height ?? 8) - 4) } });
+    await expect(page.locator('.menu-item-title:visible').filter({ hasText: /^Create task$/ }).last()).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/quick-add-from-calendar.png' });
+
+    // Close any modal that opened
+    await page.keyboard.press('Escape');
   });
 });
 
@@ -1396,7 +1401,7 @@ test.describe('Filter Panel Exploration', () => {
     await page.waitForTimeout(500);
 
     // Open filter panel
-    const filterButton = page.locator('button:has-text("Filter"), [aria-label*="Filter"]');
+    const filterButton = page.locator('.workspace-leaf.mod-active .bases-toolbar').getByRole('button', { name: 'Filter', exact: true });
     if (await filterButton.isVisible()) {
       await filterButton.click();
       await page.waitForTimeout(500);
@@ -1438,8 +1443,12 @@ test.describe('Year View Details', () => {
 
     const activeLeaf = page.locator('.workspace-leaf.mod-active');
     const yearButton = activeLeaf.locator('button.tnc-btn-view-year').first();
-    await expect(yearButton).toBeVisible();
-    await yearButton.click();
+    const viewSelect = activeLeaf.locator('#bases-calendar > .tnc .tnc-toolbar-view-select').first();
+    if (await viewSelect.isVisible()) await viewSelect.selectOption('year');
+    else {
+      await expect(yearButton).toBeVisible();
+      await yearButton.click();
+    }
     await expect(yearButton).toHaveAttribute('aria-pressed', 'true');
     await expect(activeLeaf.locator('.tnc-year').first()).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/year-view-overflow.png' });
@@ -1492,29 +1501,20 @@ test.describe('Agenda View Details', () => {
   test('should show agenda with readable day separators', async () => {
     const page = getPage();
 
-    // Open calendar first
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(500);
-
-    // Open agenda view
-    const agendaItem = page.locator('.nav-file-title:has-text("agenda-default")');
-    if (await agendaItem.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await agendaItem.click();
-      await page.waitForTimeout(1500);
-    }
-
-    // Check for day headers in agenda
-    const dayHeaders = page.locator('.tnc-list-day');
-    const headerCount = await dayHeaders.count();
-
+    const calendar = page.locator('.workspace-leaf.mod-active #bases-calendar');
+    await expect(calendar).toBeVisible();
+    await runCommand(page, 'Open agenda view');
+    await page.evaluate(() => {
+      const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
+      view.calendar.changeView('list');
+    });
+    const dayHeaders = calendar.locator(':scope > .tnc .tnc-list-day');
+    const firstHeader = dayHeaders.first();
+    await expect(firstHeader).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/agenda-day-headers.png' });
-
-    // If headers exist, verify styling
-    if (headerCount > 0) {
-      const firstHeader = dayHeaders.first();
-      await firstHeader.scrollIntoViewIfNeeded();
-      await page.screenshot({ path: 'test-results/screenshots/agenda-day-header-detail.png' });
-    }
+    await firstHeader.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: 'test-results/screenshots/agenda-day-header-detail.png' });
   });
 });
 
@@ -1607,20 +1607,16 @@ test.describe('Task Modal Advanced Features', () => {
 test.describe('Settings Panel Details', () => {
   test('should explore all TaskNotes settings tabs', async () => {
     const page = getPage();
-
     const settingsPage = await openTaskNotesSettings(page);
     try {
-      const settingsTabs = settingsPage.locator('.settings-view__tab-button');
-      await expect(settingsTabs).toHaveCount(6);
-      for (let i = 0; i < await settingsTabs.count(); i++) {
-        const tab = settingsTabs.nth(i);
-        await tab.click();
-        await expect(tab).toHaveAttribute('aria-selected', 'true');
-        await settingsPage.screenshot({ path: `test-results/screenshots/settings-tab-${i}.png` });
+      const pages = ['Task files', 'Properties', 'Task creation', 'Appearance & interaction', 'Time & reminders', 'Calendars & integrations', 'Advanced'];
+      for (const name of pages) {
+        await selectTaskNotesSettingsTab(settingsPage, name);
+        await expect(settingsPage.locator('.setting-page-title:visible').last()).toHaveText(name);
+        await expect(settingsPage.locator('.setting-group:visible').first()).toBeVisible();
+        await settingsPage.screenshot({ path: 'test-results/screenshots/settings-' + name.replaceAll(/[^a-z]/gi, '-') + '.png' });
       }
-    } finally {
-      await closeObsidianSettings(page, settingsPage);
-    }
+    } finally { await closeObsidianSettings(page, settingsPage); }
   });
 });
 
@@ -1825,26 +1821,39 @@ test.describe('Task Edit Modal', () => {
 
   test('should edit task title in modal', async () => {
     const page = getPage();
-
-    // Use command to open edit task interface
-    await runCommand(page, 'Edit task');
-    await page.waitForTimeout(800);
-
-    // Check if task selector or edit modal appeared
-    const modalOrSelector = page.locator('.modal-container, .modal, .suggestion-container');
-    if (await modalOrSelector.isVisible({ timeout: 2000 }).catch(() => false)) {
+    const folder = `Gate title edit ${Date.now()}`;
+    const title = 'Gate title';
+    const updatedTitle = 'Gate title updated';
+    await page.evaluate(async ({ folder, title }) => {
+      const app = (window as any).app;
+      const plugin = app.plugins.plugins.tasknotes;
+      await app.vault.createFolder(folder);
+      const file = await app.vault.create(`${folder}/${title}.md`, `---\ntitle: ${title}\ntags: [${plugin.settings.taskTag}]\nstatus: ${plugin.settings.defaultTaskStatus}\n---\n`);
+      await app.workspace.getLeaf(false).openFile(file);
+    }, { folder, title });
+    try {
+      await expect.poll(() => page.evaluate(async path =>
+        (await (window as any).app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(path))?.title,
+      `${folder}/${title}.md`)).toBe(title);
+      await runCommand(page, 'Edit current task');
+      const titleInput = page.locator('.modal .title-input');
+      await expect(titleInput).toHaveText(title);
+      await titleInput.fill(updatedTitle);
       await page.screenshot({ path: 'test-results/screenshots/edit-task-command.png' });
-
-      // If it's a task selector, pick a task
-      const taskSuggestion = page.locator('.suggestion-item').first();
-      if (await taskSuggestion.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await taskSuggestion.click();
-        await page.waitForTimeout(500);
-        await page.screenshot({ path: 'test-results/screenshots/edit-modal-after-select.png' });
-      }
+      await page.locator('.modal button.mod-cta').click();
+      await expect(titleInput).toHaveCount(0);
+      await expect.poll(() => page.evaluate(async folder => {
+        const app = (window as any).app;
+        const file = app.vault.getMarkdownFiles().find((file: any) => file.parent?.path === folder);
+        return file && (await app.plugins.plugins.tasknotes.cacheManager.getTaskInfo(file.path))?.title;
+      }, folder)).toBe(updatedTitle);
+    } finally {
+      await page.evaluate(async folder => {
+        const app = (window as any).app;
+        const file = app.vault.getAbstractFileByPath(folder);
+        if (file) await app.vault.delete(file, true);
+      }, folder);
     }
-
-    await page.keyboard.press('Escape');
   });
 
   test('should show task metadata in edit modal', async () => {
@@ -2096,18 +2105,15 @@ test.describe('Tag and Project Editing', () => {
 
     // Initialize calendar first (required for Bases views)
     await runCommand(page, 'Open calendar view');
-    await page.waitForTimeout(1000);
-
-    // Close any dropdowns
-    await page.keyboard.press('Escape');
-    await page.waitForTimeout(300);
-
+    await expect(page.locator('.workspace-leaf.mod-active .advanced-calendar-view')).toBeVisible();
     await runCommand(page, 'Open kanban board');
-    await page.waitForTimeout(1500);
+    await expect(page.locator('.workspace-leaf.mod-active .tn-tasknotesKanban')).toBeVisible();
 
     // Bases renders file.tags as native property chips rather than legacy a.tag links.
     // Assert a known fixture tag in the active board, not a hidden Markdown leaf.
-    const tag = page.locator('.workspace-leaf.mod-active .task-card').getByText('errands', { exact: true }).first();
+    const tag = page.locator('.workspace-leaf.mod-active .task-card').locator('.tag:visible, .task-card__metadata-overflow:visible').filter({ hasText: /^errands$/ }).or(
+      page.locator('.workspace-leaf.mod-active .task-card .task-card__metadata-overflow[aria-label*="errands"]:visible')
+    ).first();
     await expect(tag).toBeVisible();
     await page.screenshot({ path: 'test-results/screenshots/kanban-task-tags.png' });
     await tag.hover();
@@ -2372,22 +2378,13 @@ test.describe('Task Quick Actions', () => {
   test('should open task selector for time tracking', async () => {
     const page = getPage();
 
-    await runCommand(page, 'Start time tracking');
-    await page.waitForTimeout(800);
-
-    const selector = page.locator('.suggestion-container, .prompt, .modal');
-    if (await selector.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await page.screenshot({ path: 'test-results/screenshots/time-tracking-task-selector.png' });
-
-      // Check for task suggestions
-      const suggestions = page.locator('.suggestion-item');
-      const count = await suggestions.count();
-      if (count > 0) {
-        await page.screenshot({ path: 'test-results/screenshots/time-tracking-suggestions.png' });
-      }
-    }
-
+    await runCommand(page, 'Start time tracking (select task)');
+    const selector = page.locator('.prompt.tasknotes-plugin');
+    await expect(selector).toBeVisible();
+    await expect(selector.locator('.suggestion-item').first()).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/time-tracking-task-selector.png' });
     await page.keyboard.press('Escape');
+    await expect(selector).toBeHidden();
   });
 });
 
@@ -2791,7 +2788,7 @@ test.describe('Mobile Mode', () => {
   test('should open calendar view in mobile mode', async () => {
     const page = getPage();
 
-    await runCommand(page, 'Open calendar');
+    await runCommand(page, 'Open calendar view');
     await page.waitForTimeout(1500);
 
     // Verify calendar view is visible
@@ -3112,14 +3109,15 @@ test.describe('Priority Color Issues (#1036)', () => {
 
     await expandViewsFolderForPriorityTests(page);
 
-    const calendarItem = page.locator('.nav-file-title:has-text("calendar-default")');
-    if (await calendarItem.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await calendarItem.click();
-      await page.waitForTimeout(1500);
-    }
+    await page.evaluate(async () => {
+      const app = (window as any).app;
+      const file = app.vault.getFiles().find((candidate: any) => candidate.basename === 'calendar-default' && candidate.extension === 'base');
+      if (!file) throw new Error('Missing calendar-default.base fixture');
+      await app.workspace.getLeaf(false).openFile(file);
+    });
 
     // Verify the calendar loaded
-    const calendarContainer = page.locator('.tnc');
+    const calendarContainer = page.locator('.workspace-leaf.mod-active #bases-calendar > .tnc');
     await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
     // Screenshot showing priority colors in Bases calendar view
@@ -3702,109 +3700,37 @@ test.describe('Issue #1409 - Popout window functionality', () => {
 // ============================================================================
 test.describe('Issue #1352 - Preserve time when updating dates', () => {
   test('should preserve time when using +1 day from date context menu', async () => {
-    // STATUS: BUG - Issue #1352
-    //
-    // When using the date context menu's increment operations (+1 day, -1 day, etc.),
-    // the time component of the scheduled/due date is lost.
-    //
-    // Example from issue:
-    //   scheduled_date: 2025-12-10T16:00
-    //   After "+1 day": 2025-12-11 (time lost!)
-    //   Expected: 2025-12-11T16:00 (time preserved)
-    //
-    // ROOT CAUSE: In src/ui/TaskCard.ts line 362:
-    //   currentValue: getDatePart(currentValue || ""),
-    // The full datetime is stripped to just the date before being passed to DateContextMenu.
-    // When addDaysToDateTime() is called with just "2025-12-10", there's no time to preserve.
-    //
-    // FIX: Pass the full currentValue to DateContextMenu instead of just getDatePart().
-    // The DateContextMenu's getDateOptions() already uses addDaysToDateTime() which
-    // correctly preserves time when present.
     const page = getPage();
-
-    // Open the tasks view
+    const original = await page.evaluate(async () => {
+      const app = (window as any).app;
+      const path = `TaskNotes/Tasks/Issue 1352 meeting ${Date.now()}.md`;
+      await app.vault.create(path, '---\ntags: [task]\ntitle: Issue 1352 meeting\nstatus: open\nscheduled: 2025-12-30T10:00\n---\n');
+      return { path, scheduled: '2025-12-30T10:00' };
+    });
+    expect(original.scheduled).toMatch(/T10:00$/);
     await runCommand(page, 'Open tasks view');
-    await page.waitForTimeout(1500);
-
-    // Find the "Weekly team meeting" task which has scheduled: 2025-12-30T10:00
-    // This task has a time component that should be preserved
-    const taskCard = page.locator('.tn-task-card:has-text("Weekly team meeting"), .task-card:has-text("Weekly team meeting")').first();
-
-    if (!await taskCard.isVisible({ timeout: 5000 }).catch(() => false)) {
-      // If task card is not visible in default view, try searching
-      const searchInput = page.locator('.tn-search-input, [placeholder*="Search"]');
-      if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await searchInput.fill('Weekly team meeting');
-        await page.waitForTimeout(500);
-      }
-    }
-
-    // Look for the scheduled date indicator (usually has a calendar icon or shows the date)
-    const scheduledDateElement = taskCard.locator('[class*="scheduled"], [data-property="scheduled"], .tn-date-badge').first();
-
-    if (await scheduledDateElement.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Click to open the date context menu
-      await scheduledDateElement.click();
-      await page.waitForTimeout(300);
-
-      // Look for the context menu with +1 day option
-      const contextMenu = page.locator('.menu, .suggestion-container, .tn-context-menu');
-      await expect(contextMenu).toBeVisible({ timeout: 3000 });
-
-      // Screenshot showing the context menu
-      await page.screenshot({ path: 'test-results/screenshots/issue-1352-date-context-menu.png' });
-
-      // Click +1 day
-      const plusOneDay = contextMenu.locator('text="+1 day"').first();
-      if (await plusOneDay.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await plusOneDay.click();
-        await page.waitForTimeout(500);
-
-        // Screenshot after clicking +1 day
-        await page.screenshot({ path: 'test-results/screenshots/issue-1352-after-plus-one-day.png' });
-
-        // Now verify that the time was preserved by reading the task file
-        // We need to check the actual YAML frontmatter of the file
-        const updatedScheduled = await page.evaluate(async () => {
-          // @ts-ignore - Obsidian global
-          const app = (window as any).app;
-          const plugin = app?.plugins?.plugins?.['tasknotes'];
-          if (!plugin) return null;
-
-          // Find the task by title
-          const allTasks = plugin.taskService?.getAllTasks?.() || [];
-          const task = allTasks.find((t: any) => t.title === 'Weekly team meeting');
-          return task?.scheduled;
-        });
-
-        console.log('Updated scheduled value:', updatedScheduled);
-
-        // BUG: Time should be preserved!
-        // The original was 2025-12-30T10:00, after +1 day it should be 2025-12-31T10:00
-        // But the bug causes it to become just 2025-12-31 (no time)
-        if (updatedScheduled) {
-          // Check if time component is preserved (should contain 'T' and time)
-          const hasTimeComponent = updatedScheduled.includes('T') && /T\d{2}:\d{2}/.test(updatedScheduled);
-
-          // This assertion will FAIL until the bug is fixed
-          expect(hasTimeComponent).toBe(true);
-
-          // Additionally verify the time is specifically 10:00
-          if (hasTimeComponent) {
-            expect(updatedScheduled).toMatch(/T10:00$/);
-          }
-        }
-      } else {
-        // Close menu if +1 day wasn't found
-        await page.keyboard.press('Escape');
-      }
-    } else {
-      // Try right-clicking the task card instead
-      await taskCard.click({ button: 'right' });
-      await page.waitForTimeout(300);
-      await page.screenshot({ path: 'test-results/screenshots/issue-1352-task-context-menu.png' });
-      await page.keyboard.press('Escape');
-    }
+    const taskCard = page.locator(`.workspace-leaf.mod-active .task-card[data-task-path="${original.path}"]`);
+    await expect(taskCard).toBeVisible();
+    await taskCard.locator('.task-card__metadata-date--scheduled').click();
+    const picker = page.locator('.tn-picker');
+    await expect(picker).toBeVisible();
+    await page.screenshot({ path: 'test-results/screenshots/issue-1352-date-context-menu.png' });
+    await picker.getByText('+1 day', { exact: true }).click();
+    const expected = original.scheduled.replace('2025-12-30', '2025-12-31');
+    await expect.poll(() => page.evaluate(async path => {
+      const app = (window as any).app;
+      return app.metadataCache.getFileCache(app.vault.getAbstractFileByPath(path))?.frontmatter?.scheduled;
+    }, original.path)).toBe(expected);
+    await expect(page.locator('.tn-toast__message').last()).toHaveText('1 task updated: Scheduled date → Dec 31, 2025 10:00');
+    await page.locator('.tn-toast').last().getByRole('button', { name: 'Undo', exact: true }).click();
+    await expect.poll(() => page.evaluate(async path => {
+      const plugin = (window as any).app.plugins.plugins.tasknotes;
+      return (await plugin.cacheManager.getTaskInfo(path))?.scheduled;
+    }, original.path)).toBe(original.scheduled);
+    await page.evaluate(async path => {
+      const app = (window as any).app;
+      await app.vault.delete(app.vault.getAbstractFileByPath(path));
+    }, original.path);
   });
 
   test('should preserve time when using -1 day from date context menu', async () => {
@@ -7449,195 +7375,73 @@ async function expandSettingsSection(section: ReturnType<Page['locator']>): Prom
 
 test.describe('Issue #1419: Custom statuses not saving', () => {
   test('should persist new custom status values after closing and reopening settings', async () => {
-    // Issue: Custom task statuses don't save properly after updating to 4.2.0
-    // User adds a new custom status, fills in values, closes settings,
-    // reopens settings, and the values are gone.
-    //
-    // Steps to reproduce:
-    // 1. Open TaskNotes settings
-    // 2. Go to Task Properties tab
-    // 3. Expand Status property card
-    // 4. Click "Add New" to add a custom status
-    // 5. Fill in value, label, and color
-    // 6. Close settings
-    // 7. Reopen settings and navigate back to the status
-    // 8. Observe: values are empty/reset
-    //
-    // Expected: Values should persist
-    // Actual: Values are lost
-    //
-    // Related: Also affects custom priorities
-
-    const workspacePage = getPage();
-    const statusTimestamp = Date.now();
-    const testStatusValue = `test-status-${statusTimestamp}`;
-    const testStatusLabel = `Test Status Label ${statusTimestamp}`;
-    let page = await openTaskNotesSettings(workspacePage, 'Task properties');
-    let settingsModal = page.locator('.tasknotes-settings');
-
-    // Expand the Status property card
-    let statusCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-status"]');
-    await expandSettingsCard(statusCard);
-
-    // Expand the "Status Values" collapsible section
-    let statusValuesSection = statusCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Status Values' }).first();
-    await expandSettingsSection(statusValuesSection);
-
-    // Click "Add New" button to add a new status
-    const addNewButton = statusValuesSection.locator('button:has-text("Add status")').first();
-    await expect(addNewButton).toBeVisible({ timeout: 5000 });
-    await addNewButton.click();
-    await page.waitForTimeout(500);
-
-    // Find the newly added status card (should be the last one, collapsed by default)
-    // The new status has empty value so its header shows "untitled"
-    const newStatusCard = statusValuesSection.locator('.tasknotes-statuses-container .tasknotes-settings__card').last();
-    await expandSettingsCard(newStatusCard);
-
-    // Fill in the value field
-    const valueInput = newStatusCard.locator('input[type="text"]').first();
-    if (await valueInput.isVisible({ timeout: 2000 })) {
-      await valueInput.fill(testStatusValue);
-      await valueInput.dispatchEvent('change');
-      await page.waitForTimeout(200);
+    const workspace = getPage();
+    const original = await workspace.evaluate(() => JSON.parse(JSON.stringify((window as any).app.plugins.plugins.tasknotes.settings.customStatuses)));
+    let page = await openTaskNotesSettings(workspace, 'Properties');
+    try {
+      await page.locator('.setting-item.mod-navigable:visible').filter({ has: page.locator('.setting-item-name').getByText('Status', { exact: true }) }).click();
+      await page.locator('[aria-label="Add status"]:visible').click();
+      const id = await workspace.evaluate(() => (window as any).app.plugins.plugins.tasknotes.settings.customStatuses.at(-1).id);
+      await closeObsidianSettings(workspace, page);
+      page = await revealTaskNotesSetting(workspace, 'status.' + id + '.value');
+      const value = 'test-status-' + Date.now();
+      const label = 'Saved ' + value;
+      await nativeSettingRow(page, 'Value:').locator('input').fill(value);
+      await nativeSettingRow(page, 'Value:').locator('input').press('Tab');
+      await expect(nativeSettingRow(page, 'Label:')).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(nativeSettingRow(page, 'Label:').locator('input')).toBeFocused();
+      await nativeSettingRow(page, 'Label:').locator('input').fill(label);
+      await closeObsidianSettings(workspace, page);
+      const settingsPath = resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? 'tasknotes-e2e-vault', '.obsidian/plugins/tasknotes/data.json');
+      await expect.poll(() => JSON.parse(readFileSync(settingsPath, 'utf8')).customStatuses.find((entry: any) => entry.value === value)?.label).toBe(label);
+      page = await revealTaskNotesSetting(workspace, 'status.' + id + '.value');
+      await expect(nativeSettingRow(page, 'Value:').locator('input')).toHaveValue(value);
+      await expect(nativeSettingRow(page, 'Label:').locator('input')).toHaveValue(label);
+    } finally {
+      await closeObsidianSettings(workspace, page);
+      await workspace.evaluate(async original => {
+        const plugin = (window as any).app.plugins.plugins.tasknotes;
+        plugin.settings.customStatuses = original;
+        plugin.statusManager.updateStatuses(original);
+        await plugin.saveSettings();
+      }, original);
     }
-
-    // Fill in the label field
-    const labelInput = newStatusCard.locator('input[type="text"]').nth(1);
-    if (await labelInput.isVisible({ timeout: 2000 })) {
-      await labelInput.fill(testStatusLabel);
-      await labelInput.dispatchEvent('change');
-      await page.waitForTimeout(200);
-    }
-
-    // Wait for debounced save (500ms + buffer)
-    await page.waitForTimeout(1000);
-
-    await closeObsidianSettings(workspacePage, page);
-    page = await openTaskNotesSettings(workspacePage, 'Task properties');
-    // Native Settings recreates its document, so do not reuse closed-window locators.
-    settingsModal = page.locator('.tasknotes-settings');
-    statusCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-status"]');
-    await expandSettingsCard(statusCard);
-    statusValuesSection = statusCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Status Values' }).first();
-    await expandSettingsSection(statusValuesSection);
-
-    // Find the status card with our test value
-    const statusCards = statusValuesSection.locator('.tasknotes-statuses-container .tasknotes-settings__card');
-    const statusCount = await statusCards.count();
-
-    let foundStatus = false;
-    for (let i = 0; i < statusCount; i++) {
-      const card = statusCards.nth(i);
-      const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
-      if (headerText === testStatusValue || headerText === testStatusLabel) {
-        foundStatus = true;
-        // Expand this card to verify label
-        await expandSettingsCard(card);
-
-        await expect(card.locator('input[type="text"]').first()).toHaveValue(testStatusValue);
-        await expect(card.locator('input[type="text"]').nth(1)).toHaveValue(testStatusLabel);
-        break;
-      }
-    }
-
-    await closeObsidianSettings(workspacePage, page);
-
-    // EXPECTED: The custom status should be found with correct values
-    expect(foundStatus).toBe(true);
   });
 
   test('should persist new custom priority values after closing and reopening settings', async () => {
-    // Same issue as above but for priorities
-    //
-    // Steps to reproduce:
-    // 1. Open TaskNotes settings
-    // 2. Go to Task Properties tab
-    // 3. Expand Priority property card
-    // 4. Click "Add New" to add a custom priority
-    // 5. Fill in value, label, and color
-    // 6. Close settings
-    // 7. Reopen settings and navigate back to the priority
-    // 8. Observe: values are empty/reset
-    //
-    // Expected: Values should persist
-    // Actual: Values are lost
-
-    const workspacePage = getPage();
-    const priorityTimestamp = Date.now();
-    const testPriorityValue = `test-priority-${priorityTimestamp}`;
-    const testPriorityLabel = `Test Priority Label ${priorityTimestamp}`;
-    let page = await openTaskNotesSettings(workspacePage, 'Task properties');
-    let settingsModal = page.locator('.tasknotes-settings');
-
-    // Expand the Priority property card
-    let priorityCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
-    await expandSettingsCard(priorityCard);
-
-    // Expand the "Priority Values" collapsible section
-    let priorityValuesSection = priorityCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Priority Values' }).first();
-    await expandSettingsSection(priorityValuesSection);
-
-    // Click "Add New" button to add a new priority
-    const addNewButton = priorityValuesSection.locator('button:has-text("Add priority")').first();
-    await expect(addNewButton).toBeVisible({ timeout: 5000 });
-    await addNewButton.click();
-    await page.waitForTimeout(500);
-
-    // Find the newly added priority card (should be the last one)
-    const newPriorityCard = priorityValuesSection.locator('.tasknotes-priorities-container .tasknotes-settings__card').last();
-    await expandSettingsCard(newPriorityCard);
-
-    // Fill in the value field
-    const valueInput = newPriorityCard.locator('input[type="text"]').first();
-    if (await valueInput.isVisible({ timeout: 2000 })) {
-      await valueInput.fill(testPriorityValue);
-      await valueInput.dispatchEvent('change');
-      await page.waitForTimeout(200);
+    const workspace = getPage();
+    const original = await workspace.evaluate(() => JSON.parse(JSON.stringify((window as any).app.plugins.plugins.tasknotes.settings.customPriorities)));
+    let page = await openTaskNotesSettings(workspace, 'Properties');
+    try {
+      await page.locator('.setting-item.mod-navigable:visible').filter({ has: page.locator('.setting-item-name').getByText('Priority', { exact: true }) }).click();
+      await page.locator('[aria-label="Add priority"]:visible').click();
+      const id = await workspace.evaluate(() => (window as any).app.plugins.plugins.tasknotes.settings.customPriorities.at(-1).id);
+      await closeObsidianSettings(workspace, page);
+      page = await revealTaskNotesSetting(workspace, 'priority.' + id + '.value');
+      const value = 'test-priority-' + Date.now();
+      const label = 'Saved ' + value;
+      await nativeSettingRow(page, 'Value:').locator('input').fill(value);
+      await nativeSettingRow(page, 'Value:').locator('input').press('Tab');
+      await expect(nativeSettingRow(page, 'Label:')).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(nativeSettingRow(page, 'Label:').locator('input')).toBeFocused();
+      await nativeSettingRow(page, 'Label:').locator('input').fill(label);
+      await closeObsidianSettings(workspace, page);
+      const settingsPath = resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? 'tasknotes-e2e-vault', '.obsidian/plugins/tasknotes/data.json');
+      await expect.poll(() => JSON.parse(readFileSync(settingsPath, 'utf8')).customPriorities.find((entry: any) => entry.value === value)?.label).toBe(label);
+      page = await revealTaskNotesSetting(workspace, 'priority.' + id + '.value');
+      await expect(nativeSettingRow(page, 'Value:').locator('input')).toHaveValue(value);
+      await expect(nativeSettingRow(page, 'Label:').locator('input')).toHaveValue(label);
+    } finally {
+      await closeObsidianSettings(workspace, page);
+      await workspace.evaluate(async original => {
+        const plugin = (window as any).app.plugins.plugins.tasknotes;
+        plugin.settings.customPriorities = original;
+        plugin.priorityManager.updatePriorities(original);
+        await plugin.saveSettings();
+      }, original);
     }
-
-    // Fill in the label field
-    const labelInput = newPriorityCard.locator('input[type="text"]').nth(1);
-    if (await labelInput.isVisible({ timeout: 2000 })) {
-      await labelInput.fill(testPriorityLabel);
-      await labelInput.dispatchEvent('change');
-      await page.waitForTimeout(200);
-    }
-
-    // Wait for debounced save (500ms + buffer)
-    await page.waitForTimeout(1000);
-
-    await closeObsidianSettings(workspacePage, page);
-    page = await openTaskNotesSettings(workspacePage, 'Task properties');
-    settingsModal = page.locator('.tasknotes-settings');
-    priorityCard = settingsModal.locator('.tasknotes-settings__card[data-card-id="property-priority"]');
-    await expandSettingsCard(priorityCard);
-    priorityValuesSection = priorityCard.locator('.tasknotes-settings__collapsible-section').filter({ hasText: 'Priority Values' }).first();
-    await expandSettingsSection(priorityValuesSection);
-
-    // Find the priority card with our test value
-    const priorityCards = priorityValuesSection.locator('.tasknotes-priorities-container .tasknotes-settings__card');
-    const priorityCount = await priorityCards.count();
-
-    let foundPriority = false;
-    for (let i = 0; i < priorityCount; i++) {
-      const card = priorityCards.nth(i);
-      const headerText = await card.locator('.tasknotes-settings__card-primary-text').textContent().catch(() => '');
-      if (headerText === testPriorityLabel || headerText === testPriorityValue) {
-        foundPriority = true;
-        // Expand this card to verify values
-        await expandSettingsCard(card);
-
-        await expect(card.locator('input[type="text"]').first()).toHaveValue(testPriorityValue);
-        await expect(card.locator('input[type="text"]').nth(1)).toHaveValue(testPriorityLabel);
-        break;
-      }
-    }
-
-    await closeObsidianSettings(workspacePage, page);
-
-    // EXPECTED: The custom priority should be found with correct values
-    expect(foundPriority).toBe(true);
   });
 });
 

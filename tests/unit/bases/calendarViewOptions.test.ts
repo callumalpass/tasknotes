@@ -16,6 +16,17 @@ function createConfig(values: Record<string, unknown> = {}): TestConfig {
 	};
 }
 
+test("composition options preserve existing month behaviour and default the agenda strip on", () => {
+	const listOptions = buildCalendarViewOptions(createPlugin(), createConfig({ calendarView: "listWeek" }));
+	const monthOptions = buildCalendarViewOptions(createPlugin(), createConfig({ calendarView: "dayGridMonth" }));
+	expect(findOption(listOptions, "showAgendaStrip")).toMatchObject({ type: "toggle", default: true });
+	expect(findOption(monthOptions, "showMonthDayPanel")).toMatchObject({ type: "toggle", default: false });
+	expect(isHidden(findOption(listOptions, "showAgendaStrip"))).toBe(false);
+	expect(isHidden(findOption(monthOptions, "showAgendaStrip"))).toBe(true);
+	expect(isHidden(findOption(monthOptions, "showMonthDayPanel"))).toBe(false);
+	expect(isHidden(findOption(listOptions, "showMonthDayPanel"))).toBe(true);
+});
+
 function createPlugin(): TaskNotesPlugin {
 	return {
 		settings: {

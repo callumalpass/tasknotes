@@ -4,6 +4,12 @@ import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
 import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (_plugin, tasks, property, value) => tasks.map((task: TaskInfo) => ({ ...task, [property]: value }))),
+}));
 
 jest.mock("../../../src/modals/DateTimePickerModal", () => ({
 	DateTimePickerModal: jest.fn().mockImplementation(() => ({
@@ -170,7 +176,7 @@ describe("Issue #2060: custom date fields in the task context menu", () => {
 		await Promise.resolve();
 		await Promise.resolve();
 
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "snoozed", undefined);
+		expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [task], "snoozed", undefined);
 		expect(onUpdate).toHaveBeenCalledTimes(1);
 	});
 

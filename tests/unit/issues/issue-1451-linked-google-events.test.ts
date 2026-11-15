@@ -21,6 +21,7 @@ function googleEvent(id = "exported", date = day, extra: Partial<ICSEvent> = {})
 }
 function plugin(events: ICSEvent[] = []) {
 	return {
+		app: { metadataCache: { getFileCache: () => null } },
 		settings: { googleCalendarExport: { targetCalendarId: calendarId } },
 		googleCalendarService: {
 			getAllEvents: () => events,

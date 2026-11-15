@@ -6,7 +6,7 @@ import { createI18nService } from "../../../src/i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import { DateTimePickerModal } from "../../../src/modals/DateTimePickerModal";
-import { CustomRecurrenceModal } from "../../../src/components/RecurrenceContextMenu";
+import { CustomRecurrenceModal } from "../../../src/components/CustomRecurrenceModal";
 import { ReminderModal } from "../../../src/modals/ReminderModal";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import { getAvailableProperties } from "../../../src/utils/propertyHelpers";
@@ -141,9 +141,7 @@ describe.each(locales)("Interface surfaces use the real %s catalogue", (locale) 
 				date: i18n.translate(msg({ message: "today", context: "modals.actionPalette.presets.today" })),
 			})
 		);
-		const el = document.createElement("div");
-		modal.renderSuggestion({ item: today, match: { score: 1, matches: [] } }, el);
-		expect(el.querySelector(".task-action-palette__category")?.textContent).toBe(
+		expect(modal.getItemText(today)).toContain(
 			i18n.translate(msg({ message: "Dates", context: "modals.actionPalette.categories.dates" }))
 		);
 		expect(today.id).toBe("set-scheduled-today");
@@ -225,10 +223,10 @@ it("keeps audited notice and setting-label call sites marked for translation", (
 		"modals/TaskActionPaletteModal.ts",
 		"modals/DateTimePickerModal.ts",
 		"modals/FileSelectorModal.ts",
-		"settings/tabs/integrationsTab.ts",
-		"settings/tabs/featuresTab.ts",
-		"settings/tabs/appearanceTab.ts",
-		"components/RecurrenceContextMenu.ts",
+		"settings/native/integrations.ts",
+		"settings/native/features.ts",
+		"settings/native/appearance.ts",
+		"components/CustomRecurrenceModal.ts",
 	]) {
 		const source = fs.readFileSync(path.resolve(__dirname, "../../../src", file), "utf8");
 		expect({ file, notices: source.match(/new Notice\(\s*["'`]/g) }).toEqual({

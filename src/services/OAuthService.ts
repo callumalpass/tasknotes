@@ -9,6 +9,7 @@ import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/h
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { OAuthSecretStore, type OAuthCredentials } from "./OAuthSecretStore";
+import { generateUuidV4 } from "../utils/uuid";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
@@ -673,7 +674,9 @@ export class OAuthService {
 				provider,
 				newTokens,
 				connection.userEmail,
-				connectionGeneration
+				connectionGeneration,
+				connection.connectionId,
+				connection.connectedAt
 			);
 
 			return newTokens;
@@ -772,7 +775,9 @@ export class OAuthService {
 		provider: OAuthProvider,
 		tokens: OAuthTokens,
 		userEmail?: string,
-		expectedGeneration?: number
+		expectedGeneration?: number,
+		connectionId?: string,
+		connectedAt?: string
 	): Promise<void> {
 		if (
 			expectedGeneration !== undefined &&
@@ -784,8 +789,9 @@ export class OAuthService {
 		const connection: OAuthConnection = {
 			provider,
 			tokens,
+			connectionId: connectionId ?? generateUuidV4(),
 			userEmail,
-			connectedAt: new Date().toISOString(),
+			connectedAt: connectedAt ?? new Date().toISOString(),
 			lastRefreshed: new Date().toISOString(),
 		};
 		this.secretStore.setConnection(provider, connection);
@@ -799,7 +805,17 @@ export class OAuthService {
 	 * Retrieves a connection from Obsidian SecretStorage.
 	 */
 	async getConnection(provider: OAuthProvider): Promise<OAuthConnection | null> {
-		return this.secretStore.getConnection(provider);
+		const connection = this.secretStore.getConnection(provider);
+		if (!connection || connection.connectionId) {
+			return connection;
+		}
+
+		const migratedConnection = {
+			...connection,
+			connectionId: generateUuidV4(),
+		};
+		this.secretStore.setConnection(provider, migratedConnection);
+		return migratedConnection;
 	}
 
 	/**

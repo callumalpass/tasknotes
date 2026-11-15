@@ -13,101 +13,104 @@
  */
 
 import {
-	createTaskCard,
-	updateTaskCard,
-	showTaskContextMenu,
-	showDeleteConfirmationModal,
-	TaskCardOptions,
-	DEFAULT_TASK_CARD_OPTIONS,
-} from "../../../src/ui/TaskCard";
+  createTaskCard,
+  updateTaskCard,
+  showTaskContextMenu,
+  TaskCardOptions,
+  DEFAULT_TASK_CARD_OPTIONS
+} from '../../../src/ui/TaskCard';
 
 import { TaskInfo } from "../../../src/types";
 import { createI18nService } from "../../../src/i18n";
 import { TaskFactory } from "../../helpers/mock-factories";
 import { MockObsidian, TFile, Menu, Notice, Modal, App } from "../../helpers/obsidian-runtime";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	...jest.requireActual("../../../src/ui/taskPropertyPickers"),
+	changeTaskProperty: jest.fn(async (plugin, tasks, property, value) =>
+		Promise.all(tasks.map(task => plugin.updateTaskProperty(task, property, value)))),
+}));
 
 // Mock external dependencies
-jest.mock("date-fns", () => ({
-	format: jest.fn((date: Date, formatStr: string) => {
-		if (formatStr === "yyyy-MM-dd") {
-			return date.toISOString().split("T")[0];
-		}
-		return date.toISOString();
-	}),
+jest.mock('date-fns', () => ({
+  format: jest.fn((date: Date, formatStr: string) => {
+    if (formatStr === 'yyyy-MM-dd') {
+      return date.toISOString().split('T')[0];
+    }
+    return date.toISOString();
+  })
 }));
 
 // Mock helper functions
-jest.mock("../../../src/utils/helpers", () => ({
-	calculateTotalTimeSpent: jest.fn((entries) => (entries?.length ? entries.length * 30 : 0)),
-	getEffectiveTaskStatus: jest.fn((task, date) => {
-		if (task.recurrence && task.complete_instances?.includes("2025-01-15")) {
-			return "done";
-		}
-		return task.status || "open";
-	}),
-	shouldUseRecurringTaskUI: jest.fn((task) => !!task.recurrence),
-	getRecurringTaskCompletionText: jest.fn(() => "Not completed for this date"),
-	getRecurrenceDisplayText: jest.fn((recurrence) => "Daily"),
-	filterEmptyProjects: jest.fn((projects) => projects?.filter((p) => p && p.trim()) || []),
-	sanitizeForCssClass: jest.fn((value) => {
-		if (!value || typeof value !== "string") return "";
-		return value.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase();
-	}),
+jest.mock('../../../src/utils/helpers', () => ({
+  calculateTotalTimeSpent: jest.fn((entries) => entries?.length ? entries.length * 30 : 0),
+  getEffectiveTaskStatus: jest.fn((task, date) => {
+    if (task.recurrence && task.complete_instances?.includes('2025-01-15')) {
+      return 'done';
+    }
+    return task.status || 'open';
+  }),
+  shouldUseRecurringTaskUI: jest.fn((task) => !!task.recurrence),
+  getRecurringTaskCompletionText: jest.fn(() => 'Not completed for this date'),
+  getRecurrenceDisplayText: jest.fn((recurrence) => 'Daily'),
+  filterEmptyProjects: jest.fn((projects) => projects?.filter(p => p && p.trim()) || []),
+  sanitizeForCssClass: jest.fn((value) => {
+    if (!value || typeof value !== 'string') return '';
+    return value.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
+  })
 }));
 
-jest.mock("../../../src/utils/dateUtils", () => ({
-	isTodayTimeAware: jest.fn((date) => date === "2025-01-15"),
-	isOverdueTimeAware: jest.fn((date) => date === "2020-01-01"),
-	formatDateTimeForDisplay: jest.fn((date, options) => {
-		if (options?.dateFormat === "")
-			return options?.userTimeFormat === "12" ? "2:30 PM" : "14:30";
-		if (date === "2025-01-15T14:30:00") {
-			return options?.userTimeFormat === "12" ? "Jan 15, 2025 2:30 PM" : "Jan 15, 2025 14:30";
-		}
-		if (date === "2025-01-15") return "Jan 15, 2025";
-		return "Jan 15, 2025";
-	}),
-	getDatePart: jest.fn((date) => date?.split("T")[0] || ""),
-	getTimePart: jest.fn((date) =>
-		date?.includes("T") ? date.split("T")[1]?.split(":").slice(0, 2).join(":") : null
-	),
-	formatDateForStorage: jest.fn((value: Date | string) => {
-		if (value instanceof Date) {
-			return value.toISOString().split("T")[0];
-		}
-		return value?.split("T")[0] || "";
-	}),
+jest.mock('../../../src/utils/dateUtils', () => ({
+  isTodayTimeAware: jest.fn((date) => date === '2025-01-15'),
+  isOverdueTimeAware: jest.fn((date) => date === '2020-01-01'),
+  formatDateTimeForDisplay: jest.fn((date, options) => {
+    if (options?.dateFormat === '') return options?.userTimeFormat === '12' ? '2:30 PM' : '14:30';
+    if (date === '2025-01-15T14:30:00') {
+      return options?.userTimeFormat === '12' ? 'Jan 15, 2025 2:30 PM' : 'Jan 15, 2025 14:30';
+    }
+    if (date === '2025-01-15') return 'Jan 15, 2025';
+    return 'Jan 15, 2025';
+  }),
+  getDatePart: jest.fn((date) => date?.split('T')[0] || ''),
+  getTimePart: jest.fn((date) => date?.includes('T') ? date.split('T')[1]?.split(':').slice(0, 2).join(':') : null),
+  formatDateForStorage: jest.fn((value: Date | string) => {
+    if (value instanceof Date) {
+      return value.toISOString().split('T')[0];
+    }
+    return value?.split('T')[0] || '';
+  })
 }));
 
 // Mock TaskContextMenu to use the mocked Menu internally
 let lastMenuInstance: any = null;
 
-jest.mock("../../../src/components/TaskContextMenu", () => {
-	return {
-		TaskContextMenu: jest.fn().mockImplementation((options) => {
-			// Create a new Menu instance (which will be mocked)
-			const { Menu } = require("obsidian");
-			const menuInstance = new Menu();
-			lastMenuInstance = menuInstance;
-
-			// Simulate basic menu building - always add at least one item
-			menuInstance.addItem(() => {});
-
-			// Simulate the actual TaskContextMenu behavior for recurring tasks
-			if (options.task.recurrence) {
-				menuInstance.addSeparator();
-			}
-
-			// Simulate the actual TaskContextMenu behavior
-			const mockTaskContextMenu = {
-				show: jest.fn((event) => {
-					return menuInstance.showAtMouseEvent(event);
-				}),
-			};
-
-			return mockTaskContextMenu;
-		}),
-	};
+jest.mock('../../../src/components/TaskContextMenu', () => {
+  return {
+    TaskContextMenu: jest.fn().mockImplementation((options) => {
+      // Create a new Menu instance (which will be mocked)
+      const { Menu } = require('obsidian');
+      const menuInstance = new Menu();
+      lastMenuInstance = menuInstance;
+      
+      // Simulate basic menu building - always add at least one item
+      menuInstance.addItem(() => {});
+      
+      // Simulate the actual TaskContextMenu behavior for recurring tasks
+      if (options.task.recurrence) {
+        menuInstance.addSeparator();
+      }
+      
+      // Simulate the actual TaskContextMenu behavior
+      const mockTaskContextMenu = {
+        show: jest.fn((event) => {
+          return menuInstance.showAtMouseEvent(event);
+        })
+      };
+      
+      return mockTaskContextMenu;
+    })
+  };
 });
 
 describe("TaskCard Component", () => {
@@ -144,6 +147,7 @@ describe("TaskCard Component", () => {
 					projects: "projects",
 				})),
 			},
+			openTagsPane: jest.fn(),
 			statusManager: {
 				isCompletedStatus: jest.fn((status) => status === "done"),
 				getStatusConfig: jest.fn((status) => ({
@@ -163,6 +167,7 @@ describe("TaskCard Component", () => {
 				getCompletedStatuses: jest.fn(() => ["done"]),
 			},
 			priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 				getPriorityConfig: jest.fn((priority) => ({
 					value: priority,
 					label: priority,
@@ -235,6 +240,25 @@ describe("TaskCard Component", () => {
 	});
 
 	describe("createTaskCard", () => {
+		it.each(["default", "compact", "inline"] as const)(
+			"keeps title and metadata separate in the %s layout",
+			(layout) => {
+				const task = TaskFactory.createTask({ title: "A long task title", recurrence: "FREQ=DAILY" });
+				const card = createTaskCard(task, mockPlugin, ["status", "due"], { layout });
+				const title = card.querySelector(".task-card__title-text");
+				expect(title?.textContent).toBe(task.title);
+				expect(title?.getAttribute("title")).toBe(task.title);
+				const metadata = card.querySelector(".task-card__metadata");
+				expect(metadata?.closest(".task-card__title")).toBeNull();
+				if (layout === "inline") {
+					expect(card.querySelector(".task-card__badges")).toBeNull();
+				} else {
+					expect(card.querySelector(".task-card__badges")?.parentElement)
+						.toBe(card.querySelector(".task-card__title"));
+				}
+			}
+		);
+
 		it("should create basic task card", () => {
 			const task = TaskFactory.createTask({
 				title: "Test Task",
@@ -442,7 +466,7 @@ describe("TaskCard Component", () => {
 
 			const priorityDot = card.querySelector(".task-card__priority-dot") as HTMLElement;
 			expect(priorityDot).toBeTruthy();
-			expect(priorityDot.style.borderColor).toBe("rgb(255, 0, 0)");
+			expect(card.style.getPropertyValue("--current-priority-color")).toBe("#ff0000");
 			expect(priorityDot.getAttribute("aria-label")).toBe("Priority: high");
 		});
 
@@ -661,6 +685,7 @@ describe("TaskCard Component", () => {
 			await new Promise((resolve) => setTimeout(resolve, 0));
 
 			expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+			expect(changeTaskProperty).toHaveBeenCalledWith(mockPlugin, [task], "status", "done");
 			expect(mockPlugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
 		});
 
@@ -826,6 +851,18 @@ describe("TaskCard Component", () => {
 			card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
 		});
 
+		it("preserves host interaction state without keeping stale locally-updated task classes", () => {
+			card.classList.add("task-card--selected", "tn-task-focused", "task-card--reorderable", "task-card--dragging", "task-card--pending", "task-card--status-done", "task-card--completed");
+			updateTaskCard(card, { ...task, priority: "high" }, mockPlugin);
+			for (const state of ["task-card--selected", "tn-task-focused", "task-card--reorderable", "task-card--dragging", "task-card--pending"]) {
+				expect(card.classList.contains(state)).toBe(true);
+			}
+			expect(card.classList.contains("task-card--status-done")).toBe(false);
+			expect(card.classList.contains("task-card--completed")).toBe(false);
+			expect(card.classList.contains("task-card--priority-normal")).toBe(false);
+			expect(card.classList.contains("task-card--priority-high")).toBe(true);
+		});
+
 		it("should update task card with new data", () => {
 			const updatedTask = TaskFactory.createTask({
 				...task,
@@ -886,7 +923,7 @@ describe("TaskCard Component", () => {
 			});
 
 			// Task initially has no priority indicator
-			expect(cardWithoutPriority.querySelector(".task-card__priority-dot")).toBeNull();
+			expect((cardWithoutPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("unset");
 
 			const updatedTask = TaskFactory.createTask({
 				...taskWithoutPriority,
@@ -906,7 +943,7 @@ describe("TaskCard Component", () => {
 			});
 			const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
 
-			expect(cardWithPriority.querySelector(".task-card__priority-dot--icon")).toBeNull();
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("bars");
 
 			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
 				(priority) => ({
@@ -926,7 +963,7 @@ describe("TaskCard Component", () => {
 			expect(priorityDot.getAttribute("data-icon")).toBe("alert-circle");
 		});
 
-		it("should return a priority icon indicator to a plain dot when the icon is cleared", () => {
+		it("should return a custom priority icon to rank bars when the icon is cleared", () => {
 			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
 				(priority) => ({
 					value: priority,
@@ -954,11 +991,11 @@ describe("TaskCard Component", () => {
 			const priorityDot = cardWithPriority.querySelector(
 				".task-card__priority-dot"
 			) as HTMLElement;
-			expect(priorityDot.classList.contains("task-card__priority-dot--icon")).toBe(false);
-			expect(priorityDot.getAttribute("data-icon")).toBeNull();
+			expect(priorityDot.dataset.tnGlyph).toBe("bars");
+			expect(priorityDot.querySelector("svg.tn-glyph")).not.toBeNull();
 		});
 
-		it("should remove priority indicator when task loses priority", () => {
+		it("should show unset priority glyph when task loses priority", () => {
 			// Start with priority
 			const taskWithPriority = TaskFactory.createTask({
 				...task,
@@ -975,7 +1012,7 @@ describe("TaskCard Component", () => {
 
 			updateTaskCard(cardWithPriority, updatedTask, mockPlugin);
 
-			expect(cardWithPriority.querySelector(".task-card__priority-dot")).toBeNull();
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("unset");
 		});
 
 		it("should add details indicator when task gains note body details", () => {
@@ -1030,7 +1067,7 @@ describe("TaskCard Component", () => {
 			updateTaskCard(card, updatedTask, mockPlugin);
 
 			const statusDot = card.querySelector(".task-card__status-dot") as HTMLElement;
-			expect(statusDot.style.borderColor).toBe("rgb(0, 255, 0)");
+			expect(card.style.getPropertyValue("--current-status-color")).toBe("#00ff00");
 		});
 
 		it.skip("should update metadata line", () => {
@@ -1060,12 +1097,15 @@ describe("TaskCard Component", () => {
 						setTitle: jest.fn().mockReturnThis(),
 						setIcon: jest.fn().mockReturnThis(),
 						onClick: jest.fn().mockReturnThis(),
+						setSection: jest.fn().mockReturnThis(),
+						setWarning: jest.fn().mockReturnThis(),
 					};
 					callback(mockItem);
 					return mockItem;
 				}),
 				addSeparator: jest.fn(),
 				showAtMouseEvent: jest.fn(),
+				showAtPosition: jest.fn(),
 			};
 
 			MockObsidian.Menu.mockImplementation(() => mockMenu);
@@ -1122,284 +1162,749 @@ describe("TaskCard Component", () => {
 				new Date("2025-01-15")
 			);
 
-			expect(mockApp.workspace.trigger).toHaveBeenCalledTimes(1);
-			const triggerArgs = mockApp.workspace.trigger.mock.calls[0];
-			expect(triggerArgs[0]).toBe("file-menu");
-			expect(triggerArgs[1]).toBeDefined();
-			expect(triggerArgs[2]).toBe(mockFile);
-			expect(triggerArgs[3]).toBe("tasknotes-bases-view");
-		});
-
-		it("should handle errors gracefully", async () => {
-			mockPlugin.cacheManager.getTaskInfo.mockRejectedValue(new Error("Cache error"));
-
-			const mockEvent = new MouseEvent("contextmenu");
-
-			await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date("2025-01-15"));
-
-			expect(console.error).toHaveBeenCalled();
-			expect(Notice).toHaveBeenCalledWith(
-				expect.stringContaining("Failed to create context menu")
-			);
-		});
-	});
-
-	describe("showDeleteConfirmationModal", () => {
-		let task: TaskInfo;
-
-		beforeEach(() => {
-			task = TaskFactory.createTask({ title: "Task to Delete" });
-		});
-
-		it("should create and show delete confirmation modal", async () => {
-			const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-
-			// Should create promise for deletion
-			expect(deletePromise).toBeInstanceOf(Promise);
-
-			// Simulate user confirming deletion
-			mockPlugin.taskService.deleteTask.mockResolvedValue(undefined);
-		});
-
-		it("should handle successful deletion", async () => {
-			mockPlugin.taskService.deleteTask.mockResolvedValue(undefined);
-
-			const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-
-			// Modal should be created - just verify the promise exists
-			expect(deletePromise).toBeInstanceOf(Promise);
-		});
-
-		it("should handle deletion errors", async () => {
-			mockPlugin.taskService.deleteTask.mockRejectedValue(new Error("Delete failed"));
-
-			const deletePromise = showDeleteConfirmationModal(task, mockPlugin);
-
-			// Modal should still be created - just verify the promise exists
-			expect(deletePromise).toBeInstanceOf(Promise);
-		});
-	});
-
-	describe("Edge Cases and Error Handling", () => {
-		it("should handle null plugin gracefully", () => {
-			const task = TaskFactory.createTask();
-
-			// This test should throw since the function does access plugin properties early
-			// The test expectation was wrong - it should throw
-			expect(() =>
-				createTaskCard(task, null as any, undefined, { targetDate: new Date() })
-			).toThrow();
-		});
-
-		it("should handle malformed task data", () => {
-			const malformedTask = {
-				title: null,
-				status: undefined,
-				path: "",
-			} as any;
-
-			expect(() => createTaskCard(malformedTask, mockPlugin)).not.toThrow();
-		});
-
-		it("should handle missing DOM elements in update", () => {
-			const task = TaskFactory.createTask();
-			const emptyCard = document.createElement("div");
-
-			expect(() => updateTaskCard(emptyCard, task, mockPlugin)).not.toThrow();
-		});
-
-		it.skip("should handle network errors in async operations", async () => {
-			const task = TaskFactory.createTask();
-			const card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
-
-			mockPlugin.toggleTaskStatus.mockRejectedValue(new Error("Network timeout"));
-
-			const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement;
-			checkbox.click();
-
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			expect(console.error).toHaveBeenCalled();
-		});
-
-		it("should handle missing file references", async () => {
-			const task = TaskFactory.createTask({ path: "nonexistent.md" });
-			mockApp.vault.getAbstractFileByPath.mockReturnValue(null);
-
-			const card = createTaskCard(task, mockPlugin);
-
-			// Simulate Ctrl+click to trigger file opening behavior
-			const ctrlClickEvent = new MouseEvent("click", {
-				bubbles: true,
-				ctrlKey: true,
-			});
-			card.dispatchEvent(ctrlClickEvent);
-
-			// Wait for the async click handler to complete
-			await new Promise((resolve) => setTimeout(resolve, 10));
-
-			expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith("nonexistent.md");
-		});
-	});
-
-	describe("Performance and Memory", () => {
-		it("should handle large numbers of task cards efficiently", () => {
-			const startTime = Date.now();
-
-			for (let i = 0; i < 100; i++) {
-				const task = TaskFactory.createTask({ title: `Task ${i}` });
-				const card = createTaskCard(task, mockPlugin);
-				container.appendChild(card);
-			}
-
-			const endTime = Date.now();
-			expect(endTime - startTime).toBeLessThan(1000);
-			expect(container.children.length).toBe(100);
-		});
-
-		it("should clean up event listeners properly", () => {
-			const task = TaskFactory.createTask();
-			const card = createTaskCard(task, mockPlugin);
-
-			container.appendChild(card);
-			container.removeChild(card);
-
-			// Should not leak memory - hard to test directly but ensures structure is correct
-			expect(card.parentNode).toBeNull();
-		});
-
-		it("should handle rapid updates efficiently", () => {
-			const task = TaskFactory.createTask();
-			const card = createTaskCard(task, mockPlugin);
-
-			const startTime = Date.now();
-
-			for (let i = 0; i < 50; i++) {
-				const updatedTask = TaskFactory.createTask({
-					...task,
-					title: `Updated ${i}`,
-					status: i % 2 === 0 ? "open" : "done",
-				});
-				updateTaskCard(card, updatedTask, mockPlugin);
-			}
-
-			const endTime = Date.now();
-			expect(endTime - startTime).toBeLessThan(500);
-		});
-	});
-
-	describe("Subtask chevron position", () => {
-		it("should add task-card--chevron-left when setting is left (create)", async () => {
-			const task = TaskFactory.createTask({ title: "Project Task" });
-			// Ensure this task is considered a project and chevron feature is on
-			mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
-			mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
-			mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: "left" };
-
-			const card = createTaskCard(task, mockPlugin);
-
-			// Wait for async project check to complete
-			await new Promise((r) => setTimeout(r, 0));
-
-			expect(card.classList.contains("task-card--chevron-left")).toBe(true);
-			// Chevron should render for projects when feature enabled
-			expect(card.querySelector(".task-card__chevron")).not.toBeNull();
-		});
-
-		it("should not add task-card--chevron-left when setting is right/default (create)", async () => {
-			const task = TaskFactory.createTask({ title: "Project Task" });
-			mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
-			mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
-			mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: "right" };
-
-			const card = createTaskCard(task, mockPlugin);
-			await new Promise((r) => setTimeout(r, 0));
-
-			expect(card.classList.contains("task-card--chevron-left")).toBe(false);
-			expect(card.querySelector(".task-card__chevron")).not.toBeNull();
-		});
-
-		it("should toggle chevron-left class on update when setting changes", async () => {
-			const task = TaskFactory.createTask({ title: "Project Task" });
-			// Start with right/default
-			mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
-			mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
-			mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: "right" };
-
-			const card = createTaskCard(task, mockPlugin);
-			await new Promise((r) => setTimeout(r, 0));
-			expect(card.classList.contains("task-card--chevron-left")).toBe(false);
-
-			// Change to left and update
-			mockPlugin.settings.subtaskChevronPosition = "left";
-			updateTaskCard(card, task, mockPlugin);
-			expect(card.classList.contains("task-card--chevron-left")).toBe(true);
-
-			// Change back to right and update
-			mockPlugin.settings.subtaskChevronPosition = "right";
-			updateTaskCard(card, task, mockPlugin);
-			expect(card.classList.contains("task-card--chevron-left")).toBe(false);
-		});
-
-		it("should mark the subtask chevron as a no-drag control", () => {
-			const task = TaskFactory.createTask({ title: "Project Task" });
-			mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
-
-			const card = createTaskCard(task, mockPlugin);
-			const chevron = card.querySelector(".task-card__chevron") as HTMLElement;
-			const mouseDown = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
-
-			expect(chevron.getAttribute("data-tn-no-drag")).toBe("true");
-			expect(chevron.getAttribute("draggable")).toBe("false");
-
-			chevron.dispatchEvent(mouseDown);
-			expect(mouseDown.defaultPrevented).toBe(true);
-		});
-
-		it("should mark the blocking toggle as a no-drag control", () => {
-			const task = TaskFactory.createTask({
-				blocking: ["tasks/dependent-a.md"],
-				isBlocking: true,
-			});
-
-			const card = createTaskCard(task, mockPlugin);
-			const toggle = card.querySelector(".task-card__blocking-toggle") as HTMLElement;
-			const mouseDown = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
-
-			expect(toggle.getAttribute("data-tn-no-drag")).toBe("true");
-			expect(toggle.getAttribute("draggable")).toBe("false");
-
-			toggle.dispatchEvent(mouseDown);
-			expect(mouseDown.defaultPrevented).toBe(true);
-		});
-	});
-	describe("Accessibility", () => {
-		it("should have proper ARIA labels", () => {
-			const task = TaskFactory.createTask({ priority: "high" });
-			const card = createTaskCard(task, mockPlugin);
-
-			const priorityDot = card.querySelector(".task-card__priority-dot");
-			expect(priorityDot?.getAttribute("aria-label")).toBe("Priority: high");
-
-			const contextIcon = card.querySelector(".task-card__context-menu");
-			expect(contextIcon?.getAttribute("aria-label")).toBe("Task options");
-		});
-
-		it.skip("should support keyboard navigation", () => {
-			const task = TaskFactory.createTask();
-			const card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
-
-			const checkbox = card.querySelector(".task-card__checkbox") as HTMLInputElement;
-			expect(checkbox.tabIndex).toBe(0);
-		});
-
-		it("should have proper semantic structure", () => {
-			const task = TaskFactory.createTask();
-			const card = createTaskCard(task, mockPlugin);
-
-			expect(card.querySelector(".task-card__title")).toBeTruthy();
-			expect(card.querySelector(".task-card__metadata")).toBeTruthy();
-			expect(card.querySelector(".task-card__content")).toBeTruthy();
-		});
-	});
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockApp.workspace.trigger).toHaveBeenCalledWith("file-menu", expect.anything(), mockFile, "tasknotes-bases-view");
+    });
+
+    it('should hide metadata line when no metadata available', () => {
+      const task = TaskFactory.createTask({
+        due: undefined,
+        scheduled: undefined,
+        contexts: undefined,
+        timeEstimate: undefined,
+        timeEntries: undefined
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+      const metadataLine = card.querySelector('.task-card__metadata') as HTMLElement;
+
+      // Should be hidden (either 'none' or empty string depending on browser)
+      expect(metadataLine.style.display === 'none' || metadataLine.style.display === '').toBe(true);
+    });
+  });
+
+  describe('Task Card Interactions', () => {
+    let task: TaskInfo;
+    let card: HTMLElement;
+
+    beforeEach(() => {
+      task = TaskFactory.createTask();
+      card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
+      container.appendChild(card);
+    });
+
+    it.skip('should handle checkbox click for regular tasks', async () => {
+      const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
+
+      checkbox.click();
+
+      expect(mockPlugin.toggleTaskStatus).toHaveBeenCalledWith(task);
+    });
+
+    it.skip('should handle checkbox click for recurring tasks', async () => {
+      const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
+      const recurringCard = createTaskCard(recurringTask, mockPlugin, undefined, { showCheckbox: true });
+      const checkbox = recurringCard.querySelector('.task-card__checkbox') as HTMLInputElement;
+
+      checkbox.click();
+
+      expect(mockPlugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
+        recurringTask,
+        mockPlugin.selectedDate
+      );
+    });
+
+    it('should handle status dot click for regular tasks', async () => {
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(task);
+
+      const statusDot = card.querySelector('.task-card__status-dot') as HTMLElement;
+      statusDot.click();
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+      expect(mockPlugin.updateTaskProperty).toHaveBeenCalledWith(task, 'status', 'done');
+    });
+
+    it.skip('should handle status dot click for recurring tasks', async () => {
+      const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
+      const recurringCard = createTaskCard(recurringTask, mockPlugin);
+      mockPlugin.toggleRecurringTaskComplete.mockResolvedValue(recurringTask);
+
+      const statusDot = recurringCard.querySelector('.task-card__status-dot') as HTMLElement;
+      statusDot.click();
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockPlugin.toggleRecurringTaskComplete).toHaveBeenCalledWith(
+        recurringTask,
+        mockPlugin.selectedDate
+      );
+    });
+
+    it('should handle context menu icon click', async () => {
+      const contextIcon = card.querySelector('.task-card__context-menu') as HTMLElement;
+      const mockEvent = new MouseEvent('click', { bubbles: true });
+
+      // Mock showTaskContextMenu
+      const showTaskContextMenuSpy = jest.fn();
+      jest.doMock('../../../src/ui/TaskCard', () => ({
+        ...jest.requireActual('../../../src/ui/TaskCard'),
+        showTaskContextMenu: showTaskContextMenuSpy
+      }));
+
+      contextIcon.dispatchEvent(mockEvent);
+
+      // Context menu should be triggered
+      expect(contextIcon).toBeTruthy();
+    });
+
+    it('should handle card click to open edit modal', async () => {
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      
+      // Dispatch the event and wait for the handler
+      card.dispatchEvent(clickEvent);
+      
+      // Wait for the async click handler to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(mockPlugin.openTaskEditModal).toHaveBeenCalledWith(task);
+    });
+
+    it('should not open the edit modal when clicking a Bases-rendered tag', async () => {
+      const basesTagsValue = {
+        renderTo: (el: HTMLElement) => {
+          el.createEl('a', {
+            cls: 'tag',
+            text: '#client',
+            attr: { href: '#client' },
+          });
+        },
+        toString: () => '#client',
+      };
+      const tagTask = TaskFactory.createTask({
+        customProperties: {
+          'file.tags': basesTagsValue,
+        },
+      });
+      mockPlugin.fieldMapper.lookupMappingKey = jest.fn(() => null);
+      mockPlugin.openTagsPane = jest.fn();
+      const tagCard = createTaskCard(tagTask, mockPlugin, ['file.tags']);
+      container.appendChild(tagCard);
+
+      const tag = tagCard.querySelector('.tag') as HTMLElement;
+      expect(tag).toBeTruthy();
+
+      tag.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(mockPlugin.openTaskEditModal).not.toHaveBeenCalled();
+    });
+
+    it('should handle Ctrl+click to open source note', async () => {
+      const mockFile = new TFile('test.md');
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+      const ctrlClickEvent = new MouseEvent('click', {
+        bubbles: true,
+        ctrlKey: true
+      });
+
+      card.dispatchEvent(ctrlClickEvent);
+
+      // Wait for the async click handler to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
+      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+    });
+
+    it('should handle middle-click to open source note in a new tab', async () => {
+      const mockFile = new TFile('test.md');
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+      const middleClickEvent = new MouseEvent('auxclick', {
+        bubbles: true,
+        cancelable: true,
+        button: 1
+      });
+
+      card.dispatchEvent(middleClickEvent);
+
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
+      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+    });
+
+    it('should handle right-click context menu', async () => {
+      const contextMenuEvent = new MouseEvent('contextmenu', { bubbles: true });
+
+      card.dispatchEvent(contextMenuEvent);
+
+      // Should prevent default and trigger context menu
+      expect(card.dataset.taskPath).toBe(task.path);
+    });
+
+    it('should handle mouseover for hover preview', () => {
+      const mockFile = new TFile('test.md');
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+      const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
+      card.dispatchEvent(mouseoverEvent);
+
+      expect(mockApp.workspace.trigger).toHaveBeenCalledWith('hover-link', {
+        event: mouseoverEvent,
+        source: 'tasknotes-task-card',
+        hoverParent: card,
+        targetEl: card,
+        linktext: task.path,
+        sourcePath: task.path
+      });
+    });
+
+    it.skip('should handle errors in event handlers gracefully', async () => {
+      mockPlugin.toggleTaskStatus.mockRejectedValue(new Error('Network error'));
+
+      const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
+      checkbox.click();
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(console.error).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining('Failed to toggle task status'));
+    });
+  });
+
+  describe('updateTaskCard', () => {
+    let task: TaskInfo;
+    let card: HTMLElement;
+
+    beforeEach(() => {
+      task = TaskFactory.createTask({
+        title: 'Original Task',
+        status: 'open',
+        priority: 'normal'
+      });
+      card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
+    });
+
+    it('should update task card with new data', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        title: 'Updated Task',
+        status: 'done',
+        priority: 'high'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      expect(card.classList.contains('task-card--completed')).toBe(true);
+      expect(card.classList.contains('task-card--completed-strikethrough')).toBe(true);
+      expect(card.classList.contains('task-card--priority-high')).toBe(true);
+      expect(card.classList.contains('task-card--status-done')).toBe(true);
+
+      const titleEl = card.querySelector('.task-card__title');
+      expect(titleEl?.textContent).toBe('Updated Task');
+      expect(titleEl?.classList.contains('completed')).toBe(true);
+    });
+
+    it('should sanitize status and priority class modifiers when updating a card', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        title: 'Updated Task',
+        status: 'In Progress',
+        priority: 'High Priority'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      expect(card.classList.contains('task-card--status-in-progress')).toBe(true);
+      expect(card.classList.contains('task-card--priority-high-priority')).toBe(true);
+      expect(card.classList.contains('Progress')).toBe(false);
+      expect(card.classList.contains('Priority')).toBe(false);
+    });
+
+    it.skip('should update checkbox state', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        status: 'done'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
+      expect(checkbox.checked).toBe(true);
+    });
+
+    it('should add priority indicator when task gains priority', () => {
+      // Create a task without priority initially
+      const taskWithoutPriority = TaskFactory.createTask({
+        title: 'Task without priority',
+        status: 'open',
+        priority: undefined
+      });
+      const cardWithoutPriority = createTaskCard(taskWithoutPriority, mockPlugin, undefined, { showCheckbox: true });
+
+      // Task initially has no priority indicator
+      expect(cardWithoutPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('unset');
+
+      const updatedTask = TaskFactory.createTask({
+        ...taskWithoutPriority,
+        priority: 'high'
+      });
+
+      updateTaskCard(cardWithoutPriority, updatedTask, mockPlugin);
+
+      const priorityDot = cardWithoutPriority.querySelector('.task-card__priority-dot');
+      expect(priorityDot).toBeTruthy();
+    });
+
+    it('should update a priority indicator when the configured icon changes', () => {
+      const taskWithPriority = TaskFactory.createTask({
+        ...task,
+        priority: 'high'
+      });
+      const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+      expect(cardWithPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('bars');
+
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000',
+        icon: 'alert-circle'
+      }));
+
+      updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
+
+      const priorityDot = cardWithPriority.querySelector('.task-card__priority-dot') as HTMLElement;
+      expect(priorityDot.classList.contains('task-card__priority-dot--icon')).toBe(true);
+      expect(priorityDot.getAttribute('data-icon')).toBe('alert-circle');
+    });
+
+    it('should return a priority icon indicator to the shared glyph when the icon is cleared', () => {
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000',
+        icon: 'alert-circle'
+      }));
+      const taskWithPriority = TaskFactory.createTask({
+        ...task,
+        priority: 'high'
+      });
+      const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+      (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
+        value: priority,
+        label: priority,
+        color: '#ff0000'
+      }));
+
+      updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
+
+      const priorityDot = cardWithPriority.querySelector('.task-card__priority-dot') as HTMLElement;
+      expect(priorityDot.getAttribute('data-tn-glyph')).toBe('bars');
+      expect(priorityDot.getAttribute('data-icon')).toBeNull();
+    });
+
+    it('should show an unset priority glyph when task loses priority', () => {
+      // Start with priority
+      const taskWithPriority = TaskFactory.createTask({
+        ...task,
+        priority: 'high'
+      });
+      const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
+
+      expect(cardWithPriority.querySelector('.task-card__priority-dot')).toBeTruthy();
+
+      const updatedTask = TaskFactory.createTask({
+        ...taskWithPriority,
+        priority: undefined
+      });
+
+      updateTaskCard(cardWithPriority, updatedTask, mockPlugin);
+
+      expect(cardWithPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('unset');
+    });
+
+    it('should add details indicator when task gains note body details', () => {
+      expect(card.classList.contains('task-card--has-details')).toBe(false);
+      expect(card.querySelector('.task-card__details-indicator')).toBeNull();
+
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        details: 'Follow up with Alice.'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      expect(card.classList.contains('task-card--has-details')).toBe(true);
+      expect(card.dataset.hasDetails).toBe('true');
+      expect(card.querySelector('.task-card__details-indicator')).toBeTruthy();
+    });
+
+    it('should remove details indicator when task loses note body details', () => {
+      const taskWithDetails = TaskFactory.createTask({
+        ...task,
+        details: 'Follow up with Alice.'
+      });
+      const cardWithDetails = createTaskCard(taskWithDetails, mockPlugin);
+
+      expect(cardWithDetails.querySelector('.task-card__details-indicator')).toBeTruthy();
+
+      const updatedTask = TaskFactory.createTask({
+        ...taskWithDetails,
+        details: ''
+      });
+
+      updateTaskCard(cardWithDetails, updatedTask, mockPlugin);
+
+      expect(cardWithDetails.classList.contains('task-card--has-details')).toBe(false);
+      expect(cardWithDetails.dataset.hasDetails).toBe('false');
+      expect(cardWithDetails.querySelector('.task-card__details-indicator')).toBeNull();
+    });
+
+    it('should update status dot color', () => {
+      mockPlugin.statusManager.getStatusConfig.mockReturnValue({
+        value: 'done',
+        label: 'Done',
+        color: '#00ff00'
+      });
+
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        status: 'done'
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      const statusDot = card.querySelector('.task-card__status-dot') as HTMLElement;
+      expect(card.style.getPropertyValue('--current-status-color')).toBe('#00ff00');
+    });
+
+    it.skip('should update metadata line', () => {
+      const updatedTask = TaskFactory.createTask({
+        ...task,
+        due: '2025-01-15T14:30:00',
+        contexts: ['work']
+      });
+
+      updateTaskCard(card, updatedTask, mockPlugin);
+
+      const metadataLine = card.querySelector('.task-card__metadata');
+      expect(metadataLine?.textContent).toContain('Due:');
+      expect(metadataLine?.textContent).toContain('@work');
+    });
+  });
+
+  describe('showTaskContextMenu', () => {
+    let task: TaskInfo;
+    let mockMenu: any;
+
+    beforeEach(() => {
+      task = TaskFactory.createTask();
+      mockMenu = {
+        addItem: jest.fn((callback) => {
+          const mockItem = {
+            setTitle: jest.fn().mockReturnThis(),
+            setIcon: jest.fn().mockReturnThis(),
+            onClick: jest.fn().mockReturnThis(),
+            setSection: jest.fn().mockReturnThis(),
+            setWarning: jest.fn().mockReturnThis()
+          };
+          callback(mockItem);
+          return mockItem;
+        }),
+        addSeparator: jest.fn(),
+        showAtMouseEvent: jest.fn(),
+        showAtPosition: jest.fn()
+      };
+
+      MockObsidian.Menu.mockImplementation(() => mockMenu);
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(task);
+    });
+
+    it('should create context menu with basic actions', async () => {
+      const mockEvent = new MouseEvent('contextmenu');
+
+      await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date('2025-01-15'));
+      
+      expect(mockPlugin.cacheManager.getTaskInfo).toHaveBeenCalledWith(task.path);
+      expect(lastMenuInstance.addItem).toHaveBeenCalled();
+      // Note: Menu.showAtMouseEvent might not be trackable in test environment due to Obsidian mocking complexities
+      // The key behavior (context menu creation and population) is verified by addItem calls
+    });
+
+    it('should add status options to context menu', async () => {
+      const mockEvent = new MouseEvent('contextmenu');
+
+      await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date('2025-01-15'));
+
+      // Should have called addItem for each status
+      expect(lastMenuInstance.addItem).toHaveBeenCalled();
+    });
+
+    it('should add completion toggle for recurring tasks', async () => {
+      const recurringTask = TaskFactory.createRecurringTask('FREQ=DAILY');
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const mockEvent = new MouseEvent('contextmenu');
+
+      await showTaskContextMenu(mockEvent, recurringTask.path, mockPlugin, new Date('2025-01-15'));
+
+      expect(lastMenuInstance.addSeparator).toHaveBeenCalled();
+    });
+
+    it('should handle task not found by showing file context menu', async () => {
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(null);
+      const mockFile = new TFile('nonexistent.md');
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+      const mockEvent = new MouseEvent('contextmenu');
+
+      await showTaskContextMenu(mockEvent, 'nonexistent.md', mockPlugin, new Date('2025-01-15'));
+
+      expect(mockApp.workspace.trigger).toHaveBeenCalledTimes(1);
+      const triggerArgs = mockApp.workspace.trigger.mock.calls[0];
+      expect(triggerArgs[0]).toBe('file-menu');
+      expect(triggerArgs[1]).toBeDefined();
+      expect(triggerArgs[2]).toBe(mockFile);
+      expect(triggerArgs[3]).toBe('tasknotes-bases-view');
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockPlugin.cacheManager.getTaskInfo.mockRejectedValue(new Error('Cache error'));
+
+      const mockEvent = new MouseEvent('contextmenu');
+
+      await showTaskContextMenu(mockEvent, task.path, mockPlugin, new Date('2025-01-15'));
+
+      expect(console.error).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining('Failed to create context menu'));
+    });
+  });
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle null plugin gracefully', () => {
+      const task = TaskFactory.createTask();
+
+      // This test should throw since the function does access plugin properties early
+      // The test expectation was wrong - it should throw
+      expect(() => createTaskCard(task, null as any, undefined, { targetDate: new Date() })).toThrow();
+    });
+
+    it('should handle malformed task data', () => {
+      const malformedTask = {
+        title: null,
+        status: undefined,
+        path: ''
+      } as any;
+
+      expect(() => createTaskCard(malformedTask, mockPlugin)).not.toThrow();
+    });
+
+    it('should handle missing DOM elements in update', () => {
+      const task = TaskFactory.createTask();
+      const emptyCard = document.createElement('div');
+
+      expect(() => updateTaskCard(emptyCard, task, mockPlugin)).not.toThrow();
+    });
+
+    it.skip('should handle network errors in async operations', async () => {
+      const task = TaskFactory.createTask();
+      const card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
+
+      mockPlugin.toggleTaskStatus.mockRejectedValue(new Error('Network timeout'));
+
+      const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
+      checkbox.click();
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it('should handle missing file references', async () => {
+      const task = TaskFactory.createTask({ path: 'nonexistent.md' });
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(null);
+
+      const card = createTaskCard(task, mockPlugin);
+
+      // Simulate Ctrl+click to trigger file opening behavior
+      const ctrlClickEvent = new MouseEvent('click', {
+        bubbles: true,
+        ctrlKey: true
+      });
+      card.dispatchEvent(ctrlClickEvent);
+      
+      // Wait for the async click handler to complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith('nonexistent.md');
+    });
+  });
+
+  describe('Performance and Memory', () => {
+    it('should handle large numbers of task cards efficiently', () => {
+      const startTime = Date.now();
+
+      for (let i = 0; i < 100; i++) {
+        const task = TaskFactory.createTask({ title: `Task ${i}` });
+        const card = createTaskCard(task, mockPlugin);
+        container.appendChild(card);
+      }
+
+      const endTime = Date.now();
+      expect(endTime - startTime).toBeLessThan(1000);
+      expect(container.children.length).toBe(100);
+    });
+
+    it('should clean up event listeners properly', () => {
+      const task = TaskFactory.createTask();
+      const card = createTaskCard(task, mockPlugin);
+
+      container.appendChild(card);
+      container.removeChild(card);
+
+      // Should not leak memory - hard to test directly but ensures structure is correct
+      expect(card.parentNode).toBeNull();
+    });
+
+    it('should handle rapid updates efficiently', () => {
+      const task = TaskFactory.createTask();
+      const card = createTaskCard(task, mockPlugin);
+
+      const startTime = Date.now();
+
+      for (let i = 0; i < 50; i++) {
+        const updatedTask = TaskFactory.createTask({
+          ...task,
+          title: `Updated ${i}`,
+          status: i % 2 === 0 ? 'open' : 'done'
+        });
+        updateTaskCard(card, updatedTask, mockPlugin);
+      }
+
+      const endTime = Date.now();
+      expect(endTime - startTime).toBeLessThan(500);
+    });
+  });
+
+
+  describe('Subtask chevron position', () => {
+    it('should add task-card--chevron-left when setting is left (create)', async () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      // Ensure this task is considered a project and chevron feature is on
+      mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
+      mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'left' };
+
+      const card = createTaskCard(task, mockPlugin);
+
+      // Wait for async project check to complete
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(card.classList.contains('task-card--chevron-left')).toBe(true);
+      // Chevron should render for projects when feature enabled
+      expect(card.querySelector('.task-card__chevron')).not.toBeNull();
+    });
+
+    it('should not add task-card--chevron-left when setting is right/default (create)', async () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
+      mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'right' };
+
+      const card = createTaskCard(task, mockPlugin);
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+      expect(card.querySelector('.task-card__chevron')).not.toBeNull();
+    });
+
+    it('should toggle chevron-left class on update when setting changes', async () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      // Start with right/default
+      mockPlugin.projectSubtasksService.isTaskUsedAsProject.mockResolvedValue(true);
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
+      mockPlugin.settings = { showExpandableSubtasks: true, subtaskChevronPosition: 'right' };
+
+      const card = createTaskCard(task, mockPlugin);
+      await new Promise((r) => setTimeout(r, 0));
+      expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+
+      // Change to left and update
+      mockPlugin.settings.subtaskChevronPosition = 'left';
+      updateTaskCard(card, task, mockPlugin);
+      expect(card.classList.contains('task-card--chevron-left')).toBe(true);
+
+      // Change back to right and update
+      mockPlugin.settings.subtaskChevronPosition = 'right';
+      updateTaskCard(card, task, mockPlugin);
+      expect(card.classList.contains('task-card--chevron-left')).toBe(false);
+    });
+
+    it('should mark the subtask chevron as a no-drag control', () => {
+      const task = TaskFactory.createTask({ title: 'Project Task' });
+      mockPlugin.projectSubtasksService.isTaskUsedAsProjectSync.mockReturnValue(true);
+
+      const card = createTaskCard(task, mockPlugin);
+      const chevron = card.querySelector('.task-card__chevron') as HTMLElement;
+      const mouseDown = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+
+      expect(chevron.getAttribute('data-tn-no-drag')).toBe('true');
+      expect(chevron.getAttribute('draggable')).toBe('false');
+
+      chevron.dispatchEvent(mouseDown);
+      expect(mouseDown.defaultPrevented).toBe(true);
+    });
+
+    it('should mark the blocking toggle as a no-drag control', () => {
+      const task = TaskFactory.createTask({
+        blocking: ['tasks/dependent-a.md'],
+        isBlocking: true,
+      });
+
+      const card = createTaskCard(task, mockPlugin);
+      const toggle = card.querySelector('.task-card__blocking-toggle') as HTMLElement;
+      const mouseDown = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+
+      expect(toggle.getAttribute('data-tn-no-drag')).toBe('true');
+      expect(toggle.getAttribute('draggable')).toBe('false');
+
+      toggle.dispatchEvent(mouseDown);
+      expect(mouseDown.defaultPrevented).toBe(true);
+    });
+  });
+  describe('Accessibility', () => {
+    it('should have proper ARIA labels', () => {
+      const task = TaskFactory.createTask({ priority: 'high' });
+      const card = createTaskCard(task, mockPlugin);
+
+      const priorityDot = card.querySelector('.task-card__priority-dot');
+      expect(priorityDot?.getAttribute('aria-label')).toBe('Priority: high');
+
+      const contextIcon = card.querySelector('.task-card__context-menu');
+      expect(contextIcon?.getAttribute('aria-label')).toBe('Task options');
+    });
+
+    it.skip('should support keyboard navigation', () => {
+      const task = TaskFactory.createTask();
+      const card = createTaskCard(task, mockPlugin, undefined, { showCheckbox: true });
+
+      const checkbox = card.querySelector('.task-card__checkbox') as HTMLInputElement;
+      expect(checkbox.tabIndex).toBe(0);
+    });
+
+    it('should have proper semantic structure', () => {
+      const task = TaskFactory.createTask();
+      const card = createTaskCard(task, mockPlugin);
+
+      expect(card.querySelector('.task-card__title')).toBeTruthy();
+      expect(card.querySelector('.task-card__metadata')).toBeTruthy();
+      expect(card.querySelector('.task-card__content')).toBeTruthy();
+    });
+  });
 });

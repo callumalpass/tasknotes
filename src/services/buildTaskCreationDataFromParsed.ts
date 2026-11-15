@@ -3,6 +3,7 @@ import type { ParsedTaskData } from "./NaturalLanguageParser";
 import type { TaskCreationData } from "../types";
 import { combineDateAndTime, getCurrentTimestamp } from "../utils/dateUtils";
 import { sanitizeTags } from "../utils/helpers";
+import { formatResolvedProjectReference } from "../utils/linkUtils";
 
 interface BuildTaskCreationDataOptions {
 	creationContext?: TaskCreationData["creationContext"];
@@ -43,7 +44,12 @@ export function buildTaskCreationDataFromParsed(
 	}
 
 	if (parsed.projects && parsed.projects.length > 0) {
-		taskData.projects = parsed.projects;
+		const app = plugin.app;
+		taskData.projects = app?.metadataCache
+			? parsed.projects.map((project) =>
+					formatResolvedProjectReference(app, project, "", plugin.settings.useFrontmatterMarkdownLinks)
+				)
+			: parsed.projects;
 	}
 
 	if (parsed.tags && parsed.tags.length > 0) {

@@ -1,4 +1,4 @@
-// Execute the checked-in workflow's shell gates verbatim on the remote builder.
+// Execute the checked-in workflow's shell gates verbatim in this environment.
 // This does not dispatch Actions or claim checkout/setup/upload action acceptance.
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";

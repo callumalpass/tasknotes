@@ -62,7 +62,7 @@ describe("sticky grouped Task List headers", () => {
 		const pin: HTMLElement = view.virtualStickyHeaderPin;
 		expect(pin.textContent).toContain("Renamed");
 		expect(pin.textContent).toContain("(3)");
-		expect(pin.querySelectorAll("button")[1].getAttribute("aria-expanded")).toBe("false");
+		expect(pin.querySelectorAll(".task-group-toggle")[1].getAttribute("aria-expanded")).toBe("false");
 		expect(pin.getAttribute("aria-hidden")).toBe("true");
 		expect([...pin.querySelectorAll("button")].every(button => button.tabIndex === -1)).toBe(true);
 	});
@@ -74,5 +74,26 @@ describe("sticky grouped Task List headers", () => {
 		scroller.scrollContainer.getBoundingClientRect = () => ({ top: 50 });
 		scroller.container.getBoundingClientRect = () => ({ top: -125 });
 		expect(scroller.getScrollTop()).toBe(175);
+	});
+
+	it("creates a task with primary and subgroup defaults without toggling collapse", () => {
+		const { view } = setup();
+		view.getGroupByPropertyId = () => "note.status";
+		view.subGroupPropertyId = "note.priority";
+		view.plugin.app.metadataTypeManager = { properties: {} };
+		view.renderGroupTitle = (container: HTMLElement, title: string) => { container.textContent = title; };
+		const frontmatter: Record<string, unknown> = {};
+		view.createFileForView = jest.fn((_path, transform) => transform(frontmatter));
+		const header = view.createGroupHeader({
+			type: "sub-header", groupKey: "open", subGroupKey: "high",
+			subGroupTitle: "High", parentKey: "open", taskCount: 2, isCollapsed: true,
+		});
+		const parentClick = jest.fn();
+		header.addEventListener("click", parentClick);
+		header.querySelector(".task-group-add").click();
+		expect(frontmatter).toEqual({ status: "open", priority: "high" });
+		expect(view.createFileForView).toHaveBeenCalledTimes(1);
+		expect(parentClick).not.toHaveBeenCalled();
+		expect(header.querySelector(".task-group-toggle").getAttribute("aria-expanded")).toBe("false");
 	});
 });

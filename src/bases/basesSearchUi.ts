@@ -3,6 +3,7 @@ import { msg } from "@lingui/core/macro";
 import { SearchBox } from "./components/SearchBox";
 import { TaskSearchFilter } from "./TaskSearchFilter";
 import { createElementInDocument } from "../utils/documentDom";
+import { renderEmptyState } from "../ui/kit/emptyState";
 
 export type BasesSearchControls = {
 	searchContainer: HTMLElement;
@@ -14,7 +15,7 @@ export type CreateBasesSearchControlsOptions = {
 	container: HTMLElement;
 	visibleProperties: readonly string[];
 	currentSearchTerm: string;
-	onSearch: (term: string) => void;
+	onSearch: (term: string) => void | Promise<void>;
 	debounceMs?: number;
 };
 
@@ -60,24 +61,20 @@ export function isBasesSearchWithNoResults(
 
 export function renderBasesSearchNoResults(
 	container: HTMLElement,
-	searchTerm: string
+	searchTerm: string,
+	onClear?: () => void
 ): HTMLElement {
-	const doc = container.ownerDocument;
-
-	const noResultsEl = createElementInDocument(doc, "div");
-	noResultsEl.className = "tn-search-no-results";
-
-	const textEl = createElementInDocument(doc, "div");
-	textEl.className = "tn-search-no-results__text";
-	textEl.textContent = uiText(msg({ message: "No tasks match \"{searchTerm}\"", context: "bases/basesSearchUi: renderBasesSearchNoResults display" }), { searchTerm: searchTerm });
-
-	const hintEl = createElementInDocument(doc, "div");
-	hintEl.className = "tn-search-no-results__hint";
-	hintEl.textContent = uiText(msg({ message: "Try a different search term or clear the search", context: "bases/basesSearchUi: renderBasesSearchNoResults display" }));
-
-	noResultsEl.appendChild(textEl);
-	noResultsEl.appendChild(hintEl);
-	container.appendChild(noResultsEl);
-
-	return noResultsEl;
+	const empty = renderEmptyState(container, {
+		message: uiText(msg({ message: "No tasks match \"{searchTerm}\"", context: "bases/basesSearchUi: renderBasesSearchNoResults display" }), { searchTerm }),
+		actionLabel: uiText(msg({ message: "Clear search", context: "empty state action" })),
+		actionKey: "Escape",
+		onAction: onClear,
+	});
+	empty.addClass("tn-search-no-results");
+	empty.addEventListener("keydown", (event) => {
+		if (event.key !== "Escape" || !onClear) return;
+		event.preventDefault();
+		onClear();
+	});
+	return empty;
 }

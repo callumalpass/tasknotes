@@ -42,8 +42,6 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
       const settings = {
         ...DEFAULT_SETTINGS,
         disableCalendarOnMobile: true,
-        enableGoogleCalendar: true,
-        enableMicrosoftCalendar: true,
       };
 
       const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
@@ -59,8 +57,6 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
       const settings = {
         ...DEFAULT_SETTINGS,
         disableCalendarOnMobile: false,
-        enableGoogleCalendar: true,
-        enableMicrosoftCalendar: true,
       };
 
       const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
@@ -76,8 +72,6 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
       const settings = {
         ...DEFAULT_SETTINGS,
         disableCalendarOnMobile: true, // Should be ignored on desktop
-        enableGoogleCalendar: true,
-        enableMicrosoftCalendar: true,
       };
 
       const result = !isCalendarIntegrationDisabledOnMobile(settings, Platform.isMobile);
@@ -107,26 +101,21 @@ describe('Issue #898: Disable calendar integration on mobile', () => {
     /**
      * The user's use case involves syncing settings between desktop and mobile.
      * The disableCalendarOnMobile setting should be respected on mobile even when
-     * calendar settings (enableGoogleCalendar, enableMicrosoftCalendar) are synced
-     * from desktop where they are enabled.
+     * calendar selections are synced from desktop where they are enabled.
      */
-    it('should respect disableCalendarOnMobile even when enableGoogleCalendar is synced as true', () => {
+    it('should respect disableCalendarOnMobile even when calendar selections are synced', () => {
       Platform.isMobile = true;
       Platform.isDesktop = false;
 
       // This simulates settings synced from desktop
       const syncedSettings = {
         ...DEFAULT_SETTINGS,
-        enableGoogleCalendar: true, // Synced from desktop where it's enabled
-        enableMicrosoftCalendar: true, // Synced from desktop where it's enabled
         enabledGoogleCalendars: ['calendar1@google.com', 'calendar2@google.com'],
         enabledMicrosoftCalendars: ['calendar1@outlook.com'],
         disableCalendarOnMobile: true, // User specifically set this to prevent mobile loading issues
       };
 
-      const result =
-        !isCalendarIntegrationDisabledOnMobile(syncedSettings, Platform.isMobile) &&
-        (syncedSettings.enableGoogleCalendar || syncedSettings.enableMicrosoftCalendar);
+      const result = !isCalendarIntegrationDisabledOnMobile(syncedSettings, Platform.isMobile);
 
       expect(result).toBe(false);
     });

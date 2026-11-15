@@ -12,7 +12,11 @@ export const stringify = jest.fn((obj: any) => {
 	return actualYaml.stringify(obj);
 });
 
+export const parseDocument = actualYaml.parseDocument;
+
 export default {
-  parse,
-  stringify
+	...actualYaml,
+	parse,
+	stringify,
+	parseDocument,
 };

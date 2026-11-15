@@ -1,5 +1,5 @@
 import { TFile, App, Events, EventRef, parseYaml } from "obsidian";
-import { TaskInfo, NoteInfo, EVENT_TASK_UPDATED } from "../types";
+import { TaskInfo, EVENT_TASK_UPDATED } from "../types";
 import { FieldMapper } from "../core/FieldMapper";
 import { normalizePriorityConfigValue, normalizeStatusConfigValue } from "../core/fieldMapping";
 import { getTodayString, formatDateForStorage, isBeforeDateSafe, getDatePart } from "./dateUtils";
@@ -44,7 +44,6 @@ export class TaskManager extends Events {
 	private taskTag: string;
 	private excludedFolders: string[];
 	private fieldMapper?: FieldMapper;
-	private disableNoteIndexing: boolean;
 	private storeTitleInFilename: boolean;
 
 	// Initialization state
@@ -79,7 +78,6 @@ export class TaskManager extends Events {
 		this.taskTag = settings.taskTag;
 		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
 		this.fieldMapper = fieldMapper;
-		this.disableNoteIndexing = settings.disableNoteIndexing;
 		this.storeTitleInFilename = settings.storeTitleInFilename;
 	}
 
@@ -228,7 +226,6 @@ export class TaskManager extends Events {
 			this.pendingTaskInfoByPath.delete(oldPath);
 			this.pendingTaskInfoByPath.set(file.path, {
 				...pendingTaskInfo,
-				id: file.path,
 				path: file.path,
 			});
 		}
@@ -299,7 +296,6 @@ export class TaskManager extends Events {
 
 		return {
 			...taskInfo,
-			id: taskInfo.id ?? path,
 			path,
 		};
 	}
@@ -730,6 +726,30 @@ export class TaskManager extends Events {
 	}
 
 	/**
+	 * Find tasks by their optional stable frontmatter identity.
+	 *
+	 * Paths remain the operational cache key, so ID lookup deliberately returns
+	 * every match. Callers must not select an arbitrary task when a manually
+	 * copied note has introduced a duplicate ID.
+	 */
+	async getTasksById(id: string): Promise<TaskInfo[]> {
+		const normalizedId = id.trim();
+		if (!normalizedId) return [];
+
+		const tasks = await this.getAllTasks();
+		return tasks.filter((task) => task.id?.trim() === normalizedId);
+	}
+
+	/**
+	 * Resolve one unique stable ID. Missing and duplicate IDs both resolve to
+	 * null so path-based callers never mutate an arbitrary duplicate.
+	 */
+	async getTaskInfoById(id: string): Promise<TaskInfo | null> {
+		const matches = await this.getTasksById(id);
+		return matches.length === 1 ? matches[0] : null;
+	}
+
+	/**
 	 * Get all task paths from the filter index.
 	 */
 	getAllTaskPaths(): Set<string> {
@@ -891,41 +911,6 @@ export class TaskManager extends Events {
 		}
 
 		return estimates;
-	}
-
-	/**
-	 * Get notes for a specific date (just-in-time)
-	 */
-	async getNotesForDate(date: Date): Promise<NoteInfo[]> {
-		if (this.disableNoteIndexing) return [];
-
-		const notes: NoteInfo[] = [];
-		const dateStr = formatDateForStorage(date);
-		const files = this.app.vault.getMarkdownFiles();
-
-		for (const file of files) {
-			if (!this.isValidFile(file.path)) continue;
-
-			const metadata = this.app.metadataCache.getFileCache(file);
-			if (!metadata?.frontmatter) continue;
-
-			// Skip task files
-			if (this.isTaskFile(metadata.frontmatter)) continue;
-
-			// Check if note is associated with this date
-			const noteDate = metadata.frontmatter.date || metadata.frontmatter.scheduled;
-			if (noteDate === dateStr) {
-				notes.push({
-					path: file.path,
-					title: this.storeTitleInFilename
-						? file.basename
-						: metadata.frontmatter.title || file.basename,
-					tags: metadata.frontmatter.tags || [],
-				});
-			}
-		}
-
-		return notes;
 	}
 
 	/**
@@ -1138,7 +1123,6 @@ export class TaskManager extends Events {
 		this.settings = settings;
 		this.taskTag = settings.taskTag;
 		this.excludedFolders = parseExcludedFolders(settings.excludedFolders);
-		this.disableNoteIndexing = settings.disableNoteIndexing;
 		this.storeTitleInFilename = settings.storeTitleInFilename;
 		this.clearFilterIndexes();
 		this.filterIndexesBuilt = false;
@@ -1258,9 +1242,11 @@ export class TaskManager extends Events {
 			return;
 		}
 
+		// Every view reads this cache. A Bases view's entry holds live Obsidian objects
+		// that cannot be cloned, so it stays with the view that supplied it.
+		const { basesData: _basesData, ...task } = taskInfo;
 		this.pendingTaskInfoByPath.set(path, {
-			...taskInfo,
-			id: taskInfo.id ?? path,
+			...task,
 			path,
 		});
 		filterIndexChanged = this.updateFilterIndexesFromTaskInfo(path, taskInfo);

@@ -28,7 +28,7 @@ export function createTaskModalActionIcon(
 	setIcon(icon, spec.iconName);
 
 	if (spec.chip) {
-		iconContainer.addClass("tn-task-modal__chip");
+		iconContainer.addClass("tn-task-modal__chip", "tn-chip", "tn-chip--property");
 		iconContainer.createSpan("action-icon__label");
 	}
 
@@ -40,7 +40,13 @@ export function createTaskModalActionIcon(
 
 	iconContainer.addEventListener("click", activate);
 	iconContainer.addEventListener("keydown", (event) => {
-		if (event.key === "Enter" || event.key === " ") {
+		if (
+			(event.key === "Enter" || event.key === " ") &&
+			!event.ctrlKey &&
+			!event.metaKey &&
+			!event.altKey &&
+			!event.shiftKey
+		) {
 			activate(event);
 		}
 	});

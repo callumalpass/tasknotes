@@ -1,4 +1,6 @@
 import { uiData } from "./i18n/dataText";
+import { dismissTooltips } from "./ui/kit/popover";
+import { registerUndoKeyboard } from "./ui/kit/toast";
 import { displayError } from "./i18n/runtime";
 import { configLabel } from "./i18n/configLabels";
 import { uiText } from "./i18n/runtime";
@@ -17,7 +19,10 @@ import {
 type Nullable<T> = T | null;
 
 import { completeRecurringTaskWithUndo } from "./services/task-service/recurringCompletionUndo";
-import { showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
+import { recurringCompletionMessage, showRecurringCompletionNotice } from "./ui/recurringCompletionNotice";
+import { showTaskUndo, updateTaskProjectsWithUndo } from "./ui/taskPropertyPickers";
+import { captureTaskUndo } from "./ui/taskMutationUndo";
+import { showToast } from "./ui/kit/toast";
 import {
 	createDailyNote,
 	getDailyNote,
@@ -55,7 +60,6 @@ import { FilterService } from "./services/FilterService";
 import { TaskStatsService } from "./services/TaskStatsService";
 import type { ViewPerformanceService } from "./services/ViewPerformanceService";
 import { AutoArchiveService } from "./services/AutoArchiveService";
-import { ViewStateManager } from "./services/ViewStateManager";
 import { DragDropManager } from "./utils/DragDropManager";
 import { formatDateForStorage, getTodayLocal } from "./utils/dateUtils";
 import { ICSSubscriptionService } from "./services/ICSSubscriptionService";
@@ -74,14 +78,20 @@ import { createLanguagePackController } from "./bootstrap/languagePacks";
 import { OAuthService } from "./services/OAuthService";
 import { OAuthSecretStore } from "./services/OAuthSecretStore";
 import { migrateLegacyOAuthData, stripLegacyOAuthData } from "./services/oauthSecretMigration";
+import {
+	loadDeviceLocalSettings,
+	persistDeviceLocalSettings,
+	stripDeviceLocalSettings,
+	type DeviceLocalSettings,
+} from "./settings/deviceLocalSettings";
 import { GoogleCalendarService } from "./services/GoogleCalendarService";
 import { MicrosoftCalendarService } from "./services/MicrosoftCalendarService";
-import { CalendarProviderRegistry } from "./services/CalendarProvider";
+import { CalendarProviderRegistry, type GoogleCalendarSource } from "./services/CalendarProvider";
+import type { HostedGoogleCalendarService } from "./services/HostedGoogleCalendarService";
 import { TaskCalendarSyncService } from "./services/TaskCalendarSyncService";
 import { addTaskToProject, assignTaskAsSubtask } from "./services/taskRelationshipActions";
 import {
 	initializeAfterLayoutReady,
-	initializeCalendarProviders,
 	registerBasesIntegration,
 } from "./bootstrap/pluginBootstrap";
 import { cleanupPluginRuntime, initializePluginRuntime } from "./bootstrap/pluginRuntime";
@@ -89,7 +99,7 @@ import {
 	ensureDefaultBasesViewFiles,
 	type DefaultBasesFileResult,
 } from "./bootstrap/defaultBasesFiles";
-import { ensureStarterNote as ensureStarterNoteFile } from "./bootstrap/starterNote";
+import { openStarterNote as openStarterNoteFile } from "./bootstrap/starterNote";
 import {
 	getAvailableTaskNotesReleaseVersion,
 	shouldNotifyForRelease,
@@ -106,6 +116,7 @@ import { TaskContextMenu } from "./components/TaskContextMenu";
 import {
 	LoadedSettingsData,
 	buildSettingsDataForSave,
+	buildSavedSettingsSnapshot,
 	buildSettingsFromLoadedData,
 	loadPluginSettingsDataWithRetry,
 	pluginDataFileExists,
@@ -113,6 +124,7 @@ import {
 import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
 import { sanitizeLinkAliasText } from "./utils/linkAliasUtils";
+import { generateLink } from "./utils/linkUtils";
 import { withPluginDataWriteLock } from "./utils/pluginDataWriteLock";
 import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "./api/runtime-api";
 import {
@@ -136,6 +148,8 @@ function getSubmenu(item: unknown): Menu {
 
 export default class TaskNotesPlugin extends Plugin {
 	settings: TaskNotesSettings;
+	/** Settings as saved before this session's load-time migrations (mdbase legacy recognition only). */
+	savedSettingsSnapshot: TaskNotesSettings | null = null;
 	i18n: I18nService;
 	private languagePackController?: LanguagePackController;
 	private settingsLoadCompromised = false;
@@ -172,7 +186,6 @@ export default class TaskNotesPlugin extends Plugin {
 	taskService: TaskService;
 	filterService: FilterService;
 	taskStatsService: TaskStatsService;
-	viewStateManager: ViewStateManager;
 	projectSubtasksService: ProjectSubtasksService;
 	expandedProjectsService: ExpandedProjectsService;
 	autoArchiveService: AutoArchiveService;
@@ -217,9 +230,14 @@ export default class TaskNotesPlugin extends Plugin {
 	oauthService: OAuthService;
 	oauthSecretStore: OAuthSecretStore;
 	private oauthSecretStorageReady = false;
+	private deviceLocalStorageReady = false;
 
-	// Google Calendar service
-	googleCalendarService: GoogleCalendarService;
+	// Google Calendar: the one source the views read. It is the TaskNotes
+	// calendar service while this device is signed in to it, and otherwise the
+	// person's own Google application.
+	googleCalendarService: GoogleCalendarSource;
+	ownGoogleCalendarService: GoogleCalendarService;
+	hostedGoogleCalendarService: HostedGoogleCalendarService;
 
 	// Microsoft Calendar service
 	microsoftCalendarService: MicrosoftCalendarService;
@@ -234,9 +252,6 @@ export default class TaskNotesPlugin extends Plugin {
 	// mdbase-spec generation service
 	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
 
-	// Bases filter converter for exporting saved views
-	basesFilterConverter: import("./services/BasesFilterConverter").BasesFilterConverter;
-
 	// Event listener cleanup
 	taskUpdateListenerForEditor: unknown = null;
 	relationshipsReadingModeCleanup: (() => void) | null = null;
@@ -246,9 +261,10 @@ export default class TaskNotesPlugin extends Plugin {
 	initializationComplete = false;
 
 	// Migration state management
-	private migrationComplete = false;
-	private migrationPromise: Promise<void> | null = null;
-	private shouldCreateStarterNoteOnStartup = false;
+	private newInstall = false;
+	get isNewInstall(): boolean {
+		return this.newInstall;
+	}
 
 	// Bases registration state management
 	basesRegistered = false;
@@ -314,6 +330,16 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async onload() {
+		const undoDocuments = new Set<Document>([document]);
+		this.app.workspace.iterateAllLeaves(leaf => undoDocuments.add(leaf.view.containerEl.ownerDocument));
+		for (const doc of undoDocuments) this.register(registerUndoKeyboard(doc.body, this.app.vault));
+		this.registerEvent(this.app.workspace.on("window-open", (_workspaceWindow, win) => {
+			this.register(registerUndoKeyboard(win.document.body, this.app.vault));
+		}));
+		this.registerDomEvent(document, "keydown", () => dismissTooltips(document), true);
+		this.registerEvent(this.app.workspace.on("active-leaf-change", () => {
+			dismissTooltips(activeDocument);
+		}));
 		// Create the promise and store its resolver
 		this.readyPromise = new Promise((resolve) => {
 			this.resolveReady = resolve;
@@ -358,10 +384,6 @@ export default class TaskNotesPlugin extends Plugin {
 		await initializePluginRuntime(this);
 		this.registerTaskNotesFileMenuActions();
 
-		// Start migration check early (before views can be opened)
-		this.migrationPromise = this.performEarlyMigrationCheck();
-
-		initializeCalendarProviders(this);
 		// Not awaited: if Bases has not loaded yet this schedules a retry timer,
 		// and initializeAfterLayoutReady attempts registration again.
 		void registerBasesIntegration(this);
@@ -536,33 +558,6 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	/**
-	 * Perform early migration check and state preparation
-	 * This runs before any views can be opened to prevent race conditions
-	 */
-	private async performEarlyMigrationCheck(): Promise<void> {
-		try {
-			// Initialize saved views (handles migration if needed)
-			await this.viewStateManager.initializeSavedViews();
-
-			// Perform view state migration if needed (this is silent and fast)
-			if (this.viewStateManager.needsMigration()) {
-				await this.viewStateManager.performMigration();
-			}
-
-			// Migration check complete
-			this.migrationComplete = true;
-		} catch (error) {
-			tasknotesLogger.error("Error during early migration check:", {
-				category: "configuration",
-				operation: "early-migration-check",
-				error: error,
-			});
-			// Don't fail the entire plugin load due to migration check issues
-			this.migrationComplete = true;
-		}
-	}
-
-	/**
 	 * Check for version updates and show release notes if needed
 	 */
 	async checkForVersionUpdate(): Promise<void> {
@@ -655,20 +650,6 @@ export default class TaskNotesPlugin extends Plugin {
 		return fragment;
 	}
 
-	/**
-	 * Public method for views to wait for migration completion
-	 */
-	async waitForMigration(): Promise<void> {
-		if (this.migrationPromise) {
-			await this.migrationPromise;
-		}
-
-		// Additional safety check - wait until migration is marked complete
-		while (!this.migrationComplete) {
-			await new Promise((resolve) => window.setTimeout(resolve, 50));
-		}
-	}
-
 	// Methods for updating shared state and emitting events
 
 	/**
@@ -725,6 +706,7 @@ export default class TaskNotesPlugin extends Plugin {
 		this.emitter?.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS.unloading, {
 			timestamp: new Date().toISOString(),
 		});
+		void (this.api as import("./api/TaskNotesAPI").TaskNotesAPI | undefined)?.dispose();
 		void cleanupPluginRuntime(this);
 	}
 
@@ -797,25 +779,39 @@ export default class TaskNotesPlugin extends Plugin {
 		return result.data;
 	}
 
-	async loadSettings() {
+	/**
+	 * @param fromExternalChange data.json changed on disk, usually through sync. It is
+	 * migrated in memory but not written back: a device still on v4 adds the stripped
+	 * keys again on its next load, so writing would never settle. The next save on this
+	 * device stores the migrated settings.
+	 */
+	async loadSettings(fromExternalChange = false) {
 		let loadedData = await this.loadSettingsData();
 		this.oauthSecretStore ??= new OAuthSecretStore(this.app.secretStorage);
 		this.oauthSecretStorageReady = false;
+		this.deviceLocalStorageReady = false;
+		let deviceLocal: DeviceLocalSettings | null = null;
 
 		if (!this.settingsLoadCompromised) {
 			const migration = migrateLegacyOAuthData(loadedData, this.oauthSecretStore);
-			if (migration.changed && migration.data) {
-				await super.saveData(migration.data);
+			// Copy values from earlier versions to device storage before data.json drops them.
+			deviceLocal = loadDeviceLocalSettings(this.app, migration.data);
+			const sanitized = migration.data && stripDeviceLocalSettings(migration.data);
+			if (!fromExternalChange && (migration.changed || sanitized !== migration.data) && sanitized) {
+				await super.saveData(sanitized);
 			}
-			loadedData = migration.data;
+			loadedData = sanitized;
 			this.oauthSecretStorageReady = true;
+			this.deviceLocalStorageReady = true;
 		}
 
+		this.savedSettingsSnapshot = buildSavedSettingsSnapshot(loadedData);
 		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData(loadedData);
+		if (deviceLocal) Object.assign(settings, deviceLocal);
 		this.settings = settings;
-		this.shouldCreateStarterNoteOnStartup = !settings.lastSeenVersion;
+		this.newInstall = !loadedData && !settings.lastSeenVersion;
 
-		if (shouldPersistMigratedSettings) {
+		if (shouldPersistMigratedSettings && !fromExternalChange) {
 			// Save the migrated settings to include new field mappings (non-blocking)
 			window.setTimeout(() => {
 				void (async () => {
@@ -836,13 +832,17 @@ export default class TaskNotesPlugin extends Plugin {
 	}
 
 	async saveData(data: unknown): Promise<void> {
-		const sanitizedData =
-			this.oauthSecretStorageReady &&
-			typeof data === "object" &&
-			data !== null &&
-			!Array.isArray(data)
-				? stripLegacyOAuthData(data as Record<string, unknown>)
-				: data;
+		let sanitizedData = data;
+		if (typeof data === "object" && data !== null && !Array.isArray(data)) {
+			let record = data as Record<string, unknown>;
+			if (this.deviceLocalStorageReady) {
+				record = persistDeviceLocalSettings(this.app, record);
+			}
+			if (this.oauthSecretStorageReady) {
+				record = stripLegacyOAuthData(record);
+			}
+			sanitizedData = record;
+		}
 		await super.saveData(sanitizedData);
 	}
 
@@ -937,8 +937,8 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.workspaceNavigationService.activateReleaseNotesView();
 	}
 
-	async openBasesFileForCommand(commandId: string): Promise<void> {
-		await this.workspaceNavigationService.openBasesFileForCommand(commandId);
+	async openBasesFileForCommand(commandId: string, preferredView?: string): Promise<void> {
+		await this.workspaceNavigationService.openBasesFileForCommand(commandId, preferredView);
 	}
 
 	/**
@@ -983,7 +983,7 @@ export default class TaskNotesPlugin extends Plugin {
 	async ensureBasesViewFiles(
 		options: { overwriteExisting?: boolean } = {}
 	): Promise<{ created: string[]; updated: string[]; skipped: string[] }> {
-		return ensureDefaultBasesViewFiles(
+		const result = await ensureDefaultBasesViewFiles(
 			{
 				app: this.app,
 				settings: this.settings,
@@ -1005,32 +1005,24 @@ export default class TaskNotesPlugin extends Plugin {
 			},
 			options
 		);
+		await this.workspaceNavigationService.repairOpenBasesLeaves(result.updated);
+		return result;
 	}
 
-	async ensureStarterNote(): Promise<void> {
-		const shouldCreateStarterNote = this.shouldCreateStarterNoteOnStartup;
-		this.shouldCreateStarterNoteOnStartup = false;
-		await ensureStarterNoteFile({
+	/** Opens the Start Here guide, creating it if needed. */
+	async openStarterNote(): Promise<void> {
+		await openStarterNoteFile({
 			app: this.app,
-			settings: this.settings,
-			shouldCreateStarterNote,
-			saveSettings: () => this.saveSettingsDataOnly(),
 			warn: (message, error) => {
-				if (error === undefined) {
-					tasknotesLogger.warn(message, {
-						category: "configuration",
-						operation: "ensure-starter-note",
-					});
-				} else {
-					tasknotesLogger.warn(message, {
-						category: "configuration",
-						operation: "ensure-starter-note",
-						error,
-					});
-				}
+				tasknotesLogger.warn(message, {
+					category: "configuration",
+					operation: "open-starter-note",
+					...(error === undefined ? {} : { error }),
+				});
 			},
 		});
 	}
+
 
 	/**
 	 * Open and activate the search pane with a tag query
@@ -1217,7 +1209,9 @@ export default class TaskNotesPlugin extends Plugin {
 		value: TaskInfo[keyof TaskInfo],
 		options: {
 			silent?: boolean;
+			suppressNotice?: boolean;
 			completionDate?: string;
+			onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void;
 			confirmClearInstances?: (cleared: {
 				complete: string[];
 				skipped: string[];
@@ -1244,7 +1238,7 @@ export default class TaskNotesPlugin extends Plugin {
 				confirmClearInstances,
 			});
 
-			if (!options.silent && !cancelledByUser) {
+			if (!options.silent && !options.suppressNotice && !cancelledByUser) {
 				if (property === "status") {
 					const statusValue = typeof value === "string" ? value : String(value);
 					const statusConfig = this.statusManager.getStatusConfig(statusValue);
@@ -1298,21 +1292,22 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(
 		task: TaskInfo,
 		date?: Date,
-		options?: RecurringCompletionOptions
+		options?: RecurringCompletionOptions & { onUndo?: (undo: () => Promise<boolean>, message?: string) => void }
 	): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const { updatedTask, completed, changed, undo } = await completeRecurringTaskWithUndo(
+			const { updatedTask, occurrenceDate, completed, changed, undo } = await completeRecurringTaskWithUndo(
 				this,
 				task,
 				targetDate,
 				options
 			);
 			if (changed) {
-				showRecurringCompletionNotice(
+				if (options?.onUndo) options.onUndo(undo, recurringCompletionMessage(this, updatedTask, occurrenceDate, completed));
+				else showRecurringCompletionNotice(
 					this,
 					updatedTask,
-					formatDateForStorage(targetDate),
+					occurrenceDate,
 					completed,
 					undo
 				);
@@ -1324,20 +1319,22 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "toggle-recurring-task-completion",
 				error: error,
 			});
-			new Notice(this.i18n.translate(msg({ message: "Failed to update recurring task", context: "notices.commands.recurringUpdateFailed" })));
+			if (!options?.onUndo) showToast({ message: this.i18n.translate(msg({ message: "Failed to update recurring task", context: "notices.commands.recurringUpdateFailed" })) });
 			throw error;
 		}
 	}
 
 	async toggleTaskArchive(task: TaskInfo): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.taskService.toggleArchive(task);
-			new Notice(
-				this.i18n.translate(
+			const receipt = await captureTaskUndo(this, task, () => this.taskService.toggleArchive(task));
+			if (!receipt.task) throw new Error(`Missing archived task: ${task.path}`);
+			const updatedTask = receipt.task;
+			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.app.vault,
+				`${task.title} · ${this.i18n.translate(
 					updatedTask.archived
 						? msg({ message: "Task archived", context: "notices.commands.archived" })
 						: msg({ message: "Task unarchived", context: "notices.commands.unarchived" })
-				)
+				)}`
 			);
 			return updatedTask;
 		} catch (error) {
@@ -1346,16 +1343,18 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "toggle-task-archive",
 				error: error,
 			});
-			new Notice(this.i18n.translate(msg({ message: "Failed to update task archive status", context: "notices.commands.archiveFailed" })));
+			showTaskUndo([], true, 0, this.app.vault, task.title);
 			throw error;
 		}
 	}
 
 	async toggleTaskStatus(task: TaskInfo): Promise<TaskInfo> {
 		try {
-			const updatedTask = await this.taskService.toggleStatus(task);
+			const receipt = await captureTaskUndo(this, task, () => this.taskService.toggleStatus(task));
+			if (!receipt.task) throw new Error(`Missing updated task: ${task.path}`);
+			const updatedTask = receipt.task;
 			const statusConfig = this.statusManager.getStatusConfig(updatedTask.status);
-			new Notice(
+			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.app.vault,
 				this.i18n.translate(msg({ message: "Task marked as ''{status}''", context: "notices.commands.statusChanged" }), {
 					status: uiData(configLabel(statusConfig) || updatedTask.status, "User-configured status label/value; never rewrite stored metadata"),
 				})
@@ -1391,7 +1390,7 @@ export default class TaskNotesPlugin extends Plugin {
 
 		const currentFile = this.app.workspace.getActiveFile();
 		const parentNote = currentFile
-			? this.app.fileManager.generateMarkdownLink(currentFile, currentFile.path)
+			? generateLink(this.app, currentFile, currentFile.path, "", "", this.settings.useFrontmatterMarkdownLinks)
 			: undefined;
 
 		return applyParentNoteProjectDefault(prePopulatedValues, parentNote);
@@ -1407,7 +1406,14 @@ export default class TaskNotesPlugin extends Plugin {
 			new Notice(this.i18n.translate(msg({ message: "No active file to convert", context: "commands.convertCurrentNoteToTask.noActiveFile" })));
 			return;
 		}
+		await this.convertNoteToTask(activeFile);
+	}
 
+	/**
+	 * Convert a note to a task by adding required task frontmatter.
+	 * Opens the task edit modal pre-populated with the note's existing data.
+	 */
+	async convertNoteToTask(activeFile: TFile): Promise<void> {
 		// Check if this note is already a task
 		const existingTask = await this.cacheManager.getTaskInfo(activeFile.path);
 		if (existingTask) {
@@ -1875,7 +1881,8 @@ export default class TaskNotesPlugin extends Plugin {
 			}
 
 			const nextStatus = this.statusManager.getNextStatus(taskInfo.status);
-			await this.updateTaskProperty(taskInfo, "status", nextStatus);
+			const { changeTaskProperty } = await import("./ui/taskPropertyPickers");
+			await changeTaskProperty(this, [taskInfo], "status", nextStatus);
 		} catch (error) {
 			tasknotesLogger.error("Failed to cycle current task status:", {
 				category: "persistence",
@@ -1935,7 +1942,8 @@ export default class TaskNotesPlugin extends Plugin {
 
 			const currentPriority = taskInfo.priority || this.settings.defaultTaskPriority;
 			const nextPriority = this.priorityManager.getNextPriority(currentPriority);
-			await this.updateTaskProperty(taskInfo, "priority", nextPriority);
+			const { changeTaskProperty } = await import("./ui/taskPropertyPickers");
+			await changeTaskProperty(this, [taskInfo], "priority", nextPriority);
 		} catch (error) {
 			tasknotesLogger.error("Failed to cycle current task priority:", {
 				category: "persistence",
@@ -2043,27 +2051,23 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			const activeFile = this.app.workspace.getActiveFile();
 			if (!activeFile) {
-				new Notice(this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })));
+				showToast({ message: this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })) });
 				return;
 			}
 
 			const taskInfo = await this.cacheManager.getTaskInfo(activeFile.path);
 			if (!taskInfo) {
-				new Notice(
-					this.i18n.translate(
+				showToast({ message: this.i18n.translate(
 						msg({ message: "Current file is not a task", context: "settings.integrations.googleCalendarExport.notices.notATask" })
-					)
-				);
+					) });
 				return;
 			}
 
 			const selector = new ProjectSelectModal(this.app, this, (projectFile) => {
 				if (!(projectFile instanceof TFile)) {
-					new Notice(
-						this.i18n.translate(
+					showToast({ message: this.i18n.translate(
 							msg({ message: "Failed to open project selector", context: "contextMenus.task.organization.notices.projectSelectFailed" })
-						)
-					);
+						) });
 					return;
 				}
 				void this.addSelectedProjectToTask(taskInfo, projectFile);
@@ -2075,9 +2079,7 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "add-project-current-task",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })) });
 		}
 	}
 
@@ -2085,16 +2087,14 @@ export default class TaskNotesPlugin extends Plugin {
 		try {
 			const activeFile = this.app.workspace.getActiveFile();
 			if (!activeFile) {
-				new Notice(this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })));
+				showToast({ message: this.i18n.translate(msg({ message: "No file is currently open", context: "notices.commands.noOpenFile" })) });
 				return;
 			}
 
 			const allTasks = await this.cacheManager.getAllTasks();
 			const candidates = allTasks.filter((candidate) => candidate.path !== activeFile.path);
 			if (candidates.length === 0) {
-				new Notice(
-					this.i18n.translate(msg({ message: "No eligible tasks available to assign as subtasks", context: "contextMenus.task.organization.notices.noEligibleSubtasks" }))
-				);
+				showToast({ message: this.i18n.translate(msg({ message: "No eligible tasks available to assign as subtasks", context: "contextMenus.task.organization.notices.noEligibleSubtasks" })) });
 				return;
 			}
 
@@ -2108,24 +2108,20 @@ export default class TaskNotesPlugin extends Plugin {
 				operation: "add-subtask-current-note",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to open subtask selector", context: "contextMenus.task.organization.notices.subtaskSelectFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to open subtask selector", context: "contextMenus.task.organization.notices.subtaskSelectFailed" })) });
 		}
 	}
 
 	private async addSelectedProjectToTask(task: TaskInfo, projectFile: TFile): Promise<void> {
 		try {
-			await addTaskToProject(this, task, projectFile);
+			await addTaskToProject(this, task, projectFile, updateTaskProjectsWithUndo(this), message => { showToast({ message }); });
 		} catch (error) {
 			tasknotesLogger.error("Failed to add selected project to task:", {
 				category: "persistence",
 				operation: "add-selected-project-task",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to add task to project", context: "contextMenus.task.organization.notices.addToProjectFailed" })) });
 		}
 	}
 
@@ -2134,16 +2130,14 @@ export default class TaskNotesPlugin extends Plugin {
 		subtask: TaskInfo
 	): Promise<void> {
 		try {
-			await assignTaskAsSubtask(this, parentFile, subtask);
+			await assignTaskAsSubtask(this, parentFile, subtask, updateTaskProjectsWithUndo(this), message => { showToast({ message }); });
 		} catch (error) {
 			tasknotesLogger.error("Failed to assign selected subtask to current note:", {
 				category: "persistence",
 				operation: "assign-selected-subtask-current-note",
 				error: error,
 			});
-			new Notice(
-				this.i18n.translate(msg({ message: "Failed to add task as subtask", context: "contextMenus.task.organization.notices.addAsSubtaskFailed" }))
-			);
+			showToast({ message: this.i18n.translate(msg({ message: "Failed to add task as subtask", context: "contextMenus.task.organization.notices.addAsSubtaskFailed" })) });
 		}
 	}
 

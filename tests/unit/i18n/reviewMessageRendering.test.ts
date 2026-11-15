@@ -1,7 +1,7 @@
 import { msg } from "@lingui/core/macro";
 import { setupI18n } from "@lingui/core";
 import { bindUIDisplay } from "../../../src/i18n/runtime";
-import { getMonthDayOptions } from "../../../src/components/RecurrenceContextMenu";
+import { getMonthDayOptions } from "../../../src/components/CustomRecurrenceModal";
 import { observeTranslation } from "../../helpers/real-i18n";
 import { uiText } from "../../../src/i18n/runtime";
 

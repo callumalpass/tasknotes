@@ -1,8 +1,10 @@
+import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
-import { formatUIDate, formatStableDate } from "../i18n/formatters";
+import { formatStableDate } from "../i18n/formatters";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, Setting, Notice, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
+import { formatDateLabel } from "../utils/dateUtils";
 import { ICSEvent, NoteInfo } from "../types";
 import { SafeAsync } from "../utils/safeAsync";
 import { MessageDescriptor } from "../i18n";
@@ -33,6 +35,7 @@ export class ICSNoteCreationModal extends Modal {
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: ICSNoteCreationOptions) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.options = options;
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
@@ -160,7 +163,7 @@ export class ICSNoteCreationModal extends Modal {
 			startDiv.createEl("strong", {
 				text: this.translate(msg({ message: "Start: ", context: "modals.icsNoteCreation.startLabel" })),
 			});
-			startDiv.appendText(formatUIDate(startDate, "PPPp"));
+			startDiv.appendText(formatDateLabel(startDate, this.plugin.settings, "PPP", true));
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
@@ -170,7 +173,7 @@ export class ICSNoteCreationModal extends Modal {
 			const endDate = new Date(endDateStr);
 			const endDiv = details.createDiv();
 			endDiv.createEl("strong", { text: this.translate(msg({ message: "End: ", context: "modals.icsNoteCreation.endLabel" })) });
-			endDiv.appendText(formatUIDate(endDate, "PPPp"));
+			endDiv.appendText(formatDateLabel(endDate, this.plugin.settings, "PPP", true));
 		}
 
 		if (icsEvent.location) {

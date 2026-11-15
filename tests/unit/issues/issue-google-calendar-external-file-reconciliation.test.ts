@@ -342,6 +342,32 @@ describe("Google Calendar external file reconciliation", () => {
 		});
 	});
 
+	it("exports a task added after an empty vault completed its first reconciliation", async () => {
+		const tasks: TaskInfo[] = [];
+		const pluginData: Record<string, unknown> = {};
+		const plugin = createPlugin(tasks, {}, pluginData);
+		const googleCalendarService = createGoogleCalendarService();
+		const syncService = new TaskCalendarSyncService(plugin, googleCalendarService as any);
+
+		await syncService.initializeExternalFileReconciliation();
+		tasks.push({
+			path: "TaskNotes/Tasks/created-after-empty-baseline.md",
+			title: "Created after empty baseline",
+			status: "ready",
+			priority: "3-medium",
+			archived: false,
+			scheduled: "2026-05-15",
+		} as TaskInfo);
+		await syncService.initializeExternalFileReconciliation();
+
+		expect(googleCalendarService.createEvent).toHaveBeenCalledTimes(1);
+		expect(googleCalendarService.createEvent).toHaveBeenCalledWith(
+			"primary",
+			expect.objectContaining({ summary: "Created after empty baseline" }),
+			expect.any(Number)
+		);
+	});
+
 	it("does not duplicate an event when the new task already carries an event id", async () => {
 		const knownTask = {
 			path: "TaskNotes/Tasks/already-known.md",

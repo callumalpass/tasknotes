@@ -130,9 +130,9 @@ async function openBaseFile(page: Page, relativePath: string): Promise<void> {
   }
 
   await expect(page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc`).first()).toBeVisible({ timeout: 10000 });
-  const monthButton = page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc-btn-view-month`).first();
+  const monthButton = page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc-toolbar-view-select`).first();
   if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await monthButton.click();
+    await monthButton.selectOption('month');
   }
   // Restore the fixture's current month if a preceding view navigated away.
   const todayButton = page.locator(`${ACTIVE_LEAF_SELECTOR} .tnc-btn-today`).first();

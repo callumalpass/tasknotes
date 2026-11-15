@@ -103,6 +103,9 @@ describe("taskCardSecondaryBadges", () => {
 		});
 
 		expect(card.querySelector(".task-card__recurring-indicator")).not.toBeNull();
+		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(true);
+		expect(card.classList.contains("task-card--has-interactive-badges")).toBe(true);
+		expect(card.classList.contains("task-card--has-decorative-badges")).toBe(false);
 		expect(card.querySelector(".task-card__reminder-indicator")).not.toBeNull();
 		expect(card.querySelector(".task-card__details-indicator")).not.toBeNull();
 		expect(card.querySelector(".task-card__project-indicator")).not.toBeNull();
@@ -173,6 +176,8 @@ describe("taskCardSecondaryBadges", () => {
 		const folder = card.querySelector<HTMLElement>(".task-card__project-indicator");
 		expect(folder).not.toBeNull();
 		expect(folder?.getAttribute("role")).toBeNull();
+		expect(card.classList.contains("task-card--has-interactive-badges")).toBe(false);
+		expect(card.classList.contains("task-card--has-decorative-badges")).toBe(true);
 		expect(folder?.getAttribute("aria-label")).toBe("This task is used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
 		expect(plugin.expandedProjectsService?.isExpanded).not.toHaveBeenCalled();
@@ -246,6 +251,7 @@ describe("taskCardSecondaryBadges", () => {
 		expect(handlers.toggleSubtasks).not.toHaveBeenCalled();
 
 		const originalFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
+		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(true);
 		expect(originalFolder?.getAttribute("role")).toBe("button");
 		expect(card.querySelector(".task-card__chevron")).not.toBeNull();
 
@@ -266,6 +272,7 @@ describe("taskCardSecondaryBadges", () => {
 
 		const updatedFolder = card.querySelector<HTMLElement>(".task-card__project-indicator");
 		expect(updatedFolder).not.toBe(originalFolder);
+		expect(badgesContainer.classList.contains("task-card__badges--interactive")).toBe(false);
 		expect(updatedFolder?.getAttribute("role")).toBeNull();
 		expect(updatedFolder?.getAttribute("aria-label")).toBe("This task is used as a project");
 		expect(card.querySelector(".task-card__chevron")).toBeNull();
@@ -297,6 +304,8 @@ describe("taskCardSecondaryBadges", () => {
 		});
 
 		expect(badgesContainer.childElementCount).toBe(0);
+		expect(card.classList.contains("task-card--has-interactive-badges")).toBe(false);
+		expect(card.classList.contains("task-card--has-decorative-badges")).toBe(false);
 	});
 
 	it("updates, creates, refreshes, and removes secondary badge controls", async () => {

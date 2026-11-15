@@ -1,7 +1,7 @@
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { setTooltip, TFile } from "obsidian";
+import { setIcon, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import {
@@ -11,7 +11,7 @@ import {
 	resolveDependencyEntry,
 } from "../utils/dependencyUtils";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
-import { createTaskCard } from "../ui/TaskCard";
+import { createTaskModalTaskRow } from "./taskModalTaskRow";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 export interface DependencyItem {
@@ -232,12 +232,7 @@ async function renderResolvedDependency(
 
 	const taskInfo = await plugin.cacheManager.getCachedTaskInfo(item.path);
 	if (taskInfo) {
-		const taskCard = createTaskCard(taskInfo, plugin, undefined, {
-			layout: "default",
-			showSecondaryBadges: false,
-			enableHoverPreview: false,
-		});
-		contentEl.appendChild(taskCard);
+		contentEl.appendChild(createTaskModalTaskRow(taskInfo, plugin));
 		return;
 	}
 
@@ -252,11 +247,11 @@ async function renderResolvedDependency(
 	}
 }
 
+/** Sits where a task's status glyph would, so missing tasks align with the found ones. */
 function renderUnresolvedDependency(contentEl: HTMLElement, item: DependencyItem): void {
+	setIcon(contentEl.createSpan({ cls: "tn-task-modal__task-row-placeholder" }), "unlink");
 	const nameEl = contentEl.createSpan({ cls: "task-project-name" });
 	nameEl.textContent = item.name;
-	const pathText = item.path ?? item.dependency.uid;
-	contentEl.createDiv({ cls: "task-project-path", text: pathText });
 }
 
 export function candidateDependencyUid(

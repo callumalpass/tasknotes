@@ -154,7 +154,7 @@ describe("Issue #1435: context menu titles handle malformed task/settings data",
 
 		expect(nonStringTitles).toEqual([]);
 		expect(getAllTitleValues()).toEqual(
-			expect.arrayContaining(["open", "done", "123", "Unknown", "[[Valid blocker]]"])
+			expect.arrayContaining(["Unknown", "[[Valid blocker]]"])
 		);
 	});
 });

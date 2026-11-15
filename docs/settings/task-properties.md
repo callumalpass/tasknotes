@@ -1,9 +1,7 @@
 # Task Properties Settings
 
-This tab configures all task properties. Each property is displayed as a card containing its configuration options.
+Open **Settings → TaskNotes → Properties** to configure property mappings and definitions. Open a property to edit its settings and NLP trigger in inline groups. Advanced filters have a separate detail page. Built-in default values are under **Task creation → Defaults**.
 
-
-![Task Properties Settings](../assets/settings-task-properties.png)
 
 !!! tip "Looking for property type documentation?"
     See the [Property Types Reference](property-types-reference.md) for detailed documentation on the expected data types (text, list, date, etc.) for each frontmatter property.
@@ -16,7 +14,7 @@ Each property card contains:
 - **Default**: The default value applied to new tasks (where applicable)
 - **NLP trigger**: Toggle and character configuration for natural language parsing (where applicable)
 - **Property-specific settings**: Additional configuration options specific to that property
-This tab defines the task schema used by creation flows, NLP parsing, views, and API payloads.
+These settings define the task schema used by creation flows, NLP parsing, views, and API payloads.
 
 Property keys are YAML/frontmatter keys. TaskNotes can read and write keys that contain spaces or punctuation, but hand-written Bases filters and formulas must reference those keys with bracket syntax, for example `note["TN-status"]`, rather than dot syntax such as `note.TN-status`.
 
@@ -159,7 +157,6 @@ A "Filters On" badge appears when any filters are configured.
 
 Configure project suggestion appearance:
 
-- **Enable fuzzy matching**: Allow typos and partial matches in project search
 - **Row 1, 2, 3**: Configure up to 3 lines of information for each project suggestion
 
 ### Tags

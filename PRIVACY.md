@@ -26,6 +26,7 @@ Optional network features:
 
 - Release checks: when enabled, TaskNotes checks GitHub once on startup for newer compatible TaskNotes releases. This is enabled by default and can be disabled in TaskNotes settings.
 - OAuth calendar integration (Google/Microsoft): fetches and updates calendar events through provider APIs.
+- Sign in with Google: fetches and updates Google Calendar events through TaskNotes Calendar, described below.
 - ICS subscriptions: fetches events from configured ICS URLs.
 - Webhooks: sends event payloads to webhook endpoints you configure.
 - API docs UI (`/api/docs/ui`): loads Swagger UI assets from `unpkg.com` in your browser.
@@ -33,7 +34,7 @@ Optional network features:
 
 ## TaskNotes Calendar (hosted service)
 
-TaskNotes Calendar is an optional service that shows your Google Calendar events in the TaskNotes web and mobile apps and lets you create, edit and delete them there. It is only used if you sign in to it.
+TaskNotes Calendar is an optional service that shows your Google Calendar events in the TaskNotes web and mobile apps, and in the Obsidian plugin when you choose **Sign in with Google**, and lets you create, edit and delete them there. It is only used if you sign in to it.
 
 **What we receive from Google.** When you sign in, we receive your Google account identifier, email address and name. When you connect calendars, we receive access to the list of calendars you subscribe to and to the events on them.
 
@@ -50,13 +51,13 @@ TaskNotes Calendar is an optional service that shows your Google Calendar events
 
 **Who processes this data.** The service runs on Cloudflare, which hosts it and its database. Calendar data is exchanged with Google. We do not sell your data, use it for advertising, or share it with anyone else, except where the law requires it.
 
-**Your choices.** You can disconnect your calendars or delete your account in the app's settings at any time. Either one deletes our stored Google credential and asks Google to revoke our access. Deleting your account removes the data listed above, apart from a keyed digest of your identity, kept for about an hour so that sign-ins already in progress cannot recreate the account. Deleted data can remain in database backups for up to 30 days. You can also remove access from your Google Account's linked apps page. Deleting your account does not change your Google events or your tasks.
+**Your choices.** You can disconnect your calendars or delete your account in the app's settings, or in the plugin's Google Calendar settings, at any time. Either one deletes our stored Google credential and asks Google to revoke our access. Deleting your account removes the data listed above, apart from a keyed digest of your identity, kept for about an hour so that sign-ins already in progress cannot recreate the account. Deleted data can remain in database backups for up to 30 days. You can also remove access from your Google Account's linked apps page. Deleting your account does not change your Google events or your tasks.
 
 **Google API Services.** TaskNotes' use and transfer to any other app of information received from Google APIs will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
 
 ## OAuth Credentials and Tokens
 
-This section covers the Obsidian plugin, which connects to calendar providers directly.
+This section covers the Obsidian plugin when it connects to calendar providers directly, using your own OAuth application. If you choose **Sign in with Google** instead, the plugin uses TaskNotes Calendar, described above. Google's tokens then stay with that service, and Obsidian Secret Storage holds only this device's session with it. Calendar events are kept in memory and are not written to your vault.
 
 - OAuth client IDs and client secrets are configured by you in TaskNotes settings.
 - OAuth client credentials, access tokens, and refresh tokens are stored locally in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system.
@@ -91,7 +92,7 @@ You can stop TaskNotes processing by disabling the plugin.
 You can remove plugin settings by uninstalling the plugin. Before uninstalling, disconnect calendar providers and use **Forget saved credentials** to remove OAuth values from Obsidian Secret Storage.
 Your notes remain in your vault.
 
-To delete TaskNotes Calendar data, delete your account in the app's settings, as described above.
+To delete TaskNotes Calendar data, delete your account in the app's settings or the plugin's Google Calendar settings, as described above.
 
 ## Changes to This Policy
 

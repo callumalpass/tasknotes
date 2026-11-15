@@ -11,6 +11,7 @@ const toggle = (key: string) =>
   page.locator(`.kanban-view__column[data-group="${key}"] .kanban-view__column-collapse-button`);
 
 async function openBoard() {
+  await page.waitForFunction(() => (window as any).app?.workspace?.layoutReady);
   await page.waitForFunction(() => (window as any).app?.plugins?.plugins?.tasknotes?.statusManager);
   await page.evaluate(async path => {
     const app = (window as any).app;

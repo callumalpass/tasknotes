@@ -100,7 +100,6 @@ type TimeblockEventPayload = {
 	description?: string;
 	start: { dateTime: string; timeZone: string };
 	end: { dateTime: string; timeZone: string };
-	colorId?: string;
 };
 
 function getErrorStatus(error: unknown): number | undefined {
@@ -1099,7 +1098,6 @@ export class TimeblockCalendarSync {
 		date: string,
 		timeblock: TimeBlock
 	): TimeblockEventPayload {
-		const settings = this.plugin.settings.googleCalendarExport;
 		const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 		const startsAfterMidnight = timeblock.startTime !== "00:00";
 		const endsAtNextMidnight =
@@ -1116,9 +1114,6 @@ export class TimeblockCalendarSync {
 		const description = this.buildEventDescription(notePath, timeblock);
 		if (description) {
 			payload.description = description;
-		}
-		if (settings.eventColorId) {
-			payload.colorId = settings.eventColorId;
 		}
 		return payload;
 	}

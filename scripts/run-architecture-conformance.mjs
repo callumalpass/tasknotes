@@ -65,7 +65,7 @@ const vaultWriteAllowedPatterns = [
 	/^src\/bootstrap\/.*\.ts$/,
 	/^src\/core\/VaultMutationService\.ts$/,
 	/^src\/main\.ts$/,
-	/^src\/services\/(?:AutoArchiveService|ICSNoteService|MdbaseSpecService|TaskService|VaultMutationService|ViewStateManager)\.ts$/,
+	/^src\/services\/(?:AutoArchiveService|ICSNoteService|MdbaseSpecService|TaskService|VaultMutationService)\.ts$/,
 	/^src\/services\/task-service\/(?:TaskCreationService|TaskUpdateService|taskPropertyChangeSideEffects)\.ts$/,
 	/^src\/settings\/settingsPersistence\.ts$/,
 	/^src\/utils\/TaskManager\.ts$/,
@@ -73,7 +73,7 @@ const vaultWriteAllowedPatterns = [
 
 const networkAllowedPatterns = [
 	/^src\/api\/.*\.ts$/,
-	/^src\/services\/(?:GoogleCalendarService|HTTPAPIService|ICSSubscriptionService|MCPService|MicrosoftCalendarService|OAuthService)\.ts$/,
+	/^src\/services\/(?:GoogleCalendarService|HTTPAPIService|ICSSubscriptionService|MCPService|MicrosoftCalendarService|OAuthService|calendarServiceHost)\.ts$/,
 ];
 
 const pluginImportAllowedPatterns = [
@@ -85,7 +85,7 @@ const pluginImportAllowedPatterns = [
 	/^src\/editor\/.*\.ts$/,
 	/^src\/main\.ts$/,
 	/^src\/modals\/.*\.ts$/,
-	/^src\/services\/(?:AutoArchiveService|AutoExportService|CalendarProvider|FilterService|GoogleCalendarService|ICSNoteService|ICSSubscriptionService|InstantTaskConvertService|MCPService|MdbaseSpecService|MicrosoftCalendarService|NotificationService|OAuthService|PomodoroService|ProjectSubtasksService|SettingsLifecycleService|StatusBarService|TaskActionCoordinator|TaskCalendarSyncService|TaskSelectionService|TaskService|TriggerConfigService|ViewPerformanceService|ViewStateManager|WorkspaceNavigationService)\.ts$/,
+	/^src\/services\/(?:AutoArchiveService|AutoExportService|CalendarProvider|FilterService|GoogleCalendarService|ICSNoteService|ICSSubscriptionService|InstantTaskConvertService|MCPService|MdbaseSpecService|MicrosoftCalendarService|NotificationService|OAuthService|PomodoroService|ProjectSubtasksService|SettingsLifecycleService|StatusBarService|TaskActionCoordinator|TaskCalendarSyncService|TaskSelectionService|TaskService|TriggerConfigService|ViewPerformanceService|WorkspaceNavigationService)\.ts$/,
 	/^src\/services\/task-service\/(?:TaskCreationService|TaskUpdateService|taskPropertyChangeSideEffects)\.ts$/,
 	/^src\/settings\/.*\.ts$/,
 	/^src\/ui\/.*\.ts$/,

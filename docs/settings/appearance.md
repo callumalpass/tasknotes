@@ -3,15 +3,11 @@
 These settings control the visual appearance of the plugin, including the calendar, task cards, and other UI elements.
 
 
-![Appearance Settings](../assets/settings-appearance.png)
-
 ## Task Cards
 
 Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
 Use **Group complete and skip actions in a submenu** to control how the completion actions are laid out in the task context menu. When on (the default), the *Completed today / on schedule / on due date / on (pick date)* actions — and *Skip instance* for recurring tasks — are nested under a single **Mark complete or skip** entry. Turn it off to show them directly in the menu, set off by dividers.
-
-![Group complete and skip actions in a submenu](../assets/settings-complete-skip-submenu.png)
 
 Checklist progress is available as a visible property in task cards. In Bases view `order` arrays, the corresponding source property is `file.tasks` (shown as `tasks` in Bases property pickers once present in the view `order` list).
 
@@ -46,7 +42,11 @@ for task-link lines:
 
 ## Display Formatting
 
-Use **Time format** to switch between 12-hour and 24-hour display across all TaskNotes surfaces.
+Use **Date format** to choose **Default** or **ISO 8601 (2026-08-23)**. ISO mode shows full year-month-day dates in task dialogs, task cards, calendar date headings and tooltips, reminders, statistics, and other TaskNotes date labels. Dates normally shown as “Today” on task cards become absolute dates. Calendar grid day numbers remain compact.
+
+Use **Time format** to switch between 12-hour and 24-hour display, including created and modified timestamps. For example, ISO dates with 24-hour time appear as `2026-08-23 19:16`. Date-only values do not gain a time.
+
+These are display preferences only. Frontmatter, date inputs, filenames, templates, timezone handling, and user-authored Bases formulas are unchanged. A formula with its own `.format(...)` expression continues to use that expression.
 
 ## Calendar View
 
@@ -70,5 +70,5 @@ UI element toggles control auxiliary surfaces such as the tracked-task status ba
 
 Some appearance-related settings are configured elsewhere:
 
-- **Task filename format**: Configured in [Task Properties](task-properties.md) → Title card
-- **Project autosuggest display**: Configured in [Task Properties](task-properties.md) → Projects card
+- **Task filename format**: Configured in **Task files → Filenames**
+- **Project autosuggest display**: Configured in **Properties → Projects**

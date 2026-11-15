@@ -2,8 +2,8 @@
  * Coverage for issue #1684.
  *
  * Current behavior:
- * - TaskNotes does not use a hidden task ID for discovery; `TaskManager`
- *   exposes the markdown file path as the task `id`.
+ * - TaskNotes does not require a stable task ID for discovery. Hand-authored
+ *   legacy tasks remain ID-less instead of borrowing the markdown file path.
  * - Hand-authored markdown files are recognized when their YAML frontmatter
  *   matches the configured task-identification settings.
  * - Plain markdown checkboxes in note bodies are not indexed as tasks; they
@@ -64,13 +64,13 @@ describe('Issue #1684: Plain markdown task discovery', () => {
 		const task = await cache.getTaskInfo(taskPath);
 
 		expect(task).toMatchObject({
-			id: taskPath,
 			path: taskPath,
 			title: 'Manual frontmatter task',
 			status: 'open',
 			priority: 'normal',
 			tags: ['task'],
 		});
+		expect(task?.id).toBeUndefined();
 	});
 
 	it.skip('reproduces issue #1684 - a plain markdown checkbox should be discoverable without frontmatter conversion', async () => {

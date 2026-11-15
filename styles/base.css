@@ -1,8 +1,6 @@
 /* Reduced motion support - scope to TaskNotes components only */
 @media (prefers-reduced-motion: reduce) {
-    .tasknotes-container *,
-    .tasknotes-card *,
-    .tasknotes-button * {
+    .tasknotes-container * {
         animation-duration: 0.01ms;
         animation-iteration-count: 1;
         transition-duration: 0.01ms;
@@ -10,8 +8,7 @@
 }
 
 /* Button click feedback - scope to TaskNotes buttons only */
-.tasknotes-container button:active:not(:disabled),
-.tasknotes-button:active:not(:disabled) {
+.tasknotes-container button:active:not(:disabled) {
     transform: scale(0.98);
 }
 
@@ -59,21 +56,4 @@
         transform: scale(1.01);
     }
 }
-
-/* Task update animations */
-.tasknotes-plugin .task-flash {
-    animation: tn-task-flash 1500ms ease-out;
-}
-
-.tasknotes-plugin .task-pulse {
-    animation: tn-task-pulse 1000ms ease-in-out;
-}
-
-.tasknotes-plugin .task-fade-in {
-    animation: tn-task-fade-in 300ms ease-out;
-}
-
-
-
-
 

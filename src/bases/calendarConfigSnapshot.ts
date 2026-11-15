@@ -19,6 +19,8 @@ const CALENDAR_CONFIG_SNAPSHOT_KEYS = [
 	"heightMode",
 	"customDayCount",
 	"listDayCount",
+	"showAgendaStrip",
+	"showMonthDayPanel",
 	"slotMinTime",
 	"slotMaxTime",
 	"slotDuration",

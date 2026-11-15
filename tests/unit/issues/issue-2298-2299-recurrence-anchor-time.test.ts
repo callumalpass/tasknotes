@@ -1,4 +1,4 @@
-import { buildCustomRecurrenceRule, buildRecurrenceOptions, CustomRecurrenceRuleInput } from "../../../src/components/RecurrenceContextMenu";
+import { buildCustomRecurrenceRule, buildRecurrenceOptions, CustomRecurrenceRuleInput } from "../../../src/components/CustomRecurrenceModal";
 import { buildRecurringTaskCompletePlan } from "../../../src/services/task-service/taskRecurringPlanning";
 import { updateDTSTARTInRecurrenceRule } from "../../../src/core/recurrence";
 import type { TaskInfo } from "../../../src/types";
@@ -39,6 +39,7 @@ describe("Recurrence anchor time (#2298, #2299)", () => {
 
 	it.each(["Z", ""])("retains timed anchor components when completing an instance (%s)", (suffix) => {
 		const rule = `DTSTART:20260906T200037${suffix};FREQ=DAILY`;
+
 		expect(complete(rule).updatedTask.recurrence).toBe(`DTSTART:20260907T200037${suffix};FREQ=DAILY`);
 		expect(complete(rule, { scheduled: "2026-09-06T09:30:00" }).updatedTask.recurrence).toBe(`DTSTART:20260907T200037${suffix};FREQ=DAILY`);
 	});

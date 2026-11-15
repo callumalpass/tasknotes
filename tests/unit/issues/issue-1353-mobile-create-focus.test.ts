@@ -53,6 +53,7 @@ describe("Issue #1353: mobile create modal autofocus", () => {
 			editor: {
 				cm: {
 					focus,
+					contentDOM: modal.contentEl.createDiv(),
 					scrollDOM,
 				},
 			},
@@ -75,6 +76,7 @@ describe("Issue #1353: mobile create modal autofocus", () => {
 			editor: {
 				cm: {
 					focus,
+					contentDOM: modal.contentEl.createDiv(),
 					scrollDOM,
 				},
 			},

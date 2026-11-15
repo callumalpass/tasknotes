@@ -43,7 +43,8 @@ export function buildBasesVisiblePropertyLabels({
 		if (
 			taskCardPropertyId &&
 			typeof displayName === "string" &&
-			displayName.trim() !== ""
+			displayName.trim() !== "" &&
+			displayName !== basesPropertyId.replace(/^(note\.|task\.)/, "")
 		) {
 			labels[taskCardPropertyId] = displayName;
 		}

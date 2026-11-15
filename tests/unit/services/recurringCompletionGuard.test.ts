@@ -136,6 +136,13 @@ describe("guarded recurring completion", () => {
 			});
 		});
 
+		it("reports the persisted completion date when recurrence planning chooses another owning date", async () => {
+			const { plugin, toggle } = pluginReading(content, content);
+			toggle.mockResolvedValue(series({ complete_instances: [occurrence], scheduled: "2024-01-19" }));
+			const result = await completeRecurringTaskWithUndo(plugin, series(), new Date("2024-01-10T23:30:00Z"));
+			expect(result.occurrenceDate).toBe(occurrence);
+		});
+
 		it("reports a change when the file was written", async () => {
 			const { plugin } = pluginReading(content, content.replace("01-12", "01-19"));
 

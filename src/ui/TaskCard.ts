@@ -1,9 +1,8 @@
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
-import { BatchContextMenu } from "../components/BatchContextMenu";
 import { type TaskCardPresentationOptions } from "./taskCardPresentation";
-import { renderTaskCardMetadataLine } from "./taskCardMetadata";
+import { cleanupTaskCardMetadata, renderTaskCardMetadataLine } from "./taskCardMetadata";
 import {
 	cleanupTaskCardExpansions,
 	toggleBlockedByTasksExpansion,
@@ -12,11 +11,12 @@ import {
 	refreshParentTaskSubtasksExpansion,
 	type TaskCardRelationshipExpansionContext,
 } from "./taskCardRelationshipExpansion";
-import { createPriorityClickHandler, createStatusCycleHandler } from "./taskCardActions";
+import { createPriorityClickHandler, createStatusCycleHandler, syncTaskCardWriteState } from "./taskCardActions";
 import {
 	applyTaskCardPriorityColor,
 	createPriorityIndicator,
 	createStatusIndicator,
+	syncTaskCardLeadColumn,
 	updatePriorityIndicator,
 	updateStatusIndicator,
 } from "./taskCardPrimaryIndicators";
@@ -26,11 +26,10 @@ import {
 	updateTaskCardSecondaryBadges,
 	type TaskCardSecondaryBadgeHandlers,
 } from "./taskCardSecondaryBadges";
-import { createTaskCardContextMenuButton, showTaskContextMenu } from "./taskCardContextMenu";
+import { createTaskCardContextMenuButton, openTaskMenu } from "./taskCardContextMenu";
 import { createTaskCardTitle, updateTaskCardTitle } from "./taskCardTitle";
 import { updateTaskCardStatusIndicatorVisuals } from "./taskCardCompletionState";
-export { showDeleteConfirmationModal } from "./taskCardDeletion";
-export { showTaskContextMenu } from "./taskCardContextMenu";
+export { openTaskMenu, showTaskContextMenu } from "./taskCardContextMenu";
 
 // Property labels are resolved in taskCardProperties via getTaskCardPropertyLabel.
 
@@ -44,6 +43,7 @@ export interface TaskCardOptions {
 	 */
 	occurrenceScheduled?: string;
 	layout?: "default" | "compact" | "inline";
+	plainTags?: boolean;
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
 	/** When false, omit secondary badge controls such as reminders, project badges, and toggles. */
@@ -81,6 +81,7 @@ export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 type TaskCardElement = HTMLElement & {
 	_taskPath?: string;
 	_taskCardOptions?: Partial<TaskCardOptions>;
+	_taskCardStateClasses?: string[];
 };
 
 function getStoredTaskCardOptions(card: HTMLElement): Partial<TaskCardOptions> {
@@ -152,6 +153,7 @@ export function createTaskCard(
 	taskCardElement._taskCardOptions = opts;
 
 	card.className = renderState.cardClasses.join(" ");
+	taskCardElement._taskCardStateClasses = renderState.cardClasses;
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
 	card.dataset.status = effectiveStatus;
@@ -205,6 +207,7 @@ export function createTaskCard(
 		visibleProperties,
 		onClick: createPriorityClickHandler(task, plugin),
 	});
+	syncTaskCardLeadColumn(card, visibleProperties, plugin, opts.hideStatusIndicator);
 
 	// Content container
 	const contentContainer = mainRow.createEl(layout === "inline" ? "span" : "div", {
@@ -226,7 +229,7 @@ export function createTaskCard(
 		handlers: secondaryBadgeHandlers,
 	});
 
-	createTaskCardContextMenuButton({
+	const contextMenuButton = createTaskCardContextMenuButton({
 		mainRow,
 		taskPath: task.path,
 		plugin,
@@ -235,7 +238,7 @@ export function createTaskCard(
 		occurrenceDate: opts.occurrenceDate,
 	});
 
-	createTaskCardTitle({
+	const { titleEl } = createTaskCardTitle({
 		contentContainer,
 		layout,
 		task,
@@ -243,6 +246,7 @@ export function createTaskCard(
 		displayText: opts.displayText,
 		isCompleted,
 	});
+	if (badgesContainer) titleEl.appendChild(badgesContainer);
 
 	// Second line: Metadata (dynamic based on visible properties)
 	const metadataLine = contentContainer.createEl(layout === "inline" ? "span" : "div", {
@@ -257,6 +261,9 @@ export function createTaskCard(
 		propertyOptions: opts,
 		handlers: secondaryBadgeHandlers,
 	});
+	if (layout === "inline") {
+		mainRow.insertBefore(metadataLine, contextMenuButton);
+	}
 
 	// Add click handlers with single/double click distinction
 	const { clickHandler, auxclickHandler, dblclickHandler, contextmenuHandler } =
@@ -264,24 +271,20 @@ export function createTaskCard(
 			task,
 			plugin,
 			navigationSubpath: opts.navigationSubpath,
-			onSelectionClick: event => {
+			onSelectionClick: (event) => {
 				const path = card.dataset.taskPath;
-				return path ? getStoredTaskCardOptions(card).onSelectionClick?.(event, path) ?? false : false;
+				return path
+					? (getStoredTaskCardOptions(card).onSelectionClick?.(event, path) ?? false)
+					: false;
 			},
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;
 				if (!path) return;
-				void showTaskContextMenu(e, path, plugin, targetDate, {
+				void openTaskMenu(e, path, plugin, targetDate, {
 					promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
 					occurrenceDate: opts.occurrenceDate,
 				});
 			},
-			createBatchContextMenu: (selectedPaths, onUpdate) =>
-				new BatchContextMenu({
-					plugin,
-					selectedPaths,
-					onUpdate,
-				}),
 		});
 
 	card.addEventListener("click", clickHandler);
@@ -293,6 +296,7 @@ export function createTaskCard(
 		card.addEventListener("mouseover", createTaskHoverHandler(task, plugin));
 	}
 
+	syncTaskCardWriteState(card, plugin, task.path);
 	return card;
 }
 
@@ -310,7 +314,12 @@ export function updateTaskCard(
 	const renderState = buildTaskCardRenderState(task, plugin, opts);
 	const { targetDate, effectiveStatus, isCompleted, hasDetails } = renderState;
 
-	element.className = renderState.cardClasses.join(" ");
+	const previousState = new Set((element as TaskCardElement)._taskCardStateClasses ?? []);
+	const interactionClasses = Array.from(element.classList).filter((className) =>
+		!previousState.has(className) && !/^task-card--(?:layout-|priority-|status-|project-|completed(?:$|-)|skipped$|archived$|actively-tracked$|recurring$|materialized-occurrence$|has-details$|chevron-left$|has-projects$)/.test(className)
+	);
+	element.className = [...new Set([...renderState.cardClasses, ...interactionClasses])].join(" ");
+	(element as TaskCardElement)._taskCardStateClasses = renderState.cardClasses;
 	element.dataset.status = effectiveStatus;
 	if (task.priority) {
 		element.dataset.priority = task.priority;
@@ -366,6 +375,7 @@ export function updateTaskCard(
 		visibleProperties,
 		onClick: createPriorityClickHandler(task, plugin),
 	});
+	syncTaskCardLeadColumn(element, visibleProperties, plugin, opts.hideStatusIndicator);
 
 	const secondaryBadgeHandlers = createSecondaryBadgeHandlers(plugin);
 	updateTaskCardSecondaryBadges({
@@ -405,6 +415,7 @@ export function updateTaskCard(
 		});
 	}
 
+	syncTaskCardWriteState(element, plugin, task.path);
 	// Animation is now handled separately - don't add it here during reconciler updates
 }
 
@@ -412,6 +423,8 @@ export function updateTaskCard(
  * Clean up event listeners and resources for a task card
  */
 export function cleanupTaskCard(card: HTMLElement): void {
+	const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
+	if (metadata) cleanupTaskCardMetadata(metadata);
 	cleanupTaskCardExpansions(card);
 }
 

@@ -32,7 +32,7 @@ Open your first view from the TaskNotes ribbon icon or by running **TaskNotes: O
 
 ### 4. Explore
 
-Use [Core Concepts](core-concepts.md) to understand the data model, [Features](features.md) for workflow capabilities, [Views](views.md) for interface behaviour, and [Settings](settings.md) to tune TaskNotes for your vault. If you already have task-like notes, start with [Adopt TaskNotes in an existing vault](getting-started/existing-vault.md).
+Use [Core Concepts](core-concepts.md) to understand the data model, [Features](features.md) for workflow capabilities, [Views](views.md) for interface behaviour, and [Settings](settings.md) to tune TaskNotes for your vault. If you already have task-like notes, start with [Adopt TaskNotes in an existing vault](getting-started/existing-vault.md). To use your tasks on the web, iPhone and Android, see [Use TaskNotes App with your vault](guides/tasknotes-app.md).
 
 ## Quick Links
 
@@ -40,6 +40,10 @@ Use [Core Concepts](core-concepts.md) to understand the data model, [Features](f
   <a class="card" href="https://github.com/callumalpass/tasknotes" target="_blank" rel="noopener noreferrer">
     <span class="card__title">GitHub Repository</span>
     <span class="card__desc">Source code, issues, releases, and contribution discussions</span>
+  </a>
+  <a class="card" href="/guides/tasknotes-app/">
+    <span class="card__title">TaskNotes App</span>
+    <span class="card__desc">Your tasks on the web, iPhone and Android, synced with your vault through mdbase Connect</span>
   </a>
   <a class="card" href="/features/task-management/">
     <span class="card__title">Task Management</span>
@@ -64,6 +68,10 @@ Use [Core Concepts](core-concepts.md) to understand the data model, [Features](f
   <a class="card" href="/companion-plugins/">
     <span class="card__title">Companion Plugins</span>
     <span class="card__desc">Optional plugins such as Canvas Bases and TaskNotes Workflows that build on TaskNotes</span>
+  </a>
+  <a class="card" href="/migration-v4-to-v5/">
+    <span class="card__title">Upgrade Guide</span>
+    <span class="card__desc">Upgrading from TaskNotes v4 to v5</span>
   </a>
   <a class="card" href="/migration-v3-to-v4/">
     <span class="card__title">Migration Guide</span>

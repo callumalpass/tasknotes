@@ -41,6 +41,8 @@ export interface DateOption {
 	isToday?: boolean;
 	isCustom?: boolean;
 	category?: string;
+	/** Days an increment option moves the current date by. */
+	days?: number;
 }
 
 export interface DateContextMenuOptions {
@@ -93,19 +95,15 @@ export class DateContextMenu {
 
 		const dateOptions = this.getDateOptions();
 
-		const incrementOptions = dateOptions.filter((option) => option.category === "increment");
-		if (incrementOptions.length > 0) {
-			incrementOptions.forEach((option) => {
-				this.menu.addItem((item) => {
-					if (option.icon) item.setIcon(option.icon);
-					item.setTitle(option.label);
-					item.onClick(async () => {
-						this.options.onSelect(option.value, null);
-					});
-				});
+		// Same order as the date picker: pick, quick dates, increments, weekdays, clear.
+		this.menu.addItem((item) => {
+			item.setTitle(this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
+			item.setIcon("calendar");
+			item.onClick(async () => {
+				this.showDateTimePicker();
 			});
-			this.menu.addSeparator();
-		}
+		});
+		this.menu.addSeparator();
 
 		const basicOptions = dateOptions.filter((option) => option.category === "basic");
 		basicOptions.forEach((option) => {
@@ -121,6 +119,20 @@ export class DateContextMenu {
 				});
 			});
 		});
+
+		const incrementOptions = dateOptions.filter((option) => option.category === "increment");
+		if (incrementOptions.length > 0) {
+			this.menu.addSeparator();
+			incrementOptions.forEach((option) => {
+				this.menu.addItem((item) => {
+					if (option.icon) item.setIcon(option.icon);
+					item.setTitle(option.label);
+					item.onClick(async () => {
+						this.options.onSelect(option.value, null);
+					});
+				});
+			});
+		}
 
 		const weekdayOptions = dateOptions.filter((option) => option.category === "weekday");
 		if (weekdayOptions.length > 0) {
@@ -148,17 +160,8 @@ export class DateContextMenu {
 			});
 		}
 
-		this.menu.addSeparator();
-
-		this.menu.addItem((item) => {
-			item.setTitle(this.t(msg({ message: "Pick date & time…", context: "contextMenus.date.pickDateTime" })));
-			item.setIcon("calendar");
-			item.onClick(async () => {
-				this.showDateTimePicker();
-			});
-		});
-
 		if (this.options.currentValue) {
+			this.menu.addSeparator();
 			this.menu.addItem((item) => {
 				item.setTitle(this.t(msg({ message: "Clear date", context: "contextMenus.date.clearDate" })));
 				item.setIcon("x");
@@ -181,38 +184,6 @@ export class DateContextMenu {
 		const today = getMoment();
 		const options: DateOption[] = [];
 
-		if (this.options.currentValue) {
-			// Card controls supply date and time separately; task menus supply a datetime.
-			const currentValue = combineDateAndTime(
-				this.options.currentValue,
-				this.options.currentTime || ""
-			);
-			options.push({
-				label: this.t(msg({ message: "+1 day", context: "contextMenus.date.increment.plusOneDay" })),
-				value: addDaysToDateTime(currentValue, 1),
-				icon: "plus",
-				category: "increment",
-			});
-			options.push({
-				label: this.t(msg({ message: "-1 day", context: "contextMenus.date.increment.minusOneDay" })),
-				value: addDaysToDateTime(currentValue, -1),
-				icon: "minus",
-				category: "increment",
-			});
-			options.push({
-				label: this.t(msg({ message: "+1 week", context: "contextMenus.date.increment.plusOneWeek" })),
-				value: addDaysToDateTime(currentValue, 7),
-				icon: "plus-circle",
-				category: "increment",
-			});
-			options.push({
-				label: this.t(msg({ message: "-1 week", context: "contextMenus.date.increment.minusOneWeek" })),
-				value: addDaysToDateTime(currentValue, -7),
-				icon: "minus-circle",
-				category: "increment",
-			});
-		}
-
 		options.push({
 			label: this.t(msg({ message: "Today", context: "contextMenus.date.basic.today" })),
 			value: today.format("YYYY-MM-DD"),
@@ -227,6 +198,69 @@ export class DateContextMenu {
 			icon: "calendar-plus",
 			category: "basic",
 		});
+
+		const nextSaturday = today.clone().day(6);
+		if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, "day")) {
+			nextSaturday.add(1, "week");
+		}
+		options.push({
+			label: this.t(msg({ message: "This weekend", context: "contextMenus.date.basic.thisWeekend" })),
+			value: nextSaturday.format("YYYY-MM-DD"),
+			icon: "calendar-days",
+			category: "basic",
+		});
+
+		const nextMonday = today.clone().day(1).add(1, "week");
+		options.push({
+			label: this.t(msg({ message: "Next week", context: "contextMenus.date.basic.nextWeek" })),
+			value: nextMonday.format("YYYY-MM-DD"),
+			icon: "calendar-plus",
+			category: "basic",
+		});
+
+		const nextMonth = today.clone().add(1, "month").startOf("month");
+		options.push({
+			label: this.t(msg({ message: "Next month", context: "contextMenus.date.basic.nextMonth" })),
+			value: nextMonth.format("YYYY-MM-DD"),
+			icon: "calendar-range",
+			category: "basic",
+		});
+
+		if (this.options.currentValue) {
+			// Card controls supply date and time separately; task menus supply a datetime.
+			const currentValue = combineDateAndTime(
+				this.options.currentValue,
+				this.options.currentTime || ""
+			);
+			options.push({
+				label: this.t(msg({ message: "+1 day", context: "contextMenus.date.increment.plusOneDay" })),
+				value: addDaysToDateTime(currentValue, 1),
+				icon: "plus",
+				category: "increment",
+				days: 1,
+			});
+			options.push({
+				label: this.t(msg({ message: "-1 day", context: "contextMenus.date.increment.minusOneDay" })),
+				value: addDaysToDateTime(currentValue, -1),
+				icon: "minus",
+				category: "increment",
+				days: -1,
+			});
+			options.push({
+				label: this.t(msg({ message: "+1 week", context: "contextMenus.date.increment.plusOneWeek" })),
+				value: addDaysToDateTime(currentValue, 7),
+				icon: "plus-circle",
+				category: "increment",
+				days: 7,
+			});
+			options.push({
+				label: this.t(msg({ message: "-1 week", context: "contextMenus.date.increment.minusOneWeek" })),
+				value: addDaysToDateTime(currentValue, -7),
+				icon: "minus-circle",
+				category: "increment",
+				days: -7,
+			});
+		}
 
 		const weekdayMessages = [
 			msg({ message: "Sunday", context: "common.weekdays.sunday" }),
@@ -255,33 +289,6 @@ export class DateContextMenu {
 				icon: "calendar",
 				category: "weekday",
 			});
-		});
-
-		const nextSaturday = today.clone().day(6);
-		if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, "day")) {
-			nextSaturday.add(1, "week");
-		}
-		options.push({
-			label: this.t(msg({ message: "This weekend", context: "contextMenus.date.basic.thisWeekend" })),
-			value: nextSaturday.format("YYYY-MM-DD"),
-			icon: "calendar-days",
-			category: "basic",
-		});
-
-		const nextMonday = today.clone().day(1).add(1, "week");
-		options.push({
-			label: this.t(msg({ message: "Next week", context: "contextMenus.date.basic.nextWeek" })),
-			value: nextMonday.format("YYYY-MM-DD"),
-			icon: "calendar-plus",
-			category: "basic",
-		});
-
-		const nextMonth = today.clone().add(1, "month").startOf("month");
-		options.push({
-			label: this.t(msg({ message: "Next month", context: "contextMenus.date.basic.nextMonth" })),
-			value: nextMonth.format("YYYY-MM-DD"),
-			icon: "calendar-range",
-			category: "basic",
 		});
 
 		return options;

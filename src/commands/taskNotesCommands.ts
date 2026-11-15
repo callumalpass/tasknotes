@@ -4,13 +4,33 @@ import type TaskNotesPlugin from "../main";
 import type { TranslatedCommandDefinition } from "./types";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { CheckCollectionModal } from "../modals/CheckCollectionModal";
+import { openTaskNotesAppSettings } from "../settings/TaskNotesSettingTab";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Commands/TaskNotesCommands" });
+
+async function syncCurrentTask(plugin: TaskNotesPlugin): Promise<void> {
+	const file = plugin.app.workspace.getActiveFile();
+	if (!file || !plugin.taskCalendarSyncService?.isEnabled()) return;
+	const task = await plugin.cacheManager.getTaskInfo(file.path);
+	if (!task) return;
+	if (!plugin.taskCalendarSyncService.shouldSyncTask(task)) {
+		new Notice(plugin.i18n.translate(msg({ message: "Task has no scheduled or due date to sync", context: "settings.integrations.googleCalendarExport.notices.noDateToSync" })));
+		return;
+	}
+	await plugin.taskCalendarSyncService.syncTaskToCalendar(task);
+	new Notice(plugin.i18n.translate(msg({ message: "Task synced to Google Calendar", context: "settings.integrations.googleCalendarExport.notices.taskSynced" })));
+}
 
 export function createTaskNotesCommandDefinitions(
 	plugin: TaskNotesPlugin
 ): TranslatedCommandDefinition[] {
 	return [
+		{
+			id: "check-collection",
+			nameKey: msg({ message: "Check collection", context: "collectionCheck.title" }),
+			callback: (ctx) => { new CheckCollectionModal(ctx).open(); },
+		},
 		{
 			id: "open-calendar-view",
 			nameKey: msg({ message: "Open mini calendar view", context: "commands.openCalendarView" }),
@@ -33,6 +53,20 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "open-today",
+			nameKey: msg({ message: "Open today", context: "commands.openToday" }),
+			callback: async (ctx) => {
+				await ctx.openBasesFileForCommand("open-tasks-view", "Today");
+			},
+		},
+		{
+			id: "open-inbox",
+			nameKey: msg({ message: "Open inbox", context: "commands.openInbox" }),
+			callback: async (ctx) => {
+				await ctx.openBasesFileForCommand("open-tasks-view", "Inbox");
+			},
+		},
+		{
 			id: "open-agenda-view",
 			nameKey: msg({ message: "Open agenda view", context: "commands.openAgendaView" }),
 			callback: async (ctx) => {
@@ -44,6 +78,20 @@ export function createTaskNotesCommandDefinitions(
 			nameKey: msg({ message: "Open Pomodoro timer", context: "commands.openPomodoroView" }),
 			callback: async (ctx) => {
 				await ctx.activatePomodoroView();
+			},
+		},
+		{
+			id: "open-pomodoro-stats",
+			nameKey: msg({ message: "Open Pomodoro statistics", context: "commands.openPomodoroStats" }),
+			callback: async (ctx) => {
+				await ctx.activatePomodoroStatsView();
+			},
+		},
+		{
+			id: "open-statistics",
+			nameKey: msg({ message: "Open task & project statistics", context: "commands.openStatisticsView" }),
+			callback: async (ctx) => {
+				await ctx.activateStatsView();
 			},
 		},
 		{
@@ -78,24 +126,17 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
-			id: "open-pomodoro-stats",
-			nameKey: msg({ message: "Open Pomodoro statistics", context: "commands.openPomodoroStats" }),
-			callback: async (ctx) => {
-				await ctx.activatePomodoroStatsView();
-			},
-		},
-		{
-			id: "open-statistics",
-			nameKey: msg({ message: "Open task & project statistics", context: "commands.openStatisticsView" }),
-			callback: async (ctx) => {
-				await ctx.activateStatsView();
-			},
-		},
-		{
 			id: "create-new-task",
 			nameKey: msg({ message: "Create new task", context: "commands.createNewTask" }),
 			callback: (ctx) => {
 				ctx.openTaskCreationModal();
+			},
+		},
+		{
+			id: "open-start-here-guide",
+			nameKey: msg({ message: "Open the Start Here guide", context: "commands.openStartHereGuide" }),
+			callback: async (ctx) => {
+				await ctx.openStarterNote();
 			},
 		},
 		{
@@ -282,6 +323,11 @@ export function createTaskNotesCommandDefinitions(
 		{
 			id: "sync-all-tasks-google-calendar",
 			nameKey: msg({ message: "Sync all tasks to Google Calendar", context: "commands.syncAllTasksGoogleCalendar" }),
+			checkCallback: (checking) => {
+				if (!plugin.taskCalendarSyncService?.isEnabled()) return false;
+				if (!checking) void plugin.taskCalendarSyncService.syncAllTasks();
+				return true;
+			},
 			callback: async (ctx) => {
 				if (!ctx.taskCalendarSyncService?.isEnabled()) {
 					new Notice(
@@ -298,51 +344,20 @@ export function createTaskNotesCommandDefinitions(
 		{
 			id: "sync-current-task-google-calendar",
 			nameKey: msg({ message: "Sync current task to Google Calendar", context: "commands.syncCurrentTaskGoogleCalendar" }),
-			callback: async (ctx) => {
-				if (!ctx.taskCalendarSyncService?.isEnabled()) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "Google Calendar export is not enabled. Configure it in Settings > Integrations.", context: "settings.integrations.googleCalendarExport.notices.notEnabled" })
-						)
-					);
-					return;
-				}
-
-				const activeFile = ctx.app.workspace.getActiveFile();
-				if (!activeFile) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "No file is currently active", context: "settings.integrations.googleCalendarExport.notices.noActiveFile" })
-						)
-					);
-					return;
-				}
-
-				const task = await ctx.cacheManager.getTaskInfo(activeFile.path);
-				if (!task) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "Current file is not a task", context: "settings.integrations.googleCalendarExport.notices.notATask" })
-						)
-					);
-					return;
-				}
-
-				if (!ctx.taskCalendarSyncService.shouldSyncTask(task)) {
-					new Notice(
-						ctx.i18n.translate(
-							msg({ message: "Task has no scheduled or due date to sync", context: "settings.integrations.googleCalendarExport.notices.noDateToSync" })
-						)
-					);
-					return;
-				}
-
-				await ctx.taskCalendarSyncService.syncTaskToCalendar(task);
-				new Notice(
-					ctx.i18n.translate(
-						msg({ message: "Task synced to Google Calendar", context: "settings.integrations.googleCalendarExport.notices.taskSynced" })
-					)
-				);
+			checkCallback: (checking) => {
+				if (!plugin.taskCalendarSyncService?.isEnabled()) return false;
+				const file = plugin.app.workspace.getActiveFile();
+				const frontmatter = file && plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+				if (!frontmatter || !plugin.cacheManager.isTaskFile(frontmatter)) return false;
+				if (!checking) void syncCurrentTask(plugin);
+				return true;
+			},
+		},
+		{
+			id: "set-up-tasknotes-app",
+			nameKey: msg({ message: "Set up TaskNotes App", context: "commands.setUpTaskNotesApp" }),
+			callback: (ctx) => {
+				openTaskNotesAppSettings(ctx);
 			},
 		},
 		{

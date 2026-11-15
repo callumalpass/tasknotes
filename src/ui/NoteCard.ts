@@ -3,7 +3,7 @@ import { msg } from "@lingui/core/macro";
 import { TFile, setIcon } from "obsidian";
 import { NoteInfo } from "../types";
 import TaskNotesPlugin from "../main";
-import { formatDateForDisplay } from "../utils/dateUtils";
+import { formatDateTimeForDisplay, formatDateForDisplay } from "../utils/dateUtils";
 import { getAllDailyNotes } from "obsidian-daily-notes-interface";
 
 export interface NoteCardOptions {
@@ -101,12 +101,12 @@ export function createNoteCard(
 
 	// Other metadata (date, path) if needed
 	if (opts.showCreatedDate && note.createdDate) {
-		const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
-		const dateFormat = timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm";
-		const dateStr =
-			note.createdDate.indexOf("T") > 0
-				? formatDateForDisplay(note.createdDate, dateFormat)
-				: note.createdDate;
+		const dateStr = note.createdDate.includes("T")
+			? formatDateTimeForDisplay(note.createdDate, {
+				dateDisplayFormat: plugin.settings.dateDisplayFormat,
+				userTimeFormat: plugin.settings.calendarViewSettings.timeFormat,
+			})
+			: note.createdDate;
 		contentContainer.createDiv({
 			cls: "note-card__metadata",
 			text: uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr }),
@@ -228,7 +228,7 @@ export function updateNoteCard(
 		const dateFormat = timeFormat === "12" ? "MMM d, yyyy h:mm a" : "MMM d, yyyy HH:mm";
 		const dateStr =
 			note.createdDate.indexOf("T") > 0
-				? formatDateForDisplay(note.createdDate, dateFormat)
+				? formatDateForDisplay(note.createdDate, dateFormat, plugin.settings.dateDisplayFormat)
 				: note.createdDate;
 		dateEl.textContent = uiText(msg({ message: "Created: {date}", context: "note created date" }), { date: dateStr });
 	}

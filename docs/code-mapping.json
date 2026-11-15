@@ -52,7 +52,6 @@
       "source": [
         "src/services/PomodoroService.ts",
         "src/views/PomodoroView.ts",
-        "src/views/PomodoroStatsView.ts",
         "src/api/PomodoroController.ts"
       ],
       "docs": ["docs/views/pomodoro-view.md", "docs/features/time-management.md"]

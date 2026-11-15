@@ -1,0 +1,170 @@
+# Upgrading from v4 to v5
+
+TaskNotes v5 keeps your task files, Base files, and settings. Most of the upgrade happens automatically on first launch. This guide covers what changes, what moves, and what to check afterwards.
+
+!!! warning "Back up before upgrading"
+    Back up the complete vault, including the hidden `.obsidian` directory, before upgrading. See [Backup and recovery](guides/backup-recovery.md).
+
+## Requirements
+
+- **Obsidian ${tasknotes.minAppVersion} or later**. Obsidian does not offer TaskNotes v5 to older Obsidian versions.
+- **Bases core plugin enabled** (Settings → Core plugins → Bases), as in v4.
+
+If you are upgrading from a release earlier than 4.13.0, HTTP API and MCP clients also need a TaskNotes API token. See [HTTP API authentication](HTTP_API.md#authentication).
+
+## What happens on first launch
+
+1. Your existing `data.json` settings are read and kept. New settings receive their defaults. If TaskNotes cannot read the settings or determine whether the file exists, startup stops rather than saving defaults over it. Resolve the storage or sync error and restart.
+2. The HTTP API token moves from `data.json` to Obsidian Secret Storage on that device. The last-seen and last-notified release versions move to per-device storage. These values are removed from `data.json` once they have been stored.
+3. If the mdbase integration is enabled, TaskNotes-generated mdbase v0.2 metadata is upgraded to v0.3. Updating does not turn the integration on; it is on by default only for new installs. To use TaskNotes App, turn it on in **Settings → TaskNotes → TaskNotes App** after every device that uses the vault runs v5. See [mdbase collections](#mdbase-collections).
+
+Task notes are not rewritten during the upgrade.
+
+## Synced devices
+
+Upgrade every device that syncs the vault. Running v4 and v5 against the same `data.json` is not supported.
+
+Obsidian Secret Storage is kept on each device and is not synced. After upgrading:
+
+- **HTTP API**: each device that runs the HTTP API has its own token. A device that starts TaskNotes v5 after another device has already removed the token from `data.json` generates a new token and shows a notice. Copy the new token into the API and MCP clients on that device from **Settings → TaskNotes → Advanced**.
+- **Calendar accounts**: OAuth credentials and account tokens have been stored in Secret Storage since 4.x. Devices that were not connected before need to be connected separately, as in 4.x.
+
+## Settings are reorganized
+
+Settings now use Obsidian's native settings pages, navigation, and search. Individual settings can be found from Obsidian's settings search. Apart from the [removed settings](#removed-settings), the settings are unchanged; they are grouped differently:
+
+| Page | Contains |
+| --- | --- |
+| Task files | Task identification, folders, filenames, and frontmatter |
+| Properties | Property mappings, statuses, priorities, and custom properties |
+| Task creation | Defaults, templates, natural-language input, and form fields |
+| Appearance & interaction | Task cards, inline tasks, click behaviour, and view defaults |
+| Time & reminders | Notifications, time tracking, recurrence, Pomodoro, and timeblocking |
+| Calendars & integrations | Calendar accounts, subscriptions, task export, and interoperability |
+| TaskNotes App | TaskNotes App links and setup, and the mdbase integration settings |
+| Advanced | Indexing, HTTP API, webhooks, and diagnostics |
+
+See [Settings](settings.md) for details of each page.
+
+### Removed settings
+
+These settings had no effect and are no longer shown:
+
+- **Disable note indexing** (Advanced)
+- **Enable fuzzy matching** for project suggestions. The project picker always matches fuzzily.
+- **Show due dates when scheduled** and **Show ICS events** under calendar default event visibility. Each calendar view shows or hides each calendar subscription in its own options.
+
+**Export v3 saved views to Bases** has also been removed. If you still have TaskNotes v3 saved views, export them in TaskNotes 4.x before upgrading; see [Upgrading from v3 to v4](migration-v3-to-v4.md#converting-saved-filter-views).
+
+Values saved for these settings stay in `data.json`, so devices still on 4.x keep them.
+
+## Stable task IDs
+
+New and converted tasks receive a UUID in the `id` frontmatter property. The ID stays the same when a task file is renamed or moved, so integrations can refer to a task without depending on its path.
+
+Existing tasks without an `id` remain valid and are not changed. Path-based integrations continue to work. The JavaScript API adds `getByPath()` and `getById()`; see [JavaScript API](javascript-api.md).
+
+## mdbase collections
+
+If the [mdbase integration](settings/integrations.md#mdbase) is enabled, TaskNotes v5 publishes the portable `tasknotes.task` contract (version 0.3.0-rc.6) used by TaskNotes App and other compatible tools. It is the same contract, byte for byte, that TaskNotes App installs, so the plugin and the app can share a collection. Tasks can list assignees as links to person notes; the property is optional.
+
+### mdbase metadata folders
+
+When TaskNotes first creates `mdbase.yaml`, including a v4 to v5 upgrade without
+an existing config, it explicitly uses `_mdbase/types/` and `_mdbase/contracts/`.
+Contract schemas live beside them in `_mdbase/schemas/` (and pack task schemas in
+`_mdbase/_schemas/tasknotes/`). `_mdbase/README.md` explains the folder; an existing
+README is never overwritten.
+
+A vault that already has `mdbase.yaml` keeps its configured folders. A config
+without folder settings still uses the spec defaults `_types/` and `_contracts/`.
+No existing metadata is moved. New settings records use `_mdbase/settings/`; existing records in `_settings/` stay there.
+
+**Hide mdbase folders in the file explorer** is on by default under Calendars &
+integrations. Turn it off to browse these folders; their files remain available
+in search and the quick switcher. See [Integrations](settings/integrations.md).
+
+### TaskNotes settings record
+
+Collection-wide TaskNotes behaviour is stored in `_mdbase/settings/dev.tasknotes.md` (or an existing `_settings/dev.tasknotes.md`), a settings record that TaskNotes App reads and writes too. It holds natural-language capture triggers, body templates for new tasks and occurrences, whether archiving moves the file and where to, whether completing a task stops its timer, whether recurring tasks uncheck body checkboxes, the link format written to frontmatter, and per-status next status, cycle exclusion and auto-archive settings. Everything else, such as property mappings, statuses, priorities and filename rules, stays in the task type.
+
+TaskNotes reads the new path first, then the legacy path, and saves to the path it read. When neither exists, it creates the record at `_mdbase/settings/dev.tasknotes.md`. It never moves a record.
+
+TaskNotes creates the record when it upgrades a collection: from your saved settings for a v4 collection, or from the earlier task type for a 5.0 beta or TaskNotes App collection. This happens in the same backed-up step as the task type upgrade. If the record already exists, TaskNotes keeps every setting it holds and adds only the ones the upgrade moved. TaskNotes also starts the record from your settings when it creates a new collection.
+
+Outside those upgrades, opening a vault never creates or changes the record. A setting missing from the record, or invalid in it, is read from an earlier task type that still holds it, otherwise it takes its default. So does every setting when a collection has no record: settings saved on this device do not apply to the collection until you change them in TaskNotes.
+
+Editing the record changes these settings in TaskNotes; changing them in TaskNotes writes only the changed fields to the record, creating it if needed. Other fields and the note body are kept. If both changed, TaskNotes asks which to keep. A record written by a newer settings version is used as written and not changed.
+
+If another file in `_mdbase/settings/` or `_settings/` also claims to be the TaskNotes collection settings record (`app: dev.tasknotes` and `scope: collection`), such as a sync conflict copy named `dev.tasknotes (conflicted copy).md`, TaskNotes shows a notice naming those files. It keeps using the resolved record and does not change, merge or delete the others. Copy any settings you want to keep into the record named in the notice, then delete the other files.
+
+When the collection's only active type is an unmodified TaskNotes-generated v0.2 type, TaskNotes upgrades the metadata to mdbase v0.3 automatically. Generated formats from 4.3.2 through 4.18.0 are recognized using their historical writers and your saved settings (including a legacy single user field, and user field names with surrounding spaces), including BOM/CRLF formatting and reordered YAML mapping keys. Exact historical output containing v4's invalid unquoted status values can also be regenerated safely from those settings. The original bytes of `mdbase.yaml`, the task type and replaced support resources are kept under `.tasknotes/migrations/`; task notes are never rewritten.
+
+If v4 added its generated task type to an existing v0.3 collection, TaskNotes upgrades that file in place and preserves foreign types and configuration instead of creating an overlapping task type.
+
+Incomplete synced metadata is not treated as a new collection. If type or support files arrive before `mdbase.yaml`, TaskNotes waits without creating another type. The upgrade retries when the configuration or task type arrives. Finish syncing all metadata before diagnosing a blocked upgrade.
+
+Additional v0.2 types or genuinely edited task/support definitions are preserved for review. The notice names the affected file. Back up the vault, finish syncing and restart first. If still blocked, restore the unmodified generated type **and matching saved settings** from a known-good backup, or use mdbase to migrate a separate copy and review all type definitions before replacing the active metadata. Do not delete a user-maintained type merely to make ownership recognition succeed. Known generated support resources tolerate line-ending changes; custom commentary or schema edits are not silently overwritten.
+
+If you used a 5.0 beta, TaskNotes updates its task type to the current contract when the vault opens and tells you once. The previous type is backed up under `.tasknotes/migrations/`. The upgrade keeps existing property-role mappings (including custom stable IDs), binding policies, archive tags, occurrence horizons, custom schema constraints, extensions and Markdown body. It lifts the contract version and adds optional assignee support without rebuilding these policies from plugin defaults. App behaviour settings move from the type to the [settings record](#tasknotes-settings-record) unchanged. Ordinary settings changes update only plugin-owned options. Text, number, date, boolean and list custom properties retain their declarations through migration and later settings saves, including legacy coercion-compatible schemas. An owned property whose type cannot be resolved stops settings import with a named diagnostic instead of disappearing. A leading UTF-8 BOM and CRLF line endings are accepted for canonical metadata as well as historical metadata; recovery copies retain the original bytes. Task files are not changed. Collections that TaskNotes App has already updated retain their task definitions. If a beta added a second task type named `tasknotes-task` after TaskNotes App updated the collection, TaskNotes moves that duplicate into a unique folder under `.tasknotes/migrations/`, preserving its relative path and actual bytes. Explicit record membership keeps the provider in place with a notice naming the type and record. A concurrent edit is preserved and blocks cleanup; task references are never rewritten.
+
+### Interrupted updates and blocked collections
+
+Both v0.2 migrations and beta metadata upgrades are backed up and journaled. Metadata is staged in sibling temporary files and read back. On desktop and mobile, each replacement first moves the actual active revision into a unique recovery path under `.tasknotes/migrations/metadata-swaps/` and compares those moved bytes with the expected original. The verified stage is published only after the active path is empty. When the adapter exposes a vault filesystem path and Node filesystem access, publication uses an atomic no-replace operation even when Obsidian emulates mobile. A late arrival remains active and blocks the update. On non-native storage, automatic migration remains enabled using the adapter's empty-destination move. A verified publication copy is moved while the intended stage, displaced original and journal are retained until active-byte read-back passes. If read-back differs from the intended stage, TaskNotes reports a conflict and keeps that evidence instead of reporting success. A changed revision captured at displacement is retained, restored to the active path if still empty, and reported as a conflict. Native files and containing directories are flushed where supported. The type is updated before activating its new contract, and configuration is committed last. A write failure restores unchanged original metadata and removes the files the update created, such as new contracts, schemas, the settings type and the settings record, along with its temporary staging files. A created file is removed only while it still holds exactly what TaskNotes wrote; a file edited since is kept. Restarting TaskNotes first recovers interrupted swaps, including an empty active path with its moved original present, then recovers the enclosing transaction, including the same cleanup, before attempting another upgrade.
+
+On iOS/Android adapters that internally check whether the destination exists and then rename, there is still a residual window between those steps. A revision arriving in that window can be overwritten; read-back cannot detect it if the final active bytes equal the intended stage. This adapter path is not an atomic no-replace guarantee. Finish syncing before upgrading, avoid simultaneous metadata updates on other devices, and retain a separate full-vault backup. See [Backup and recovery](guides/backup-recovery.md#interrupted-mdbase-metadata-updates).
+
+A settings-save synchronization failure shows recovery details immediately, while distinguishing saved plugin settings from a completed metadata update. Repeated failures for the same pending journal do not repeat the notice during the session.
+
+Recovery does **not** overwrite an external edit. If recovery is blocked, the notice identifies the pending journal (`.tasknotes/migrations/metadata-swaps/<id>.json`, `mdbase-v0.2-pending.json` or `mdbase-v0.3-pending.json`), backup folder, and affected file. Close Obsidian on all syncing devices, make another full-vault backup, and compare the journal's snapshots/intended writes and backup manifest with the active files. Swap journals identify the expected original, intended bytes, stage and actual-revision recovery path; keep all those files. Preserve external changes separately before restoring a coherent config/type/support set. Do not delete a pending journal or restore only the contract file to force an upgrade; reload TaskNotes after resolving the conflict or file permissions. See [Backup and recovery](guides/backup-recovery.md).
+
+When more than one TaskNotes provider remains, startup lists every candidate path and keeps the last-known-good plugin configuration. Review which provider the plugin should manage. Keep explicitly referenced providers until you have reviewed their membership; do not delete a definition merely to clear the warning. The App can support multiple providers, but the plugin's writable configuration currently requires one. The same unchanged multiple-provider notice is not repeated during a session.
+
+Adapters without safe metadata replacement or move support stop with a notice rather than deleting existing files. Resolve the adapter limitation on a supported device before retrying.
+
+Symlinked metadata directories are refused before changes are made. Use physical directories inside the vault and update `mdbase.yaml` to match; the engine also rejects symlinked type folders.
+
+If the integration is not enabled, nothing changes.
+
+Existing collection membership settings are retained: omitting `explicit_type_keys` means the engine's `type` and `types` defaults, and an explicit empty list remains empty. Only genuinely new plugin collections choose `mdbase_type`. TaskNotes encodes excluded folders as automatic task-type path predicates, including nested folders but not similarly named siblings; it does not globally exclude records of other types. Explicit membership in `type`, `types` or configured keys takes precedence over automatic matching, so explicitly typed tasks in those folders remain engine members even when hidden from plugin views. Collection-wide `settings.exclude` and `include_subfolders: false` still exclude those paths from the collection.
+
+TaskNotes additively includes `md` and `base` record extensions and Base includes for `TaskNotes/Views` and folders containing configured view files. Existing extensions, includes and other collection configuration are never removed. When `record_extensions` is absent, its initial values preserve the engine's effective legacy `settings.extensions` (with Markdown always included) before adding `base`. Invalid extension settings stop reconciliation instead of silently narrowing record coverage; collection checks and duplicate-reference inventory use the same extension precedence. Invalid canonical mappings or binding policies are reported with the type's path and validation details; plugin settings remain at their last valid values. Review `implements.fields` (especially required `status` and `dateCreated`) and `binding`, then retry after correcting the configuration.
+
+### TaskNotes App setup is separate
+
+Metadata compatibility is not pack installation. TaskNotes does **not** create or stamp `mdbase.lock.yaml` or pack provenance. The first time TaskNotes App opens the collection, approve its one-time **Set up** step: the engine assesses and installs or upgrades packs, including saved-view/Base contracts. An `install` or `upgrade` assessment before that consent is expected, even when the task contract is already current. Existing pack locks are retained until engine-approved setup.
+
+That setup writes the task type whether or not type definitions are turned on in the plugin. Update TaskNotes to version 5 on every device that uses the vault first: a device still running TaskNotes 4 with **Generate mdbase type definitions** turned on can overwrite the type. See [Use TaskNotes App with your vault](guides/tasknotes-app.md).
+
+### Check existing task records
+
+Metadata migration never silently repairs old notes. A tag-identified task may lack the portable contract's required creation timestamp, or contain a status outside the configured vocabulary. Run **TaskNotes: Check collection** from the command palette after upgrading:
+
+1. Review the invalid records and their schema/contract errors. Checking alone changes no notes. The check uses the collection's effective scope, including collection-wide exclusions, subfolder settings, nested collection boundaries and explicit membership. It includes explicitly typed tasks hidden by plugin folder exclusions, but never offers repairs outside the collection. Supported nested `fields_present` and `match.where` references use dotted paths, `[]` selectors or JSON Pointers, following the engine's first resolved value. String or array `path_glob` predicates are respected. Unparseable membership or unsupported predicate forms stop the scan rather than reporting a partial scan as clean.
+2. For missing creation dates, **Back up and fix** offers the file's creation time. Check that time in the confirmation; copying files between devices can change filesystem creation times.
+3. For invalid statuses, choose a replacement separately for each record. No status mapping is inferred. The all-record action applies only selected replacements and missing-date fixes; it leaves other errors untouched.
+4. Confirm the exact listed changes. Each original note is verified in `.tasknotes/migrations/` before its change, and the repair refuses to overwrite a note or collection membership changed since the check. The current provider, status vocabulary and proposed schema/contract output are rechecked when applying the repair; a stale preview must be checked again. Cancel keeps every note unchanged.
+5. Recheck the results. Other invalid fields, malformed notes and custom schema constraints need manual review. Custom CEL match expressions not generated by TaskNotes require engine validation rather than guessed membership.
+
+For independent verification, use `mdbase -C <collection> validate`, `types list`, `query --types <task-type-name>` and `packs assess` with the App's manifest/resources. Compare task counts and mapped values, not just metadata version numbers. `Check collection` checks task record schemas, portable contract projections and status vocabulary; engine validation also checks collection-wide rules and links.
+
+If the integration is not enabled, migration does nothing. The collection-check command requires existing canonical mdbase metadata.
+
+## Interface changes
+
+- Task cards show dates within a week of today as relative days, such as "Due: Yesterday" or "Scheduled: Monday". The full date appears on hover. To keep absolute dates, choose ISO dates under **Appearance & interaction → Display formatting**.
+- The task context menu keeps status, priority, dates, reminders, time tracking, edit, and open at the top level. Other actions are under **More**.
+- Kanban swimlanes can be collapsed from their label. Empty swimlanes start collapsed.
+- New vaults hide the identifying task tag on task cards by default. Existing vaults keep their current setting.
+
+## Returning to v4
+
+To return to TaskNotes 4.x, restore the backup you made before upgrading. If you downgrade without restoring:
+
+- 4.x no longer finds the HTTP API token in `data.json` and generates a new one when the API starts. Update your clients.
+- 4.x no longer finds its last-seen version in `data.json`, so it treats the vault as a new install and may create the TaskNotes starter note. You can delete that note.
+- If an mdbase upgrade ran, restore `mdbase.yaml` and the task type from `.tasknotes/migrations/`.
+
+## Getting help
+
+If something does not look right after upgrading, see [Troubleshooting](troubleshooting.md) or [report the problem](https://github.com/callumalpass/tasknotes/issues) with the output of Obsidian's **Show debug info** command.

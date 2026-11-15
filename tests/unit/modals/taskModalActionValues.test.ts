@@ -81,14 +81,9 @@ describe("taskModalActionValues", () => {
 		);
 	});
 
-	it("preserves all unsupported rule data in the custom fallback", () => {
-		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY;COUNT=4")).toBe(
-			"Custom recurrence: FREQ=HOURLY;COUNT=4"
-		);
-		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY;UNTIL=20260519")).toBe(
-			"Custom recurrence: FREQ=HOURLY;UNTIL=20260519"
-		);
-		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY")).toBe("Custom recurrence: FREQ=HOURLY");
+	it("describes sub-daily rules in words", () => {
+		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY;COUNT=4")).toBe("Hourly (4 times)");
+		expect(getTaskModalRecurrenceDisplayText("FREQ=HOURLY")).toBe("Hourly");
 	});
 
 	it("formats ordinal suffixes", () => {

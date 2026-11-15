@@ -121,25 +121,35 @@ export class NotificationService {
 				if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
 			};
 			this.indexListeners = [
-				{ events: metadataCache, ref: metadataCache.on("changed", (file) => indexed(file.path)) },
-				{ events: vault, ref: vault.on("delete", (file) => {
-					for (const path of this.unindexedAtStartup) {
-						if (path === file.path || path.startsWith(`${file.path}/`)) this.unindexedAtStartup.delete(path);
-					}
-					if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
-				}) },
-				{ events: vault, ref: vault.on("rename", (file, oldPath) => {
-					for (const path of [...this.unindexedAtStartup]) {
-						if (path !== oldPath && !path.startsWith(`${oldPath}/`)) continue;
-						this.unindexedAtStartup.delete(path);
-						const renamedPath = `${file.path}${path.slice(oldPath.length)}`;
-						const renamed = vault.getAbstractFileByPath(renamedPath);
-						if (renamed instanceof TFile && !metadataCache.getFileCache(renamed)) {
-							this.unindexedAtStartup.add(renamedPath);
+				{
+					events: metadataCache,
+					ref: metadataCache.on("changed", (file) => indexed(file.path)),
+				},
+				{
+					events: vault,
+					ref: vault.on("delete", (file) => {
+						for (const path of this.unindexedAtStartup) {
+							if (path === file.path || path.startsWith(`${file.path}/`))
+								this.unindexedAtStartup.delete(path);
 						}
-					}
-					if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
-				}) },
+						if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
+					}),
+				},
+				{
+					events: vault,
+					ref: vault.on("rename", (file, oldPath) => {
+						for (const path of [...this.unindexedAtStartup]) {
+							if (path !== oldPath && !path.startsWith(`${oldPath}/`)) continue;
+							this.unindexedAtStartup.delete(path);
+							const renamedPath = `${file.path}${path.slice(oldPath.length)}`;
+							const renamed = vault.getAbstractFileByPath(renamedPath);
+							if (renamed instanceof TFile && !metadataCache.getFileCache(renamed)) {
+								this.unindexedAtStartup.add(renamedPath);
+							}
+						}
+						if (this.unindexedAtStartup.size === 0) void this.scanTasksAndBuildQueue();
+					}),
+				},
 			];
 			return;
 		}
@@ -329,7 +339,9 @@ export class NotificationService {
 		const missed: NotificationQueueItem[] = [];
 		for (const item of due) {
 			// Mark as processed to avoid duplicates
-			this.processedReminders.add(this.reminderKey(item.taskPath, item.reminder, item.notifyAt));
+			this.processedReminders.add(
+				this.reminderKey(item.taskPath, item.reminder, item.notifyAt)
+			);
 			if (now - item.notifyAt > this.LATE_THRESHOLD) {
 				missed.push(item);
 			} else {
@@ -361,8 +373,10 @@ export class NotificationService {
 	private saveCursor(cursor: number | null): void {
 		try {
 			// A partial scan must not persist a cursor past still-unindexed reminders.
-			const safeCursor = cursor !== null && this.startupCatchUpBoundary !== null
-				? Math.min(cursor, this.startupCatchUpBoundary) : cursor;
+			const safeCursor =
+				cursor !== null && this.startupCatchUpBoundary !== null
+					? Math.min(cursor, this.startupCatchUpBoundary)
+					: cursor;
 			this.plugin.app.saveLocalStorage(this.CURSOR_STORAGE_KEY, safeCursor);
 		} catch {
 			// Catch-up across restarts is best effort.
@@ -421,7 +435,12 @@ export class NotificationService {
 
 		this.showMissedSummary(missed.map(({ task, item }) => ({ task, path: item.taskPath })));
 		for (const { task, item } of missed) {
-			await this.triggerReminderWebhook(task, item, this.generateMissedMessage(task, item), true);
+			await this.triggerReminderWebhook(
+				task,
+				item,
+				this.generateMissedMessage(task, item),
+				true
+			);
 		}
 	}
 
@@ -490,7 +509,10 @@ export class NotificationService {
 			const notification = new Notification(title, {
 				body:
 					more > 0
-						? this.translateMissed("summaryMore", { titles: shown.join(", "), count: more })
+						? this.translateMissed("summaryMore", {
+								titles: shown.join(", "),
+								count: more,
+							})
 						: shown.join(", "),
 				tag: "tasknotes-missed-reminders",
 			});
@@ -505,7 +527,10 @@ export class NotificationService {
 		this.showMissedSummaryNotice(title, missed);
 	}
 
-	private showMissedSummaryNotice(title: string, missed: { task: TaskInfo; path: string }[]): void {
+	private showMissedSummaryNotice(
+		title: string,
+		missed: { task: TaskInfo; path: string }[]
+	): void {
 		const fragment = createFragment();
 		const container = fragment.createDiv({ cls: "tasknotes-missed-reminders" });
 		container.createDiv({ cls: "tasknotes-missed-reminders__title", text: title });
@@ -654,9 +679,12 @@ export class NotificationService {
 		const { reminder } = item;
 		if (reminder.description) return withPrefix(reminderDescriptionLabel(reminder.description));
 
-		const anchorStr = reminder.type === "relative"
-			? (reminder.relatedTo === "due" ? task.due : task.scheduled)
-			: undefined;
+		const anchorStr =
+			reminder.type === "relative"
+				? reminder.relatedTo === "due"
+					? task.due
+					: task.scheduled
+				: undefined;
 		if (!anchorStr) return withPrefix(task.title);
 
 		// Say when the anchor is rather than replaying an offset that no longer holds.
@@ -667,11 +695,16 @@ export class NotificationService {
 			? day
 				? this.translateMissed("whenOnDayAt", { day, time })
 				: this.translateMissed("whenTodayAt", { time })
-			: day ? this.translateMissed("whenOnDay", { day }) : this.translateMissed("whenToday");
+			: day
+				? this.translateMissed("whenOnDay", { day })
+				: this.translateMissed("whenToday");
 		const past = (hasTime ? anchor : anchor + 24 * 60 * 60 * 1000) <= Date.now();
 		const anchorLabel = reminder.relatedTo === "due" ? "due" : "scheduled";
 		return withPrefix(
-			this.translateMissed(`${anchorLabel}${past ? "Was" : "Is"}`, { title: task.title, when })
+			this.translateMissed(`${anchorLabel}${past ? "Was" : "Is"}`, {
+				title: task.title,
+				when,
+			})
 		);
 	}
 
@@ -686,7 +719,7 @@ export class NotificationService {
 			day: date.toDateString() === new Date().toDateString()
 				? null
 				: date.toLocaleDateString(uiLocale(), { month: "short", day: "numeric" }),
-			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit" }),
+			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit", hour12: this.plugin.settings.calendarViewSettings?.timeFormat === "12" }),
 		};
 	}
 
@@ -715,18 +748,28 @@ export class NotificationService {
 
 	private isReminderEligible(task: TaskInfo, reminder: Reminder, notifyAt: number): boolean {
 		// Relative reminders refer to the anchor occurrence, not the offset's day.
-		const anchor = reminder.type === "relative"
-			? (reminder.relatedTo === "due" ? task.due : task.scheduled)
-			: undefined;
-		return !task.archived && !isTaskInstanceCompleted(
-			task,
-			anchor ? parseDateToLocal(anchor) : new Date(notifyAt),
-			this.plugin.statusManager,
-			this.plugin.settings.defaultTaskStatus
+		const anchor =
+			reminder.type === "relative"
+				? reminder.relatedTo === "due"
+					? task.due
+					: task.scheduled
+				: undefined;
+		return (
+			!task.archived &&
+			!isTaskInstanceCompleted(
+				task,
+				anchor ? parseDateToLocal(anchor) : new Date(notifyAt),
+				this.plugin.statusManager,
+				this.plugin.settings.defaultTaskStatus
+			)
 		);
 	}
 
-	private queueRemindersForTask(taskPath: string, task: TaskInfo, windowStart = Date.now()): void {
+	private queueRemindersForTask(
+		taskPath: string,
+		task: TaskInfo,
+		windowStart = Date.now()
+	): void {
 		const now = Date.now();
 		const windowEnd = now + this.QUEUE_WINDOW;
 
@@ -739,7 +782,8 @@ export class NotificationService {
 			if (notifyAt === null || !this.isReminderEligible(task, reminder, notifyAt)) {
 				continue;
 			}
-			if (this.processedReminders.has(this.reminderKey(taskPath, reminder, notifyAt))) continue;
+			if (this.processedReminders.has(this.reminderKey(taskPath, reminder, notifyAt)))
+				continue;
 
 			if (notifyAt > windowStart && notifyAt <= windowEnd) {
 				this.notificationQueue.push({

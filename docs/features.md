@@ -32,7 +32,7 @@ See [Inline Task Integration](features/inline-tasks.md) for details.
 
 ## Time Management
 
-Time tracking records work sessions per task, and Pomodoro mode supports focused intervals with break handling. Over time, the statistics views help you compare estimated versus actual effort and spot trends in workload distribution.
+Time tracking records work sessions per task, and Pomodoro mode supports focused intervals with break handling. Recorded time entries stay in task frontmatter for review through Bases or other tools.
 
 ![Pomodoro timer](assets/feature-pomodoro-timer.png)
 

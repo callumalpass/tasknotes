@@ -4,7 +4,21 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 
 ## Latest Releases
 
-### Version 4.x (Current)
+### Version 5.x (Current)
+
+- [5.0.0-beta.10](releases/5.0.0-beta.10.md)
+- [5.0.0-beta.9](releases/5.0.0-beta.9.md)
+- [5.0.0-beta.8](releases/5.0.0-beta.8.md)
+- [5.0.0-beta.7](releases/5.0.0-beta.7.md)
+- [5.0.0-beta.6](releases/5.0.0-beta.6.md)
+- [5.0.0-beta.5](releases/5.0.0-beta.5.md)
+- [5.0.0-beta.4](releases/5.0.0-beta.4.md)
+- [5.0.0-beta.3](releases/5.0.0-beta.3.md)
+- [5.0.0-beta.2](releases/5.0.0-beta.2.md)
+- [5.0.0-beta.1](releases/5.0.0-beta.1.md)
+- [5.0.0-beta.0](releases/5.0.0-beta.0.md)
+
+### Version 4.x
 
 - [4.18.3](releases/4.18.3.md)
 - [4.18.2](releases/4.18.2.md)

@@ -278,6 +278,43 @@ describe('SearchBox', () => {
 	});
 
 	describe('getValue and setValue', () => {
+		it('flushes pending search and waits for results before keyboard exit', async () => {
+			let finishSearch: (() => void) | undefined;
+			onSearchMock.mockReturnValue(new Promise<void>(resolve => { finishSearch = resolve; }));
+			searchBox = new SearchBox(container, onSearchMock);
+			searchBox.render();
+			const input = container.querySelector('input')!;
+			const exit = jest.fn();
+			container.addEventListener('tn-search-exit', exit);
+			input.focus();
+			input.value = 'new query';
+			input.dispatchEvent(new Event('input'));
+			input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+			expect(onSearchMock).toHaveBeenCalledWith('new query');
+			expect(exit).not.toHaveBeenCalled();
+			finishSearch?.();
+			await Promise.resolve();
+			expect(exit).toHaveBeenCalledTimes(1);
+			expect((exit.mock.calls[0][0] as CustomEvent).detail).toBe(true);
+		});
+
+		it('uses Escape first to clear and then to return to the previous row', async () => {
+			searchBox = new SearchBox(container, onSearchMock);
+			searchBox.render();
+			const input = container.querySelector('input')!;
+			const exit = jest.fn();
+			container.addEventListener('tn-search-exit', exit);
+			input.focus();
+			input.value = 'query';
+			input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+			expect(input.value).toBe('');
+			expect(onSearchMock).toHaveBeenCalledWith('');
+			expect(exit).not.toHaveBeenCalled();
+			input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+			await Promise.resolve();
+			expect((exit.mock.calls[0][0] as CustomEvent).detail).toBe(false);
+		});
+
 		it('should get current input value', () => {
 			searchBox = new SearchBox(container, onSearchMock);
 			searchBox.render();

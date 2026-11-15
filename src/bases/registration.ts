@@ -52,7 +52,6 @@ export function hasStaleTaskNotesView(basesView: unknown, plugin: TaskNotesPlugi
  * Requires Obsidian 1.10.1+ (public Bases API with groupBy support)
  */
 export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<boolean> {
-	if (!plugin.settings.enableBases) return false;
 	// All views now require Obsidian 1.10.1+ (public Bases API with groupBy support)
 	if (!requireApiVersion("1.10.1")) return false;
 	const logger = createTaskNotesLogger({
@@ -78,7 +77,11 @@ export async function registerBasesTaskList(plugin: TaskNotesPlugin): Promise<bo
 							placeholder: uiText(msg({ message: "Select property for sub-grouping (optional)", context: "bases/registration: registerBasesTaskList.attemptRegistration.options placeholder" })),
 							filter: (prop: string) => {
 								// Show all note, task, and formula properties that could be used for sub-grouping
-								return prop.startsWith("note.") || prop.startsWith("task.") || prop.startsWith("formula.");
+								return (
+									prop.startsWith("note.") ||
+									prop.startsWith("task.") ||
+									prop.startsWith("formula.")
+								);
 							},
 						},
 						{

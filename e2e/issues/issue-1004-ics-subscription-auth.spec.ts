@@ -1,5 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
-import { launchObsidian, closeObsidian, openTaskNotesSettings, type ObsidianApp } from "../obsidian";
+import { test, expect } from "@playwright/test";
+import { launchObsidian, closeObsidian, revealTaskNotesSetting, nativeSettingRow, type ObsidianApp } from "../obsidian";
 
 // Issue #1004 / PR #1346: Basic auth fields on ICS subscription cards.
 // The card must stay open while focus moves from username to password, and
@@ -7,7 +7,6 @@ import { launchObsidian, closeObsidian, openTaskNotesSettings, type ObsidianApp 
 
 const PASSWORD = "e2e-pässwörd-1004";
 let obsidian: ObsidianApp;
-let settingsPage: Page;
 let subscriptionId = "";
 
 test.beforeAll(async () => {
@@ -24,8 +23,6 @@ test.beforeAll(async () => {
 		});
 		return sub.id as string;
 	});
-	settingsPage = await openTaskNotesSettings(obsidian.page);
-	await settingsPage.locator("#tab-button-integrations").click();
 });
 
 test.afterAll(async () => {
@@ -43,25 +40,26 @@ test.afterAll(async () => {
 });
 
 test("credentials can be entered without the card collapsing; password goes to SecretStorage", async () => {
-	const card = settingsPage.locator(`[data-card-id="${subscriptionId}"]`);
-	await card.locator(".tasknotes-settings__card-header").click();
-	await expect(card).not.toHaveClass(/tasknotes-settings__card--collapsed/);
+	const settingsPage = await revealTaskNotesSetting(obsidian.page, `subscription.${subscriptionId}.authType`);
+	const card = settingsPage.locator('.vertical-tab-content').last();
 
-	const username = card.locator('input[type="text"][placeholder="Username"]');
+	const username = nativeSettingRow(settingsPage, 'Username:').locator('input');
 	const password = card.locator('input[type="password"]');
 	await expect(username).toBeHidden();
 
-	await card.locator("select").nth(1).selectOption("basic");
+	await nativeSettingRow(settingsPage, 'Authentication:').locator('select:not(.is-measuring)').selectOption('basic');
 	await expect(username).toBeVisible();
 	await expect(password).toBeVisible();
 
 	await username.fill("jürgen");
 	await username.press("Tab");
+	await expect(nativeSettingRow(settingsPage, 'Password:')).toBeFocused();
+	await settingsPage.keyboard.press('Enter');
 	await expect(password).toBeFocused();
 	await password.fill(PASSWORD);
 	await password.press("Tab");
 
-	await expect(card).not.toHaveClass(/tasknotes-settings__card--collapsed/);
+	await expect(settingsPage.locator('.setting-page-title:visible').last()).toHaveText('E2E private feed');
 	await expect(password).toHaveValue("");
 	await expect(password).toHaveAttribute("placeholder", /Saved/);
 

@@ -16,13 +16,29 @@ function harness() {
 	const preview = { ...original, start: "2026-11-03T09:00", isPreview: true };
 	const upsert = jest.fn(), remove = jest.fn(), invalid = jest.fn();
 	const build = jest.fn(() => [preview]);
+	const isValidTarget = jest.fn(() => true);
 	const controller = new CalendarBatchPreview({ root, getItems: () => items, getRevision: () => items,
-		build, upsert, remove, onInvalidDrop: invalid });
+		build, upsert, remove, isValidTarget, onInvalidDrop: invalid });
 	const proposal: CalendarBatchProposal = { item: items[0], start: new Date("2026-11-03T09:00Z"), end: new Date("2026-11-03T10:00Z"), allDay: false };
-	return { root, el, grip, original, preview, upsert, remove, invalid, build, controller, proposal,
+	return { root, el, grip, original, preview, upsert, remove, invalid, build, isValidTarget, controller, proposal,
 		setItems(next: CalendarEventItem[]) { items = next; } };
 }
 afterEach(() => { document.body.replaceChildren(); });
+
+it("restores peers immediately outside valid targets and repaints when reentering", () => {
+	const harnessState = harness();
+	try {
+		pointer(harnessState.el, "pointerdown");
+		harnessState.controller.allow(harnessState.proposal);
+		harnessState.isValidTarget.mockReturnValue(false);
+		pointer(document, "pointermove");
+		expect(harnessState.upsert).toHaveBeenLastCalledWith([harnessState.original]);
+		harnessState.isValidTarget.mockReturnValue(true);
+		harnessState.controller.allow(harnessState.proposal);
+		expect(harnessState.build).toHaveBeenCalledTimes(2);
+		expect(harnessState.upsert).toHaveBeenLastCalledWith([harnessState.preview]);
+	} finally { harnessState.controller.dispose(); }
+});
 
 it("paints peer proposals once per position and restores canonical values after release validation", async () => {
 	const h = harness();
@@ -133,16 +149,38 @@ it("does not repaint stale peers after a full source refresh", () => {
 	} finally { h.controller.dispose(); }
 });
 
-it("follows the owner document when the calendar is moved to a popout", async () => {
+it.each(["live window", "detached document"])("follows the owner document when moved to a popout with a %s", async kind => {
 	const h = harness();
 	try {
-		const popout = document.implementation.createHTMLDocument("Popout");
+		const frame = document.createElement("iframe");
+		document.body.appendChild(frame);
+		const popout = kind === "live window" ? frame.contentDocument! : document.implementation.createHTMLDocument("Popout");
 		popout.body.append(popout.adoptNode(h.root));
 		pointer(h.el, "pointerdown"); h.controller.allow(h.proposal);
 		pointer(popout, "pointerup");
 		await new Promise(resolve => setTimeout(resolve, 0));
 		expect(h.upsert).toHaveBeenLastCalledWith([h.original]);
 	} finally { h.controller.dispose(); }
+});
+
+it("keeps an invalid proposal denied while the engine rechecks pointerup", async () => {
+	const harnessState = harness();
+	const recheck = jest.fn(() => {
+		expect(harnessState.controller.allow(harnessState.proposal)).toBe(false);
+	});
+	try {
+		pointer(harnessState.el, "pointerdown");
+		harnessState.build.mockImplementation(() => { throw new Error("Incompatible selection"); });
+		expect(harnessState.controller.allow(harnessState.proposal)).toBe(false);
+		harnessState.el.addEventListener("pointerup", recheck);
+		pointer(harnessState.el, "pointerup");
+		expect(recheck).toHaveBeenCalledTimes(1);
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(harnessState.invalid).toHaveBeenCalledTimes(1);
+	} finally {
+		harnessState.el.removeEventListener("pointerup", recheck);
+		harnessState.controller.dispose();
+	}
 });
 
 it("does not preview keyboard moves or resizes, and unregisters listeners on disposal", () => {

@@ -1,0 +1,247 @@
+import { showToast } from "../../ui/kit/toast";
+import { changeTaskProperty } from "../../ui/taskPropertyPickers";
+import { displayError } from "../../i18n/runtime";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Menu } from "obsidian";
+import TaskNotesPlugin from "../../main";
+import { TaskInfo } from "../../types";
+import { DateContextMenu } from "../DateContextMenu";
+import { DateTimePickerModal } from "../../modals/DateTimePickerModal";
+import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import type { UserMappedField } from "../../types/settings";
+import type { TaskContextMenuOptions } from "./types";
+import { getSubmenu } from "./helpers";
+
+const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
+export class TaskPropertyMenu {
+	constructor(
+		private options: TaskContextMenuOptions,
+		private menu: Menu
+	) {}
+	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
+		return this.options.plugin.i18n.translate(key, params);
+	}
+	addDateOptions(
+		submenu: Menu,
+		currentValue: string | undefined,
+		onSelect: (value: string | null) => Promise<void>,
+		onCustomDate: () => void,
+		options: { pickDateTitle?: string } = {}
+	): void {
+		const dateContextMenu = new DateContextMenu({
+			currentValue: currentValue,
+			onSelect: (value: string | null) => {
+				void onSelect(value);
+			},
+			onCustomDate: onCustomDate,
+			plugin: this.options.plugin,
+			app: this.options.plugin.app,
+		});
+
+		const dateOptions = dateContextMenu.getDateOptions();
+		const selectedTitle = (label: string, value: string | null) =>
+			value === currentValue
+				? this.t(msg({ message: "✓ {label}", context: "contextMenus.date.selected" }), {
+						label,
+					})
+				: label;
+
+		// Same order as the date picker: pick, quick dates, increments, weekdays, clear.
+		submenu.addItem((item) => {
+			item.setTitle(
+				options.pickDateTitle ??
+					this.t(
+						msg({
+							message: "Pick date & time…",
+							context: "contextMenus.date.pickDateTime",
+						})
+					)
+			);
+			item.setIcon("calendar");
+			item.onClick(onCustomDate);
+		});
+		submenu.addSeparator();
+
+		for (const option of dateOptions.filter((entry) => entry.category === "basic")) {
+			submenu.addItem((item) => {
+				if (option.icon) item.setIcon(option.icon);
+				item.setTitle(selectedTitle(option.label, option.value));
+				item.onClick(() => {
+					void onSelect(option.value);
+				});
+			});
+		}
+
+		const incrementOptions = dateOptions.filter((option) => option.category === "increment");
+		if (incrementOptions.length > 0) {
+			submenu.addSeparator();
+			for (const option of incrementOptions) {
+				submenu.addItem((item) => {
+					if (option.icon) item.setIcon(option.icon);
+					item.setTitle(option.label);
+					item.onClick(() => {
+						void onSelect(option.value);
+					});
+				});
+			}
+		}
+
+		const weekdayOptions = dateOptions.filter((option) => option.category === "weekday");
+		if (weekdayOptions.length > 0) {
+			submenu.addSeparator();
+			submenu.addItem((item) => {
+				item.setTitle(
+					this.t(msg({ message: "Weekdays", context: "contextMenus.date.weekdaysLabel" }))
+				);
+				item.setIcon("calendar");
+				const weekdaySubmenu = getSubmenu(item);
+				for (const option of weekdayOptions) {
+					weekdaySubmenu.addItem((subItem) => {
+						subItem.setTitle(selectedTitle(option.label, option.value));
+						subItem.setIcon("calendar");
+						subItem.onClick(() => {
+							void onSelect(option.value);
+						});
+					});
+				}
+			});
+		}
+
+		if (currentValue) {
+			submenu.addSeparator();
+			submenu.addItem((item) => {
+				item.setTitle(
+					this.t(msg({ message: "Clear date", context: "contextMenus.date.clearDate" }))
+				);
+				item.setIcon("x");
+				item.onClick(() => {
+					void onSelect(null);
+				});
+			});
+		}
+	}
+
+	addCustomDateFieldMenuItems(task: TaskInfo, plugin: TaskNotesPlugin): void {
+		const dateFields = this.getCustomDateFields(plugin);
+		if (dateFields.length === 0) {
+			return;
+		}
+
+		this.menu.addItem((item) => {
+			item.setTitle(
+				this.t(msg({ message: "Custom dates", context: "contextMenus.task.customDates" }))
+			);
+			item.setIcon("calendar-days");
+
+			const submenu = getSubmenu(item);
+			dateFields.forEach((field) => {
+				submenu.addItem((fieldItem) => {
+					const fieldLabel = this.getCustomFieldLabel(field);
+					fieldItem.setTitle(fieldLabel);
+					fieldItem.setIcon("calendar");
+
+					const fieldSubmenu = getSubmenu(fieldItem);
+					const currentValue = this.getCustomDateFieldValue(task, field);
+					this.addDateOptions(
+						fieldSubmenu,
+						currentValue,
+						async (value) => {
+							await this.updateCustomDateField(task, plugin, field, value);
+						},
+						() => {
+							this.openCustomDateFieldPicker(task, plugin, field, currentValue);
+						},
+						{
+							pickDateTitle: this.t(
+								msg({
+									message: "Pick {field} date",
+									context: "modals.task.userFields.pickDate",
+								}),
+								{
+									field: fieldLabel,
+								}
+							),
+						}
+					);
+				});
+			});
+		});
+	}
+
+	getCustomDateFields(plugin: TaskNotesPlugin): UserMappedField[] {
+		return (plugin.settings.userFields || []).filter(
+			(field) => field.type === "date" && field.key.trim().length > 0
+		);
+	}
+
+	getCustomFieldLabel(field: UserMappedField): string {
+		return field.displayName.trim() || field.key || field.id;
+	}
+
+	getCustomDateFieldValue(task: TaskInfo, field: UserMappedField): string | undefined {
+		const taskRecord = task as unknown as Record<string, unknown>;
+		const value = taskRecord[field.key] ?? task.customProperties?.[field.key];
+		return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+	}
+
+	openCustomDateFieldPicker(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		field: UserMappedField,
+		currentValue: string | undefined
+	): void {
+		this.menu.hide();
+		const fieldLabel = this.getCustomFieldLabel(field);
+		const modal = new DateTimePickerModal(plugin.app, {
+			currentDate: currentValue || null,
+			title: this.t(
+				msg({ message: "Pick {field} date", context: "modals.task.userFields.pickDate" }),
+				{ field: fieldLabel }
+			),
+			showTime: false,
+			plugin,
+			onSelect: (date) => {
+				void this.updateCustomDateField(task, plugin, field, date);
+			},
+		});
+		modal.open();
+	}
+
+	async updateCustomDateField(
+		task: TaskInfo,
+		plugin: TaskNotesPlugin,
+		field: UserMappedField,
+		value: string | null
+	): Promise<void> {
+		const fieldLabel = this.getCustomFieldLabel(field);
+		try {
+			const [updatedTask] = await changeTaskProperty(
+				plugin,
+				[task],
+				field.key as keyof TaskInfo,
+				value || undefined
+			);
+			if (updatedTask) Object.assign(task, updatedTask);
+			this.options.onUpdate?.();
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			tasknotesLogger.error("Error updating custom date field:", {
+				category: "persistence",
+				operation: "updating-custom-date-field",
+				details: { taskPath: task.path, field: field.key },
+				error: errorMessage,
+			});
+			showToast({ message: this.t(
+					msg({
+						message: "Failed to update {field}: {message}",
+						context: "contextMenus.task.notices.updateCustomDateFailure",
+					}),
+					{
+						field: fieldLabel,
+						message: displayError(errorMessage),
+					}
+				) });
+		}
+	}
+}
