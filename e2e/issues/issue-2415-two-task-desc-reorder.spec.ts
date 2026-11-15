@@ -145,7 +145,8 @@ for (const direction of ["ASC", "DESC"]) {
 			await expectOrder(day, direction === "ASC" ? "Alpha" : "Beta");
 		await instance.page.reload();
 		await instance.page.waitForFunction(
-			() => (window as any).app?.plugins?.plugins?.tasknotes?.cacheManager
+			() => (window as any).app?.workspace?.layoutReady &&
+				(window as any).app?.plugins?.plugins?.tasknotes?.cacheManager
 		);
 		await instance.page.evaluate(async (base) => {
 			const app = (window as any).app;

@@ -8,8 +8,14 @@ import type { ObsidianApp } from "./obsidian";
 let app: ObsidianApp | undefined;
 let ownedRoot: string;
 let obsidian: typeof import("./obsidian");
+const originalEnvironment = {
+	TASKNOTES_E2E_VAULT_DIR: process.env.TASKNOTES_E2E_VAULT_DIR,
+	TASKNOTES_E2E_USER_DATA_DIR: process.env.TASKNOTES_E2E_USER_DATA_DIR,
+	TASKNOTES_E2E_REUSE_OBSIDIAN: process.env.TASKNOTES_E2E_REUSE_OBSIDIAN,
+};
 
 test.beforeEach(async ({}, testInfo) => {
+	app = undefined;
 	ownedRoot = fs.mkdtempSync(path.join(os.tmpdir(), "tasknotes-mdbase-folders-"));
 	const vault = path.join(ownedRoot, "vault");
 	const config = path.join(vault, ".obsidian");
@@ -63,6 +69,11 @@ test.afterEach(async () => {
 	try {
 		if (app) await obsidian.closeObsidian(app);
 	} finally {
+		for (const [key, value] of Object.entries(originalEnvironment)) {
+			if (value === undefined) delete process.env[key];
+			else process.env[key] = value;
+		}
+		delete require.cache[require.resolve("./obsidian")];
 		if (ownedRoot) fs.rmSync(ownedRoot, { recursive: true, force: true });
 	}
 });
