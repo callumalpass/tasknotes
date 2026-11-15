@@ -83,7 +83,7 @@ export function renderTimeRangeStats(plugin: TaskNotesPlugin, container: HTMLEle
 		container.createEl("p", {
 			cls: "stats-view__period-summary",
 			text: "—",
-			attr: { "aria-label": plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })), title: plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })) },
+			attr: { "aria-label": plugin.i18n.translate(msg({ message: "No activity in this period.", context: "statistics empty period" })) },
 		});
 		return;
 	}

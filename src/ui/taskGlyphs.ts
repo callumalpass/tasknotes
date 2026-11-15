@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian";
+import { setIcon, setTooltip } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { createElementInDocument } from "../utils/documentDom";
@@ -22,7 +22,7 @@ export function createTaskGlyphs(
 	glyphs.className = "tn-task-glyphs";
 	glyphs.setAttribute("aria-hidden", "true");
 	const statusGlyph = glyphs.createSpan({ cls: "tn-task-glyphs__status" });
-	if (!status) statusGlyph.setAttribute("title", unconfiguredValueLabel(task.status));
+	if (!status) setTooltip(statusGlyph, unconfiguredValueLabel(task.status));
 	statusGlyph.style.color = status?.color || "var(--text-muted)";
 	if (status?.icon) setIcon(statusGlyph, status.icon);
 	else
@@ -36,7 +36,7 @@ export function createTaskGlyphs(
 		return glyphs;
 	}
 	const priorityGlyph = glyphs.createSpan({ cls: "tn-task-glyphs__priority" });
-	if (!priority) priorityGlyph.setAttribute("title", unconfiguredValueLabel(task.priority));
+	if (!priority) setTooltip(priorityGlyph, unconfiguredValueLabel(task.priority));
 	priorityGlyph.style.color = priority?.color || "var(--text-muted)";
 	if (priority?.icon) setIcon(priorityGlyph, priority.icon);
 	else

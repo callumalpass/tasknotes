@@ -162,7 +162,6 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			row.createSpan({
 				cls: "tn-picker__label",
 				text: item.label,
-				attr: { title: item.label },
 			});
 			if (item.detail) row.createSpan({ cls: "tn-picker__detail", text: item.detail });
 			if (item.keyHint) renderKeyHint(row, item.keyHint);
