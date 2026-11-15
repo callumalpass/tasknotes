@@ -6,7 +6,7 @@ const folders =
 		paths.includes(path);
 
 describe("mdbase file explorer folders", () => {
-	it("hides the new metadata root and the step 1 settings folder without redundant children", () => {
+	it("hides the new metadata root and the legacy settings folder without redundant children", () => {
 		expect(
 			mdbaseHiddenFolders(
 				{ types_folder: "_mdbase/types", contracts_folder: "_mdbase/contracts" },
@@ -17,8 +17,7 @@ describe("mdbase file explorer folders", () => {
 					"_mdbase/schemas",
 					"_mdbase/schemas/tasknotes.settings",
 					"_settings"
-				),
-				true
+				)
 			)
 		).toEqual(["_mdbase", "_settings"]);
 	});
@@ -34,8 +33,7 @@ describe("mdbase file explorer folders", () => {
 					"schemas",
 					"schemas/personal",
 					"_schemas"
-				),
-				true
+				)
 			)
 		).toEqual(["_types", "_contracts", "_settings"]);
 	});
@@ -46,8 +44,7 @@ describe("mdbase file explorer folders", () => {
 			expect(
 				mdbaseHiddenFolders(
 					{},
-					folders("schemas", `schemas/${id}`, "_schemas", "_schemas/tasknotes"),
-					false
+					folders("schemas", `schemas/${id}`, "_schemas", "_schemas/tasknotes")
 				)
 			).toEqual(["schemas", "_schemas"]);
 		}
@@ -66,8 +63,7 @@ describe("mdbase file explorer folders", () => {
 					"Metadata/_schemas",
 					"Metadata/_schemas/tasknotes",
 					"schemas"
-				),
-				false
+				)
 			)
 		).toEqual([
 			"Metadata/types",
@@ -77,16 +73,15 @@ describe("mdbase file explorer folders", () => {
 		]);
 	});
 
-	it("leaves unconfigured _mdbase and unrelated _settings folders visible", () => {
-		expect(mdbaseHiddenFolders({}, folders("_mdbase", "_settings"), false)).toEqual([]);
+	it("hides reserved folders even with old types and no TaskNotes settings record", () => {
+		expect(mdbaseHiddenFolders({}, folders("_mdbase", "_settings"))).toEqual(["_mdbase", "_settings"]);
 	});
 
 	it("recognizes schemas older plugins left at the root with nested contracts", () => {
 		expect(
 			mdbaseHiddenFolders(
 				{ contracts_folder: "Metadata/contracts" },
-				folders("schemas", "schemas/mdbase.app-settings", "_schemas", "_schemas/tasknotes"),
-				false
+				folders("schemas", "schemas/mdbase.app-settings", "_schemas", "_schemas/tasknotes")
 			)
 		).toEqual(["schemas", "_schemas"]);
 	});
@@ -95,8 +90,7 @@ describe("mdbase file explorer folders", () => {
 		expect(
 			mdbaseHiddenFolders(
 				{ types_folder: "../private", contracts_folder: "/" },
-				folders("../private", "/", "_types", "_contracts"),
-				false
+				folders("../private", "/", "_types", "_contracts")
 			)
 		).toEqual(["_types", "_contracts"]);
 	});

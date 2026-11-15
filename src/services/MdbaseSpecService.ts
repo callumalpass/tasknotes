@@ -32,6 +32,8 @@ import {
 	completeTaskNotesAppSettingsChanges,
 	newTaskNotesSettingsFrontmatter,
 	APP_SETTINGS_FOLDER,
+	LEGACY_APP_SETTINGS_FOLDER,
+	resolveAppSettingsPath,
 	readAppSettingsFrontmatter,
 	resolveTaskNotesAppSettings,
 	taskNotesAppSettingsFromLegacyBinding,
@@ -41,7 +43,7 @@ import {
 	type TaskNotesAppSettingsValues,
 } from "@tasknotes/model/settings";
 import { NEW_TYPES_FOLDER, NEW_CONTRACTS_FOLDER, MDBASE_README_PATH, MDBASE_README } from "./mdbase/folders";
-import { APP_SETTINGS_RECORD_PATH, appSettingsSupportResources } from "./mdbase/appSettingsResources";
+import { APP_SETTINGS_RECORD_PATH, LEGACY_APP_SETTINGS_RECORD_PATH, isAppSettingsRecordPath, appSettingsSupportResources } from "./mdbase/appSettingsResources";
 
 import TaskNotesPlugin from "../main";
 import { FieldMapping } from "../types";
@@ -216,6 +218,7 @@ export class MdbaseSpecService {
 	private lastKnownRecordContent: string | null = null;
 	/** The record as read at the start of the current synchronization. */
 	private currentRecordContent: string | null = null;
+	private currentRecordPath = APP_SETTINGS_RECORD_PATH;
 	/** App settings as last applied from, or written to, the record. */
 	private lastAppliedAppFingerprint: string | null = null;
 	private lastAppliedAppValues: TaskNotesAppSettingsValues | null = null;
@@ -345,17 +348,18 @@ export class MdbaseSpecService {
 			resources,
 			legacyType.path
 		);
+		await this.selectAppSettingsRecordPath();
 		const settingsResources = this.appSettingsResources(resources);
 		const managedPaths = [
 			resources.paths.contract,
 			...schemaRefreshes.map(({ path }) => path),
 			legacyType.path,
 			...settingsResources.map(({ path }) => path),
-			APP_SETTINGS_RECORD_PATH,
+			this.currentRecordPath,
 			"mdbase.yaml",
 		];
 		const snapshots = await this.snapshotFiles(managedPaths);
-		const sharedPaths = new Set([...settingsResources.map(({ path }) => path), APP_SETTINGS_RECORD_PATH]);
+		const sharedPaths = new Set([...settingsResources.map(({ path }) => path), this.currentRecordPath]);
 		if (
 			snapshots.find(({ path }) => path === "mdbase.yaml")?.content !== sourceConfig ||
 			snapshots.find(({ path }) => path === legacyType.path)?.content !== legacyType.content ||
@@ -372,7 +376,7 @@ export class MdbaseSpecService {
 		}
 		// The v4 settings (data.json) become the settings record in the same
 		// journalled step. A record another device already wrote keeps its fields.
-		const recordSnapshot = snapshots.find(({ path }) => path === APP_SETTINGS_RECORD_PATH)?.content ?? null;
+		const recordSnapshot = snapshots.find(({ path }) => path === this.currentRecordPath)?.content ?? null;
 		const recordContent = this.migratedRecordContent(recordSnapshot, YAML.parse(migratedConfig) as MdbaseYamlConfig);
 		const intendedWrites: FileSnapshot[] = [
 			...schemaRefreshes.map(({ path, content }) => ({ path, content })),
@@ -382,7 +386,7 @@ export class MdbaseSpecService {
 				.filter(({ path }) => snapshots.find((snapshot) => snapshot.path === path)?.content === null)
 				.map(({ path, content }) => ({ path, content })),
 			...(recordContent !== null && recordContent !== recordSnapshot
-				? [{ path: APP_SETTINGS_RECORD_PATH, content: recordContent }]
+				? [{ path: this.currentRecordPath, content: recordContent }]
 				: []),
 			{ path: "mdbase.yaml", content: migratedConfig },
 		];
@@ -986,7 +990,7 @@ export class MdbaseSpecService {
 			if (upgraded !== state.content) {
 				this.publishNotice(
 					hasLegacyAppSettings(state.legacyBinding)
-						? uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated"), appSettingsRecordPath: uiData(APP_SETTINGS_RECORD_PATH, "Stable contract version or vault path, never translated") })
+						? uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated"), appSettingsRecordPath: uiData(this.currentRecordPath, "Stable contract version or vault path, never translated") })
 						: uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskTaskfileswerenotchanged" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated") })
 				);
 			}
@@ -1225,8 +1229,17 @@ export class MdbaseSpecService {
 		}
 	}
 
+	private async selectAppSettingsRecordPath(): Promise<void> {
+		const adapter = this.plugin.app.vault.adapter;
+		this.currentRecordPath = resolveAppSettingsPath(TASKNOTES_SETTINGS_APP, {
+			currentExists: await adapter.exists(APP_SETTINGS_RECORD_PATH),
+			legacyExists: await adapter.exists(LEGACY_APP_SETTINGS_RECORD_PATH),
+		});
+	}
+
 	private async loadAppSettingsRecord(): Promise<void> {
-		this.currentRecordContent = await this.metadataIO.read(APP_SETTINGS_RECORD_PATH);
+		await this.selectAppSettingsRecordPath();
+		this.currentRecordContent = await this.metadataIO.read(this.currentRecordPath);
 		await this.reportCompetingSettingsRecords();
 	}
 
@@ -1238,9 +1251,10 @@ export class MdbaseSpecService {
 	private async reportCompetingSettingsRecords(): Promise<void> {
 		const adapter = this.plugin.app.vault.adapter;
 		const competing: string[] = [];
-		if (typeof adapter.list === "function" && (await adapter.exists(APP_SETTINGS_FOLDER))) {
-			for (const path of await this.listMarkdownFilesRecursively(APP_SETTINGS_FOLDER)) {
-				if (path === APP_SETTINGS_RECORD_PATH) continue;
+		for (const folder of [APP_SETTINGS_FOLDER, LEGACY_APP_SETTINGS_FOLDER]) {
+			if (typeof adapter.list !== "function" || !(await adapter.exists(folder))) continue;
+			for (const path of await this.listMarkdownFilesRecursively(folder)) {
+				if (path === this.currentRecordPath) continue;
 				const frontmatter = this.parseRecord(await adapter.read(path));
 				if (frontmatter?.app === TASKNOTES_SETTINGS_APP && frontmatter.scope === "collection") competing.push(path);
 			}
@@ -1250,7 +1264,7 @@ export class MdbaseSpecService {
 			return;
 		}
 		const paths = competing.sort().join(", ");
-		const message = this.plugin.i18n.translate(msg({ message: "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files.", context: "mdbaseSafety.competingSettings" }), { paths, record: APP_SETTINGS_RECORD_PATH });
+		const message = this.plugin.i18n.translate(msg({ message: "Other TaskNotes settings records found: {paths}. TaskNotes is using {record} and ignoring the others. Copy any settings you want to keep into {record}, then delete the other files.", context: "mdbaseSafety.competingSettings" }), { paths, record: this.currentRecordPath });
 		if (this.lastCompetingRecordsNotice === message) return;
 		this.lastCompetingRecordsNotice = message;
 		this.publishNotice(message);
@@ -1263,7 +1277,7 @@ export class MdbaseSpecService {
 	}
 
 	/**
-	 * Keep the TaskNotes settings record (_settings/dev.tasknotes.md) in step with
+	 * Keep the resolved TaskNotes settings record in step with
 	 * the plugin's app settings. Runs inside the type's metadata transaction, so a
 	 * migration writes the record in the same journalled step as the type.
 	 *
@@ -1277,7 +1291,7 @@ export class MdbaseSpecService {
 	 */
 	private async syncAppSettingsRecordSnapshot(existingCollection: ExistingCollection): Promise<void> {
 		if (!this.canonicalTypePath || this.canonicalReadBlocked || this.lastKnownTypeContent === null) return;
-		const path = APP_SETTINGS_RECORD_PATH;
+		const path = this.currentRecordPath;
 		const moved = this.recordFieldsToMove;
 		this.recordFieldsToMove = null;
 		const content = await this.metadataIO.read(path);
@@ -1347,7 +1361,7 @@ export class MdbaseSpecService {
 
 	private async writeRecordPatch(content: string, patch: Record<string, unknown>): Promise<void> {
 		const next = writeAppSettingsDocument(content, patch);
-		await this.writeFileIfUnchanged({ path: APP_SETTINGS_RECORD_PATH, content }, next);
+		await this.writeFileIfUnchanged({ path: this.currentRecordPath, content }, next);
 		this.lastKnownRecordContent = next;
 	}
 
@@ -1495,7 +1509,7 @@ export class MdbaseSpecService {
 		this.publishNotice(
 			uiText(msg({ message: "TaskNotes removed {value1}, an earlier duplicate of {value2}. A copy is in {folder}.", context: "integration.TaskNotesremovedanearlierduplicateofAcopyisin" }), { value1: superseded.map((state) => state.path).join(", "), value2: current[0].path, folder: folder }) +
 				(withAppSettings.length > 0
-					? uiText(msg({ message: " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}.", context: "integration.Appsettingsitheldsuchastemplatesandarchivemoves" }), { appSettingsRecordPath: uiData(APP_SETTINGS_RECORD_PATH, "Stable contract version or vault path, never translated"), value2: current[0].path })
+					? uiText(msg({ message: " App settings it held (such as templates and archive moves) were not used: TaskNotes keeps them in {appSettingsRecordPath}, alongside {value2}.", context: "integration.Appsettingsitheldsuchastemplatesandarchivemoves" }), { appSettingsRecordPath: uiData(this.currentRecordPath, "Stable contract version or vault path, never translated"), value2: current[0].path })
 					: "")
 		);
 		return true;
@@ -1531,9 +1545,9 @@ export class MdbaseSpecService {
 	}
 
 	private isCanonicalPath(path: string): boolean {
-		if (path === "mdbase.yaml" || path === this.canonicalTypePath || path === APP_SETTINGS_RECORD_PATH) return true;
+		if (path === "mdbase.yaml" || path === this.canonicalTypePath || isAppSettingsRecordPath(path)) return true;
 		// Other records in the settings folder: a competing copy is reported.
-		if (path.startsWith(`${APP_SETTINGS_FOLDER}/`) && path.endsWith(".md")) return true;
+		if ([APP_SETTINGS_FOLDER, LEGACY_APP_SETTINGS_FOLDER].some((folder) => path.startsWith(`${folder}/`)) && path.endsWith(".md")) return true;
 		return Boolean(
 			this.canonicalTypesFolder &&
 				path.startsWith(`${this.canonicalTypesFolder}/`) &&
@@ -2519,6 +2533,7 @@ function parseMigrationJournal(value: unknown): MigrationJournal {
 	const legacyContract = `${contractsFolder}/tasknotes.task.md`;
 	const settingsPaths = [
 		APP_SETTINGS_RECORD_PATH,
+		LEGACY_APP_SETTINGS_RECORD_PATH,
 		...appSettingsSupportResources(contractsFolder, typesFolder).map(({ path }) => path),
 	];
 	const versionedContract = /^tasknotes\.task\/[^/]+\.md$/;

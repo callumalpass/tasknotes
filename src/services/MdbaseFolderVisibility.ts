@@ -1,7 +1,7 @@
-import { TFile, TFolder } from "obsidian";
+import { TFolder } from "obsidian";
 import YAML from "yaml";
 import type TaskNotesPlugin from "../main";
-import { APP_SETTINGS_RECORD_PATH, appSettingsSchemasFolder } from "./mdbase/appSettingsResources";
+import { appSettingsSchemasFolder } from "./mdbase/appSettingsResources";
 
 function folder(value: unknown, fallback: string): string {
 	if (typeof value !== "string") return fallback;
@@ -20,19 +20,14 @@ function folder(value: unknown, fallback: string): string {
 /** Only reserved/configured metadata folders; generic schema folders need ownership evidence. */
 export function mdbaseHiddenFolders(
 	settings: { types_folder?: unknown; contracts_folder?: unknown },
-	hasFolder: (path: string) => boolean,
-	hasSettingsRecord: boolean
+	hasFolder: (path: string) => boolean
 ): string[] {
 	const types = folder(settings.types_folder, "_types");
 	const contracts = folder(settings.contracts_folder, "_contracts");
 	const schemas = appSettingsSchemasFolder(contracts);
 	const parent = contracts.split("/").slice(0, -1).join("/");
 	const taskSchemas = parent ? `${parent}/_schemas` : "_schemas";
-	const paths = [types, contracts];
-	if ([types, contracts].some((path) => path === "_mdbase" || path.startsWith("_mdbase/"))) {
-		paths.unshift("_mdbase");
-	}
-	if (hasSettingsRecord) paths.push("_settings");
+	const paths = ["_mdbase", types, contracts, "_settings"];
 	// Older plugin versions wrote schemas at the root even with nested contracts.
 	for (const path of new Set([schemas, "schemas"])) {
 		if (["mdbase.app-settings", "tasknotes.settings"].some((id) => hasFolder(`${path}/${id}`)))
@@ -87,10 +82,7 @@ export function installMdbaseFolderVisibility(plugin: TaskNotesPlugin): void {
 						mdbaseHiddenFolders(
 							config.settings ?? {},
 							(path) =>
-								plugin.app.vault.getAbstractFileByPath(path) instanceof TFolder,
-							plugin.app.vault.getAbstractFileByPath(
-								APP_SETTINGS_RECORD_PATH
-							) instanceof TFile
+								plugin.app.vault.getAbstractFileByPath(path) instanceof TFolder
 						)
 					);
 				}

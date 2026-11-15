@@ -11,7 +11,7 @@ import { createI18nService } from "../../../src/i18n";
  * and leave a collection that is already current exactly as it is.
  *
  * tasknotes.task rc.6 moved app behaviour out of the binding: every upgrade
- * also writes the TaskNotes settings record (_settings/dev.tasknotes.md) with
+ * also writes the TaskNotes settings record (_mdbase/settings/dev.tasknotes.md) with
  * the settings the collection had (data.json for v4, the binding for rc.3 and
  * rc.5), in the same journalled step.
  */
@@ -176,10 +176,11 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 			expect(binding.archive.move_on_archive).toBeUndefined();
 			expect(binding.status.definitions.some((d: any) => "auto_archive" in d || "next_status" in d)).toBe(false);
 		}
-		expect(files.get("_types/tasknotes-settings.md")).toBe(canonical("types/tasknotes-settings/1.md"));
+		expect(files.get("_types/tasknotes-settings.md")).toBe(before["_types/tasknotes-settings.md"] ?? canonical("types/tasknotes-settings/2.md"));
 		expect(files.get("_contracts/tasknotes.settings/1.0.0.md")).toBe(canonical("contracts/tasknotes.settings/1.0.0.md"));
 		expect(files.get("_contracts/mdbase.app-settings/1.0.0.md")).toBe(canonical("contracts/mdbase.app-settings/1.0.0.md"));
-		const record = frontmatter(files.get("_settings/dev.tasknotes.md")!);
+		const recordPath = before["_settings/dev.tasknotes.md"] ? "_settings/dev.tasknotes.md" : "_mdbase/settings/dev.tasknotes.md";
+		const record = frontmatter(files.get(recordPath)!);
 		expect(record).toMatchObject({ app: "dev.tasknotes", scope: "collection", settings_version: 1 });
 		expect(Object.keys(record.status_behavior).sort()).toEqual([...implementation.binding.status.values].sort());
 		if (implementation.binding.status.values.includes("cancelled")) {
@@ -275,7 +276,7 @@ describe("saving a moved setting after a v4 migration", () => {
 		settings.moveArchivedTasks = true;
 		settings.archiveFolder = "Old/Archive";
 		const { service } = await start(files, vault, settings);
-		const record = () => frontmatter(files.get("_settings/dev.tasknotes.md")!);
+		const record = () => frontmatter(files.get("_mdbase/settings/dev.tasknotes.md")!);
 		expect(record()).toMatchObject({ move_on_archive: true, archive_folder: "Old/Archive" });
 
 		settings.moveArchivedTasks = false;
@@ -299,25 +300,25 @@ describe("competing TaskNotes settings records", () => {
 	it("names sync conflict copies and keeps using the canonical record", async () => {
 		const { files, vault } = memoryVault(JSON.parse(fs.readFileSync(path.join(FIXTURES, "beta3-default.json"), "utf8")).files);
 		await load(files, vault, settingsFor("default"));
-		const canonicalRecord = files.get("_settings/dev.tasknotes.md")!;
-		files.set("_settings/dev.tasknotes.md", canonicalRecord.replace(/archive_folder: .*/, "archive_folder: Device-A"));
+		const canonicalRecord = files.get("_mdbase/settings/dev.tasknotes.md")!;
+		files.set("_mdbase/settings/dev.tasknotes.md", canonicalRecord.replace(/archive_folder: .*/, "archive_folder: Device-A"));
 		const copy = canonicalRecord.replace(/archive_folder: .*/, "archive_folder: Device-B");
-		files.set("_settings/dev.tasknotes (conflicted copy Device-B).md", copy);
+		files.set("_mdbase/settings/dev.tasknotes (conflicted copy Device-B).md", copy);
 		files.set("_settings/dev.other.md", "---\napp: dev.other\nscope: collection\n---\n");
 
 		const settings = settingsFor("default");
 		const notices = await load(files, vault, settings);
 
 		const notice = notices.find((message) => message.includes("conflicted copy"));
-		expect(notice).toContain("_settings/dev.tasknotes (conflicted copy Device-B).md");
+		expect(notice).toContain("_mdbase/settings/dev.tasknotes (conflicted copy Device-B).md");
 		expect(notice).not.toContain("dev.other");
 		expect(settings.archiveFolder).toBe("Device-A");
-		expect(files.get("_settings/dev.tasknotes (conflicted copy Device-B).md")).toBe(copy);
+		expect(files.get("_mdbase/settings/dev.tasknotes (conflicted copy Device-B).md")).toBe(copy);
 	});
 });
 
 describe("the settings record follows mdbase.app-settings", () => {
-	const RECORD = "_settings/dev.tasknotes.md";
+	const RECORD = "_mdbase/settings/dev.tasknotes.md";
 
 	/** A current collection with no record, or with `record` as its document. */
 	async function currentCollection(record?: string) {
@@ -452,5 +453,36 @@ describe("the settings record follows mdbase.app-settings", () => {
 		expect(Object.keys(moved).sort()).toEqual(Object.keys(taskNotesAppSettingsFromLegacyBinding(binding)).sort());
 		expect(moved.move_on_archive).toBe(false);
 		expect(settings.moveArchivedTasks).toBe(false);
+	});
+});
+
+describe("settings record path compatibility", () => {
+	const current = "_mdbase/settings/dev.tasknotes.md";
+	const legacy = "_settings/dev.tasknotes.md";
+	const document = (archive: string) =>
+		`---\napp: dev.tasknotes\nscope: collection\nsettings_version: 1\narchive_folder: ${archive}\n---\nKeep this body.\n`;
+
+	it.each(["legacy", "current", "both", "absent"])("reads and saves the resolved %s record without moving files", async (layout) => {
+		const { files, vault } = memoryVault(JSON.parse(fs.readFileSync(path.join(FIXTURES, "beta3-default.json"), "utf8")).files);
+		await load(files, vault, settingsFor("default"));
+		files.delete(current);
+		files.delete(legacy);
+		if (layout === "legacy" || layout === "both") files.set(legacy, document("Legacy/Archive"));
+		if (layout === "current" || layout === "both") files.set(current, document("Current/Archive"));
+		const settings = settingsFor("default");
+		const { service } = await start(files, vault, settings);
+		const selected = layout === "legacy" ? legacy : current;
+		expect(settings.archiveFolder).toBe(layout === "absent" ? DEFAULT_SETTINGS.archiveFolder : layout === "legacy" ? "Legacy/Archive" : "Current/Archive");
+		if (layout === "absent") expect(files.has(current)).toBe(false);
+		const other = selected === current ? legacy : current;
+		const otherBefore = files.get(other);
+		settings.archiveFolder = "Saved/Archive";
+		await service.onSettingsChanged();
+		expect(frontmatter(files.get(selected)!)).toMatchObject({ archive_folder: "Saved/Archive" });
+		expect(files.get(other)).toBe(otherBefore);
+		if (layout !== "absent") expect(files.get(selected)).toContain("Keep this body.");
+		const restarted = settingsFor("default");
+		await load(files, vault, restarted);
+		expect(restarted.archiveFolder).toBe("Saved/Archive");
 	});
 });

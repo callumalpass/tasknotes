@@ -1,7 +1,7 @@
 import YAML from "yaml";
 import { MDBASE_README, MDBASE_README_PATH, NEW_TYPES_FOLDER, NEW_CONTRACTS_FOLDER } from "./folders";
 import { SafeMetadata, type MetadataSnapshot } from "./SafeMetadata";
-import { APP_SETTINGS_RECORD_PATH, isAppSettingsMetadataPath } from "./appSettingsResources";
+import { isAppSettingsRecordPath, isAppSettingsMetadataPath } from "./appSettingsResources";
 
 export const METADATA_PENDING = ".tasknotes/migrations/mdbase-v0.3-pending.json";
 type Journal = { backupFolder: string; snapshots: MetadataSnapshot[]; intendedWrites: MetadataSnapshot[] };
@@ -96,7 +96,7 @@ export class MetadataTransaction {
 	private rank(path: string): number {
 		if (path === "mdbase.yaml") return 4;
 		// The settings record after its type and contracts.
-		if (path === APP_SETTINGS_RECORD_PATH) return 3;
+		if (isAppSettingsRecordPath(path)) return 3;
 		if (/(^|\/)(tasknotes\.task|tasknotes\.settings|mdbase\.app-settings)(\/[^/]+)?\.md$/.test(path)) return 2;
 		if (path.endsWith(".json")) return 1;
 		return 0;

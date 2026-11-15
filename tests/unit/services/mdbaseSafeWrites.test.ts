@@ -104,7 +104,7 @@ describe("safe migration writes and recovery", () => {
 		expect(h.files.get("mdbase.yaml")).toBe("external");
 		expect([...h.files.keys()]).toEqual(["mdbase.yaml"]);
 	});
-	it.each(["_types/task.md", "_schemas/tasknotes/tasknotes-task.schema.json", "_contracts/tasknotes.task/0.3.0-rc.6.md", "_settings/dev.tasknotes.md", "mdbase.yaml"])("rolls back a beta upgrade when %s fails", async (target) => {
+	it.each(["_types/task.md", "_schemas/tasknotes/tasknotes-task.schema.json", "_contracts/tasknotes.task/0.3.0-rc.6.md", "_mdbase/settings/dev.tasknotes.md", "mdbase.yaml"])("rolls back a beta upgrade when %s fails", async (target) => {
 		const before = faultFixture(target);
 		const h = safetyHarness(before);
 		let failed = false;
@@ -347,7 +347,6 @@ describe("safe migration writes and recovery", () => {
 		expect(h.notices.join(" ")).toContain("move unavailable");
 	});
 });
-
 
 it.each([false, true])("recovers an interrupted new-layout setup, enforcing README bytes (edited: %s)", async (edited) => {
 	const h = safetyHarness({});

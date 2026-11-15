@@ -2,13 +2,14 @@ import { test, expect } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
+import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
 import type { ObsidianApp } from "./obsidian";
 
 let app: ObsidianApp | undefined;
 let ownedRoot: string;
 let obsidian: typeof import("./obsidian");
 
-test.beforeAll(async () => {
+test.beforeEach(async ({}, testInfo) => {
 	ownedRoot = fs.mkdtempSync(path.join(os.tmpdir(), "tasknotes-mdbase-folders-"));
 	const vault = path.join(ownedRoot, "vault");
 	const config = path.join(vault, ".obsidian");
@@ -32,14 +33,33 @@ test.beforeAll(async () => {
 		})
 	);
 	fs.writeFileSync(path.join(vault, "My note.md"), "# My note\n");
+	if (testInfo.title.startsWith("old-layout")) {
+		const resources = buildTaskNotesMdbaseResources({ typesFolder: "_types", contractsFolder: "_contracts" });
+		for (const [file, content] of [
+			["mdbase.yaml", resources.configDocument],
+			[resources.paths.type, resources.typeDocument],
+			[resources.paths.contract, resources.contractDocument],
+		] as const) {
+			fs.mkdirSync(path.dirname(path.join(vault, file)), { recursive: true });
+			fs.writeFileSync(path.join(vault, file), content);
+		}
+		// Reader's reserved folder must be hidden even without a TaskNotes record.
+		fs.mkdirSync(path.join(vault, "_settings"), { recursive: true });
+		fs.writeFileSync(path.join(vault, "_settings/dev.mdbase.reader.md"), "---\napp: dev.mdbase.reader\n---\n");
+		if (testInfo.title.includes("legacy record")) {
+			fs.writeFileSync(path.join(vault, "_settings/dev.tasknotes.md"), "---\nmdbase_type: tasknotes-settings\napp: dev.tasknotes\nscope: collection\nsettings_version: 1\narchive_folder: Legacy/Archive\n---\nKeep this body.\n");
+		}
+	}
 	process.env.TASKNOTES_E2E_VAULT_DIR = vault;
 	process.env.TASKNOTES_E2E_USER_DATA_DIR = path.join(ownedRoot, "profile");
 	process.env.TASKNOTES_E2E_REUSE_OBSIDIAN = "0";
+	// The harness captures its vault at module load; each test owns a fresh one.
+	delete require.cache[require.resolve("./obsidian")];
 	obsidian = require("./obsidian");
 	app = await obsidian.launchObsidian();
 });
 
-test.afterAll(async () => {
+test.afterEach(async () => {
 	try {
 		if (app) await obsidian.closeObsidian(app);
 	} finally {
@@ -91,3 +111,40 @@ test("new vault metadata is hidden by default and the settings toggle reveals it
 	});
 	await expect(metadata).toBeVisible();
 });
+
+for (const legacy of [true, false]) {
+	test(`old-layout vault ${legacy ? "with legacy record keeps its location" : "without a record creates settings in _mdbase"}`, async () => {
+		const page = app!.page;
+		const vault = process.env.TASKNOTES_E2E_VAULT_DIR!;
+		const current = "_mdbase/settings/dev.tasknotes.md";
+		const old = "_settings/dev.tasknotes.md";
+		const selected = legacy ? old : current;
+		const explorer = page.locator('.workspace-leaf-content[data-type="file-explorer"]');
+		const settingsFolder = explorer.locator('.nav-folder-title[data-path="_settings"]');
+		await expect(settingsFolder).toHaveCount(1);
+		await expect(settingsFolder).toBeHidden();
+		expect(await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.settings.archiveFolder)).toBe(legacy ? "Legacy/Archive" : "TaskNotes/Archive");
+		expect(fs.existsSync(path.join(vault, current))).toBe(false);
+		const configBefore = fs.readFileSync(path.join(vault, "mdbase.yaml"), "utf8");
+		await page.evaluate(async () => {
+			const plugin = (window as any).app.plugins.plugins.tasknotes;
+			plugin.settings.archiveFolder = "Saved/Archive";
+			await plugin.saveSettings();
+		});
+		await expect.poll(() => fs.existsSync(path.join(vault, selected)) && fs.readFileSync(path.join(vault, selected), "utf8")).toContain("archive_folder: Saved/Archive");
+		expect(fs.existsSync(path.join(vault, legacy ? current : old))).toBe(false);
+		if (legacy) expect(fs.readFileSync(path.join(vault, old), "utf8")).toContain("Keep this body.");
+		expect(fs.readFileSync(path.join(vault, "mdbase.yaml"), "utf8")).toBe(configBefore);
+		if (!legacy) {
+			const metadata = explorer.locator('.nav-folder-title[data-path="_mdbase"]');
+			await expect(metadata).toHaveCount(1);
+			await expect(metadata).toBeHidden();
+		}
+		await page.evaluate(async () => {
+			const plugins = (window as any).app.plugins;
+			await plugins.disablePlugin("tasknotes");
+			await plugins.enablePlugin("tasknotes");
+		});
+		expect(await page.evaluate(() => (window as any).app.plugins.plugins.tasknotes.settings.archiveFolder)).toBe("Saved/Archive");
+	});
+}

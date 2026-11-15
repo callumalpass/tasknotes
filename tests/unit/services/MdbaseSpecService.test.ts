@@ -1494,7 +1494,7 @@ describe("MdbaseSpecService", () => {
 				types_folder: "_mdbase/types", contracts_folder: "_mdbase/contracts",
 			});
 			expect(files.get("_mdbase/README.md")).toBe(MDBASE_README);
-			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.19.json"), "utf8"));
+			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.21.json"), "utf8"));
 			let compared = 0;
 			for (const resource of pack.resources) {
 				const entry = pack.manifest.resources.find((entry: { source: string }) => entry.source === resource.source);
@@ -1507,7 +1507,7 @@ describe("MdbaseSpecService", () => {
 					compared++;
 				}
 			}
-			expect(compared).toBe(5);
+			expect(compared).toBe(7);
 			expect(files.has("schemas/mdbase.app-settings/1.0.0.schema.json")).toBe(false);
 		});
 
