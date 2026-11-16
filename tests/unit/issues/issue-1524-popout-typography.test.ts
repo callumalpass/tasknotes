@@ -10,7 +10,7 @@ describe("Issue #1524: pop-out task card typography", () => {
 
 		expect(variablesCss).toContain("--tn-type-md: calc(var(--tn-type-base) * 0.875);");
 		expect(variablesCss).toContain("--tn-type-xs: calc(var(--tn-type-base) * 0.75);");
-		expect(variablesCss).toContain("--tn-type-2xs: calc(var(--tn-type-base) * 0.6875);");
+		expect(variablesCss).toContain("--tn-type-2xs: max(var(--font-ui-smaller, 12px), calc(var(--tn-type-base) * 0.6875));");
 		expect(variablesCss).toContain("--tn-type-base: var(--font-text-size, 16px);");
 		expect(variablesCss).not.toContain("--tn-type-base: 0.875rem;");
 	});

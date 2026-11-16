@@ -161,7 +161,7 @@
     padding: var(--size-4-1);
     font-family: var(--font-interface);
     font-size: var(--font-ui-small);
-	z-index: 9999;
+	z-index: var(--tn-z-tooltip);
     max-height: 300px;
     overflow-y: auto;
 }

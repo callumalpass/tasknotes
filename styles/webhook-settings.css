@@ -221,13 +221,13 @@
   white-space: nowrap;
   min-width: 0;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-stationary);
 }
 
 .tasknotes-webhook-modal-btn:hover {
   background: var(--background-modifier-hover);
   border-color: var(--interactive-accent);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-s);
   transform: translateY(-1px);
 }
 

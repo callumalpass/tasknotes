@@ -180,7 +180,7 @@
     display: inline-flex;
     margin-left: var(--tn-space-half);
     color: var(--tn-text-muted);
-    font-size: var(--tn-type-2xs);
+    font-size: var(--tn-ui-type-xs);
     font-weight: var(--tn-font-weight-normal);
 }
 
@@ -375,7 +375,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__column-title {
 
 .tasknotes-plugin .kanban-view__column-count {
     color: var(--tn-text-muted);
-    font-size: var(--tn-type-2xs);
+    font-size: var(--tn-ui-type-xs);
     line-height: 1.2;
     font-weight: 400;
     margin: 0;
@@ -777,7 +777,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     border: 1px solid var(--tn-border-color-hover);
     position: absolute;
     pointer-events: none;
-    z-index: var(--tn-z-tooltip);
+    z-index: var(--tn-z-dragged);
     transform: translate(-50%, -50%);
     box-shadow: var(--tn-drag-shadow);
 }
@@ -813,7 +813,7 @@ body.is-mobile .tasknotes-plugin .kanban-view__swimlane-column {
     padding: 0;
     pointer-events: none;
     transform: var(--tn-kanban-drag-preview-transform, translate3d(-9999px, -9999px, 0));
-    z-index: var(--layer-tooltip, 10000);
+    z-index: var(--tn-z-dragged);
     overflow: visible;
     cursor: grabbing;
     opacity: 1;

@@ -46,7 +46,7 @@
     --tnc-theme-drag-border: var(--tn-drag-border);
     --tnc-theme-drag-shadow: var(--tn-drag-shadow);
     --tnc-theme-date-target: var(--tn-touch-target);
-    --tnc-theme-drag-z: var(--tn-z-dropdown);
+    --tnc-theme-drag-z: calc(var(--tn-z-sticky) + 1);
     --tnc-radius: var(--tn-radius-sm);
     --tnc-shadow: var(--tn-shadow-raised);
     --tnc-font-size: var(--tn-type-sm);
@@ -165,7 +165,7 @@
     border-radius: var(--tn-radius-md);
     background: var(--tn-bg-primary);
     color: var(--tn-text-muted);
-    font-size: var(--tn-type-xs);
+    font-size: var(--tn-ui-type-xs);
     font-weight: var(--tn-font-weight-medium);
 }
 
@@ -575,7 +575,7 @@
     border: 1px solid var(--tn-border-color);
     border-radius: var(--tn-radius-lg);
     box-shadow: var(--tn-shadow-overlay);
-    font-size: var(--tn-type-sm);
+    font-size: var(--tn-ui-type-sm);
 }
 
 .tasknotes-plugin .tnc-popover-head {

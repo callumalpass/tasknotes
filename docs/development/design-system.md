@@ -26,11 +26,13 @@ Inline card rules live in `styles/task-inline-widget.css`, after the shared card
 
 Family is always `var(--font-interface)`; tabular data uses `font-variant-numeric: tabular-nums`. There is no display face.
 
-Sizes are multiples of `--font-text-size`, so they follow Obsidian's font size setting. Values below are at the default 16px.
+Content sizes are multiples of `--font-text-size`, so they follow Obsidian's font size setting. Values below are at the default 16px. Nothing goes below Obsidian's smallest interface size, `--font-ui-smaller`.
+
+Interface chrome (menus, pickers, toasts, buttons, segmented controls, key hints, counts, and board, group and calendar weekday headers) uses `--tn-ui-type-xs` (`--font-ui-smaller`, 12px) and `--tn-ui-type-sm` (`--font-ui-small`, 13px), so it sizes like Obsidian's own chrome, including its larger mobile sizes.
 
 | Token | Size | Use |
 | --- | --- | --- |
-| `--tn-type-2xs` | 11px | Keyboard hints, group counts, calendar weekday headers |
+| `--tn-type-2xs` | 12px | Smallest supporting text; never below `--font-ui-smaller` |
 | `--tn-type-xs` | 12px | Metadata, chips, dates, secondary labels |
 | `--tn-type-sm` | 13px | **Default UI size:** task titles, menus, buttons, inputs |
 | `--tn-type-md` | 14px | Section headers |
@@ -48,8 +50,8 @@ Surfaces and text come only from the theme: `--background-primary`, `--backgroun
 | `--tn-hairline` | 1px separators. Lighter than the theme border |
 | `--tn-hover` | Row and control hover |
 | `--tn-active` | Pressed |
-| `--tn-selected` | Selected row, accent-tinted |
-| `--tn-focus-ring` | Keyboard focus |
+| `--tn-selected` | Selected row: Obsidian's `--nav-item-background-selected` |
+| `--tn-focus-ring` | Keyboard focus: Obsidian's `--background-modifier-border-focus` |
 | `--tn-danger`, `--tn-warning`, `--tn-success`, `--tn-info` | Theme-derived semantic colour |
 
 Status and priority colours stay user-configurable. They colour glyphs, never task-row backgrounds. Status-grouped Kanban columns retain a restrained 5% body tint from a resolvable status colour, mixed with the theme's secondary surface; invalid colours stay neutral.
@@ -62,6 +64,7 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 
 - Space: 4px grid: `--tn-space-1` (4) to `--tn-space-8` (32), plus `--tn-space-half` (2).
 - Radius: `--tn-radius-sm` 4 (chips, keys), `--tn-radius-md` 6 (buttons, inputs, rows), `--tn-radius-lg` 8 (cards, menus), `--tn-radius-xl` 12 (modals), `--tn-radius-full`.
+- Layers: in-view stacking uses `--tn-z-sticky`; overlays on the document body use Obsidian's `--layer-*` through `--tn-z-dropdown`, `--tn-z-modal`, `--tn-z-notification`, `--tn-z-tooltip` and `--tn-z-dragged`.
 - Depth: flat at rest. `--tn-shadow-raised` for cards on drag. `--tn-shadow-overlay` for popovers and menus. `--tn-shadow-modal` for modals. Overlays add a hairline border.
 - Motion: `--tn-motion-fast` 80ms (hover), `--tn-motion-base` 140ms (pickers, reveals), `--tn-motion-slow` 220ms (panels). Ease out with `--tn-ease`. Spatial motion uses transform and opacity; state fills may cross-fade without changing geometry. No bounce. `prefers-reduced-motion` removes all of it.
 - Controls: 28px default height, 24px small. Task rows use `--tn-task-row-height` (58px), `--tn-task-row-height-phone` (72px) and `--tn-task-row-height-compact` (46px); desktop Task List rows and Kanban cards have no minimum and size to their content; the older 34px/28px row tokens remain for non-task controls. On mobile, touch targets are 40px minimum.
@@ -76,7 +79,7 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 | Priority glyph | `glyphs.ts` | Signal bars by rank; solid alert for top rank; dashes for none. Custom icons win |
 | Date label | `dateLabel.ts` | Relative label, lateness colour |
 | Key hint | `keyHint.ts` | Renders `⌘K`, `S`, platform aware; omitted on touch/mobile |
-| Button, chip, segmented control | `controls.ts`, `kit.css` | `tn-btn`, `tn-chip`, `tn-segmented` |
+| Button, chip, segmented control | `controls.ts`, `kit.css` | `tn-btn`, `tn-chip` (Obsidian's `--pill-*` tokens), `tn-segmented` |
 | Popover | `popover.ts` | Anchored overlay on the anchor window body or modal container, focus return, Esc, outside click, viewport clamp and flip |
 | List picker | `listPicker.ts` | Typeahead list on popover: arrows, Enter, shared footer, checked current value, applied-first multi-select |
 | Toast | `toast.ts` | Bottom-right, one result with a changed-task count and Undo; does not cover the central title column |

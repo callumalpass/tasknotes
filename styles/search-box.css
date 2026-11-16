@@ -42,7 +42,7 @@
 	padding: var(--size-4-2, 8px) var(--size-4-3, 12px);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
-	background: var(--input-background, var(--background-primary));
+	background: var(--background-modifier-form-field);
 	color: var(--text-normal);
 	font-size: var(--font-ui-small);
 	outline: none;

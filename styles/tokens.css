@@ -8,12 +8,16 @@
     --tn-task-date-width: 21ch;
     --tn-type-timer: clamp(var(--tn-type-xl), calc(var(--tn-type-base) * 4 * var(--pomodoro-scale, 1)), calc(var(--tn-type-base) * 4));
     --tn-type-base: var(--font-text-size, 16px);
-    --tn-type-2xs: calc(var(--tn-type-base) * 0.6875);
+    --tn-type-2xs: max(var(--font-ui-smaller, 12px), calc(var(--tn-type-base) * 0.6875));
     --tn-type-xs: calc(var(--tn-type-base) * 0.75);
     --tn-type-sm: calc(var(--tn-type-base) * 0.8125);
     --tn-type-md: calc(var(--tn-type-base) * 0.875);
     --tn-type-lg: calc(var(--tn-type-base) * 1.125);
     --tn-type-xl: calc(var(--tn-type-base) * 1.5);
+    /* Interface chrome (menus, pickers, toasts, buttons, key hints, board and group headers)
+       follows Obsidian's UI sizes rather than the reading size, as Obsidian's own chrome does. */
+    --tn-ui-type-xs: var(--font-ui-smaller, 12px);
+    --tn-ui-type-sm: var(--font-ui-small, 13px);
 
     --tn-font-weight-normal: var(--font-normal, 400);
     --tn-font-weight-medium: var(--font-medium, 500);
@@ -97,16 +101,12 @@
     /* Interaction states */
     --tn-hover: var(--background-modifier-hover);
     --tn-active: var(--background-modifier-active-hover, var(--background-modifier-hover));
-    --tn-selected: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-    --tn-selected-hover: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-    --tn-focus-ring: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
-    --tn-drag-source-opacity: 0.38;
+    --tn-selected: var(--nav-item-background-selected, color-mix(in oklch, var(--interactive-accent) 15%, transparent));
+    --tn-selected-hover: color-mix(in oklch, var(--tn-selected), var(--interactive-accent) 6%);
+    --tn-focus-ring: var(--background-modifier-border-focus);
     --tn-disabled-opacity: 0.5;
     --tn-drag-surface: var(--background-primary);
     --tn-drag-border: var(--background-modifier-border-hover);
-    --tn-drag-shadow: 0 6px 20px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.08);
-    --tn-drop-indicator: var(--interactive-accent);
-    --tn-drop-surface: color-mix(in srgb, var(--interactive-accent) 8%, var(--background-primary));
     --tn-drop-invalid: var(--text-error);
     --tn-drag-lift: var(--tn-shadow-raised);
     --tn-drop-target: var(--tn-selected);
@@ -181,18 +181,20 @@
     --tn-input-height-sm: var(--tn-control-sm);
     --tn-input-height-md: var(--tn-control-md);
     --tn-input-height-lg: 32px;
-    --tn-touch-target: 40px;
     --tn-icon-sm: var(--tn-glyph-sm);
     --tn-icon-md: var(--tn-glyph);
     --tn-icon-lg: var(--icon-l, 18px);
 
     /* Layers */
+    /* In-view stacking only: each workspace leaf isolates its own stacking context */
     --tn-z-base: 0;
     --tn-z-sticky: 100;
-    --tn-z-dropdown: 1000;
-    --tn-z-modal: 2000;
-    --tn-z-tooltip: 3000;
-    --tn-z-notification: 4000;
+    /* Overlays attached to the document body use Obsidian's layers */
+    --tn-z-dropdown: var(--layer-menu, 65);
+    --tn-z-modal: var(--layer-modal, 50);
+    --tn-z-notification: var(--layer-notice, 60);
+    --tn-z-tooltip: var(--layer-tooltip, 70);
+    --tn-z-dragged: var(--layer-dragged-item, 80);
 
     /* Status and priority colours are injected by StatusManager and PriorityManager */
     --tn-color-status-fallback: var(--tn-text-muted);

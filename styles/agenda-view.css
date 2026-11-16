@@ -17,7 +17,7 @@
     border: none;
     border-radius: var(--tn-radius-none);
     padding: 0;
-    font-size: var(--tn-type-2xs);
+    font-size: var(--tn-ui-type-xs);
     font-weight: var(--tn-font-weight-medium);
     line-height: 1.2;
     display: inline-flex;

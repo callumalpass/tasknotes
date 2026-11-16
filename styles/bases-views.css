@@ -360,7 +360,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 
 @media (max-width: 480px) {
     .tn-bases-tasknotes-list .task-group-header {
-        font-size: var(--tn-type-xs);
+        font-size: var(--tn-ui-type-xs);
         padding: var(--tn-space-1) 0 var(--tn-space-half);
     }
 }
@@ -474,7 +474,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 
 /* Swimlane task count */
 .kanban-view__swimlane-count {
-    font-size: var(--tn-type-xs);
+    font-size: var(--tn-ui-type-xs);
     color: var(--tn-text-muted);
     font-variant-numeric: tabular-nums;
 }
@@ -511,7 +511,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 
 .kanban-view__column-header-cell .kanban-view__column-title {
     flex: 1;
-    font-size: var(--tn-type-xs);
+    font-size: var(--tn-ui-type-xs);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     min-width: 0;
@@ -592,7 +592,7 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     }
 
     .kanban-view__column-header-cell .kanban-view__column-title {
-        font-size: var(--tn-type-xs);
+        font-size: var(--tn-ui-type-xs);
     }
 }
 
