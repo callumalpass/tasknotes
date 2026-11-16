@@ -23,6 +23,34 @@ When you want workflow by status, [Kanban View](views/kanban-view.md) organizes 
 
 ![Calendar week view](assets/views-calendar-week.png)
 
+## Keyboard shortcuts
+
+Task List, Kanban, Calendar and Agenda views can be used from the keyboard. Click in a view, or tab into it, then press **?** or select the **Keyboard shortcuts** button in the view's toolbar to see the shortcuts available there.
+
+| Key | Action |
+| --- | --- |
+| Up/Down or J/K | Move between tasks |
+| Left/Right or H/L | Move between columns (Kanban) or days (Calendar) |
+| Shift+Up/Down | Extend the selection |
+| X | Select or deselect the focused task |
+| Mod+A | Select all tasks |
+| Escape | Clear the selection |
+| Enter | Open the task note |
+| E | Edit the task |
+| S | Change status |
+| P | Change priority |
+| D | Change the due date |
+| Shift+H | Change the scheduled date |
+| T | Change tags |
+| C | Create a task |
+| / | Search |
+| Mod+K | Open the actions palette for the focused or selected tasks |
+| Mod+Z | Undo the last change |
+
+Mod is Cmd on macOS and Ctrl elsewhere. When several tasks are selected, property shortcuts change all of them.
+
+Calendar views add **[** and **]** (or **N**) for the previous and next period, and **W** and **M** for the week and month views. When no task is focused, **T** goes to today, **D** switches to the day view, and **P** moves to the previous period.
+
 ## Productivity-Focused Views
 
 These views support time management and work tracking.

@@ -77,7 +77,7 @@ The exact rules for how fields map to semantic roles, how dates are interpreted,
 
 ### Custom Fields
 
-Add any frontmatter property to your tasks. User-defined fields work in filtering, sorting, and templates. Define custom fields in `Settings -> TaskNotes -> Task Properties` to include them in task modals and views.
+Add any frontmatter property to your tasks. User-defined fields work in filtering, sorting, and templates. Define custom fields in `Settings -> TaskNotes -> Properties` to include them in task modals and views.
 
 ## Bases Integration
 

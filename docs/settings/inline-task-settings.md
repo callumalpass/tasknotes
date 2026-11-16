@@ -4,16 +4,22 @@ These settings control the behavior of TaskNotes' inline task management feature
 
 ## Task Link Overlay
 
+Location: **Settings → TaskNotes → Appearance & interaction → Inline tasks**
+
 You can enable or disable the **Task Link Overlay** feature, which replaces wikilinks to task notes with interactive widgets.
 
 ## Instant Task Conversion
 
+Location: **Settings → TaskNotes → Appearance & interaction → Inline tasks**
+
 You can enable or disable the **Instant Task Conversion** feature, which allows you to convert any line type (checkboxes, bullet points, numbered lists, blockquotes, headers, or plain text) to TaskNotes with a single click. You can also choose whether to keep the original checkbox marker in the source note and whether to apply your default task settings to converted tasks.
 
-The folder where inline-created and converted tasks are created is configured in **Settings → TaskNotes → Task files → Folder for inline-created tasks**. See [General Settings](general.md#task-storage) for details on folder configuration options, including `{{currentNotePath}}` and `../` sibling-folder paths.
+The folder where inline-created and converted tasks are created is configured in **Settings → TaskNotes → Task files → Folder for inline-created tasks**. See [Task files and folders](general.md#task-storage) for details on folder configuration options, including `{{currentNotePath}}` and `../` sibling-folder paths.
 
 Instant conversion uses the same filename settings as other new tasks. Configure these in **Settings → TaskNotes → Task files → Filenames**, including custom templates such as `{{date}} {{title}}`.
 
 ## Natural Language Processing
+
+Location: **Settings → TaskNotes → Task creation → Natural language processing**
 
 You can enable or disable the **Natural Language Processor (NLP)**, which allows you to create tasks using conversational language. You can also set the default date type for ambiguous date references.

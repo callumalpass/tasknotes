@@ -7,7 +7,7 @@ User fields can store workflow-specific metadata such as owner, effort class, cl
 
 ## Creating User Fields
 
-User fields are created in the TaskNotes settings, under the "Task Properties" tab. To create a new user field, click the "Add new user field" button.
+User fields are created in **Settings → TaskNotes → Properties → Custom user fields**.
 Fields that are not used in filters or grouping still add frontmatter overhead, so this section focuses on fields used in views.
 
 Each user field has the following properties:
@@ -49,7 +49,7 @@ Filtering narrows wikilink suggestions in large vaults.
 
 To configure filters for a custom field:
 
-1. Go to **Settings → Task Properties → Custom User Fields**
+1. Go to **Settings → TaskNotes → Properties → Custom user fields**
 2. Expand the custom field card you want to configure
 3. Expand the **"Autosuggestion filters (Advanced)"** section
 4. Configure one or more of the following filters:

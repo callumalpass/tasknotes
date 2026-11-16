@@ -37,8 +37,8 @@ npm install -g mdbase-tasknotes
 
 ### Using an existing TaskNotes vault
 
-If you already use TaskNotes with canonical mdbase configuration enabled
-(Settings → Integrations → Use canonical mdbase configuration), point `mtn` at
+If you already use TaskNotes with type definitions turned on
+(Settings → TaskNotes → TaskNotes App → Turn on type definitions), point `mtn` at
 your vault root:
 
 ```bash

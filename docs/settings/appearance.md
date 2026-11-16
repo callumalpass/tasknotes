@@ -1,9 +1,10 @@
-# Appearance & UI Settings
+# Appearance & interaction settings
 
 These settings control the visual appearance of the plugin, including the calendar, task cards, and other UI elements.
 
-
 ## Task Cards
+
+Location: **Settings → TaskNotes → Appearance & interaction → Task cards**
 
 Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
@@ -42,6 +43,8 @@ for task-link lines:
 
 ## Display Formatting
 
+Location: **Settings → TaskNotes → Appearance & interaction → Display formatting**
+
 Use **Date format** to choose **Default** or **ISO 8601 (2026-08-23)**. ISO mode shows full year-month-day dates in task dialogs, task cards, calendar date headings and tooltips, reminders, statistics, and other TaskNotes date labels. Dates normally shown as “Today” on task cards become absolute dates. Calendar grid day numbers remain compact.
 
 Use **Time format** to switch between 12-hour and 24-hour display, including created and modified timestamps. For example, ISO dates with 24-hour time appear as `2026-08-23 19:16`. Date-only values do not gain a time.
@@ -50,21 +53,29 @@ These are display preferences only. Frontmatter, date inputs, filenames, templat
 
 ## Calendar View
 
+Location: **Settings → TaskNotes → Appearance & interaction → Calendar defaults**
+
 Calendar view settings determine the default landing mode, day/week framing, and timeline affordances. You can choose the default view, custom day span, first day of week, weekend visibility, week numbers, and whether today/current-time markers are shown. **Selection mirror** controls whether drag selections show a visual preview before committing.
 
 Use **Calendar locale** for region-specific formatting and calendar systems (for example `en`, `de`, or `fa`). Leave it empty to use automatic detection.
 
 ## Default Event Visibility
 
-This section controls which event layers are enabled when a calendar view opens. You can independently toggle scheduled tasks, due dates, due dates for already-scheduled tasks, time entries, recurring tasks, and ICS events.
+Location: **Settings → TaskNotes → Appearance & interaction → Calendar defaults**
+
+This section controls which event layers are enabled when a calendar view opens. You can independently toggle scheduled tasks, due dates, time entries, and recurring tasks. Each calendar view shows or hides calendar subscriptions in its own options.
 
 ## Time Settings
+
+Location: **Settings → TaskNotes → Appearance & interaction → Calendar defaults**
 
 Time settings define the structure of timeline views: slot duration, earliest visible time, latest visible time, and initial scroll position. Use these together to match your workday shape.
 
 ## UI Elements
 
-UI element toggles control auxiliary surfaces such as the tracked-task status bar entry, the project subtasks widget and its placement, expandable subtasks in cards, chevron position, and the alignment of the views/filters button.
+Location: **Settings → TaskNotes → Appearance & interaction → UI elements**
+
+UI element toggles control auxiliary surfaces such as the tracked-task status bar entry, the project subtasks widget and its placement, expandable subtasks in cards, and chevron position.
 
 ## Related Settings
 
