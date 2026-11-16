@@ -399,7 +399,7 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		plugin.filterService.initialize();
 		plugin.statusBarService.initialize();
 		await plugin.notificationService.initialize();
-		await plugin.warmupProjectIndexes();
+		scheduleIdleIndexWarmup(plugin);
 		await plugin.autoArchiveService.start();
 		plugin.setupDateChangeDetection();
 		initializeServicesLazily(plugin);
@@ -413,6 +413,21 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 			operation: "post-layout-initialization",
 			error: error,
 		});
+	}
+}
+
+/**
+ * Builds the filter indexes once Obsidian is idle instead of during startup.
+ * Queries that need them before then build them on demand.
+ */
+function scheduleIdleIndexWarmup(plugin: TaskNotesPlugin): void {
+	const warmup = () => void plugin.warmupProjectIndexes();
+	if (typeof window.requestIdleCallback === "function") {
+		const handle = window.requestIdleCallback(warmup, { timeout: 10_000 });
+		plugin.register(() => window.cancelIdleCallback(handle));
+	} else {
+		const handle = window.setTimeout(warmup, 2_000);
+		plugin.register(() => window.clearTimeout(handle));
 	}
 }
 

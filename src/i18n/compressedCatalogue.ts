@@ -7,6 +7,7 @@ import type { Messages } from "@lingui/core";
  */
 export function unpackBundledCatalogue(base64: string): { messages: Messages } {
 	const binary = atob(base64);
-	const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
 	return { messages: compiledMessages(JSON.parse(strFromU8(unzlibSync(bytes)))) };
 }

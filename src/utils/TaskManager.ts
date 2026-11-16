@@ -704,17 +704,59 @@ export class TaskManager extends Events {
 	}
 
 	/**
+	 * Snapshot every task as it is now, like getAllTasks, without mapping them all.
+	 *
+	 * Indexed tasks keep a reference to their cached frontmatter, which Obsidian
+	 * replaces rather than mutates when a file changes, and are mapped only when
+	 * read. Unindexed or pending tasks are resolved now, as getAllTasks would.
+	 */
+	async getAllTaskSnapshots(): Promise<Map<string, () => TaskInfo | null>> {
+		const snapshots = new Map<string, () => TaskInfo | null>();
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const path = file.path;
+			if (!this.isValidFile(path)) continue;
+
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (metadata && !this.pendingTaskInfoByPath.has(path)) {
+				const frontmatter = metadata.frontmatter;
+				if (frontmatter && this.isTaskFile(frontmatter)) {
+					snapshots.set(path, () => this.extractTaskInfoFromNative(path, frontmatter));
+				}
+				continue;
+			}
+
+			const taskInfo = await this.getTaskInfo(path);
+			if (taskInfo) {
+				snapshots.set(path, () => taskInfo);
+			}
+		}
+
+		return snapshots;
+	}
+
+	/**
 	 * Get every task currently available in Obsidian's metadata cache.
 	 *
 	 * This intentionally avoids getTaskInfo's disk fallback so recurring background
 	 * scans cannot turn an incomplete metadata cache into a vault-wide read.
+	 *
+	 * `withFrontmatterField` skips files whose cached frontmatter does not set that
+	 * field (unless they have a pending in-memory update), so scans that only need
+	 * one property do not map every task in the vault.
 	 */
-	getAllCachedTasks(): TaskInfo[] {
+	getAllCachedTasks(options: { withFrontmatterField?: string } = {}): TaskInfo[] {
 		const tasks: TaskInfo[] = [];
 		const files = this.app.vault.getMarkdownFiles();
+		const requiredField = options.withFrontmatterField;
 
 		for (const file of files) {
 			if (!this.isValidFile(file.path)) continue;
+			if (requiredField && !this.pendingTaskInfoByPath.has(file.path)) {
+				const value: unknown =
+					this.app.metadataCache.getFileCache(file)?.frontmatter?.[requiredField];
+				if (value === undefined || value === null) continue;
+			}
 
 			const taskInfo = this.getCachedTaskInfoSync(file.path);
 			if (taskInfo) {

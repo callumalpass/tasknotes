@@ -12,14 +12,15 @@ export function linguiMacros() {
   return {
     name: "lingui-core-macros",
     setup(build) {
-      // One compact, synchronously decoded data module per bundled catalogue.
-      // Downloaded pack/manifest JSON remains byte-for-byte untouched.
+      // One compact data module per bundled catalogue, decoded synchronously the
+      // first time its messages are read, so startup only pays for the locales in
+      // use. Downloaded pack/manifest JSON remains byte-for-byte untouched.
       if (build.initialOptions.minify && process.env.TASKNOTES_RAW_CATALOGUES !== "1") {
         build.onLoad({ filter: /\/src\/i18n\/locales\/[^/]+\/messages\.json$/ }, async ({ path }) => {
           const catalogue = JSON.parse(await readFile(path, "utf8"));
           const compressed = deflateSync(Buffer.from(JSON.stringify(catalogue.messages)), { level: 9 }).toString("base64");
           return {
-            contents: `import { unpackBundledCatalogue } from ${JSON.stringify(resolve(pluginRoot, "src/i18n/compressedCatalogue.ts"))}; export default unpackBundledCatalogue(${JSON.stringify(compressed)});`,
+            contents: `import { unpackBundledCatalogue } from ${JSON.stringify(resolve(pluginRoot, "src/i18n/compressedCatalogue.ts"))}; let unpacked; export default { get messages() { if (!unpacked) unpacked = unpackBundledCatalogue(${JSON.stringify(compressed)}); return unpacked.messages; } };`,
             loader: "js", resolveDir: resolve("src/i18n"), watchFiles: [path],
           };
         });

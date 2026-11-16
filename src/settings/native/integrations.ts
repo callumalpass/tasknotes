@@ -315,7 +315,13 @@ export function calendarDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			desc: t(msg({ message: "Sync timeblocks from your daily notes to Google Calendar as events. Needs your own Google Cloud project; Sign in with Google can’t export.", context: "settings.integrations.googleCalendarTimeblockExport.description" })),
 			items: [
 				exportNeedsOwnProject,
-				field(google, "syncTimeblocks", "googleCalendarExport.syncTimeblocks", { name: msg({ message: "Sync timeblocks", context: "settings.integrations.googleCalendarTimeblockExport.enable.name" }), description: msg({ message: "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them.", context: "settings.integrations.googleCalendarTimeblockExport.enable.description" }) }),
+				ctx.field(google, "syncTimeblocks", "googleCalendarExport.syncTimeblocks", t(msg({ message: "Sync timeblocks", context: "settings.integrations.googleCalendarTimeblockExport.enable.name" })), {
+					desc: t(msg({ message: "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them.", context: "settings.integrations.googleCalendarTimeblockExport.enable.description" })),
+					// Only timeblocks added or edited from now on are synced.
+					onChange: () => {
+						if (google.syncTimeblocks) plugin.taskCalendarSyncService?.timeblocks.ensureBaseline();
+					},
+				}),
 				ctx.field(
 					google,
 					"timeblockTargetCalendarId",

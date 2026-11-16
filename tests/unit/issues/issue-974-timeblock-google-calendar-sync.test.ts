@@ -154,6 +154,38 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 		]);
 	});
 
+	it("lists daily notes only once sync is turned on, then syncs only later edits", async () => {
+		const notePath = "Daily/2026-11-02.md";
+		const notes: Notes = new Map([
+			[notePath, { date: "2026-11-02", timeblocks: [timeblock("old")] }],
+		]);
+		const plugin = createPlugin({}, { syncTimeblocks: false });
+		const google = createGoogle();
+		const source = createSource(notes);
+		const listNotePaths = jest.spyOn(source, "listNotePaths");
+		const service = new TaskCalendarSyncService(plugin, google as any, { timeblockSource: source });
+		const sync = service.timeblocks;
+		sync.initialize();
+		expect(listNotePaths).not.toHaveBeenCalled();
+
+		notes.get(notePath)!.timeblocks.push(timeblock("while-off"));
+		sync.handleNoteChanged(notePath);
+		plugin.settings.googleCalendarExport.syncTimeblocks = true;
+		sync.ensureBaseline();
+		expect(listNotePaths).toHaveBeenCalledTimes(1);
+
+		notes.get(notePath)!.timeblocks.push(timeblock("new", { title: "Review" }));
+		sync.handleNoteChanged(notePath);
+		await sync.flush();
+
+		expect(google.createEvent).toHaveBeenCalledTimes(1);
+		expect(google.createEvent).toHaveBeenCalledWith(
+			CALENDAR_ID,
+			expect.objectContaining({ summary: "[TB] Review 09:00-10:30" }),
+			expect.any(Number)
+		);
+	});
+
 	it("creates one event when saves overlap, including across service instances", async () => {
 		const notePath = "Daily/2026-11-02.md";
 		const notes: Notes = new Map([[notePath, { date: "2026-11-02", timeblocks: [] }]]);

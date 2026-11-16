@@ -23,7 +23,7 @@ describe('reminder reliability', () => {
     plugin = { settings: { defaultTaskStatus: 'open', notificationType: 'in-app' }, statusManager: statuses, i18n: createI18nService(),
       cacheManager: { getAllCachedTasks: () => [current] },
       app: { vault: { getAbstractFileByPath: () => new TFile(current.path) }, metadataCache: { getFileCache: () => ({ frontmatter: current }) } },
-      fieldMapper: { mapFromFrontmatter: (fm: any) => fm } };
+      fieldMapper: { mapFromFrontmatter: (fm: any) => fm, toUserField: (field: string) => field } };
     service = new NotificationService(plugin);
     jest.spyOn(service, 'showInAppNotice').mockImplementation(() => {});
   });

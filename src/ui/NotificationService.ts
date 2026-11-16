@@ -240,7 +240,10 @@ export class NotificationService {
 		// Deliver queued deadlines before a rescan can discard them.
 		this.checkNotificationQueue();
 		// Scans stay cache-only; move the cursor only after a successful scan.
-		const tasks = this.plugin.cacheManager.getAllCachedTasks();
+		// Reminders only come from the reminders field, so skip mapping other tasks.
+		const tasks = this.plugin.cacheManager.getAllCachedTasks({
+			withFrontmatterField: this.plugin.fieldMapper.toUserField("reminders"),
+		});
 		const now = Date.now();
 		const windowStart = Math.max(catchUpBoundary, now - this.CATCH_UP_WINDOW);
 		this.notificationQueue = [];
