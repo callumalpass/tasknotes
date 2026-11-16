@@ -39,3 +39,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @Robubble for reporting, and to @stefan-f-bucher for the related report in #2226
 - (#2555) Natural language parsing now uses the NLP triggers shown in settings. Previously, if saved settings had no project trigger, an empty one, or one with surrounding spaces, settings showed `+` as enabled, but text like `+Admin` was not added to projects and stayed in the task title. Trigger characters entered in settings are now saved without surrounding spaces.
   - Thanks to @jdhauck for reporting
+- (#2559) Fixed completing a recurring task from a Bases view failing with "Failed to execute 'structuredClone' on 'Window'" when the note was included in the view but not identified as a task by TaskNotes' own task identification settings. Saving the Undo for a completion no longer copies view data, and if Undo cannot be prepared the completion still saves.
+  - Thanks to @0x326-CHR for reporting
