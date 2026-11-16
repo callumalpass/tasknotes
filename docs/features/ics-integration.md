@@ -158,7 +158,7 @@ All standard TaskNotes template variables remain available:
 
 ## Configuration
 
-ICS integration settings are located under `Settings -> TaskNotes -> Integrations`:
+ICS integration settings are located under `Settings -> TaskNotes -> Calendars & integrations`:
 
 ### Default Templates
 

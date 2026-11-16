@@ -179,6 +179,6 @@ Filtering and sorting are configured through the Bases view settings, not throug
 
 ## Keyboard Navigation
 
-With the board focused, Left/Right or H/L moves task focus between populated, expanded columns. Up/Down or J/K moves through tasks. Press **?** for the shortcut reference. On Kanban, **Shift+H** opens the scheduled-date picker; Task List retains **H** for that action. Column collapse buttons also support Enter and Space.
+With the board focused, Left/Right or H/L moves task focus between populated, expanded columns. Up/Down or J/K moves through tasks. Press **?** for the shortcut reference. **Shift+H** opens the scheduled-date picker. See [Keyboard shortcuts](../views.md#keyboard-shortcuts) for the full list. Column collapse buttons also support Enter and Space.
 
 Empty, unpinned columns start as compact drop-target rails unless hidden by **Hide empty columns**. Expand a rail with its chevron to create a task there. Explicit column collapse choices remain saved in the view; automatically compacting an empty column does not change its configuration. Columns adapt to the available width, with horizontal scrolling and a next-column peek on narrow boards.

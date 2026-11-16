@@ -20,7 +20,7 @@ Connecting Microsoft Outlook, or Google Calendar with your own credentials, requ
 1. Create an OAuth application in Google Cloud Console or Microsoft Azure Portal
 2. Configure redirect URIs and scopes
 3. Obtain client ID and client secret
-4. Enter credentials in TaskNotes settings (`Settings -> TaskNotes -> Integrations`, OAuth calendar section)
+4. Enter credentials in TaskNotes settings (`Settings -> TaskNotes -> Calendars & integrations`, under the calendar provider)
 
 ### Synchronization Behavior
 
@@ -82,7 +82,7 @@ Access the time entry editor by clicking an existing time entry in the calendar.
 
 TaskNotes can subscribe to external calendar feeds using the iCalendar (ICS) format. This provides read-only access to events from calendar services. ICS subscriptions differ from OAuth calendar integration in that they are read-only—dragging ICS events to new dates does not update the source calendar.
 
-Add and manage ICS subscriptions from `Settings -> TaskNotes -> Integrations` (Calendar Subscriptions section).
+Add and manage ICS subscriptions from `Settings -> TaskNotes -> Calendars & integrations` (Calendar subscriptions).
 
 ### Private feeds (username and password)
 
@@ -111,11 +111,11 @@ The Calendar View supports time blocking for scheduling dedicated work periods. 
 
 Time blocks are stored in the frontmatter of daily notes and can be linked to specific tasks. This differs from time entries, which track actual time spent and are stored in task frontmatter rather than daily notes.
 
-Enable time blocking under `Settings -> TaskNotes -> Features` (Timeblocking section).
+Enable time blocking under `Settings -> TaskNotes -> Time & reminders` (Timeblocking).
 
 ### Syncing Timeblocks to Google Calendar
 
-TaskNotes can create Google Calendar events for your timeblocks. This is off by default. Under **Settings → TaskNotes → Integrations → Export timeblocks to Google Calendar**:
+TaskNotes can create Google Calendar events for your timeblocks. This is off by default. Under **Settings → TaskNotes → Calendars & integrations → Export timeblocks to Google Calendar**:
 
 - **Sync timeblocks** turns syncing on. It works independently of **Enable task export**, but Google Calendar must be connected.
 - **Timeblock calendar** chooses the calendar for timeblock events. Leave it on **Same as task calendar** to use the task export target calendar.

@@ -22,7 +22,7 @@ If commands open empty or unexpected views, first confirm Bases is enabled and t
 
 ### View File Location
 
-When you use the "Open Tasks View" command or ribbon icon, TaskNotes opens the `.base` file configured under `Settings -> TaskNotes -> General -> Views & base files` (initially `TaskNotes/Views/tasks-default.base`). TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled, and you can point the command to any other `.base` file if you maintain multiple task-list layouts.
+When you use the "Open Tasks View" command or ribbon icon, TaskNotes opens the `.base` file configured under `Settings -> TaskNotes -> Appearance & interaction -> Views & base files` (initially `TaskNotes/Views/tasks-default.base`). TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled, and you can point the command to any other `.base` file if you maintain multiple task-list layouts.
 
 ## Configuration
 
@@ -98,7 +98,7 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 | Created | `file.ctime` | File creation date |
 | Modified | `file.mtime` | File modification date |
 
-The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Task Properties`). The table above shows default mappings.
+The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Properties`). The table above shows default mappings.
 
 ## Filtering and Sorting
 
@@ -291,7 +291,7 @@ The v3 FilterBar UI component no longer exists - all configuration is done throu
 
 The Task List View provides interaction with tasks through clicking and context menus:
 
-- **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> General` in click-action controls)
+- **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> Appearance & interaction -> Task interaction`)
 - **Right-click on a task**: Opens a context menu with actions:
   - Mark as complete
   - Change status, priority, tags, dates, recurrence and reminders. Each opens the same searchable picker as the task's own controls.

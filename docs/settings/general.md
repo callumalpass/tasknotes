@@ -1,13 +1,16 @@
-# General Settings
+# Task files and folders
 
-These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior.
-
+These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior. Most are on the **Task files** settings page; each section below names where to find it.
 
 ## Task Storage
+
+Location: **Settings → TaskNotes → Task files → Task storage**
 
 Task storage settings define where new and inline-created task files are created and how archived tasks are relocated. **Default tasks folder** sets the base location and supports folder template variables, including `{{currentNotePath}}` and `{{currentNoteTitle}}` for creating command-palette or ribbon tasks beside the active note. It also supports date variables such as `{{year}}` and Daily Notes-style date tokens such as `YYYY/MM/DD`. **Folder for inline-created tasks** controls the Create Inline Task command and instant conversion output. Leave it empty to use the default tasks folder, set a fixed folder path to centralize inline tasks, or use `{{currentNotePath}}` and `{{currentNoteTitle}}` placeholders for contextual routing. Relative path segments such as `../` are normalized after variables are expanded. If archive moves are enabled, completed archived tasks are moved automatically to your configured archive folder.
 
 ## Task Identification
+
+Location: **Settings → TaskNotes → Task files → Task identification**
 
 TaskNotes can identify task notes using either a tag or a frontmatter property.
 
@@ -44,9 +47,13 @@ The task edit modal follows the same visibility setting. Visible child tags such
 
 ## Folder Management
 
+Location: **Settings → TaskNotes → Task files → Folder management**
+
 Use **Excluded folders** to omit paths from Notes tab indexing and keep large archive areas out of regular task browsing.
 
 ## Views & Base Files
+
+Location: **Settings → TaskNotes → Appearance & interaction → Views & base files**
 
 TaskNotes uses Obsidian Bases files (`.base`) to power its task views. By default, missing view files are created automatically on startup.
 
@@ -54,14 +61,18 @@ Use **Create files** to generate missing default files in `TaskNotes/Views/` wit
 
 ## Frontmatter
 
-This section only appears when you have markdown links enabled globally in Obsidian settings.
+Location: **Settings → TaskNotes → Task files → Frontmatter**
 
-**Use markdown links in frontmatter** switches project/dependency serialization from wikilinks (`[[path]]`) to markdown links (`[text](path)`). This requires the `obsidian-frontmatter-markdown-links` plugin.
+**Use Markdown links in frontmatter** switches project/dependency serialization from wikilinks (`[[path]]`) to markdown links (`[text](path)`). TaskNotes writes Markdown links even when Obsidian's **Use [[Wikilinks]]** setting is on. Obsidian needs the `obsidian-frontmatter-markdown-links` plugin to resolve them.
 
 ## Task Interaction
+
+Location: **Settings → TaskNotes → Appearance & interaction → Task interaction**
 
 Task interaction settings define default click behavior on task cards. You can independently choose single-click and double-click actions (edit task, open note, or no action for double click).
 
 ## Release Notes
 
-**View release notes** opens the release notes view for the current version. Notes also open automatically after updates and remain available from the command palette.
+Location: **Settings → TaskNotes**
+
+**Release notes**, on the main TaskNotes settings page, opens the release notes for the current version. Notes also open automatically after updates and remain available from the command palette.

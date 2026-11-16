@@ -42,7 +42,7 @@ The natural language input field includes auto-suggestion functionality that act
 - **@** - Shows available contexts from existing tasks
 - **#** - Shows available tags from existing tasks
 - **+** - Shows files from your vault as project suggestions
-- **\*** - Shows available status options (configurable trigger in Settings → Features)
+- **\*** - Shows available status options (configurable trigger in Settings → TaskNotes → Properties → Status)
 
 In task creation and edit fields, focusing the tags or contexts input also opens the available suggestions immediately, so you can pick from the current vocabulary without typing a first character.
 
@@ -61,14 +61,14 @@ Project suggestions search across:
 - File names (basename without extension)
 - Frontmatter titles (using your configured field mapping)
 - Frontmatter aliases
-- Optional filtering by required tags, folders, and a specific frontmatter property/value defined in Settings → Appearance & UI → Project Autosuggest
+- Optional filtering by required tags, folders, and a specific frontmatter property/value defined in Settings → TaskNotes → Properties → Projects → Autosuggestion filters (advanced)
 
 Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
 
 
 #### Enhanced Project Auto‑suggester (configurable cards)
 
-Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → Appearance & UI → Project Autosuggest.
+Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → TaskNotes → Properties → Projects.
 
 - Properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key
 - Flags:
@@ -108,7 +108,7 @@ When typing the status trigger character (default `*`) in the natural language i
 
 Status suggestions allow quick selection of statuses when creating tasks. For example, typing `*in` shows "In Progress" as a suggestion if that's one of your configured statuses.
 
-Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → Task Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps. When **Reset status after each occurrence** is on and the first status marked **Completed** has a **Next status**, recurring tasks follow the same cycle and complete the occurrence when it reaches a completed status. Otherwise, a click completes the occurrence directly. See [Recurring Tasks](recurring-tasks.md#completion-tracking).
+Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → TaskNotes → Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps. When **Reset status after each occurrence** is on and the first status marked **Completed** has a **Next status**, recurring tasks follow the same cycle and complete the occurrence when it reaches a completed status. Otherwise, a click completes the occurrence directly. See [Recurring Tasks](recurring-tasks.md#completion-tracking).
 
 Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 
@@ -217,7 +217,7 @@ Task cards show a paperclip with the number of attachments next to their other b
 
 TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
 
-Configure auto-archiving per status from **Settings → Task Properties → Task Statuses**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1–1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
+Configure auto-archiving per status from **Settings → TaskNotes → Properties → Status**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1–1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
 
 The auto-archive queue runs in the background and persists across plugin restarts. If TaskNotes was closed while an archive was pending, the task will be archived shortly after the plugin loads again as long as it still matches the configured status.
 
@@ -243,7 +243,7 @@ You can record a task's completion — and choose the date it is recorded agains
 
 An action is disabled when the date it needs is not set — for example *Completed on schedule* on a task with no scheduled date — rather than silently falling back to another date. Recurring tasks also get a **Skip instance** action alongside these.
 
-By default the actions are grouped under a single **Mark complete or skip** entry (**Mark complete** for non-recurring tasks). To show them directly in the menu instead — set off by dividers — turn off **Settings → Appearance & UI → Task cards → Group complete and skip actions in a submenu**.
+By default the actions are grouped under a single **Mark complete or skip** entry (**Mark complete** for non-recurring tasks). To show them directly in the menu instead — set off by dividers — turn off **Settings → TaskNotes → Appearance & interaction → Task cards → Group complete and skip actions in a submenu**.
 
 ![Completion actions grouped under a submenu (default)](../assets/feature-completion-date-actions.png)
 

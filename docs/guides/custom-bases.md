@@ -17,7 +17,7 @@ Avoid editing the only copy of a generated default. **Update default base files*
 
 ## Preserve task identification
 
-Every task view needs a filter that matches the identification method in **Settings → TaskNotes → General**.
+Every task view needs a filter that matches the identification method in **Settings → TaskNotes → Task files → Task identification**.
 
 For tag identification:
 
@@ -76,7 +76,7 @@ This lists the highest priority first and tasks with a missing or unrecognized p
 
 ## Point a command at the custom Base
 
-Open **Settings → TaskNotes → General → View commands** and change the relevant command path. Resetting that mapping returns it to the generated default path.
+Open **Settings → TaskNotes → Appearance & interaction → Views & base files** and change the relevant command path. Resetting that mapping returns it to the generated default path.
 
 ## Upgrade safely
 

@@ -6,7 +6,7 @@ Inline features support capture and task updates without leaving the current not
 
 ## Task Link Overlays
 
-When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Features` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
+When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Appearance & interaction -> Inline tasks` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
 
 ![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
 
@@ -49,14 +49,14 @@ To turn the current line into a TaskNote, use `Convert to TaskNote` or the insta
 
 ## Instant Task Conversion
 
-The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Features` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
+The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Appearance & interaction -> Inline tasks` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
 This supports progressive conversion from draft notes to dedicated task files.
 
 With a selection, `Convert to TaskNote` uses the first selected line as the title and additional selected text as details. Text outside the selection is left in place. Selecting a whole line through the start of the next line (for example, Home then Shift+Down) does not include that next line in the conversion.
 
 ### Folder Configuration
 
-By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in `Settings -> TaskNotes -> General` (`Folder for converted tasks`):
+By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in `Settings -> TaskNotes -> Task files -> Task storage` (`Folder for inline-created tasks`):
 
 - **Leave empty**: Uses your default tasks folder (configured in the same section)
 - **`{{currentNotePath}}`**: Places tasks in the same folder as the note you're editing (default)
@@ -184,7 +184,7 @@ Additional behavior:
 
 ### Configuration
 
-Enable or disable the widget in `Settings -> TaskNotes -> Appearance` (`Show relationships widget`).
+Enable or disable the widget in `Settings -> TaskNotes -> Appearance & interaction -> UI elements` (`Show relationships widget`).
 
 Position the widget at the top (after frontmatter) or bottom of the note using the **Relationships Position** setting.
 
@@ -193,7 +193,7 @@ Position the widget at the top (after frontmatter) or bottom of the note using t
 Tasks with subtasks can display an expand/collapse chevron that toggles subtask visibility.
 
 - The chevron can be positioned on the Right (default, hover to show) or on the Left (always visible, matches group chevrons).
-- Configure this in `Settings -> TaskNotes -> Appearance` (`Subtask chevron position`).
+- Configure this in `Settings -> TaskNotes -> Appearance & interaction -> UI elements` (`Subtask chevron position`).
 
 ![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
 
@@ -247,7 +247,7 @@ Features include:
 
 ### Customizable Triggers
 
-**New in v4**: Triggers for NLP properties can be customized in `Settings -> TaskNotes -> Features` (`NLP Triggers`).
+Triggers for NLP properties can be customized for each property in `Settings -> TaskNotes -> Properties`.
 
 You can configure trigger characters or strings for:
 

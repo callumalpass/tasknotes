@@ -4,7 +4,7 @@ TaskNotes webhooks send HTTP POST requests when selected events occur.
 
 ## Prerequisites
 
-1. Enable HTTP API in `Settings -> TaskNotes -> Integrations -> HTTP API`.
+1. Enable HTTP API in `Settings -> TaskNotes -> Advanced -> HTTP API`.
 2. Create at least one webhook (settings UI or API).
 3. Subscribe it to one or more events.
 

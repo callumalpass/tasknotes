@@ -118,7 +118,7 @@ These indicators are intended to make reminders discoverable in list-heavy views
 
 Default reminders can be configured in:
 
-`Settings -> TaskNotes -> Task Properties -> Reminders`
+`Settings -> TaskNotes -> Task creation -> Defaults` (Default reminders)
 
 Defaults are applied to:
 
@@ -147,4 +147,4 @@ Archived tasks and completed tasks do not deliver reminders. For recurring tasks
 - Reminders follow iCalendar `VALARM` concepts with ISO 8601 offsets
 - The reminder property name can be customized through field mapping
 
-For settings-level behavior (notification channels, enable/disable state), see [Features Settings](../settings/features.md).
+For settings-level behavior (notification channels, enable/disable state), see [Time and workflow features](../settings/features.md).
