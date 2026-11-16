@@ -1,10 +1,13 @@
 /**
- * Issue #2559: completing a recurring task from a Bases task list showed
- * "Failed to execute 'structuredClone' on 'Window'" and the completion failed.
+ * Issue #2559: in a Bases task list filtered on `type: task`, notes that
+ * TaskNotes' own task identification does not match could not be completed.
+ * Recurring tasks showed "Failed to execute 'structuredClone' on 'Window'";
+ * non-recurring tasks showed "Task not found".
  *
  * Bases attaches its entry to TaskInfo as `basesData`; that entry holds the
  * Obsidian app (functions, DOM), which structuredClone cannot copy. The
- * recurring completion Undo receipt cloned the whole TaskInfo.
+ * recurring completion Undo receipt cloned the whole TaskInfo. The status
+ * click on a non-recurring card required a cached task, which such notes lack.
  *
  * @see https://github.com/callumalpass/tasknotes/issues/2559
  */
@@ -14,6 +17,7 @@ import { closeObsidian, launchObsidian, type ObsidianApp } from "../obsidian";
 
 const folder = `Issue 2559 ${Date.now()}`;
 const taskPath = `${folder}/Daily standup.md`;
+const oneOffPath = `${folder}/Send report.md`;
 let instance: ObsidianApp;
 let page: Page;
 let original: Record<string, unknown>;
@@ -36,16 +40,16 @@ const reporterStatuses = [
 	{ value: "blocked", nextStatus: "in-progress" },
 ];
 
-const statusDot = (): Locator =>
+const statusDot = (path = taskPath): Locator =>
 	page
-		.locator(`.workspace-leaf.mod-active [data-task-path="${taskPath}"] .task-card__status-dot`)
+		.locator(`.workspace-leaf.mod-active [data-task-path="${path}"] .task-card__status-dot`)
 		.first();
 
-async function frontmatter(): Promise<Record<string, any>> {
+async function frontmatter(path = taskPath): Promise<Record<string, any>> {
 	const text = await page.evaluate(async (path) => {
 		const app = (window as any).app;
 		return app.vault.read(app.vault.getAbstractFileByPath(path));
-	}, taskPath);
+	}, path);
 	return parse(text.match(/^---\r?\n([\s\S]*?)\r?\n---/)![1]);
 }
 
@@ -59,7 +63,7 @@ test.beforeAll(async () => {
 	instance = await launchObsidian();
 	page = instance.page;
 	original = await page.evaluate(
-		async ({ folder, taskPath, today, statuses }) => {
+		async ({ folder, taskPath, oneOffPath, today, statuses }) => {
 			const app = (window as any).app;
 			const plugin = app.plugins.plugins.tasknotes;
 			const { customStatuses, defaultTaskStatus } = plugin.settings;
@@ -101,6 +105,10 @@ test.beforeAll(async () => {
 					"",
 				].join("\n")
 			);
+			await app.vault.create(
+				oneOffPath,
+				"---\nstatus: open\npriority: normal\ntype: task\ndue: 2026-10-20T09:00\n---\n"
+			);
 			for (const leaf of app.workspace.getLeavesOfType("bases")) leaf.detach();
 			const base = await app.vault.create(
 				`${folder}/Tasks.base`,
@@ -110,7 +118,7 @@ test.beforeAll(async () => {
 			document.querySelectorAll(".notice").forEach((notice) => notice.remove());
 			return { customStatuses, defaultTaskStatus };
 		},
-		{ folder, taskPath, today, statuses: reporterStatuses }
+		{ folder, taskPath, oneOffPath, today, statuses: reporterStatuses }
 	);
 	await expect(statusDot()).toBeVisible();
 });
@@ -145,4 +153,20 @@ test("clicking a recurring Bases task's status completes today's occurrence", as
 		.toContain(today);
 	await expect.poll(async () => (await noticeTexts()).join("\n")).toContain("Completed occurrence");
 	expect((await noticeTexts()).join("\n")).not.toMatch(/structuredClone|Failed to update/);
+});
+
+test("clicking a non-recurring Bases task's status moves it to the next status", async () => {
+	// Reported in the same issue: "Task not found" for the same kind of note.
+	await page.evaluate(() => document.querySelectorAll(".notice").forEach((n) => n.remove()));
+	await statusDot(oneOffPath).dispatchEvent("click");
+	await expect
+		.poll(async () => (await frontmatter(oneOffPath)).status, { timeout: 5000 })
+		.toBe("in-progress");
+
+	// The next click reads the task TaskNotes cached from that update.
+	await statusDot(oneOffPath).dispatchEvent("click");
+	await expect
+		.poll(async () => (await frontmatter(oneOffPath)).status, { timeout: 5000 })
+		.toBe("resolved");
+	expect((await noticeTexts()).join("\n")).not.toMatch(/Task not found|Failed to update/);
 });

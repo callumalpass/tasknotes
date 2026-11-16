@@ -12288,7 +12288,6 @@ msgid "Task must have a title"
 msgstr "Aufgabe muss einen Titel haben"
 
 #: src/modals/TaskActionPaletteModal.ts
-#: src/ui/taskCardActions.ts
 msgctxt "modals.actionPalette.taskNotFound"
 msgid "Task not found"
 msgstr "Aufgabe nicht gefunden"
