@@ -1288,8 +1288,8 @@ msgstr "サブタスクとして追加"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "{parent} のサブタスクとして追加します。他のプロジェクトは変更されません。"
+msgid "Add as subtask of {parent}"
+msgstr "{parent} のサブタスクとして追加"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts

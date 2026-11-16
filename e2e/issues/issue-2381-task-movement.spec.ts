@@ -196,6 +196,11 @@ async function beginParentDrop(title: string): Promise<void> {
 	);
 	await expect(target).toBeVisible();
 	const bounds = await target.boundingBox();
+	// The target must not cover the title of the row being dropped onto.
+	const titleBounds = await card(title)
+		.locator(":scope > .task-card__main-row .task-card__title-text")
+		.boundingBox();
+	expect(bounds!.x).toBeGreaterThanOrEqual(titleBounds!.x + titleBounds!.width);
 	await instance.page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2, {
 		steps: 5,
 	});

@@ -1290,8 +1290,8 @@ msgstr "Adicionar como subtarefa"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "Adicionar como subtarefa de {parent}. Os outros projetos permanecem inalterados."
+msgid "Add as subtask of {parent}"
+msgstr "Adicionar como subtarefa de {parent}"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts

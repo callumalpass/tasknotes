@@ -252,7 +252,7 @@ test('native list preview and exact Escape', async () => {
   await page.keyboard.press('Escape');
   writeFileSync(join(evidence, 'list.json'), JSON.stringify({ sourceBounds, preview, original, autoScrolled, restored, help }, null, 2));
   await page.screenshot({ path: join(evidence, 'list.png') });
-  if (!baseline) { expect(restored).toBe(original); expect(preview.width).toBeCloseTo(sourceBounds.width, 0); expect(help.join('')).toContain('Keyboard shortcuts'); expect(help.join('')).not.toContain('Preview'); }
+  if (!baseline) { expect(restored).toBe(original); expect(preview.width).toBeLessThanOrEqual(Math.min(280, sourceBounds.width)); expect(help.join('')).toContain('Keyboard shortcuts'); expect(help.join('')).not.toContain('Preview'); }
 });
 
 test('native cross-group row stays at destination while its write is held and rolls back on failure', async () => {

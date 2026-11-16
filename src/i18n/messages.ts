@@ -8,7 +8,7 @@ export const messages = {
 "views.basesCalendar.settings.layout.customDayView": msg({ message: "Custom days", context: "views.basesCalendar.settings.layout.customDayView" }),
 "views.taskList.movement.parentAdd": msg({ message: "Add as subtask", context: "views.taskList.movement.parentAdd" }),
 "views.taskList.movement.parentChoose": msg({ message: "Add as subtask of…", context: "views.taskList.movement.parentChoose" }),
-"views.taskList.movement.parentPreview": msg({ message: "Add as subtask of {parent}. Other projects stay unchanged.", context: "views.taskList.movement.parentPreview" }),
+"views.taskList.movement.parentPreview": msg({ message: "Add as subtask of {parent}", context: "views.taskList.movement.parentPreview" }),
 "views.taskList.movement.parentSelf": msg({ message: "A task cannot be its own parent.", context: "views.taskList.movement.parentSelf" }),
 "views.taskList.movement.parentCycle": msg({ message: "Cannot add a task under one of its descendants.", context: "views.taskList.movement.parentCycle" }),
 "views.taskList.movement.parentAlready": msg({ message: "Already a subtask of {parent}.", context: "views.taskList.movement.parentAlready" }),

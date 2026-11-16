@@ -1288,8 +1288,8 @@ msgstr "하위 작업으로 추가"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "{parent}의 하위 작업으로 추가합니다. 다른 프로젝트는 변경되지 않습니다."
+msgid "Add as subtask of {parent}"
+msgstr "{parent}의 하위 작업으로 추가"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts

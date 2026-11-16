@@ -257,7 +257,6 @@ export class TaskListView extends BasesViewBase {
 	private emptyDestinations: HTMLElement | null = null;
 	private touchMovement: TaskMovementTouch | null = null;
 	private edgeScroll: TaskMovementAutoScroll | null = null;
-	private movementPointer = { x: 0, y: 0 };
 	private nativeMovementActive = false;
 	private nativeMovementCancelled = false;
 	private dragPreview = new KanbanDragPreview();
@@ -1191,9 +1190,7 @@ export class TaskListView extends BasesViewBase {
 	}
 
 	private updateTouchGhost(x: number, y: number): void {
-		this.movementPointer = { x, y };
 		this.dragPreview.move(x, y);
-		this.positionMovementFeedback();
 	}
 
 	private async finishTaskMovement(target: EventTarget | null, clientY: number): Promise<void> {
@@ -1554,8 +1551,12 @@ export class TaskListView extends BasesViewBase {
 					"task-list-view__parent-target--active"
 				)
 			);
+		this.itemsContainer
+			?.querySelectorAll(".task-list-view__nest-target")
+			.forEach((element) => element.classList.remove("task-list-view__nest-target"));
 		this.movementFeedback?.remove();
 		this.movementFeedback = null;
+		this.dragPreview.setDetail(null, "task-list-view__movement-feedback");
 		this.dropDestination = null;
 	}
 
@@ -1649,26 +1650,17 @@ export class TaskListView extends BasesViewBase {
 		return `${format(before)} → ${format(after)}`;
 	}
 
+	/** The drag chip shows the outcome; a hidden live region announces it. */
 	private setMovementFeedback(text: string, _target?: HTMLElement): void {
 		if (!this.movementFeedback) {
 			this.movementFeedback = createElementInDocument(this.containerEl.ownerDocument, "div");
-			this.movementFeedback.className = "tasknotes-plugin task-list-view__movement-feedback";
+			this.movementFeedback.className = "tasknotes-plugin task-list-view__movement-status";
 			this.movementFeedback.setAttribute("role", "status");
 			this.movementFeedback.setAttribute("aria-live", "polite");
 			this.containerEl.ownerDocument.body.appendChild(this.movementFeedback);
 		}
 		if (this.movementFeedback.textContent !== text) this.movementFeedback.textContent = text;
-		this.positionMovementFeedback();
-	}
-
-	private positionMovementFeedback(): void {
-		if (!this.movementFeedback) return;
-		const win = this.containerEl.ownerDocument.defaultView ?? window;
-		const rect = this.movementFeedback.getBoundingClientRect();
-		const left = Math.max(8, Math.min(this.movementPointer.x + 16, win.innerWidth - rect.width - 8));
-		const top = Math.max(8, Math.min(this.movementPointer.y - rect.height - 12, win.innerHeight - rect.height - 8));
-		this.movementFeedback.style.setProperty("--tn-movement-hint-top", `${top + win.scrollY}px`);
-		this.movementFeedback.style.setProperty("--tn-movement-hint-left", `${left + win.scrollX}px`);
+		this.dragPreview.setDetail(text, "task-list-view__movement-feedback");
 	}
 
 	private updateTaskMovementTarget(
@@ -1730,6 +1722,9 @@ export class TaskListView extends BasesViewBase {
 				"task-list-view__move-target--blocked",
 				resolvedState !== "assign"
 			);
+			parentTarget
+				.closest<HTMLElement>(".task-card[data-task-path]")
+				?.classList.toggle("task-list-view__nest-target", resolvedState === "assign");
 			this.setMovementFeedback(this.parentAssignmentMessage(resolvedState, parentPath), parentTarget);
 			return { kind: "parent", parentPath, state: resolvedState };
 		}
@@ -1743,6 +1738,9 @@ export class TaskListView extends BasesViewBase {
 					"task-list-view__move-target--blocked"
 				)
 			);
+		this.itemsContainer
+			?.querySelectorAll(".task-list-view__nest-target")
+			.forEach((element) => element.classList.remove("task-list-view__nest-target"));
 		const clear = (): null => {
 			this.clearMovementPreview();
 			this.clearDropIndicators();
@@ -2173,13 +2171,15 @@ export class TaskListView extends BasesViewBase {
 		const target = createElementInDocument(card.ownerDocument, "div");
 		target.className = "task-list-view__parent-target";
 		target.dataset.parentTaskPath = path;
-		const icon = target.createSpan();
-		setIcon(icon, "corner-down-right");
-		target.createSpan({
-			text: this.plugin.i18n.translate(
+		// Icon only: the drag chip names the parent, and the row title stays readable.
+		target.setAttribute(
+			"aria-label",
+			this.plugin.i18n.translate(
 				msg({ message: "Add as subtask", context: "views.taskList.movement.parentAdd" })
-			),
-		});
+			)
+		);
+		const icon = target.createSpan({ cls: "task-list-view__parent-target-icon" });
+		setIcon(icon, "corner-down-right");
 		anchor.appendChild(target);
 	}
 
