@@ -1500,6 +1500,10 @@ export function renderIntegrationsTab(
 						getValue: () => plugin.settings.googleCalendarExport.syncTimeblocks,
 						setValue: async (value: boolean) => {
 							plugin.settings.googleCalendarExport.syncTimeblocks = value;
+							if (value) {
+								// Only timeblocks added or edited from now on are synced.
+								plugin.taskCalendarSyncService?.timeblocks.ensureBaseline();
+							}
 							save();
 						},
 					})

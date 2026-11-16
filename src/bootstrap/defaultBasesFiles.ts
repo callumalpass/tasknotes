@@ -77,18 +77,20 @@ export async function ensureDefaultBasesViewFiles(
 			}
 
 			const normalizedPath = normalizePath(rawPath);
+			const exists = await adapter.exists(normalizedPath);
+			if (exists && !overwriteExisting) {
+				// Runs on every startup; only generate templates that will be written.
+				skipped.push(rawPath);
+				continue;
+			}
+
 			const template = host.generateTemplate(commandId);
 			if (!template) {
 				skipped.push(rawPath);
 				continue;
 			}
 
-			if (await adapter.exists(normalizedPath)) {
-				if (!overwriteExisting) {
-					skipped.push(rawPath);
-					continue;
-				}
-
+			if (exists) {
 				const existing = vault.getAbstractFileByPath(normalizedPath);
 				if (!(existing instanceof TFile)) {
 					host.warn?.(

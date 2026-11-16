@@ -95,6 +95,9 @@ describe("TaskService materialized occurrences", () => {
 			cacheManager: {
 				getTaskInfo: jest.fn(async (path: string) => tasks[path] ?? null),
 				getAllTasks: jest.fn(async () => Object.values(tasks)),
+				getAllTaskSnapshots: jest.fn(
+					async () => new Map(Object.values(tasks).map((task) => [task.path, () => task]))
+				),
 				updateTaskInfoInCache: jest.fn((path: string, task: TaskInfo) => {
 					tasks[path] = task;
 				}),

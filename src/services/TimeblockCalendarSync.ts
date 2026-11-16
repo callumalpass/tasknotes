@@ -304,6 +304,7 @@ export class TimeblockCalendarSync {
 	private baselinePaths: Set<string> = new Set();
 	private createdPaths: Set<string> = new Set();
 	private initialized = false;
+	private baselineCaptured = false;
 	private startupRecoveryStartedAt: number | null = null;
 	private destroyed = false;
 
@@ -350,11 +351,26 @@ export class TimeblockCalendarSync {
 	}
 
 	/**
-	 * Record the current timeblocks of every daily note. Only timeblocks added
-	 * or edited after this point are created in Google Calendar, so enabling
-	 * sync does not flood the calendar with historical timeblocks.
+	 * Start tracking daily notes. The baseline is taken now only when timeblock
+	 * sync is on; otherwise it waits until sync is turned on, since listing
+	 * daily notes parses the name of every file in the daily notes folder.
 	 */
 	initialize(): void {
+		this.initialized = true;
+		if (this.plugin.settings.googleCalendarExport?.syncTimeblocks) {
+			this.ensureBaseline();
+		}
+	}
+
+	/**
+	 * Record the current timeblocks of every daily note, once. Only timeblocks
+	 * added or edited after this point are created in Google Calendar, so
+	 * enabling sync does not flood the calendar with historical timeblocks.
+	 */
+	ensureBaseline(): void {
+		if (this.baselineCaptured || this.destroyed) return;
+		this.baselineCaptured = true;
+		this.initialized = true;
 		for (const notePath of this.source.listNotePaths()) {
 			const state = this.source.read(notePath);
 			if (!state) continue;
@@ -368,7 +384,6 @@ export class TimeblockCalendarSync {
 				this.snapshots.set(notePath, fingerprints);
 			}
 		}
-		this.initialized = true;
 	}
 
 	/** Subscribe to vault and metadata events for daily notes. */
@@ -435,6 +450,12 @@ export class TimeblockCalendarSync {
 			this.unindexedNotes.delete(notePath) ||
 			!this.plugin.settings.googleCalendarExport?.syncTimeblocks
 		) {
+			return;
+		}
+		if (!this.baselineCaptured) {
+			// Sync was turned on outside the settings tab (e.g. settings synced from
+			// another device): like the toggle, only later edits are synced.
+			this.ensureBaseline();
 			return;
 		}
 
@@ -548,6 +569,7 @@ export class TimeblockCalendarSync {
 		if (!this.isEnabled()) {
 			return;
 		}
+		this.ensureBaseline();
 		if (includeIndexedNotes) {
 			this.startupRecoveryStartedAt = Date.now();
 		}

@@ -81,4 +81,38 @@ describe("TaskManager metadata-cache reads", () => {
 		);
 		expect(readSpy).toHaveBeenCalledTimes(1);
 	});
+
+	it("keeps a task snapshot's earlier state after the file changes", async () => {
+		const path = "Tasks/snapshot.md";
+		MockObsidian.createTestFile(path, taskContent("Before"));
+		const snapshots = await manager.getAllTaskSnapshots();
+
+		// Obsidian replaces a changed file's cached metadata with a new object.
+		app.metadataCache.setCache(path, {
+			frontmatter: { title: "After", status: "open", priority: "normal", tags: ["task"] },
+		});
+
+		expect(manager.getCachedTaskInfoSync(path)?.title).toBe("After");
+		expect(snapshots.get(path)?.()?.title).toBe("Before");
+	});
+
+	it("returns only tasks whose frontmatter has the requested field", () => {
+		const withReminder = "Tasks/with-reminder.md";
+		MockObsidian.createTestFile(withReminder, [
+			"---",
+			JSON.stringify({
+				title: "Reminded",
+				status: "open",
+				tags: ["task"],
+				reminders: [{ id: "r1", type: "absolute", absoluteTime: "2026-06-01T09:00:00" }],
+			}),
+			"---",
+			"",
+		].join("\n"));
+		MockObsidian.createTestFile("Tasks/no-reminder.md", taskContent("Not reminded"));
+
+		expect(
+			manager.getAllCachedTasks({ withFrontmatterField: "reminders" }).map((task) => task.path)
+		).toEqual([withReminder]);
+	});
 });

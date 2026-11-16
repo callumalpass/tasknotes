@@ -39,3 +39,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @Robubble for reporting, and to @stefan-f-bucher for the related report in #2226
 - (#2555) Natural language parsing now uses the NLP triggers shown in settings. Previously, if saved settings had no project trigger, an empty one, or one with surrounding spaces, settings showed `+` as enabled, but text like `+Admin` was not added to projects and stayed in the task title. Trigger characters entered in settings are now saved without surrounding spaces.
   - Thanks to @jdhauck for reporting
+
+## Changed
+
+- TaskNotes adds less time to Obsidian startup. Bundled interface translations are now decoded only for English and the language in use, instead of for all ten languages, each time the plugin loads. In testing, this halved the plugin's load time (from about 145 ms to about 70 ms).
+  - Less work runs just after the workspace opens. The reminder check reads only tasks that have reminders; the default Bases view files are no longer regenerated when they already exist; and the task index warmup runs when Obsidian is idle instead of during startup. In a test vault with 8,000 notes, this cut that setup from about 160 ms to about 75 ms.
+  - Background setup that follows is lighter. Daily notes are listed for Google Calendar timeblock sync only when timeblock sync is on, and tasks are no longer all loaded up front to detect direct edits to task files; each task's earlier state is read only when it is edited. In the same test vault, this cut that work from about 180 ms to about 65 ms.
