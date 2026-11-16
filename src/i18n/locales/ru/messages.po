@@ -1291,8 +1291,8 @@ msgstr "Добавить как подзадачу"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "Добавить в подзадачи задачи «{parent}». Другие проекты не изменятся."
+msgid "Add as subtask of {parent}"
+msgstr "Добавить в подзадачи задачи «{parent}»"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts

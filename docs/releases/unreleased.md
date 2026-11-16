@@ -47,5 +47,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Text no longer goes below 12px.
   - The search field in TaskNotes views uses Obsidian's form field background.
   - A few remaining fixed shadows now come from the theme.
+- Dragging tasks in the task list shows less on screen:
+  - A small chip with the task's title follows the pointer instead of a full copy of the row. A second line in the chip says what dropping there will do, or why you can't drop there.
+  - The "Add as subtask" target is now an icon at the end of the row, so it no longer covers the title of the task you're dropping onto. Over it, the parent row is highlighted and an indented line marks where the subtask will go.
+  - The separate floating message next to the pointer is gone. Its text is now in the chip, and "Other projects stay unchanged" was removed.
+  - The keyboard focus outline is hidden while dragging, so it can't be mistaken for the drop target.
 
 ## Security

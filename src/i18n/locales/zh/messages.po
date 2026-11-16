@@ -1288,8 +1288,8 @@ msgstr "添加为子任务"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "添加为 {parent} 的子任务。其他项目保持不变。"
+msgid "Add as subtask of {parent}"
+msgstr "添加为 {parent} 的子任务"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts

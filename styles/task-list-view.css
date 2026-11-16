@@ -282,23 +282,58 @@ body.tn-drag-active.tn-drag-invalid * {
     z-index: auto;
 }
 
-.tasknotes-plugin.task-list-view__movement-feedback {
+/* Announces the drop outcome; the drag chip shows it. */
+.tasknotes-plugin.task-list-view__movement-status {
     position: absolute;
-    top: var(--tn-movement-hint-top, 0);
-    left: var(--tn-movement-hint-left, var(--tn-space-3));
-    width: fit-content;
-    max-width: min(28em, calc(100% - var(--tn-space-6)));
-    margin-inline: var(--tn-space-1);
-    padding: var(--tn-space-1) var(--tn-space-2);
-    background: var(--tn-bg-secondary);
-    color: var(--tn-text-normal);
-    border: 1px solid var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-md);
-    font-size: var(--tn-type-xs);
-    line-height: 1.4;
-    overflow-wrap: anywhere;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
     pointer-events: none;
-    z-index: var(--layer-popover);
+}
+
+/* One small chip follows the pointer: the dragged title, then what a drop here does. */
+.tasknotes-plugin.kanban-view__floating-drag-preview.task-list-view__touch-ghost {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tn-space-half);
+    width: max-content;
+    max-width: min(280px, calc(100vw - var(--tn-space-4)));
+    min-height: 0;
+    padding: var(--tn-space-1) var(--tn-space-2);
+    border-color: var(--tn-border-color);
+    border-radius: var(--tn-radius-md);
+    box-shadow: var(--tn-drag-lift);
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost > .kanban-view__floating-drag-preview-title {
+    padding: 0;
+    font-size: var(--tn-ui-type-sm);
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost[data-drag-count] > .kanban-view__floating-drag-preview-title {
+    padding-inline-end: var(--tn-space-6);
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost[data-drag-count]::after {
+    inset-block-start: var(--tn-space-1);
+    inset-inline-end: var(--tn-space-1);
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost > .task-list-view__movement-feedback {
+    color: var(--tn-interactive-accent);
+    font-size: var(--tn-ui-type-xs);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost.kanban-view__floating-drag-preview--invalid {
+    border-color: var(--tn-drop-invalid);
+}
+
+.tasknotes-plugin.task-list-view__touch-ghost.kanban-view__floating-drag-preview--invalid > .task-list-view__movement-feedback {
+    color: var(--tn-drop-invalid);
 }
 
 .tasknotes-plugin .task-list-view__empty-destinations {
@@ -321,23 +356,16 @@ body.tn-drag-active.tn-drag-invalid * {
     position: relative;
 }
 
+/* The subtask drop zone sits at the row's trailing edge, clear of the title.
+   The zone is the full row height; the icon is its visible mark. */
 .tasknotes-plugin .task-list-view__parent-target {
     display: none;
     position: absolute;
-    inset-inline-end: 40px;
-    top: 50%;
-    transform: translateY(-50%);
+    inset-block: calc(-1 * var(--tn-space-1));
+    inset-inline-end: calc(-1 * var(--tn-space-1));
+    width: 40px;
     align-items: center;
-    gap: var(--tn-space-1);
-    min-height: 28px;
-    max-width: calc(100% - 80px);
-    padding: var(--tn-space-1) var(--tn-space-2);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    background: var(--tn-bg-primary);
-    color: var(--tn-text-normal);
-    font-size: var(--tn-type-xs);
-    line-height: 1.2;
+    justify-content: center;
     z-index: 1;
 }
 
@@ -345,14 +373,38 @@ body.tn-drag-active.tn-drag-invalid * {
     display: flex;
 }
 
+.tasknotes-plugin .task-list-view__parent-target-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--tn-border-color);
+    border-radius: var(--tn-radius-sm);
+    background: var(--tn-bg-primary);
+    color: var(--tn-text-muted);
+    transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast), border-color var(--tn-transition-fast);
+}
+
 .tasknotes-plugin .task-list-view__parent-target svg {
     width: 14px;
     height: 14px;
 }
 
-.tasknotes-plugin .task-list-view__parent-target--active {
+.tasknotes-plugin .task-list-view__parent-target--active > .task-list-view__parent-target-icon {
     border-color: var(--tn-drop-indicator);
-    background: var(--tn-drop-surface);
+    background: var(--tn-drop-indicator);
+    color: var(--text-on-accent);
+}
+
+.tasknotes-plugin .task-list-view__parent-target.task-list-view__move-target--blocked {
+    outline: none;
+}
+
+.tasknotes-plugin .task-list-view__parent-target.task-list-view__move-target--blocked > .task-list-view__parent-target-icon {
+    border-style: dashed;
+    border-color: var(--tn-drop-invalid);
+    color: var(--tn-drop-invalid);
 }
 
 body.is-mobile .tasknotes-plugin .task-list-view__parent-target {
@@ -361,6 +413,27 @@ body.is-mobile .tasknotes-plugin .task-list-view__parent-target {
 
 @media (pointer: coarse) {
     .tasknotes-plugin .task-list-view__parent-target { min-height: 44px; }
+}
+
+/* Nesting: tint the parent and draw the insertion line at subtask depth. */
+.tn-tasknotesTaskList .task-card.task-list-view__nest-target > .task-card__main-row::before {
+    background: var(--tn-drop-surface);
+}
+
+.tn-tasknotesTaskList .task-card.task-list-view__nest-target > .task-card__main-row::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--tn-space-8) var(--tn-space-2);
+    inset-block-end: calc(-1 * (var(--tn-space-2) + var(--tn-space-half)));
+    height: var(--tn-space-half);
+    border-radius: var(--tn-radius-full);
+    background: var(--tn-drop-indicator);
+    pointer-events: none;
+}
+
+/* Rows are targets during a drag, not focus or selection. */
+body.tn-drag-active .tasknotes-plugin .task-card:is(:focus-visible, .tn-task-focused) {
+    outline: none;
 }
 
 .tasknotes-plugin .task-list-view__destination-label {
