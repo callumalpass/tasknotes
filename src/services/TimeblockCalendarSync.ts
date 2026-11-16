@@ -453,9 +453,11 @@ export class TimeblockCalendarSync {
 		}
 		if (!this.baselineCaptured) {
 			// Sync was turned on outside the settings tab (e.g. settings synced from
-			// another device): like the toggle, only later edits are synced.
+			// another device). Take the baseline now, but keep this note's state from
+			// before this change so the change itself is still synced.
 			this.ensureBaseline();
-			return;
+			if (previous) this.snapshots.set(notePath, previous);
+			else this.snapshots.delete(notePath);
 		}
 
 		// Any other note seen for the first time (e.g. an old project note sharing

@@ -186,6 +186,25 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 		);
 	});
 
+	it("syncs the first edit after sync is turned on outside the settings toggle", async () => {
+		const notes: Notes = new Map();
+		const { plugin, google, sync } = setup(notes, {}, { syncTimeblocks: false });
+		plugin.settings.googleCalendarExport.syncTimeblocks = true;
+
+		const notePath = "Daily/2026-11-03.md";
+		notes.set(notePath, { date: "2026-11-03", timeblocks: [timeblock("new", { title: "Review" })] });
+		sync.handleNoteCreated(notePath);
+		sync.handleNoteChanged(notePath);
+		await sync.flush();
+
+		expect(google.createEvent).toHaveBeenCalledTimes(1);
+		expect(google.createEvent).toHaveBeenCalledWith(
+			CALENDAR_ID,
+			expect.objectContaining({ summary: "[TB] Review 09:00-10:30" }),
+			expect.any(Number)
+		);
+	});
+
 	it("creates one event when saves overlap, including across service instances", async () => {
 		const notePath = "Daily/2026-11-02.md";
 		const notes: Notes = new Map([[notePath, { date: "2026-11-02", timeblocks: [] }]]);
