@@ -607,7 +607,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 .tasknotes-settings__card--dragging {
     opacity: 0.7;
     transform: rotate(1deg);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-s);
     border-color: var(--interactive-accent);
 }
 
@@ -767,7 +767,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     border-radius: var(--tn-radius-lg);
     overflow: hidden;
     margin: 16px 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-stationary);
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;

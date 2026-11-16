@@ -34,7 +34,7 @@
     margin-bottom: 0;
     border-bottom: none;
     position: relative;
-    font-size: var(--tn-type-sm);
+    font-size: var(--tn-ui-type-sm);
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     letter-spacing: normal;
@@ -218,7 +218,7 @@ body:not(.is-mobile) .tasknotes-plugin .task-group-toggle:hover {
 
 @media (max-width: 480px) {
     .tasknotes-plugin .task-list-view__group-header {
-        font-size: var(--tn-type-xs);
+        font-size: var(--tn-ui-type-xs);
         padding: var(--tn-space-1) 0 var(--tn-space-half);
     }
 
@@ -477,12 +477,12 @@ body .tasknotes-plugin.tn-tasknotesTaskList .task-card:is(:hover, :focus-visible
     padding-block: var(--tn-space-1);
     border-radius: var(--tn-radius-md);
     transition: background-color var(--tn-transition-fast);
-    font-size: var(--tn-type-sm);
+    font-size: var(--tn-ui-type-sm);
 }
 
 .tn-tasknotesTaskList .task-group-header .agenda-view__item-count {
     color: var(--tn-text-muted);
-    font-size: var(--tn-type-xs);
+    font-size: var(--tn-ui-type-xs);
     margin-inline-start: var(--tn-space-1);
 }
 

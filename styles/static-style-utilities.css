@@ -427,7 +427,7 @@
 	background: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--tn-radius-md);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-stationary);
 }
 
 .tn-static-padding-16px-287f770e {

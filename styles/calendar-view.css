@@ -253,7 +253,7 @@
 .tasknotes-plugin .mini-calendar-view__day-header {
     text-align: center;
     font-weight: 500;
-    font-size: var(--tn-type-2xs);
+    font-size: var(--tn-ui-type-xs);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: var(--tn-space-half);
@@ -674,7 +674,7 @@ body.is-mobile .tasknotes-plugin .mini-calendar-view__grid .mini-calendar-view__
 .tasknotes-plugin .mini-calendar-view__week-header {
     text-align: center;
     font-weight: 500;
-    font-size: var(--tn-type-2xs);
+    font-size: var(--tn-ui-type-xs);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: var(--tn-space-half);
