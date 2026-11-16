@@ -38,4 +38,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- The plugin's `main.js` is about 295 KB smaller (4.9 MB to 4.6 MB). The Google Calendar sign-in client no longer bundles validation code TaskNotes never uses, including error messages for every language.
+
 ## Security
