@@ -10,7 +10,9 @@ function normalizeLocale(locale: string): string {
 /** The plugin-owned Lingui instance; downloads never gate construction. */
 export class I18nService extends Events {
 	readonly lingui = setupI18n();
-	private readonly resources: TranslationResources;
+	/** Bundled catalogues may decode lazily on first read; never copy or spread them. */
+	private readonly bundledResources: TranslationResources;
+	private readonly registeredResources: TranslationResources = {};
 	private readonly defaultLocale: string;
 	private readonly fallbackLocale: string;
 	private readonly getSystemLocaleFn?: () => string;
@@ -19,7 +21,7 @@ export class I18nService extends Events {
 
 	constructor(options: I18nServiceOptions) {
 		super();
-		this.resources = { ...options.resources };
+		this.bundledResources = options.resources;
 		this.availableLocales = options.availableLocales ?? Object.keys(options.resources);
 		this.defaultLocale = options.defaultLocale;
 		this.fallbackLocale = options.fallbackLocale ?? "en";
@@ -29,7 +31,11 @@ export class I18nService extends Events {
 	}
 
 	getAvailableLocales(): string[] {
-		return [...new Set([...this.availableLocales, ...Object.keys(this.resources)])];
+		return [...new Set([
+			...this.availableLocales,
+			...Object.keys(this.bundledResources),
+			...Object.keys(this.registeredResources),
+		])];
 	}
 
 	getPreferredLocale(locale: string): string {
@@ -38,13 +44,15 @@ export class I18nService extends Events {
 	}
 
 	hasLocale(locale: string): boolean {
-		return Object.prototype.hasOwnProperty.call(this.resources, normalizeLocale(locale));
+		const normalized = normalizeLocale(locale);
+		return Object.prototype.hasOwnProperty.call(this.registeredResources, normalized) ||
+			Object.prototype.hasOwnProperty.call(this.bundledResources, normalized);
 	}
 
 	registerLocale(locale: string, resources: Messages): void {
 		const normalized = normalizeLocale(locale);
 		if (normalized === this.defaultLocale) throw new Error("Cannot replace the bundled default language");
-		this.resources[normalized] = resources;
+		this.registeredResources[normalized] = resources;
 		// Refresh this core immediately, without stealing another service's UI binding.
 		if (normalized === this.currentLocale) this.activate(false);
 	}
@@ -92,9 +100,14 @@ export class I18nService extends Events {
 		this.lingui.loadAndActivate({
 			locale: this.currentLocale,
 			locales: this.currentLocale === "pt" ? "pt-BR" : this.currentLocale === "zh" ? "zh-CN" : this.currentLocale,
-			messages: { ...this.resources[this.defaultLocale], ...this.resources[this.fallbackLocale], ...this.resources[this.currentLocale] },
+			messages: { ...this.getMessages(this.defaultLocale), ...this.getMessages(this.fallbackLocale), ...this.getMessages(this.currentLocale) },
 		});
 		if (bindDisplay) bindUIDisplay(this.lingui);
+	}
+
+	private getMessages(locale: string): Messages | undefined {
+		if (Object.prototype.hasOwnProperty.call(this.registeredResources, locale)) return this.registeredResources[locale];
+		return Object.prototype.hasOwnProperty.call(this.bundledResources, locale) ? this.bundledResources[locale] : undefined;
 	}
 
 	private resolveLocale(locale: string): string {
