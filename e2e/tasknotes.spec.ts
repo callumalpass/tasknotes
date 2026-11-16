@@ -1505,6 +1505,14 @@ test.describe('Agenda View Details', () => {
     const calendar = page.locator('.workspace-leaf.mod-active #bases-calendar');
     await expect(calendar).toBeVisible();
     await runCommand(page, 'Open agenda view');
+    // The agenda creates its calendar asynchronously after the view opens.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => !!(window as any).app.workspace.getMostRecentLeaf()?.view?.controller?.view?.calendar
+        )
+      )
+      .toBe(true);
     await page.evaluate(() => {
       const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
       view.calendar.changeView('list');
