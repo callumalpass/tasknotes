@@ -53,6 +53,13 @@ describe("settings persistence helpers", () => {
 		);
 	});
 
+	it("stores Pomodoro history in daily notes for new installs and plugin data for saved setups", () => {
+		expect(
+			buildSettingsFromLoadedData({ defaultTaskStatus: "inbox" }).settings.pomodoroStorageLocation
+		).toBe("plugin");
+		expect(buildSettingsFromLoadedData(null).settings.pomodoroStorageLocation).toBe("daily-notes");
+	});
+
 	it("builds the plugin data path from manifest dir first", () => {
 		const host = createHost({
 			dir: ".obsidian/plugins/tasknotes",

@@ -32,7 +32,7 @@ Wikilinks, markdown links and URLs stay in the title as written, and nothing ins
 
 Location: **Settings → TaskNotes → Time & reminders → Pomodoro timer**
 
-Pomodoro settings control interval lengths, long-break cadence, optional auto-start behavior, and end-of-session notifications/sound. **Pomodoro data storage** chooses whether history is kept in plugin data or daily notes.
+Pomodoro settings control interval lengths, long-break cadence, optional auto-start behavior, and end-of-session notifications/sound. **Pomodoro data storage** chooses whether history is kept in daily notes (the default for new installs) or plugin data. With daily notes, a session that can't be written to a daily note is kept in plugin data.
 
 ## Notifications
 

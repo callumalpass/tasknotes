@@ -47,7 +47,7 @@ When a task is associated with a Pomodoro session, TaskNotes starts a task track
 
 Version 5 removes the Statistics and Pomodoro statistics dashboards and no longer generates a Pomodoro statistics Base. Time tracking, the timer, session storage settings, recorded history, and the API remain available. Existing statistics Base files are kept as ordinary user-editable Bases. No task notes or history are deleted. TaskNotes closes any statistics tabs left in your workspace.
 
-By default, Pomodoro sessions are stored in the plugin's data file (`data.json`). To keep them in your vault, set **Pomodoro data storage** to **Daily notes** under `Settings → TaskNotes → Time & reminders`; existing sessions are moved to the `pomodoros` property of each day's daily note.
+New installs store each Pomodoro session in the `pomodoros` property of that day's daily note, creating the note if needed. If the Daily notes core plugin (or Periodic Notes) is off, or the daily note can't be created, the session is saved in the plugin's data file (`data.json`) instead, and still appears in your history. Vaults set up before this change keep using `data.json`. To change where sessions go, set **Pomodoro data storage** under `Settings → TaskNotes → Time & reminders`. Switching to **Daily notes** moves existing sessions from `data.json` into your daily notes.
 
 ### Time by project with Bases
 

@@ -40,6 +40,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - In the Task List, a task's tags no longer run together into one tag (for example "taskwork") when the view shows the `file.tags` property, as the default Tasks view does.
 - The mini calendar's day list no longer shows "00:00" for tasks that have a date but no time. This happened when the view's date property had no `note.` prefix, as in the default mini calendar views.
+- With **Pomodoro data storage** set to Daily notes, a finished session is no longer lost when the daily note can't be created or the Daily notes plugin is off. It is saved to `data.json` and still appears in your history.
 
 ## Changed
 
@@ -67,6 +68,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - In calendar month views, timed tasks show the time first and then the title, which can use the rest of the cell. Status and priority icons are no longer shown in month cells.
 - Boards in a note's relationships panel show only the columns that have tasks. Set **Hide empty columns** on the view to change this. New relationships base files set this option for the Subtasks and Blocking boards.
 - In the task dialog, the Contexts, Tags and Time estimate fields show "Add contexts", "Add tags" and "Add estimate" when empty, instead of example values. When the full form is open, the task's projects appear only in the Projects field, not also as a chip in the property row.
+
+- New installs store Pomodoro sessions in daily notes, in the `pomodoros` property of each day's note, instead of the plugin's `data.json`. If daily notes are off or the day's note can't be created, the session is saved to `data.json` and still counts in your history. Existing setups keep their current storage. See [Recorded data](https://tasknotes.dev/features/time-management/#recorded-data).
 
 ## Removed
 
