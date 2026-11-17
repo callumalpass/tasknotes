@@ -348,6 +348,17 @@
     display: none;
 }
 
+/* Timed items in month cells: the time leads, then the title, which gets the rest of the width.
+   No status or priority glyphs: the item's bar already carries the priority colour, and a
+   narrow cell cannot spare the space. */
+.tasknotes-plugin .tnc-dg .tnc-item--dot .tnc-item-title {
+    order: 0;
+}
+
+.tasknotes-plugin .tnc-dg .tnc-item--dot .tn-task-glyphs {
+    display: none;
+}
+
 .tasknotes-plugin .tnc-item--timed:not(.tnc-item--list):not(.tnc-item--indicator) {
     container-type: size;
 }

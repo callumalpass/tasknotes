@@ -105,12 +105,13 @@ test('week dates fit every header and compact month reveals selected-day titles'
     await expect(instance.page.locator(`${root} .tn-calendar-day-panel .task-card__title`).first()).toBeVisible();
     const month = await instance.page.locator(root).evaluate(element => {
       const weeks = Array.from(element.querySelectorAll('.tnc-dg-week')).map(week => week.getBoundingClientRect().height);
-      const title = element.querySelector('.tn-calendar-day-panel .task-card__title')!.getBoundingClientRect();
+      // The visible title text: the title box is centred in the card, so its top moves with the row height.
+      const title = element.querySelector('.tn-calendar-day-panel .task-card__title-text')!.getBoundingClientRect();
       return { weeks, firstTitleTop: title.top, dates: element.querySelectorAll('.tnc-dg-day').length };
     });
     await shot(`month-${theme}-${width}-${mobile ? 'mobile' : 'pane'}`);
     if (!baseline && width === 400) {
-      expect(month.firstTitleTop).toBeLessThan(600);
+      expect(month.firstTitleTop).toBeLessThan(610);
       expect(month.weeks.every(height => height >= 40 && height <= 52)).toBe(true);
       expect(month.dates).toBe(42);
     }

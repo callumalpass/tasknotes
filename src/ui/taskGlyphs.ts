@@ -16,12 +16,23 @@ export function createTaskGlyphs(
 	task: TaskInfo,
 	plugin: TaskNotesPlugin
 ): HTMLElement {
-	const status = plugin.statusManager.getStatusConfig(task.status);
-	const priority = plugin.priorityManager.getPriorityConfig(task.priority);
 	const glyphs = createElementInDocument(document, "span");
 	glyphs.className = "tn-task-glyphs";
 	glyphs.setAttribute("aria-hidden", "true");
-	const statusGlyph = glyphs.createSpan({ cls: "tn-task-glyphs__status" });
+	glyphs.append(createStatusGlyph(document, task, plugin));
+	// A task with no priority shows nothing: events are too narrow to spend space on an empty slot.
+	if (!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())) {
+		glyphs.classList.add("tn-task-glyphs--status-only");
+		return glyphs;
+	}
+	glyphs.append(createPriorityGlyph(document, task, plugin));
+	return glyphs;
+}
+
+export function createStatusGlyph(document: Document, task: TaskInfo, plugin: TaskNotesPlugin): HTMLElement {
+	const status = plugin.statusManager.getStatusConfig(task.status);
+	const statusGlyph = createElementInDocument(document, "span");
+	statusGlyph.className = "tn-task-glyphs__status";
 	if (!status) setTooltip(statusGlyph, unconfiguredValueLabel(task.status));
 	statusGlyph.style.color = status?.color || "var(--text-muted)";
 	if (status?.icon) setIcon(statusGlyph, status.icon);
@@ -30,12 +41,22 @@ export function createTaskGlyphs(
 			statusGlyph,
 			statusGlyphState(task.status, plugin.statusManager.getAllStatuses())
 		);
-	// A task with no priority shows nothing: events are too narrow to spend space on an empty slot.
-	if (!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())) {
-		glyphs.classList.add("tn-task-glyphs--status-only");
-		return glyphs;
+	return statusGlyph;
+}
+
+/** The task's priority mark, or null when it would only draw the empty "no priority" ring. */
+export function createRankedPriorityGlyph(document: Document, task: TaskInfo, plugin: TaskNotesPlugin): HTMLElement | null {
+	const priority = plugin.priorityManager.getPriorityConfig(task.priority);
+	if (!priority?.icon && priorityGlyphState(task.priority, plugin.priorityManager.getAllPriorities()).kind === "unset") {
+		return null;
 	}
-	const priorityGlyph = glyphs.createSpan({ cls: "tn-task-glyphs__priority" });
+	return createPriorityGlyph(document, task, plugin);
+}
+
+function createPriorityGlyph(document: Document, task: TaskInfo, plugin: TaskNotesPlugin): HTMLElement {
+	const priority = plugin.priorityManager.getPriorityConfig(task.priority);
+	const priorityGlyph = createElementInDocument(document, "span");
+	priorityGlyph.className = "tn-task-glyphs__priority";
 	if (!priority) setTooltip(priorityGlyph, unconfiguredValueLabel(task.priority));
 	priorityGlyph.style.color = priority?.color || "var(--text-muted)";
 	if (priority?.icon) setIcon(priorityGlyph, priority.icon);
@@ -44,5 +65,5 @@ export function createTaskGlyphs(
 			priorityGlyph,
 			priorityGlyphState(task.priority, plugin.priorityManager.getAllPriorities())
 		);
-	return glyphs;
+	return priorityGlyph;
 }

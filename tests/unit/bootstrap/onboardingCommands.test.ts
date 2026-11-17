@@ -45,9 +45,9 @@ it("only exposes Google sync when configured, and current-task sync in task cont
 	expect(syncAllTasks).toHaveBeenCalledTimes(1);
 });
 
-it("keeps the timer and restores optional redesign statistics commands", () => {
+it("keeps the timer without the retired statistics dashboards", () => {
 	const ids = createTaskNotesCommandDefinitions({} as TaskNotesPlugin).map(command => command.id);
 	expect(ids).toContain("open-pomodoro-view");
-	expect(ids).toContain("open-statistics");
-	expect(ids).toContain("open-pomodoro-stats");
+	expect(ids).not.toContain("open-statistics");
+	expect(ids).not.toContain("open-pomodoro-stats");
 });

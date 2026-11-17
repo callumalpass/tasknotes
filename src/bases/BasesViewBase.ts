@@ -350,6 +350,13 @@ export abstract class BasesViewBase extends Component {
 		this.containerEl.appendChild(root);
 		this.rootElement = root;
 
+		// Bases owns this element; the attribute lets styles adjust it per view type.
+		const host = this.containerEl;
+		host.dataset.tnView = this.type;
+		this.register(() => {
+			if (host.dataset.tnView === this.type) delete host.dataset.tnView;
+		});
+
 		// Add custom "New Task" button and hide the default Bases "New" button
 		this.setupNewTaskButton();
 	}

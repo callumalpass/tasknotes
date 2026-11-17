@@ -1403,16 +1403,30 @@ export class PomodoroService {
 			activePeriods: session.activePeriods.slice(), // Copy the active periods array
 		};
 
-		try {
-			if (this.plugin.settings.pomodoroStorageLocation === "daily-notes") {
-				// For daily notes, add only this session to the appropriate daily note
+		if (
+			this.plugin.settings.pomodoroStorageLocation === "daily-notes" &&
+			appHasDailyNotesPluginLoaded()
+		) {
+			try {
 				await this.addSingleSessionToDailyNote(historyEntry);
-			} else {
-				// For plugin storage, add to the full history
-				const history = await this.getSessionHistory();
-				history.push(historyEntry);
-				await this.saveSessionHistory(history);
+				return;
+			} catch (error) {
+				tasknotesLogger.warn("Saving Pomodoro session to plugin data instead of the daily note", {
+					category: "persistence",
+					operation: "add-session-daily-note-fallback",
+					error: error,
+				});
 			}
+		}
+
+		// Plugin data is the chosen storage, or the fallback when daily notes are
+		// unavailable. Daily-note storage merges these sessions into its history.
+		try {
+			const history = await this.loadPluginHistory();
+			if (!history.some((entry) => entry.id === historyEntry.id)) {
+				history.push(historyEntry);
+			}
+			await this.savePluginHistory(history);
 		} catch (error) {
 			tasknotesLogger.error("Failed to add session to history:", {
 				category: "persistence",
@@ -1661,52 +1675,44 @@ export class PomodoroService {
 	 * Add a single session to the appropriate daily note
 	 */
 	private async addSingleSessionToDailyNote(session: PomodoroSessionHistory): Promise<void> {
-		try {
-			const sessionDateKey = getPomodoroSessionDateKey(session);
-			if (!sessionDateKey) {
-				throw new Error(`Invalid Pomodoro session start time: ${session.startTime}`);
-			}
-
-			const sessionDate = parseDateToLocal(sessionDateKey);
-			const dailyNoteMoment = getDailyNoteMoment(sessionDate);
-
-			// Get or create daily note
-			const allDailyNotes = getAllDailyNotes();
-			let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
-
-			if (!dailyNote) {
-				dailyNote = await createDailyNote(dailyNoteMoment);
-
-				// Validate that daily note was created successfully
-				if (!dailyNote) {
-					throw new Error(
-						"Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists."
-					);
-				}
-			}
-
-			// Update frontmatter
-			const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
-
-			await processVaultFrontMatter(this.plugin.app, dailyNote, (frontmatter) => {
-				// Get existing sessions
-				const existingSessions = Array.isArray(frontmatter[pomodoroField])
-					? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
-					: [];
-				const existingIds = new Set(existingSessions.map((s) => s.id));
-
-				// Only add session if it doesn't already exist
-				if (!existingIds.has(session.id)) {
-					frontmatter[pomodoroField] = [...existingSessions, session];
-				}
-			});
-		} catch (error) {
-			tasknotesLogger.error(`Failed to add session to daily note:`, {
-				category: "persistence",
-				operation: "add-session-daily-note",
-				error: error,
-			});
+		const sessionDateKey = getPomodoroSessionDateKey(session);
+		if (!sessionDateKey) {
+			throw new Error(`Invalid Pomodoro session start time: ${session.startTime}`);
 		}
+
+		const sessionDate = parseDateToLocal(sessionDateKey);
+		const dailyNoteMoment = getDailyNoteMoment(sessionDate);
+
+		// Get or create daily note
+		const allDailyNotes = getAllDailyNotes();
+		let dailyNote = getDailyNote(dailyNoteMoment, allDailyNotes);
+
+		if (!dailyNote) {
+			dailyNote = await createDailyNote(dailyNoteMoment);
+
+			// Validate that daily note was created successfully
+			if (!dailyNote) {
+				throw new Error(
+					"Failed to create daily note. Please check your Daily Notes plugin configuration and ensure the daily notes folder exists."
+				);
+			}
+		}
+
+		// Update frontmatter
+		const pomodoroField = this.plugin.fieldMapper.toUserField("pomodoros");
+
+		await processVaultFrontMatter(this.plugin.app, dailyNote, (frontmatter) => {
+			// Get existing sessions
+			const existingSessions = Array.isArray(frontmatter[pomodoroField])
+				? frontmatter[pomodoroField].filter(isPomodoroSessionHistory)
+				: [];
+			const existingIds = new Set(existingSessions.map((s) => s.id));
+
+			// Only add session if it doesn't already exist
+			if (!existingIds.has(session.id)) {
+				frontmatter[pomodoroField] = [...existingSessions, session];
+			}
+		});
 	}
 
 	private async deleteSessionFromDailyNote(session: PomodoroSessionHistory): Promise<boolean> {

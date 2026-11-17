@@ -195,6 +195,14 @@
 	flex: 1 1 auto;
 	min-height: 0;
 	overflow-y: auto;
+	/* Equal space on both sides of the rows, so hover backgrounds sit evenly in the pane. */
+	scrollbar-gutter: stable both-edges;
+}
+
+/* The Bases wrapper never scrolls while the list owns scrolling, so its reserved
+   scrollbar gutter would only add space on the right. */
+.bases-view[data-tn-view="tasknotesTaskList"] {
+	scrollbar-gutter: auto;
 }
 
 /* Each section bounds its sticky header; nested offsets follow measured height. */

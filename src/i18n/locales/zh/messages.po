@@ -382,30 +382,15 @@ msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count}天"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
-msgid "{count} fewer than yesterday"
-msgstr "比昨天少{count}个"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.summaryTitle"
 msgid "{count} missed TaskNotes reminders"
 msgstr "{count} 条错过的 TaskNotes 提醒"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.more"
-msgid "{count} more than yesterday"
-msgstr "比昨天多{count}个"
-
 #: src/bases/CalendarView.ts
 msgctxt "calendar view hint"
 msgid "{count}-day view"
 msgstr "{count}天视图"
-
-#: src/views/stats/charts.ts
-msgctxt "statistics daily time tooltip"
-msgid "{date}: {duration}"
-msgstr "{date}：{duration}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence ordinal number"
@@ -456,16 +441,6 @@ msgstr "{displayName}："
 msgctxt "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text"
 msgid "{displayName}: {displayValue}"
 msgstr "{displayName}：{displayValue}"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.less"
-msgid "{duration} less than yesterday"
-msgstr "比昨天少{duration}"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.more"
-msgid "{duration} more than yesterday"
-msgstr "比昨天多{duration}"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
@@ -652,11 +627,6 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, other {已关联 {length, number} 个日历事件}}"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
-msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
-msgstr "{length, plural, other {显示 {length, number} 个任务}}"
-
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro break notification"
 msgid "{length, select, long {Time for a long break 💤} other {Time for a short break ☕}}"
@@ -671,11 +641,6 @@ msgstr "{minutes, number}分钟"
 msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, other {{minutes, number}分钟前}}"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.duration"
-msgid "{minutes} min"
-msgstr "{minutes}分钟"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
@@ -731,11 +696,6 @@ msgstr "已完成 {percent, number}%（{completed, number}/{total, number}）"
 msgctxt "services.notification.missed.message"
 msgid "{prefix}: {text}"
 msgstr "{prefix}：{text}"
-
-#: src/views/StatsView.ts
-msgctxt "views/StatsView: StatsView.openProjectDrilldown display"
-msgid "{projectName} - Detailed View"
-msgstr "{projectName} - 详细视图"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: renderPropertyMetadata display"
@@ -837,11 +797,6 @@ msgstr "{title}原计划于{when}"
 msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles} 及另外 {count} 项"
-
-#: src/views/stats/charts.ts
-msgctxt "views/StatsView: StatsView.renderProgressCircle display"
-msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
-msgstr "{total, plural, other {{completed, number}/{total, number} 个任务}}"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
@@ -1110,11 +1065,6 @@ msgctxt "settings.tasknotesApp.step2.name"
 msgid "3. Add this vault"
 msgstr "3. 添加此仓库"
 
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimatePlaceholder"
-msgid "30"
-msgstr "30"
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
 msgid "30 minutes"
@@ -1240,16 +1190,6 @@ msgctxt "settings.integrations.webhooks.statusLabels.active"
 msgid "Active"
 msgstr "活动"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.filters.activeOnly"
-msgid "Active only"
-msgstr "仅未完成"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.activeProjects"
-msgid "Active projects"
-msgstr "活跃项目"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
 msgid "Active time tracking session has changed"
@@ -1259,11 +1199,6 @@ msgstr "当前时间跟踪会话已更改"
 msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "活动："
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.activity"
-msgid "Activity over time (last 30 days)"
-msgstr "活动趋势（最近 30 天）"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
@@ -1312,10 +1247,20 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "添加日历订阅"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.contextsPlaceholder"
+msgid "Add contexts"
+msgstr "添加上下文"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "添加此事件的详细信息..."
+
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimatePlaceholder"
+msgid "Add estimate"
+msgstr "添加预估时长"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.addFromVaultButton"
@@ -1393,6 +1338,11 @@ msgstr "向当前笔记添加子任务"
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "添加子任务…"
+
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "添加标签"
 
 #: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -1537,35 +1487,15 @@ msgctxt "settings.native.allNotes"
 msgid "All notes"
 msgstr "所有笔记"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.allTasks"
-msgid "All project tasks"
-msgstr "所有项目任务"
-
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "所有任务关联已删除"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.filters.allTasks"
-msgid "All tasks"
-msgstr "所有任务"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "All Tasks"
 msgstr "所有任务"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.allTime"
-msgid "All time"
-msgstr "全部时间"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.allTime"
-msgid "All time"
-msgstr "全部时间"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.description"
@@ -1923,26 +1853,6 @@ msgstr "可用API端点"
 msgctxt "modals.icsNoteCreation.variables"
 msgid "Available template variables"
 msgstr "可用的模板变量"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.average"
-msgid "Avg length"
-msgstr "平均时长"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.average"
-msgid "Avg per task"
-msgstr "每项任务平均时长"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.avgTimePerTask"
-msgid "Avg time per task"
-msgstr "每项任务平均时长"
-
-#: src/views/StatsView.ts
-msgctxt "views/StatsView: StatsView.renderProjectStats display"
-msgid "Avg: {value1}/task"
-msgstr "平均：{value1}/任务"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fix"
@@ -2316,7 +2226,6 @@ msgstr "显示的日历"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
-#: src/views/PomodoroStatsView.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "取消"
@@ -2884,16 +2793,6 @@ msgctxt "ui.taskCard.labels.completed"
 msgid "Completed"
 msgstr "已完成"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.status.completed"
-msgid "Completed"
-msgstr "已完成"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.labels.completed"
-msgid "Completed"
-msgstr "已完成"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.completedDate"
 msgid "Completed date"
@@ -2924,11 +2823,6 @@ msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "将计划日期记为完成日期"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.filters.completedOnly"
-msgid "Completed only"
-msgstr "仅已完成的"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.statsLabel"
 msgid "completed today"
@@ -2938,16 +2832,6 @@ msgstr "今日完成"
 msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "将今天记为完成日期"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
-msgid "Completed: "
-msgstr "已完成："
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.completion"
-msgid "Completion"
-msgstr "完成率"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
@@ -2963,11 +2847,6 @@ msgstr "仅完成时"
 msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "完成或跳过时"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.completionRate"
-msgid "Completion rate"
-msgstr "完成率"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.sections.completions"
@@ -3065,11 +2944,6 @@ msgstr "上下文"
 msgctxt "ui.filterBar.group.context"
 msgid "Context"
 msgstr "上下文"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.contextsPlaceholder"
-msgid "context1, context2"
-msgstr "上下文1，上下文2"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
@@ -3687,11 +3561,6 @@ msgctxt "settings.appearance.calendarView.defaultView.options.customMultiDay"
 msgid "Custom multi-day"
 msgstr "自定义多日"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.customRange"
-msgid "Custom range"
-msgstr "自定义范围"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
@@ -3863,11 +3732,6 @@ msgstr "日期导航"
 msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName"
 msgid "Date Property"
 msgstr "日期属性"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.dateRange"
-msgid "Date range"
-msgstr "日期范围"
 
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
@@ -4132,11 +3996,6 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "删除"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
-msgid "Delete"
-msgstr "删除"
-
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirm"
 msgid "Delete \"{title}\" from {provider}?"
@@ -4175,16 +4034,6 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "删除任务时删除事件"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteAria"
-msgid "Delete Pomodoro session"
-msgstr "删除番茄钟会话"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteConfirmTitle"
-msgid "Delete Pomodoro session?"
-msgstr "删除番茄钟会话？"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -4194,11 +4043,6 @@ msgstr "删除属性"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "删除提醒"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.delete"
-msgid "Delete session"
-msgstr "删除会话"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -4990,11 +4834,6 @@ msgstr "加载看板失败：{message}"
 msgctxt "bases/MiniCalendarView: MiniCalendarView.renderError display"
 msgid "Error loading mini calendar: {message}"
 msgstr "加载迷你日历失败：{message}"
-
-#: src/views/StatsView.ts
-msgctxt "notices.statsLoadingFailed"
-msgid "Error loading project details."
-msgstr "加载项目详情时出错。"
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.renderError display"
@@ -6017,7 +5856,6 @@ msgid "Fill container"
 msgstr "填满容器"
 
 #: src/bases/BasesViewBase.ts
-#: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
 msgstr "筛选器"
@@ -6153,11 +5991,6 @@ msgstr "星期五"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.friday"
 msgid "Friday"
 msgstr "星期五"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.dateRangeFrom"
-msgid "From"
-msgstr "从"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.header"
@@ -6628,11 +6461,6 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "界面语言"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.status.interrupted"
-msgid "Interrupted"
-msgstr "已中断"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
@@ -6839,26 +6667,6 @@ msgctxt "recurrence position last"
 msgid "last"
 msgstr "最后"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.last30Days"
-msgid "Last 30 days"
-msgstr "最近 30 天"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.last7Days"
-msgid "Last 7 days"
-msgstr "最近 7 天"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.last90Days"
-msgid "Last 90 days"
-msgstr "最近 90 天"
-
-#: src/views/StatsView.ts
-msgctxt "views/StatsView: StatsView.renderProjectStats display"
-msgid "Last activity: {value1}"
-msgstr "上次活动：{value1}"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
@@ -7050,11 +6858,6 @@ msgstr "正在加载提醒…"
 msgctxt "contextMenus.task.subtasks.loading"
 msgid "Loading subtasks..."
 msgstr "正在加载子任务..."
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.loading"
-msgid "Loading..."
-msgstr "加载中..."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.typeOptions.local"
@@ -7266,11 +7069,6 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "迁移番茄钟数据？"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.filters.minTime"
-msgid "Min time (minutes)"
-msgstr "最短时长（分钟）"
-
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7292,7 +7090,6 @@ msgid "minutes"
 msgstr "分钟"
 
 #: src/modals/ReminderModal.ts
-#: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.stats.minutes"
 msgid "Minutes"
 msgstr "分钟"
@@ -7499,11 +7296,6 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Multiple tasks matched title \"{title}\": {value2}"
 msgstr "多个任务匹配标题“{title}”：{value2}"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.notAvailable"
-msgid "N/A"
-msgstr "不适用"
-
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameAToZ"
 msgid "Name (ascending)"
@@ -7557,8 +7349,6 @@ msgstr "永不结束"
 
 #: src/bases/BasesViewBase.ts
 #: src/bases/taskListGroupHeader.ts
-#: src/views/stats/drilldown.ts
-#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "新建"
@@ -7731,12 +7521,6 @@ msgstr "未找到进行中的时间跟踪会话"
 msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "未找到正在进行的时间跟踪会话"
-
-#: src/views/PomodoroStatsView.ts
-#: src/views/stats/summary.ts
-msgctxt "statistics empty period"
-msgid "No activity in this period."
-msgstr "此期间没有活动。"
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -7937,16 +7721,6 @@ msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "无项目"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.noProject"
-msgid "No project"
-msgstr "无项目"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.noProjectData"
-msgid "No project data available"
-msgstr "无可用的项目数据"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No refresh token available for {provider}"
@@ -7971,11 +7745,6 @@ msgstr "无计划日期"
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "此任务没有计划日期"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.empty"
-msgid "No sessions recorded yet"
-msgstr "尚未记录会话"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction picker"
@@ -8023,11 +7792,6 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "没有可用的任务进行时间跟踪"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.noTasks"
-msgid "No tasks found"
-msgstr "未找到任务"
-
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.noTasksToExport"
 msgid "No tasks found to export"
@@ -8062,11 +7826,6 @@ msgstr "尚无任务。"
 msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "暂无时间记录"
-
-#: src/views/stats/charts.ts
-msgctxt "views.stats.project.noTracking"
-msgid "No time tracking data"
-msgstr "没有时间跟踪数据"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockTimes display"
@@ -8575,11 +8334,6 @@ msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "打开或创建重复实例笔记"
 
-#: src/commands/taskNotesCommands.ts
-msgctxt "commands.openPomodoroStats"
-msgid "Open Pomodoro statistics"
-msgstr "打开番茄钟统计"
-
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openPomodoroView"
@@ -8604,11 +8358,6 @@ msgstr "打开 {occurrence_date} 的重复实例的父任务"
 msgctxt "interaction shortcut"
 msgid "Open task"
 msgstr "打开任务"
-
-#: src/commands/taskNotesCommands.ts
-msgctxt "commands.openStatisticsView"
-msgid "Open task & project statistics"
-msgstr "打开任务和项目统计"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.name"
@@ -8997,7 +8746,6 @@ msgid "Point your phone’s camera at the code for your phone."
 msgstr "将手机相机对准适用于您手机的二维码。"
 
 #: src/views/PomodoroView.ts
-#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "番茄钟"
@@ -9006,11 +8754,6 @@ msgstr "番茄钟"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Pomodoro action to perform (default: status)"
 msgstr "要执行的番茄钟操作（默认：status）"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.basesMigration.description"
-msgid "Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes."
-msgstr "番茄钟 Base 视图从每日笔记的前置元数据读取历史记录。要在生成的番茄钟统计 Base 中查看历史记录，请先在设置中迁移番茄钟数据，再将存储位置设为每日笔记。"
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.pomodoroCompleted.label"
@@ -9047,16 +8790,6 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "番茄钟会话数据将存储在每日笔记前置元数据中，而不是插件数据文件中。"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteSuccess"
-msgid "Pomodoro session deleted"
-msgstr "番茄钟会话已删除"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteNotFound"
-msgid "Pomodoro session was not found"
-msgstr "未找到番茄钟会话"
-
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -9072,20 +8805,10 @@ msgctxt "pomodoro start notification"
 msgid "Pomodoro started for {title}"
 msgstr "已为 {title} 启动番茄钟"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.heading"
-msgid "Pomodoro statistics"
-msgstr "番茄钟统计数据"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "番茄钟统计 Base"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.title"
-msgid "Pomodoro stats"
-msgstr "番茄钟统计"
 
 #: src/services/PomodoroService.ts
 msgctxt "services.pomodoro.notices.stoppedAndReset"
@@ -9101,11 +8824,6 @@ msgstr "番茄钟存储位置已更改为 {location}"
 msgctxt "settings.features.pomodoro.header"
 msgid "Pomodoro timer"
 msgstr "番茄钟计时器"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.pomodoros"
-msgid "Pomodoros"
-msgstr "番茄钟"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.description"
@@ -9218,11 +8936,6 @@ msgctxt "ui.filterBar.group.project"
 msgid "Project"
 msgstr "项目"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.projectBreakdown"
-msgid "Project breakdown"
-msgstr "项目明细"
-
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredTags.placeholder"
 msgid "project, active, important"
@@ -9253,11 +8966,6 @@ msgstr "项目"
 
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Projects"
-msgstr "项目"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "项目"
 
@@ -9381,11 +9089,6 @@ msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "准备开始"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.recent"
-msgid "Recent sessions"
-msgstr "最近的会话"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
@@ -9460,16 +9163,6 @@ msgstr "刷新"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "views.notes.refreshButton"
-msgid "Refresh"
-msgstr "刷新"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.refresh"
-msgid "Refresh"
-msgstr "刷新"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.refreshButton"
 msgid "Refresh"
 msgstr "刷新"
 
@@ -9795,11 +9488,6 @@ msgstr "重置字段"
 msgctxt "settings.native.resetFileMapping"
 msgid "Reset file mapping"
 msgstr "重置文件映射"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.resetFiltersButton"
-msgid "Reset filters"
-msgstr "重置筛选"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields"
@@ -10786,7 +10474,6 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "开始日期属性"
 
-#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
@@ -10873,11 +10560,6 @@ msgstr "开始跟踪此任务的用时"
 msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "开始："
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.title"
-msgid "Statistics"
-msgstr "统计"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -10989,11 +10671,6 @@ msgstr "保存在 Obsidian 的机密存储中，而非 TaskNotes 设置中。"
 msgctxt "settings.native.storedInTaskNotesChangingThisDoesNotRename"
 msgid "Stored in task notes. Changing this does not rename values in existing notes."
 msgstr "存储在任务笔记中。修改此项不会重命名现有笔记中的值。"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.streak"
-msgid "Streak"
-msgstr "连续完成次数"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
@@ -11263,11 +10940,6 @@ msgctxt "settings.general.taskIdentification.taskTag.description"
 msgid "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters."
 msgstr "识别笔记为任务的标签（不含 #）。更改此设置后，现有 .base 视图筛选器会保留旧标签；请更新默认 Base 文件或手动编辑这些筛选器。"
 
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.tagsPlaceholder"
-msgid "tag1, tag2"
-msgstr "标签1，标签2"
-
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
 msgctxt "contextMenus.task.tags"
@@ -11318,11 +10990,6 @@ msgstr "任务"
 msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "任务"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.taskProjectStats"
-msgid "Task & project statistics"
-msgstr "任务和项目统计"
 
 #: src/main.ts
 msgctxt "notices.commands.archived"
@@ -11841,11 +11508,6 @@ msgctxt "settings.calendarService.disconnect.confirmMessage"
 msgid "TaskNotes will stop showing Google Calendar events on every device where you signed in with Google. Your events in Google Calendar are not changed."
 msgstr "在所有使用 Google 账号登录的设备上，TaskNotes 都将不再显示 Google 日历的日程。你在 Google 日历中的日程不会改变。"
 
-#: src/views/stats/summary.ts
-msgctxt "views.stats.labels.tasks"
-msgid "Tasks"
-msgstr "任务"
-
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.copiedTasks"
@@ -12014,11 +11676,6 @@ msgstr "这是正在拖动的任务。"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
-msgid "This month"
-msgstr "本月"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.thisMonth"
 msgid "This month"
 msgstr "本月"
 
@@ -12273,11 +11930,6 @@ msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "从 Obsidian 机密存储中移除客户端 ID 和客户端密钥。"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
-msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
-msgstr "此操作会从番茄钟历史记录中删除该会话，但不会更改现有的任务时间记录。"
-
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
 msgid "This task is an occurrence of a recurring task"
@@ -12322,16 +11974,6 @@ msgstr "此仓库"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
-msgid "This week"
-msgstr "本周"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.week"
-msgid "This week"
-msgstr "本周"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.thisWeek"
 msgid "This week"
 msgstr "本周"
 
@@ -12492,12 +12134,6 @@ msgstr "停止时间跟踪"
 msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "打开时间线视图时滚动到的时间（HH:MM格式）"
-
-#: src/views/stats/summary.ts
-#: src/views/StatsView.ts
-msgctxt "views.stats.cards.timeTrackedEstimated"
-msgid "Time tracked / estimated"
-msgstr "已跟踪／预估时长"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeTrackingSection.header"
@@ -12701,11 +12337,6 @@ msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "title: {title}"
 msgstr "title: {title}"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.dateRangeTo"
-msgid "To"
-msgstr "到"
-
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
@@ -12824,30 +12455,10 @@ msgctxt "views.basesCalendar.today"
 msgid "Today"
 msgstr "今天"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.today"
-msgid "Today"
-msgstr "今天"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.today"
-msgid "Today"
-msgstr "今天"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
 msgid "Today column width (×)"
 msgstr "今天的列宽（倍）"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayFocus.label"
-msgid "Today''s focus"
-msgstr "今日专注时间"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
-msgid "Today''s pomos"
-msgstr "今日番茄钟"
 
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.toggleColumn"
@@ -12926,31 +12537,6 @@ msgstr "明天"
 msgctxt "settings.appearance.uiElements.relationshipsPosition.options.top"
 msgid "Top of note"
 msgstr "笔记顶部"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.totalFocus.label"
-msgid "Total focus duration"
-msgstr "总专注时长"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
-msgid "Total pomos"
-msgstr "总番茄钟数"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.totalTasks"
-msgid "Total tasks"
-msgstr "总任务数"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.totalTasks"
-msgid "Total tasks"
-msgstr "任务总数"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.totalTime"
-msgid "Total time"
-msgstr "总时间"
 
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.totalTrackedTime"
@@ -13533,11 +13119,6 @@ msgstr "等待授权中..."
 msgctxt "settings.calendarService.waiting.name"
 msgid "Waiting for you to finish in your browser"
 msgstr "正在等待你在浏览器中完成操作"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.basesMigration.title"
-msgid "Want a base view?"
-msgstr "想使用 Base 视图吗？"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.starMessage"

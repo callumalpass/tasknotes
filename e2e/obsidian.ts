@@ -184,7 +184,8 @@ export async function revealTaskNotesSetting(workspacePage: Page, key: string): 
     tab.update();
     const find = (items: any[], path: string[] = []): any => {
       for (const item of items) {
-        if (item.control?.key === key) return { definition: item, path };
+        // Rows drawn with render() have no control; their first alias is the setting key.
+        if (item.control?.key === key || (item.render && item.aliases?.[0] === key)) return { definition: item, path };
         const match = item.items && find(item.items, item.type === 'page' ? [...path, item.name] : path);
         if (match) return match;
       }

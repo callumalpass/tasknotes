@@ -18,6 +18,7 @@ import { openPopover } from "./kit/popover";
 import {
 	toggleTaskCardBlockedByExpansion,
 	type TaskCardSecondaryBadgeHandlers,
+	type TaskCardSecondaryBadgeOptions,
 } from "./taskCardSecondaryBadges";
 
 const metadataObservers = new WeakMap<HTMLElement, ResizeObserver>();
@@ -52,6 +53,14 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 	summary.dataset.occurrenceScheduled = occurrenceScheduled;
 	summary.hidden = true;
 	let hiddenLabels: string[] = [];
+	// Styles separate the first property from a date before it; dates come first on the line but
+	// after the properties in the DOM, so CSS cannot tell on its own whether one is showing.
+	const markVisibleDates = () =>
+		metadataLine.classList.toggle(
+			"task-card__metadata--dated",
+			dateSlots.some((slot) => !slot.hidden)
+		);
+	markVisibleDates();
 	summary.addEventListener("click", (event) => {
 		event.stopPropagation();
 		if (!hiddenLabels.length) return;
@@ -105,6 +114,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		hiddenLabels = [];
 		const fits = () => {
 			values.hidden = !atoms.some((atom) => !atom.hidden);
+			markVisibleDates();
 			return [...atoms, ...dateSlots, summary].every((element) => {
 				if (element.hidden) return true;
 				const bounds = element.getBoundingClientRect();
@@ -130,6 +140,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		for (const group of groups)
 			group.property.hidden = group.chips.every((chip) => chip.hidden);
 		values.hidden = !atoms.some((atom) => !atom.hidden);
+		markVisibleDates();
 		const hidden = [...atoms, ...dateSlots]
 			.filter((atom) => atom.hidden)
 			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
@@ -158,7 +169,7 @@ export interface RenderTaskCardMetadataConfig {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	visibleProperties?: string[];
-	propertyOptions?: TaskCardPropertyOptions;
+	propertyOptions?: TaskCardPropertyOptions & Pick<TaskCardSecondaryBadgeOptions, "showSecondaryBadges">;
 	onBlockedByToggle: () => void;
 }
 
@@ -168,7 +179,7 @@ export interface RenderTaskCardMetadataLineConfig {
 	task: TaskInfo;
 	plugin: TaskNotesPlugin;
 	visibleProperties?: string[];
-	propertyOptions?: TaskCardPropertyOptions;
+	propertyOptions?: TaskCardPropertyOptions & Pick<TaskCardSecondaryBadgeOptions, "showSecondaryBadges">;
 	handlers: Pick<TaskCardSecondaryBadgeHandlers, "toggleBlockedByTasks">;
 }
 
@@ -374,6 +385,17 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 			isPropertyForField(propertyId, "status", plugin) ||
 			isPropertyForField(propertyId, "priority", plugin) ||
 			isTitleProperty(propertyId, plugin)
+		) {
+			continue;
+		}
+
+		// The recurrence indicator on the title line already marks a repeating task. Inline cards
+		// have no indicators, so they keep the property.
+		if (
+			propertyOptions.showSecondaryBadges !== false &&
+			card.querySelector(".task-card__badges") &&
+			task.recurrence &&
+			isPropertyForField(propertyId, "recurrence", plugin)
 		) {
 			continue;
 		}

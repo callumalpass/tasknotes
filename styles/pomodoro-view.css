@@ -489,20 +489,6 @@
     text-align: center;
 }
 
-.tasknotes-plugin .pomodoro-view__stat--clickable {
-    cursor: var(--cursor-link, pointer);
-    padding: var(--tn-space-half);
-    border-radius: var(--tn-radius-md);
-    transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast);
-}
-
-@media (hover: hover) {
-    .tasknotes-plugin .pomodoro-view__stat--clickable:hover:not(:disabled):not([aria-disabled="true"]) {
-        background: var(--tn-interactive-hover);
-        border: none;
-        box-shadow: none;
-    }
-}
 .tasknotes-plugin .pomodoro-view__stat-value {
     font-size: var(--tn-type-sm);
     font-weight: var(--tn-font-weight-bold);

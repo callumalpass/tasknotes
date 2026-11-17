@@ -81,20 +81,6 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
-			id: "open-pomodoro-stats",
-			nameKey: msg({ message: "Open Pomodoro statistics", context: "commands.openPomodoroStats" }),
-			callback: async (ctx) => {
-				await ctx.activatePomodoroStatsView();
-			},
-		},
-		{
-			id: "open-statistics",
-			nameKey: msg({ message: "Open task & project statistics", context: "commands.openStatisticsView" }),
-			callback: async (ctx) => {
-				await ctx.activateStatsView();
-			},
-		},
-		{
 			id: "open-kanban-view",
 			nameKey: msg({ message: "Open Kanban board", context: "commands.openKanbanView" }),
 			callback: async (ctx) => {

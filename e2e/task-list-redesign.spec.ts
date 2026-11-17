@@ -194,8 +194,13 @@ for (const theme of ['theme-light', 'theme-dark']) {
       expect(await items.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       const controls = longCard.locator('.task-card__drag-handle, .task-card__context-menu, .task-card__metadata-overflow');
       await expect(controls).toHaveCount(3);
-      const sizes = await controls.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().toJSON()));
-      expect(sizes.every(size => size.width >= 40 && size.height >= 40)).toBe(true);
+      // First-line controls are 32px touch targets; the "+N" overflow on the metadata line is 24px.
+      const sizes = await controls.evaluateAll(elements => elements.map(element => {
+        const box = element.getBoundingClientRect();
+        const min = element.classList.contains('task-card__metadata-overflow') ? 24 : 32;
+        return box.width >= min && box.height >= min;
+      }));
+      expect(sizes).toEqual([true, true, true]);
     } finally {
       await page.evaluate(() => {
         document.body.classList.remove('is-mobile');
@@ -302,7 +307,7 @@ test('embedded bases, native priority menus and selected timer tasks share atomi
   await page.evaluate(() => document.body.classList.remove('is-mobile'));
   await embedded.first().locator('.task-card__context-menu').click();
   await page.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Priority$/ }) }).hover();
-  await expect(page.locator('.menu-item-icon[data-tn-glyph="bars"]').first()).toBeVisible();
+  await expect(page.locator('.menu-item-icon[data-tn-glyph="dot"]').first()).toBeVisible();
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
   await page.screenshot({ path: 'test-results/list-redesign-embedded.png' });

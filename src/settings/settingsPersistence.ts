@@ -130,6 +130,12 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.resetRecurringStatusAfterOccurrence = false;
 	}
 
+	// Migration: Pomodoro history now defaults to daily notes. Settings saved
+	// without the option predate it and keep their history in plugin data.
+	if (typeof migratedData.pomodoroStorageLocation === "undefined") {
+		migratedData.pomodoroStorageLocation = "plugin";
+	}
+
 	// Migration: Add API settings defaults if they don't exist.
 	if (typeof migratedData.enableAPI === "undefined") {
 		migratedData.enableAPI = false;

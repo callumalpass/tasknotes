@@ -13,7 +13,7 @@ TaskNotes keeps task content in your vault and configuration in the plugin data 
 | Task notes | Your configured task folders | Titles, properties, details, recurrence, and time entries |
 | Base views | `TaskNotes/Views/` or custom paths | Filters, formulas, layout, and custom views |
 | Plugin settings | `.obsidian/plugins/tasknotes/data.json` | Field mapping, statuses, defaults, integrations, and view command paths |
-| Daily notes | Your daily-note folder | Pomodoro history when daily-note storage is enabled |
+| Daily notes | Your daily-note folder | Pomodoro history when daily-note storage is enabled (the default for new installs) |
 | mdbase configuration | `mdbase.yaml`, `_mdbase/` (including `_mdbase/settings/dev.tasknotes.md`), legacy `_settings/` records, older configured type/contract and schema folders, pack lock/provisions, and `.tasknotes/migrations/` when configured | Shared collection metadata, provenance, and migration recovery copies |
 
 Treat `data.json` as sensitive because integration configuration, such as webhook URLs and calendar subscription URLs, can include private values. OAuth credentials, calendar account tokens, and the HTTP API token are kept in Obsidian Secret Storage on each device instead, so they are not part of a vault backup and must be set up again when restoring onto a new device. Store backups accordingly.

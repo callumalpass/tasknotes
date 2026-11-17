@@ -23,7 +23,6 @@ This directory contains the modular CSS source files for the TaskNotes plugin. T
 - `agenda-view.css` - BEM AgendaView component
 - `notes-view.css` - BEM NotesView component
 - `pomodoro-view.css` - BEM PomodoroView component
-- `pomodoro-stats-view.css` - BEM PomodoroStatsView component
 - `settings-view.css` - BEM SettingsView component
 
 ### Legacy Files (Remaining)

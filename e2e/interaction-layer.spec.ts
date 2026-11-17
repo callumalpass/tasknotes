@@ -36,6 +36,8 @@ test.afterAll(async () => {
       plugin.settings = (window as any).interactionSettings;
       plugin.statusManager.updateStatuses(plugin.settings.customStatuses);
       plugin.priorityManager.updatePriorities(plugin.settings.customPriorities);
+      // Settings edits made through the settings tab are saved to disk; later specs launch from disk.
+      await plugin.saveSettings();
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
     }, folder);

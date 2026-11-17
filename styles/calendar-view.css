@@ -139,6 +139,27 @@
     text-overflow: ellipsis;
 }
 
+.tasknotes-plugin .mini-calendar-view__entry .tn-calendar-entry-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* In the day picker the label wraps, so the glyphs sit inline beside the title. */
+.note-selector-modal__suggestion .tn-picker__label > :is(.tn-task-glyphs__status, .tn-task-glyphs__priority) {
+    vertical-align: text-bottom;
+}
+
+.note-selector-modal__suggestion .tn-picker__label > .tn-task-glyphs__status {
+    margin-inline-end: var(--tn-space-1);
+}
+
+.note-selector-modal__suggestion .tn-picker__label > .tn-task-glyphs__priority {
+    margin-inline-start: var(--tn-space-1);
+}
+
 .tasknotes-plugin .mini-calendar-view__entry-time {
     grid-column: 2;
     grid-row: 1;

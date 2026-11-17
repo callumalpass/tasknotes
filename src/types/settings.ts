@@ -124,7 +124,7 @@ export interface TaskNotesSettings {
 	pomodoroNotifications: boolean;
 	pomodoroSoundEnabled: boolean;
 	pomodoroSoundVolume: number; // 0-100
-	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data
+	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data; daily notes fall back to plugin data when unavailable
 	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
 	showPomodoroInStatusBar: boolean;
 	// Editor settings

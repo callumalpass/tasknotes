@@ -78,6 +78,11 @@ When TaskNotes integration is enabled, Canvas Bases can:
 
 TaskNotes remains responsible for task semantics. Canvas Bases asks TaskNotes to read and mutate tasks instead of editing task frontmatter directly.
 
+Canvas Bases can also publish `canvas.drop@1.0.0` and provide
+`canvas.card.create@1.0.0` through the optional **mdbase** plugin (`mdbase-sync`).
+Enable **Allow plugin integrations** in mdbase settings to allow these integrations.
+TaskNotes and mdbase are optional for ordinary Bases and Canvas use.
+
 ## Edges and Relationships
 
 Canvas Bases can draw edges when both endpoint notes are present on the board.
