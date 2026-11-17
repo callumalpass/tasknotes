@@ -31,6 +31,7 @@ import type { PopoverHandle, PopoverOptions } from "./kit/popover";
 import { showToast, type ToastAction } from "./kit/toast";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { isTaskIdentificationTag } from "../utils/taskTagFiltering";
+import { cloneSnapshotData } from "../utils/cloneSnapshotData";
 import {
 	renderPriorityGlyph,
 	renderStatusGlyph,
@@ -97,9 +98,14 @@ export function tasksForPropertyAction(
 ): Promise<TaskInfo[]> {
 	const selection = plugin.taskSelectionService;
 	const paths = selection?.isSelected(task.path) ? selection.getSelectedPaths() : [task.path];
-	return Promise.all(paths.map(async (path) => plugin.cacheManager.getTaskInfo(path))).then(
-		(tasks) => tasks.filter((item): item is TaskInfo => !!item)
-	);
+	// A note a Bases view shows but task identification does not match has no
+	// cache entry (#2559); act on the view's task for the clicked note.
+	return Promise.all(
+		paths.map(
+			async (path) =>
+				(await plugin.cacheManager.getTaskInfo(path)) ?? (path === task.path ? task : null)
+		)
+	).then((tasks) => tasks.filter((item): item is TaskInfo => !!item));
 }
 
 export async function changeTaskProperty<Property extends keyof TaskInfo>(
@@ -116,9 +122,11 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 	let failed = false;
 	for (const task of tasks) {
 		try {
-			const cached = await plugin.cacheManager.getTaskInfo(task.path);
-			const before = cached ? structuredClone(cached) : null;
-			if (!before) throw new Error(`Missing task: ${task.path}`);
+			// A Bases view can show notes that TaskNotes' task identification does
+			// not match (#2559). The cache has no entry for those, so use the view's task.
+			const before = cloneSnapshotData(
+				(await plugin.cacheManager.getTaskInfo(task.path)) ?? task
+			);
 			const parent =
 				property === "status" && before.recurrence_parent
 					? await plugin.taskService.getMaterializedOccurrenceParent(before)
@@ -142,8 +150,8 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 					suppressNotice: true,
 					onRecurringParentUpdated: (original, next) => {
 						parentTransition = {
-							original: structuredClone(original),
-							updated: structuredClone(next),
+							original: cloneSnapshotData(original),
+							updated: cloneSnapshotData(next),
 						};
 					},
 				}
