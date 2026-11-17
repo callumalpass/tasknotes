@@ -198,6 +198,13 @@ export function creationDefaults(ctx: SettingsContext): SettingGroupItem[] {
 				defaultProjects(ctx),
 				ctx.field(
 					d,
+					"defaultProjectsOnlyWhenEmpty",
+					"taskCreationDefaults.defaultProjectsOnlyWhenEmpty",
+					t(msg({ message: "Use default projects only when no project is specified", context: "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty" })),
+					{ desc: t(msg({ message: "Projects you choose or type when creating a task replace the default projects.", context: "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty.description" })) }
+				),
+				ctx.field(
+					d,
 					"useParentNoteForTaskCreation",
 					"taskCreationDefaults.useParentNoteForTaskCreation",
 					t(msg({ message: "Use active note for new tasks:", context: "settings.taskProperties.projectsCard.useParentNoteForTaskCreation" }))

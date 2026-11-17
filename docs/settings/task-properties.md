@@ -131,6 +131,7 @@ Projects the task belongs to. Configuration options:
 
 - **Property key**: Frontmatter field name (default: `projects`)
 - **Default projects**: Select project notes to automatically link to new tasks
+- **Use default projects only when no project is specified**: Off by default. When on, a project you pick in the task creation form, or type in the natural language field, replaces the default projects. If you delete the typed project, the defaults come back. Instant conversion also leaves out the defaults when the converted text names a project. Projects filled in by a Bases view or a parent task are kept as they are.
 - **Use active note for new tasks**: Automatically link the active note as a project when opening task creation from the command palette or ribbon
 - **Use parent note for inline/instant conversion**: Automatically link the source note as a project when using inline task creation or instant task conversion
 - **NLP trigger**: Character that triggers project parsing (default: `+`)
