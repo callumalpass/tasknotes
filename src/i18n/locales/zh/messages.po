@@ -12440,6 +12440,11 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Calendar"
 msgstr "TaskNotes 日历"
 
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "由于无法读取设置文件，TaskNotes 未启动。你的设置没有更改。请重启 Obsidian 后重试。重新安装 TaskNotes 会删除其设置。"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Kanban"

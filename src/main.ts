@@ -790,11 +790,34 @@ export default class TaskNotesPlugin extends Plugin {
 				},
 			});
 		}
-		if (result.compromised)
+		if (result.compromised) {
+			this.showUnreadableSettingsNotice();
 			throw new Error(
 				"TaskNotes settings are unreadable; restore settings before loading the plugin."
 			);
+		}
 		return result.data;
+	}
+
+	/**
+	 * Obsidian reports only "Failed to load" when onload throws. Say why, and that
+	 * reinstalling deletes the settings file this guard is protecting (#2559).
+	 */
+	private showUnreadableSettingsNotice(): void {
+		const i18n = createI18nService({
+			initialLocale: "system",
+			getSystemLocale: () => this.getSystemUILocale(),
+		});
+		new Notice(
+			i18n.translate(
+				msg({
+					message:
+						"TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings.",
+					context: "notices.settingsUnreadable",
+				})
+			),
+			0
+		);
 	}
 
 	async loadSettings() {
