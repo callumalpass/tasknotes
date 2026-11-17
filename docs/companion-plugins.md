@@ -26,6 +26,11 @@ const workflows = tasknotes?.api?.extensions.get("tasknotes-workflows");
 
 The extension registry is useful when companion plugins need to expose commands, validation helpers, catalogs, or run APIs to other in-vault tools.
 
+Cross-plugin events can use the optional **mdbase** plugin (`mdbase-sync`). Enable
+**Allow plugin integrations** in its settings (off by default). TaskNotes publishes
+`tasknotes.task.completed@1.0.0` through its API v1 bridge; live task reads and
+writes still use the TaskNotes runtime API.
+
 ## Choosing an Integration Surface
 
 | Use case | Prefer |

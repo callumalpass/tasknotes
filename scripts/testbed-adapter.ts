@@ -101,14 +101,15 @@ async function eventMulticast(): Promise<Record<string, unknown>[]> {
 	};
 	const mdbase = {
 		api: {
-			interop: { connect: (): InteropClient => source },
-			getInteropStatus: () => ({ enabled: true }),
+			apiVersion: 1,
+			interop: { profileVersion: "0.1", connect: (): InteropClient => source },
+			getInteropStatus: () => ({ enabled: true, profileVersion: "0.1" }),
 		},
 	};
 	const plugin = {
 		app: {
 			plugins: {
-				getPlugin: (id: string) => (id === "mdbase-obsidian" ? mdbase : null),
+				getPlugin: (id: string) => (id === "mdbase-sync" ? mdbase : null),
 			},
 		},
 	};
