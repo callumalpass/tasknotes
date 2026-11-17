@@ -39,6 +39,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2267) With **Include Obsidian link** on, Google Calendar event descriptions for tasks and timeblocks show a clickable "Open in Obsidian" link again, instead of the `obsidian://` address as plain text. Existing events get the link the next time the task or timeblock is synced. Thanks to @techy-robot for reporting.
+
 ## Changed
 
 - The plugin's `main.js` is about 295 KB smaller (4.9 MB to 4.6 MB). The Google Calendar sign-in client no longer bundles validation code TaskNotes never uses, including error messages for every language.
