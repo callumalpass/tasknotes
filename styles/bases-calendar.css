@@ -359,8 +359,11 @@
     display: none;
 }
 
+/* Timed items query their own height. Their font size is the title's, so the em lengths in
+   the line-count queries below follow Obsidian's font size setting. */
 .tasknotes-plugin .tnc-item--timed:not(.tnc-item--list):not(.tnc-item--indicator) {
     container-type: size;
+    font-size: var(--tn-type-sm);
 }
 
 .tasknotes-plugin .tn-calendar-deadline-marker {
@@ -388,26 +391,65 @@
     }
 }
 
-@container (min-height: 40px) {
-    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+/* Stacked items keep the time on its own line and give the title the whole lines left over,
+   so the last visible line ends in an ellipsis instead of being cut through. In em of the
+   title font, n title lines need (1.25n + 1.15)em + 1px: 1.25em per title line, 1.15em for
+   the time and a 1px gap. */
+.tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
+    line-height: 1.25;
+}
+
+.tasknotes-plugin .tnc-item--timed:not(.is-short):not(.tnc-item--list) .tnc-item-time {
+    line-height: calc(var(--tn-type-sm) * 1.15);
+}
+
+/* Too short for a title line above the time: lay them out on one row, as short items are. */
+@container (height < calc(2.4em + 1px)) {
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tnc-item-main {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--tn-space-2);
+    }
+
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tnc-item-title {
+        align-items: center;
+        flex: 1 1 auto;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
+        display: block;
+        white-space: nowrap;
+    }
+}
+
+@container (height >= calc(3.65em + 1px)) {
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
         -webkit-line-clamp: 2;
     }
 }
 
-@container (min-height: 60px) {
-    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+@container (height >= calc(4.9em + 1px)) {
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
         -webkit-line-clamp: 3;
     }
 }
 
-@container (min-height: 80px) {
-    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+@container (height >= calc(6.15em + 1px)) {
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
         -webkit-line-clamp: 4;
     }
 }
 
-@container (min-height: 120px) {
-    .tasknotes-plugin .tnc-item--timed .tn-calendar-event-title {
+@container (height >= calc(7.4em + 1px)) {
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
+        -webkit-line-clamp: 5;
+    }
+}
+
+@container (height >= calc(8.65em + 1px)) {
+    .tasknotes-plugin .tnc-item--timed:not(.is-short) .tn-calendar-event-title {
         -webkit-line-clamp: 6;
     }
 }

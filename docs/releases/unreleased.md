@@ -37,6 +37,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Fixed tracked-time blocks in the calendar hiding the task title unless the block was very short. The title now appears beside the status icon, as it does on scheduled tasks.
+- Fixed calendar event titles being cut through the middle of a line in blocks of about an hour. Titles now show as many whole lines as fit above the time and end with an ellipsis, and blocks too short for both put the title and time on one row. This also follows Obsidian's font size setting.
 
 ## Changed
 
