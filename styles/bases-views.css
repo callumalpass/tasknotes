@@ -301,22 +301,22 @@
     height: 14px;
 }
 
-body.is-mobile .tn-tasknotesTaskList .tn-bases-items-container,
-body.is-mobile .tn-bases-tasknotes-list {
-    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
-    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+/* Bottom spacing for TaskNotes views opened as Bases tabs, using the spacing
+   Obsidian applies to its own views. On phones the floating navbar covers the
+   bottom of the pane; Obsidian's --view-bottom-spacing (safe area + navbar,
+   less the keyboard) keeps every TaskNotes view above it, including views
+   that fit the pane instead of scrolling, such as the month grid. List
+   scrollers also end with the same --size-4-8 / safe-area padding as Obsidian's
+   .view-content, so the last row can scroll clear of the desktop status bar.
+   Embeds are not matched: the note's own scroller already clears these. */
+.is-phone .workspace-leaf-content[data-type="bases"] .tn-bases-integration {
+    box-sizing: border-box;
+    padding-bottom: var(--view-bottom-spacing, 0px);
 }
 
-body.is-mobile .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
-body.is-mobile .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container {
-    padding-bottom: 0;
-    scroll-padding-bottom: 0;
-}
-
-body.is-mobile .internal-embed .tn-bases-tasknotes-list,
-body.is-mobile .markdown-embed .tn-bases-tasknotes-list {
-    padding-bottom: var(--tn-space-1);
-    scroll-padding-bottom: 0;
+.workspace-leaf-content[data-type="bases"] .tn-bases-integration :is(.tn-bases-items-container, .tnc-list-scroll) {
+    padding-bottom: max(var(--size-4-8), var(--safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: max(var(--size-4-8), var(--safe-area-inset-bottom, 0px));
 }
 
 /* Sidebar and popout note embeds already have a constrained note scroller. Let

@@ -36,6 +36,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2526) On phones, the Agenda, Calendar and Kanban views no longer extend under Obsidian's bottom navigation bar, so the last tasks can be seen. These views now use the same bottom spacing as Obsidian's own Bases views. The Task List uses it too, in place of a fixed gap, and embedded views are unchanged.
+  - Thanks to @Jomo94 for reporting.
+- (#2263) The last task in the Task List and Agenda can now be scrolled clear of the status bar on desktop.
+  - Thanks to @3zra47 for reporting.
+
 ## Changed
 
 - The plugin's `main.js` is about 295 KB smaller (4.9 MB to 4.6 MB). The Google Calendar sign-in client no longer bundles validation code TaskNotes never uses, including error messages for every language.
