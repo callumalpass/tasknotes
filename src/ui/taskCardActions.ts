@@ -117,11 +117,10 @@ export function createStatusCycleHandler(
 			const logger = getTaskCardActionLogger(plugin);
 			try {
 				{
-					const fresh = await plugin.cacheManager.getTaskInfo(task.path);
-					if (!fresh) {
-						new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
-						return;
-					}
+					// A Bases view can show notes that TaskNotes' task identification
+					// does not match (e.g. a view filtered on `type: task`). The cache has
+					// no entry for those, so use the card's task.
+					const fresh = (await plugin.cacheManager.getTaskInfo(task.path)) ?? task;
 					let updated: TaskInfo | null;
 					const cycle = fresh.recurrence
 						? getRecurringCycleStatus(fresh, plugin, targetDate, e.shiftKey)
@@ -155,7 +154,8 @@ export function createStatusCycleHandler(
 										throw new Error("Task changed since completion");
 								},
 							], false, 1, plugin.app.vault);
-						updated = await plugin.cacheManager.getTaskInfo(fresh.path);
+						updated =
+							(await plugin.cacheManager.getTaskInfo(fresh.path)) ?? result.updatedTask;
 					}
 					if (updated) {
 						const effective = getEffectiveTaskStatus(

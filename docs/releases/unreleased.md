@@ -54,6 +54,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @Jomo94 for reporting.
 - (#2263) The last task in the Task List and Agenda can now be scrolled clear of the status bar on desktop.
   - Thanks to @3zra47 for reporting.
+- (#2559) Fixed clicking a task's status in a Bases view when the note is included by the view's filter but not identified as a task by TaskNotes' task identification settings (for example, a view filtered on `type: task` while TaskNotes identifies tasks by tag). Recurring tasks failed with "Failed to execute 'structuredClone' on 'Window'", and other tasks showed "Task not found". Both now update. Saving the Undo for a recurring completion no longer copies view data, and if Undo cannot be prepared the completion still saves.
+  - Thanks to @0x326-CHR for reporting
 
 ## Changed
 
