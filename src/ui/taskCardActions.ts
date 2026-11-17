@@ -94,11 +94,10 @@ export function createStatusCycleHandler(
 					return;
 				}
 
-				const freshTask = await plugin.cacheManager.getTaskInfo(task.path);
-				if (!freshTask) {
-					new Notice(plugin.i18n.translate(msg({ message: "Task not found", context: "modals.actionPalette.taskNotFound" })));
-					return;
-				}
+				// A Bases view can show notes that TaskNotes' task identification
+				// does not match (e.g. a view filtered on `type: task`). The cache has
+				// no entry for those, so use the card's task, as recurring completion does.
+				const freshTask = (await plugin.cacheManager.getTaskInfo(task.path)) ?? task;
 
 				const currentStatus = freshTask.status || plugin.settings.defaultTaskStatus;
 				const nextStatus = e.shiftKey

@@ -123,7 +123,7 @@ describe("taskCardActions", () => {
 		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "backlog");
 	});
 
-	it("notices when the status handler cannot find a fresh task", async () => {
+	it("cycles a card's own task when TaskNotes does not identify the note (#2559)", async () => {
 		const plugin = createPlugin({
 			cacheManager: {
 				getTaskInfo: jest.fn(async () => null),
@@ -139,8 +139,8 @@ describe("taskCardActions", () => {
 		handler({ stopPropagation: jest.fn(), shiftKey: false } as unknown as MouseEvent);
 		await flushAsyncHandlers();
 
-		expect(Notice).toHaveBeenCalledWith("Task not found");
-		expect(plugin.updateTaskProperty).not.toHaveBeenCalled();
+		expect(Notice).not.toHaveBeenCalledWith("Task not found");
+		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
 	});
 
 	describe("on a recurring card", () => {

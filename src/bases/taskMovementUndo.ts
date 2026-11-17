@@ -1,3 +1,5 @@
+import { cloneSnapshotData } from "../utils/cloneSnapshotData";
+
 export type TaskMovementUndoChange = {
 	property: string;
 	before: unknown;
@@ -22,8 +24,8 @@ export function buildTaskMovementUndo(
 		)
 		.map((property) => ({
 			property,
-			before: structuredClone(before[property]),
-			after: structuredClone(after[property]),
+			before: cloneSnapshotData(before[property]),
+			after: cloneSnapshotData(after[property]),
 			hadBefore: Object.prototype.hasOwnProperty.call(before, property),
 			hadAfter: Object.prototype.hasOwnProperty.call(after, property),
 		}));
@@ -44,7 +46,7 @@ export function applyTaskMovementUndo(
 	)
 		return false;
 	for (const change of changes) {
-		if (change.hadBefore) frontmatter[change.property] = structuredClone(change.before);
+		if (change.hadBefore) frontmatter[change.property] = cloneSnapshotData(change.before);
 		else delete frontmatter[change.property];
 	}
 	return true;

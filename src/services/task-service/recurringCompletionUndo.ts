@@ -9,6 +9,7 @@ import {
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
 import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { cloneSnapshotData } from "../../utils/cloneSnapshotData";
 import { getRecurringTaskActionDate } from "./taskRecurringPlanning";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionUndo" });
@@ -80,8 +81,8 @@ export function buildCompletionContentUndo(
 	return {
 		changes: properties.filter(property => property !== modifiedProperty).map(property => ({
 			property,
-			before: structuredClone(previous.frontmatter[property]),
-			after: structuredClone(next.frontmatter[property]),
+			before: cloneSnapshotData(previous.frontmatter[property]),
+			after: cloneSnapshotData(next.frontmatter[property]),
 			hadBefore: Object.prototype.hasOwnProperty.call(previous.frontmatter, property),
 			hadAfter: Object.prototype.hasOwnProperty.call(next.frontmatter, property),
 		})),
@@ -137,22 +138,22 @@ export async function completeRecurringTaskWithUndo(
 	const before = await Promise.all(tasks.map(async taskInfo => {
 		const file = plugin.app.vault.getAbstractFileByPath(taskInfo.path);
 		if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
-		return { file, taskInfo: structuredClone(taskInfo), content: await plugin.app.vault.read(file) };
+		return { file, taskInfo: cloneSnapshotData(taskInfo), content: await plugin.app.vault.read(file) };
 	}));
 	const parentTransition: { original?: TaskInfo; updated?: TaskInfo } = {};
 	const result = await service.toggleRecurringTaskCompleteWithOccurrenceNotes(
 		parent,
 		identityDate,
 		(original, updated) => {
-			parentTransition.original = structuredClone(original);
-			parentTransition.updated = structuredClone(updated);
+			parentTransition.original = cloneSnapshotData(original);
+			parentTransition.updated = cloneSnapshotData(updated);
 		},
 		options
 	);
 	const updatedTask = result.path === parent.path ? result : parentTransition.updated || parent;
 	const modifiedProperty = plugin.fieldMapper.toUserField("dateModified");
 	const properties = completionFields.map(field => plugin.fieldMapper.toUserField(mappingKey(field)));
-	const entries = await Promise.all(before.map(async previous => {
+	const buildEntries = () => Promise.all(before.map(async previous => {
 		const nextTask = previous.file.path === result.path ? result : updatedTask;
 		const afterContent = await plugin.app.vault.read(previous.file);
 		const undo = buildCompletionContentUndo(previous.content, afterContent, properties, modifiedProperty);
@@ -178,6 +179,19 @@ export async function completeRecurringTaskWithUndo(
 		}
 		return { ...previous, nextTask, undo, safe, changed: afterContent !== previous.content };
 	}));
+	// The completion has already been written. A receipt that cannot be built
+	// only makes it not undoable; it must never report the completion as failed.
+	let entries: Awaited<ReturnType<typeof buildEntries>>;
+	let receiptAvailable = true;
+	try {
+		entries = await buildEntries();
+	} catch (error) {
+		tasknotesLogger.warn("Could not build Undo for recurring completion", {
+			category: "persistence", operation: "recurring-completion-undo-receipt", error,
+		});
+		receiptAvailable = false;
+		entries = [];
+	}
 	const completed = occurrence
 		? plugin.statusManager.isCompletedStatus(result.status)
 		: (updatedTask.complete_instances ?? []).some(day => !parent.complete_instances?.includes(day));
@@ -185,9 +199,9 @@ export async function completeRecurringTaskWithUndo(
 	return {
 		updatedTask,
 		completed,
-		changed: entries.some(entry => entry.changed),
+		changed: receiptAvailable ? entries.some(entry => entry.changed) : true,
 		undo: async () => {
-			if (used || entries.some(entry => !entry.safe)) return false;
+			if (used || !receiptAvailable || entries.some(entry => !entry.safe)) return false;
 			used = true;
 			const syncUpdates: { current: TaskInfo; restored: TaskInfo }[] = [];
 			// Lock both parent and occurrence in stable order. Validate every receipt
