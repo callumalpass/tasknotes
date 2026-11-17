@@ -1,6 +1,9 @@
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/VirtualScroller" });
+
+/** How many range rechecks measurements may trigger before a scroll or other update. */
+const MAX_MEASUREMENT_RANGE_UPDATES = 4;
 /**
  * Simple virtual scrolling implementation for large lists
  *
@@ -96,6 +99,7 @@ export class VirtualScroller<T> {
 	private pinnedItemKeys = new Set<string>();
 	private pinnedItemStyles = new Map<string, { position: string; top: string; width: string }>();
 	private scrollRAF: number | null = null;
+	private measurementRangeUpdates = 0;
 
 	// Variable height tracking
 	private itemHeights = new Map<number, number>(); // index -> measured height
@@ -445,8 +449,7 @@ export class VirtualScroller<T> {
 
 		if (heightsChanged) {
 			this.rebuildPositionCache();
-			// Don't force re-render here to avoid infinite loops
-			// Just update the spacer height
+			this.updateVisibleRange(true);
 		}
 	}
 
@@ -472,6 +475,7 @@ export class VirtualScroller<T> {
 
 		if (heightsChanged) {
 			this.rebuildPositionCache();
+			this.updateVisibleRange(true);
 		}
 	}
 
@@ -492,7 +496,19 @@ export class VirtualScroller<T> {
 		});
 	};
 
-	private updateVisibleRange(): void {
+	/**
+	 * Measured rows can be shorter than the estimate, leaving part of the viewport empty
+	 * until the next scroll. Measurements therefore recheck the range, but only a few
+	 * times in a row: rows whose height keeps changing must not keep re-rendering.
+	 */
+	private updateVisibleRange(fromMeasurement = false): void {
+		if (fromMeasurement) {
+			if (this.measurementRangeUpdates >= MAX_MEASUREMENT_RANGE_UPDATES) return;
+			this.measurementRangeUpdates++;
+		} else {
+			this.measurementRangeUpdates = 0;
+		}
+
 		const scrollTop = this.getScrollTop();
 		let containerHeight = this.scrollContainer.clientHeight;
 

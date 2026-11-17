@@ -279,3 +279,43 @@ describe("VirtualScroller", () => {
 		expect(container.querySelector("[data-key='c']")).toBe(thirdElement);
 	});
 });
+
+describe("VirtualScroller measurement", () => {
+	it("fills the viewport when measured rows are shorter than the estimate", () => {
+		const frames: FrameRequestCallback[] = [];
+		const raf = jest
+			.spyOn(window, "requestAnimationFrame")
+			.mockImplementation((callback) => frames.push(callback));
+		const flushFrames = () => {
+			for (let i = 0; i < 10 && frames.length > 0; i++) {
+				frames.splice(0).forEach((callback) => callback(0));
+			}
+		};
+
+		const container = document.createElement("div");
+		container.style.overflowY = "auto";
+		Object.defineProperty(container, "clientHeight", { value: 200 });
+		const items = Array.from({ length: 50 }, (_, i) => ({ id: `${i}`, label: `${i}` }));
+		const scroller = new VirtualScroller<TestItem>({
+			container,
+			items,
+			itemHeight: 50,
+			overscan: 0,
+			renderItem: (item) => {
+				const element = document.createElement("div");
+				element.dataset.key = item.id;
+				element.getBoundingClientRect = () => ({ height: 20 }) as DOMRect;
+				return element;
+			},
+			getItemKey: (item) => item.id,
+		});
+
+		expect(renderedKeys(container).length).toBeLessThan(10);
+		flushFrames();
+		// 200px of 20px rows: rows 0-10 reach the bottom of the viewport.
+		expect(renderedKeys(container).length).toBeGreaterThanOrEqual(10);
+
+		scroller.destroy();
+		raf.mockRestore();
+	});
+});
