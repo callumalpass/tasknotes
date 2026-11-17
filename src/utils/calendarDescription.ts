@@ -257,3 +257,30 @@ export function normalizeCalendarDescription(value: string | undefined | null): 
 	const plainText = htmlToPlainText(value);
 	return plainText.length > 0 ? plainText : undefined;
 }
+
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+/**
+ * Builds an exported event description that ends with an "Open in Obsidian" link.
+ *
+ * Google Calendar auto-links http(s) URLs but not `obsidian://` URIs, so the link
+ * is an HTML anchor. Google renders a small HTML subset in descriptions and keeps
+ * newlines, so the other lines stay line-based text, escaped so task values are
+ * not read as markup.
+ */
+export function calendarDescriptionWithObsidianLink(
+	lines: string[],
+	obsidianUri: string,
+	linkText: string
+): string {
+	return [
+		...lines.map(escapeHtml),
+		`<a href="${escapeHtml(obsidianUri)}">${escapeHtml(linkText)}</a>`,
+	].join("\n");
+}

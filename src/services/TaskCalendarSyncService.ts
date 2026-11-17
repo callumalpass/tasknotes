@@ -13,6 +13,7 @@ import {
 } from "../types";
 import { convertToGoogleRecurrence } from "../utils/rruleConverter";
 import { stringifyUnknown } from "../utils/stringUtils";
+import { calendarDescriptionWithObsidianLink } from "../utils/calendarDescription";
 import { getDatePart } from "../utils/dateUtils";
 import { TokenRefreshError } from "./errors";
 import { GOOGLE_CALENDAR_CONSTANTS } from "./constants";
@@ -2204,13 +2205,14 @@ export class TaskCalendarSyncService {
 			parts.push("---");
 		}
 
-		// Add Obsidian link (as HTML anchor for clickability in Google Calendar)
 		if (settings.includeObsidianLink) {
 			const vaultName = this.plugin.app.vault.getName();
 			const encodedPath = encodeURIComponent(task.path);
 			const obsidianUri = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodedPath}`;
-			const linkText = t("openInObsidian");
-			parts.push(`${linkText}: ${obsidianUri}`);
+			return uiData(
+				calendarDescriptionWithObsidianLink(parts, obsidianUri, t("openInObsidian")),
+				"Persisted Google Calendar description: English metadata, untouched configured labels and user data"
+			);
 		}
 
 		return uiData(parts.join("\n"), "Persisted Google Calendar description: English metadata, untouched configured labels and user data");
