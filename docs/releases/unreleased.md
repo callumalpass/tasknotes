@@ -36,6 +36,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed long Task Lists leaving the bottom of the list blank after a large jump with the scrollbar. The missing rows appeared only after scrolling again.
+
 ## Changed
 
 - The plugin's `main.js` is about 295 KB smaller (4.9 MB to 4.6 MB). The Google Calendar sign-in client no longer bundles validation code TaskNotes never uses, including error messages for every language.
