@@ -34,6 +34,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (#2436) Added **Use default projects only when no project is specified** under Settings → Task creation → Defaults → Default projects. When it is on, a project you pick or type while creating a task replaces your default projects instead of being added to them, and instant conversion leaves out the defaults when the text names a project. Off by default. See [Task Properties](https://tasknotes.dev/settings/task-properties/).
+  - Thanks to @RumiaKitinari for the request
+
 ## Fixed
 
 ## Changed
