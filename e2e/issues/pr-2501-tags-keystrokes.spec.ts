@@ -41,7 +41,7 @@ for (const mobile of [false, true]) {
   test(`typing comma-separated tags preserves the separator in the create modal${mobile ? ' (phone layout)' : ''}`, async () => {
     const page = instance.page;
     await openCreate(mobile, false);
-    const tags = page.locator('.modal.mod-tasknotes input[placeholder="tag1, tag2"]');
+    const tags = page.locator('.modal.mod-tasknotes input[placeholder="Add tags"]');
     await expect(tags).toBeVisible();
 
     // Control: a single input event supplies an already-complete list.
@@ -56,7 +56,7 @@ for (const mobile of [false, true]) {
     // Sanitising still applies once the field is left.
     await tags.pressSequentially(', ', { delay: 50 });
     await expect(tags).toHaveValue('work, home, ');
-    const contexts = page.locator('.modal.mod-tasknotes input[placeholder="context1, context2"]');
+    const contexts = page.locator('.modal.mod-tasknotes input[placeholder="Add contexts"]');
     await contexts.click();
     await expect(tags).toHaveValue('work, home');
 

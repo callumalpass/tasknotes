@@ -458,13 +458,15 @@ test.describe('Properties Panel', () => {
 });
 
 test.describe('Statistics Views', () => {
-  test('should open task and project statistics', async () => {
+  test('should open the Pomodoro statistics Base', async () => {
     const page = getPage();
 
-    await runCommand(page, 'Open task & project statistics');
-    await page.waitForTimeout(1000);
+    await runCommand(page, 'Open Pomodoro statistics');
+    await expect
+      .poll(() => page.evaluate(() => (window as any).app.workspace.getActiveFile()?.path))
+      .toBe('TaskNotes/Views/pomodoro-stats.base');
 
-    await page.screenshot({ path: 'test-results/screenshots/task-statistics.png' });
+    await page.screenshot({ path: 'test-results/screenshots/pomodoro-statistics.png' });
   });
 });
 
