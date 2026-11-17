@@ -36,6 +36,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed tracked-time blocks in the calendar hiding the task title unless the block was very short. The title now appears beside the status icon, as it does on scheduled tasks.
+
 ## Changed
 
 ## Security

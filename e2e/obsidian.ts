@@ -397,6 +397,8 @@ export async function launchObsidian(): Promise<ObsidianApp> {
         ...(launchWithoutDisplay ? ['--ozone-platform=x11', '--disable-gpu'] : []),
         `--remote-debugging-port=${remoteDebuggingPort}`,
         `--user-data-dir=${userDataDir}`,
+        // Extra Chromium flags, e.g. --force-device-scale-factor=2 for README screenshots.
+        ...(process.env.TASKNOTES_E2E_ELECTRON_ARGS?.split(/\s+/).filter(Boolean) ?? []),
         E2E_VAULT_DIR,
       ];
       const spawnCommand = launchWithoutDisplay ? 'xvfb-run' : obsidianBinary;
