@@ -1201,7 +1201,15 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 	}
 
 }
-.tasknotes-plugin .tnc-col-actual :is(.tnc-item-title, .tn-calendar-event-title) {
+/* Tracked-time items keep the status glyphs and the title on one line. A block title
+   row pushed the text below the glyphs, where overflow clipped it. */
+.tasknotes-plugin .tnc-col-actual .tnc-item-title {
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.tasknotes-plugin .tnc-col-actual .tn-calendar-event-title {
     display: block;
     white-space: nowrap;
     overflow-wrap: normal;

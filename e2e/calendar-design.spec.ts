@@ -40,6 +40,8 @@ timeEstimate: 60
 timeEntries:
   - startTime: '${new Date(`${today}T11:00`).toISOString()}'
     endTime: '${new Date(`${today}T11:30`).toISOString()}'
+  - startTime: '${new Date(`${today}T15:00`).toISOString()}'
+    endTime: '${new Date(`${today}T16:00`).toISOString()}'
 ---
 `);
     const titles = ['Reconcile supplier invoices', 'Review onboarding changes', 'Prepare customer research', 'Plan accessibility fixes', 'Send weekly project update'];
@@ -103,6 +105,16 @@ test.afterAll(async () => {
   } finally {
     await closeObsidian(app);
   }
+});
+
+test('tracked time blocks keep the task title beside the status glyph', async () => {
+  const tracked = app.page.locator('.workspace-leaf.mod-active .tnc-k-timeEntry:not(.is-short)').first();
+  await expect(tracked).toBeVisible();
+  const title = tracked.locator('.tn-calendar-event-title');
+  await expect(title).toHaveText('Review calendar interaction details');
+  // The title row clips its overflow; text wrapped below the glyphs is hidden in short blocks.
+  const [glyphs, text] = await Promise.all([tracked.locator('.tn-task-glyphs').boundingBox(), title.boundingBox()]);
+  expect(text!.y).toBeLessThan(glyphs!.y + glyphs!.height);
 });
 
 test('narrow defaults are temporary and explicit view choices survive resizing', async () => {
