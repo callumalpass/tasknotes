@@ -1111,11 +1111,6 @@ msgctxt "settings.tasknotesApp.step2.name"
 msgid "3. Add this vault"
 msgstr "3. Aggiungi questo vault"
 
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimatePlaceholder"
-msgid "30"
-msgstr "30"
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
 msgid "30 minutes"
@@ -1313,10 +1308,20 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "Aggiungi sottoscrizione calendario"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.contextsPlaceholder"
+msgid "Add contexts"
+msgstr "Aggiungi contesti"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "Aggiungi dettagli su questo evento…"
+
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimatePlaceholder"
+msgid "Add estimate"
+msgstr "Aggiungi stima"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.addFromVaultButton"
@@ -1394,6 +1399,11 @@ msgstr "Aggiungi sottoattività alla nota corrente"
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "Aggiungi sottoattività…"
+
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "Aggiungi etichette"
 
 #: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -3066,11 +3076,6 @@ msgstr "Contesto"
 msgctxt "ui.filterBar.group.context"
 msgid "Context"
 msgstr "Contesto"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.contextsPlaceholder"
-msgid "context1, context2"
-msgstr "contesto1, contesto2"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
@@ -11260,11 +11265,6 @@ msgstr "Etichetta"
 msgctxt "settings.general.taskIdentification.taskTag.description"
 msgid "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters."
 msgstr "Etichetta che identifica le note come attività (senza #). I filtri delle viste .base esistenti manterranno l’etichetta attuale quando la cambi; aggiorna i file Base predefiniti o modifica quei filtri."
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.tagsPlaceholder"
-msgid "tag1, tag2"
-msgstr "tag1, tag2"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts

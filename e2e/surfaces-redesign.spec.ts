@@ -320,7 +320,9 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
       const overflow = page.locator('.task-card-note-widget .task-card__metadata-overflow:visible');
       await expect.poll(async () => await widgetTag.isVisible() ||
         (await overflow.getAttribute('aria-label'))?.includes(tagText)).toBe(true);
-      await expect(widgetTag).toHaveCSS('background-color', await nativeTag.evaluate(element => getComputedStyle(element).backgroundColor));
+      // Tags in the widget read like the rest of its second line, as on a board card, not as the note's tag pills.
+      await expect(widgetTag).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      expect(await widgetTag.evaluate(element => getComputedStyle(element).color)).not.toBe(await nativeTag.evaluate(element => getComputedStyle(element).color));
       await screenshot(`task-note-${theme}-${mobile ? 'mobile' : 'desktop'}`);
     }
   }

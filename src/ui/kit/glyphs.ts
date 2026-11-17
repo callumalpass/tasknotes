@@ -4,7 +4,8 @@ import { uiText } from "../../i18n/runtime";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const RING_RADIUS = 6.25;
-const PIE_RADIUS = 2.75;
+// The progress pie stops short of the ring, so an in-progress status keeps the open ring's weight.
+const PIE_RADIUS = 2;
 const PIE_CIRCUMFERENCE = 2 * Math.PI * PIE_RADIUS;
 
 type SvgAttributes = Record<string, string | number>;
@@ -119,11 +120,13 @@ export function renderStatusGlyph(host: HTMLElement, state: StatusGlyphState): v
 	}
 }
 
+/** Where a ranked priority sits among the configured ones: the top and bottom ranks get their own shape. */
+export type PriorityGlyphRank = "top" | "middle" | "bottom";
+
 export type PriorityGlyphState =
 	| { kind: "unset" }
 	| { kind: "unknown" }
-	| { kind: "bars"; level: 1 | 2 | 3 }
-	| { kind: "top" };
+	| { kind: "dot"; rank: PriorityGlyphRank };
 
 interface RankedPriority {
 	value: string;
@@ -138,91 +141,56 @@ export function hasVisiblePriority(
 }
 
 /**
- * Bars by rank. Workflows with four or more ranked priorities reserve a solid
- * mark for the highest, so three bars stay meaningful below it. Weight zero is "none".
+ * Every ranked priority is a dot in the priority's colour. So that the levels differ by more
+ * than colour, the highest weight gets a ring around its dot and the lowest a smaller dot;
+ * a single ranked priority is a plain dot. Weight zero is "none" and, like a missing
+ * priority, draws an empty ring.
  */
 export function priorityGlyphState(
 	priorityValue: string | undefined,
 	priorities: readonly RankedPriority[]
 ): PriorityGlyphState {
-	if (priorityValue && !priorities.some((priority) => priority.value === priorityValue))
-		return { kind: "unknown" };
-	const ranked = priorities
-		.filter((priority) => priority.weight > 0)
-		.sort((a, b) => a.weight - b.weight);
-	const index = ranked.findIndex((priority) => priority.value === priorityValue);
-	if (index < 0) return { kind: "unset" };
-
-	const reservesTop = ranked.length >= 4;
-	if (reservesTop && index === ranked.length - 1) return { kind: "top" };
-
-	const barRanks = reservesTop ? ranked.length - 1 : ranked.length;
-	const level = Math.max(1, Math.ceil(((index + 1) / barRanks) * 3));
-	return { kind: "bars", level: Math.min(level, 3) as 1 | 2 | 3 };
+	const priority = priorityValue
+		? priorities.find((candidate) => candidate.value === priorityValue)
+		: undefined;
+	if (priorityValue && !priority) return { kind: "unknown" };
+	if (!priority || priority.weight <= 0) return { kind: "unset" };
+	const weights = priorities
+		.map((candidate) => candidate.weight)
+		.filter((weight) => weight > 0);
+	const highest = Math.max(...weights);
+	const lowest = Math.min(...weights);
+	if (highest === lowest) return { kind: "dot", rank: "middle" };
+	if (priority.weight === highest) return { kind: "dot", rank: "top" };
+	if (priority.weight === lowest) return { kind: "dot", rank: "bottom" };
+	return { kind: "dot", rank: "middle" };
 }
 
 export function renderPriorityGlyph(host: HTMLElement, state: PriorityGlyphState): void {
 	const root = glyphRoot(host);
 	const doc = host.ownerDocument;
 	host.dataset.tnGlyph = state.kind;
+	if (state.kind === "dot") host.dataset.tnGlyphRank = state.rank;
+	else delete host.dataset.tnGlyphRank;
 	if (state.kind === "unknown") {
 		setIcon(host, "badge-help");
 		return;
 	}
 
-	if (state.kind === "top") {
-		root.appendChild(
-			svgNode(doc, "rect", {
-				x: 1.5,
-				y: 1.5,
-				width: 13,
-				height: 13,
-				rx: 3,
-				fill: "currentColor",
-			})
-		);
-		root.appendChild(
-			svgNode(doc, "path", {
-				d: "M8 4.5v4.2M8 11.2v.3",
-				stroke: "var(--background-primary)",
-				"stroke-width": 1.8,
-				"stroke-linecap": "round",
-			})
-		);
-		return;
-	}
-
 	if (state.kind === "unset") {
-		for (const x of [2.5, 6.75, 11]) {
-			root.appendChild(
-				svgNode(doc, "rect", {
-					x,
-					y: 7.25,
-					width: 2.5,
-					height: 1.5,
-					rx: 0.75,
-					fill: "currentColor",
-				})
-			);
-		}
+		root.appendChild(
+			svgNode(doc, "circle", { cx: 8, cy: 8, r: 3.5, stroke: "currentColor", "stroke-width": 1.25 })
+		);
 		return;
 	}
 
-	[
-		{ x: 2, y: 9, height: 5 },
-		{ x: 6.5, y: 5.5, height: 8.5 },
-		{ x: 11, y: 2, height: 12 },
-	].forEach((bar, index) => {
+	const radius = { top: 3.25, middle: 4, bottom: 2.75 }[state.rank];
+	root.appendChild(svgNode(doc, "circle", { cx: 8, cy: 8, r: radius, fill: "currentColor" }));
+	if (state.rank === "top") {
 		root.appendChild(
-			svgNode(doc, "rect", {
-				...bar,
-				width: 3,
-				rx: 1,
-				fill: "currentColor",
-				opacity: index < state.level ? 1 : 0.25,
-			})
+			svgNode(doc, "circle", { cx: 8, cy: 8, r: 6, stroke: "currentColor", "stroke-width": 1.25 })
 		);
-	});
+	}
 }
 
 /** Lucide icon by name, for the rare spot that wants one inside a kit part. */

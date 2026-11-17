@@ -24,6 +24,7 @@ import { TaskInfo } from "../../../src/types";
 import { createI18nService } from "../../../src/i18n";
 import { TaskFactory } from "../../helpers/mock-factories";
 import { MockObsidian, TFile, Menu, Notice, Modal, App } from "../../helpers/obsidian-runtime";
+import * as obsidian from "obsidian";
 import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
 
 jest.mock("../../../src/ui/taskPropertyPickers", () => ({
@@ -258,6 +259,23 @@ describe("TaskCard Component", () => {
 				}
 			}
 		);
+
+		it.each([
+			[true, 0],
+			[false, 1],
+		])("shows the recurrence property only when no indicator marks it (indicators: %s)", (showSecondaryBadges, expected) => {
+			const task = TaskFactory.createTask({ title: "Weekly review", recurrence: "FREQ=WEEKLY" });
+			mockPlugin.fieldMapper.isPropertyForField = jest.fn(
+				(propertyId: string, field: string) => propertyId === field
+			);
+			mockPlugin.fieldMapper.lookupMappingKey = jest.fn((propertyId: string) => propertyId);
+			// The mock icon adds no element, and a property that renders nothing is dropped.
+			jest.spyOn(obsidian, "setIcon").mockImplementation((element: HTMLElement) => {
+				element.createSpan({ cls: "svg-icon" });
+			});
+			const card = createTaskCard(task, mockPlugin, ["recurrence"], { showSecondaryBadges });
+			expect(card.querySelectorAll(".task-card__metadata-property--recurrence")).toHaveLength(expected);
+		});
 
 		it("should create basic task card", () => {
 			const task = TaskFactory.createTask({
@@ -943,7 +961,7 @@ describe("TaskCard Component", () => {
 			});
 			const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
 
-			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("bars");
+			expect((cardWithPriority.querySelector(".task-card__priority-dot") as HTMLElement).dataset.tnGlyph).toBe("dot");
 
 			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
 				(priority) => ({
@@ -963,7 +981,7 @@ describe("TaskCard Component", () => {
 			expect(priorityDot.getAttribute("data-icon")).toBe("alert-circle");
 		});
 
-		it("should return a custom priority icon to rank bars when the icon is cleared", () => {
+		it("should return a custom priority icon to the default dot when the icon is cleared", () => {
 			(mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation(
 				(priority) => ({
 					value: priority,
@@ -991,7 +1009,7 @@ describe("TaskCard Component", () => {
 			const priorityDot = cardWithPriority.querySelector(
 				".task-card__priority-dot"
 			) as HTMLElement;
-			expect(priorityDot.dataset.tnGlyph).toBe("bars");
+			expect(priorityDot.dataset.tnGlyph).toBe("dot");
 			expect(priorityDot.querySelector("svg.tn-glyph")).not.toBeNull();
 		});
 
@@ -1467,7 +1485,7 @@ describe("TaskCard Component", () => {
       });
       const cardWithPriority = createTaskCard(taskWithPriority, mockPlugin);
 
-      expect(cardWithPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('bars');
+      expect(cardWithPriority.querySelector('.task-card__priority-dot')?.getAttribute('data-tn-glyph')).toBe('dot');
 
       (mockPlugin.priorityManager.getPriorityConfig as jest.Mock).mockImplementation((priority) => ({
         value: priority,
@@ -1505,7 +1523,7 @@ describe("TaskCard Component", () => {
       updateTaskCard(cardWithPriority, taskWithPriority, mockPlugin);
 
       const priorityDot = cardWithPriority.querySelector('.task-card__priority-dot') as HTMLElement;
-      expect(priorityDot.getAttribute('data-tn-glyph')).toBe('bars');
+      expect(priorityDot.getAttribute('data-tn-glyph')).toBe('dot');
       expect(priorityDot.getAttribute('data-icon')).toBeNull();
     });
 

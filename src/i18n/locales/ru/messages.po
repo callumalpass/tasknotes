@@ -1113,11 +1113,6 @@ msgctxt "settings.tasknotesApp.step2.name"
 msgid "3. Add this vault"
 msgstr "3. Добавить это хранилище"
 
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimatePlaceholder"
-msgid "30"
-msgstr "30"
-
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.timeSettings.timeSlotDuration.options.thirtyMinutes"
 msgid "30 minutes"
@@ -1315,10 +1310,20 @@ msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "Добавить подписку на календарь"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.contextsPlaceholder"
+msgid "Add contexts"
+msgstr "Добавить контексты"
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionPlaceholder"
 msgid "Add details about this event..."
 msgstr "Добавить подробности о событии..."
+
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimatePlaceholder"
+msgid "Add estimate"
+msgstr "Добавить оценку"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.addFromVaultButton"
@@ -1396,6 +1401,11 @@ msgstr "Добавить подзадачу к текущей заметке"
 msgctxt "contextMenus.task.organization.addSubtasks"
 msgid "Add subtasks…"
 msgstr "Добавить подзадачи…"
+
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "Добавить теги"
 
 #: src/bases/CalendarView.ts
 #: src/modals/taskModalOrganizationFields.ts
@@ -3068,11 +3078,6 @@ msgstr "Контекст"
 msgctxt "ui.filterBar.group.context"
 msgid "Context"
 msgstr "Контекст"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.contextsPlaceholder"
-msgid "context1, context2"
-msgstr "контекст1, контекст2"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.organization.contexts"
@@ -11260,11 +11265,6 @@ msgstr "Тег"
 msgctxt "settings.general.taskIdentification.taskTag.description"
 msgid "Tag that identifies notes as tasks (without #). Existing .base view filters keep their old tag when this changes; update default Base files or edit those filters."
 msgstr "Тег, который идентифицирует заметки как задачи (без #). Существующие фильтры представлений .base сохраняют старый тег после изменения; обновите файлы Base по умолчанию или отредактируйте эти фильтры."
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.tagsPlaceholder"
-msgid "tag1, tag2"
-msgstr "тег1, тег2"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts

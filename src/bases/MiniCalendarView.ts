@@ -19,7 +19,7 @@ import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
 import { readBasesViewConfigValue } from "./basesViewConfig";
 import { ICSEvent, TaskInfo } from "../types";
-import { createTaskGlyphs } from "../ui/taskGlyphs";
+import { createRankedPriorityGlyph, createStatusGlyph } from "../ui/taskGlyphs";
 import {
 	formatDateLabel,
 	formatDateForStorage,
@@ -405,9 +405,14 @@ export class MiniCalendarView extends BasesViewBase {
 					}
 				}
 
+				// The frontmatter text says whether the date has a time; Bases turns a plain date into
+				// midnight. A property id without a prefix is a note property, like "note.".
 				const nativeDate = this.dataAdapter.getPropertyValue(item, this.dateProperty);
-				const sourceDate = this.dateProperty.startsWith("note.")
-					? this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.[this.dateProperty.slice(5)] ?? nativeDate
+				const frontmatterKey = this.dateProperty.startsWith("note.")
+					? this.dateProperty.slice(5)
+					: /^(file|formula)\./.test(this.dateProperty) ? null : this.dateProperty;
+				const sourceDate = frontmatterKey
+					? this.plugin.app.metadataCache.getFileCache(file)?.frontmatter?.[frontmatterKey] ?? nativeDate
 					: nativeDate;
 				// Create note entry
 				const noteEntry: NoteEntry = {
@@ -1746,9 +1751,13 @@ class NoteSelectionModal extends FuzzySuggestModal<NoteEntry> {
 
 function renderCalendarEntry(host: HTMLElement, note: NoteEntry, plugin: TaskNotesPlugin, className = "note-selector-modal__suggestion"): void {
 	const container = host.createDiv({ cls: `${className} tn-picker__row` });
-	const title = container.createDiv({ cls: "note-selector-modal__title tn-picker__label", text: note.title });
+	const title = container.createDiv({ cls: "note-selector-modal__title tn-picker__label" });
 	const task = note.kind === "note" ? plugin.cacheManager.getCachedTaskInfoSync(note.path) : null;
-	if (task) title.prepend(createTaskGlyphs(host.ownerDocument, task, plugin));
+	// Like a task row: status before the title, priority after it, and no mark for a task without one.
+	if (task) title.append(createStatusGlyph(host.ownerDocument, task, plugin));
+	title.createSpan({ cls: "tn-calendar-entry-title", text: note.title });
+	const priority = task ? createRankedPriorityGlyph(host.ownerDocument, task, plugin) : null;
+	if (priority) title.append(priority);
 	if (className === "mini-calendar-view__entry-content" && calendarEntryMinute(note) >= 0) {
 		container.createSpan({ cls: "mini-calendar-view__entry-time", text: formatTime(new Date(2000, 0, 1, 0, calendarEntryMinute(note)), plugin.settings.calendarViewSettings.timeFormat === "12" ? "12" : "24") });
 	}

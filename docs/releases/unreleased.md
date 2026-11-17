@@ -34,7 +34,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- The **Icon** field for statuses and priorities suggests Lucide icons as you type, with a preview of the chosen icon.
+
 ## Fixed
+
+- In the Task List, a task's tags no longer run together into one tag (for example "taskwork") when the view shows the `file.tags` property, as the default Tasks view does.
+- The mini calendar's day list no longer shows "00:00" for tasks that have a date but no time. This happened when the view's date property had no `note.` prefix, as in the default mini calendar views.
 
 ## Changed
 
@@ -47,5 +52,20 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Text no longer goes below 12px.
   - The search field in TaskNotes views uses Obsidian's form field background.
   - A few remaining fixed shadows now come from the theme.
+- Task rows in lists and boards are tidier:
+  - Priority sits at the end of the title line on every row, so priorities line up down the list. It no longer moves under the status icon on rows that have a date. On very narrow cards (240px or less), priority moves under the status icon and the dates use the full width of the card.
+  - The default priority mark is a dot in the priority's colour, instead of signal bars. Priorities with a custom icon still show that icon. So that priorities differ by more than colour, the highest-weighted priority has a ring around its dot and the lowest-weighted one has a smaller dot.
+  - A faint dot separates the items on a task's second line: dates, tags, contexts, projects and any other properties you show. Tags no longer run into the date before them.
+  - With a mouse, reminder, recurrence, dependency and other indicator icons sit on the title line next to the priority, as other indicators already did. The second line keeps its full width for dates and properties. On touch screens these icons stay on the second line.
+  - On mobile and other touch screens, task rows are shorter (about 72px instead of 96px for a row with a date). The status, priority and menu buttons are 32px, and dates, tags and indicator icons on the second line are 24px. Previously both lines were 40px tall, which left a wide gap between a task's title and its dates. On mobile, the dots between tags and other list items are now evenly spaced.
+  - The in-progress status icon has a smaller fill inside the ring, so it no longer outweighs high-priority rows.
+  - Scheduled dates no longer show a calendar icon in task rows. Due dates keep their flag, so a plain date is the scheduled date.
+  - Rows in the Task List have the same space on both sides of the pane.
+  - A recurring task shows one recurrence icon. Cards that show the recurrence indicator on the title line no longer also show the recurrence property on the second line.
+  - In a task note, the task card's tags are plain text like the rest of the card's second line, as on board cards, instead of coloured tag pills.
+- The mini calendar's day list shows tasks like task rows: the status icon before the title and the priority after it. Tasks without a priority show no priority mark, and long titles end with "…".
+- In calendar month views, timed tasks show the time first and then the title, which can use the rest of the cell. Status and priority icons are no longer shown in month cells.
+- Boards in a note's relationships panel show only the columns that have tasks. Set **Hide empty columns** on the view to change this. New relationships base files set this option for the Subtasks and Blocking boards.
+- In the task dialog, the Contexts, Tags and Time estimate fields show "Add contexts", "Add tags" and "Add estimate" when empty, instead of example values. When the full form is open, the task's projects appear only in the Projects field, not also as a chip in the property row.
 
 ## Security

@@ -63,7 +63,7 @@ describe("calendar task glyphs", () => {
 		decorateCalendarTaskGlyphs(element, task, plugin);
 		expect(element.querySelectorAll(".tn-task-glyphs")).toHaveLength(1);
 		expect(element.querySelector(".tn-task-glyphs__status")?.getAttribute("data-tn-glyph")).toBe("progress");
-		expect(element.querySelector(".tn-task-glyphs__priority")?.getAttribute("data-tn-glyph")).toBe("bars");
+		expect(element.querySelector(".tn-task-glyphs__priority")?.getAttribute("data-tn-glyph")).toBe("dot");
 		expect(element.querySelector(".tnc-item-title")?.textContent).toBe("Calendar task");
 		expect(element.querySelector(".tnc-item-time")?.textContent).toBe("09:00");
 		expect(element.dataset.status).toBe("active");

@@ -12,10 +12,12 @@ describe("Issue #190: mobile task widget touch targets", () => {
 		const css = readRepoFile("styles/task-card-bem.css");
 		const tokens = readRepoFile("styles/tokens.css");
 		expect(tokens).toContain("--tn-touch-target: 40px");
+		expect(tokens).toContain("--tn-task-control: 32px");
+		expect(tokens).toContain("--tn-task-line-control: var(--tn-control-sm)");
 		const narrow = css.slice(css.indexOf("Stacked card layout at every width"));
-		expect(narrow).toContain("grid-template-rows: auto minmax(var(--tn-touch-target), auto)");
-		expect(narrow).toMatch(/:is\(\.task-card__status-dot, \.task-card__priority-dot, \.task-card__context-menu, \.task-card__drag-handle,[^}]*min-width: var\(--tn-touch-target\);[^}]*min-height: var\(--tn-touch-target\);/s);
-		expect(narrow).toContain('.task-card__badges [role="button"]');
+		expect(narrow).toContain("grid-template-rows: auto minmax(var(--tn-task-line-control), auto)");
+		expect(narrow).toMatch(/:is\(\.task-card__status-dot, \.task-card__priority-dot, \.task-card__context-menu, \.task-card__drag-handle,[^}]*min-width: var\(--tn-task-control\);[^}]*min-height: var\(--tn-task-control\);/s);
+		expect(narrow).toMatch(/:is\(\.task-card__metadata-date, \.task-card__metadata-overflow:not\(\[hidden\]\), \.task-card__badges \[role="button"\]\)\s*\{[^}]*min-height: var\(--tn-task-line-control\);/s);
 		expect(narrow).toMatch(/\.task-card__metadata-date > \.task-card__date-value\s*\{[^}]*white-space:\s*normal;[^}]*overflow:\s*visible;/s);
 		expect(narrow).toContain("max-width: calc((100% - var(--tn-touch-target) - 2 * var(--tn-space-2)) / 2)");
 		expect(narrow).toMatch(/\.task-card__context-menu\s*\{[^}]*opacity:\s*1;/s);

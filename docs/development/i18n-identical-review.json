@@ -165,12 +165,6 @@
         "reason": "Product name"
       },
       {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "M_M2LS",
         "message": "−{duration}",
         "context": "timer subtract duration button",
@@ -579,12 +573,6 @@
         "message": "Tags",
         "context": "modals.task.tagsLabel",
         "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
-      },
-      {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
         "id": "M_M2LS",
@@ -1141,12 +1129,6 @@
         "reason": "Product name"
       },
       {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "M_M2LS",
         "message": "−{duration}",
         "context": "timer subtract duration button",
@@ -1515,12 +1497,6 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "M_M2LS",
         "message": "−{duration}",
         "context": "timer subtract duration button",
@@ -1839,12 +1815,6 @@
         "message": "Microsoft Calendar",
         "context": "services/ICSNoteService: ICSNoteService.findEventById display",
         "reason": "Product name"
-      },
-      {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
         "id": "M_M2LS",
@@ -2267,12 +2237,6 @@
         "message": "Microsoft Calendar",
         "context": "services/ICSNoteService: ICSNoteService.findEventById display",
         "reason": "Product name"
-      },
-      {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
         "id": "M_M2LS",
@@ -2703,12 +2667,6 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "M_M2LS",
         "message": "−{duration}",
         "context": "timer subtract duration button",
@@ -3033,12 +2991,6 @@
         "message": "Microsoft Calendar",
         "context": "services/ICSNoteService: ICSNoteService.findEventById display",
         "reason": "Product name"
-      },
-      {
-        "id": "MM_MAN",
-        "message": "30",
-        "context": "modals.task.timeEstimatePlaceholder",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
         "id": "M_M2LS",

@@ -9420,8 +9420,8 @@
     "context": "modals.task.contextsLabel"
   },
   "modals.task.contextsPlaceholder": {
-    "id": "9DhU0A",
-    "message": "context1, context2",
+    "id": "5Uog9J",
+    "message": "Add contexts",
     "context": "modals.task.contextsPlaceholder"
   },
   "modals.task.tagsLabel": {
@@ -9430,8 +9430,8 @@
     "context": "modals.task.tagsLabel"
   },
   "modals.task.tagsPlaceholder": {
-    "id": "yE2-Wz",
-    "message": "tag1, tag2",
+    "id": "lj_f3z",
+    "message": "Add tags",
     "context": "modals.task.tagsPlaceholder"
   },
   "modals.task.timeEstimateLabel": {
@@ -9440,8 +9440,8 @@
     "context": "modals.task.timeEstimateLabel"
   },
   "modals.task.timeEstimatePlaceholder": {
-    "id": "MM_MAN",
-    "message": "30",
+    "id": "m167w8",
+    "message": "Add estimate",
     "context": "modals.task.timeEstimatePlaceholder"
   },
   "modals.task.unsavedChanges.title": {
