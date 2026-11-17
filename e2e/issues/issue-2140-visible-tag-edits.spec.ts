@@ -64,7 +64,7 @@ for (const scalar of [false, true]) {
       }, path);
       await expect(page.locator('.modal .title-input')).toBeVisible();
       if (await page.locator('.modal .tn-task-modal__details-toggle').getAttribute('aria-expanded') !== 'true') await page.locator('.modal .tn-task-modal__details-toggle').click();
-      const input = page.locator('.modal input[placeholder="tag1, tag2"]');
+      const input = page.locator('.modal input[placeholder="Add tags"]');
       await expect(input).toHaveValue(/task\/context\/onscreen/);
       await input.fill(scalar ? 'task' : 'task, health');
       await page.locator('.modal').getByRole('button', { name: 'Save', exact: true }).click();
