@@ -1,7 +1,7 @@
 import { showToast } from "../ui/kit/toast";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
-import { App, Notice, TFile } from "obsidian";
+import { App, Notice, TAbstractFile, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal, type TaskSubmitOptions } from "./TaskModal";
 import { TaskInfo } from "../types";
@@ -121,6 +121,8 @@ export class TaskCreationModal extends TaskModal {
 	private nlEditorFailed = false;
 	private nlProjectInput = "";
 	private nlProjectItems: TaskModalProjectItem[] = [];
+	/** Projects that came from the default-projects setting, not from the user or the caller. */
+	private defaultProjectItems: TaskModalProjectItem[] = [];
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskCreationOptions = {}) {
 		super(app, plugin);
@@ -350,8 +352,9 @@ export class TaskCreationModal extends TaskModal {
 		if (projectInput === this.nlProjectInput) return;
 		this.nlProjectInput = projectInput;
 
-		const manualItems = this.selectedProjectItems.filter(
-			(item) => !this.nlProjectItems.includes(item)
+		const manualItems = this.withDefaultProjectFallback(
+			this.selectedProjectItems.filter((item) => !this.nlProjectItems.includes(item)),
+			projects.some((project) => project.trim().length > 0)
 		);
 		this.selectedProjectItems = manualItems;
 		this.addProjectsFromStrings(projects, true);
@@ -359,6 +362,44 @@ export class TaskCreationModal extends TaskModal {
 			(item) => !manualItems.includes(item)
 		);
 		this.renderProjectsList();
+	}
+
+	private usesDefaultProjectFallback(): boolean {
+		return (
+			this.plugin.settings.taskCreationDefaults.defaultProjectsOnlyWhenEmpty === true &&
+			this.defaultProjectItems.length > 0
+		);
+	}
+
+	/**
+	 * With "Use default projects only when no project is specified", projects typed in the
+	 * natural language field stand in for the default projects. The defaults come back when
+	 * those projects are deleted from the text, unless the user has removed them or picked a
+	 * project themselves.
+	 */
+	private withDefaultProjectFallback(
+		items: TaskModalProjectItem[],
+		hasNaturalLanguageProjects: boolean
+	): TaskModalProjectItem[] {
+		if (!this.usesDefaultProjectFallback()) return items;
+		const withoutDefaults = items.filter((item) => !this.defaultProjectItems.includes(item));
+		if (hasNaturalLanguageProjects) return withoutDefaults;
+		return [...this.defaultProjectItems, ...withoutDefaults];
+	}
+
+	protected addProject(file: TAbstractFile): void {
+		if (file instanceof TFile && this.usesDefaultProjectFallback()) {
+			this.selectedProjectItems = this.selectedProjectItems.filter(
+				(item) => !this.defaultProjectItems.includes(item)
+			);
+			this.defaultProjectItems = [];
+		}
+		super.addProject(file);
+	}
+
+	protected removeProject(item: TaskModalProjectItem): void {
+		this.defaultProjectItems = this.defaultProjectItems.filter((d) => d !== item);
+		super.removeProject(item);
 	}
 
 	async initializeFormData(): Promise<void> {
@@ -387,6 +428,12 @@ export class TaskCreationModal extends TaskModal {
 		if (formState.projectStrings.length > 0) {
 			this.initializeProjectsFromStrings(formState.projectStrings, true);
 		}
+		// Only projects from the setting count as defaults. Projects supplied by a Bases view,
+		// a parent task or another caller are intentional, even if they name a default project.
+		this.defaultProjectItems =
+			this.options.prePopulatedValues?.projects === undefined
+				? [...this.selectedProjectItems]
+				: [];
 
 		this.attachmentEntries = createLinkedAttachmentEntries(
 			this.options.prePopulatedValues?.attachments,

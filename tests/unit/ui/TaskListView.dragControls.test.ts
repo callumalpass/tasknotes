@@ -290,9 +290,9 @@ describe("TaskListView drag controls", () => {
 		expect(items.querySelectorAll(".task-list-view__drag-source")).toHaveLength(2);
 		const preview = document.body.querySelector<HTMLElement>(".kanban-view__floating-drag-preview");
 		expect(preview?.dataset.dragCount).toBe("2");
-		expect(preview?.querySelector(".task-card__main-row")).not.toBeNull();
-		expect(preview?.querySelector(".task-card")?.className).toBe("task-card");
-		expect(preview?.querySelector(".task-card__drag-handle")).toBeNull();
+		// List rows travel as a compact title chip, not a cloned row.
+		expect(preview?.querySelector(".task-card")).toBeNull();
+		expect(preview?.querySelector(".kanban-view__floating-drag-preview-title")?.textContent).toBeTruthy();
 		expect(items.querySelectorAll(".task-card__drag-handle")).toHaveLength(3);
 		expect(preview?.querySelector("[data-task-path]")).toBeNull();
 		expect(state.getVisibleDropCards().map((card: HTMLElement) => card.dataset.taskPath)).toEqual([paths[2]]);

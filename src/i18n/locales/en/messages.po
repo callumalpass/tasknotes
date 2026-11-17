@@ -1224,8 +1224,8 @@ msgstr "Add as subtask"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "Add as subtask of {parent}. Other projects stay unchanged."
+msgid "Add as subtask of {parent}"
+msgstr "Add as subtask of {parent}"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -8972,6 +8972,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "Projects"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty.description"
+msgid "Projects you choose or type when creating a task replace the default projects."
+msgstr "Projects you choose or type when creating a task replace the default projects."
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
@@ -12937,6 +12942,11 @@ msgstr "Use active note for new tasks:"
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "Use body template"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "Use default projects only when no project is specified"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.status.notAdded"

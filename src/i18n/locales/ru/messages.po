@@ -1226,8 +1226,8 @@ msgstr "Добавить как подзадачу"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "Добавить в подзадачи задачи «{parent}». Другие проекты не изменятся."
+msgid "Add as subtask of {parent}"
+msgstr "Добавить в подзадачи задачи «{parent}»"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -8972,6 +8972,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "Проекты"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty.description"
+msgid "Projects you choose or type when creating a task replace the default projects."
+msgstr "Проекты, которые вы выбираете или вводите при создании задачи, заменяют проекты по умолчанию."
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
@@ -12937,6 +12942,11 @@ msgstr "Использовать активную заметку для новы
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "Использовать шаблон тела"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "Использовать проекты по умолчанию, только если проект не указан"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.status.notAdded"

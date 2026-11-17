@@ -1223,8 +1223,8 @@ msgstr "添加为子任务"
 
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentPreview"
-msgid "Add as subtask of {parent}. Other projects stay unchanged."
-msgstr "添加为 {parent} 的子任务。其他项目保持不变。"
+msgid "Add as subtask of {parent}"
+msgstr "添加为 {parent} 的子任务"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -8969,6 +8969,11 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Projects"
 msgstr "项目"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty.description"
+msgid "Projects you choose or type when creating a task replace the default projects."
+msgstr "创建任务时选择或输入的项目将替代默认项目。"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
@@ -12934,6 +12939,11 @@ msgstr "新任务使用当前笔记："
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "使用正文模板"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "仅在未指定项目时使用默认项目"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.status.notAdded"

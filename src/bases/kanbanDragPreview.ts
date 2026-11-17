@@ -10,6 +10,7 @@ export class KanbanDragPreview {
 	private floatingDragPreviewPendingX = 0;
 	private floatingDragPreviewPendingY = 0;
 	private invalidReason: string | null = null;
+	private compact = false;
 	show(
 		sourceElement: HTMLElement,
 		event: Pick<DragEvent, "clientX" | "clientY">,
@@ -33,11 +34,15 @@ export class KanbanDragPreview {
 
 		preview.classList.add("tasknotes-plugin", "kanban-view__floating-drag-preview");
 		if (className) preview.classList.add(className);
-		const sourceCard = sourceElement.matches(".task-card")
-			? sourceElement
-			: sourceElement.querySelector(".task-card");
+		// List rows travel as a compact title chip so the rows under the pointer stay readable.
+		const compact = className === "task-list-view__touch-ghost";
+		const sourceCard = compact
+			? null
+			: sourceElement.matches(".task-card")
+				? sourceElement
+				: sourceElement.querySelector(".task-card");
 		if (sourceCard) {
-			const wrapper = preview.createDiv({ cls: className === "task-list-view__touch-ghost" ? "tn-tasknotesTaskList task-list-view__drag-row" : "kanban-view__card-wrapper" });
+			const wrapper = preview.createDiv({ cls: "kanban-view__card-wrapper" });
 			const card = sourceCard.cloneNode(true) as HTMLElement;
 			card.classList.remove(
 				"task-card--selected", "task-card--selected-primary", "tn-task-focused", "tn-task-arrived",
@@ -63,16 +68,17 @@ export class KanbanDragPreview {
 		if (count > 1) {
 			preview.dataset.dragCount = `${count}`;
 		}
-		this.floatingDragPreviewWidth = className === "task-list-view__touch-ghost"
-			? Math.min(rect.width, (doc.defaultView?.innerWidth ?? rect.width) - 16)
+		this.compact = compact;
+		this.floatingDragPreviewWidth = compact
+			? 0
 			: Math.min(Math.max(rect.width, 180), 320);
 		preview.setCssProps({
-			"--tn-kanban-drag-preview-width": `${this.floatingDragPreviewWidth}px`,
+			"--tn-kanban-drag-preview-width": compact ? "auto" : `${this.floatingDragPreviewWidth}px`,
 			"--tn-kanban-drag-preview-transform": "translate3d(-9999px, -9999px, 0)",
 		});
 
 		body.appendChild(preview);
-		this.floatingDragPreviewHeight = preview.getBoundingClientRect().height;
+		this.measure(preview);
 		this.floatingDragPreviewEl = preview;
 		this.floatingDragPreviewDocument = doc;
 
@@ -98,7 +104,33 @@ export class KanbanDragPreview {
 		} else {
 			feedback?.remove();
 		}
-		this.floatingDragPreviewHeight = preview.getBoundingClientRect().height;
+		this.measure(preview);
+	}
+
+	/**
+	 * A second line under the title describing what a drop here would do.
+	 * Pass null to remove it.
+	 */
+	setDetail(text: string | null, className: string): void {
+		const preview = this.floatingDragPreviewEl;
+		if (!preview) return;
+		let detail = preview.querySelector<HTMLElement>(`:scope > .kanban-view__drag-detail`);
+		if (text === null) {
+			if (!detail) return;
+			detail.remove();
+		} else {
+			detail ??= preview.createDiv({ cls: `kanban-view__drag-detail ${className}` });
+			if (detail.textContent === text) return;
+			detail.textContent = text;
+		}
+		preview.classList.toggle("kanban-view__floating-drag-preview--has-detail", text !== null);
+		this.measure(preview);
+	}
+
+	private measure(preview: HTMLElement): void {
+		const rect = preview.getBoundingClientRect();
+		this.floatingDragPreviewHeight = rect.height;
+		if (this.compact) this.floatingDragPreviewWidth = rect.width;
 	}
 
 	move(clientX: number, clientY: number): void {
@@ -176,6 +208,7 @@ export class KanbanDragPreview {
 		this.floatingDragPreviewMoveHandler = null;
 		this.floatingDragPreviewWidth = 280;
 		this.floatingDragPreviewHeight = 40;
+		this.compact = false;
 		this.floatingDragPreviewPendingX = 0;
 		this.floatingDragPreviewPendingY = 0;
 	}
