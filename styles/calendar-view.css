@@ -93,6 +93,11 @@
     .tasknotes-plugin .mini-calendar-bases-view {
         padding-inline: 0;
     }
+
+    /* The grid uses the full width; the day list keeps a gutter */
+    .tasknotes-plugin .mini-calendar-view__selected-day {
+        padding-inline: var(--tn-space-2);
+    }
 }
 
 .tasknotes-plugin .mini-calendar-view__selected-day {

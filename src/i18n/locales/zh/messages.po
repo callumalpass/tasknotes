@@ -642,6 +642,11 @@ msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, other {{minutes, number}分钟前}}"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.duration"
+msgid "{minutes} min"
+msgstr "{minutes}分钟"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
 msgid "{minutes}m total"
@@ -686,6 +691,11 @@ msgstr "{path} 存在不一致：{issues}。重试前请检查 implements.fields
 msgctxt "integration.isinconsistent"
 msgid "{path} is inconsistent: {value2}"
 msgstr "{path} 存在不一致：{value2}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases completion percentage"
+msgid "{percent, number}%"
+msgstr "{percent, number}%"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -1698,6 +1708,11 @@ msgstr "附件"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "附件"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Attempted"
+msgstr "已尝试"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.authHelp"
@@ -2788,6 +2803,11 @@ msgctxt "modals.actionPalette.completeOccurrence"
 msgid "Complete this occurrence"
 msgstr "完成此次重复"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completed"
+msgstr "已完成"
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.completed"
 msgid "Completed"
@@ -2833,6 +2853,11 @@ msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "将今天记为完成日期"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completion"
+msgstr "完成情况"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
@@ -2862,11 +2887,6 @@ msgstr "配置冲突"
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
 msgstr "配置为每个项目建议显示最多3行信息。"
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.dataStorage.description"
-msgid "Configure where Pomodoro session data is stored and how it''s managed."
-msgstr "配置番茄钟会话数据的存储位置和管理方式。"
 
 #: src/modals/ConfirmationModal.ts
 msgctxt "modals/ConfirmationModal: ConfirmationModal confirmText"
@@ -3636,6 +3656,11 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "每日"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Daily"
+msgstr "每日"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.options.daily"
 msgid "Daily"
@@ -3673,6 +3698,11 @@ msgctxt "notices.commands.dailyNotesDisabled"
 msgid "Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 msgstr "核心插件“每日笔记”未启用。请在“设置 > 核心插件”中启用。"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.dataStorage.description"
+msgid "Daily notes keeps each session in that day''s note. When a daily note can''t be written, the session is kept in plugin data."
+msgstr "“每日笔记”会将每个会话保存在当天的笔记中。如果无法写入每日笔记，会话将保存在插件数据中。"
+
 #: src/modals/StorageLocationConfirmationModal.ts
 msgctxt "modals.storageLocation.bullets.dailyNotesRequired"
 msgid "Daily notes must be enabled in the core daily notes plugin or periodic notes"
@@ -3700,6 +3730,11 @@ msgstr "数据将存储在你的每日笔记前置元数据中"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "components.dateContextMenu.dateLabel"
+msgid "Date"
+msgstr "日期"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
 msgid "Date"
 msgstr "日期"
 
@@ -3996,6 +4031,11 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "删除"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmButton"
+msgid "Delete"
+msgstr "删除"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirm"
 msgid "Delete \"{title}\" from {provider}?"
@@ -4034,6 +4074,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "删除任务时删除事件"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteAria"
+msgid "Delete Pomodoro session"
+msgstr "删除番茄钟会话"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmTitle"
+msgid "Delete Pomodoro session?"
+msgstr "删除番茄钟会话？"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -4043,6 +4093,11 @@ msgstr "删除属性"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "删除提醒"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.delete"
+msgid "Delete session"
+msgstr "删除会话"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -5905,6 +5960,16 @@ msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "专注"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus minutes"
+msgstr "专注时长（分钟）"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus time"
+msgstr "专注时间"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderLabel"
 msgid "Folder"
@@ -6461,6 +6526,16 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "界面语言"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Interrupted"
+msgstr "已中断"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.interrupted"
+msgid "Interrupted"
+msgstr "已中断"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
@@ -6939,6 +7014,11 @@ msgctxt "services.pomodoro.notices.longBreakStarted"
 msgid "Long break started"
 msgstr "长休息已开始"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Long breaks"
+msgstr "长休息"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
@@ -7069,6 +7149,11 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "迁移番茄钟数据？"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateUnit"
+msgid "min"
+msgstr "分钟"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7162,6 +7247,11 @@ msgctxt "calendar view name"
 msgid "Month"
 msgstr "月"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Month"
+msgstr "月"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
 msgid "Month grid"
@@ -7175,6 +7265,11 @@ msgstr "月视图"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
+msgid "Monthly"
+msgstr "每月"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
 msgid "Monthly"
 msgstr "每月"
 
@@ -7745,6 +7840,11 @@ msgstr "无计划日期"
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "此任务没有计划日期"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.empty"
+msgid "No sessions recorded yet"
+msgstr "尚未记录会话"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction picker"
@@ -8334,6 +8434,11 @@ msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "打开或创建重复实例笔记"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openPomodoroStats"
+msgid "Open Pomodoro statistics"
+msgstr "打开番茄钟统计"
+
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openPomodoroView"
@@ -8790,6 +8895,16 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "番茄钟会话数据将存储在每日笔记前置元数据中，而不是插件数据文件中。"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteSuccess"
+msgid "Pomodoro session deleted"
+msgstr "番茄钟会话已删除"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteNotFound"
+msgid "Pomodoro session was not found"
+msgstr "未找到番茄钟会话"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -8806,6 +8921,7 @@ msgid "Pomodoro started for {title}"
 msgstr "已为 {title} 启动番茄钟"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "番茄钟统计 Base"
@@ -9088,6 +9204,11 @@ msgstr "准备好开始下一个番茄钟了吗？"
 msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "准备开始"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.heading"
+msgid "Recent sessions"
+msgstr "最近的会话"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
@@ -10077,6 +10198,11 @@ msgstr "短休息时长"
 msgctxt "services.pomodoro.notices.shortBreakStarted"
 msgid "Short break started"
 msgstr "短休息已开始"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Short breaks"
+msgstr "短休息"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11930,6 +12056,11 @@ msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "从 Obsidian 机密存储中移除客户端 ID 和客户端密钥。"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmMessage"
+msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
+msgstr "此操作会从番茄钟历史记录中删除该会话，但不会更改现有的任务时间记录。"
+
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
 msgid "This task is an occurrence of a recurring task"
@@ -12060,6 +12191,11 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "已为 {taskTitle} 创建时间记录（{duration} 分钟）"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateLabel"
+msgid "Time estimate"
+msgstr "预估时长"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.timeEstimate"
 msgid "Time estimate"
@@ -12074,11 +12210,6 @@ msgstr "预估时长"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Time Estimate"
 msgstr "预估时长"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimateLabel"
-msgid "Time estimate (minutes)"
-msgstr "预估时长（分钟）"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"

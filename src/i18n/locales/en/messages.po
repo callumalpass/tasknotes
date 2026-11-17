@@ -642,6 +642,11 @@ msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.duration"
+msgid "{minutes} min"
+msgstr "{minutes} min"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
 msgid "{minutes}m total"
@@ -686,6 +691,11 @@ msgstr "{path} is inconsistent: {issues}. Review its implements.fields and bindi
 msgctxt "integration.isinconsistent"
 msgid "{path} is inconsistent: {value2}"
 msgstr "{path} is inconsistent: {value2}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases completion percentage"
+msgid "{percent, number}%"
+msgstr "{percent, number}%"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -1699,6 +1709,11 @@ msgstr "Attachments"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "Attachments"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Attempted"
+msgstr "Attempted"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.authHelp"
@@ -2789,6 +2804,11 @@ msgctxt "modals.actionPalette.completeOccurrence"
 msgid "Complete this occurrence"
 msgstr "Complete this occurrence"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completed"
+msgstr "Completed"
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.completed"
 msgid "Completed"
@@ -2834,6 +2854,11 @@ msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "Completed today"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completion"
+msgstr "Completion"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
@@ -2863,11 +2888,6 @@ msgstr "Configuration conflict"
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
 msgstr "Configure up to 3 lines of information to show for each project suggestion."
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.dataStorage.description"
-msgid "Configure where Pomodoro session data is stored and how it''s managed."
-msgstr "Configure where Pomodoro session data is stored and how it''s managed."
 
 #: src/modals/ConfirmationModal.ts
 msgctxt "modals/ConfirmationModal: ConfirmationModal confirmText"
@@ -3637,6 +3657,11 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "Daily"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Daily"
+msgstr "Daily"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.options.daily"
 msgid "Daily"
@@ -3674,6 +3699,11 @@ msgctxt "notices.commands.dailyNotesDisabled"
 msgid "Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 msgstr "Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.dataStorage.description"
+msgid "Daily notes keeps each session in that day''s note. When a daily note can''t be written, the session is kept in plugin data."
+msgstr "Daily notes keeps each session in that day''s note. When a daily note can''t be written, the session is kept in plugin data."
+
 #: src/modals/StorageLocationConfirmationModal.ts
 msgctxt "modals.storageLocation.bullets.dailyNotesRequired"
 msgid "Daily notes must be enabled in the core daily notes plugin or periodic notes"
@@ -3701,6 +3731,11 @@ msgstr "Data will be stored in your daily notes frontmatter"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "components.dateContextMenu.dateLabel"
+msgid "Date"
+msgstr "Date"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
 msgid "Date"
 msgstr "Date"
 
@@ -3997,6 +4032,11 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmButton"
+msgid "Delete"
+msgstr "Delete"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirm"
 msgid "Delete \"{title}\" from {provider}?"
@@ -4035,6 +4075,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "Delete event on task delete"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteAria"
+msgid "Delete Pomodoro session"
+msgstr "Delete Pomodoro session"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmTitle"
+msgid "Delete Pomodoro session?"
+msgstr "Delete Pomodoro session?"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -4044,6 +4094,11 @@ msgstr "Delete property"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "Delete reminder"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.delete"
+msgid "Delete session"
+msgstr "Delete session"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -5906,6 +5961,16 @@ msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "Focus"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus minutes"
+msgstr "Focus minutes"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus time"
+msgstr "Focus time"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderLabel"
 msgid "Folder"
@@ -6464,6 +6529,16 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "Interface language"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Interrupted"
+msgstr "Interrupted"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.interrupted"
+msgid "Interrupted"
+msgstr "Interrupted"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
@@ -6942,6 +7017,11 @@ msgctxt "services.pomodoro.notices.longBreakStarted"
 msgid "Long break started"
 msgstr "Long break started"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Long breaks"
+msgstr "Long breaks"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
@@ -7072,6 +7152,11 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "Migrate Pomodoro data?"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateUnit"
+msgid "min"
+msgstr "min"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7165,6 +7250,11 @@ msgctxt "calendar view name"
 msgid "Month"
 msgstr "Month"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Month"
+msgstr "Month"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
 msgid "Month grid"
@@ -7178,6 +7268,11 @@ msgstr "Month view"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
+msgid "Monthly"
+msgstr "Monthly"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
 msgid "Monthly"
 msgstr "Monthly"
 
@@ -7748,6 +7843,11 @@ msgstr "No scheduled date"
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "No scheduled date on this task"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.empty"
+msgid "No sessions recorded yet"
+msgstr "No sessions recorded yet"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction picker"
@@ -8337,6 +8437,11 @@ msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "Open or create occurrence note"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openPomodoroStats"
+msgid "Open Pomodoro statistics"
+msgstr "Open Pomodoro statistics"
+
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openPomodoroView"
@@ -8793,6 +8898,16 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteSuccess"
+msgid "Pomodoro session deleted"
+msgstr "Pomodoro session deleted"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteNotFound"
+msgid "Pomodoro session was not found"
+msgstr "Pomodoro session was not found"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -8809,6 +8924,7 @@ msgid "Pomodoro started for {title}"
 msgstr "Pomodoro started for {title}"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "Pomodoro statistics base"
@@ -9091,6 +9207,11 @@ msgstr "Ready for the next pomodoro?"
 msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "Ready to start"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.heading"
+msgid "Recent sessions"
+msgstr "Recent sessions"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
@@ -10080,6 +10201,11 @@ msgstr "Short break duration"
 msgctxt "services.pomodoro.notices.shortBreakStarted"
 msgid "Short break started"
 msgstr "Short break started"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Short breaks"
+msgstr "Short breaks"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11933,6 +12059,11 @@ msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "This removes the saved client ID and client secret from Obsidian secret storage."
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmMessage"
+msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
+msgstr "This removes the session from Pomodoro history. Existing task time entries are not changed."
+
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
 msgid "This task is an occurrence of a recurring task"
@@ -12063,6 +12194,11 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "Time entry created for {taskTitle} ({duration} minutes)"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateLabel"
+msgid "Time estimate"
+msgstr "Time estimate"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.timeEstimate"
 msgid "Time estimate"
@@ -12077,11 +12213,6 @@ msgstr "Time estimate"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Time Estimate"
 msgstr "Time Estimate"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimateLabel"
-msgid "Time estimate (minutes)"
-msgstr "Time estimate (minutes)"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"

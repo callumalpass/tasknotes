@@ -69,7 +69,7 @@ Values saved for these settings stay in `data.json`, so devices still on 4.x kee
 - **Calendar.** The Calendar view uses TaskNotes' own calendar engine instead of FullCalendar. Existing calendar settings in `.base` files keep working.
 - **Task dialogs.** The create and edit dialogs share one layout. The title is a Markdown editor, and **More fields** shows the less common fields.
 - **Natural language input.** Tags, contexts, projects and custom fields are only recognized at the start of the input or after a space, so email addresses and URLs stay intact.
-- **Statistics.** The Statistics and Pomodoro statistics dashboards have been removed. The Pomodoro timer, time tracking and recorded history are kept. See [Time Management](features/time-management.md).
+- **Statistics.** The Statistics and Pomodoro statistics dashboards have been removed. The Pomodoro timer, time tracking and recorded history are kept. **Open Pomodoro statistics** now opens a generated Base, `TaskNotes/Views/pomodoro-stats.base`, which totals sessions stored in daily notes. See [Time Management](features/time-management.md#pomodoro-statistics-base).
 - **Start Here note.** TaskNotes no longer creates a Start Here note on first install. Open it with the **Open the Start Here guide** command.
 - **Kanban swimlanes** can be collapsed from their label. Empty swimlanes start collapsed.
 - **Identifying tag.** New vaults hide the identifying task tag on task cards by default. Existing vaults keep their current setting.

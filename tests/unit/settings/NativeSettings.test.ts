@@ -79,7 +79,6 @@ describe("Native settings navigation and search", () => {
 		const keys = entries.flatMap(item => "control" in item && item.control ? [item.control.key] : []);
 		for (const retired of [
 			"viewsButtonAlignment",
-			"commandFileMapping.pomodoro-stats-base",
 			"disableNoteIndexing",
 			"projectAutosuggest.enableFuzzy",
 			"calendarViewSettings.defaultShowDueWhenScheduled",

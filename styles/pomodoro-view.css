@@ -503,6 +503,88 @@
     margin: 0;
 }
 
+/* Recent sessions: collapsed under the count, with a delete action per session */
+.tasknotes-plugin .pomodoro-view__recent {
+    margin-top: var(--tn-space-2);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-summary {
+    cursor: var(--cursor);
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
+    text-align: center;
+    list-style-position: inside;
+}
+
+.tasknotes-plugin .pomodoro-view__recent-summary:focus-visible {
+    outline: 2px solid var(--background-modifier-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--tn-radius-sm);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--tn-space-1);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-item {
+    display: flex;
+    align-items: center;
+    gap: var(--tn-space-1);
+    min-height: 28px;
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-when,
+.tasknotes-plugin .pomodoro-view__recent-duration {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.tasknotes-plugin .pomodoro-view__recent-duration {
+    min-width: 6ch;
+    text-align: end;
+}
+
+.tasknotes-plugin .pomodoro-view__recent-task {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--tn-text-normal);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-status {
+    flex: none;
+    color: var(--text-warning);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-delete {
+    flex: none;
+    margin-inline-start: auto;
+    padding: var(--size-2-1);
+    --icon-size: var(--icon-xs);
+}
+
+.tasknotes-plugin .pomodoro-view__recent-empty {
+    font-size: var(--tn-type-xs);
+    color: var(--tn-text-muted);
+    text-align: center;
+}
+
+@media (hover: hover) {
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-view__recent-delete {
+        opacity: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .pomodoro-view__recent-item:is(:hover, :focus-within) .pomodoro-view__recent-delete {
+        opacity: 1;
+    }
+}
+
 /* ================================================
    RESPONSIVE DESIGN
    ================================================ */

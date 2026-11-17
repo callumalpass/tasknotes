@@ -395,7 +395,7 @@ export function featuresDefinitions(ctx: SettingsContext): SettingDefinitionGrou
 				),
 				ctx.dropdown("pomodoroStorageLocation", {
 					name: translate(msg({ message: "Pomodoro data storage", context: "settings.features.dataStorage.name" })),
-					desc: translate(msg({ message: "Configure where Pomodoro session data is stored and how it''s managed.", context: "settings.features.dataStorage.description" })),
+					desc: translate(msg({ message: "Daily notes keeps each session in that day''s note. When a daily note can''t be written, the session is kept in plugin data.", context: "settings.features.dataStorage.description" })),
 					options: [
 						{
 							value: "plugin",

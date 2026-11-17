@@ -74,6 +74,13 @@ export function createTaskNotesCommandDefinitions(
 			},
 		},
 		{
+			id: "open-pomodoro-stats",
+			nameKey: msg({ message: "Open Pomodoro statistics", context: "commands.openPomodoroStats" }),
+			callback: async (ctx) => {
+				await ctx.openBasesFileForCommand("pomodoro-stats-base");
+			},
+		},
+		{
 			id: "open-pomodoro-view",
 			nameKey: msg({ message: "Open Pomodoro timer", context: "commands.openPomodoroView" }),
 			callback: async (ctx) => {

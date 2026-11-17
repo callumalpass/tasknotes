@@ -642,6 +642,11 @@ msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, one {{minutes, number} минуту назад} few {{minutes, number} минуты назад} many {{minutes, number} минут назад} other {{minutes, number} минут назад}}"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.duration"
+msgid "{minutes} min"
+msgstr "{minutes} мин"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
 msgid "{minutes}m total"
@@ -686,6 +691,11 @@ msgstr "{path} содержит несогласованные данные: {is
 msgctxt "integration.isinconsistent"
 msgid "{path} is inconsistent: {value2}"
 msgstr "{path} содержит несоответствия: {value2}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases completion percentage"
+msgid "{percent, number}%"
+msgstr "{percent, number}%"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -1701,6 +1711,11 @@ msgstr "Вложения"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "Вложения"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Attempted"
+msgstr "Попытка"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.authHelp"
@@ -2791,6 +2806,11 @@ msgctxt "modals.actionPalette.completeOccurrence"
 msgid "Complete this occurrence"
 msgstr "Завершить это повторение"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completed"
+msgstr "Завершено"
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.completed"
 msgid "Completed"
@@ -2836,6 +2856,11 @@ msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "Выполнена сегодня"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completion"
+msgstr "Завершение"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
@@ -2865,11 +2890,6 @@ msgstr "Конфликт конфигурации"
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
 msgstr "Настройте до 3 строк информации для отображения для каждого предложения проекта."
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.dataStorage.description"
-msgid "Configure where Pomodoro session data is stored and how it''s managed."
-msgstr "Настройка места хранения данных сеансов Pomodoro и управления ими."
 
 #: src/modals/ConfirmationModal.ts
 msgctxt "modals/ConfirmationModal: ConfirmationModal confirmText"
@@ -3639,6 +3659,11 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "Ежедневно"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Daily"
+msgstr "Ежедневно"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.options.daily"
 msgid "Daily"
@@ -3676,6 +3701,11 @@ msgctxt "notices.commands.dailyNotesDisabled"
 msgid "Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 msgstr "Основной плагин «Ежедневные заметки» отключён. Включите его в настройках основных плагинов."
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.dataStorage.description"
+msgid "Daily notes keeps each session in that day''s note. When a daily note can''t be written, the session is kept in plugin data."
+msgstr "«Ежедневные заметки» сохраняют каждый сеанс в заметке за этот день. Если записать в ежедневную заметку не удаётся, сеанс сохраняется в данных плагина."
+
 #: src/modals/StorageLocationConfirmationModal.ts
 msgctxt "modals.storageLocation.bullets.dailyNotesRequired"
 msgid "Daily notes must be enabled in the core daily notes plugin or periodic notes"
@@ -3703,6 +3733,11 @@ msgstr "Данные будут храниться в frontmatter ваших е�
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "components.dateContextMenu.dateLabel"
+msgid "Date"
+msgstr "Дата"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
 msgid "Date"
 msgstr "Дата"
 
@@ -3999,6 +4034,11 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "Удалить"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmButton"
+msgid "Delete"
+msgstr "Удалить"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirm"
 msgid "Delete \"{title}\" from {provider}?"
@@ -4037,6 +4077,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "Удалять событие при удалении задачи"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteAria"
+msgid "Delete Pomodoro session"
+msgstr "Удалить сессию Pomodoro"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmTitle"
+msgid "Delete Pomodoro session?"
+msgstr "Удалить сессию Pomodoro?"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -4046,6 +4096,11 @@ msgstr "Удалить свойство"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "Удалить напоминание"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.delete"
+msgid "Delete session"
+msgstr "Удалить сессию"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -5908,6 +5963,16 @@ msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "Фокус"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus minutes"
+msgstr "Минуты сосредоточенной работы"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus time"
+msgstr "Время сосредоточенной работы"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderLabel"
 msgid "Folder"
@@ -6464,6 +6529,16 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "Язык интерфейса"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Interrupted"
+msgstr "Прервано"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.interrupted"
+msgid "Interrupted"
+msgstr "Прервано"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
@@ -6942,6 +7017,11 @@ msgctxt "services.pomodoro.notices.longBreakStarted"
 msgid "Long break started"
 msgstr "Длинный перерыв начат"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Long breaks"
+msgstr "Длинные перерывы"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
@@ -7072,6 +7152,11 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "Мигрировать данные помодоро?"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateUnit"
+msgid "min"
+msgstr "мин"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7165,6 +7250,11 @@ msgctxt "calendar view name"
 msgid "Month"
 msgstr "Месяц"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Month"
+msgstr "Месяц"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
 msgid "Month grid"
@@ -7178,6 +7268,11 @@ msgstr "Вид по месяцам"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
+msgid "Monthly"
+msgstr "Ежемесячно"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
 msgid "Monthly"
 msgstr "Ежемесячно"
 
@@ -7748,6 +7843,11 @@ msgstr "Без запланированной даты"
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "У этой задачи нет запланированной даты"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.empty"
+msgid "No sessions recorded yet"
+msgstr "Сессии еще не записаны"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction picker"
@@ -8337,6 +8437,11 @@ msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "Открыть или создать заметку повторения"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openPomodoroStats"
+msgid "Open Pomodoro statistics"
+msgstr "Открыть статистику помодоро"
+
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openPomodoroView"
@@ -8793,6 +8898,16 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "Данные сессий помодоро будут храниться в frontmatter ежедневных заметок вместо файла данных плагина."
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteSuccess"
+msgid "Pomodoro session deleted"
+msgstr "Сессия Pomodoro удалена"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteNotFound"
+msgid "Pomodoro session was not found"
+msgstr "Сессия Pomodoro не найдена"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -8809,6 +8924,7 @@ msgid "Pomodoro started for {title}"
 msgstr "Помодоро начато для задачи {title}"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "Представление Bases со статистикой помодоро"
@@ -9091,6 +9207,11 @@ msgstr "Готовы к следующему помодоро?"
 msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "Готово к началу"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.heading"
+msgid "Recent sessions"
+msgstr "Последние сессии"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
@@ -10080,6 +10201,11 @@ msgstr "Длительность короткого перерыва"
 msgctxt "services.pomodoro.notices.shortBreakStarted"
 msgid "Short break started"
 msgstr "Короткий перерыв начат"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Short breaks"
+msgstr "Короткие перерывы"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11933,6 +12059,11 @@ msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "Удаляет ID и секрет клиента из секретного хранилища Obsidian."
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmMessage"
+msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
+msgstr "Это удалит сессию из истории Pomodoro. Существующие записи времени задач не изменятся."
+
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
 msgid "This task is an occurrence of a recurring task"
@@ -12063,6 +12194,11 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "Запись времени для задачи «{taskTitle}» создана ({duration} мин)"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateLabel"
+msgid "Time estimate"
+msgstr "Оценка времени"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.timeEstimate"
 msgid "Time estimate"
@@ -12077,11 +12213,6 @@ msgstr "Оценка времени"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Time Estimate"
 msgstr "Оценка времени"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimateLabel"
-msgid "Time estimate (minutes)"
-msgstr "Оценка времени (минуты)"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"

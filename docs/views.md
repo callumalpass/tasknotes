@@ -55,7 +55,7 @@ Calendar views add **[** and **]** (or **N**) for the previous and next period, 
 
 These views support time management and work tracking.
 
-[Pomodoro View](views/pomodoro-view.md) supports focused intervals directly inside Obsidian. Task time tracking and session history remain available; version 5 removes the separate Statistics and Pomodoro statistics dashboards.
+[Pomodoro View](views/pomodoro-view.md) supports focused intervals directly inside Obsidian. Task time tracking and session history remain available. Version 5 removes the separate Statistics and Pomodoro statistics dashboards; **Open Pomodoro statistics** opens a generated Base instead.
 
 ![Pomodoro view](assets/feature-pomodoro-timer.png)
 

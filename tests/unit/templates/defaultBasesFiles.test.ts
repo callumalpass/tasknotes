@@ -497,7 +497,10 @@ describe("defaultBasesFiles", () => {
 		expect(boost("2026-04-28T09:00:00Z")).toBeGreaterThan(boost("2026-04-28T17:00:00Z"));
 	});
 
-	it("does not generate retired Pomodoro statistics Bases", () => {
-		expect(generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any)).toBe("");
+	it("generates Pomodoro statistics from daily notes as valid YAML", () => {
+		const template = generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any);
+		const parsed = parse(template) as { filters: { and: string[] }; views: Array<{ name: string }> };
+		expect(parsed.views.map((view) => view.name)).toEqual(["Daily", "Monthly"]);
+		expect(parsed.filters.and).toContain('file.hasProperty("pomodoros")');
 	});
 });

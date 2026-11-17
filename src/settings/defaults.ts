@@ -382,6 +382,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		"open-advanced-calendar-view": "TaskNotes/Views/calendar-default.base",
 		"open-agenda-view": "TaskNotes/Views/agenda-default.base",
 		relationships: "TaskNotes/Views/relationships.base",
+		"pomodoro-stats-base": "TaskNotes/Views/pomodoro-stats.base",
 	},
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,

@@ -642,6 +642,11 @@ msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, other {{minutes, number}분 전}}"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.duration"
+msgid "{minutes} min"
+msgstr "{minutes}분"
+
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
 msgid "{minutes}m total"
@@ -686,6 +691,11 @@ msgstr "{path}에 불일치가 있습니다: {issues}. 다시 시도하기 전�
 msgctxt "integration.isinconsistent"
 msgid "{path} is inconsistent: {value2}"
 msgstr "{path}에 불일치가 있습니다: {value2}"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases completion percentage"
+msgid "{percent, number}%"
+msgstr "{percent, number}%"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: checklistProgress display"
@@ -1698,6 +1708,11 @@ msgstr "첨부 파일"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
 msgstr "첨부 파일"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Attempted"
+msgstr "시도됨"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.authHelp"
@@ -2788,6 +2803,11 @@ msgctxt "modals.actionPalette.completeOccurrence"
 msgid "Complete this occurrence"
 msgstr "이 회차 완료"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completed"
+msgstr "완료됨"
+
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.labels.completed"
 msgid "Completed"
@@ -2833,6 +2853,11 @@ msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "오늘 완료"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Completion"
+msgstr "완료"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
 msgid "Completion date"
@@ -2862,11 +2887,6 @@ msgstr "설정 충돌"
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
 msgstr "각 프로젝트 제안에 표시할 최대 3줄의 정보를 구성합니다."
-
-#: src/settings/native/features.ts
-msgctxt "settings.features.dataStorage.description"
-msgid "Configure where Pomodoro session data is stored and how it''s managed."
-msgstr "뽀모도로 세션 데이터가 저장되고 관리되는 방법을 설정합니다."
 
 #: src/modals/ConfirmationModal.ts
 msgctxt "modals/ConfirmationModal: ConfirmationModal confirmText"
@@ -3636,6 +3656,11 @@ msgctxt "components.recurrenceContextMenu.daily"
 msgid "Daily"
 msgstr "매일"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Daily"
+msgstr "일간"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.options.daily"
 msgid "Daily"
@@ -3673,6 +3698,11 @@ msgctxt "notices.commands.dailyNotesDisabled"
 msgid "Daily notes core plugin is not enabled. Please enable it in settings > core plugins."
 msgstr "데일리 노트 코어 플러그인이 비활성화되어 있습니다. 설정 > 코어 플러그인에서 활성화하세요."
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.dataStorage.description"
+msgid "Daily notes keeps each session in that day''s note. When a daily note can''t be written, the session is kept in plugin data."
+msgstr "'데일리 노트'는 각 세션을 해당 날짜의 노트에 저장합니다. 데일리 노트에 쓸 수 없으면 세션은 플러그인 데이터에 보관됩니다."
+
 #: src/modals/StorageLocationConfirmationModal.ts
 msgctxt "modals.storageLocation.bullets.dailyNotesRequired"
 msgid "Daily notes must be enabled in the core daily notes plugin or periodic notes"
@@ -3700,6 +3730,11 @@ msgstr "데이터가 데일리 노트 프런트매터에 저장됩니다"
 
 #: src/modals/DateTimePickerModal.ts
 msgctxt "components.dateContextMenu.dateLabel"
+msgid "Date"
+msgstr "날짜"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
 msgid "Date"
 msgstr "날짜"
 
@@ -3996,6 +4031,11 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "삭제"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmButton"
+msgid "Delete"
+msgstr "삭제"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirm"
 msgid "Delete \"{title}\" from {provider}?"
@@ -4034,6 +4074,16 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "작업 삭제 시 이벤트 삭제"
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteAria"
+msgid "Delete Pomodoro session"
+msgstr "뽀모도로 세션 삭제"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmTitle"
+msgid "Delete Pomodoro session?"
+msgstr "뽀모도로 세션을 삭제하시겠습니까?"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -4043,6 +4093,11 @@ msgstr "속성 삭제"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "리마인더 삭제"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.delete"
+msgid "Delete session"
+msgstr "세션 삭제"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -5905,6 +5960,16 @@ msgctxt "views.pomodoro.status.focus"
 msgid "Focus"
 msgstr "집중"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus minutes"
+msgstr "집중 시간(분)"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Focus time"
+msgstr "집중 시간"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.folderLabel"
 msgid "Folder"
@@ -6463,6 +6528,16 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "인터페이스 언어"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Interrupted"
+msgstr "중단됨"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.interrupted"
+msgid "Interrupted"
+msgstr "중단됨"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
@@ -6941,6 +7016,11 @@ msgctxt "services.pomodoro.notices.longBreakStarted"
 msgid "Long break started"
 msgstr "긴 휴식이 시작되었습니다"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Long breaks"
+msgstr "긴 휴식"
+
 #: src/i18n/configLabels.ts
 msgctxt "settings/defaults: defaults label"
 msgid "Low"
@@ -7071,6 +7151,11 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "뽀모도로 데이터를 마이그레이션하시겠습니까?"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateUnit"
+msgid "min"
+msgstr "분"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7164,6 +7249,11 @@ msgctxt "calendar view name"
 msgid "Month"
 msgstr "월"
 
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Month"
+msgstr "월"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.defaultView.options.monthGrid"
 msgid "Month grid"
@@ -7179,6 +7269,11 @@ msgstr "월간 보기"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.frequencies.monthly"
 msgid "Monthly"
 msgstr "매월"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases view name"
+msgid "Monthly"
+msgstr "월간"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.defaults.options.monthly"
@@ -7747,6 +7842,11 @@ msgstr "예정일 없음"
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "이 작업에 예정일이 없습니다"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.empty"
+msgid "No sessions recorded yet"
+msgstr "아직 기록된 세션이 없습니다"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction picker"
@@ -8336,6 +8436,11 @@ msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "회차 노트 열기 또는 만들기"
 
+#: src/commands/taskNotesCommands.ts
+msgctxt "commands.openPomodoroStats"
+msgid "Open Pomodoro statistics"
+msgstr "뽀모도로 통계 열기"
+
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openPomodoroView"
@@ -8792,6 +8897,16 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "뽀모도로 세션 데이터가 플러그인 데이터 파일 대신 데일리 노트 프런트매터에 저장됩니다."
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteSuccess"
+msgid "Pomodoro session deleted"
+msgstr "뽀모도로 세션이 삭제되었습니다"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteNotFound"
+msgid "Pomodoro session was not found"
+msgstr "뽀모도로 세션을 찾을 수 없습니다"
+
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -8808,6 +8923,7 @@ msgid "Pomodoro started for {title}"
 msgstr "{title}의 뽀모도로 시작됨"
 
 #: src/i18n/messages.ts
+#: src/settings/native/general.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "뽀모도로 통계 베이스"
@@ -9090,6 +9206,11 @@ msgstr "다음 뽀모도로를 시작할 준비가 되었나요?"
 msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "시작 준비 완료"
+
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.heading"
+msgid "Recent sessions"
+msgstr "최근 세션"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
@@ -10079,6 +10200,11 @@ msgstr "짧은 휴식 시간"
 msgctxt "services.pomodoro.notices.shortBreakStarted"
 msgid "Short break started"
 msgstr "짧은 휴식이 시작되었습니다"
+
+#: src/templates/defaultBasesFiles.ts
+msgctxt "generated Bases column name"
+msgid "Short breaks"
+msgstr "짧은 휴식"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11932,6 +12058,11 @@ msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "Obsidian 비밀 저장소에서 클라이언트 ID와 비밀 키를 제거합니다."
 
+#: src/views/PomodoroView.ts
+msgctxt "views.pomodoro.recent.deleteConfirmMessage"
+msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
+msgstr "뽀모도로 기록에서 이 세션을 삭제합니다. 기존 작업의 시간 기록은 변경되지 않습니다."
+
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
 msgid "This task is an occurrence of a recurring task"
@@ -12062,6 +12193,11 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "{taskTitle}에 대한 시간 기록이 생성되었습니다 ({duration}분)"
 
+#: src/modals/taskModalMetadataFields.ts
+msgctxt "modals.task.timeEstimateLabel"
+msgid "Time estimate"
+msgstr "예상 시간"
+
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.timeEstimate"
 msgid "Time estimate"
@@ -12076,11 +12212,6 @@ msgstr "예상 시간"
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Time Estimate"
 msgstr "예상 시간"
-
-#: src/modals/taskModalMetadataFields.ts
-msgctxt "modals.task.timeEstimateLabel"
-msgid "Time estimate (minutes)"
-msgstr "예상 시간 (분)"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"

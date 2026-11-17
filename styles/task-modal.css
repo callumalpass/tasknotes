@@ -643,6 +643,33 @@
     color: var(--tn-text-muted);
 }
 
+/* Time estimate: the unit sits after the field on the same line */
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control.task-modal__estimate-control {
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control.task-modal__estimate-control input {
+    flex: 0 1 auto;
+    width: 12ch;
+    min-width: 0;
+}
+
+/* Size the field to its value or placeholder so the unit follows it */
+@supports (field-sizing: content) {
+    .tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control.task-modal__estimate-control input {
+        width: auto;
+        min-width: 2ch;
+        field-sizing: content;
+    }
+}
+
+.tasknotes-plugin .task-modal__estimate-unit {
+    flex: none;
+    color: var(--tn-text-muted);
+    font-size: var(--tn-type-sm);
+}
+
 /* The disclosed title wraps like any other value, up to three lines */
 .tasknotes-plugin.minimalist-task-modal .details-container .setting-item-control textarea.title-input-detailed {
     height: var(--tn-task-modal-title-height, auto);

@@ -48,6 +48,7 @@ Default mappings:
 - **Open Calendar View** → `TaskNotes/Views/calendar-default.base`
 - **Open Agenda View** → `TaskNotes/Views/agenda-default.base`
 - **Relationships Widget** → `TaskNotes/Views/relationships.base`
+- **Pomodoro statistics** → `TaskNotes/Views/pomodoro-stats.base`
 
 Each command allows you to specify a custom `.base` file path and includes a reset button to restore the default path.
 
@@ -56,8 +57,6 @@ Each command allows you to specify a custom `.base` file path and includes a res
 **Create files**: Button to generate all default `.base` files in the `TaskNotes/Views/` directory. Existing files are not overwritten.
 
 **Update files** replaces the configured generated files and repairs open Bases whose selected view no longer exists. Existing views are retained when still valid. Today and Inbox commands use the Tasks file mapping; there are no separate files to configure. If an older or custom Base lacks the requested view name, the command falls back to its first view. Update defaults explicitly or add those named views to your custom Base to use the shortcuts.
-
-Version 5 no longer generates a Pomodoro statistics Base. Existing files and session history are left untouched.
 
 ## OAuth Calendar Integration
 

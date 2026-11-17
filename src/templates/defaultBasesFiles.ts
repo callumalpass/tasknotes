@@ -551,6 +551,104 @@ function insertOrderPropertyAfter(
 
 
 /**
+ * Pomodoro statistics from the sessions stored in daily notes.
+ */
+function generatePomodoroStatsTemplate(plugin: TaskNotesPlugin): string {
+	const pomodoroProperty = mapPropertyToBasesProperty("pomodoros", plugin);
+	const pomodoroRef = formatNotePropertyReference(pomodoroProperty);
+	const workSessions = `list(${pomodoroRef}).filter(value.type == "work")`;
+	const completedWorkSessions = `list(${pomodoroRef}).filter(value.type == "work" && value.completed == true)`;
+	const completedWorkDurations = `${completedWorkSessions}.map(if(value.plannedDuration && value.plannedDuration > 0, value.plannedDuration, if(value.startTime && value.endTime, ((number(date(value.endTime)) - number(date(value.startTime))) / 60000).round(), 0)))`;
+
+	return `# Pomodoro statistics
+# Reads Pomodoro sessions stored in daily notes (Settings → TaskNotes → Time & reminders → Pomodoro data storage).
+# Sessions kept in plugin data are not included.
+
+filters:
+  and:
+    - file.hasProperty("${escapeBasesStringLiteral(pomodoroProperty)}")
+    - list(${pomodoroRef}).filter(value.startTime).isEmpty() == false
+
+formulas:
+  pomodoroDate: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.startTime).map(date(value.startTime).format("YYYY-MM-DD")).unique().join(", "), file.basename)'
+  pomodoroMonth: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.startTime).map(date(value.startTime).format("YYYY-MM")).unique().join(", "), "")'
+  completedPomos: 'if(${pomodoroRef}, ${completedWorkSessions}.length, 0)'
+  attemptedPomos: 'if(${pomodoroRef}, ${workSessions}.length, 0)'
+  interruptedPomos: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.type == "work" && value.completed == false).length, 0)'
+  focusMinutes: 'if(${pomodoroRef}, ${completedWorkDurations}.reduce(acc + value, 0).round(), 0)'
+  focusTime: ${JSON.stringify(`if(formula.focusMinutes >= 60, ${basesMessage(msg({ message: "{hours, number}h {minutes, number}m", context: "generated Bases compact hours and minutes" }), { hours: "(formula.focusMinutes / 60).floor()", minutes: "(formula.focusMinutes % 60).round()" })}, ${basesMessage(msg({ message: "{minutes, number}m", context: "generated Bases compact minutes" }), { minutes: "formula.focusMinutes" })})`)}
+  completionRate: ${JSON.stringify(basesMessage(msg({ message: "{percent, number}%", context: "generated Bases completion percentage" }), { percent: "if(formula.attemptedPomos > 0, (formula.completedPomos / formula.attemptedPomos * 100).round(), 0)" }))}
+  shortBreaks: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.type == "short-break").length, 0)'
+  longBreaks: 'if(${pomodoroRef}, list(${pomodoroRef}).filter(value.type == "long-break").length, 0)'
+
+properties:
+  formula.pomodoroDate:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Date", context: "generated Bases column name" })))}
+  formula.pomodoroMonth:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Month", context: "generated Bases column name" })))}
+  formula.completedPomos:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Completed", context: "generated Bases column name" })))}
+  formula.attemptedPomos:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Attempted", context: "generated Bases column name" })))}
+  formula.interruptedPomos:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Interrupted", context: "generated Bases column name" })))}
+  formula.focusMinutes:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Focus minutes", context: "generated Bases column name" })))}
+  formula.focusTime:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Focus time", context: "generated Bases column name" })))}
+  formula.completionRate:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Completion", context: "generated Bases column name" })))}
+  formula.shortBreaks:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Short breaks", context: "generated Bases column name" })))}
+  formula.longBreaks:
+    displayName: ${JSON.stringify(uiText(msg({ message: "Long breaks", context: "generated Bases column name" })))}
+
+views:
+  - type: table
+    name: ${JSON.stringify(uiText(msg({ message: "Daily", context: "generated Bases view name" })))}
+    order:
+      - formula.pomodoroDate
+      - formula.completedPomos
+      - formula.focusTime
+      - formula.attemptedPomos
+      - formula.completionRate
+      - formula.interruptedPomos
+      - formula.shortBreaks
+      - formula.longBreaks
+      - file.name
+    sort:
+      - column: formula.pomodoroDate
+        direction: DESC
+  - type: table
+    name: ${JSON.stringify(uiText(msg({ message: "Monthly", context: "generated Bases view name" })))}
+    groupBy:
+      property: formula.pomodoroMonth
+      direction: DESC
+    order:
+      - formula.pomodoroDate
+      - formula.completedPomos
+      - formula.focusMinutes
+      - formula.focusTime
+      - formula.attemptedPomos
+      - formula.completionRate
+      - formula.interruptedPomos
+      - formula.shortBreaks
+      - formula.longBreaks
+      - file.name
+    summaries:
+      formula.completedPomos: Sum
+      formula.focusMinutes: Sum
+      formula.attemptedPomos: Sum
+      formula.interruptedPomos: Sum
+      formula.shortBreaks: Sum
+      formula.longBreaks: Sum
+    sort:
+      - column: formula.pomodoroDate
+        direction: DESC
+`;
+}
+
+/**
  * Generate a Bases file template for a specific command with user settings
  */
 export function generateBasesFileTemplate(commandId: string, plugin: TaskNotesPlugin): string {
@@ -874,6 +972,9 @@ ${orderYaml}
     customDayCount: 3
     firstDay: ${plugin.settings.calendarViewSettings.firstDay}
 `;
+
+		case "pomodoro-stats-base":
+			return generatePomodoroStatsTemplate(plugin);
 
 		case "open-agenda-view": {
 			const dueProperty = mapPropertyToBasesProperty("due", plugin);

@@ -220,6 +220,7 @@ export interface TaskNotesSettings {
 		"open-advanced-calendar-view": string;
 		"open-agenda-view": string;
 		relationships: string; // Bases file for unified relationships widget
+		"pomodoro-stats-base": string; // Pomodoro statistics from daily notes
 		[key: string]: string; // Allow string indexing
 	};
 	// Recurring task behavior

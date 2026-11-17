@@ -103,8 +103,8 @@ export function createTaskModalTimeEstimateField(
 	options: CreateTaskModalTimeEstimateFieldOptions
 ): HTMLInputElement {
 	let inputEl: HTMLInputElement | null = null;
-	new Setting(options.container)
-		.setName(context.translate(msg({ message: "Time estimate (minutes)", context: "modals.task.timeEstimateLabel" })))
+	const setting = new Setting(options.container)
+		.setName(context.translate(msg({ message: "Time estimate", context: "modals.task.timeEstimateLabel" })))
 		.addText((text) => {
 			text.setPlaceholder(context.translate(msg({ message: "Add estimate", context: "modals.task.timeEstimatePlaceholder" })))
 				.setValue(formatTaskModalTimeEstimate(options.value))
@@ -120,6 +120,13 @@ export function createTaskModalTimeEstimateField(
 				if (minutes !== null) text.inputEl.value = formatTaskModalTimeEstimate(minutes);
 			});
 		});
+
+	// The unit follows the field on the same line
+	setting.controlEl.addClass("task-modal__estimate-control");
+	setting.controlEl.createSpan({
+		cls: "task-modal__estimate-unit",
+		text: context.translate(msg({ message: "min", context: "modals.task.timeEstimateUnit" })),
+	});
 
 	if (!inputEl) {
 		throw new Error("Failed to create time estimate input");

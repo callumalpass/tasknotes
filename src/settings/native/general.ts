@@ -42,6 +42,11 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 			name: msg({ message: "Relationships widget", context: "settings.integrations.basesIntegration.viewCommands.commands.relationships" }),
 			defaultPath: "TaskNotes/Views/relationships.base",
 		},
+		{
+			id: "pomodoro-stats-base",
+			name: msg({ message: "Pomodoro statistics base", context: "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats" }),
+			defaultPath: "TaskNotes/Views/pomodoro-stats.base",
+		},
 	];
 	const uiLanguageOptions = (() => {
 		const options: Array<{ value: string; label: string }> = [

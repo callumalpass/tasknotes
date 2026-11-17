@@ -285,6 +285,12 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
+        "id": "cQxDIu",
+        "message": "{minutes} min",
+        "context": "views.pomodoro.recent.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
         "id": "dBdBmg",
         "message": "0",
         "context": "modals.task.userFields.numberPlaceholder",
@@ -349,6 +355,12 @@
         "message": "#3b82f6",
         "context": "modals.timeblockInfo.colorPlaceholder",
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "v6TmgG",
+        "message": "min",
+        "context": "modals.task.timeEstimateUnit",
+        "reason": "Standard minute abbreviation"
       },
       {
         "id": "veiAoK",
@@ -1237,6 +1249,12 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
+        "id": "cQxDIu",
+        "message": "{minutes} min",
+        "context": "views.pomodoro.recent.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
         "id": "dBdBmg",
         "message": "0",
         "context": "modals.task.userFields.numberPlaceholder",
@@ -1325,6 +1343,12 @@
         "message": "#3b82f6",
         "context": "modals.timeblockInfo.colorPlaceholder",
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
+      },
+      {
+        "id": "v6TmgG",
+        "message": "min",
+        "context": "modals.task.timeEstimateUnit",
+        "reason": "Standard minute abbreviation"
       },
       {
         "id": "veiAoK",
@@ -2323,6 +2347,12 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
+        "id": "cQxDIu",
+        "message": "{minutes} min",
+        "context": "views.pomodoro.recent.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
         "id": "dBdBmg",
         "message": "0",
         "context": "modals.task.userFields.numberPlaceholder",
@@ -2435,6 +2465,12 @@
         "message": "\nStatus: {value1}",
         "context": "bases/calendar-core: generateTaskTooltip display",
         "reason": "Individually reviewed pt cognate/loanword; identical spelling is correct, not English fallback"
+      },
+      {
+        "id": "v6TmgG",
+        "message": "min",
+        "context": "modals.task.timeEstimateUnit",
+        "reason": "Standard minute abbreviation"
       },
       {
         "id": "veiAoK",
@@ -3069,6 +3105,20 @@
         "message": "✓ {label}",
         "context": "contextMenus.task.prioritySelected",
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
+      }
+    ],
+    "it": [
+      {
+        "id": "cQxDIu",
+        "message": "{minutes} min",
+        "context": "views.pomodoro.recent.duration",
+        "reason": "Standard minute abbreviation"
+      },
+      {
+        "id": "v6TmgG",
+        "message": "min",
+        "context": "modals.task.timeEstimateUnit",
+        "reason": "Standard minute abbreviation"
       }
     ]
   },

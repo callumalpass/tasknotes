@@ -9060,8 +9060,8 @@
     "context": "modals.task.tagsPlaceholder"
   },
   "modals.task.timeEstimateLabel": {
-    "id": "mI9h0H",
-    "message": "Time estimate (minutes)",
+    "id": "NdLvJq",
+    "message": "Time estimate",
     "context": "modals.task.timeEstimateLabel"
   },
   "modals.task.timeEstimatePlaceholder": {

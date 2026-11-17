@@ -1,8 +1,11 @@
-import { uiNumber, uiDuration } from "../i18n/formatters";
+import { formatUIDate, uiNumber, uiDuration } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { ItemView, WorkspaceLeaf, EventRef, setTooltip, setIcon } from "obsidian";
 import { showNotice } from "../ui/kit/notice";
+import { showConfirmationModal } from "../modals/ConfirmationModal";
+import { getTaskCardTitleText } from "../ui/taskCardTitle";
+import { getSessionDuration } from "../utils/pomodoroUtils";
 import TaskNotesPlugin from "../main";
 import {
 	POMODORO_VIEW_TYPE,
@@ -12,6 +15,7 @@ import {
 	EVENT_POMODORO_TICK,
 	EVENT_TASK_UPDATED,
 	PomodoroSession,
+	PomodoroSessionHistory,
 	PomodoroState,
 	TaskInfo,
 } from "../types";
@@ -78,6 +82,11 @@ export class PomodoroView extends ItemView {
 	private stopButton: HTMLButtonElement | null = null;
 	private taskDisplay: HTMLElement | null = null;
 	private statsDisplay: HTMLElement | null = null;
+	private recentSessionsDetails: HTMLDetailsElement | null = null;
+	private recentSessionsList: HTMLElement | null = null;
+	private recentSessionsGeneration = 0;
+	/** Deleted here; daily-note metadata can lag behind the write. */
+	private deletedSessionIds = new Set<string>();
 	private taskSelectButton: HTMLButtonElement | null = null;
 	private taskClearButton: HTMLButtonElement | null = null;
 	private currentSelectedTask: TaskInfo | null = null;
@@ -299,6 +308,9 @@ export class PomodoroView extends ItemView {
 		this.stopButton = null;
 		this.taskDisplay = null;
 		this.statsDisplay = null;
+		this.recentSessionsDetails = null;
+		this.recentSessionsList = null;
+		this.recentSessionsGeneration++;
 		this.taskSelectButton = null;
 		this.taskClearButton = null;
 		this.currentSelectedTask = null;
@@ -457,6 +469,17 @@ export class PomodoroView extends ItemView {
 		pomodoroStat.createSpan({
 			cls: "pomodoro-view__stat-label",
 			text: this.t(msg({ message: "completed today", context: "views.pomodoro.statsLabel" })),
+		});
+
+		// Recent sessions load only when opened; reading every daily note on each tick is wasteful.
+		this.recentSessionsDetails = statsSection.createEl("details", { cls: "pomodoro-view__recent" });
+		this.recentSessionsDetails.createEl("summary", {
+			cls: "pomodoro-view__recent-summary",
+			text: this.t(msg({ message: "Recent sessions", context: "views.pomodoro.recent.heading" })),
+		});
+		this.recentSessionsList = this.recentSessionsDetails.createDiv({ cls: "pomodoro-view__recent-list" });
+		this.registerDomEvent(this.recentSessionsDetails, "toggle", () => {
+			if (this.recentSessionsDetails?.open) void this.renderRecentSessions();
 		});
 
 		// Add event listeners
@@ -1152,6 +1175,7 @@ export class PomodoroView extends ItemView {
 			const stats = await this.plugin.pomodoroService.getTodayStats();
 			if (this.isClosed || generation !== this.openGeneration) return;
 			this.todaysPomodoros = stats.pomodorosCompleted;
+			if (this.recentSessionsDetails?.open) void this.renderRecentSessions();
 
 			// Update only if values changed to avoid unnecessary DOM updates
 			if (
@@ -1172,6 +1196,96 @@ export class PomodoroView extends ItemView {
 			// Fallback to show zeros if stats loading fails
 			if (this.isViewVisible() && this.statElements.pomodoros)
 				this.statElements.pomodoros.textContent = "0";
+		}
+	}
+
+	private async renderRecentSessions(): Promise<void> {
+		const container = this.recentSessionsList;
+		const service = this.plugin.pomodoroService;
+		if (!container || !service) return;
+		const generation = ++this.recentSessionsGeneration;
+		const sessions = (await service.getSessionHistory())
+			.filter((session) => session.type === "work" && !this.deletedSessionIds.has(session.id))
+			.slice(-10)
+			.reverse();
+		const titles = await Promise.all(
+			sessions.map(async (session) => {
+				if (!session.taskPath) return "";
+				const task = await this.plugin.cacheManager.getTaskInfo(session.taskPath);
+				return task
+					? getTaskCardTitleText(task)
+					: session.taskPath.split("/").pop()?.replace(/\.md$/i, "") || "";
+			})
+		);
+		if (this.isClosed || generation !== this.recentSessionsGeneration) return;
+
+		container.empty();
+		if (sessions.length === 0) {
+			container.createDiv({
+				cls: "pomodoro-view__recent-empty",
+				text: this.t(msg({ message: "No sessions recorded yet", context: "views.pomodoro.recent.empty" })),
+			});
+			return;
+		}
+
+		const timeFormat = this.plugin.settings.calendarViewSettings.timeFormat === "12" ? "MMM d, h:mm a" : "MMM d, HH:mm";
+		for (const [index, session] of sessions.entries()) {
+			const row = container.createDiv({ cls: "pomodoro-view__recent-item" });
+			row.createSpan({
+				cls: "pomodoro-view__recent-when",
+				text: formatUIDate(new Date(session.startTime), timeFormat),
+			});
+			row.createSpan({
+				cls: "pomodoro-view__recent-duration",
+				text: this.t(msg({ message: "{minutes} min", context: "views.pomodoro.recent.duration" }), {
+					minutes: getSessionDuration(session),
+				}),
+			});
+			row.createSpan({ cls: "pomodoro-view__recent-task", text: titles[index] });
+			if (!session.completed) {
+				row.createSpan({
+					cls: "pomodoro-view__recent-status",
+					text: this.t(msg({ message: "Interrupted", context: "views.pomodoro.recent.interrupted" })),
+				});
+			}
+			const deleteButton = row.createEl("button", {
+				cls: "pomodoro-view__recent-delete clickable-icon",
+				attr: {
+					type: "button",
+					"aria-label": this.t(msg({ message: "Delete Pomodoro session", context: "views.pomodoro.recent.deleteAria" })),
+				},
+			});
+			setIcon(deleteButton, "trash-2");
+			setTooltip(deleteButton, this.t(msg({ message: "Delete session", context: "views.pomodoro.recent.delete" })), {
+				placement: "top",
+			});
+			this.registerDomEvent(deleteButton, "click", (event: MouseEvent) => {
+				event.preventDefault();
+				void this.confirmDeleteSession(session);
+			});
+		}
+	}
+
+	private async confirmDeleteSession(session: PomodoroSessionHistory): Promise<void> {
+		const confirmed = await showConfirmationModal(this.plugin.app, {
+			title: this.t(msg({ message: "Delete Pomodoro session?", context: "views.pomodoro.recent.deleteConfirmTitle" })),
+			message: this.t(msg({ message: "This removes the session from Pomodoro history. Existing task time entries are not changed.", context: "views.pomodoro.recent.deleteConfirmMessage" })),
+			confirmText: this.t(msg({ message: "Delete", context: "views.pomodoro.recent.deleteConfirmButton" })),
+			isDestructive: true,
+		});
+		if (!confirmed || !this.plugin.pomodoroService) return;
+
+		const deleted = await this.plugin.pomodoroService.deleteSessionFromHistory(session);
+		showNotice(
+			this.t(
+				deleted
+					? msg({ message: "Pomodoro session deleted", context: "views.pomodoro.recent.deleteSuccess" })
+					: msg({ message: "Pomodoro session was not found", context: "views.pomodoro.recent.deleteNotFound" })
+			)
+		);
+		if (deleted) {
+			this.deletedSessionIds.add(session.id);
+			this.refreshStats();
 		}
 	}
 

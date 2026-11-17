@@ -9,13 +9,11 @@ dateModified: 2026-05-17T21:57:48+1000
 TaskNotes automatically generates [Bases](https://help.obsidian.md/Bases/Introduction+to+Bases) files for its built-in views when you first open them. These templates are configured based on your TaskNotes settings, including custom property names, statuses, and task identification methods.
 
 This page shows the default templates as they would appear with TaskNotes' default settings. The actual templates generated in your vault may differ if you've customized your settings.
-Version 5 no longer generates Pomodoro statistics files. Existing files and recorded session data are kept. Calendar, Agenda, Kanban, and Mini Calendar defaults exclude archived tasks without applying hidden filters to user-created Bases.
+Calendar, Agenda, Kanban, and Mini Calendar defaults exclude archived tasks without applying hidden filters to user-created Bases.
 
 This page documents generated defaults. It is reference material for understanding and editing `.base` files already created in your vault.
 
 Generated `.base` files are regular vault files. When you change task identification, field mapping, status, or priority settings, existing files keep their current content until you edit them. To replace the configured default files with templates generated from your current settings, use **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** or run the **TaskNotes: Update default base files** command. Automation clients can call `api.bases.updateDefaultFiles()` from the runtime API or `POST /api/bases/default-files/update` from the local HTTP API. These update actions overwrite the configured default `.base` files, including any manual edits in those files.
-
-Custom priority labels and priority/status values are escaped in generated expressions, so apostrophes, double quotes, backslashes, and line breaks do not break the generated formulas or YAML. YAML quoting and line wrapping may differ from the examples below without changing the formulas. If an existing generated file cannot open after these settings were customized, regenerate it using **Update default base files** (this replaces manual edits).
 
 Custom priority labels and priority/status values are escaped in generated expressions, so apostrophes, double quotes, backslashes, and line breaks do not break the generated formulas or YAML. YAML quoting and line wrapping may differ from the examples below without changing the formulas. If an existing generated file cannot open after these settings were customized, regenerate it using **Update default base files** (this replaces manual edits).
 
