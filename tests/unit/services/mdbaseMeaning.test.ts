@@ -124,7 +124,8 @@ describe("migration meaning preservation", () => {
 		prior.schema.value.properties.title.minLength = 12;
 		prior.schema.value.allOf.push({ properties: { title: { maxLength: 200 } } });
 		prior.schema.value.required.push("due");
-		const generated = buildTaskNotesMdbaseResources({ archive: { moveOnArchive: true, folder: "New archive" } });
+		// Settings read from this type map the ID to its `uid` property.
+		const generated = buildTaskNotesMdbaseResources({ modelConfig: { fieldMapping: { id: "uid" } }, archive: { moveOnArchive: true, folder: "New archive" } });
 		expect(generated.appSettings).toMatchObject({ move_on_archive: true, archive_folder: "New archive" });
 		const after = typeOf(mergeCanonicalTaskTypeDocument(doc(prior), generated));
 		expect(after.implements[0].fields.id).toBe("uid");
@@ -136,6 +137,22 @@ describe("migration meaning preservation", () => {
 		expect(after.schema.value.properties.title.minLength).toBe(12);
 		expect(after.schema.value.allOf).toContainEqual({ properties: { title: { maxLength: 200 } } });
 		expect(after.schema.value.required).toContain("due");
+	});
+
+	it("#2574: remapping the ID in settings moves its schema, generator and uniqueness rule", () => {
+		const prior = typeOf(capture("meaning-policy")["_types/task.md"]);
+		// This type maps its ID to `uid`; give `uid` the generator and uniqueness rule too.
+		const generator = { uuid: true };
+		delete prior.lifecycle.on_create.set.id;
+		prior.lifecycle.on_create.set.uid = generator;
+		prior.collection.unique = [{ field: "uid", scope: "type" }];
+		const generated = buildTaskNotesMdbaseResources({ modelConfig: { fieldMapping: { id: "tasknote_id" } } });
+		const after = typeOf(mergeCanonicalTaskTypeDocument(doc(prior), generated));
+		expect(after.implements[0].fields.id).toBe("tasknote_id");
+		expect(after.lifecycle.on_create.set.tasknote_id).toEqual(generator);
+		expect(after.lifecycle.on_create.set.uid).toBeUndefined();
+		expect(after.schema.value.properties.tasknote_id).toEqual(prior.schema.value.properties.uid);
+		expect(after.collection.unique).toEqual([{ field: "tasknote_id", scope: "type" }]);
 	});
 
 	it.each([undefined, [], ["custom_type"]])("COMPAT-06: preserves effective existing keys %j", async (keys) => {

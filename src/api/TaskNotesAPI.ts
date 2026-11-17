@@ -35,6 +35,8 @@ import {
 	FILTER_PROPERTIES,
 } from "../types";
 import type { TaskNotesSettings } from "../types/settings";
+import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
+import { toUserField } from "../core/fieldMapping";
 import { ensureFolderExists } from "../utils/helpers";
 import { parseLinkToPath } from "../utils/linkUtils";
 import { computeTaskTimeData, computeTimeSummary } from "../utils/timeTrackingUtils";
@@ -353,6 +355,7 @@ const CORE_FIELD_DEFINITIONS: ReadonlyArray<
 const FIELD_MAPPING_KEY_BY_FIELD_ID: Partial<
 	Record<string, keyof TaskNotesSettings["fieldMapping"]>
 > = {
+	id: "id",
 	title: "title",
 	status: "status",
 	priority: "priority",
@@ -1062,14 +1065,15 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 	}
 
 	private getFieldDefinitions(): TaskNotesRuntimeFieldDefinition[] {
-		const mapping = this.plugin.settings.fieldMapping ?? {};
+		const mapping = this.plugin.settings.fieldMapping ?? DEFAULT_FIELD_MAPPING;
 		const coreFields = CORE_FIELD_DEFINITIONS.map((field) => {
 			const mappingKey = FIELD_MAPPING_KEY_BY_FIELD_ID[field.id];
 			const queryField = runtimeFilterPropertyForInternal(field.id);
 			return {
 				...field,
-				frontmatterKey:
-					field.id === "id" ? "id" : mappingKey ? mapping[mappingKey] : undefined,
+				frontmatterKey: mappingKey
+					? toUserField(mapping, mappingKey)
+					: undefined,
 				queryable: !!queryField,
 				sortable: queryField?.sortable ?? false,
 				groupable: queryField?.groupable ?? false,

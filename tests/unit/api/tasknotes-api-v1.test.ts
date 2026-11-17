@@ -639,6 +639,16 @@ describe("TaskNotesApiV1", () => {
 		);
 	});
 
+	it("reports a remapped ID property in the field catalog (#2574)", () => {
+		const { plugin } = createPluginContext();
+		plugin.settings.fieldMapping = { ...plugin.settings.fieldMapping, id: "tasknote_id" };
+		const api = new TaskNotesAPI(plugin);
+
+		expect(api.catalog.fields()).toContainEqual(
+			expect.objectContaining({ id: "id", frontmatterKey: "tasknote_id" })
+		);
+	});
+
 	it("exposes catalog metadata for companion plugin editors", () => {
 		const { plugin } = createPluginContext();
 		const api = new TaskNotesAPI(plugin);

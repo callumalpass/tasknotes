@@ -28,7 +28,7 @@ import type {
 	TaskInfo,
 } from "../types";
 import type { UserMappedField } from "../types/settings";
-import { DEFAULT_RECURRENCE_ORIGINAL_DATE_PROPERTY } from "./defaultFieldMapping";
+import { DEFAULT_ID_PROPERTY, DEFAULT_RECURRENCE_ORIGINAL_DATE_PROPERTY } from "./defaultFieldMapping";
 import { normalizeStringArrayValue } from "./nullableListNormalization";
 
 export {
@@ -47,17 +47,23 @@ export {
 	VALID_DEPENDENCY_RELTYPES,
 };
 
-// The shared model mapping does not know about `recurrenceOriginalDate`, and settings saved
-// before the field existed do not contain it. These wrappers resolve the property name
-// (falling back to the default) and handle the field around the model functions.
+// Settings saved before `id` and `recurrenceOriginalDate` were mappable do not contain
+// them. These wrappers resolve both property names (falling back to the defaults) and
+// handle `recurrenceOriginalDate` around the model functions.
 
-type ResolvedFieldMapping = FieldMapping & { recurrenceOriginalDate: string };
+type ResolvedFieldMapping = FieldMapping & { id: string; recurrenceOriginalDate: string };
 
 function withResolvedMapping(mapping: FieldMapping): ResolvedFieldMapping {
-	if (typeof mapping.recurrenceOriginalDate === "string") {
+	const hasId = typeof mapping.id === "string" && mapping.id.trim().length > 0;
+	if (hasId && typeof mapping.recurrenceOriginalDate === "string") {
 		return mapping as ResolvedFieldMapping;
 	}
-	return { ...mapping, recurrenceOriginalDate: DEFAULT_RECURRENCE_ORIGINAL_DATE_PROPERTY };
+	return {
+		...mapping,
+		id: hasId ? (mapping.id as string) : DEFAULT_ID_PROPERTY,
+		recurrenceOriginalDate:
+			mapping.recurrenceOriginalDate ?? DEFAULT_RECURRENCE_ORIGINAL_DATE_PROPERTY,
+	};
 }
 
 /**
