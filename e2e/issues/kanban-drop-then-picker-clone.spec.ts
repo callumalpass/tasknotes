@@ -19,7 +19,9 @@ const card = (name: string) =>
 
 async function readYaml(name: string): Promise<Record<string, unknown>> {
 	const text = await readFile(join(vaultPath, path(name)), "utf8");
-	return parse(text.match(/^---\r?\n([\s\S]*?)\r?\n---/)![1]);
+	// Obsidian rewrites the file in place, so a read can land mid-write; let polls retry.
+	const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+	return frontmatter ? parse(frontmatter[1]) : {};
 }
 
 async function drag(source: Locator, target: Locator) {
