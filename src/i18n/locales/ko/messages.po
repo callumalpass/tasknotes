@@ -9263,6 +9263,11 @@ msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "프로젝트"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty.description"
+msgid "Projects you choose or type when creating a task replace the default projects."
+msgstr "작업을 만들 때 선택하거나 입력한 프로젝트가 기본 프로젝트를 대체합니다."
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
@@ -13350,6 +13355,11 @@ msgstr "새 작업에서 활성 노트 사용:"
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "본문 템플릿 사용"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "프로젝트가 지정되지 않은 경우에만 기본 프로젝트 사용"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.status.notAdded"

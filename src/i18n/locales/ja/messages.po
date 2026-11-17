@@ -9263,6 +9263,11 @@ msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "プロジェクト"
 
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty.description"
+msgid "Projects you choose or type when creating a task replace the default projects."
+msgstr "タスクの作成時に選択または入力したプロジェクトが、既定のプロジェクトの代わりに使用されます。"
+
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.includeFolders.placeholder"
 msgid "Projects/, Work/Active, Personal"
@@ -13350,6 +13355,11 @@ msgstr "新しいタスクでアクティブノートを使用:"
 msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "ボディテンプレートを使用"
+
+#: src/settings/native/creation.ts
+msgctxt "settings.taskProperties.projectsCard.defaultProjectsOnlyWhenEmpty"
+msgid "Use default projects only when no project is specified"
+msgstr "プロジェクトが指定されていない場合のみ既定のプロジェクトを使用"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.status.notAdded"

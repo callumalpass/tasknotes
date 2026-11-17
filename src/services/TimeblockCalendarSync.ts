@@ -12,6 +12,7 @@ import type {
 } from "../types";
 import { validateTimeBlock } from "../utils/helpers";
 import { parseDateToLocal } from "../utils/dateUtils";
+import { calendarDescriptionWithObsidianLink } from "../utils/calendarDescription";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 
@@ -1170,7 +1171,10 @@ export class TimeblockCalendarSync {
 			}
 			const vaultName = this.plugin.app.vault.getName();
 			const obsidianUri = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(notePath)}`;
-			parts.push(`Open in Obsidian: ${obsidianUri}`);
+			return uiData(
+				calendarDescriptionWithObsidianLink(parts, obsidianUri, "Open in Obsidian"),
+				"Persisted Google Calendar description: user timeblock data and English link label, matching task events"
+			);
 		}
 		return uiData(
 			parts.join("\n"),

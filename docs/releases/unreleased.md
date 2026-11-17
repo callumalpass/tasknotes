@@ -34,8 +34,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (#2436) Added **Use default projects only when no project is specified** under Settings → Task creation → Defaults → Default projects. When it is on, a project you pick or type while creating a task replaces your default projects instead of being added to them, and instant conversion leaves out the defaults when the text names a project. Off by default. See [Task Properties](https://tasknotes.dev/settings/task-properties/).
+  - Thanks to @RumiaKitinari for the request
+
 ## Fixed
 
+- (#2267) With **Include Obsidian link** on, Google Calendar event descriptions for tasks and timeblocks show a clickable "Open in Obsidian" link again, instead of the `obsidian://` address as plain text. Existing events get the link the next time the task or timeblock is synced. Thanks to @techy-robot for reporting.
 - Fixed long Task Lists leaving the bottom of the list blank after a large jump with the scrollbar. The missing rows appeared only after scrolling again.
 
 ## Changed
