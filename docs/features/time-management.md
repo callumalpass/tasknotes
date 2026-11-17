@@ -45,4 +45,40 @@ When a task is associated with a Pomodoro session, TaskNotes starts a task track
 
 ## Recorded data
 
-Version 5 removes the Statistics and Pomodoro statistics dashboards and no longer generates a Pomodoro statistics Base. Time tracking, the timer, session storage settings, recorded history, and the API remain available. Existing statistics Base files are kept as ordinary user-editable Bases. No task notes or history are deleted. Close any old statistics dashboard tabs after upgrading.
+Version 5 removes the Statistics and Pomodoro statistics dashboards and no longer generates a Pomodoro statistics Base. Time tracking, the timer, session storage settings, recorded history, and the API remain available. Existing statistics Base files are kept as ordinary user-editable Bases. No task notes or history are deleted. TaskNotes closes any statistics tabs left in your workspace.
+
+By default, Pomodoro sessions are stored in the plugin's data file (`data.json`). To keep them in your vault, set **Pomodoro data storage** to **Daily notes** under `Settings → TaskNotes → Time & reminders`; existing sessions are moved to the `pomodoros` property of each day's daily note.
+
+### Time by project with Bases
+
+A Bases table can total tracked time by project. Save the following as a `.base` file, for example `Time by project.base`:
+
+```yaml
+filters:
+  and:
+    - file.hasTag("task")
+formulas:
+  trackedMinutes: 'if(timeEntries, list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
+  trackedLast7Days: 'if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
+views:
+  - type: table
+    name: Time by project
+    filters:
+      and:
+        - formula.trackedMinutes > 0
+    groupBy:
+      property: projects
+      direction: ASC
+    order:
+      - file.name
+      - status
+      - timeEstimate
+      - formula.trackedMinutes
+      - formula.trackedLast7Days
+    summaries:
+      timeEstimate: Sum
+      formula.trackedMinutes: Sum
+      formula.trackedLast7Days: Sum
+```
+
+Each project gets a group with the total estimate, total tracked minutes and minutes tracked in the last seven days. A task in several projects forms its own group. The example uses the default property names and the `task` tag; if you have changed them under `Settings → TaskNotes → Properties`, use your names instead. To count a different period, change `"7d"` to, for example, `"30d"`.

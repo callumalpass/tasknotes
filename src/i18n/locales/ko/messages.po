@@ -382,30 +382,15 @@ msgctxt "calendar view name"
 msgid "{count} days"
 msgstr "{count}일"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.less"
-msgid "{count} fewer than yesterday"
-msgstr "어제보다 {count}개 더 적음"
-
 #: src/i18n/messages.ts
 msgctxt "services.notification.missed.summaryTitle"
 msgid "{count} missed TaskNotes reminders"
 msgstr "놓친 TaskNotes 알림 {count}개"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayPomos.change.more"
-msgid "{count} more than yesterday"
-msgstr "어제보다 {count}개 더 많음"
-
 #: src/bases/CalendarView.ts
 msgctxt "calendar view hint"
 msgid "{count}-day view"
 msgstr "{count}일 보기"
-
-#: src/views/stats/charts.ts
-msgctxt "statistics daily time tooltip"
-msgid "{date}: {duration}"
-msgstr "{date}: {duration}"
 
 #: src/i18n/recurrence.ts
 msgctxt "recurrence ordinal number"
@@ -456,16 +441,6 @@ msgstr "{displayName}: "
 msgctxt "modals/TaskSelectorWithCreateModal: TaskSelectorWithCreateModal.buildMetadataParts text"
 msgid "{displayName}: {displayValue}"
 msgstr "{displayName}: {displayValue}"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.less"
-msgid "{duration} less than yesterday"
-msgstr "어제보다 {duration} 더 짧음"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayFocus.change.more"
-msgid "{duration} more than yesterday"
-msgstr "어제보다 {duration} 더 김"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.executeWithRetry display"
@@ -652,11 +627,6 @@ msgctxt "ui/taskCardProperties: icsEventId display"
 msgid "{length, plural, one {Linked to {length, number} calendar event} other {Linked to {length, number} calendar events}}"
 msgstr "{length, plural, other {캘린더 이벤트 {length, number}개에 연결됨}}"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views/StatsView: StatsView.renderDrilldownContent.renderTasks display"
-msgid "{length, plural, one {Showing {length, number} task} other {Showing {length, number} tasks}}"
-msgstr "{length, plural, other {작업 {length, number}개 표시 중}}"
-
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro break notification"
 msgid "{length, select, long {Time for a long break 💤} other {Time for a short break ☕}}"
@@ -671,11 +641,6 @@ msgstr "{minutes, number}분"
 msgctxt "settings.integrations.timeFormats.minutesAgo"
 msgid "{minutes, plural, one {{minutes, number} minute ago} other {{minutes, number} minutes ago}}"
 msgstr "{minutes, plural, other {{minutes, number}분 전}}"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.duration"
-msgid "{minutes} min"
-msgstr "{minutes}분"
 
 #: src/modals/TimeEntryEditorModal.ts
 msgctxt "modals.timeEntryEditor.totalMinutes"
@@ -731,11 +696,6 @@ msgstr "{percent, number}% 완료 ({completed, number}/{total, number})"
 msgctxt "services.notification.missed.message"
 msgid "{prefix}: {text}"
 msgstr "{prefix}: {text}"
-
-#: src/views/StatsView.ts
-msgctxt "views/StatsView: StatsView.openProjectDrilldown display"
-msgid "{projectName} - Detailed View"
-msgstr "{projectName} - 상세 뷰"
 
 #: src/ui/taskCardProperties.ts
 msgctxt "ui/taskCardProperties: renderPropertyMetadata display"
@@ -837,11 +797,6 @@ msgstr "{title}의 예정 일시({when})가 지났습니다"
 msgctxt "services.notification.missed.summaryMore"
 msgid "{titles} and {count} more"
 msgstr "{titles} 외 {count}개"
-
-#: src/views/stats/charts.ts
-msgctxt "views/StatsView: StatsView.renderProgressCircle display"
-msgid "{total, plural, one {{completed, number}/{total, number} task} other {{completed, number}/{total, number} tasks}}"
-msgstr "{total, plural, other {{completed, number}/{total, number}개 작업}}"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.meta.breakReady"
@@ -1235,16 +1190,6 @@ msgctxt "settings.integrations.webhooks.statusLabels.active"
 msgid "Active"
 msgstr "활성"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.filters.activeOnly"
-msgid "Active only"
-msgstr "활성 작업만"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.activeProjects"
-msgid "Active projects"
-msgstr "활성 프로젝트"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskService: TaskService.stopTimeTrackingLocked display"
 msgid "Active time tracking session has changed"
@@ -1254,11 +1199,6 @@ msgstr "진행 중인 시간 추적 세션이 변경되었습니다"
 msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "활성:"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.activity"
-msgid "Activity over time (last 30 days)"
-msgstr "시간에 따른 활동 (지난 30일)"
 
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
@@ -1547,35 +1487,15 @@ msgctxt "settings.native.allNotes"
 msgid "All notes"
 msgstr "모든 노트"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.allTasks"
-msgid "All project tasks"
-msgstr "모든 프로젝트 작업"
-
 #: src/services/TaskCalendarSyncService.ts
 msgctxt "settings.integrations.googleCalendarExport.notices.tasksUnlinked"
 msgid "All task links removed"
 msgstr "모든 작업 링크가 제거되었습니다"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.filters.allTasks"
-msgid "All tasks"
-msgstr "모든 작업"
-
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases view name"
 msgid "All Tasks"
 msgstr "모든 작업"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.allTime"
-msgid "All time"
-msgstr "전체 기간"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.allTime"
-msgid "All time"
-msgstr "전체 기간"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.showAllDayAsFree.description"
@@ -1933,26 +1853,6 @@ msgstr "사용 가능한 API 엔드포인트"
 msgctxt "modals.icsNoteCreation.variables"
 msgid "Available template variables"
 msgstr "사용 가능한 템플릿 변수"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.average"
-msgid "Avg length"
-msgstr "평균 시간"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.average"
-msgid "Avg per task"
-msgstr "작업당 평균"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.avgTimePerTask"
-msgid "Avg time per task"
-msgstr "작업당 평균 시간"
-
-#: src/views/StatsView.ts
-msgctxt "views/StatsView: StatsView.renderProjectStats display"
-msgid "Avg: {value1}/task"
-msgstr "평균: 작업당 {value1}"
 
 #: src/modals/CheckCollectionModal.ts
 msgctxt "collectionCheck.fix"
@@ -2326,7 +2226,6 @@ msgstr "표시할 캘린더"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
-#: src/views/PomodoroStatsView.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "취소"
@@ -2894,16 +2793,6 @@ msgctxt "ui.taskCard.labels.completed"
 msgid "Completed"
 msgstr "완료"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.status.completed"
-msgid "Completed"
-msgstr "완료됨"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.labels.completed"
-msgid "Completed"
-msgstr "완료됨"
-
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.taskProperties.fieldMapping.fields.completedDate"
 msgid "Completed date"
@@ -2934,11 +2823,6 @@ msgctxt "contextMenus.task.completion.completeAsScheduled"
 msgid "Completed on schedule"
 msgstr "예정일에 완료"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.filters.completedOnly"
-msgid "Completed only"
-msgstr "완료된 작업만"
-
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.statsLabel"
 msgid "completed today"
@@ -2948,16 +2832,6 @@ msgstr "오늘 완료"
 msgctxt "contextMenus.task.completion.completeToday"
 msgid "Completed today"
 msgstr "오늘 완료"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.advancedCalendar.timeEntry.completedPrefix"
-msgid "Completed: "
-msgstr "완료: "
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.completion"
-msgid "Completion"
-msgstr "완료율"
 
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.completionDate"
@@ -2973,11 +2847,6 @@ msgstr "완료 시에만"
 msgctxt "ui.audit.completionOrSkip"
 msgid "Completion or skip"
 msgstr "완료 또는 건너뛰기 시"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.completionRate"
-msgid "Completion rate"
-msgstr "완료율"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "modals.taskEdit.sections.completions"
@@ -3692,11 +3561,6 @@ msgctxt "settings.appearance.calendarView.defaultView.options.customMultiDay"
 msgid "Custom multi-day"
 msgstr "사용자 지정 다일"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.customRange"
-msgid "Custom range"
-msgstr "사용자 지정 범위"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.title"
 msgid "Custom recurrence"
@@ -3868,11 +3732,6 @@ msgstr "날짜 탐색"
 msgctxt "bases/calendarViewOptions: buildMiniCalendarViewOptions displayName"
 msgid "Date Property"
 msgstr "날짜 속성"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.dateRange"
-msgid "Date range"
-msgstr "날짜 범위"
 
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
@@ -4137,11 +3996,6 @@ msgctxt "views.advancedCalendar.contextMenus.deleteButton"
 msgid "Delete"
 msgstr "삭제"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteConfirmButton"
-msgid "Delete"
-msgstr "삭제"
-
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirm"
 msgid "Delete \"{title}\" from {provider}?"
@@ -4180,16 +4034,6 @@ msgctxt "settings.integrations.googleCalendarExport.syncOnDelete.name"
 msgid "Delete event on task delete"
 msgstr "작업 삭제 시 이벤트 삭제"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteAria"
-msgid "Delete Pomodoro session"
-msgstr "뽀모도로 세션 삭제"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteConfirmTitle"
-msgid "Delete Pomodoro session?"
-msgstr "뽀모도로 세션을 삭제하시겠습니까?"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.native.deleteProperty"
 msgid "Delete property"
@@ -4199,11 +4043,6 @@ msgstr "속성 삭제"
 msgctxt "settings.defaults.reminders.deleteTooltip"
 msgid "Delete reminder"
 msgstr "리마인더 삭제"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.delete"
-msgid "Delete session"
-msgstr "세션 삭제"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
@@ -4995,11 +4834,6 @@ msgstr "칸반을 불러오는 중 오류가 발생했습니다: {message}"
 msgctxt "bases/MiniCalendarView: MiniCalendarView.renderError display"
 msgid "Error loading mini calendar: {message}"
 msgstr "미니 캘린더를 불러오는 중 오류가 발생했습니다: {message}"
-
-#: src/views/StatsView.ts
-msgctxt "notices.statsLoadingFailed"
-msgid "Error loading project details."
-msgstr "프로젝트 세부정보 로딩 중 오류."
 
 #: src/bases/TaskListView.ts
 msgctxt "bases/TaskListView: TaskListView.renderError display"
@@ -6022,7 +5856,6 @@ msgid "Fill container"
 msgstr "컨테이너 채우기"
 
 #: src/bases/BasesViewBase.ts
-#: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
 msgstr "필터"
@@ -6158,11 +5991,6 @@ msgstr "금요일"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdays.friday"
 msgid "Friday"
 msgstr "금요일"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.dateRangeFrom"
-msgid "From"
-msgstr "시작"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.frontmatter.header"
@@ -6635,11 +6463,6 @@ msgctxt "settings.features.uiLanguage.header"
 msgid "Interface language"
 msgstr "인터페이스 언어"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.status.interrupted"
-msgid "Interrupted"
-msgstr "중단됨"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.interval"
 msgid "Interval"
@@ -6846,26 +6669,6 @@ msgctxt "recurrence position last"
 msgid "last"
 msgstr "마지막"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.last30Days"
-msgid "Last 30 days"
-msgstr "최근 30일"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.last7Days"
-msgid "Last 7 days"
-msgstr "최근 7일"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.timeRanges.last90Days"
-msgid "Last 90 days"
-msgstr "최근 90일"
-
-#: src/views/StatsView.ts
-msgctxt "views/StatsView: StatsView.renderProjectStats display"
-msgid "Last activity: {value1}"
-msgstr "마지막 활동: {value1}"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.lastDay"
 msgid "Last day"
@@ -7057,11 +6860,6 @@ msgstr "리마인더 불러오는 중…"
 msgctxt "contextMenus.task.subtasks.loading"
 msgid "Loading subtasks..."
 msgstr "하위 작업 로딩 중..."
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.loading"
-msgid "Loading..."
-msgstr "로딩 중..."
 
 #: src/settings/native/connections.ts
 msgctxt "settings.integrations.subscriptionsList.typeOptions.local"
@@ -7273,11 +7071,6 @@ msgctxt "modals.storageLocation.title.migrate"
 msgid "Migrate Pomodoro data?"
 msgstr "뽀모도로 데이터를 마이그레이션하시겠습니까?"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.filters.minTime"
-msgid "Min time (minutes)"
-msgstr "최소 시간 (분)"
-
 #: src/bases/MiniCalendarView.ts
 msgctxt "views.miniCalendar.title"
 msgid "Mini calendar"
@@ -7299,7 +7092,6 @@ msgid "minutes"
 msgstr "분"
 
 #: src/modals/ReminderModal.ts
-#: src/views/PomodoroStatsView.ts
 msgctxt "views.pomodoroStats.stats.minutes"
 msgid "Minutes"
 msgstr "분"
@@ -7506,11 +7298,6 @@ msgctxt "cli/helpers/taskResolution: resolveTaskForCli display"
 msgid "Multiple tasks matched title \"{title}\": {value2}"
 msgstr "\"{title}\" 제목에 일치하는 작업이 여러 개입니다: {value2}"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.notAvailable"
-msgid "N/A"
-msgstr "N/A"
-
 #: src/settings/native/features.ts
 msgctxt "settings.native.nameAToZ"
 msgid "Name (ascending)"
@@ -7564,8 +7351,6 @@ msgstr "끝나지 않음"
 
 #: src/bases/BasesViewBase.ts
 #: src/bases/taskListGroupHeader.ts
-#: src/views/stats/drilldown.ts
-#: src/views/StatsView.ts
 msgctxt "common.new"
 msgid "New"
 msgstr "새로 만들기"
@@ -7738,12 +7523,6 @@ msgstr "진행 중인 시간 추적 세션을 찾을 수 없습니다"
 msgctxt "modals.timeTracking.noActiveTasks"
 msgid "No active time tracking session found"
 msgstr "진행 중인 시간 추적 세션을 찾을 수 없습니다"
-
-#: src/views/PomodoroStatsView.ts
-#: src/views/stats/summary.ts
-msgctxt "statistics empty period"
-msgid "No activity in this period."
-msgstr "이 기간에는 활동이 없습니다."
 
 #: src/api/loadAPIEndpoints.ts
 msgctxt "api/loadAPIEndpoints: loadAPIEndpoints text"
@@ -7944,16 +7723,6 @@ msgctxt "services.filter.groupLabels.noProject"
 msgid "No project"
 msgstr "프로젝트 없음"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.noProject"
-msgid "No project"
-msgstr "프로젝트 없음"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.noProjectData"
-msgid "No project data available"
-msgstr "프로젝트 데이터가 없습니다"
-
 #: src/i18n/errorMessages.ts
 msgctxt "services/OAuthService: OAuthService.refreshToken display"
 msgid "No refresh token available for {provider}"
@@ -7978,11 +7747,6 @@ msgstr "예정일 없음"
 msgctxt "contextMenus.task.completion.noScheduledDate"
 msgid "No scheduled date on this task"
 msgstr "이 작업에 예정일이 없습니다"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.empty"
-msgid "No sessions recorded yet"
-msgstr "아직 기록된 세션이 없습니다"
 
 #: src/ui/taskPropertyPickers.ts
 msgctxt "interaction picker"
@@ -8030,11 +7794,6 @@ msgctxt "modals.timeTracking.noTasksAvailable"
 msgid "No tasks available to track time for"
 msgstr "시간을 추적할 수 있는 작업이 없습니다"
 
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.noTasks"
-msgid "No tasks found"
-msgstr "작업을 찾을 수 없습니다"
-
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.noTasksToExport"
 msgid "No tasks found to export"
@@ -8069,11 +7828,6 @@ msgstr "아직 작업이 없습니다."
 msgctxt "modals.timeEntryEditor.noEntries"
 msgid "No time entries yet"
 msgstr "아직 시간 기록이 없습니다"
-
-#: src/views/stats/charts.ts
-msgctxt "views.stats.project.noTracking"
-msgid "No time tracking data"
-msgstr "시간 추적 데이터가 없습니다"
 
 #: src/i18n/errorMessages.ts
 msgctxt "utils/helpers: updateTimeblockTimes display"
@@ -8582,11 +8336,6 @@ msgctxt "modals.actionPalette.openOccurrence"
 msgid "Open or create occurrence note"
 msgstr "회차 노트 열기 또는 만들기"
 
-#: src/commands/taskNotesCommands.ts
-msgctxt "commands.openPomodoroStats"
-msgid "Open Pomodoro statistics"
-msgstr "뽀모도로 통계 열기"
-
 #: src/bootstrap/pluginBootstrap.ts
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.openPomodoroView"
@@ -8611,11 +8360,6 @@ msgstr "{occurrence_date} 회차의 반복 상위 작업 열기"
 msgctxt "interaction shortcut"
 msgid "Open task"
 msgstr "작업 열기"
-
-#: src/commands/taskNotesCommands.ts
-msgctxt "commands.openStatisticsView"
-msgid "Open task & project statistics"
-msgstr "작업 및 프로젝트 통계 열기"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.taskCreation.openAfterCreate.name"
@@ -9004,7 +8748,6 @@ msgid "Point your phone’s camera at the code for your phone."
 msgstr "휴대폰 카메라를 해당하는 코드에 비추세요."
 
 #: src/views/PomodoroView.ts
-#: src/views/stats/charts.ts
 msgctxt "views.pomodoro.title"
 msgid "Pomodoro"
 msgstr "뽀모도로"
@@ -9013,11 +8756,6 @@ msgstr "뽀모도로"
 msgctxt "cli/commands/pomodoroCommand: defaults description"
 msgid "Pomodoro action to perform (default: status)"
 msgstr "수행할 뽀모도로 동작(기본값: status)"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.basesMigration.description"
-msgid "Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes."
-msgstr "뽀모도로 베이스 뷰는 데일리 노트의 프런트매터를 사용합니다. 생성된 뽀모도로 통계 베이스에서 기록을 보려면 설정에서 뽀모도로 데이터를 이전한 뒤 저장 위치를 데일리 노트로 설정하세요."
 
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.pomodoroCompleted.label"
@@ -9054,16 +8792,6 @@ msgctxt "modals.storageLocation.message.switch"
 msgid "Pomodoro session data will be stored in daily notes frontmatter instead of the plugin data file."
 msgstr "뽀모도로 세션 데이터가 플러그인 데이터 파일 대신 데일리 노트 프런트매터에 저장됩니다."
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteSuccess"
-msgid "Pomodoro session deleted"
-msgstr "뽀모도로 세션이 삭제되었습니다"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteNotFound"
-msgid "Pomodoro session was not found"
-msgstr "뽀모도로 세션을 찾을 수 없습니다"
-
 #: src/services/PomodoroService.ts
 msgctxt "pomodoro start notification"
 msgid "Pomodoro started"
@@ -9079,20 +8807,10 @@ msgctxt "pomodoro start notification"
 msgid "Pomodoro started for {title}"
 msgstr "{title}의 뽀모도로 시작됨"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.heading"
-msgid "Pomodoro statistics"
-msgstr "뽀모도로 통계"
-
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.commands.pomodoroStats"
 msgid "Pomodoro statistics base"
 msgstr "뽀모도로 통계 베이스"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.title"
-msgid "Pomodoro stats"
-msgstr "뽀모도로 통계"
 
 #: src/services/PomodoroService.ts
 msgctxt "services.pomodoro.notices.stoppedAndReset"
@@ -9108,11 +8826,6 @@ msgstr "뽀모도로 저장 위치 변경 완료: {location}"
 msgctxt "settings.features.pomodoro.header"
 msgid "Pomodoro timer"
 msgstr "뽀모도로 타이머"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.pomodoros"
-msgid "Pomodoros"
-msgstr "뽀모도로"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.description"
@@ -9225,11 +8938,6 @@ msgctxt "ui.filterBar.group.project"
 msgid "Project"
 msgstr "프로젝트"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.projectBreakdown"
-msgid "Project breakdown"
-msgstr "프로젝트별 분석"
-
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "settings.appearance.projectAutosuggest.requiredTags.placeholder"
 msgid "project, active, important"
@@ -9260,11 +8968,6 @@ msgstr "프로젝트"
 
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
-msgid "Projects"
-msgstr "프로젝트"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.labels.projects"
 msgid "Projects"
 msgstr "프로젝트"
 
@@ -9383,11 +9086,6 @@ msgctxt "views.pomodoro.status.ready"
 msgid "Ready to start"
 msgstr "시작 준비 완료"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.recent"
-msgid "Recent sessions"
-msgstr "최근 세션"
-
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
@@ -9462,16 +9160,6 @@ msgstr "새로고침"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "views.notes.refreshButton"
-msgid "Refresh"
-msgstr "새로고침"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.refresh"
-msgid "Refresh"
-msgstr "새로고침"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.refreshButton"
 msgid "Refresh"
 msgstr "새로고침"
 
@@ -9797,11 +9485,6 @@ msgstr "필드 초기화"
 msgctxt "settings.native.resetFileMapping"
 msgid "Reset file mapping"
 msgstr "파일 매핑 초기화"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.resetFiltersButton"
-msgid "Reset filters"
-msgstr "필터 초기화"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.resetFormFields"
@@ -10788,7 +10471,6 @@ msgctxt "views.basesCalendar.settings.propertyBasedEvents.startDateProperty"
 msgid "Start date property"
 msgstr "시작일 속성"
 
-#: src/views/PomodoroStatsView.ts
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.startFocus"
 msgid "Start focus"
@@ -10875,11 +10557,6 @@ msgstr "이 작업의 시간 추적 시작"
 msgctxt "modals.icsNoteCreation.startLabel"
 msgid "Start: "
 msgstr "시작: "
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.title"
-msgid "Statistics"
-msgstr "통계"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
@@ -10991,11 +10668,6 @@ msgstr "TaskNotes 설정이 아닌 Obsidian 비밀 저장소에 보관됩니다.
 msgctxt "settings.native.storedInTaskNotesChangingThisDoesNotRename"
 msgid "Stored in task notes. Changing this does not rename values in existing notes."
 msgstr "작업 노트에 저장됩니다. 변경해도 기존 노트의 값 이름은 바뀌지 않습니다."
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.stats.streak"
-msgid "Streak"
-msgstr "연속 기록"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showCompletedTaskStrikethrough.name"
@@ -11315,11 +10987,6 @@ msgstr "작업"
 msgctxt "modals.icsEventInfo.typeTask"
 msgid "Task"
 msgstr "작업"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.taskProjectStats"
-msgid "Task & project statistics"
-msgstr "작업 및 프로젝트 통계"
 
 #: src/main.ts
 msgctxt "notices.commands.archived"
@@ -11838,11 +11505,6 @@ msgctxt "settings.calendarService.disconnect.confirmMessage"
 msgid "TaskNotes will stop showing Google Calendar events on every device where you signed in with Google. Your events in Google Calendar are not changed."
 msgstr "Google로 로그인한 모든 기기에서 TaskNotes가 Google 캘린더 일정을 더 이상 표시하지 않습니다. Google 캘린더의 일정은 변경되지 않습니다."
 
-#: src/views/stats/summary.ts
-msgctxt "views.stats.labels.tasks"
-msgid "Tasks"
-msgstr "작업"
-
 #: src/bases/BasesViewBase.ts
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.copiedTasks"
@@ -12011,11 +11673,6 @@ msgstr "현재 드래그 중인 작업입니다."
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
-msgid "This month"
-msgstr "이번 달"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.thisMonth"
 msgid "This month"
 msgstr "이번 달"
 
@@ -12270,11 +11927,6 @@ msgctxt "settings.native.thisRemovesTheSavedClientIDAndClientSecret"
 msgid "This removes the saved client ID and client secret from Obsidian secret storage."
 msgstr "Obsidian 비밀 저장소에서 클라이언트 ID와 비밀 키를 제거합니다."
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.recents.deleteConfirmMessage"
-msgid "This removes the session from Pomodoro history. Existing task time entries are not changed."
-msgstr "뽀모도로 기록에서 이 세션을 삭제합니다. 기존 작업의 시간 기록은 변경되지 않습니다."
-
 #: src/main.ts
 msgctxt "notices.commands.repeatOccurrence"
 msgid "This task is an occurrence of a recurring task"
@@ -12319,16 +11971,6 @@ msgstr "이 보관함"
 
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases grouping label"
-msgid "This week"
-msgstr "이번 주"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.week"
-msgid "This week"
-msgstr "이번 주"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.thisWeek"
 msgid "This week"
 msgstr "이번 주"
 
@@ -12489,12 +12131,6 @@ msgstr "시간 추적 중지됨"
 msgctxt "settings.appearance.timeSettings.initialScrollTime.description"
 msgid "Time to scroll to when opening timeline views (HH:MM format)"
 msgstr "타임라인 뷰를 열 때 스크롤할 시간 (HH:MM 형식)"
-
-#: src/views/stats/summary.ts
-#: src/views/StatsView.ts
-msgctxt "views.stats.cards.timeTrackedEstimated"
-msgid "Time tracked / estimated"
-msgstr "기록 시간 / 예상 시간"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.timeTrackingSection.header"
@@ -12698,11 +12334,6 @@ msgctxt "suggest/FileSuggestHelper: suggest.run display"
 msgid "title: {title}"
 msgstr "제목: {title}"
 
-#: src/views/StatsView.ts
-msgctxt "views.stats.dateRangeTo"
-msgid "To"
-msgstr "종료"
-
 #: src/modals/FileSelectorModal.ts
 #: src/modals/ProjectSelectModal.ts
 #: src/modals/TaskSelectorWithCreateModal.ts
@@ -12821,30 +12452,10 @@ msgctxt "views.basesCalendar.today"
 msgid "Today"
 msgstr "오늘"
 
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.sections.today"
-msgid "Today"
-msgstr "오늘"
-
-#: src/views/StatsView.ts
-msgctxt "views.stats.sections.today"
-msgid "Today"
-msgstr "오늘"
-
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.todayColumnWidthMultiplier"
 msgid "Today column width (×)"
 msgstr "오늘 열 너비 (배)"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayFocus.label"
-msgid "Today''s focus"
-msgstr "오늘의 집중 시간"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.todayPomos.label"
-msgid "Today''s pomos"
-msgstr "오늘의 뽀모도로"
 
 #: src/bases/KanbanView.ts
 msgctxt "views.kanban.toggleColumn"
@@ -12923,31 +12534,6 @@ msgstr "내일"
 msgctxt "settings.appearance.uiElements.relationshipsPosition.options.top"
 msgid "Top of note"
 msgstr "노트 상단"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.totalFocus.label"
-msgid "Total focus duration"
-msgstr "총 집중 시간"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.overviewCards.totalPomos.label"
-msgid "Total pomos"
-msgstr "총 뽀모도로"
-
-#: src/views/stats/summary.ts
-msgctxt "views.stats.cards.totalTasks"
-msgid "Total tasks"
-msgstr "총 작업"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.totalTasks"
-msgid "Total tasks"
-msgstr "총 작업"
-
-#: src/views/stats/drilldown.ts
-msgctxt "views.stats.project.totalTime"
-msgid "Total time"
-msgstr "총 시간"
 
 #: src/utils/propertyHelpers.ts
 msgctxt "settings.appearance.taskCards.properties.totalTrackedTime"
@@ -13525,11 +13111,6 @@ msgstr "인증 대기 중..."
 msgctxt "settings.calendarService.waiting.name"
 msgid "Waiting for you to finish in your browser"
 msgstr "브라우저에서 작업을 마칠 때까지 기다리는 중"
-
-#: src/views/PomodoroStatsView.ts
-msgctxt "views.pomodoroStats.basesMigration.title"
-msgid "Want a base view?"
-msgstr "베이스 뷰를 사용하시겠습니까?"
 
 #: src/views/ReleaseNotesView.ts
 msgctxt "views.releaseNotes.starMessage"

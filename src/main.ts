@@ -926,14 +926,6 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.workspaceNavigationService.activatePomodoroView();
 	}
 
-	async activatePomodoroStatsView() {
-		return this.workspaceNavigationService.activatePomodoroStatsView();
-	}
-
-	async activateStatsView() {
-		return this.workspaceNavigationService.activateStatsView();
-	}
-
 	async activateReleaseNotesView() {
 		return this.workspaceNavigationService.activateReleaseNotesView();
 	}

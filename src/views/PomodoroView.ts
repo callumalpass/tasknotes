@@ -449,10 +449,7 @@ export class PomodoroView extends ItemView {
 		this.statsDisplay = statsSection.createDiv({ cls: "pomodoro-view__stats" });
 
 		// Create minimal stat elements
-		const pomodoroStat = this.statsDisplay.createEl("button", {
-			cls: "tn-btn tn-btn--ghost pomodoro-view__stat pomodoro-view__stat--clickable",
-		});
-		this.registerDomEvent(pomodoroStat, "click", () => { void this.plugin.activatePomodoroStatsView(); });
+		const pomodoroStat = this.statsDisplay.createDiv({ cls: "pomodoro-view__stat" });
 		this.statElements.pomodoros = pomodoroStat.createSpan({
 			cls: "pomodoro-view__stat-value",
 			text: "0",

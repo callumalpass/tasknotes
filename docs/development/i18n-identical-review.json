@@ -39,12 +39,6 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
-        "id": "2Y6vv9",
-        "message": "{minutes} min",
-        "context": "views.pomodoroStats.recents.duration",
-        "reason": "Standard minute abbreviation"
-      },
-      {
         "id": "3Oe9si",
         "message": "UUID v4",
         "context": "settings.appearance.taskFilenames.filenameFormat.options.uuid",
@@ -357,12 +351,6 @@
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
       },
       {
-        "id": "so9I-j",
-        "message": "Pomodoros",
-        "context": "views.pomodoroStats.stats.pomodoros",
-        "reason": "Locale-valid plural of the named technique"
-      },
-      {
         "id": "veiAoK",
         "message": "15",
         "context": "settings.appearance.timeSettings.eventMinHeight.placeholder",
@@ -435,12 +423,6 @@
         "message": "'{'aliases|n(Aliases)'}'",
         "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
-      },
-      {
-        "id": "2Y6vv9",
-        "message": "{minutes} min",
-        "context": "views.pomodoroStats.recents.duration",
-        "reason": "Standard minute abbreviation"
       },
       {
         "id": "30_Hpx",
@@ -701,12 +683,6 @@
         "reason": "URL acronym"
       },
       {
-        "id": "XMobL1",
-        "message": "{date}: {duration}",
-        "context": "statistics daily time tooltip",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "YC_bjz",
         "message": "06:00",
         "context": "settings.appearance.timeSettings.startTime.placeholder",
@@ -869,12 +845,6 @@
         "reason": "Individually reviewed de cognate/loanword; identical spelling is correct, not English fallback"
       },
       {
-        "id": "so9I-j",
-        "message": "Pomodoros",
-        "context": "views.pomodoroStats.stats.pomodoros",
-        "reason": "Locale-valid plural of the named technique"
-      },
-      {
         "id": "tfrEWg",
         "message": "\nStatus: {value1}",
         "context": "bases/calendar-core: generateTaskTooltip display",
@@ -983,12 +953,6 @@
         "message": "'{'aliases|n(Aliases)'}'",
         "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
-      },
-      {
-        "id": "2Y6vv9",
-        "message": "{minutes} min",
-        "context": "views.pomodoroStats.recents.duration",
-        "reason": "Standard minute abbreviation"
       },
       {
         "id": "30_Hpx",
@@ -1237,12 +1201,6 @@
         "reason": "URL acronym"
       },
       {
-        "id": "XMobL1",
-        "message": "{date}: {duration}",
-        "context": "statistics daily time tooltip",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "YC_bjz",
         "message": "06:00",
         "context": "settings.appearance.timeSettings.startTime.placeholder",
@@ -1367,12 +1325,6 @@
         "message": "#3b82f6",
         "context": "modals.timeblockInfo.colorPlaceholder",
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
-      },
-      {
-        "id": "so9I-j",
-        "message": "Pomodoros",
-        "context": "views.pomodoroStats.stats.pomodoros",
-        "reason": "Locale-valid plural of the named technique"
       },
       {
         "id": "veiAoK",
@@ -1569,12 +1521,6 @@
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
-        "id": "XMobL1",
-        "message": "{date}: {duration}",
-        "context": "statistics daily time tooltip",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "YC_bjz",
         "message": "06:00",
         "context": "settings.appearance.timeSettings.startTime.placeholder",
@@ -1639,12 +1585,6 @@
         "message": "3",
         "context": "settings.appearance.calendarView.customDayCount.placeholder",
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
-        "id": "pEX5XU",
-        "message": "N/A",
-        "context": "views.stats.notAvailable",
-        "reason": "Standard unavailable-value notation"
       },
       {
         "id": "qtA22g",
@@ -1919,12 +1859,6 @@
         "reason": "URL acronym"
       },
       {
-        "id": "XMobL1",
-        "message": "{date}: {duration}",
-        "context": "statistics daily time tooltip",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "YC_bjz",
         "message": "06:00",
         "context": "settings.appearance.timeSettings.startTime.placeholder",
@@ -1995,12 +1929,6 @@
         "message": "3",
         "context": "settings.appearance.calendarView.customDayCount.placeholder",
         "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
-        "id": "pEX5XU",
-        "message": "N/A",
-        "context": "views.stats.notAvailable",
-        "reason": "Standard unavailable-value notation"
       },
       {
         "id": "qtA22g",
@@ -2099,12 +2027,6 @@
         "message": "'{'aliases|n(Aliases)'}'",
         "context": "settings.appearance.projectAutosuggest.displayRows.row2.placeholder",
         "reason": "Reviewed literal filename/template/format/color/tag example; preserve native syntax and identifiers"
-      },
-      {
-        "id": "2Y6vv9",
-        "message": "{minutes} min",
-        "context": "views.pomodoroStats.recents.duration",
-        "reason": "Standard minute abbreviation"
       },
       {
         "id": "30_Hpx",
@@ -2359,12 +2281,6 @@
         "reason": "URL acronym"
       },
       {
-        "id": "XMobL1",
-        "message": "{date}: {duration}",
-        "context": "statistics daily time tooltip",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
-      },
-      {
         "id": "YC_bjz",
         "message": "06:00",
         "context": "settings.appearance.timeSettings.startTime.placeholder",
@@ -2513,12 +2429,6 @@
         "message": "aliases: {value1}",
         "context": "suggest/FileSuggestHelper: suggest.run display",
         "reason": "Native metadata property name"
-      },
-      {
-        "id": "so9I-j",
-        "message": "Pomodoros",
-        "context": "views.pomodoroStats.stats.pomodoros",
-        "reason": "Locale-valid plural of the named technique"
       },
       {
         "id": "tfrEWg",
@@ -2761,12 +2671,6 @@
         "message": "URL:",
         "context": "settings.integrations.subscriptionsList.labels.url",
         "reason": "URL acronym"
-      },
-      {
-        "id": "XMobL1",
-        "message": "{date}: {duration}",
-        "context": "statistics daily time tooltip",
-        "reason": "Nonverbal parameter layout, numeric example or symbol; localized/user-owned parameter values are supplied by callers"
       },
       {
         "id": "YC_bjz",

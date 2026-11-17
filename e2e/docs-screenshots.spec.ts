@@ -364,7 +364,7 @@ test.describe('Task Modal', () => {
 
 // ============================================================================
 // POMODORO SCREENSHOTS
-// Timer and statistics views
+// Timer view
 // ============================================================================
 
 test.describe('Pomodoro Timer', () => {
@@ -376,33 +376,6 @@ test.describe('Pomodoro Timer', () => {
     await page.waitForTimeout(1000);
 
     await docScreenshot(page, 'feature-pomodoro-timer');
-  });
-
-  test('pomodoro-statistics', async () => {
-    const page = getPage();
-    await ensureCleanState(page);
-
-    await runCommand(page, 'Open pomodoro statistics');
-    await page.waitForTimeout(1000);
-
-    await docScreenshot(page, 'feature-pomodoro-stats');
-  });
-});
-
-// ============================================================================
-// STATISTICS SCREENSHOTS
-// Task and project analytics
-// ============================================================================
-
-test.describe('Statistics', () => {
-  test('task-statistics', async () => {
-    const page = getPage();
-    await ensureCleanState(page);
-
-    await runCommand(page, 'Open task & project statistics');
-    await page.waitForTimeout(1000);
-
-    await docScreenshot(page, 'feature-task-statistics');
   });
 });
 

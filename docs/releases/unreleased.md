@@ -68,4 +68,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Boards in a note's relationships panel show only the columns that have tasks. Set **Hide empty columns** on the view to change this. New relationships base files set this option for the Subtasks and Blocking boards.
 - In the task dialog, the Contexts, Tags and Time estimate fields show "Add contexts", "Add tags" and "Add estimate" when empty, instead of example values. When the full form is open, the task's projects appear only in the Projects field, not also as a chip in the property row.
 
+## Removed
+
+- Removed the Statistics and Pomodoro statistics views again, with their **Open task & project statistics** and **Open Pomodoro statistics** commands. Version 5.0.0-beta.5 removed them, but later betas brought them back. Time tracking, the Pomodoro timer and recorded sessions are unchanged. TaskNotes closes any statistics tabs left in your workspace. The Pomodoro view's "completed today" count no longer opens the statistics view. To total tracked time by project, see [Time by project with Bases](https://tasknotes.dev/features/time-management/#time-by-project-with-bases).
+
 ## Security
