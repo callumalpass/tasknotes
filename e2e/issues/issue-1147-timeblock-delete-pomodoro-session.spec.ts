@@ -59,8 +59,18 @@ test("deletes a daily-note Pomodoro session from Recent sessions (#1147)", async
 			return history.some((session: { id: string }) => session.id === id);
 		}, sessionId);
 
+	// History is read through Obsidian's metadata cache, which can lag well behind the
+	// write while a large vault is still being indexed. Check the stored note itself.
+	const sessionInDailyNote = () =>
+		page.evaluate(async (id) => {
+			const obsidian = (window as any).app;
+			const file = obsidian.vault.getAbstractFileByPath(`${window.moment().format("YYYY-MM-DD")}.md`);
+			return file ? (await obsidian.vault.read(file)).includes(id) : false;
+		}, sessionId);
+
 	try {
 		await expect.poll(hasSession).toBe(true);
+		expect(await sessionInDailyNote()).toBe(true);
 		await runCommand(page, "TaskNotes: Open Pomodoro timer");
 		const recent = page.locator(".pomodoro-view__recent");
 		await recent.locator("summary").click();
@@ -72,7 +82,7 @@ test("deletes a daily-note Pomodoro session from Recent sessions (#1147)", async
 		await rows.first().locator(".pomodoro-view__recent-delete").click();
 		await page.locator(".modal-container button.mod-warning").click();
 
-		await expect.poll(hasSession).toBe(false);
+		await expect.poll(sessionInDailyNote).toBe(false);
 		await expect(rows).toHaveCount(before - 1);
 	} finally {
 		await page.evaluate(async ({ storage, createdNote }) => {
