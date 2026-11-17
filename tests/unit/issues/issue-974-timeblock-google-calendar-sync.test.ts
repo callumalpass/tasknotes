@@ -154,6 +154,25 @@ describe("Issue #974: sync daily-note timeblocks to Google Calendar", () => {
 		]);
 	});
 
+	it("ends the description with a clickable Obsidian link and escapes timeblock text (#2267)", async () => {
+		const notePath = "Daily/2026-11-02.md";
+		const notes: Notes = new Map([[notePath, { date: "2026-11-02", timeblocks: [] }]]);
+		const { google, plugin, sync } = setup(notes, {}, { includeObsidianLink: true });
+		plugin.app.vault.getName = jest.fn(() => "My Vault");
+
+		notes.get(notePath)!.timeblocks.push(timeblock("linked", { description: "Plan <Q&A>" }));
+		sync.handleNoteChanged(notePath);
+		await sync.flush();
+
+		const event = (google.createEvent.mock.calls[0] as unknown[])[1] as { description: string };
+		expect(event.description.split("\n")).toEqual([
+			"Plan &lt;Q&amp;A&gt;",
+			"",
+			"---",
+			'<a href="obsidian://open?vault=My%20Vault&amp;file=Daily%2F2026-11-02.md">Open in Obsidian</a>',
+		]);
+	});
+
 	it("lists daily notes only once sync is turned on, then syncs only later edits", async () => {
 		const notePath = "Daily/2026-11-02.md";
 		const notes: Notes = new Map([
