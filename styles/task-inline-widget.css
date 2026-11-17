@@ -607,15 +607,15 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
         min-height: var(--tn-touch-target);
     }
 
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty .task-card__main-row {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty > .task-card__main-row {
         grid-template-rows: var(--tn-touch-target);
     }
 
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty .task-card__title {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty > :where(.task-card__main-row) .task-card__title {
         grid-column: 2;
     }
 
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty :is(.task-card__priority-dot, .task-card__context-menu, .task-card__content, .task-card__status-dot) {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty > :where(.task-card__main-row) :is(.task-card__priority-dot, .task-card__context-menu, .task-card__content, .task-card__status-dot) {
         grid-row: 1;
     }
 

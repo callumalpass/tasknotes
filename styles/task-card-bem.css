@@ -1537,23 +1537,23 @@ body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__met
     font-size: inherit;
 }
 
-body .tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--has-interactive-badges, .task-card--has-decorative-badges) .task-card__metadata {
+body .tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--has-interactive-badges, .task-card--has-decorative-badges) > :where(.task-card__main-row) .task-card__metadata {
     grid-column: 2 / -1;
 }
 
-body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__main-row {
+body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > .task-card__main-row {
     grid-template-rows: var(--tn-task-control);
 }
 
-body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__title-text {
+body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) .task-card__title-text {
     grid-column: 2;
 }
 
-body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__badges {
+body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) .task-card__badges {
     grid-column: 3;
 }
 
-body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) :is(.task-card__content, .task-card__title, .task-card__priority-dot, .task-card__badges, .task-card__context-menu, .task-card__drag-handle, .task-card__status-dot) {
+body .tasknotes-plugin .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) :is(.task-card__content, .task-card__title, .task-card__priority-dot, .task-card__badges, .task-card__context-menu, .task-card__drag-handle, .task-card__status-dot) {
     grid-row: 1;
 }
 
