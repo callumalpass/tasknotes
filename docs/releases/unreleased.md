@@ -44,6 +44,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - The mini calendar's day list no longer shows "00:00" for tasks that have a date but no time. This happened when the view's date property had no `note.` prefix, as in the default mini calendar views.
 - With **Pomodoro data storage** set to Daily notes, a finished session is no longer lost when the daily note can't be created or the Daily notes plugin is off. It is saved to `data.json` and still appears in your history.
 - (#2267) With **Include Obsidian link** on, Google Calendar event descriptions for tasks and timeblocks show a clickable "Open in Obsidian" link again, instead of the `obsidian://` address as plain text. Existing events get the link the next time the task or timeblock is synced. Thanks to @techy-robot for reporting.
+- Fixed task completion events connecting to the published mdbase plugin (`mdbase-sync`) when **Allow plugin integrations** is enabled. Unsupported bridge API versions are ignored.
 
 ## Changed
 
