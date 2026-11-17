@@ -439,7 +439,7 @@ views:
       await expect(todayCell).toHaveAttribute('aria-selected', 'true');
       await expect(page.locator('.note-selector-modal')).toHaveCount(0);
       await expect(page.locator('.note-selector-modal__title').filter({ hasText: 'Review calendar' })).toBeVisible();
-      await expect(page.locator('.note-selector-modal__title .tn-task-glyphs').first()).toBeVisible();
+      await expect(page.locator('.note-selector-modal__title .tn-task-glyphs__status').first()).toBeVisible();
       await page.keyboard.press('Escape');
       await mini.locator('.mini-calendar-view__day:not(.mini-calendar-view__day--outside-month):not([aria-current="date"])').first().click();
       await expect(todayCell).toHaveAttribute('aria-selected', 'false');

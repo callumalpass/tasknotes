@@ -294,7 +294,7 @@ function configuredValues(
 						desc: ctx.t(msg({ message: "A CSS color or theme variable, such as var(--text-accent).", context: "settings.native.aCSSColorOrThemeVariableSuchAsVar" })),
 					}
 				),
-				ctx.field(
+				ctx.icon(
 					item,
 					"icon",
 					`${id}.icon`,

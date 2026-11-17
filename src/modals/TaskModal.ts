@@ -778,6 +778,7 @@ export abstract class TaskModal extends Modal {
 			);
 			this.containerEl.removeClass("expanded");
 			this.syncCompactLayout();
+			this.updateProjectChip();
 		});
 	}
 
@@ -1145,12 +1146,16 @@ export abstract class TaskModal extends Modal {
 		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 }, anchor.ownerDocument);
 	}
 
-	/** Projects get a chip in the property row once the task has any. */
+	/**
+	 * Projects get a chip in the property row once the task has any. While the expanded form
+	 * shows the Projects field, the chip would repeat it, so it is hidden.
+	 */
 	private updateProjectChip(): void {
 		const chip = this.projectChip;
 		if (!chip) return;
 		const items = this.selectedProjectItems;
-		chip.hidden = items.length === 0;
+		const fieldShown = this.isExpanded && Boolean(this.projectsList && this.containerEl.contains(this.projectsList));
+		chip.hidden = items.length === 0 || fieldShown;
 		chip.classList.toggle("has-value", items.length > 0);
 		const label = chip.querySelector<HTMLElement>(".action-icon__label");
 		if (!label || items.length === 0) return;
@@ -1368,6 +1373,7 @@ export abstract class TaskModal extends Modal {
 			this.isExpanded = true;
 			this.containerEl.classList.add("expanded");
 			this.syncCompactLayout();
+			this.updateProjectChip();
 			setTaskModalDetailsCollapsed(
 				{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
 				false

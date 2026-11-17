@@ -699,11 +699,6 @@
     "message": "Recurring: ",
     "context": "views.advancedCalendar.timeEntry.recurringPrefix"
   },
-  "views.advancedCalendar.timeEntry.completedPrefix": {
-    "id": "OxEd6G",
-    "message": "Completed: ",
-    "context": "views.advancedCalendar.timeEntry.completedPrefix"
-  },
   "views.advancedCalendar.timeEntry.createdPrefix": {
     "id": "gBAnFQ",
     "message": "Created: ",
@@ -1464,215 +1459,15 @@
     "message": "completed today",
     "context": "views.pomodoro.statsLabel"
   },
-  "views.pomodoroStats.title": {
-    "id": "1lLTl7",
-    "message": "Pomodoro stats",
-    "context": "views.pomodoroStats.title"
-  },
-  "views.pomodoroStats.heading": {
-    "id": "QkquLn",
-    "message": "Pomodoro statistics",
-    "context": "views.pomodoroStats.heading"
-  },
-  "views.pomodoroStats.refresh": {
-    "id": "AAK6Dd",
-    "message": "Refresh",
-    "context": "views.pomodoroStats.refresh"
-  },
-  "views.pomodoroStats.basesMigration.title": {
-    "id": "JRXfl5",
-    "message": "Want a base view?",
-    "context": "views.pomodoroStats.basesMigration.title"
-  },
-  "views.pomodoroStats.basesMigration.description": {
-    "id": "WAHXN6",
-    "message": "Pomodoro base views use daily notes frontmatter; to see this history in the generated Pomodoro statistics base, migrate Pomodoro data in settings, then set storage to daily notes.",
-    "context": "views.pomodoroStats.basesMigration.description"
-  },
   "views.pomodoroStats.sections.overview": {
     "id": "7G_dLB",
     "message": "Overview",
     "context": "views.pomodoroStats.sections.overview"
   },
-  "views.pomodoroStats.sections.today": {
-    "id": "nIM457",
-    "message": "Today",
-    "context": "views.pomodoroStats.sections.today"
-  },
-  "views.pomodoroStats.sections.week": {
-    "id": "t3Bd-F",
-    "message": "This week",
-    "context": "views.pomodoroStats.sections.week"
-  },
-  "views.pomodoroStats.sections.allTime": {
-    "id": "8IDZoq",
-    "message": "All time",
-    "context": "views.pomodoroStats.sections.allTime"
-  },
-  "views.pomodoroStats.sections.recent": {
-    "id": "yackXm",
-    "message": "Recent sessions",
-    "context": "views.pomodoroStats.sections.recent"
-  },
-  "views.pomodoroStats.overviewCards.todayPomos.label": {
-    "id": "pjbu0m",
-    "message": "Today''s pomos",
-    "context": "views.pomodoroStats.overviewCards.todayPomos.label"
-  },
-  "views.pomodoroStats.overviewCards.todayPomos.change.more": {
-    "id": "42vcvu",
-    "message": "{count} more than yesterday",
-    "context": "views.pomodoroStats.overviewCards.todayPomos.change.more"
-  },
-  "views.pomodoroStats.overviewCards.todayPomos.change.less": {
-    "id": "rO70p0",
-    "message": "{count} fewer than yesterday",
-    "context": "views.pomodoroStats.overviewCards.todayPomos.change.less"
-  },
-  "views.pomodoroStats.overviewCards.totalPomos.label": {
-    "id": "k291SY",
-    "message": "Total pomos",
-    "context": "views.pomodoroStats.overviewCards.totalPomos.label"
-  },
-  "views.pomodoroStats.overviewCards.todayFocus.label": {
-    "id": "zKPxqy",
-    "message": "Today''s focus",
-    "context": "views.pomodoroStats.overviewCards.todayFocus.label"
-  },
-  "views.pomodoroStats.overviewCards.todayFocus.change.more": {
-    "id": "DKISZp",
-    "message": "{duration} more than yesterday",
-    "context": "views.pomodoroStats.overviewCards.todayFocus.change.more"
-  },
-  "views.pomodoroStats.overviewCards.todayFocus.change.less": {
-    "id": "F9c9nM",
-    "message": "{duration} less than yesterday",
-    "context": "views.pomodoroStats.overviewCards.todayFocus.change.less"
-  },
-  "views.pomodoroStats.overviewCards.totalFocus.label": {
-    "id": "gzSZCs",
-    "message": "Total focus duration",
-    "context": "views.pomodoroStats.overviewCards.totalFocus.label"
-  },
-  "views.pomodoroStats.stats.pomodoros": {
-    "id": "so9I-j",
-    "message": "Pomodoros",
-    "context": "views.pomodoroStats.stats.pomodoros"
-  },
-  "views.pomodoroStats.stats.streak": {
-    "id": "NEeOxj",
-    "message": "Streak",
-    "context": "views.pomodoroStats.stats.streak"
-  },
   "views.pomodoroStats.stats.minutes": {
     "id": "GOMvlq",
     "message": "Minutes",
     "context": "views.pomodoroStats.stats.minutes"
-  },
-  "views.pomodoroStats.stats.average": {
-    "id": "dLuRt_",
-    "message": "Avg length",
-    "context": "views.pomodoroStats.stats.average"
-  },
-  "views.pomodoroStats.stats.completion": {
-    "id": "Hixjth",
-    "message": "Completion",
-    "context": "views.pomodoroStats.stats.completion"
-  },
-  "views.pomodoroStats.recents.empty": {
-    "id": "bBupWq",
-    "message": "No sessions recorded yet",
-    "context": "views.pomodoroStats.recents.empty"
-  },
-  "views.pomodoroStats.recents.duration": {
-    "id": "2Y6vv9",
-    "message": "{minutes} min",
-    "context": "views.pomodoroStats.recents.duration"
-  },
-  "views.pomodoroStats.recents.delete": {
-    "id": "T4mF0y",
-    "message": "Delete session",
-    "context": "views.pomodoroStats.recents.delete"
-  },
-  "views.pomodoroStats.recents.deleteAria": {
-    "id": "uWwGM3",
-    "message": "Delete Pomodoro session",
-    "context": "views.pomodoroStats.recents.deleteAria"
-  },
-  "views.pomodoroStats.recents.deleteConfirmTitle": {
-    "id": "fKeB6E",
-    "message": "Delete Pomodoro session?",
-    "context": "views.pomodoroStats.recents.deleteConfirmTitle"
-  },
-  "views.pomodoroStats.recents.deleteConfirmMessage": {
-    "id": "g467zf",
-    "message": "This removes the session from Pomodoro history. Existing task time entries are not changed.",
-    "context": "views.pomodoroStats.recents.deleteConfirmMessage"
-  },
-  "views.pomodoroStats.recents.deleteConfirmButton": {
-    "id": "P69XLT",
-    "message": "Delete",
-    "context": "views.pomodoroStats.recents.deleteConfirmButton"
-  },
-  "views.pomodoroStats.recents.deleteSuccess": {
-    "id": "t_spyU",
-    "message": "Pomodoro session deleted",
-    "context": "views.pomodoroStats.recents.deleteSuccess"
-  },
-  "views.pomodoroStats.recents.deleteNotFound": {
-    "id": "xJa-u2",
-    "message": "Pomodoro session was not found",
-    "context": "views.pomodoroStats.recents.deleteNotFound"
-  },
-  "views.pomodoroStats.recents.status.completed": {
-    "id": "WDnGWd",
-    "message": "Completed",
-    "context": "views.pomodoroStats.recents.status.completed"
-  },
-  "views.pomodoroStats.recents.status.interrupted": {
-    "id": "uKvUtW",
-    "message": "Interrupted",
-    "context": "views.pomodoroStats.recents.status.interrupted"
-  },
-  "views.stats.project.totalTime": {
-    "id": "e9x0qX",
-    "message": "Total time",
-    "context": "views.stats.project.totalTime"
-  },
-  "views.stats.project.totalTasks": {
-    "id": "pkwSMP",
-    "message": "Total tasks",
-    "context": "views.stats.project.totalTasks"
-  },
-  "views.stats.project.average": {
-    "id": "NsHICI",
-    "message": "Avg per task",
-    "context": "views.stats.project.average"
-  },
-  "views.stats.project.activity": {
-    "id": "srXnMt",
-    "message": "Activity over time (last 30 days)",
-    "context": "views.stats.project.activity"
-  },
-  "views.stats.project.allTasks": {
-    "id": "4DvO0j",
-    "message": "All project tasks",
-    "context": "views.stats.project.allTasks"
-  },
-  "views.stats.project.noTracking": {
-    "id": "oGb2pr",
-    "message": "No time tracking data",
-    "context": "views.stats.project.noTracking"
-  },
-  "views.stats.title": {
-    "id": "b7ke6d",
-    "message": "Statistics",
-    "context": "views.stats.title"
-  },
-  "views.stats.taskProjectStats": {
-    "id": "KKzFdn",
-    "message": "Task & project statistics",
-    "context": "views.stats.taskProjectStats"
   },
   "views.stats.sections.filters": {
     "id": "JP-tuy",
@@ -1683,161 +1478,6 @@
     "id": "_OOJhQ",
     "message": "Overview",
     "context": "views.stats.sections.overview"
-  },
-  "views.stats.sections.today": {
-    "id": "-Kd8cH",
-    "message": "Today",
-    "context": "views.stats.sections.today"
-  },
-  "views.stats.sections.thisWeek": {
-    "id": "nEJCnC",
-    "message": "This week",
-    "context": "views.stats.sections.thisWeek"
-  },
-  "views.stats.sections.thisMonth": {
-    "id": "3JQW0p",
-    "message": "This month",
-    "context": "views.stats.sections.thisMonth"
-  },
-  "views.stats.sections.projectBreakdown": {
-    "id": "jejaYD",
-    "message": "Project breakdown",
-    "context": "views.stats.sections.projectBreakdown"
-  },
-  "views.stats.sections.dateRange": {
-    "id": "HsAnue",
-    "message": "Date range",
-    "context": "views.stats.sections.dateRange"
-  },
-  "views.stats.filters.minTime": {
-    "id": "0h5B2y",
-    "message": "Min time (minutes)",
-    "context": "views.stats.filters.minTime"
-  },
-  "views.stats.filters.allTasks": {
-    "id": "Im_lKd",
-    "message": "All tasks",
-    "context": "views.stats.filters.allTasks"
-  },
-  "views.stats.filters.activeOnly": {
-    "id": "MnKA59",
-    "message": "Active only",
-    "context": "views.stats.filters.activeOnly"
-  },
-  "views.stats.filters.completedOnly": {
-    "id": "x8VMXo",
-    "message": "Completed only",
-    "context": "views.stats.filters.completedOnly"
-  },
-  "views.stats.refreshButton": {
-    "id": "PSUSLO",
-    "message": "Refresh",
-    "context": "views.stats.refreshButton"
-  },
-  "views.stats.timeRanges.allTime": {
-    "id": "l9x3Ku",
-    "message": "All time",
-    "context": "views.stats.timeRanges.allTime"
-  },
-  "views.stats.timeRanges.last7Days": {
-    "id": "JFkTHu",
-    "message": "Last 7 days",
-    "context": "views.stats.timeRanges.last7Days"
-  },
-  "views.stats.timeRanges.last30Days": {
-    "id": "q9xIJz",
-    "message": "Last 30 days",
-    "context": "views.stats.timeRanges.last30Days"
-  },
-  "views.stats.timeRanges.last90Days": {
-    "id": "ooCNVt",
-    "message": "Last 90 days",
-    "context": "views.stats.timeRanges.last90Days"
-  },
-  "views.stats.timeRanges.customRange": {
-    "id": "jJ4aWS",
-    "message": "Custom range",
-    "context": "views.stats.timeRanges.customRange"
-  },
-  "views.stats.resetFiltersButton": {
-    "id": "6OYGEY",
-    "message": "Reset filters",
-    "context": "views.stats.resetFiltersButton"
-  },
-  "views.stats.dateRangeFrom": {
-    "id": "AX6N14",
-    "message": "From",
-    "context": "views.stats.dateRangeFrom"
-  },
-  "views.stats.dateRangeTo": {
-    "id": "39xlWI",
-    "message": "To",
-    "context": "views.stats.dateRangeTo"
-  },
-  "views.stats.noProject": {
-    "id": "18fV-T",
-    "message": "No project",
-    "context": "views.stats.noProject"
-  },
-  "views.stats.cards.timeTrackedEstimated": {
-    "id": "JvHrN7",
-    "message": "Time tracked / estimated",
-    "context": "views.stats.cards.timeTrackedEstimated"
-  },
-  "views.stats.cards.totalTasks": {
-    "id": "zt6XMy",
-    "message": "Total tasks",
-    "context": "views.stats.cards.totalTasks"
-  },
-  "views.stats.cards.completionRate": {
-    "id": "yw3KnH",
-    "message": "Completion rate",
-    "context": "views.stats.cards.completionRate"
-  },
-  "views.stats.cards.activeProjects": {
-    "id": "RzO_aM",
-    "message": "Active projects",
-    "context": "views.stats.cards.activeProjects"
-  },
-  "views.stats.cards.avgTimePerTask": {
-    "id": "KQ_um4",
-    "message": "Avg time per task",
-    "context": "views.stats.cards.avgTimePerTask"
-  },
-  "views.stats.labels.tasks": {
-    "id": "i0GRrV",
-    "message": "Tasks",
-    "context": "views.stats.labels.tasks"
-  },
-  "views.stats.labels.completed": {
-    "id": "Dvf3xI",
-    "message": "Completed",
-    "context": "views.stats.labels.completed"
-  },
-  "views.stats.labels.projects": {
-    "id": "HbeTfV",
-    "message": "Projects",
-    "context": "views.stats.labels.projects"
-  },
-  "views.stats.noProjectData": {
-    "id": "ZYOBHK",
-    "message": "No project data available",
-    "context": "views.stats.noProjectData"
-  },
-  "views.stats.notAvailable": {
-    "id": "pEX5XU",
-    "message": "N/A",
-    "context": "views.stats.notAvailable"
-  },
-  "views.stats.noTasks": {
-    "id": "der_Cd",
-    "message": "No tasks found",
-    "context": "views.stats.noTasks"
-  },
-  "views.stats.loading": {
-    "id": "2JEeSq",
-    "message": "Loading...",
-    "context": "views.stats.loading"
   },
   "views.releaseNotes.current": {
     "id": "yAcnMu",
@@ -7914,11 +7554,6 @@
     "message": "Error loading agenda. Please try refreshing.",
     "context": "notices.agendaLoadingFailed"
   },
-  "notices.statsLoadingFailed": {
-    "id": "V0af42",
-    "message": "Error loading project details.",
-    "context": "notices.statsLoadingFailed"
-  },
   "commands.openCalendarView": {
     "id": "k0jAgs",
     "message": "Open mini calendar view",
@@ -7958,16 +7593,6 @@
     "id": "iYyOKj",
     "message": "Update default base files",
     "context": "commands.updateDefaultBaseFiles"
-  },
-  "commands.openPomodoroStats": {
-    "id": "dO2bYG",
-    "message": "Open Pomodoro statistics",
-    "context": "commands.openPomodoroStats"
-  },
-  "commands.openStatisticsView": {
-    "id": "cHxmdJ",
-    "message": "Open task & project statistics",
-    "context": "commands.openStatisticsView"
   },
   "commands.createNewTask": {
     "id": "WybqlN",
@@ -9420,8 +9045,8 @@
     "context": "modals.task.contextsLabel"
   },
   "modals.task.contextsPlaceholder": {
-    "id": "9DhU0A",
-    "message": "context1, context2",
+    "id": "5Uog9J",
+    "message": "Add contexts",
     "context": "modals.task.contextsPlaceholder"
   },
   "modals.task.tagsLabel": {
@@ -9430,8 +9055,8 @@
     "context": "modals.task.tagsLabel"
   },
   "modals.task.tagsPlaceholder": {
-    "id": "yE2-Wz",
-    "message": "tag1, tag2",
+    "id": "lj_f3z",
+    "message": "Add tags",
     "context": "modals.task.tagsPlaceholder"
   },
   "modals.task.timeEstimateLabel": {
@@ -9440,8 +9065,8 @@
     "context": "modals.task.timeEstimateLabel"
   },
   "modals.task.timeEstimatePlaceholder": {
-    "id": "MM_MAN",
-    "message": "30",
+    "id": "m167w8",
+    "message": "Add estimate",
     "context": "modals.task.timeEstimatePlaceholder"
   },
   "modals.task.unsavedChanges.title": {

@@ -34,10 +34,6 @@
 }
 
 .tasknotes-plugin .task-card.task-card-note-widget__card {
-    --tag-background: inherit;
-    --tag-color: inherit;
-    --tag-radius: inherit;
-
     /* Reset margins for the inner task card */
     margin: 0;
     border: 0;
@@ -51,14 +47,15 @@
     gap: var(--tn-space-1);
 }
 
+/* Tags read like the rest of the second line, as on a board card, rather than as the
+   note's own tag pills. */
 .tasknotes-plugin.task-card-note-widget .task-card__metadata-property .tag {
-    display: inline-flex;
-    align-items: center;
-    background: var(--tag-background);
-    color: var(--tag-color);
-    border-radius: var(--tag-radius);
-    font-size: var(--tn-type-xs);
-    padding: var(--tn-space-half) var(--tn-space-1);
+    border: none;
+    border-radius: var(--tn-radius-none);
+    background: transparent;
+    box-shadow: none;
+    padding-inline: 0;
+    color: var(--tn-text-metadata);
 }
 
 /* With a fine pointer the widget's controls are as small as a list row's. */

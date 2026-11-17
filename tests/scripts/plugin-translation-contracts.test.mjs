@@ -67,7 +67,11 @@ test("the 22 rewritten one arms have contextual singular wording; all 90 copied 
   for (const retirement of v5Retirements) {
     assert.equal(generateMessageId(retirement.message, retirement.context), retirement.id);
     assert.equal(retirement.source, "src/views/StatsView.ts");
-    const restoredSource = await readFile(new URL(retirement.source, root), "utf8");
+    // The statistics dashboards were removed again, so the source file may be gone.
+    const restoredSource = await readFile(new URL(retirement.source, root), "utf8").catch(error => {
+      if (error.code === "ENOENT") return "";
+      throw error;
+    });
     assert.ok(!restoredSource.includes(retirement.context));
     assert.ok(!restoredSource.includes(retirement.message));
     const english = await readFile(new URL("src/i18n/locales/en/messages.po", root), "utf8");

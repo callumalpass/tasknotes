@@ -163,6 +163,11 @@
     --tn-control-sm: 24px;
     --tn-control-md: var(--input-height, 30px);
     --tn-touch-target: 40px;
+    /* Task rows on touch screens: first-line controls (status, priority, menu) and second-line
+       targets (dates, property links, indicator icons). Smaller than --tn-touch-target so a row
+       stays close to its text height. */
+    --tn-task-control: 32px;
+    --tn-task-line-control: var(--tn-control-sm);
     --tn-row-height: 34px;
     --tn-row-height-compact: 28px;
     --tn-glyph: var(--icon-s, 16px);

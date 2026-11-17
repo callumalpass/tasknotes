@@ -34,8 +34,6 @@ const CSS_FILES = [
     'styles/kanban-view.css',        // KanbanView component with proper BEM scoping
     'styles/task-card-layout.css',   // Card layout shared by Kanban cards and Task List rows
     'styles/agenda-view.css',        // AgendaView component with proper BEM scoping
-    'styles/pomodoro-stats-view.css',
-    'styles/stats-view.css',
     'styles/pomodoro-view.css',      // PomodoroView component with proper BEM scoping
     'styles/release-notes-view.css', // Release notes view typography
     'styles/settings-view.css',      // SettingsView component with proper BEM scoping

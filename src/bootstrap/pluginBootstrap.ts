@@ -1,14 +1,12 @@
 import { uiText } from "../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { MarkdownView, Platform, addIcon, setTooltip } from "obsidian";
+import { MarkdownView, Platform, WorkspaceLeaf, addIcon, setTooltip } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import type TaskNotesPlugin from "../main";
 import {
 	EVENT_TASK_UPDATED,
 	POMODORO_VIEW_TYPE,
-	POMODORO_STATS_VIEW_TYPE,
-	STATS_VIEW_TYPE,
 	TaskInfo,
 } from "../types";
 import { RequestDeduplicator, PredictivePrefetcher } from "../utils/RequestDeduplicator";
@@ -30,8 +28,6 @@ import { StatusBarService } from "../ui/StatusBarService";
 import { NotificationService } from "../ui/NotificationService";
 import { ViewPerformanceService } from "../services/ViewPerformanceService";
 import { PomodoroView } from "../views/PomodoroView";
-import { PomodoroStatsView } from "../views/PomodoroStatsView";
-import { StatsView } from "../views/StatsView";
 import { ReleaseNotesView, RELEASE_NOTES_VIEW_TYPE } from "../views/ReleaseNotesView";
 import { RELEASE_NOTES_BUNDLE, CURRENT_VERSION } from "../releaseNotes";
 import { createTaskLinkOverlay, dispatchTaskUpdate } from "../editor/TaskLinkOverlay";
@@ -392,6 +388,7 @@ export async function initializeAfterLayoutReady(plugin: TaskNotesPlugin): Promi
 		plugin.injectCustomStyles();
 		installMdbaseFolderVisibility(plugin);
 		registerActiveViews(plugin);
+		closeRetiredViews(plugin);
 		registerEditorIntegrations(plugin);
 
 		plugin.cacheManager.initialize();
@@ -433,12 +430,22 @@ function scheduleIdleIndexWarmup(plugin: TaskNotesPlugin): void {
 
 function registerActiveViews(plugin: TaskNotesPlugin): void {
 	plugin.registerView(POMODORO_VIEW_TYPE, (leaf) => new PomodoroView(leaf, plugin));
-	plugin.registerView(POMODORO_STATS_VIEW_TYPE, (leaf) => new PomodoroStatsView(leaf, plugin));
-	plugin.registerView(STATS_VIEW_TYPE, (leaf) => new StatsView(leaf, plugin));
 	plugin.registerView(
 		RELEASE_NOTES_VIEW_TYPE,
 		(leaf) => new ReleaseNotesView(leaf, plugin, RELEASE_NOTES_BUNDLE, CURRENT_VERSION)
 	);
+}
+
+/** Views TaskNotes no longer provides. A saved workspace can still hold their tabs. */
+const RETIRED_VIEW_TYPES = new Set(["tasknotes-stats-view", "tasknotes-pomodoro-stats-view"]);
+
+/** Closes leftover tabs of retired views, which Obsidian would otherwise show as from an inactive plugin. */
+function closeRetiredViews(plugin: TaskNotesPlugin): void {
+	const retired: WorkspaceLeaf[] = [];
+	plugin.app.workspace.iterateAllLeaves((leaf) => {
+		if (RETIRED_VIEW_TYPES.has(leaf.getViewState().type)) retired.push(leaf);
+	});
+	for (const leaf of retired) leaf.detach();
 }
 
 function registerEditorIntegrations(plugin: TaskNotesPlugin): void {

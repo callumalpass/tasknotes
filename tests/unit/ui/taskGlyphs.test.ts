@@ -35,6 +35,27 @@ describe("shared task identity", () => {
 		expect(host.dataset.tnGlyph).toBe("unknown");
 	});
 
+	it("gives the highest and lowest of any priority set their own shape", () => {
+		const custom = [
+			{ value: "none", weight: 0 },
+			{ value: "someday", weight: 1 },
+			{ value: "low", weight: 2 },
+			{ value: "normal", weight: 3 },
+			{ value: "urgent", weight: 9 },
+		];
+		const rank = (value: string, priorities = custom) => {
+			const state = priorityGlyphState(value, priorities);
+			return state.kind === "dot" ? state.rank : state.kind;
+		};
+		expect(["none", "someday", "low", "normal", "urgent"].map(value => rank(value))).toEqual(["unset", "bottom", "middle", "middle", "top"]);
+		expect(rank("only", [{ value: "only", weight: 5 }])).toBe("middle");
+		const host = document.createElement("span");
+		renderPriorityGlyph(host, { kind: "dot", rank: "top" });
+		expect(host.querySelectorAll("circle")).toHaveLength(2);
+		renderPriorityGlyph(host, { kind: "unset" });
+		expect(host.dataset.tnGlyphRank).toBeUndefined();
+	});
+
 	it("uses one relative day, fallback and time format", () => {
 		const today = new Date(2026, 10, 5, 12);
 		expect(taskDateLabel("2026-11-05", "24", today)).toBe("Today");

@@ -1,8 +1,9 @@
 import { displayError } from "../../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
-import { Notice, type SettingDefinition, type SettingControl } from "obsidian";
+import { Notice, setIcon, type SettingDefinition, type SettingControl } from "obsidian";
 import type TaskNotesPlugin from "../../main";
+import { IconSuggest, iconSettingName, isKnownIcon } from "../components/IconSuggest";
 
 interface ValueOptions<T> {
 	name: string;
@@ -214,6 +215,55 @@ export class SettingsContext {
 			},
 		};
 	}
+	/** A Lucide icon name: a text input with icon suggestions and a preview of the chosen icon. */
+	icon<T extends object, K extends keyof T>(
+		object: T,
+		property: K,
+		key: string,
+		name: string,
+		config: { desc?: string; onChange?: () => void } = {}
+	): SettingDefinition {
+		const read = () => String(object[property] ?? "");
+		const write = (value: string) => {
+			object[property] = iconSettingName(value.trim()) as T[K];
+			config.onChange?.();
+			this.save();
+		};
+		const definition = this.text(key, {
+			name,
+			desc: config.desc,
+			getValue: read,
+			setValue: write,
+		});
+		return {
+			name: definition.name,
+			desc: definition.desc,
+			aliases: definition.aliases,
+			render: (setting) => {
+				setting.setName(name);
+				if (config.desc) setting.setDesc(config.desc);
+				setting.settingEl.addClass("tn-icon-setting");
+				const preview = setting.controlEl.createSpan({ cls: "tn-icon-setting__preview" });
+				const showPreview = (value: string) => {
+					preview.empty();
+					const known = isKnownIcon(value);
+					preview.toggleClass("is-empty", !known);
+					if (known) setIcon(preview, iconSettingName(value.trim()));
+				};
+				let suggest: IconSuggest | undefined;
+				setting.addText((text) => {
+					text.setValue(read()).onChange((value) => {
+						showPreview(value);
+						write(value);
+					});
+					suggest = new IconSuggest(this.plugin.app, text.inputEl);
+				});
+				showPreview(read());
+				return () => suggest?.close();
+			},
+		};
+	}
+
 	field<T extends object, K extends keyof T>(
 		object: T,
 		property: K,

@@ -111,6 +111,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultContexts: "",
 	defaultTags: "",
 	defaultProjects: "",
+	defaultProjectsOnlyWhenEmpty: false,
 	useParentNoteForTaskCreation: false,
 	useParentNoteAsProject: false,
 	useParentHeaderAsProject: false,
@@ -279,7 +280,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroNotifications: true,
 	pomodoroSoundEnabled: true,
 	pomodoroSoundVolume: 50,
-	pomodoroStorageLocation: "plugin",
+	// New installs keep history in daily notes. Existing settings keep their saved value.
+	pomodoroStorageLocation: "daily-notes",
 	pomodoroMobileSidebar: "tab",
 	showPomodoroInStatusBar: true,
 	// Editor defaults

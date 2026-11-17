@@ -3377,7 +3377,6 @@ test.describe('Issue #1409 - Popout window functionality', () => {
     // - src/bases/KanbanView.ts:1274 - document.body.appendChild() for drag ghost
     // - src/bases/KanbanView.ts:1299 - document.elementFromPoint() queries wrong document
     // - src/bases/KanbanView.ts:1618 - document.addEventListener for contextmenu
-    // - src/views/StatsView.ts:1306 - document.body.createDiv() for modal
     //
     // STEPS TO REPRODUCE:
     // 1. Open calendar view in main window

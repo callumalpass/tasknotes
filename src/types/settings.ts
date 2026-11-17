@@ -124,7 +124,7 @@ export interface TaskNotesSettings {
 	pomodoroNotifications: boolean;
 	pomodoroSoundEnabled: boolean;
 	pomodoroSoundVolume: number; // 0-100
-	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data
+	pomodoroStorageLocation: "plugin" | "daily-notes"; // where to store pomodoro history data; daily notes fall back to plugin data when unavailable
 	pomodoroMobileSidebar: "tab" | "left" | "right"; // where to open pomodoro view on mobile
 	showPomodoroInStatusBar: boolean;
 	// Editor settings
@@ -266,6 +266,7 @@ export interface TaskCreationDefaults {
 	defaultContexts: string; // Comma-separated list
 	defaultTags: string; // Comma-separated list
 	defaultProjects: string; // Comma-separated list of project links
+	defaultProjectsOnlyWhenEmpty: boolean; // Explicit projects replace creation defaults
 	useParentNoteForTaskCreation: boolean; // Use the active note as a project for normal task creation
 	useParentNoteAsProject: boolean; // Use the parent note as a project during inline creation and instant conversion
 	useParentHeaderAsProject: boolean; // Use the closest markdown heading as a project during instant conversion

@@ -974,47 +974,7 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     max-width: 100%;
 }
 
-.tasknotes-plugin .tn-report-horizons {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--tn-space-3);
-}
-
-.tasknotes-plugin .tn-metrics.tn-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-    gap: var(--tn-space-3) var(--tn-space-6);
-}
-
-.tasknotes-plugin .stats-view__overview-grid.tn-metrics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.tasknotes-plugin .stats-view__stats-grid.tn-metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.tasknotes-plugin .tn-metrics > :is(.stats-view__overview-card, .stats-view__stat-card, .pomodoro-stats-view__overview-card, .pomodoro-stats-view__stat-card) {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: var(--tn-space-1);
-    padding: var(--tn-space-2) 0;
-}
-
-.tasknotes-plugin .tn-metrics :is(.stats-view__overview-value, .stats-view__stat-value, .pomodoro-stats-view__overview-value, .pomodoro-stats-view__stat-value) {
-    text-align: start;
-    font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
-}
-
-.tasknotes-plugin .stats-view__overview-grid.tn-metrics > :first-child .stats-view__overview-value {
-    font-size: var(--tn-type-xl);
-    color: var(--tn-text-normal);
-    order: 0;
-}
-
-.tasknotes-plugin :is(.stats-view__section, .pomodoro-stats-view__section, .settings-view__tab-content) .setting-item-heading .setting-item-name,
+.tasknotes-plugin .settings-view__tab-content .setting-item-heading .setting-item-name,
 .tasknotes-release-notes-view h3 {
     font-size: var(--tn-type-md);
     font-weight: var(--tn-font-weight-medium);
@@ -1029,30 +989,6 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     font-weight: var(--tn-font-weight-semibold);
 }
 
-@container (max-width: 620px) {
-    .tasknotes-plugin .stats-view__overview-grid.tn-metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .tasknotes-plugin .tn-report-horizons {
-        grid-template-columns: minmax(0, 1fr);
-        gap: var(--tn-space-2);
-    }
-
-    .tasknotes-plugin .tn-report-horizons .tn-metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--tn-space-1) var(--tn-space-3);
-    }
-
-    .tasknotes-plugin .tn-report-horizons :is(.stats-view__stat-value, .pomodoro-stats-view__stat-value) {
-        font-size: var(--tn-type-md);
-    }
-
-    .tasknotes-plugin .tn-report-horizons .stats-view__section {
-        min-width: 0;
-        gap: var(--tn-space-2);
-    }
-}
 .tasknotes-plugin:focus-within .tn-task-focused {
 	outline: var(--tn-space-half) solid var(--tn-focus-ring);
 	outline-offset: calc(-1 * var(--tn-space-half));
@@ -1084,25 +1020,25 @@ body.is-mobile .tasknotes-plugin .tn-btn {
     min-width: var(--tn-touch-target);
 }
 
-.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .pomodoro-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
 .tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item) {
     transition: background-color var(--tn-transition-fast), color var(--tn-transition-fast), border-color var(--tn-transition-fast);
     -webkit-tap-highlight-color: transparent;
 }
 
-.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select, summary):focus-visible,
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .pomodoro-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select, summary):focus-visible,
 .tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action):focus-visible {
     outline: var(--tn-space-half) solid var(--tn-focus-ring);
     outline-offset: var(--tn-space-half);
     box-shadow: none;
 }
 
-.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select):focus:not(:focus-visible) {
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .pomodoro-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], input, textarea, select):focus:not(:focus-visible) {
     outline: none;
     box-shadow: none;
 }
 
-.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"]):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary),
+.tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .pomodoro-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"]):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary),
 .tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item, .tn-toast__action):active:not(:disabled, [aria-disabled="true"], .mod-cta, .tn-btn--primary) {
     background: var(--tn-active);
     color: var(--tn-text-normal);
@@ -1234,7 +1170,7 @@ body.is-mobile .tasknotes-plugin :is(.tn-segmented__item, .tn-toast__action) {
         animation: none;
     }
 
-    .tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .stats-view, .pomodoro-view, .pomodoro-stats-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
+    .tasknotes-plugin:is(.tn-modal, .tasknotes-settings, .pomodoro-view, .date-time-picker-modal, .tasknotes-reminder-modal) :is(button, [role="button"], select, summary),
     .tasknotes-plugin :is(.tn-btn, .tn-chip--property, .tn-segmented__item) {
         transition: none;
     }

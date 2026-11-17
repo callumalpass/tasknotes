@@ -323,7 +323,7 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 	recurrence: (element, value, _task, plugin, options) => {
 		if (typeof value === "string") {
 			const description = getRecurrenceTooltip(plugin, value, options?.propertyLabels);
-			setIcon(element, "repeat");
+			setIcon(element, "rotate-ccw");
 			element.setAttribute("aria-label", description);
 			setTooltip(element, description, { placement: "top" });
 		}
@@ -614,7 +614,8 @@ export function renderPropertyMetadata(
 }
 
 function getFileTagsList(value: unknown, task: TaskInfo): string[] {
-	const native = convertBasesValueToNative(value);
+	// Plain tags pass the task's own tag array; converting an array as a Bases value joins it into one string.
+	const native = Array.isArray(value) ? value : convertBasesValueToNative(value);
 	const list = Array.isArray(native) ? native : typeof native === "string" ? [native] : task.tags;
 	return (list ?? [])
 		.map((tag) => (tag !== null && typeof tag === "object" ? convertBasesValueToNative(tag) : tag))

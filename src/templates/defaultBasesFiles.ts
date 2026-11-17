@@ -961,6 +961,7 @@ ${orderYaml}
     groupBy:
       property: ${statusProperty}
       direction: ASC
+    hideEmptyColumns: true
   - type: tasknotesTaskList
     name: ${JSON.stringify(uiText(msg({ message: "Occurrences", context: "generated Bases view name" })))}
     filters:
@@ -1004,6 +1005,7 @@ ${orderYaml}
     groupBy:
       property: ${statusProperty}
       direction: ASC
+    hideEmptyColumns: true
 `;
 		}
 

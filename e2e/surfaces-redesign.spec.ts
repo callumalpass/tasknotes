@@ -170,42 +170,20 @@ test('timer retains edit, focus, pause, resume and stop without a decorative rin
   await expect(page.locator('.pomodoro-view__task-card-container .task-card')).toHaveCount(0);
 });
 
-test('typographic reports, release notes and all settings tabs in both themes and mobile', async () => {
+test('release notes and all settings tabs in both themes and mobile', async () => {
   test.setTimeout(120000);
   const page = instance.page;
   for (const theme of ['theme-light', 'theme-dark']) {
     for (const mobile of [false, true]) {
       await appearance(theme, mobile);
-      for (const [type, root] of [['tasknotes-stats-view', '.stats-view'], ['tasknotes-pomodoro-stats-view', '.pomodoro-stats-view'], ['tasknotes-release-notes', '.tasknotes-release-notes-view']]) {
-        await openView(type);
-        await expect(page.locator(root)).toBeVisible();
-        await expect(page.locator(`${root} .stats-view__progress-circle`)).toHaveCount(0);
-        if (type === 'tasknotes-stats-view') {
-          await expect(page.locator('.stats-view__overview-card').first()).toBeVisible();
-          expect(await page.locator('.stats-view__overview-grid').evaluate(element => getComputedStyle(element).display)).toBe('grid');
-          const disclosure = page.locator('.stats-view__filter-disclosure');
-          const filter = page.locator('.tn-select.stats-view__filter-select');
-          await expect(filter).toBeHidden();
-          await disclosure.locator('summary').click();
-          await expect(filter).toBeVisible();
-          await filter.selectOption('7days');
-          await disclosure.locator('summary').click();
-          await expect(filter).toBeHidden();
-          await disclosure.locator('summary').click();
-          await expect(filter).toHaveValue('7days');
-          await filter.selectOption('all');
-          expect(await page.locator('.stats-view__header .setting-item').evaluate(element => getComputedStyle(element).paddingLeft)).toBe('0px');
-        }
-        if (type === 'tasknotes-release-notes') {
-          const header = page.locator('.release-notes-version-header').nth(1);
-          await header.click();
-          await expect(page.locator('.release-notes-version-content').nth(1)).toBeVisible();
-          await header.click();
-          await expect(page.locator('.release-notes-version-content').nth(1)).toBeHidden();
-        }
-        if (mobile && type !== 'tasknotes-release-notes') await expectTouchTargets(`${root} button, ${root} select, ${root} input`);
-        await screenshot(`${type}-${theme}-${mobile ? 'mobile' : 'desktop'}`);
-      }
+      await openView('tasknotes-release-notes');
+      await expect(page.locator('.tasknotes-release-notes-view')).toBeVisible();
+      const header = page.locator('.release-notes-version-header').nth(1);
+      await header.click();
+      await expect(page.locator('.release-notes-version-content').nth(1)).toBeVisible();
+      await header.click();
+      await expect(page.locator('.release-notes-version-content').nth(1)).toBeHidden();
+      await screenshot(`tasknotes-release-notes-${theme}-${mobile ? 'mobile' : 'desktop'}`);
       const settingsPage = await openTaskNotesSettings(page);
       try {
         await setObsidianViewport(settingsPage, { width: mobile ? 640 : 1180, height: 800 });
@@ -320,7 +298,9 @@ test('inline task glyphs, dates and unknown values sit in reading and live-previ
       const overflow = page.locator('.task-card-note-widget .task-card__metadata-overflow:visible');
       await expect.poll(async () => await widgetTag.isVisible() ||
         (await overflow.getAttribute('aria-label'))?.includes(tagText)).toBe(true);
-      await expect(widgetTag).toHaveCSS('background-color', await nativeTag.evaluate(element => getComputedStyle(element).backgroundColor));
+      // Tags in the widget read like the rest of its second line, as on a board card, not as the note's tag pills.
+      await expect(widgetTag).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      expect(await widgetTag.evaluate(element => getComputedStyle(element).color)).not.toBe(await nativeTag.evaluate(element => getComputedStyle(element).color));
       await screenshot(`task-note-${theme}-${mobile ? 'mobile' : 'desktop'}`);
     }
   }

@@ -45,7 +45,7 @@ for task-link lines:
 
 Location: **Settings → TaskNotes → Appearance & interaction → Display formatting**
 
-Use **Date format** to choose **Default** or **ISO 8601 (2026-08-23)**. ISO mode shows full year-month-day dates in task dialogs, task cards, calendar date headings and tooltips, reminders, statistics, and other TaskNotes date labels. Dates normally shown as “Today” on task cards become absolute dates. Calendar grid day numbers remain compact.
+Use **Date format** to choose **Default** or **ISO 8601 (2026-08-23)**. ISO mode shows full year-month-day dates in task dialogs, task cards, calendar date headings and tooltips, reminders, and other TaskNotes date labels. Dates normally shown as “Today” on task cards become absolute dates. Calendar grid day numbers remain compact.
 
 Use **Time format** to switch between 12-hour and 24-hour display, including created and modified timestamps. For example, ISO dates with 24-hour time appear as `2026-08-23 19:16`. Date-only values do not gain a time.
 

@@ -431,7 +431,12 @@ export class KanbanView extends BasesViewBase {
 			this.swimLanePropertyId = readBasesViewPropertyId(this.config, "swimLane");
 			this.columnWidth = (get("columnWidth") as number) || 280;
 			this.maxSwimlaneHeight = (get("maxSwimlaneHeight") as number) || 600;
-			this.hideEmptyColumns = get("hideEmptyColumns") === true;
+			// A board in a note's relationships panel usually holds a handful of tasks, so unless the
+			// view says otherwise it shows only the columns that have tasks.
+			const hideEmptyColumns = get("hideEmptyColumns");
+			this.hideEmptyColumns =
+				hideEmptyColumns === true ||
+				(hideEmptyColumns == null && Boolean(this.containerEl.closest(".tasknotes-relationships-widget")));
 
 			// Read explodeListColumns option (defaults to true)
 			const explodeValue = get("explodeListColumns");

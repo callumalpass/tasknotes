@@ -7,6 +7,7 @@ jest.mock("obsidian-daily-notes-interface", () => ({
 
 import {
 	appHasDailyNotesPluginLoaded,
+	createDailyNote,
 	getAllDailyNotes,
 	getDailyNote,
 } from "obsidian-daily-notes-interface";
@@ -15,6 +16,7 @@ import type { PomodoroSessionHistory } from "../../../src/types";
 
 const mockedAppHasDailyNotesPluginLoaded =
 	appHasDailyNotesPluginLoaded as jest.MockedFunction<typeof appHasDailyNotesPluginLoaded>;
+const mockedCreateDailyNote = createDailyNote as jest.MockedFunction<typeof createDailyNote>;
 const mockedGetAllDailyNotes = getAllDailyNotes as jest.MockedFunction<typeof getAllDailyNotes>;
 const mockedGetDailyNote = getDailyNote as jest.MockedFunction<typeof getDailyNote>;
 
@@ -148,5 +150,21 @@ describe("Issue #1147: deleting Pomodoro session history", () => {
 
 		expect(plugin.saveData).toHaveBeenCalledWith({ pomodoroHistory: [] });
 		expect(plugin._dailyNoteSessions["2026-04-26"]).toEqual([keptSession]);
+	});
+
+	it.each([
+		["the daily notes plugin is off", false],
+		["the daily note can't be created", true],
+	])("keeps a finished session in plugin data when %s", async (_case, dailyNotesLoaded) => {
+		mockedAppHasDailyNotesPluginLoaded.mockReturnValue(dailyNotesLoaded);
+		mockedCreateDailyNote.mockResolvedValue(undefined as any);
+		const plugin = createPlugin({ storageLocation: "daily-notes" });
+		const service = new PomodoroService(plugin as any);
+		const session = createSession("finished", "2026-04-26T09:00:00.000Z");
+
+		await service.addSessionToHistory({ ...session, interrupted: false } as any);
+
+		expect(plugin.saveData).toHaveBeenCalledWith({ pomodoroHistory: [session] });
+		await expect(service.getSessionHistory()).resolves.toEqual([session]);
 	});
 });
