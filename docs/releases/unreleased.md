@@ -46,6 +46,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2267) With **Include Obsidian link** on, Google Calendar event descriptions for tasks and timeblocks show a clickable "Open in Obsidian" link again, instead of the `obsidian://` address as plain text. Existing events get the link the next time the task or timeblock is synced. Thanks to @techy-robot for reporting.
 - Fixed task completion events connecting to the published mdbase plugin (`mdbase-sync`) when **Allow plugin integrations** is enabled. Unsupported bridge API versions are ignored.
 - Fixed long Task Lists leaving the bottom of the list blank after a large jump with the scrollbar. The missing rows appeared only after scrolling again.
+- (#2526) On phones, the Agenda, Calendar and Kanban views no longer extend under Obsidian's bottom navigation bar, so the last tasks can be seen. These views now use the same bottom spacing as Obsidian's own Bases views. The Task List uses it too, in place of a fixed gap, and embedded views are unchanged.
+  - Thanks to @Jomo94 for reporting.
+- (#2263) The last task in the Task List and Agenda can now be scrolled clear of the status bar on desktop.
+  - Thanks to @3zra47 for reporting.
 
 ## Changed
 
