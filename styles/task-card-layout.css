@@ -186,11 +186,11 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
     grid-template-rows: auto minmax(var(--tn-task-line-control), auto);
 }
 
-body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__main-row {
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > .task-card__main-row {
     grid-template-rows: minmax(var(--tn-board-control-size), auto);
 }
 
-body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot) {
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) :is(.task-card__status-dot, .task-card__priority-dot) {
     align-self: center;
 }
 
@@ -204,7 +204,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
     flex-wrap: wrap;
 }
 
-body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--has-interactive-badges) .task-card__metadata {
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--has-interactive-badges) > :where(.task-card__main-row) .task-card__metadata {
     grid-column: 2 / -1;
 }
 
@@ -236,7 +236,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 }
 
 /* Without metadata the badges join the first line, before the priority. */
-body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty .task-card__badges.task-card__badges--interactive {
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty > :where(.task-card__main-row) .task-card__badges.task-card__badges--interactive {
     grid-column: 3;
 }
 
@@ -339,25 +339,25 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
         grid-column: 2 / -1;
     }
 
-    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) .task-card__main-row {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) > .task-card__main-row {
         grid-template-rows: auto minmax(var(--tn-board-control-size), auto) auto;
     }
 
-    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) :is(.task-card__content, .task-card__title) {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) > :where(.task-card__main-row) :is(.task-card__content, .task-card__title) {
         grid-row: 1 / span 3;
     }
 
-    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) .task-card__badges.task-card__badges--interactive {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) > :where(.task-card__main-row) .task-card__badges.task-card__badges--interactive {
         grid-column: 2 / -1;
         grid-row: 3;
         justify-self: start;
     }
 
-    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__main-row {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > .task-card__main-row {
         grid-template-rows: auto minmax(var(--tn-board-control-size), auto);
     }
 
-    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) .task-card__priority-dot {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) .task-card__priority-dot {
         grid-row: 2;
     }
 }
