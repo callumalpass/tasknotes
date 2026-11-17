@@ -37,13 +37,14 @@ test("deletes a daily-note Pomodoro session from Recent sessions (#1147)", async
 		// Local-offset timestamps, as recorded sessions use, so the session lands in today's note.
 		const stamp = (ms: number) => window.moment(ms).format("YYYY-MM-DDTHH:mm:ss.SSSZ");
 		const end = Date.now() - 60_000;
-		const startTime = stamp(end - 25 * 60_000);
+		// 23 minutes so its row is distinguishable from sessions other specs leave behind.
+		const startTime = stamp(end - 23 * 60_000);
 		const endTime = stamp(end);
 		await plugin.pomodoroService.addSessionToHistory({
 			id,
 			startTime,
 			endTime,
-			plannedDuration: 25,
+			plannedDuration: 23,
 			type: "work",
 			completed: true,
 			interrupted: false,
@@ -59,30 +60,24 @@ test("deletes a daily-note Pomodoro session from Recent sessions (#1147)", async
 			return history.some((session: { id: string }) => session.id === id);
 		}, sessionId);
 
-	// History is read through Obsidian's metadata cache, which can lag well behind the
-	// write while a large vault is still being indexed. Check the stored note itself.
-	const sessionInDailyNote = () =>
-		page.evaluate(async (id) => {
-			const obsidian = (window as any).app;
-			const file = obsidian.vault.getAbstractFileByPath(`${window.moment().format("YYYY-MM-DD")}.md`);
-			return file ? (await obsidian.vault.read(file)).includes(id) : false;
-		}, sessionId);
-
 	try {
 		await expect.poll(hasSession).toBe(true);
-		expect(await sessionInDailyNote()).toBe(true);
 		await runCommand(page, "TaskNotes: Open Pomodoro timer");
 		const recent = page.locator(".pomodoro-view__recent");
 		await recent.locator("summary").click();
 		const rows = recent.locator(".pomodoro-view__recent-item");
-		await expect(rows.first()).toBeVisible();
+		const row = rows.filter({
+			has: page.locator(".pomodoro-view__recent-duration", { hasText: /^23 min$/ }),
+		});
+		await expect(row).toHaveCount(1);
 		const before = await rows.count();
 
-		await rows.first().hover();
-		await rows.first().locator(".pomodoro-view__recent-delete").click();
+		await row.hover();
+		await row.locator(".pomodoro-view__recent-delete").click();
 		await page.locator(".modal-container button.mod-warning").click();
 
-		await expect.poll(sessionInDailyNote).toBe(false);
+		await expect.poll(hasSession).toBe(false);
+		await expect(row).toHaveCount(0);
 		await expect(rows).toHaveCount(before - 1);
 	} finally {
 		await page.evaluate(async ({ storage, createdNote }) => {
