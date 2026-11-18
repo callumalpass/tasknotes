@@ -10,6 +10,8 @@ Use **Default visible properties** to decide what metadata appears on task cards
 
 When a card is too narrow for all of its properties, TaskNotes keeps them on one line and hides the rest behind a count such as **+3**. Select the count to see the hidden properties. Turn on **Show all properties on task cards** to wrap the properties onto extra lines instead, so every property stays visible and cards get taller. This applies to task cards in Bases views (task list, Kanban and calendar agenda). Task links in notes always stay on one line.
 
+In Bases views that show the **priority** property, a task with a priority gets a bar in the priority's colour along the left edge of its card, as well as the priority mark. Tasks with no priority, or a priority of weight 0 such as *None*, have no bar. Remove **priority** from the view's properties to hide both.
+
 A task with attachments shows a paperclip and a count on its card. To see the file names instead, add **attachments** to the view's properties (or to **Default visible properties**). Each attachment then appears as a link named by its file, such as *Quarterly report.pdf*, and the count is no longer shown.
 
 Use **Group complete and skip actions in a submenu** to control how the completion actions are laid out in the task context menu. When on (the default), the *Completed today / on schedule / on due date / on (pick date)* actions — and *Skip instance* for recurring tasks — are nested under a single **Mark complete or skip** entry. Turn it off to show them directly in the menu, set off by dividers.

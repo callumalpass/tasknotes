@@ -54,5 +54,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @dh-gh-1 for the suggestion (#2584)
 - The two-pane task modal (Create with More fields, and Edit) now uses the window's available height, up to 900px, instead of a fixed 540px, so fields, attachments and details need less scrolling. It still keeps one height when More fields opens.
   - Thanks to @dh-gh-1 for the suggestion (#2585)
+- (#2590) Task cards in Bases views that show priority now have a bar in the priority's colour along their left edge, so priority is visible at a glance and not only from the small mark at the end of the card. Tasks with no priority, or a priority of weight 0 such as *None*, have no bar. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
+  - Thanks to @kmaustral for reporting
 
 ## Security
