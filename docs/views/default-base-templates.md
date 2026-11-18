@@ -31,6 +31,8 @@ When property identification is incomplete (either the name or value is blank), 
 
 When task identification uses a property instead of a tag, generated filters reference the identifying note property with bracket notation and list-tolerant matching, such as `list(note["Task Type"]).contains(true)`. This keeps filters valid when custom property names contain spaces or other characters that cannot be used with dot notation, and matches tasks whose identifying property is stored as either a scalar value or a list containing that value.
 
+Mapped field names follow the same rule. If a field mapping uses a name that is not a plain identifier, such as `due date`, generated filters and formulas read it as `note["due date"]`. Column, sort and grouping entries use the plain name (`due date`). Names made of letters, digits and underscores, such as `due`, are written as before.
+
 ## Included formulas
 
 All templates include the following calculated formula properties that you can use in views, filters, and sorting.

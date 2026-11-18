@@ -1705,6 +1705,11 @@ msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "Pièces jointes"
 
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
+msgid "Attachments"
+msgstr "Pièces jointes"
+
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
@@ -10227,6 +10232,11 @@ msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "Tout afficher"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "Afficher toutes les propriétés sur les cartes de tâches dans les notes"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.name"
 msgid "Show all properties on task cards"
@@ -11530,6 +11540,11 @@ msgstr "TaskNotes n’a pas pu mettre à jour les métadonnées mdbase et a rest
 msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes a créé un nouveau jeton API pour cet appareil. Copiez-le depuis Paramètres → TaskNotes → Intégrations dans vos clients API et MCP."
+
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "TaskNotes n'a pas démarré, car son fichier de paramètres n'a pas pu être lu. Vos paramètres n'ont pas été modifiés. Redémarrez Obsidian pour réessayer. Réinstaller TaskNotes supprime ses paramètres."
 
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
@@ -13561,10 +13576,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Durée de travail"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "Renvoie les propriétés d’un lien de tâche à la ligne au lieu de les masquer derrière un compteur tel que +3. Les liens de tâches au milieu d’une phrase n’affichent toujours que le titre."
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.description"
-msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line."
-msgstr "Renvoie les propriétés à la ligne quand une carte est trop étroite, au lieu de les masquer derrière un compteur tel que +3. Les liens de tâches dans les notes restent sur une seule ligne."
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "Renvoie les propriétés à la ligne quand une carte est trop étroite, au lieu de les masquer derrière un compteur tel que +3. Les liens de tâches dans les notes ont leur propre réglage dans « Tâches dans les notes »."
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

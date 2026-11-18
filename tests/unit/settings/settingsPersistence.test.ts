@@ -90,7 +90,8 @@ describe("settings persistence helpers", () => {
 			data: null,
 			compromised: true,
 		});
-		expect(host.loadData).toHaveBeenCalledTimes(4);
+		// The first read plus 20 retries, about two seconds at the default delay.
+		expect(host.loadData).toHaveBeenCalledTimes(21);
 	});
 
 	it("does not mark a new install as compromised when data.json is absent", async () => {

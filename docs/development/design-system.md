@@ -54,7 +54,7 @@ Surfaces and text come only from the theme: `--background-primary`, `--backgroun
 | `--tn-focus-ring` | Keyboard focus: Obsidian's `--background-modifier-border-focus` |
 | `--tn-danger`, `--tn-warning`, `--tn-success`, `--tn-info` | Theme-derived semantic colour |
 
-Status and priority colours stay user-configurable. They colour glyphs, never task-row backgrounds. Status-grouped Kanban columns retain a restrained 5% body tint from a resolvable status colour, mixed with the theme's secondary surface; invalid colours stay neutral.
+Status and priority colours stay user-configurable. They colour glyphs, never task-row backgrounds. The one exception is the priority bar: in Bases views that show priority, a card with a ranked priority (weight above zero) gets a 3px bar in that colour along its left edge (`task-card--has-priority-bar`, set by `syncTaskCardPriorityBar`), so priority reads at a glance and not only from the glyph. Status-grouped Kanban columns retain a restrained 5% body tint from a resolvable status colour, mixed with the theme's secondary surface; invalid colours stay neutral.
 
 Calendar chips use theme text on a quiet surface, with a small hue mark derived from the configured colour. Clamp the mark's OKLCH lightness and chroma separately for light and dark themes before tinting the surface. Completed chips keep opaque text and a quieter mark. Selection adds an opaque accent outline, a theme-surface separator and a checkmark, rather than relying on the fill hue.
 

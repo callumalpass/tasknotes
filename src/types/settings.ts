@@ -182,6 +182,8 @@ export interface TaskNotesSettings {
 	completionMenuAsSubmenu: boolean;
 	/** Wrap task card properties onto extra lines instead of hiding overflow behind "+N". */
 	wrapTaskCardProperties: boolean;
+	/** Wrap properties of task links in notes onto extra lines instead of collapsing them into +N. */
+	wrapInlineTaskProperties: boolean;
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings

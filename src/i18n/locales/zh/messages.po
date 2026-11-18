@@ -1704,6 +1704,11 @@ msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "附件"
 
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
+msgid "Attachments"
+msgstr "附件"
+
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
@@ -10224,6 +10229,11 @@ msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "显示全部"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "在内联任务卡片上显示所有属性"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.name"
 msgid "Show all properties on task cards"
@@ -11527,6 +11537,11 @@ msgstr "TaskNotes 无法更新 mdbase 元数据，已恢复 v0.2 文件。备份
 msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes 已为此设备创建新的 API 令牌。请从设置 → TaskNotes → 集成中将其复制到您的 API 和 MCP 客户端。"
+
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "由于无法读取设置文件，TaskNotes 未启动。你的设置没有更改。请重启 Obsidian 后重试。重新安装 TaskNotes 会删除其设置。"
 
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
@@ -13558,10 +13573,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "工作时长"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "将任务链接的属性换行显示，而不是隐藏在 +3 之类的计数后面。句子中的任务链接仍只显示标题。"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.description"
-msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line."
-msgstr "卡片过窄时，将属性换行显示，而不是隐藏在 +3 之类的计数后面。笔记中的任务链接仍保持单行。"
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "卡片过窄时，将属性换行显示，而不是隐藏在 +3 之类的计数后面。笔记中的任务链接在“内联任务”中有单独的设置。"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

@@ -1704,6 +1704,11 @@ msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "添付ファイル"
 
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
+msgid "Attachments"
+msgstr "添付ファイル"
+
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
@@ -10226,6 +10231,11 @@ msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "すべて表示"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "インラインタスクカードにすべてのプロパティを表示"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.name"
 msgid "Show all properties on task cards"
@@ -11529,6 +11539,11 @@ msgstr "TaskNotes は mdbase メタデータを更新できず、v0.2 のファ�
 msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes はこのデバイス用の新しい API トークンを作成しました。設定 → TaskNotes → 連携から、API および MCP クライアントにコピーしてください。"
+
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "設定ファイルを読み込めなかったため、TaskNotes は起動しませんでした。設定は変更されていません。Obsidian を再起動して、もう一度お試しください。TaskNotes を再インストールすると設定が削除されます。"
 
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
@@ -13560,10 +13575,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "作業時間"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "タスクリンクのプロパティを +3 のような件数の後ろに隠さず、複数行に折り返して表示します。文中のタスクリンクは引き続きタイトルのみを表示します。"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.description"
-msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line."
-msgstr "カードの幅が狭いとき、プロパティを +3 のような件数の後ろに隠さず、複数行に折り返して表示します。ノート内のタスクリンクは 1 行のままです。"
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "カードの幅が狭いとき、プロパティを +3 のような件数の後ろに隠さず、複数行に折り返して表示します。ノート内のタスクリンクには「インラインタスク」に専用の設定があります。"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

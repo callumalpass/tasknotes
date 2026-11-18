@@ -84,8 +84,11 @@ export async function loadPluginSettingsDataWithRetry(
 	host: SettingsDataHost,
 	options: { retryCount?: number; retryDelayMs?: number } = {}
 ): Promise<SettingsDataReadResult> {
-	const retryCount = options.retryCount ?? 3;
-	const retryDelayMs = options.retryDelayMs ?? 50;
+	// While Obsidian updates a plugin, the outgoing version can still be writing
+	// data.json when the new version reads it (#1591, #2559). Wait up to about two
+	// seconds for that write to finish before treating the file as unreadable.
+	const retryCount = options.retryCount ?? 20;
+	const retryDelayMs = options.retryDelayMs ?? 100;
 
 	const loadedData = (await host.loadData()) ?? null;
 	if (loadedData !== null) {

@@ -1704,6 +1704,11 @@ msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "첨부 파일"
 
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
+msgid "Attachments"
+msgstr "첨부 파일"
+
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
@@ -10226,6 +10231,11 @@ msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "모두 표시"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "인라인 작업 카드에 모든 속성 표시"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.name"
 msgid "Show all properties on task cards"
@@ -11529,6 +11539,11 @@ msgstr "TaskNotes가 mdbase 메타데이터를 업데이트하지 못해 v0.2 �
 msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes가 이 기기를 위한 새 API 토큰을 만들었습니다. 설정 → TaskNotes → 통합에서 API 및 MCP 클라이언트로 복사하세요."
+
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "설정 파일을 읽을 수 없어 TaskNotes가 시작되지 않았습니다. 설정은 변경되지 않았습니다. Obsidian을 다시 시작하여 다시 시도하세요. TaskNotes를 다시 설치하면 설정이 삭제됩니다."
 
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
@@ -13560,10 +13575,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "작업 시간"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "작업 링크의 속성을 +3 같은 개수 뒤에 숨기지 않고 여러 줄로 줄바꿈합니다. 문장 안의 작업 링크는 계속 제목만 표시합니다."
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.description"
-msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line."
-msgstr "카드가 너무 좁을 때 속성을 +3 같은 개수 뒤에 숨기지 않고 여러 줄로 줄바꿈합니다. 노트 안의 작업 링크는 한 줄로 유지됩니다."
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "카드가 너무 좁을 때 속성을 +3 같은 개수 뒤에 숨기지 않고 여러 줄로 줄바꿈합니다. 노트 안의 작업 링크는 '인라인 작업'에 별도 설정이 있습니다."
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

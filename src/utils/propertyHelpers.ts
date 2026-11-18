@@ -121,6 +121,10 @@ export function getAvailableProperties(
 			id: "tags",
 			label: plugin.i18n.translate(msg({ message: "Tags", context: "settings.appearance.taskCards.properties.tags" })),
 		},
+		{
+			id: "attachments",
+			label: makeLabel(msg({ message: "Attachments", context: "settings.taskProperties.fieldMapping.fields.attachments" }), "attachments"),
+		},
 	];
 
 	// Add user-defined fields
