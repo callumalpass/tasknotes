@@ -180,13 +180,15 @@
 }
 
 /* "Show all properties on task cards": nothing is hidden behind a count, so the properties wrap
-   onto further lines and a long value wraps within the card. */
+   onto further lines and a long value wraps within the card. These cards have no separator dots
+   (see task-card-layout.css); a wider gap spaces the items. */
 body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap {
+    --tn-meta-gap: var(--tn-space-3);
     flex-wrap: wrap;
+    gap: 0 var(--tn-meta-gap);
 }
 
 body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap > .task-card__metadata-values {
-    flex: 1 1 auto;
     flex-wrap: wrap;
     row-gap: 0;
     overflow: visible;
@@ -195,6 +197,7 @@ body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap
 
 body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap .task-card__metadata-chips {
     flex-wrap: wrap;
+    row-gap: 0;
     max-width: 100%;
 }
 

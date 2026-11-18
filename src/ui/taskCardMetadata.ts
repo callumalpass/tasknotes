@@ -66,6 +66,7 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		);
 	markVisibleDates();
 	metadataLine.classList.toggle("task-card__metadata--wrap", wrap);
+	metadataLine.closest(".task-card")?.classList.toggle("task-card--metadata-wrap", wrap);
 	if (wrap) return;
 	summary.addEventListener("click", (event) => {
 		event.stopPropagation();
@@ -442,6 +443,11 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		}
 	}
 
+	// Attachment names on the card replace the paperclip count. Badges render (and update) before
+	// the metadata, so the count is removed here.
+	if (metadataElements.some((element) => element.querySelector(".task-card__attachment-link"))) {
+		card.querySelector(".task-card__attachment-indicator")?.remove();
+	}
 	updateMetadataVisibility(metadataLine, metadataElements);
 	metadataLine.hidden = metadataElements.length === 0;
 	card.classList.toggle("task-card--metadata-empty", metadataLine.hidden);

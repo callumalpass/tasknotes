@@ -48,4 +48,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Task cards that show the attachments property now list each attachment as a link named by its file, such as *Quarterly report.pdf*, instead of its full vault path. Each name fits, collapses into the +N count, or wraps like any other property, and the paperclip count is no longer shown alongside the names. To show attachment names, add **attachments** to the view's properties. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
+  - Thanks to @dh-gh-1 for the suggestion (#2584)
+
 ## Security

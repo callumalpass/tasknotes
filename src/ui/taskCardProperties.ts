@@ -37,6 +37,7 @@ import {
 } from "./taskCardHelpers";
 import {
 	appendInternalLink,
+	renderAttachmentLinks,
 	renderProjectLinks,
 	renderTextWithLinks,
 	type LinkServices,
@@ -266,6 +267,14 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			};
 			renderProjectLinks(element, value as string[], linkServices);
 		}
+	},
+	attachments: (element, _value, task, plugin) => {
+		renderAttachmentLinks(element, task.attachments ?? [], {
+			translate: plugin.i18n.translate.bind(plugin.i18n),
+			metadataCache: plugin.app.metadataCache,
+			workspace: plugin.app.workspace,
+			sourcePath: task.path,
+		});
 	},
 	contexts: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
