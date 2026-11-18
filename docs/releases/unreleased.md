@@ -47,6 +47,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @TonyAtlas for reporting
 - (#2581) Fixed task cards in Bases views showing "Normal" priority, with the Normal colour, for notes that have no priority property. These cards now show no priority, which matches how Bases sorts and filters the missing property and how the default priority formulas rank it (below every configured priority).
   - Thanks to @arthurhfcardoso for reporting
+- (#2592) Fixed generated default `.base` files breaking when a field mapping uses a property name with a space, such as `due date`. Filters and formulas wrote the name bare (`due date.isEmpty()`), so views showed no tasks or formula errors. They now read such names as `note["due date"]`, for every mapped field. The All Tasks view also sorted by `due` instead of the mapped due property. Run **TaskNotes: Update default base files** to regenerate existing files; this overwrites manual edits in them. See [Default base templates](https://tasknotes.dev/views/default-base-templates/).
+  - Thanks to @hughbiquitous for reporting
 
 ## Changed
 
