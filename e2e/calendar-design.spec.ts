@@ -117,6 +117,44 @@ test('tracked time blocks keep the task title beside the status glyph', async ()
   expect(text!.y).toBeLessThan(glyphs!.y + glyphs!.height);
 });
 
+test('timed blocks show whole title lines and keep the time inside the block', async () => {
+  const page = app.page;
+  const title = 'Draft the quarterly planning document for the platform and infrastructure teams';
+  await page.evaluate(async ({ folder, title }) => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    await (window as any).app.vault.create(`${folder}/Long block.md`, `---\ntitle: ${title}\ntags: [task]\nstatus: open\nscheduled: ${today}T15:00\ntimeEstimate: 120\n---\n`);
+  }, { folder, title });
+  try {
+    const calendar = page.locator('.workspace-leaf.mod-active .tnc');
+    await expect(calendar.locator('.tnc-item--timed').filter({ hasText: title })).toBeVisible();
+    const blocks = await calendar.evaluate(root => Array.from(root.querySelectorAll<HTMLElement>('.tnc-item--timed[data-task-path]:not(.is-short)')).map(block => {
+      const text = block.querySelector<HTMLElement>('.tn-calendar-event-title')!;
+      const time = block.querySelector<HTMLElement>('.tnc-item-time');
+      const style = getComputedStyle(block);
+      const inner = block.getBoundingClientRect().bottom - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth);
+      const row = block.querySelector<HTMLElement>('.tnc-item-title')!.getBoundingClientRect();
+      const lines = text.clientHeight / parseFloat(getComputedStyle(text).lineHeight);
+      return {
+        title: text.textContent,
+        lines: Math.round(lines),
+        wholeLines: Math.abs(lines - Math.round(lines)) < 0.1,
+        titleInside: text.getBoundingClientRect().bottom <= row.bottom + 0.5 && row.bottom <= inner + 0.5,
+        timeInside: !time || time.getBoundingClientRect().bottom <= inner + 0.5,
+      };
+    }));
+    // Covers 30-minute, 1-hour and 2-hour blocks; 1-hour blocks used to cut their second title line in half.
+    expect(blocks.length).toBeGreaterThan(5);
+    expect(blocks.filter(block => !block.wholeLines || !block.titleInside || !block.timeInside)).toEqual([]);
+    expect(blocks.find(block => block.title === title)?.lines).toBeGreaterThan(1);
+  } finally {
+    await page.evaluate(async folder => {
+      const app = (window as any).app;
+      await app.vault.delete(app.vault.getAbstractFileByPath(`${folder}/Long block.md`));
+    }, folder);
+  }
+});
+
 test('narrow defaults are temporary and explicit view choices survive resizing', async () => {
   const page = app.page;
   await page.evaluate(() => {
