@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- (#2602) Fixed the time range shown while dragging to create a timeblock, task or time entry in the calendar being hidden behind existing events. The selection now draws above existing events, so its time range can be read while dragging over them.
+  - Thanks to @RumiaKitinari for reporting
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
