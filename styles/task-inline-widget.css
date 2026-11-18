@@ -520,11 +520,14 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
     container-type: inline-size;
 }
 
-.markdown-preview-view .tasknotes-inline-widget-host {
+/* The host (a reading-mode task list item or a live-preview line) is the size
+   container, so the widget can stay inline beside CodeMirror's widget buffers
+   instead of opening blank line boxes above and below the card. */
+.tasknotes-inline-widget-host {
     container-type: inline-size;
 }
 
-.markdown-preview-view .tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
+.tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
     display: inline;
     container-type: normal;
 }
