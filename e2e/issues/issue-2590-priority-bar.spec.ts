@@ -85,3 +85,43 @@ test('cards get no priority bar when the view does not show priority', async () 
   await expect(card).toBeVisible();
   expect(await bar(page, card)).toBeNull();
 });
+
+// Second report on #2590: views embedded in Markdown table cells, one per column. Table columns
+// size to their content, so the cells shrank until each card was only its status and priority
+// icons, and centred columns centred the titles.
+for (const mode of ['preview', 'source'] as const) {
+  test(`task list embedded in a table cell keeps readable cards (${mode === 'preview' ? 'Reading view' : 'Live Preview'})`, async () => {
+    const base = stringify({
+      filters: { and: [`file.inFolder("${folder}")`, 'file.ext == "md"', 'file.hasTag("task")'] },
+      views: ['1', '2', '3'].map(name => ({ type: 'tasknotesTaskList', name, order: ['status', 'priority'] })),
+    });
+    const note = `| Today | This Week | On-Hold |\n| :---: | :---: | :---: |\n` +
+      `| ![[${folder}/Columns.base#1]] | ![[${folder}/Columns.base#2]] | ![[${folder}/Columns.base#3]] |\n`;
+    await page.evaluate(async ({ folder, base, note, mode }) => {
+      const app = (window as any).app;
+      if (!app.vault.getAbstractFileByPath(`${folder}/Columns.base`)) await app.vault.create(`${folder}/Columns.base`, base);
+      const path = `${folder}/Table ${mode}.md`;
+      const file = app.vault.getAbstractFileByPath(path) ?? await app.vault.create(path, note);
+      await app.workspace.getLeaf(false).setViewState({ type: 'markdown', state: { file: file.path, mode, source: false } });
+    }, { folder, base, note, mode });
+
+    const cards = page.locator('.workspace-leaf.mod-active table .task-card').filter({ hasText: 'Priority high' });
+    await expect(cards).toHaveCount(3);
+    for (const card of await cards.all()) {
+      const layout = await card.evaluate(element => {
+        const title = element.querySelector<HTMLElement>('.task-card__title-text')!;
+        return {
+          card: element.getBoundingClientRect().width,
+          title: title.getBoundingClientRect().width,
+          align: getComputedStyle(title).textAlign,
+          glyph: element.querySelector('.task-card__priority-dot')!.getBoundingClientRect().height,
+        };
+      });
+      expect(layout.card).toBeGreaterThan(200);
+      expect(layout.title).toBeGreaterThan(50);
+      expect(layout.align).toBe('start');
+      expect(layout.glyph).toBeLessThanOrEqual(24);
+      expect(await bar(page, card)).toEqual({ color: 'rgb(255, 0, 0)', width: 3 });
+    }
+  });
+}

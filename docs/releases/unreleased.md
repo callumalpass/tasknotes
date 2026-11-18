@@ -47,6 +47,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @TonyAtlas for reporting
 - (#2581) Fixed task cards in Bases views showing "Normal" priority, with the Normal colour, for notes that have no priority property. These cards now show no priority, which matches how Bases sorts and filters the missing property and how the default priority formulas rank it (below every configured priority).
   - Thanks to @arthurhfcardoso for reporting
+- (#2590) Fixed TaskNotes views embedded in Markdown table cells shrinking until each card showed only its status and priority icons, with no title. Embedded views now keep a readable minimum width (the table scrolls sideways when the note is too narrow), and titles stay left-aligned in centred columns.
+  - Thanks to @DevOps-Toast for reporting
 
 ## Changed
 
