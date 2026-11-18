@@ -47,6 +47,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @TonyAtlas for reporting
 - (#2581) Fixed task cards in Bases views showing "Normal" priority, with the Normal colour, for notes that have no priority property. These cards now show no priority, which matches how Bases sorts and filters the missing property and how the default priority formulas rank it (below every configured priority).
   - Thanks to @arthurhfcardoso for reporting
+- (#2590) Fixed TaskNotes views embedded in Markdown table cells shrinking until each card showed only its status and priority icons, with no title. Embedded views now keep a readable minimum width (the table scrolls sideways when the note is too narrow), and titles stay left-aligned in centred columns.
+  - Thanks to @DevOps-Toast for reporting
 
 ## Changed
 
@@ -54,5 +56,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @dh-gh-1 for the suggestion (#2584)
 - The two-pane task modal (Create with More fields, and Edit) now uses the window's available height, up to 900px, instead of a fixed 540px, so fields, attachments and details need less scrolling. It still keeps one height when More fields opens.
   - Thanks to @dh-gh-1 for the suggestion (#2585)
+- (#2590) Task cards in Bases views that show priority now have a bar in the priority's colour along their left edge, so priority is visible at a glance and not only from the small mark at the end of the card. Tasks with no priority, or a priority of weight 0 such as *None*, have no bar. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
+  - Thanks to @kmaustral for reporting
 
 ## Security

@@ -1323,6 +1323,31 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__priority-dot--icon:hover svg 
 }
 }
 
+/* Priority bar: in views that show priority, a task with a ranked priority gets a bar in the
+   priority's colour along the card's left edge, so priority reads at a glance and not only from
+   the small dot. The bar is drawn over the card's padding and does not move its content. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-priority-bar:not(.task-card--layout-inline)::after {
+    content: "";
+    position: absolute;
+    top: var(--tn-space-1);
+    bottom: var(--tn-space-1);
+    left: var(--tn-priority-bar-offset, 0);
+    width: var(--tn-priority-bar-width, 3px);
+    border-radius: var(--tn-radius-full);
+    background-color: var(--current-priority-color, var(--priority-color, var(--tn-text-muted)));
+    pointer-events: none;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-priority-bar.task-card--completed:not(.task-card--layout-inline)::after {
+    opacity: 0.6;
+}
+
+/* Agenda cards have no padding of their own, so the bar sits in the list entry's padding instead
+   of against the status icon. */
+.tasknotes-plugin .tn-calendar-list-card .task-card {
+    --tn-priority-bar-offset: calc(-1 * var(--tn-space-1) - 1px);
+}
+
 /* Use child combinator (>) to prevent subtasks from inheriting parent status styling */
 .tasknotes-plugin .task-card[data-status] > .task-card__main-row .task-card__status-dot {
     border-color: var(--current-status-color, var(--tn-border-color));

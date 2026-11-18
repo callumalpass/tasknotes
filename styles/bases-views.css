@@ -65,6 +65,15 @@
 	width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
 }
 
+/* A TaskNotes view embedded in a table cell (#2590). Table columns size to their content and a
+   Base embed has no width of its own, so the cell shrank until each card was only its status
+   and priority icons. Give the embed a readable minimum width, and undo the cell's text
+   alignment so titles stay left-aligned in centred columns. */
+:is(td, th) .internal-embed.bases-embed.tasknotes-view-active {
+	min-width: min(18rem, 80vw);
+	text-align: start;
+}
+
 /* Bases TaskNotes List View Container */
 .tn-bases-tasknotes-list {
     display: flex;
