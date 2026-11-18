@@ -48,6 +48,15 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 					translate(msg({ message: "Default visible properties", context: "settings.appearance.taskCards.defaultVisibleProperties.name" })),
 					translate(msg({ message: "Choose which properties appear on task cards by default.", context: "settings.appearance.taskCards.defaultVisibleProperties.description" }))
 				),
+				ctx.toggle("wrapTaskCardProperties", {
+					name: translate(msg({ message: "Show all properties on task cards", context: "settings.appearance.taskCards.wrapProperties.name" })),
+					desc: translate(msg({ message: "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line.", context: "settings.appearance.taskCards.wrapProperties.description" })),
+					getValue: () => plugin.settings.wrapTaskCardProperties,
+					setValue: async (value: boolean) => {
+						plugin.settings.wrapTaskCardProperties = value;
+						save();
+					},
+				}),
 				ctx.toggle("completionMenuAsSubmenu", {
 					name: translate(msg({ message: "Group complete and skip actions in a submenu", context: "settings.appearance.taskCards.completionSubmenu.name" })),
 					desc: translate(msg({ message: "Nest the complete and skip actions under a submenu in the task context menu. Turn off to show them directly in the menu.", context: "settings.appearance.taskCards.completionSubmenu.description" })),
