@@ -2,6 +2,7 @@ import { Page, chromium, Browser, expect, type Locator } from '@playwright/test'
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
+import { stopOwnedProcess } from './process-lifecycle';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const UNPACKED_DIR = path.resolve(process.env.TASKNOTES_E2E_RUNTIME_DIR ?? path.join(PROJECT_ROOT, '.obsidian-unpacked'));
@@ -313,19 +314,6 @@ async function waitForCdpUrl(
     obsidianProcess.on('exit', onExit);
     obsidianProcess.on('error', onError);
   });
-}
-
-async function stopOwnedProcess(child?: ChildProcess): Promise<void> {
-  if (!child?.pid) return;
-  for (const signal of ['SIGTERM', 'SIGKILL'] as const) {
-    try {
-      process.kill(-child.pid, signal);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ESRCH') return;
-      throw error;
-    }
-    if (signal === 'SIGTERM') await new Promise(resolve => setTimeout(resolve, 1000));
-  }
 }
 
 export async function launchObsidian(): Promise<ObsidianApp> {

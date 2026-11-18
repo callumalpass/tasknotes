@@ -25,6 +25,21 @@ describe("card property wrapping defaults", () => {
 		expect(buildSettingsFromLoadedData(saved as LoadedSettingsData).settings.wrapTaskCardProperties).toBe(value);
 	});
 
+	it("keeps inline wrapping off independently of the Bases wrapping default", () => {
+		const { settings } = buildSettingsFromLoadedData(null);
+		expect(settings.wrapTaskCardProperties).toBe(true);
+		expect(settings.wrapInlineTaskProperties).toBe(false);
+	});
+
+	it("keeps separate saved choices for Bases and inline wrapping", () => {
+		const { settings } = buildSettingsFromLoadedData({
+			wrapTaskCardProperties: false,
+			wrapInlineTaskProperties: true,
+		});
+		expect(settings.wrapTaskCardProperties).toBe(false);
+		expect(settings.wrapInlineTaskProperties).toBe(true);
+	});
+
 	it("does not rewrite the saved choice while loading settings", () => {
 		const data = { wrapTaskCardProperties: false };
 		buildSettingsFromLoadedData(data);
