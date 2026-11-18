@@ -11545,6 +11545,10 @@ msgstr "TaskNotes creó un nuevo token de API para este dispositivo. Cópialo de
 msgctxt "migrationRecognition.waiting"
 msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
 msgstr "TaskNotes encontró metadatos en {path} sin mdbase.yaml y no creó otra colección. Termine la sincronización o restaure la configuración correspondiente desde una copia de seguridad; la migración se reintentará cuando lleguen los metadatos."
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "TaskNotes no se ha iniciado porque no se pudo leer su archivo de configuración. Tu configuración no se ha modificado. Reinicia Obsidian para volver a intentarlo. Reinstalar TaskNotes elimina su configuración."
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
