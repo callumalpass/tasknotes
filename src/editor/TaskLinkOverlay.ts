@@ -399,7 +399,8 @@ export function buildTaskLinkDecorations(
 					const lineStart = text.lastIndexOf("\n", link.start - 1) + 1;
 					const lineEnd = text.indexOf("\n", link.end);
 					const surrounding = text.slice(lineStart, link.start) + text.slice(link.end, lineEnd < 0 ? text.length : lineEnd);
-					const inSentence = surrounding.replace(/^\s*(?:[-*+]|\d+\.)\s+/, "").trim().length > 0;
+					// A list marker and an optional task checkbox are not sentence text.
+					const inSentence = surrounding.replace(/^\s*(?:[-*+]|\d+\.)\s+(?:\[.\]\s+)?/, "").trim().length > 0;
 					const newWidget = new TaskLinkWidget(
 						taskInfo,
 						plugin,
