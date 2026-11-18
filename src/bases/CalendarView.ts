@@ -1469,6 +1469,8 @@ export class CalendarView extends BasesViewBase {
 		}
 		const dayMaxEventRows = this.getAllDayRowLimit();
 		if (this.calendar && this.calendar.getOptions().dayMaxEventRows !== dayMaxEventRows) this.calendar.setOptions({ dayMaxEventRows });
+		// A same-range layout rebuild resets the engine toolbar without onRangeChange.
+		this.syncCalendarToolbar();
 	}
 
 	private addTaskOnDay(dateStr: string): void {
