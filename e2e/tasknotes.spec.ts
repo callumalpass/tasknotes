@@ -2120,8 +2120,8 @@ test.describe('Tag and Project Editing', () => {
     await expect(page.locator('.workspace-leaf.mod-active .tn-tasknotesKanban')).toBeVisible();
 
     // Bases renders file.tags as native property chips rather than legacy a.tag links.
-    // Assert a known fixture tag in the active board, not a hidden Markdown leaf.
-    const tag = page.locator('.workspace-leaf.mod-active .task-card').locator('.tag:visible, .task-card__metadata-overflow:visible').filter({ hasText: /^errands$/ }).or(
+    // Assert the known tag (with its visible # prefix) or its compact overflow summary.
+    const tag = page.locator('.workspace-leaf.mod-active .task-card').locator('.tag:visible, .task-card__metadata-overflow:visible').filter({ hasText: /^#?errands$/ }).or(
       page.locator('.workspace-leaf.mod-active .task-card .task-card__metadata-overflow[aria-label*="errands"]:visible')
     ).first();
     await expect(tag).toBeVisible();

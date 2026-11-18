@@ -8,7 +8,7 @@ Location: **Settings → TaskNotes → Appearance & interaction → Task cards**
 
 Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
-When a card is too narrow for all of its properties, TaskNotes keeps them on one line and hides the rest behind a count such as **+3**. Select the count to see the hidden properties. Turn on **Show all properties on task cards** to wrap the properties onto extra lines instead, so every property stays visible and cards get taller. This applies to task cards in Bases views (task list, Kanban and calendar agenda). Task links in notes always stay on one line.
+**Show all properties on task cards** is on by default when no choice has been saved. Properties wrap onto extra lines when a card is too narrow, so every property stays visible and cards get taller. Turn it off to keep properties on one line and hide the rest behind a count such as **+3**; select the count to see the hidden properties. Previously saved choices are preserved. This applies to task cards in Bases views (task list, Kanban and calendar agenda). Task links in notes always stay on one line.
 
 A task with attachments shows a paperclip and a count on its card. To see the file names instead, add **attachments** to the view's properties (or to **Default visible properties**). Each attachment then appears as a link named by its file, such as *Quarterly report.pdf*, and the count is no longer shown.
 
