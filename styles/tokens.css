@@ -70,7 +70,9 @@
     --tn-modal-composer-width: 720px;
     --tn-modal-compact-width: 600px;
     --tn-modal-split-width: 960px;
-    --tn-modal-split-height: 540px;
+    /* The two-pane modal keeps one height, so More fields never moves it. It takes the window's
+       available height (the modal's max-height) up to this size, so fields and details need less scrolling. */
+    --tn-modal-split-height: 900px;
     --tn-modal-details-min-width: 320px;
     --tn-modal-details-min-height: 96px;
     --tn-modal-editor-size: calc(var(--font-text-size) - 1px);

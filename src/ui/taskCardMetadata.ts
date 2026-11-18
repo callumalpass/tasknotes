@@ -28,7 +28,11 @@ export function cleanupTaskCardMetadata(metadataLine: HTMLElement): void {
 	metadataObservers.delete(metadataLine);
 }
 
-export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement, plugin?: TaskNotesPlugin, occurrenceScheduled = ""): void {
+/**
+ * Keeps a card's metadata on one line, hiding what does not fit behind a "+N" count. With `wrap`,
+ * nothing is hidden: the properties wrap onto further lines instead.
+ */
+export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLElement, plugin?: TaskNotesPlugin, occurrenceScheduled = "", wrap = false): void {
 	const atoms: HTMLElement[] = [];
 	const groups: Array<{ property: HTMLElement; chips: HTMLElement[] }> = [];
 	for (const property of Array.from(values.children) as HTMLElement[]) {
@@ -61,6 +65,9 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			dateSlots.some((slot) => !slot.hidden)
 		);
 	markVisibleDates();
+	metadataLine.classList.toggle("task-card__metadata--wrap", wrap);
+	metadataLine.closest(".task-card")?.classList.toggle("task-card--metadata-wrap", wrap);
+	if (wrap) return;
 	summary.addEventListener("click", (event) => {
 		event.stopPropagation();
 		if (!hiddenLabels.length) return;
@@ -436,6 +443,11 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		}
 	}
 
+	// Attachment names on the card replace the paperclip count. Badges render (and update) before
+	// the metadata, so the count is removed here.
+	if (metadataElements.some((element) => element.querySelector(".task-card__attachment-link"))) {
+		card.querySelector(".task-card__attachment-indicator")?.remove();
+	}
 	updateMetadataVisibility(metadataLine, metadataElements);
 	metadataLine.hidden = metadataElements.length === 0;
 	card.classList.toggle("task-card--metadata-empty", metadataLine.hidden);
@@ -456,7 +468,14 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		slot.hidden = !date;
 		if (date) slot.appendChild(date);
 	}
-	fitTaskCardMetadata(values, metadataLine, plugin, propertyOptions.occurrenceScheduled);
+	fitTaskCardMetadata(
+		values,
+		metadataLine,
+		plugin,
+		propertyOptions.occurrenceScheduled,
+		plugin.settings.wrapTaskCardProperties === true &&
+			!card.classList.contains("task-card--layout-inline")
+	);
 	return metadataElements;
 }
 

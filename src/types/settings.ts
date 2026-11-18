@@ -180,6 +180,8 @@ export interface TaskNotesSettings {
 	subtaskChevronPosition: "left" | "right";
 	// Nest the complete/skip context-menu actions under a submenu (vs. flat menu items)
 	completionMenuAsSubmenu: boolean;
+	/** Wrap task card properties onto extra lines instead of hiding overflow behind "+N". */
+	wrapTaskCardProperties: boolean;
 	// Overdue behavior settings
 	hideCompletedFromOverdue: boolean;
 	// ICS integration settings
