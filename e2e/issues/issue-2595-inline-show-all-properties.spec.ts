@@ -1,10 +1,11 @@
 /**
- * Discussion #2595: task links in notes collapse properties that do not fit into a "+N" count.
+ * Discussions #2595 and #2597: task links in notes collapse properties that do not fit into a "+N" count.
  * "Show all properties on inline task cards" lists them all under the title instead, including
  * custom fields and attachments. The default stays one line (#2579), and links inside a sentence
  * still show only the title.
  *
  * @see https://github.com/callumalpass/tasknotes/discussions/2595
+ * @see https://github.com/callumalpass/tasknotes/discussions/2597
  */
 import { test, expect, type Page } from '@playwright/test';
 import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } from '../obsidian';

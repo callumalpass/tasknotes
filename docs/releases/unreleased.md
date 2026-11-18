@@ -37,7 +37,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Added **Show all properties on task cards** (Settings → Appearance & interaction → Task cards). When it is on, properties that do not fit on a narrow card wrap onto extra lines instead of being hidden behind a count such as +3, as they did in 4.x. Task links in notes have their own setting, below. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
   - Thanks to @dh-gh-1 for the suggestion (#2583)
 - Added **Show all properties on inline task cards** (Settings → Appearance & interaction → Inline tasks). When it is on, a task link on its own line in a note lists every selected property on extra lines under its title, instead of hiding the ones that do not fit behind a count such as +3. It is off by default, so task links stay on one line, and links inside a sentence still show only the title. **Attachments** can now be chosen in **Inline task card properties** and **Default visible properties**, and appear as links named by their file. See [Inline tasks](https://tasknotes.dev/features/inline-tasks/).
-  - Thanks to @dh-gh-1 for the suggestion (#2595)
+  - Thanks to @dh-gh-1 for the suggestions (#2595, #2597)
 
 ## Fixed
 
