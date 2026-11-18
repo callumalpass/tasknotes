@@ -39,6 +39,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2594) Fixed Obsidian freezing when a note showed a TaskNotes calendar in list (Agenda) layout inside a `base` code block. The agenda kept loading more days, and redrawing every task each time, until Obsidian stopped responding. A calendar in a code block now sizes to its content, as one embedded with `![[...]]` already did.
+  - Thanks to @sovf4717 for reporting
 - Fixed tracked-time blocks in the calendar hiding the task title unless the block was very short. The title now appears beside the status icon, as it does on scheduled tasks.
 - Fixed expanded subtasks of a task with no dates or properties being squeezed onto one line, with their dates and properties overlapping the title. Subtasks now keep their own layout.
 - (#2579) Fixed task links on their own line in Live Preview taking up about three lines each, with blank space above and below the task and list bullets pushed onto a separate line. Each task now takes one line again, as it did in 4.x.
