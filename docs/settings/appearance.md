@@ -8,6 +8,8 @@ Location: **Settings → TaskNotes → Appearance & interaction → Task cards**
 
 Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
+When a card is too narrow for all of its properties, TaskNotes keeps them on one line and hides the rest behind a count such as **+3**. Select the count to see the hidden properties. Turn on **Show all properties on task cards** to wrap the properties onto extra lines instead, so every property stays visible and cards get taller. This applies to task cards in Bases views (task list, Kanban and calendar agenda). Task links in notes always stay on one line.
+
 Use **Group complete and skip actions in a submenu** to control how the completion actions are laid out in the task context menu. When on (the default), the *Completed today / on schedule / on due date / on (pick date)* actions — and *Skip instance* for recurring tasks — are nested under a single **Mark complete or skip** entry. Turn it off to show them directly in the menu, set off by dividers.
 
 Checklist progress is available as a visible property in task cards. In Bases view `order` arrays, the corresponding source property is `file.tasks` (shown as `tasks` in Bases property pickers once present in the view `order` list).

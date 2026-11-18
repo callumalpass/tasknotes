@@ -179,6 +179,32 @@
     display: none;
 }
 
+/* "Show all properties on task cards": nothing is hidden behind a count, so the properties wrap
+   onto further lines and a long value wraps within the card. */
+body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap {
+    flex-wrap: wrap;
+}
+
+body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap > .task-card__metadata-values {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    row-gap: 0;
+    overflow: visible;
+    white-space: normal;
+}
+
+body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap .task-card__metadata-chips {
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+body .tasknotes-plugin .task-card .task-card__metadata.task-card__metadata--wrap :is(.task-card__metadata-values > *, .task-card__metadata-chips :is(.tag, .context-tag, .task-card__project-link)) {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .tasknotes-plugin .kanban-view__card-wrapper .task-card__metadata > .task-card__metadata-values {
     flex: 1 1 0;
     display: flex;

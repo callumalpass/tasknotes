@@ -27,6 +27,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 ## Added
 
+- Added **Show all properties on task cards** (Settings → Appearance & interaction → Task cards). When it is on, properties that do not fit on a narrow card wrap onto extra lines instead of being hidden behind a count such as +3, as they did in 4.x. Task links in notes stay on one line. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
+  - Thanks to @dh-gh-1 for the suggestion (#2583)
+
 - Added materialized occurrence notes for recurring tasks. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes) for setup and calendar behavior.
 ```
 
