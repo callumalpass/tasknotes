@@ -492,6 +492,54 @@ export function renderProjectLinks(
 }
 
 /**
+ * Render task attachments as links named by their file, such as "Quarterly report.pdf". An alias
+ * in the link wins; a Markdown note shows its name without the extension. The links share the
+ * project link chip styling, so each one fits, collapses or wraps on its own on a card.
+ */
+export function renderAttachmentLinks(
+	container: HTMLElement,
+	attachments: string[],
+	deps: LinkServices
+): void {
+	container.empty();
+	for (const raw of attachments) {
+		if (typeof raw !== "string" || raw.trim() === "") continue;
+		const attachment = raw.trim();
+		let path = attachment;
+		let alias = "";
+		let subpath: string | undefined;
+		if (isWikilink(attachment)) {
+			const inner = attachment.slice(2, -2);
+			const target = parseWikilinkTarget(inner);
+			path = target.path;
+			subpath = target.subpath;
+			if (inner.includes("|")) alias = inner.slice(inner.indexOf("|") + 1).trim();
+		} else if (isMarkdownLink(attachment)) {
+			const parsed = parseMarkdownLink(attachment);
+			if (!parsed) continue;
+			path = parsed.filePath;
+			subpath = parsed.subpath;
+			alias = parsed.displayText;
+		}
+		const normalizedPath = parseLinkToPath(path);
+		const file =
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, deps.sourcePath ?? "") ||
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+		const name =
+			alias ||
+			(file instanceof TFile
+				? file.extension === "md" ? file.basename : file.name
+				: normalizedPath.split("/").pop() || normalizedPath);
+		appendInternalLink(container, path, uiData(name, "Attachment file name or link alias; preserve user-authored link data"), deps, {
+			cssClass: "task-card__project-link task-card__attachment-link internal-link",
+			hoverSource: "tasknotes-attachment-link",
+			showErrorNotices: true,
+			subpath,
+		});
+	}
+}
+
+/**
  * Render an array of strings with custom separator and formatting
  */
 export function renderArrayWithLinks(
