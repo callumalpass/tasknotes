@@ -11539,14 +11539,15 @@ msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes hat für dieses Gerät ein neues API-Token erstellt. Kopiere es aus Einstellungen → TaskNotes → Integrationen in deine API- und MCP-Clients."
 
-#: src/services/mdbase/recognitionNotices.ts
-msgctxt "migrationRecognition.waiting"
-msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
-msgstr "TaskNotes hat Metadaten in {path} ohne mdbase.yaml gefunden und keine weitere Sammlung erstellt. Schließen Sie die Synchronisierung ab oder stellen Sie die passende Konfiguration aus einer Sicherung wieder her. Die Migration wird beim Eintreffen der Metadaten erneut versucht."
 #: src/main.ts
 msgctxt "notices.settingsUnreadable"
 msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
 msgstr "TaskNotes wurde nicht gestartet, weil die Einstellungsdatei nicht gelesen werden konnte. Deine Einstellungen wurden nicht verändert. Starte Obsidian neu, um es erneut zu versuchen. Eine Neuinstallation von TaskNotes löscht die Einstellungen."
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "TaskNotes hat Metadaten in {path} ohne mdbase.yaml gefunden und keine weitere Sammlung erstellt. Schließen Sie die Synchronisierung ab oder stellen Sie die passende Konfiguration aus einer Sicherung wieder her. Die Migration wird beim Eintreffen der Metadaten erneut versucht."
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"

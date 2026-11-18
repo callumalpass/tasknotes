@@ -11538,14 +11538,15 @@ msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes 已为此设备创建新的 API 令牌。请从设置 → TaskNotes → 集成中将其复制到您的 API 和 MCP 客户端。"
 
-#: src/services/mdbase/recognitionNotices.ts
-msgctxt "migrationRecognition.waiting"
-msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
-msgstr "TaskNotes 在 {path} 中发现了没有 mdbase.yaml 的元数据，因此未创建另一个集合。请完成同步或从备份恢复对应的配置；元数据到达后会重试迁移。"
 #: src/main.ts
 msgctxt "notices.settingsUnreadable"
 msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
 msgstr "由于无法读取设置文件，TaskNotes 未启动。你的设置没有更改。请重启 Obsidian 后重试。重新安装 TaskNotes 会删除其设置。"
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "TaskNotes 在 {path} 中发现了没有 mdbase.yaml 的元数据，因此未创建另一个集合。请完成同步或从备份恢复对应的配置；元数据到达后会重试迁移。"
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"

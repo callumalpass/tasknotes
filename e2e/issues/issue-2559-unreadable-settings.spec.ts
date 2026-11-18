@@ -15,13 +15,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { closeObsidian, launchObsidian, type ObsidianApp } from "../obsidian";
 
-const dataPath = path.resolve(
-	__dirname,
-	"../../tasknotes-e2e-vault/.obsidian/plugins/tasknotes/data.json"
+const vaultRoot = path.resolve(
+	process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(__dirname, "../../tasknotes-e2e-vault")
 );
+const dataPath = path.join(vaultRoot, ".obsidian/plugins/tasknotes/data.json");
 let instance: ObsidianApp;
 let page: Page;
 let saved: string;
+let originalData: string | undefined;
 
 async function restartPlugin(): Promise<void> {
 	await page.evaluate(async () => {
@@ -41,6 +42,7 @@ async function notices(): Promise<string> {
 test.beforeAll(async () => {
 	instance = await launchObsidian();
 	page = instance.page;
+	originalData = fs.readFileSync(dataPath, "utf8");
 	await page.evaluate(async () => {
 		const plugin = (window as any).app.plugins.plugins.tasknotes;
 		plugin.settings.taskPropertyName = "issue-2559";
@@ -57,15 +59,15 @@ test.beforeEach(async () => {
 
 test.afterAll(async () => {
 	try {
-		if (saved) fs.writeFileSync(dataPath, saved);
 		if (page && !page.isClosed()) {
 			await page.evaluate(async () => {
-				const app = (window as any).app;
-				await app.plugins.disablePlugin("tasknotes");
-				await app.plugins.enablePlugin("tasknotes");
-				const plugin = app.plugins.plugins.tasknotes;
-				plugin.settings.taskPropertyName = "";
-				await plugin.saveSettings();
+				await (window as any).app.plugins.disablePlugin("tasknotes");
+			});
+		}
+		if (originalData !== undefined) fs.writeFileSync(dataPath, originalData);
+		if (page && !page.isClosed() && originalData !== undefined) {
+			await page.evaluate(async () => {
+				await (window as any).app.plugins.enablePlugin("tasknotes");
 			});
 		}
 	} finally {

@@ -11541,14 +11541,15 @@ msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes ha creato un nuovo token API per questo dispositivo. Copialo da Impostazioni → TaskNotes → Integrazioni nei tuoi client API e MCP."
 
-#: src/services/mdbase/recognitionNotices.ts
-msgctxt "migrationRecognition.waiting"
-msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
-msgstr "TaskNotes ha trovato metadati in {path} senza mdbase.yaml e non ha creato un’altra raccolta. Completa la sincronizzazione o ripristina la configurazione corrispondente da una copia di sicurezza; la migrazione riproverà all’arrivo dei metadati."
 #: src/main.ts
 msgctxt "notices.settingsUnreadable"
 msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
 msgstr "TaskNotes non è stato avviato perché non è stato possibile leggere il file delle impostazioni. Le tue impostazioni non sono state modificate. Riavvia Obsidian per riprovare. Reinstallare TaskNotes elimina le sue impostazioni."
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "TaskNotes ha trovato metadati in {path} senza mdbase.yaml e non ha creato un’altra raccolta. Completa la sincronizzazione o ripristina la configurazione corrispondente da una copia di sicurezza; la migrazione riproverà all’arrivo dei metadati."
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"

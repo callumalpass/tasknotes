@@ -11542,14 +11542,15 @@ msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "O TaskNotes criou um novo token de API para este dispositivo. Copie-o de Configurações → TaskNotes → Integrações para seus clientes de API e MCP."
 
-#: src/services/mdbase/recognitionNotices.ts
-msgctxt "migrationRecognition.waiting"
-msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
-msgstr "O TaskNotes encontrou metadados em {path} sem mdbase.yaml e não criou outra coleção. Conclua a sincronização ou restaure a configuração correspondente de um backup; a migração será tentada novamente quando os metadados chegarem."
 #: src/main.ts
 msgctxt "notices.settingsUnreadable"
 msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
 msgstr "O TaskNotes não foi iniciado porque não foi possível ler o arquivo de configurações. Suas configurações não foram alteradas. Reinicie o Obsidian para tentar novamente. Reinstalar o TaskNotes apaga as configurações."
+
+#: src/services/mdbase/recognitionNotices.ts
+msgctxt "migrationRecognition.waiting"
+msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
+msgstr "O TaskNotes encontrou metadados em {path} sem mdbase.yaml e não criou outra coleção. Conclua a sincronização ou restaure a configuração correspondente de um backup; a migração será tentada novamente quando os metadados chegarem."
 
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
