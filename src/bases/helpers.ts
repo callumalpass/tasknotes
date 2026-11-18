@@ -240,7 +240,7 @@ function createTaskInfoFromProperties(
 			basesItem.path?.split("/").pop()?.replace(".md", "") ||
 			uiText(msg({ message: "Untitled", context: "bases/helpers: createTaskInfoFromProperties title" })),
 		status: toOptionalString(props.status) || plugin?.settings?.defaultTaskStatus || "open",
-		priority: toOptionalString(props.priority) || "normal",
+		priority: toOptionalString(props.priority) || "",
 		path: basesItem.path || "",
 		archived: props.archived === true,
 		due: toOptionalString(props.due),
