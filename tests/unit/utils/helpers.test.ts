@@ -485,7 +485,7 @@ describe('Helpers', () => {
         expect(result).toMatchObject({
           title: 'my-task',
           status: 'open',
-          priority: 'normal',
+          priority: '',
           path: '/tasks/my-task.md',
           archived: false
         });
@@ -499,6 +499,8 @@ describe('Helpers', () => {
 
         expect(result).toBeDefined();
         expect(result?.title).toBe('Test');
+        // #2581: a missing priority stays empty rather than becoming "normal".
+        expect(result?.priority).toBe('');
       });
     });
 
