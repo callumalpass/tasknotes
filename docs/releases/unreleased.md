@@ -27,15 +27,15 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 ## Added
 
-- Added **Show all properties on task cards** (Settings → Appearance & interaction → Task cards). When it is on, properties that do not fit on a narrow card wrap onto extra lines instead of being hidden behind a count such as +3, as they did in 4.x. Task links in notes stay on one line. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
-  - Thanks to @dh-gh-1 for the suggestion (#2583)
-
 - Added materialized occurrence notes for recurring tasks. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes) for setup and calendar behavior.
 ```
 
 -->
 
 ## Added
+
+- Added **Show all properties on task cards** (Settings → Appearance & interaction → Task cards). When it is on, properties that do not fit on a narrow card wrap onto extra lines instead of being hidden behind a count such as +3, as they did in 4.x. Task links in notes stay on one line. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
+  - Thanks to @dh-gh-1 for the suggestion (#2583)
 
 ## Fixed
 
@@ -52,5 +52,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Task cards that show the attachments property now list each attachment as a link named by its file, such as *Quarterly report.pdf*, instead of its full vault path. Each name fits, collapses into the +N count, or wraps like any other property, and the paperclip count is no longer shown alongside the names. To show attachment names, add **attachments** to the view's properties. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
   - Thanks to @dh-gh-1 for the suggestion (#2584)
+- The two-pane task modal (Create with More fields, and Edit) now uses the window's available height, up to 900px, instead of a fixed 540px, so fields, attachments and details need less scrolling. It still keeps one height when More fields opens.
+  - Thanks to @dh-gh-1 for the suggestion (#2585)
 
 ## Security
