@@ -62,6 +62,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @arthurhfcardoso for reporting
 - (#2590) Fixed TaskNotes views embedded in Markdown table cells shrinking until each card showed only its status and priority icons, with no title. Embedded views now keep a readable minimum width (the table scrolls sideways when the note is too narrow), and titles stay left-aligned in centred columns.
   - Thanks to @DevOps-Toast for reporting
+- (#2604) Fixed the task card in a narrow Pomodoro view (about 350 px wide or less) running the title under the status and priority icons. On narrow task cards in any view, the due-date icon could also sit on its own line above the date. It now stays beside the date. Turn on **Show all properties on task cards** to show time estimate and time tracked on extra lines instead of in a count such as +2.
+  - Thanks to @RumiaKitinari for reporting
 
 ## Changed
 
