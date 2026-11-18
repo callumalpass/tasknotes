@@ -473,8 +473,9 @@ export function renderTaskCardMetadata(config: RenderTaskCardMetadataConfig): HT
 		metadataLine,
 		plugin,
 		propertyOptions.occurrenceScheduled,
-		plugin.settings.wrapTaskCardProperties === true &&
-			!card.classList.contains("task-card--layout-inline")
+		card.classList.contains("task-card--layout-inline")
+			? plugin.settings.wrapInlineTaskProperties === true
+			: plugin.settings.wrapTaskCardProperties === true
 	);
 	return metadataElements;
 }

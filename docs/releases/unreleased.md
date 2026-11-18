@@ -34,8 +34,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
-- Added **Show all properties on task cards** (Settings → Appearance & interaction → Task cards). When it is on, properties that do not fit on a narrow card wrap onto extra lines instead of being hidden behind a count such as +3, as they did in 4.x. Task links in notes stay on one line. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
+- Added **Show all properties on task cards** (Settings → Appearance & interaction → Task cards). When it is on, properties that do not fit on a narrow card wrap onto extra lines instead of being hidden behind a count such as +3, as they did in 4.x. Task links in notes have their own setting, below. See [Appearance settings](https://tasknotes.dev/settings/appearance/).
   - Thanks to @dh-gh-1 for the suggestion (#2583)
+- Added **Show all properties on inline task cards** (Settings → Appearance & interaction → Inline tasks). When it is on, a task link on its own line in a note lists every selected property on extra lines under its title, instead of hiding the ones that do not fit behind a count such as +3. It is off by default, so task links stay on one line, and links inside a sentence still show only the title. **Attachments** can now be chosen in **Inline task card properties** and **Default visible properties**, and appear as links named by their file. See [Inline tasks](https://tasknotes.dev/features/inline-tasks/).
+  - Thanks to @dh-gh-1 for the suggestion (#2595)
 
 ## Fixed
 
@@ -47,6 +49,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @TonyAtlas for reporting
 - (#2581) Fixed task cards in Bases views showing "Normal" priority, with the Normal colour, for notes that have no priority property. These cards now show no priority, which matches how Bases sorts and filters the missing property and how the default priority formulas rank it (below every configured priority).
   - Thanks to @arthurhfcardoso for reporting
+- Fixed tags, contexts, projects and attachments in task links in notes stacking one per line or running together, such as "@studio@phone". They now sit in a row with a space between them, as on task cards in Bases views.
+- Fixed task links in notes not updating after a change to **Inline task card properties** until the note was reopened.
 
 ## Changed
 

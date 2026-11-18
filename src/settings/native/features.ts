@@ -57,6 +57,15 @@ export function featuresDefinitions(ctx: SettingsContext): SettingDefinitionGrou
 					ctx.t(msg({ message: "Inline task card properties", context: "settings.native.inlineTaskCardProperties" })),
 					ctx.t(msg({ message: "Select which properties to show in inline task cards.", context: "settings.native.selectWhichPropertiesToShowInInlineTaskCards" }))
 				),
+				ctx.toggle("wrapInlineTaskProperties", {
+					name: translate(msg({ message: "Show all properties on inline task cards", context: "settings.features.inlineTasks.wrapProperties.name" })),
+					desc: translate(msg({ message: "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title.", context: "settings.features.inlineTasks.wrapProperties.description" })),
+					getValue: () => plugin.settings.wrapInlineTaskProperties,
+					setValue: async (value: boolean) => {
+						plugin.settings.wrapInlineTaskProperties = value;
+						save();
+					},
+				}),
 				ctx.toggle("enableInstantTaskConvert", {
 					name: translate(msg({ message: "Show convert button next to checkboxes", context: "settings.features.instantConvert.toggle.name" })),
 					desc: translate(msg({ message: "Display an inline button next to Markdown checkboxes that converts them to TaskNotes", context: "settings.features.instantConvert.toggle.description" })),
