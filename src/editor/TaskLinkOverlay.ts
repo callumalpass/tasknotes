@@ -28,6 +28,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskLinkOverlay" })
 
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
+const standaloneTaskLinkLine = Decoration.line({ class: "tasknotes-inline-widget-host" });
 
 interface ParsedTaskLink {
 	linkPath: string;
@@ -398,6 +399,7 @@ export function buildTaskLinkDecorations(
 					const lineStart = text.lastIndexOf("\n", link.start - 1) + 1;
 					const lineEnd = text.indexOf("\n", link.end);
 					const surrounding = text.slice(lineStart, link.start) + text.slice(link.end, lineEnd < 0 ? text.length : lineEnd);
+					const inSentence = surrounding.replace(/^\s*(?:[-*+]|\d+\.)\s+/, "").trim().length > 0;
 					const newWidget = new TaskLinkWidget(
 						taskInfo,
 						plugin,
@@ -405,7 +407,7 @@ export function buildTaskLinkDecorations(
 						displayText,
 						undefined,
 						parsed.subpath,
-						surrounding.replace(/^\s*(?:[-*+]|\d+\.)\s+/, "").trim().length > 0
+						inSentence
 					);
 
 					// Check if we need to update the cached widget
@@ -420,6 +422,11 @@ export function buildTaskLinkDecorations(
 						inclusive: true,
 					});
 
+					// A standalone widget stays inline so CodeMirror's widget buffers share
+					// its line; the line itself is the size container for narrow layouts.
+					if (!inSentence) {
+						builder.add(lineStart, lineStart, standaloneTaskLinkLine);
+					}
 					builder.add(link.start, link.end, decoration);
 				}
 			} catch {
