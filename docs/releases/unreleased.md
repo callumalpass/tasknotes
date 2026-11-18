@@ -34,6 +34,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Added
 
+- (#2574) The task ID property can now be remapped like other task properties, under **Settings → TaskNotes → Properties → Metadata & integration properties → Task ID**. It defaults to `id`, so existing vaults are unchanged. When a collection's task type maps the ID to another property, TaskNotes uses that property. See [Task Properties](https://tasknotes.dev/settings/task-properties/#metadata-properties).
+  - Thanks to @minchinweb for the request
+
 ## Fixed
 
 ## Changed

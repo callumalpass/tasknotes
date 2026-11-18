@@ -11257,6 +11257,11 @@ msgctxt "settings.integrations.googleCalendarExport.notices.noDateToSync"
 msgid "Task has no scheduled or due date to sync"
 msgstr "У задачи нет запланированной даты или срока для синхронизации"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.properties.id.name"
+msgid "Task ID"
+msgstr "ID задачи"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.header"
 msgid "Task identification"

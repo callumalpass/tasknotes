@@ -73,37 +73,43 @@ export function preserveUnownedCanonicalSettings(existing: ObjectValue, generate
 	}
 	const fields = { ...object(previous.fields), ...object(next.fields) };
 	Object.assign(next, { ...previous, version: next.version, fields, binding });
-	// Stable IDs are not a plugin field-mapping setting. Keep its schema and lifecycle.
-	const idField = object(previous.fields).id;
+	// The ID property follows the field mapping. A type that never had a stable
+	// ID keeps none, and an existing ID generator is kept (under the new name
+	// when the mapping renames the property).
+	const previousIdField = object(previous.fields).id;
+	const idField = object(next.fields).id;
 	const collection = object(desired.collection);
-	if (object(existing.collection).unique !== undefined) collection.unique = copy(object(existing.collection).unique);
-	else delete collection.unique;
-	if (typeof idField === "string") {
-		fields.id = idField;
-		const createSet = object(object(object(desired.lifecycle).on_create).set);
-		delete createSet.id;
-		const previousSet = object(object(object(existing.lifecycle).on_create).set);
-		if (previousSet[idField]) createSet[idField] = copy(previousSet[idField]);
-		if (idField !== "id") {
-			delete object(object(object(desired.schema).value).properties).id;
-			const generator = object(desired["x-tasknotes-generator"]);
-			generator.managed_fields = [...(generator.managed_fields as string[]).filter((field) => field !== "id"), idField];
+	const existingUnique = object(existing.collection).unique;
+	if (existingUnique !== undefined) {
+		const unique = copy(existingUnique);
+		if (Array.isArray(unique) && typeof previousIdField === "string" && typeof idField === "string") {
+			for (const rule of unique.map(object)) if (rule.field === previousIdField) rule.field = idField;
 		}
-	}
-	if (idField === undefined) {
+		collection.unique = unique;
+	} else delete collection.unique;
+	const createSet = object(object(object(desired.lifecycle).on_create).set);
+	const previousSet = object(object(object(existing.lifecycle).on_create).set);
+	const properties = object(object(object(desired.schema).value).properties);
+	if (typeof previousIdField === "string" && typeof idField === "string") {
+		fields.id = idField;
+		delete createSet[idField];
+		if (previousSet[previousIdField] !== undefined) createSet[idField] = copy(previousSet[previousIdField]);
+		if (idField !== previousIdField) {
+			const previousIdProperty = object(object(object(existing.schema).value).properties)[previousIdField];
+			if (previousIdProperty !== undefined) properties[idField] = copy(previousIdProperty);
+		}
+	} else if (previousIdField === undefined) {
 		delete fields.id;
-		const properties = object(object(object(desired.schema).value).properties);
-		const previousId = object(object(object(existing.schema).value).properties).id;
-		if (previousId !== undefined) properties.id = copy(previousId);
-		else delete properties.id;
-		const set = object(object(object(desired.lifecycle).on_create).set);
-		const previousIdGenerator = object(object(object(existing.lifecycle).on_create).set).id;
-		if (previousIdGenerator !== undefined) set.id = copy(previousIdGenerator);
-		else delete set.id;
+		if (typeof idField === "string") {
+			const previousId = object(object(object(existing.schema).value).properties)[idField];
+			if (previousId !== undefined) properties[idField] = copy(previousId);
+			else delete properties[idField];
+			if (previousSet[idField] !== undefined) createSet[idField] = copy(previousSet[idField]);
+			else delete createSet[idField];
+		}
 	}
 	if (object(previous.fields).tags === undefined) delete fields.tags;
 	// Do not replace custom constraints with model defaults on retained properties.
-	const properties = object(object(object(desired.schema).value).properties);
 	const previousProperties = object(object(object(existing.schema).value).properties);
 	for (const [field, definition] of Object.entries(properties)) {
 		const prior = previousProperties[field];

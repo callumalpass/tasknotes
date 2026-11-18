@@ -213,6 +213,7 @@ Each default reminder can be:
 
 These properties are system-managed and typically only require property key configuration:
 
+- **Task ID**: The task's stable ID (default: `id`). Change it if your notes already use `id` for something else, for example `tasknote_id`. Existing notes keep their IDs under the old key until you rename it in them.
 - **Date Created**: When the task was created
 - **Date Modified**: When the task was last modified
 - **Completed Date**: When the task was completed
