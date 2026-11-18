@@ -50,7 +50,7 @@ export function appearanceDefinitions(ctx: SettingsContext): SettingDefinitionGr
 				),
 				ctx.toggle("wrapTaskCardProperties", {
 					name: translate(msg({ message: "Show all properties on task cards", context: "settings.appearance.taskCards.wrapProperties.name" })),
-					desc: translate(msg({ message: "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line.", context: "settings.appearance.taskCards.wrapProperties.description" })),
+					desc: translate(msg({ message: "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks.", context: "settings.appearance.taskCards.wrapProperties.description" })),
 					getValue: () => plugin.settings.wrapTaskCardProperties,
 					setValue: async (value: boolean) => {
 						plugin.settings.wrapTaskCardProperties = value;

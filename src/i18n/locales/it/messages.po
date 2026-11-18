@@ -1705,6 +1705,11 @@ msgctxt "modals.timeblockInfo.attachmentsLabel"
 msgid "Attachments"
 msgstr "Allegati"
 
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
+msgid "Attachments"
+msgstr "Allegati"
+
 #: src/i18n/fieldLabels.ts
 msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Attachments"
@@ -10227,6 +10232,11 @@ msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "Mostra tutto"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "Mostra tutte le proprietà nelle schede attività in linea"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.name"
 msgid "Show all properties on task cards"
@@ -13561,10 +13571,15 @@ msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Durata del lavoro"
 
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "Manda a capo le proprietà di un link a un'attività su più righe invece di nasconderle dietro un conteggio come +3. I link alle attività all'interno di una frase mostrano sempre solo il titolo."
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.wrapProperties.description"
-msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes stay on one line."
-msgstr "Manda a capo le proprietà su più righe quando una scheda è troppo stretta, invece di nasconderle dietro un conteggio come +3. I link alle attività nelle note restano su una sola riga."
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "Manda a capo le proprietà su più righe quando una scheda è troppo stretta, invece di nasconderle dietro un conteggio come +3. I link alle attività nelle note hanno un'impostazione propria in «Attività in linea»."
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

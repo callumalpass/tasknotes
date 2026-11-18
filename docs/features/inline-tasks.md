@@ -35,7 +35,9 @@ Task link overlays work in both Live Preview and Reading modes:
 - **Live Preview Mode**: Widgets hide when the cursor is within the wikilink range, allowing for easy editing.
 - **Reading Mode**: Widgets display with full functionality and integrate with the reading mode typography.
 
-On Obsidian mobile, long titles are ellipsized to fit the available line after the status and priority indicators, including in nested bullets. Enabled properties remain available in a horizontally scrollable strip that can flow onto the next line. Configure these properties under `Settings -> TaskNotes -> Features -> Inline Task Card Properties`.
+On Obsidian mobile, long titles are ellipsized to fit the available line after the status and priority indicators, including in nested bullets. Enabled properties remain available in a horizontally scrollable strip that can flow onto the next line. Configure these properties under `Settings -> TaskNotes -> Appearance & interaction -> Inline tasks` (`Inline task card properties`). Custom fields and attachments can be added there; attachments appear as links named by their file.
+
+A task link on its own line shows its properties on the same line as the title, and hides the ones that do not fit behind a count such as **+3**; select the count to see them. Turn on `Show all properties on inline task cards` in the same section to list every property on extra lines under the title instead. Task links inside a sentence always show only the title.
 
 The overlays support drag-and-drop to calendar views and provide keyboard shortcuts for quick navigation (Ctrl/Cmd+Click to open the source file).
 

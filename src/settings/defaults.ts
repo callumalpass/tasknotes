@@ -330,6 +330,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	showCompletedTaskStrikethrough: true,
 	completionMenuAsSubmenu: true,
 	wrapTaskCardProperties: false,
+	wrapInlineTaskProperties: false,
 	// Task card expandable subtasks defaults
 	showExpandableSubtasks: true,
 	expandSubtasksByDefault: false,
