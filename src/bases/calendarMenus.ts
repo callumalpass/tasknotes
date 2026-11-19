@@ -7,7 +7,7 @@ import {
 	loadTimeblock,
 	showTimeblockInfoModal,
 } from "./calendar-core";
-import { handleCalendarTaskClick } from "../utils/clickHandlers";
+import { getModifierPaneType, handleCalendarTaskClick, openTaskNote } from "../utils/clickHandlers";
 import { openTaskMenu } from "../ui/taskCardContextMenu";
 import { isCalendarBatchTarget } from "./calendarBatchMove";
 import { ICSEventContextMenu } from "../components/ICSEventContextMenu";
@@ -90,12 +90,7 @@ export async function handleCalendarEventClick(
 
 	// Handle property-based event click - open file directly
 	if (eventType === "property-based" && filePath) {
-		const file = context.plugin.app.vault.getAbstractFileByPath(filePath);
-		if (file instanceof TFile) {
-			const isModKey = jsEvent.ctrlKey || jsEvent.metaKey;
-			const newLeaf = isModKey || jsEvent.button === 1; // Ctrl/Cmd+click or middle click
-			void context.plugin.app.workspace.getLeaf(newLeaf).openFile(file);
-		}
+		openTaskNote(context.plugin.app, filePath, getModifierPaneType(jsEvent));
 		return;
 	}
 

@@ -92,14 +92,15 @@ describe("Discussion #2355: inline heading and block navigation", () => {
 	it.each(["#Details", "#^block"])("retains %s for all open-note gestures", subpath => {
 		const { plugin, render, title } = setup();
 		const element = title(render(subpath));
-		for (const options of [{}, { ctrlKey: true }, { metaKey: true }]) {
+		// Obsidian's Mod key is Ctrl off macOS (Cmd on macOS), where tests run.
+		for (const [options, paneType] of [[{}, false], [{ ctrlKey: true }, "tab"]] as const) {
 			element.dispatchEvent(new MouseEvent("click", { bubbles: true, ...options }));
 			expect(plugin.app.workspace.openLinkText).toHaveBeenLastCalledWith(
-				"Tasks/Lecture.md" + subpath, "", !!(options.ctrlKey || options.metaKey)
+				"Tasks/Lecture.md" + subpath, "", paneType
 			);
 		}
 		element.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, button: 1 }));
-		expect(plugin.app.workspace.openLinkText).toHaveBeenLastCalledWith("Tasks/Lecture.md" + subpath, "", true);
+		expect(plugin.app.workspace.openLinkText).toHaveBeenLastCalledWith("Tasks/Lecture.md" + subpath, "", "tab");
 	});
 
 	it("preserves the target for the configured double-click open action", () => {

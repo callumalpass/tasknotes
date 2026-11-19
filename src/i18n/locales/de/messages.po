@@ -8433,6 +8433,11 @@ msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "Notiz öffnen"
 
+#: src/components/TaskContextMenu.ts
+msgctxt "contextMenus.task.openNoteInNewTab"
+msgid "Open note in new tab"
+msgstr "Notiz in neuem Tab öffnen"
+
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
 #: src/modals/taskEditCompletions.ts

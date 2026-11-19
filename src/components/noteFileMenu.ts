@@ -14,6 +14,8 @@ export interface NoteFileActionOptions {
 	task?: TaskInfo;
 	/** Lead with Open, for a menu that is not already a task menu. */
 	includeOpen?: boolean;
+	/** Offer Open in new tab; the task menu has its own top-level item. Default true. */
+	includeOpenInNewTab?: boolean;
 	/** Offer Convert to task, for a note that is not a task. */
 	offerConvert?: boolean;
 	/** `source` passed to Obsidian's `file-menu` event. */
@@ -50,13 +52,15 @@ export function addNoteFileActions(
 				.onClick(() => void app.workspace.getLeaf(false).openFile(file))
 		);
 	}
-	menu.addItem((item) =>
-		item
-			.setSection("open")
-			.setTitle(t(msg({ message: "Open in new tab", context: "ui.audit.openNewTab" })))
-			.setIcon("external-link")
-			.onClick(() => void app.workspace.openLinkText(file.path, "", true))
-	);
+	if (options.includeOpenInNewTab !== false) {
+		menu.addItem((item) =>
+			item
+				.setSection("open")
+				.setTitle(t(msg({ message: "Open in new tab", context: "ui.audit.openNewTab" })))
+				.setIcon("external-link")
+				.onClick(() => void app.workspace.openLinkText(file.path, "", true))
+		);
+	}
 	menu.addItem((item) =>
 		item
 			.setSection("open")

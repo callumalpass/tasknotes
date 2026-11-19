@@ -292,6 +292,7 @@ The v3 FilterBar UI component no longer exists - all configuration is done throu
 The Task List View provides interaction with tasks through clicking and context menus:
 
 - **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> Appearance & interaction -> Task interaction`)
+- **Ctrl/Cmd-click or middle-click on a task**: Opens the task note in a new tab, as with a link in Obsidian. Ctrl/Cmd+Alt-click opens it to the side, and Ctrl/Cmd+Alt+Shift-click in a new window. The context menu also has **Open note in new tab**.
 - **Right-click on a task**: Opens a context menu with actions:
   - Mark as complete
   - Change status, priority, tags, dates, recurrence and reminders. Each opens the same searchable picker as the task's own controls.
@@ -300,7 +301,7 @@ The Task List View provides interaction with tasks through clicking and context 
 
 Context menu availability depends on your TaskNotes settings and task properties.
 
-For batch date changes in Task List or Kanban, Ctrl/Cmd-click individual task cards to toggle selection, or Shift-click to select a range, then right-click a selected card. Modifier-clicks on task-card bodies select tasks rather than opening their source notes; links and other card controls keep their own actions. **Status**, **Priority**, **Tags**, **Due date** and **Scheduled date** open the same pickers as a single task's. A date assigns that same value to each selected task, and the +/- day and week options move each task's own date. A date-only choice removes the time from that property; dismissing the picker changes nothing. Each change, and **Delete**, can be undone from the notice that follows.
+For batch date changes in Task List or Kanban, Shift-click a task card to start a selection (Shift-click another card to select the range between them), then click or Ctrl/Cmd-click cards to add or remove them, and right-click a selected card. While no selection is active, Ctrl/Cmd-click opens the task note in a new tab instead; links and other card controls keep their own actions. **Status**, **Priority**, **Tags**, **Due date** and **Scheduled date** open the same pickers as a single task's. A date assigns that same value to each selected task, and the +/- day and week options move each task's own date. A date-only choice removes the time from that property; dismissing the picker changes nothing. Each change, and **Delete**, can be undone from the notice that follows.
 
 ## Virtual Scrolling
 
