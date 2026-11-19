@@ -90,6 +90,7 @@ function renderCalendarMonth(
 	const recurringDateStrings = new Set(recurringDates.map((date) => formatDateForStorage(date)));
 	const completedInstances = getCurrentCompletedInstances(options);
 	const skippedInstances = getCurrentSkippedInstances(options);
+	const completesAnyDay = (options.task.recurrence_anchor || "scheduled") === "completion";
 
 	renderMonthCalendar(container, {
 		month: displayDate,
@@ -104,8 +105,17 @@ function renderCalendarMonth(
 			const occurrenceDate = new Date(day);
 			const dayElement = grid.createDiv("recurring-calendar__day");
 			dayElement.textContent = uiNumber(day.getUTCDate());
-			dayElement.addClass("recurring-calendar__day--clickable");
 			dayElement.setAttribute("data-occurrence-date", dayStr);
+			// A scheduled series only completes its own occurrences. Completion-anchored
+			// series take any day, and a recorded day can always be cleared.
+			const isToggleable =
+				isOccurrenceDate ||
+				completesAnyDay ||
+				completedInstances.has(dayStr) ||
+				skippedInstances.has(dayStr);
+			if (isToggleable) {
+				dayElement.addClass("recurring-calendar__day--clickable");
+			}
 
 			if (!isCurrentMonth) {
 				dayElement.addClass("recurring-calendar__day--faded");
@@ -131,10 +141,12 @@ function renderCalendarMonth(
 				dayElement.addClass("recurring-calendar__day--skipped");
 			}
 
-			dayElement.addEventListener("click", () => {
-				syncInstanceChangeState(options, dayStr, "complete");
-				renderCalendarMonth(container, displayDate, options);
-			});
+			if (isToggleable) {
+				dayElement.addEventListener("click", () => {
+					syncInstanceChangeState(options, dayStr, "complete");
+					renderCalendarMonth(container, displayDate, options);
+				});
+			}
 
 			if (isOccurrenceDate) {
 				dayElement.addEventListener("contextmenu", (event) => {
