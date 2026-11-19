@@ -39,7 +39,7 @@ test.afterAll(async () => {
     await page.evaluate(async ({ folder, originalWrap }) => {
       const app = (window as any).app;
       const plugin = app.plugins.plugins.tasknotes;
-      plugin.settings.wrapTaskCardProperties = originalWrap ?? false;
+      plugin.settings.wrapTaskCardProperties = originalWrap ?? true;
       await plugin.saveSettings();
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
@@ -49,7 +49,51 @@ test.afterAll(async () => {
   }
 });
 
+for (const type of ['tasknotesCalendar', 'tasknotesKanban', 'tasknotesTaskList']) {
+  test(`missing saved choice defaults to wrapping in ${type}`, async () => {
+    const effective = await page.evaluate(async () => {
+      const plugin = (window as any).app.plugins.plugins.tasknotes;
+      const data = await plugin.loadData();
+      delete data.wrapTaskCardProperties;
+      await plugin.saveData(data);
+      await plugin.loadSettings();
+      return plugin.settings.wrapTaskCardProperties;
+    });
+    expect(effective).toBe(true);
+    const content = stringify({
+      filters: { and: [`file.inFolder("${folder}")`, 'file.ext == "md"'] },
+      views: [{
+        type, name: 'Default wrapping', calendarView: 'listWeek',
+        groupBy: { property: 'status', direction: 'ASC' },
+        order: ['status', 'scheduled', 'projects', 'contexts', 'tags', 'note.client', 'note.estimate_note'],
+      }],
+    });
+    await page.evaluate(async ({ path, content }) => {
+      const app = (window as any).app;
+      await app.workspace.getLeaf(false).openFile(await app.vault.create(path, content));
+      app.workspace.leftSplit.collapse();
+      app.workspace.rightSplit.collapse();
+    }, { path: `${folder}/Default-${type}.base`, content });
+    const leaf = page.locator('.workspace-leaf.mod-active');
+    await leaf.evaluate(element => { (element as HTMLElement).style.maxWidth = '320px'; });
+    const card = leaf.locator('.task-card').first();
+    await expect(card).toHaveClass(/task-card--metadata-wrap/);
+    await expect(card.locator('.task-card__metadata-overflow')).toBeHidden();
+    for (const text of ['Northwind Traders', 'Needs a second review', 'studio', 'phone', 'accessibility']) {
+      await expect(card.locator('.task-card__metadata').getByText(text)).toBeVisible();
+    }
+  });
+}
+
 test('narrow agenda cards show every property when the setting is on', async () => {
+  const savedOff = await page.evaluate(async () => {
+    const plugin = (window as any).app.plugins.plugins.tasknotes;
+    plugin.settings.wrapTaskCardProperties = false;
+    await plugin.saveSettings();
+    await plugin.loadSettings();
+    return plugin.settings.wrapTaskCardProperties;
+  });
+  expect(savedOff).toBe(false);
   const content = stringify({
     filters: { and: [`file.inFolder("${folder}")`] },
     views: [{

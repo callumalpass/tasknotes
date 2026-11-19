@@ -195,16 +195,29 @@ describe("basesSelectionUi", () => {
 			"Tasks/b.md",
 		]);
 
+		// Outside a selection, Ctrl/Cmd+click is left to open the note in a new tab.
+		const idleService = createSelectionService();
 		expect(
 			handleBasesSelectionClick({
 				event: new MouseEvent("click", { ctrlKey: true }),
 				taskPath: "Tasks/a.md",
-				selectionService: inactiveService,
+				selectionService: idleService,
+				getVisibleTaskPaths,
+				updateSelectionVisuals,
+			})
+		).toBe(false);
+		expect(idleService.toggleSelection).not.toHaveBeenCalled();
+
+		expect(
+			handleBasesSelectionClick({
+				event: new MouseEvent("click", { metaKey: true }),
+				taskPath: "Tasks/a.md",
+				selectionService: activeService,
 				getVisibleTaskPaths,
 				updateSelectionVisuals,
 			})
 		).toBe(true);
-		expect(inactiveService.toggleSelection).toHaveBeenCalledWith("Tasks/a.md");
+		expect(activeService.toggleSelection).toHaveBeenCalledWith("Tasks/a.md");
 
 		expect(
 			handleBasesSelectionClick({

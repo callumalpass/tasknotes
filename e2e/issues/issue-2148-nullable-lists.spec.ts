@@ -117,6 +117,12 @@ test('clearing the last item in every list does not persist null strings', async
   const modal = page.locator('.modal');
   await modal.getByPlaceholder('Add contexts', { exact: true }).fill('');
   await modal.getByPlaceholder('Add tags', { exact: true }).fill('');
+  // Clearing tags opens autocomplete; dismiss it before clicking controls behind it.
+  if (await page.locator('.suggestion-container:visible').count()) {
+    await modal.getByPlaceholder('Add tags', { exact: true }).press('Escape');
+    await expect(page.locator('.suggestion-container:visible')).toHaveCount(0);
+    await expect(modal).toBeVisible();
+  }
   await modal.getByRole('button', { name: 'Remove project', exact: true }).click();
   await modal.getByRole('button', { name: 'Remove task', exact: true }).click();
   await modal.locator('.setting-item').filter({ hasText: 'Custom list' }).locator('input').fill('');

@@ -796,7 +796,7 @@ describe("TaskCard Component", () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
-			expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+			expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", "tab");
 		});
 
 		it("should handle middle-click to open source note in a new tab", async () => {
@@ -812,7 +812,7 @@ describe("TaskCard Component", () => {
 			card.dispatchEvent(middleClickEvent);
 
 			expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
-			expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+			expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", "tab");
 		});
 
 		it("should handle right-click context menu", async () => {
@@ -1336,7 +1336,7 @@ describe("TaskCard Component", () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
-      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", "tab");
     });
 
     it('should handle middle-click to open source note in a new tab', async () => {
@@ -1352,7 +1352,7 @@ describe("TaskCard Component", () => {
       card.dispatchEvent(middleClickEvent);
 
       expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(task.path);
-      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", true);
+      expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(task.path, "", "tab");
     });
 
     it('should handle right-click context menu', async () => {

@@ -38,7 +38,10 @@ test.beforeEach(async () => {
       customPriorities: plugin.settings.customPriorities,
       taskIdentificationMethod: plugin.settings.taskIdentificationMethod,
       taskTag: plugin.settings.taskTag,
+      wrapTaskCardProperties: plugin.settings.wrapTaskCardProperties,
     };
+    // These scenarios exercise the supported compact (+N) layout, not the wrapping default.
+    plugin.settings.wrapTaskCardProperties = false;
     plugin.settings.customStatuses = ['open', 'waiting', 'review', 'done', 'parked'].map((value, order) => ({
       id: value, value, label: value, color: 'var(--color-blue)', order,
       isCompleted: value === 'done',
@@ -88,6 +91,7 @@ test.afterEach(async () => {
       Object.assign(plugin.settings, settings);
       plugin.statusManager.updateStatuses(plugin.settings.customStatuses);
       plugin.priorityManager.updatePriorities(plugin.settings.customPriorities);
+      await plugin.saveSettingsDataOnly();
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
     }, { folder, settings: originalSettings });

@@ -37,7 +37,7 @@ The Calendar View provides multiple view modes (month, week, day, year, list, an
 
 ### Selecting and Rescheduling Multiple Tasks
 
-Use **Ctrl/Cmd-click** to select individual task markers, or **Shift-click** to select a range. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
+Use **Shift-click** to start a selection or select a range, then click or **Ctrl/Cmd-click** markers to add or remove them. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. While no selection is active, Ctrl/Cmd-click or middle-click opens a task's note in a new tab. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
 
 Open **Task options** in the toolbar, or right-click a selected marker, to change the selected tasks together. **Scheduled date** and **Due date** open the date picker, with quick dates, +/- day and week options and **Pick date & time…** for any date with an optional time. A date assigns the same value to every selected task, and the +/- options move each task's own date; choosing a date without a time makes that property date-only. Dismissing the picker leaves the tasks unchanged.
 
