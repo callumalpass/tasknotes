@@ -29,6 +29,9 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Editor/TaskLinkOverlay" })
 // Define a state effect for task updates
 const taskUpdateEffect = StateEffect.define<{ taskPath?: string }>();
 const standaloneTaskLinkLine = Decoration.line({ class: "tasknotes-inline-widget-host" });
+const standaloneTaskItemLine = Decoration.line({
+	class: "tasknotes-inline-widget-host tasknotes-inline-widget-host--task-item",
+});
 
 interface ParsedTaskLink {
 	linkPath: string;
@@ -426,7 +429,9 @@ export function buildTaskLinkDecorations(
 					// A standalone widget stays inline so CodeMirror's widget buffers share
 					// its line; the line itself is the size container for narrow layouts.
 					if (!inSentence) {
-						builder.add(lineStart, lineStart, standaloneTaskLinkLine);
+						// A checkbox line also holds the checkbox and the convert button.
+						const onTaskItem = /^\s*(?:[-*+]|\d+\.)\s+\[.\]\s/.test(text.slice(lineStart, link.start));
+						builder.add(lineStart, lineStart, onTaskItem ? standaloneTaskItemLine : standaloneTaskLinkLine);
 					}
 					builder.add(link.start, link.end, decoration);
 				}
