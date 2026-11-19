@@ -2,6 +2,7 @@ import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { PendingAutoArchive, TaskInfo, StatusConfig } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { hasRecurringSeriesEnded } from "../core/recurrence";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/AutoArchiveService" });
 
@@ -96,7 +97,9 @@ export class AutoArchiveService {
 			return;
 		}
 
-		if (task.recurrence) {
+		// A running series is a live template; only a COUNT or UNTIL series that
+		// has ended is finished like a regular task.
+		if (task.recurrence && !hasRecurringSeriesEnded(task)) {
 			await this.cancelAutoArchive(task.path);
 			return;
 		}
@@ -202,6 +205,11 @@ export class AutoArchiveService {
 			this.normalizeStatusValue(item.statusValue)
 		) {
 			// Task status changed since scheduling, consider processed
+			return true;
+		}
+
+		if (currentTask.recurrence && !hasRecurringSeriesEnded(currentTask)) {
+			// The series was extended or reopened since scheduling
 			return true;
 		}
 
