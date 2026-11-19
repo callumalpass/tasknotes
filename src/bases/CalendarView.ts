@@ -63,6 +63,7 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
+import { filterListTopLevelSubtasks } from "./calendarListSubtasks";
 import { buildExternalCalendarEvents, buildLinkedGoogleEventPredicate, setProviderCalendarToggle } from "./calendarExternalEvents";
 import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
@@ -215,6 +216,7 @@ export class CalendarView extends BasesViewBase {
 		listDayCount: number;
 		showAgendaStrip: boolean;
 		showMonthDayPanel: boolean;
+		hideTopLevelSubtasks: boolean;
 		slotMinTime: string;
 		slotMaxTime: string;
 		slotDuration: string;
@@ -287,6 +289,7 @@ export class CalendarView extends BasesViewBase {
 			listDayCount: 7,
 			showAgendaStrip: true,
 			showMonthDayPanel: false,
+			hideTopLevelSubtasks: false,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -932,6 +935,7 @@ export class CalendarView extends BasesViewBase {
 			);
 			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
 			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
+			this.viewOptions.hideTopLevelSubtasks = this.getConfigOption<unknown>("hideTopLevelSubtasks", false) === true;
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
@@ -1115,6 +1119,7 @@ export class CalendarView extends BasesViewBase {
 					} finally {
 						this.automaticViewChange = false;
 					}
+					this.syncMainCalendarItems();
 					this.syncSelectionModeAfterCalendarRender();
 					this.destroyDayPanel();
 					this.syncDayPanel();
@@ -1182,13 +1187,40 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private calendarItems: CalendarEventItem[] = [];
+	/** Items last handed to the main calendar: list views may get fewer (hidden subtasks). */
+	private mainCalendarItems: CalendarEventItem[] = [];
+	private listItemsCache: { source: CalendarEventItem[]; items: CalendarEventItem[] } | null = null;
+
+	/** Items for list rows (agenda, month day panel), without subtasks shown under their parent that day. */
+	private getListItems(): CalendarEventItem[] {
+		if (!this.viewOptions.hideTopLevelSubtasks) return this.calendarItems;
+		if (this.listItemsCache?.source !== this.calendarItems) {
+			this.listItemsCache = {
+				source: this.calendarItems,
+				items: filterListTopLevelSubtasks(this.calendarItems, (linkPath, sourcePath) =>
+					this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath)),
+			};
+		}
+		return this.listItemsCache.items;
+	}
+
+	private getMainCalendarItems(viewType: string | undefined = this.calendar?.getView().type): CalendarEventItem[] {
+		return viewType === "list" ? this.getListItems() : this.calendarItems;
+	}
+
+	private syncMainCalendarItems(viewType?: string): void {
+		const items = this.getMainCalendarItems(viewType);
+		if (items === this.mainCalendarItems) return;
+		this.mainCalendarItems = items;
+		this.calendar?.setItems(items);
+	}
 	private batchMoveInProgress = false;
 	private batchPreview: CalendarBatchPreview | null = null;
 
 	private getBatchCalendarItems(): CalendarEventItem[] {
 		const view = this.calendar?.getView();
 		const timeGrid = view && isTimeGridCalendarView(viewToBases(view.type) ?? view.type);
-		return (this.calendarItems ?? []).filter(item => !timeGrid ||
+		return this.getMainCalendarItems(view?.type).filter(item => !timeGrid ||
 			(item.allDay ? this.viewOptions.showAllDaySlot : this.viewOptions.showTimeGrid));
 	}
 
@@ -1240,8 +1272,9 @@ export class CalendarView extends BasesViewBase {
 	private setCalendarItems(items: CalendarEventItem[]): void {
 		this.batchPreview?.clear(false);
 		this.calendarItems = items.map(item => item.data?.eventType === "due" ? { ...item, timeDisplay: "start" } : item);
-		this.calendar?.setItems(this.calendarItems);
-		this.dayPanel?.setItems(this.calendarItems);
+		this.mainCalendarItems = this.getMainCalendarItems();
+		this.calendar?.setItems(this.mainCalendarItems);
+		this.dayPanel?.setItems(this.getListItems());
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		this.updateSelectionVisuals();
 	}
@@ -1470,6 +1503,7 @@ export class CalendarView extends BasesViewBase {
 		}
 		if (view.type !== "days") this.narrowWeek = false;
 		this.batchPreview?.clear();
+		this.syncMainCalendarItems(view.type);
 		this.syncSelectionModeAfterCalendarRender();
 		const viewType = this.narrowWeek ? "timeGridWeek" : viewToBases(view.type);
 		if (!this.automaticViewChange && viewType && viewType !== this.viewOptions.calendarView) {
@@ -1556,7 +1590,7 @@ export class CalendarView extends BasesViewBase {
 			if (format(this.dayPanel.getDate(), "yyyy-MM-dd") !== this.selectedMonthDay) {
 				this.dayPanel.gotoDate(this.selectedMonthDay);
 			}
-			this.dayPanel.setItems(this.calendarItems);
+			this.dayPanel.setItems(this.getListItems());
 			this.updateDayPanelCount();
 			this.dayPanel.updateSize();
 			return;
@@ -1571,7 +1605,7 @@ export class CalendarView extends BasesViewBase {
 			onNavLink: arg => this.openDailyNoteFromDateLink(arg.date),
 			listEmptyContent: undefined,
 		});
-		this.dayPanel.setItems(this.calendarItems);
+		this.dayPanel.setItems(this.getListItems());
 		this.updateDayPanelCount();
 		const add = this.dayPanelEl.createEl("button", {
 			cls: "tn-calendar-day-panel-add",
@@ -1591,7 +1625,7 @@ export class CalendarView extends BasesViewBase {
 		const start = new Date(`${this.selectedMonthDay}T00:00:00`);
 		const end = new Date(start);
 		end.setDate(end.getDate() + 1);
-		const paths = new Set(this.calendarItems.filter(item => {
+		const paths = new Set(this.getListItems().filter(item => {
 			const event = eventApiFromItem(item);
 			return event.start && event.start < end && (event.end ? event.end > start : event.start >= start);
 		}).map(item => item.data?.taskInfo?.path || item.id));
