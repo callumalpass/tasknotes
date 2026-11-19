@@ -1,4 +1,7 @@
-import { Notice, TFile } from "obsidian";
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
+import { TFile } from "obsidian";
+import { showToast } from "./kit/toast";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { formatDateForStorage } from "../utils/dateUtils";
@@ -51,11 +54,23 @@ export async function openOrCreateOccurrenceNote(
 		const occurrence = await plugin.taskService.materializeOccurrence(parentTask, targetDate);
 		await openTaskPath({ plugin, path: occurrence.path, openInNewLeaf });
 		onUpdate?.();
-		new Notice(
-			existingOccurrence
-				? `Opened occurrence note for ${dateStr}`
-				: `Created occurrence note for ${dateStr}`
-		);
+		showToast({
+			message: existingOccurrence
+				? plugin.i18n.translate(
+						msg({
+							message: "Opened occurrence note for {date}",
+							context: "notices.audit.occurrenceOpened",
+						}),
+						{ date: dateStr }
+					)
+				: plugin.i18n.translate(
+						msg({
+							message: "Created occurrence note for {date}",
+							context: "notices.audit.occurrenceCreated",
+						}),
+						{ date: dateStr }
+					),
+		});
 		return occurrence;
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : String(error);
@@ -65,7 +80,17 @@ export async function openOrCreateOccurrenceNote(
 			details: { taskPath: parentTask.path, targetDate: dateStr },
 			error: errorMessage,
 		});
-		new Notice(`Failed to open occurrence note: ${errorMessage}`);
+		showToast({
+			message: plugin.i18n.translate(
+				msg({
+					message: "Failed to open occurrence note: {message}",
+					context: "notices.interface.occurrenceOpenFailed",
+				}),
+				{
+					message: displayError(errorMessage),
+				}
+			),
+		});
 		return null;
 	}
 }
@@ -78,7 +103,14 @@ export async function openMaterializedOccurrenceParent(
 	try {
 		const parent = await plugin.taskService.getMaterializedOccurrenceParent(occurrenceTask);
 		if (!parent) {
-			new Notice("Recurring parent not found");
+			showToast({
+				message: plugin.i18n.translate(
+					msg({
+						message: "Recurring parent not found",
+						context: "notices.interface.parentMissing",
+					})
+				),
+			});
 			return null;
 		}
 
@@ -95,7 +127,15 @@ export async function openMaterializedOccurrenceParent(
 			},
 			error: errorMessage,
 		});
-		new Notice(`Failed to open recurring parent: ${errorMessage}`);
+		showToast({
+			message: plugin.i18n.translate(
+				msg({
+					message: "Failed to open recurring parent: {message}",
+					context: "notices.interface.parentOpenFailed",
+				}),
+				{ message: displayError(errorMessage) }
+			),
+		});
 		return null;
 	}
 }

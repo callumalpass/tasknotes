@@ -1,3 +1,4 @@
+import { taskInfoTitle } from "../i18n/taskInfoTitle";
 import type { TaskInfo } from "../types";
 import { calculateTotalTimeSpent } from "./helpers";
 
@@ -23,9 +24,9 @@ export function buildTaskInfoFromMappedTask({
 	return {
 		...mappedTask,
 		path,
-		title: mappedTask.title || "Untitled task",
+		title: taskInfoTitle(mappedTask.title),
 		status: mappedTask.status || defaultTaskStatus,
-		priority: mappedTask.priority || "normal",
+		priority: mappedTask.priority || "",
 		archived: mappedTask.archived || false,
 		tags: Array.isArray(mappedTask.tags) ? mappedTask.tags : [],
 		contexts: Array.isArray(mappedTask.contexts) ? mappedTask.contexts : [],

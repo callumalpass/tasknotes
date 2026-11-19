@@ -1,3 +1,5 @@
+import { uiData } from "../i18n/dataText";
+
 import { StatusConfig } from "../types";
 import { normalizeStatusConfigValue } from "../core/fieldMapping";
 import { isSupportedColorValue, normalizeThemeColor } from "../utils/themeColors";
@@ -112,6 +114,18 @@ export class StatusManager {
 	 */
 	getCompletedStatuses(): string[] {
 		return this.statuses.filter((s) => s.isCompleted).map((s) => s.value);
+	}
+
+	/**
+	 * Get the status explicitly configured to follow the first completed status,
+	 * the one toggleStatus completes to. Unlike getNextStatus, this never falls back
+	 * to cycle order, so a recurring series keeps its status unless the user has
+	 * said what comes after done.
+	 */
+	getConfiguredStatusAfterCompletion(): string | undefined {
+		const completed = this.getStatusConfig(this.getCompletedStatuses()[0] ?? "");
+		const next = completed?.nextStatus ? this.getStatusConfig(completed.nextStatus) : undefined;
+		return next && !next.isCompleted ? next.value : undefined;
 	}
 
 	/**
@@ -254,7 +268,7 @@ export class StatusManager {
 		return {
 			id,
 			value: "new-status",
-			label: "New status",
+			label: uiData("New status", "Writable persisted seed for a new user-configured label; not a display getter"),
 			color: "#808080",
 			isCompleted: false,
 			excludeFromCycle: false,

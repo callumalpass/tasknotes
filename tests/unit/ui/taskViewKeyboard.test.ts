@@ -1,0 +1,225 @@
+import type TaskNotesPlugin from "../../../src/main";
+import type { TaskInfo } from "../../../src/types";
+import { installTaskViewKeyboard, revealTaskViewCard } from "../../../src/ui/taskViewKeyboard";
+import { openTaskPropertyPicker } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({
+	openTaskPropertyPicker: jest.fn(),
+	taskPropertyLabel: (property: string) => property,
+	archiveTasksWithUndo: jest.fn(),
+}));
+
+beforeEach(() => {
+	HTMLElement.prototype.scrollIntoView = jest.fn();
+});
+
+function harness() {
+	const root = document.body.createDiv();
+	root.tabIndex = 0;
+	for (const path of ["first.md", "second.md"]) {
+		const card = root.createDiv({ cls: "task-card" });
+		card.dataset.taskPath = path;
+		card.createEl("button", { cls: "task-card__status-dot" });
+		card.createEl("button", { cls: "task-card__priority-dot" });
+	}
+	const plugin = {
+		app: { scope: {}, keymap: { pushScope: jest.fn(), popScope: jest.fn() } },
+		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => 0 },
+		emitter: { on: jest.fn(), offref: jest.fn() },
+	} as unknown as TaskNotesPlugin;
+	const dispose = installTaskViewKeyboard({
+		plugin, root, paths: () => ["first.md", "second.md"],
+		taskForPath: async path => ({ path, title: path, status: "open", priority: "normal" }) as TaskInfo,
+		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
+	});
+	const first = root.querySelector<HTMLElement>('[data-task-path="first.md"]')!;
+	return { root, first, dispose, keymap: plugin.app.keymap };
+}
+
+afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
+
+it("reveals the whole target below stacked sticky headers using their live bounds", () => {
+	const root = document.body.createDiv();
+	root.style.overflowY = "auto";
+	Object.defineProperties(root, { scrollHeight: { value: 1000 }, clientHeight: { value: 400 } });
+	root.scrollTop = 200;
+	root.getBoundingClientRect = () => ({ top: 100, bottom: 500 }) as DOMRect;
+	const pin = root.createDiv({ cls: "task-list-virtual-sticky-header" });
+	for (const [top, bottom] of [[100, 140], [140, 172]]) {
+		const header = pin.createDiv({ cls: "task-list-virtual-sticky-header__group" });
+		header.getBoundingClientRect = () => ({ top, bottom, height: bottom - top, left: 0, right: 400 }) as DOMRect;
+	}
+	const card = root.createDiv({ cls: "task-card" });
+	card.getBoundingClientRect = () => ({ top: 130, bottom: 188, left: 0, right: 400 }) as DOMRect;
+	revealTaskViewCard(card, root);
+	expect(root.scrollTop).toBe(158);
+});
+
+it("does not scroll for a sticky header in a neighbouring board column", () => {
+	const root = document.body.createDiv();
+	root.style.overflowY = "auto";
+	Object.defineProperties(root, { scrollHeight: { value: 1000 }, clientHeight: { value: 400 } });
+	root.scrollTop = 200;
+	root.getBoundingClientRect = () => ({ top: 100, bottom: 500 }) as DOMRect;
+	const header = root.createDiv({ cls: "kanban-view__column-header" });
+	header.style.position = "sticky";
+	header.getBoundingClientRect = () => ({ top: 100, bottom: 150, height: 50, left: 500, right: 800 }) as DOMRect;
+	const card = root.createDiv({ cls: "task-card" });
+	card.getBoundingClientRect = () => ({ top: 130, bottom: 188, left: 0, right: 400 }) as DOMRect;
+	revealTaskViewCard(card, root);
+	expect(root.scrollTop).toBe(200);
+});
+
+it("releases the view scope synchronously when a modal begins opening", () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		expect(state.keymap.pushScope).toHaveBeenCalled();
+		document.dispatchEvent(new Event("tn-modal-opening"));
+		expect(state.keymap.popScope).toHaveBeenCalled();
+		jest.mocked(state.keymap.pushScope).mockClear();
+		document.body.createDiv({ cls: "modal-container" });
+		state.root.focus();
+		expect(state.keymap.pushScope).not.toHaveBeenCalled();
+	} finally { state.dispose(); }
+});
+
+it("does not open a live picker while an unfocused modal is loading", async () => {
+	const state = harness();
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		document.body.createDiv({ cls: "modal-container" });
+		control.dispatchEvent(new KeyboardEvent("keydown", { key: "s", bubbles: true, cancelable: true }));
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
+	} finally { state.dispose(); }
+});
+
+it("abandons an in-flight view action when a modal opens during task resolution", async () => {
+	const state = harness();
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		control.dispatchEvent(new KeyboardEvent("keydown", { key: "s", bubbles: true, cancelable: true }));
+		document.body.createDiv({ cls: "modal-container" });
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
+	} finally { state.dispose(); }
+});
+
+it("keeps native menu keyboard ownership when a refreshed task control regains focus", async () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		jest.mocked(state.keymap.pushScope).mockClear();
+		const menu = document.body.createDiv({ cls: "menu" });
+		state.first.replaceWith(state.first.cloneNode(true));
+		await Promise.resolve();
+		expect(jest.mocked(state.keymap.pushScope).mock.calls.length).toBe(0);
+		menu.remove();
+		state.root.focus();
+		expect(state.keymap.pushScope).toHaveBeenCalledTimes(1);
+	} finally {
+		state.dispose();
+	}
+});
+
+it.each(["ArrowDown", "p", "Escape"])("defers %s to an open native menu while its trigger retains focus", async key => {
+	const state = harness();
+	const received = jest.fn();
+	document.addEventListener("keydown", received);
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		document.body.createDiv({ cls: "menu" });
+		const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+		control.dispatchEvent(event);
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(event.defaultPrevented).toBe(false);
+		expect(received).toHaveBeenCalledWith(event);
+		expect(document.activeElement).toBe(control);
+		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
+	} finally {
+		document.removeEventListener("keydown", received);
+		state.dispose();
+	}
+});
+
+it.each(["status", "priority"])("retains the %s control and task identity when its row is replaced", async property => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>(`.task-card__${property}-dot`)!.focus();
+		const replacement = state.first.cloneNode(true) as HTMLElement;
+		state.first.replaceWith(replacement);
+		await Promise.resolve();
+		expect(document.activeElement).toBe(replacement.querySelector(`.task-card__${property}-dot`));
+		document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "p", bubbles: true }));
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(openTaskPropertyPicker).toHaveBeenCalledWith(expect.anything(), "priority", [expect.objectContaining({ path: "first.md" })], replacement.querySelector(".task-card__status-dot"));
+	} finally { state.dispose(); }
+});
+
+it("does not steal focus from an outside control during a row refresh", async () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		const outside = document.body.createEl("button");
+		outside.focus();
+		state.first.replaceWith(state.first.cloneNode(true));
+		await Promise.resolve();
+		expect(document.activeElement).toBe(outside);
+	} finally { state.dispose(); }
+});
+
+it("retains pointer-focused controls when a native focusout precedes their removal", async () => {
+	const state = harness();
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+		control.focus();
+		control.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
+		const replacement = state.first.cloneNode(true) as HTMLElement;
+		state.first.replaceWith(replacement);
+		await Promise.resolve();
+		expect(document.activeElement).toBe(replacement.querySelector("button"));
+	} finally { state.dispose(); }
+});
+
+it("does not replace intentional view-root focus with a child control", async () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		state.root.focus();
+		state.first.replaceWith(state.first.cloneNode(true));
+		await Promise.resolve();
+		expect(document.activeElement).toBe(state.root);
+	} finally { state.dispose(); }
+});
+
+it("falls back to the view rather than choosing an ambiguous replacement control", async () => {
+	const state = harness();
+	try {
+		state.first.querySelector<HTMLElement>("button")!.focus();
+		const replacement = state.first.cloneNode(true) as HTMLElement;
+		replacement.createEl("button", { cls: "task-card__status-dot" });
+		state.first.replaceWith(replacement);
+		await Promise.resolve();
+		expect(document.activeElement).toBe(state.root);
+	} finally { state.dispose(); }
+});
+
+it("retains date-field identity rather than picking another date control", async () => {
+	const state = harness();
+	try {
+		for (const field of ["scheduled", "due"]) {
+			const date = state.first.createEl("button", { cls: "task-card__metadata-date" });
+			date.dataset.tnDateType = field;
+		}
+		state.first.querySelector<HTMLElement>('[data-tn-date-type="due"]')!.focus();
+		const replacement = state.first.cloneNode(true) as HTMLElement;
+		state.first.replaceWith(replacement);
+		await Promise.resolve();
+		expect(document.activeElement).toBe(replacement.querySelector('[data-tn-date-type="due"]'));
+	} finally { state.dispose(); }
+});

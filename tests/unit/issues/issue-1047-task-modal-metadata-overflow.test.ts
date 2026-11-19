@@ -14,18 +14,15 @@ describe("Issue #1047: task modal metadata overflow", () => {
 	it("allows long metadata values to wrap instead of widening the modal", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
 		const metadataItemBlock = extractCssBlock(cssContent, ".tasknotes-plugin .metadata-item");
-		const metadataKeyBlock = extractCssBlock(cssContent, ".tasknotes-plugin .metadata-key");
 		const metadataValueBlock = extractCssBlock(
 			cssContent,
 			".tasknotes-plugin .metadata-value"
 		);
 
 		expect(metadataItemBlock).toContain("min-width: 0");
-		expect(metadataKeyBlock).toContain("flex: 0 0 auto");
-		expect(metadataValueBlock).toContain("flex: 1 1 auto");
+		expect(metadataItemBlock).toContain("minmax(0, 1fr)");
 		expect(metadataValueBlock).toContain("min-width: 0");
 		expect(metadataValueBlock).toContain("overflow-wrap: anywhere");
-		expect(metadataValueBlock).toContain("white-space: normal");
 	});
 });
 

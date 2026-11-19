@@ -27,7 +27,7 @@
  * - src/services/TaskService.ts - new deleteTask() method
  * - src/modals/TaskEditModal.ts - new Delete button and confirmation flow
  * - src/types/events.ts - EVENT_TASK_DELETED constant
- * - src/i18n/resources/*.ts - translation strings
+ * - src/i18n/locales/en/messages.po - translation strings
  * - styles/task-modal.css - button styling (optional)
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1009

@@ -13,7 +13,7 @@ The TaskNotes HTTP API provides local HTTP access to tasks, time tracking, pomod
   (`chrome-extension://…`, `moz-extension://…`) without paths, credentials, ports, queries, or fragments
 - Not available on mobile
 
-Enable it in `Settings -> TaskNotes -> Integrations -> HTTP API`.
+Enable it in `Settings -> TaskNotes -> Advanced -> HTTP API`.
 
 ## Base URL
 
@@ -41,7 +41,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8080/api/health
 
 TaskNotes 4.13.0 and later require a **TaskNotes API token**, not a Claude/Anthropic API key. The local MCP endpoint uses bearer authentication, not OAuth registration.
 
-1. In **Settings → TaskNotes → Integrations**, enable **HTTP API** and **MCP server**.
+1. In **Settings → TaskNotes → Advanced → HTTP API**, turn on **Enable HTTP API** and **Enable MCP server**.
 2. To generate a TaskNotes token, leave **API authentication token** empty and restart Obsidian. An existing TaskNotes token can be reused; do not clear it unless you intend to replace it for all clients.
 3. Reopen Integrations and copy the generated token. Keep it private.
 4. In Claude Desktop, open **Settings → Developer → Edit Config** and add the following entry, preserving any other MCP servers:
@@ -221,6 +221,8 @@ Common optional fields:
 - `gap`: optional ISO 8601 duration, such as `P1D`
 
 `blocking` is a read-only reverse relationship in API responses. To make a task block existing tasks, update those existing tasks' `blockedBy` fields.
+
+The MCP tools `tasknotes_create_task` and `tasknotes_update_task` accept the same `blockedBy` objects. On `tasknotes_update_task`, `blockedBy` replaces the whole list, and `null` or `[]` clears it.
 
 ```bash
 curl -X POST http://localhost:8080/api/tasks \

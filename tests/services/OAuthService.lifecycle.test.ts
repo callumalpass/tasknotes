@@ -1,3 +1,4 @@
+import { observeTranslation } from "../helpers/real-i18n";
 import { OAuthService } from "../../src/services/OAuthService";
 import { OAuthSecretStore } from "../../src/services/OAuthSecretStore";
 
@@ -8,7 +9,7 @@ function createService() {
 		setSecret: (key, value) => { values.set(key, value); },
 	});
 	store.setCredentials("google", { clientId: "fixture-client" });
-	const service: any = new OAuthService({ emitter: { trigger: jest.fn() } } as any, store);
+	const service: any = new OAuthService({ emitter: { trigger: jest.fn() }, i18n: { translate: observeTranslation(), getCurrentLocale: () => "en" } } as any, store);
 	service.generateCodeChallenge = jest.fn().mockResolvedValue("challenge");
 	service.generateState = jest.fn().mockReturnValue("fixture-state");
 	service.startCallbackServer = jest.fn().mockResolvedValue(18081);

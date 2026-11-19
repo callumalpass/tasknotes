@@ -1,6 +1,9 @@
-import { App, Notice, setIcon, setTooltip, TFile } from "obsidian";
+import { showToast } from "../ui/kit/toast";
+import { displayError } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
+import { App, Notice, TAbstractFile, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
-import { TaskModal } from "./TaskModal";
+import { TaskModal, type TaskSubmitOptions } from "./TaskModal";
 import { TaskInfo } from "../types";
 import { sanitizeTags } from "../utils/helpers";
 import {
@@ -14,17 +17,24 @@ import type {
 	MarkdownEditorProps,
 } from "../editor/EmbeddableMarkdownEditor";
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
+import { createNLPHighlight } from "../editor/NLPHighlight";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
 import {
 	buildTaskCreationFormState,
 	type TaskCreationPrepopulatedValues,
 } from "./taskCreationFormState";
 import { applyTaskCreationSubtaskAssignments } from "./taskCreationSubtasks";
-import { NLPSuggest } from "./taskCreationSuggest";
-import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
-import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
-import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
+import { getTaskFilenameNotice } from "../utils/filenameGenerator";
+import type { TaskFormNaturalLanguageLayer } from "./taskFormModel";
+import type { TaskModalProjectItem } from "./taskModalProjects";
+import { runTaskSaveFollowUps, type TaskSaveOutcome } from "./taskModalSave";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+import {
+	createLinkedAttachmentEntries,
+	getLinkedAttachmentReferences,
+	hasPendingAttachments,
+} from "./taskModalAttachments";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationModal" });
 export type { StatusSuggestion } from "./taskCreationSuggest";
@@ -59,6 +69,7 @@ export function getTaskCreationFailureNoticeMessage(error: unknown): string {
 }
 
 export interface TaskCreationOptions {
+	targetFolder?: string;
 	prePopulatedValues?: TaskCreationPrepopulatedValues;
 	onTaskCreated?: (task: TaskInfo) => void;
 	creationContext?: "manual-creation" | "modal-inline-creation"; // Folder behavior context
@@ -102,22 +113,16 @@ function createEmbeddableMarkdownEditor(
 }
 
 export class TaskCreationModal extends TaskModal {
+	protected readonly mode = "create";
 	private options: TaskCreationOptions;
 	private nlParser: NaturalLanguageParser;
-	private nlInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - keeping for compatibility
+	private nlContainer: HTMLElement | null = null;
 	private nlMarkdownEditor: EmbeddableMarkdownEditor | null = null;
-	private nlPreviewContainer: HTMLElement = undefined as unknown as HTMLElement;
-	// Parsed natural language values shown in the action bar before they are applied on save.
-	private nlPreviewParsed: NLParsedTaskData | null = null;
-	private nlButtonContainer: HTMLElement = undefined as unknown as HTMLElement;
-	private nlpSuggest: NLPSuggest | null = null; // Will be replaced with CodeMirror autocomplete
-
-	// Track event listeners for cleanup
-	private eventListeners: Array<{
-		element: HTMLElement | HTMLTextAreaElement;
-		event: string;
-		handler: EventListener;
-	}> = [];
+	private nlEditorFailed = false;
+	private nlProjectInput = "";
+	private nlProjectItems: TaskModalProjectItem[] = [];
+	/** Projects that came from the default-projects setting, not from the user or the caller. */
+	private defaultProjectItems: TaskModalProjectItem[] = [];
 
 	constructor(app: App, plugin: TaskNotesPlugin, options: TaskCreationOptions = {}) {
 		super(app, plugin);
@@ -126,60 +131,35 @@ export class TaskCreationModal extends TaskModal {
 	}
 
 	getModalTitle(): string {
-		return this.t("modals.taskCreation.title");
+		return this.t(msg({ message: "Create task", context: "modals.taskCreation.title" }));
 	}
 
-	protected isCreationMode(): boolean {
-		return true;
+	private usesNaturalLanguage(): boolean {
+		return this.plugin.settings.enableNaturalLanguageInput && !this.nlEditorFailed;
 	}
 
-	/**
-	 * Add an event listener and track it for cleanup
-	 */
-	private addTrackedEventListener(
-		element: HTMLElement | HTMLTextAreaElement,
-		event: string,
-		handler: EventListener
-	): void {
-		element.addEventListener(event, handler);
-		this.eventListeners.push({ element, event, handler });
+	protected getTitleErrorAnchor(): HTMLElement | null {
+		return this.nlContainer ?? super.getTitleErrorAnchor();
 	}
 
-	/**
-	 * Remove all tracked event listeners
-	 */
-	private removeAllEventListeners(): void {
-		for (const { element, event, handler } of this.eventListeners) {
-			element.removeEventListener(event, handler);
-		}
-		this.eventListeners = [];
+	/** With natural language on, Create opens compact, as the parsed line covers most fields. */
+	protected usesCompactLayout(): boolean {
+		return this.usesNaturalLanguage() && !this.isExpanded;
 	}
 
-	/**
-	 * Override to use NLP input when enabled, otherwise fall back to title input
-	 */
+	protected showsTitleInDetails(): boolean {
+		return this.usesNaturalLanguage();
+	}
+
+	/** Without natural language the title input is the primary field, with everything visible. */
 	protected createPrimaryInput(container: HTMLElement): void {
-		if (this.plugin.settings.enableNaturalLanguageInput) {
+		if (this.usesNaturalLanguage()) {
 			this.createNaturalLanguageInput(container);
-		} else {
-			// Fall back to regular title input
-			this.createTitleInput(container);
-			// When NLP is disabled, start with the modal expanded
+		}
+		if (!this.usesNaturalLanguage()) {
+			super.createPrimaryInput(container);
 			this.isExpanded = true;
 			this.containerEl.addClass("expanded");
-		}
-	}
-
-	/**
-	 * Override to re-render projects list after modal content is created
-	 */
-	protected createAdditionalSections(container: HTMLElement): void {
-		// Re-render projects list if pre-populated values were applied or defaults are set
-		if (
-			(this.options.prePopulatedValues && this.options.prePopulatedValues.projects) ||
-			this.selectedProjectItems.length > 0
-		) {
-			this.renderProjectsList();
 		}
 	}
 
@@ -190,15 +170,6 @@ export class TaskCreationModal extends TaskModal {
 		const editorContainer = nlContainer.createDiv(
 			"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--nlp"
 		);
-		editorContainer.setAttribute("role", "textbox");
-		editorContainer.setAttribute("aria-label", this.t("modals.taskCreation.nlPlaceholder"));
-		editorContainer.setAttribute("aria-multiline", "true");
-
-		// Preview container
-		this.nlPreviewContainer = nlContainer.createDiv("nl-preview-container");
-		this.nlPreviewContainer.setAttribute("role", "status");
-		this.nlPreviewContainer.setAttribute("aria-live", "polite");
-		this.nlPreviewContainer.setAttribute("aria-label", "Task preview");
 
 		try {
 			// Create NLP autocomplete extension for @, #, +, status triggers
@@ -208,17 +179,20 @@ export class TaskCreationModal extends TaskModal {
 			// Create embeddable markdown editor with autocomplete
 			this.nlMarkdownEditor = createEmbeddableMarkdownEditor(this.app, editorContainer, {
 				value: "",
-				placeholder: this.t("modals.taskCreation.nlPlaceholder"),
+				placeholder: this.t(
+					msg({
+						message: "Buy groceries tomorrow at 3pm @home #errands",
+						context: "modals.taskCreation.nlPlaceholder",
+					})
+				),
 				cls: "nlp-editor",
-				extensions: nlpAutocomplete, // Add autocomplete extensions (array)
+				extensions: [
+					...nlpAutocomplete,
+					createNLPHighlight((text) => this.nlParser.parseInputWithSpans(text).spans),
+				],
 				enterVimInsertMode: true, // Auto-enter insert mode when vim is enabled (#1410)
-				onChange: (value) => {
-					// Update preview as user types
-					if (value.trim()) {
-						this.updateNaturalLanguagePreview(value.trim());
-					} else {
-						this.clearNaturalLanguagePreview();
-					}
+				onChange: () => {
+					this.syncNaturalLanguageInput();
 				},
 				onSubmit: (_editor, shift) => {
 					// Ctrl+Enter - save the task
@@ -233,20 +207,7 @@ export class TaskCreationModal extends TaskModal {
 					if (shift) {
 						return this.focusPreviousNaturalLanguageField(editorContainer);
 					}
-					// Tab - jump to title input (expand form if needed)
-					if (!this.isExpanded) {
-						this.expandModal();
-					}
-					// Focus title input
-					window.setTimeout(() => {
-						const titleInput = this.modalEl.querySelector(
-							".title-input-detailed"
-						) as HTMLInputElement;
-						if (titleInput) {
-							titleInput.focus();
-						}
-					}, 50);
-					return true; // Prevent default tab behavior
+					return this.focusFieldAfterTitle();
 				},
 				onEnter: (editor, mod, shift) => {
 					if (mod) {
@@ -272,70 +233,21 @@ export class TaskCreationModal extends TaskModal {
 					return true;
 				},
 			});
+			// Referenced rather than set with aria-label, which Obsidian shows as a hover tooltip.
+			const label = nlContainer.createDiv({
+				text: this.t(msg({ message: "Title", context: "utils/fieldConfigDefaults: defaults displayName" })),
+				attr: { id: "tn-task-modal-nlp-label", hidden: "" },
+			});
+			this.nlMarkdownEditor.editor.cm.contentDOM.setAttribute("aria-labelledby", label.id);
+			this.nlContainer = nlContainer;
 		} catch (error) {
 			tasknotesLogger.error("Failed to create NLP markdown editor:", {
 				category: "persistence",
 				operation: "create-nlp-markdown-editor",
 				error: error,
 			});
-			// Fallback to textarea if editor creation fails
-			this.nlInput = editorContainer.createEl("textarea", {
-				cls: "nl-input",
-				attr: {
-					placeholder: this.t("modals.taskCreation.nlPlaceholder"),
-					rows: "3",
-				},
-			});
-
-			// Event listeners for fallback - track them for cleanup
-			const inputHandler = () => {
-				const input = this.nlInput.value.trim();
-				if (input) {
-					this.updateNaturalLanguagePreview(input);
-				} else {
-					this.clearNaturalLanguagePreview();
-				}
-			};
-			this.addTrackedEventListener(this.nlInput, "input", inputHandler);
-
-			// WebKit fires the Enter that confirms IME text after compositionend, so
-			// stay "composing" until that keydown has been handled.
-			let composing = false;
-			this.addTrackedEventListener(this.nlInput, "compositionstart", () => {
-				composing = true;
-			});
-			this.addTrackedEventListener(this.nlInput, "compositionend", () => {
-				window.setTimeout(() => {
-					composing = false;
-				}, 0);
-			});
-
-			const keydownHandler = (e: Event) => {
-				const input = this.nlInput.value.trim();
-				if (!input) return;
-
-				const keyEvent = e as KeyboardEvent;
-				if (keyEvent.key === "Enter" && (keyEvent.ctrlKey || keyEvent.metaKey)) {
-					keyEvent.preventDefault();
-					void this.handleSubmitShortcut(keyEvent.shiftKey);
-				} else if (
-					keyEvent.key === "Enter" &&
-					!keyEvent.shiftKey &&
-					!keyEvent.isComposing &&
-					!composing &&
-					this.plugin.settings.nlpEnterToSubmit
-				) {
-					keyEvent.preventDefault();
-					void this.handleSubmitShortcut(false);
-				} else if (keyEvent.key === "Tab" && keyEvent.shiftKey) {
-					keyEvent.preventDefault();
-					this.parseAndFillForm(input);
-				}
-			};
-			this.addTrackedEventListener(this.nlInput, "keydown", keydownHandler);
-
-			// Initialize auto-suggestion for fallback
-			this.nlpSuggest = new NLPSuggest(this.app, this.nlInput, this.plugin);
+			nlContainer.remove();
+			this.nlEditorFailed = true;
 		}
 	}
 
@@ -366,287 +278,128 @@ export class TaskCreationModal extends TaskModal {
 		return true;
 	}
 
+	protected focusPreviousField(): boolean {
+		if (!this.nlMarkdownEditor) return super.focusPreviousField();
+		this.nlMarkdownEditor.editor.cm.focus();
+		return true;
+	}
+
 	protected focusTitleInput(): void {
-		if (!this.plugin.settings.enableNaturalLanguageInput) {
+		if (!this.usesNaturalLanguage() || (this.isExpanded && this.titleInput)) {
 			super.focusTitleInput();
 			return;
 		}
 
-		window.setTimeout(() => {
-			const cm = this.nlMarkdownEditor?.editor?.cm;
-			if (cm) {
-				cm.focus();
-				cm.scrollDOM.scrollTop = 0;
-				return;
-			}
-
-			if (this.nlInput) {
-				this.nlInput.focus({ preventScroll: true });
-				this.nlInput.select();
-			}
-		}, this.getInitialFocusDelay());
+		const cm = this.nlMarkdownEditor?.editor?.cm;
+		if (cm) this.focusInitialTarget(cm.contentDOM, () => {
+			cm.focus();
+			cm.scrollDOM.scrollTop = 0;
+		});
 	}
 
-	private updateNaturalLanguagePreview(input: string): void {
-		if (!this.nlPreviewContainer) return;
-
-		const parsed = this.nlParser.parseInput(input);
-		const previewData = this.nlParser.getPreviewData(parsed);
-		this.nlPreviewParsed = parsed;
-		this.updateIconStates();
-
-		if (previewData.length > 0 && parsed.title) {
-			this.nlPreviewContainer.empty();
-			this.nlPreviewContainer.classList.add("nl-preview-container--visible");
-			this.nlPreviewContainer.classList.remove(
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-
-			previewData.forEach((item) => {
-				const previewItem = this.nlPreviewContainer.createDiv("nl-preview-item");
-				previewItem.textContent = item.text;
-			});
-		} else {
-			this.clearNaturalLanguagePreview();
-		}
-	}
-
-	protected getPendingActionIconValues() {
-		const parsed = this.nlPreviewParsed;
-		// Mirrors handleSave: the text is only parsed on save while no title has been entered.
-		if (!parsed || this.title.trim()) return {};
-		return {
-			...(parsed.status ? { status: parsed.status } : {}),
-			...(parsed.priority ? { priority: parsed.priority } : {}),
-			...(parsed.dueDate
-				? {
-						dueDate: parsed.dueTime
-							? combineDateAndTime(parsed.dueDate, parsed.dueTime)
-							: parsed.dueDate,
-					}
-				: {}),
-			...(parsed.scheduledDate
-				? {
-						scheduledDate: parsed.scheduledTime
-							? combineDateAndTime(parsed.scheduledDate, parsed.scheduledTime)
-							: parsed.scheduledDate,
-					}
-				: {}),
-		};
-	}
-
-	private clearNaturalLanguagePreview(): void {
-		if (this.nlPreviewParsed) {
-			this.nlPreviewParsed = null;
-			this.updateIconStates();
-		}
-		if (this.nlPreviewContainer) {
-			this.nlPreviewContainer.empty();
-			this.nlPreviewContainer.classList.remove("nl-preview-container--visible");
-			this.nlPreviewContainer.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-		}
-	}
-
-	/**
-	 * Get the current NLP input value from either markdown editor or fallback textarea
-	 */
 	private getNLPInputValue(): string {
-		if (this.nlMarkdownEditor) {
-			return this.nlMarkdownEditor.value;
-		} else if (this.nlInput) {
-			return this.nlInput.value;
-		}
-		return "";
+		return this.nlMarkdownEditor?.value ?? "";
 	}
 
-	protected createActionBar(container: HTMLElement): void {
-		this.actionBar = container.createDiv("tn-task-modal__action-bar");
-
-		// NLP-specific icons (only if NLP is enabled)
-		if (this.plugin.settings.enableNaturalLanguageInput) {
-			// Fill form icon
-			this.createActionIcon(
-				this.actionBar,
-				"wand",
-				this.t("modals.taskCreation.actions.fillFromNaturalLanguage"),
-				(icon, event) => {
-					const input = this.getNLPInputValue().trim();
-					if (input) {
-						this.parseAndFillForm(input);
-					}
-				}
-			);
-
-			// Expand/collapse icon
-			this.createActionIcon(
-				this.actionBar,
-				this.isExpanded ? "chevron-up" : "chevron-down",
-				this.isExpanded
-					? this.t("modals.taskCreation.actions.hideDetailedOptions")
-					: this.t("modals.taskCreation.actions.showDetailedOptions"),
-				(icon, event) => {
-					this.toggleDetailedForm();
-					// Update icon and tooltip
-					const iconEl = icon.querySelector(".icon");
-					if (iconEl) {
-						setIcon(
-							iconEl as HTMLElement,
-							this.isExpanded ? "chevron-up" : "chevron-down"
-						);
-					}
-					setTooltip(
-						icon,
-						this.isExpanded
-							? this.t("modals.taskCreation.actions.hideDetailedOptions")
-							: this.t("modals.taskCreation.actions.showDetailedOptions"),
-						{ placement: "top" }
-					);
-				}
-			);
-
-			// Add separator
-			const separator = this.actionBar.createDiv("action-separator");
-			separator.classList.remove(
-				"tn-static-width-100-0466783d",
-				"tn-static-width-12px-fbf353fb",
-				"tn-static-width-16px-7375d50b",
-				"tn-static-width-200px-2acaf3b5",
-				"tn-static-width-60px-bd09c419",
-				"tn-static-width-80px-8573bae3"
-			);
-			separator.classList.add("tn-static-width-1px-aa77e27e");
-			separator.classList.remove(
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-height-0-7a31cef0",
-				"tn-static-height-100-62264068",
-				"tn-static-height-12px-06c0747e",
-				"tn-static-height-16px-30de4aee",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			separator.classList.add("tn-static-height-24px-29a11d37");
-			separator.classList.remove(
-				"tn-static-background-color-var-background-se-9087a23e",
-				"tn-static-background-color-var-color-base-40-ef5f175e",
-				"tn-static-background-color-var-color-red-134bc721",
-				"tn-static-background-color-var-text-accent-a954c70f"
-			);
-			separator.classList.add("tn-static-background-color-var-background-mo-94b219f0");
-			separator.classList.remove(
-				"tn-static-margin-0-11696618",
-				"tn-static-margin-0-auto-266e9b04",
-				"tn-static-margin-0-db0d5f36",
-				"tn-static-margin-2px-0-edce9b14",
-				"tn-static-margin-8px-0-0-0-a2eb8382",
-				"tn-static-padding-12px-43bef435",
-				"tn-static-padding-20px-ebe8e48c"
-			);
-			separator.classList.add("tn-static-margin-0-var-size-4-2-77f7dc08");
-		}
-
-		this.createCoreActionIcons(this.actionBar);
-		this.updateIconStates();
+	/** Keep the form in step with the text: each change replaces what the last parse set. */
+	private syncNaturalLanguageInput(): void {
+		const input = this.getNLPInputValue().trim();
+		const parsed = input ? this.nlParser.parseInputForModal(input) : null;
+		this.syncNaturalLanguageProjects(parsed?.projects ?? []);
+		this.form.applyNaturalLanguage(parsed ? this.buildNaturalLanguageLayer(parsed) : {});
 	}
 
-	private parseAndFillForm(input: string): void {
-		const parsed = this.nlParser.parseInput(input);
-		this.applyParsedData(parsed);
+	private buildNaturalLanguageLayer(parsed: NLParsedTaskData): TaskFormNaturalLanguageLayer {
+		const layer: TaskFormNaturalLanguageLayer = {};
 
-		// Expand the form to show filled fields
-		if (!this.isExpanded) {
-			this.expandModal();
-		}
-	}
-
-	private applyParsedData(parsed: NLParsedTaskData): void {
-		if (parsed.title) this.title = parsed.title;
-		if (parsed.status) this.status = parsed.status;
-		if (parsed.priority) this.priority = parsed.priority;
-
-		// Handle due date with time
+		if (parsed.title) layer.title = parsed.title;
+		if (parsed.status) layer.status = parsed.status;
+		if (parsed.priority) layer.priority = parsed.priority;
 		if (parsed.dueDate) {
-			this.dueDate = parsed.dueTime
+			layer.dueDate = parsed.dueTime
 				? combineDateAndTime(parsed.dueDate, parsed.dueTime)
 				: parsed.dueDate;
 		}
-
-		// Handle scheduled date with time
 		if (parsed.scheduledDate) {
-			this.scheduledDate = parsed.scheduledTime
+			layer.scheduledDate = parsed.scheduledTime
 				? combineDateAndTime(parsed.scheduledDate, parsed.scheduledTime)
 				: parsed.scheduledDate;
 		}
-
-		if (parsed.contexts && parsed.contexts.length > 0)
-			this.contexts = parsed.contexts.join(", ");
-		// Projects will be handled in the form input update section below
-		if (parsed.tags && parsed.tags.length > 0) this.tags = sanitizeTags(parsed.tags.join(", "));
-		if (parsed.details) this.details = parsed.details;
-		if (parsed.recurrence) this.recurrenceRule = parsed.recurrence;
-		if (parsed.estimate !== undefined) {
-			this.timeEstimate = parsed.estimate > 0 ? parsed.estimate : 0;
-			if (this.timeEstimateInput) {
-				this.timeEstimateInput.value =
-					this.timeEstimate > 0 ? this.timeEstimate.toString() : "";
-			}
+		if (parsed.contexts && parsed.contexts.length > 0) {
+			layer.contexts = parsed.contexts.join(", ");
 		}
-
-		// Update form inputs if they exist
-		if (this.titleInput) this.titleInput.value = this.title;
-		if (this.detailsInput) this.detailsInput.value = this.details;
-		setTaskModalDetailsEditorValue(this.detailsMarkdownEditor, this.details);
-		if (this.contextsInput) this.contextsInput.value = this.contexts;
-		if (this.tagsInput) this.tagsInput.value = this.tags;
-
-		// Handle projects differently - they use file selection, not text input
-		if (parsed.projects && parsed.projects.length > 0) {
-			this.addProjectsFromStrings(parsed.projects, true);
-			this.renderProjectsList();
+		if (parsed.tags && parsed.tags.length > 0) {
+			layer.tags = sanitizeTags(parsed.tags.join(", "));
 		}
+		if (parsed.details) layer.details = parsed.details;
+		if (parsed.recurrence) layer.recurrenceRule = parsed.recurrence;
+		if (parsed.estimate !== undefined) layer.timeEstimate = Math.max(parsed.estimate, 0);
 
-		// Handle user-defined fields
 		if (parsed.userFields) {
+			layer.userFields = {};
 			for (const [fieldId, value] of Object.entries(parsed.userFields)) {
 				const userField = this.plugin.settings.userFields?.find((f) => f.id === fieldId);
-				if (userField) {
-					this.userFields[userField.key] = value;
-				}
+				if (userField) layer.userFields[userField.key] = value;
 			}
-			this.updateUserFieldControls();
 		}
 
-		// Update icon states
-		this.updateIconStates();
+		return layer;
 	}
 
-	private toggleDetailedForm(): void {
-		if (this.isExpanded) {
-			// Collapse
-			this.isExpanded = false;
-			collapseTaskModalDetailsLayout({
-				detailsContainer: this.detailsContainer,
-				splitRightColumn: this.splitRightColumn,
-			});
-			this.containerEl.removeClass("expanded");
-		} else {
-			// Expand
-			this.expandModal();
+	/** Projects are chosen as files rather than held in a text field, so they sync separately. */
+	private syncNaturalLanguageProjects(projects: string[]): void {
+		const projectInput = projects.join("\n");
+		if (projectInput === this.nlProjectInput) return;
+		this.nlProjectInput = projectInput;
+
+		const manualItems = this.withDefaultProjectFallback(
+			this.selectedProjectItems.filter((item) => !this.nlProjectItems.includes(item)),
+			projects.some((project) => project.trim().length > 0)
+		);
+		this.selectedProjectItems = manualItems;
+		this.addProjectsFromStrings(projects, true);
+		this.nlProjectItems = this.selectedProjectItems.filter(
+			(item) => !manualItems.includes(item)
+		);
+		this.renderProjectsList();
+	}
+
+	private usesDefaultProjectFallback(): boolean {
+		return (
+			this.plugin.settings.taskCreationDefaults.defaultProjectsOnlyWhenEmpty === true &&
+			this.defaultProjectItems.length > 0
+		);
+	}
+
+	/**
+	 * With "Use default projects only when no project is specified", projects typed in the
+	 * natural language field stand in for the default projects. The defaults come back when
+	 * those projects are deleted from the text, unless the user has removed them or picked a
+	 * project themselves.
+	 */
+	private withDefaultProjectFallback(
+		items: TaskModalProjectItem[],
+		hasNaturalLanguageProjects: boolean
+	): TaskModalProjectItem[] {
+		if (!this.usesDefaultProjectFallback()) return items;
+		const withoutDefaults = items.filter((item) => !this.defaultProjectItems.includes(item));
+		if (hasNaturalLanguageProjects) return withoutDefaults;
+		return [...this.defaultProjectItems, ...withoutDefaults];
+	}
+
+	protected addProject(file: TAbstractFile): void {
+		if (file instanceof TFile && this.usesDefaultProjectFallback()) {
+			this.selectedProjectItems = this.selectedProjectItems.filter(
+				(item) => !this.defaultProjectItems.includes(item)
+			);
+			this.defaultProjectItems = [];
 		}
+		super.addProject(file);
+	}
+
+	protected removeProject(item: TaskModalProjectItem): void {
+		this.defaultProjectItems = this.defaultProjectItems.filter((d) => d !== item);
+		super.removeProject(item);
 	}
 
 	async initializeFormData(): Promise<void> {
@@ -659,118 +412,70 @@ export class TaskCreationModal extends TaskModal {
 			prePopulatedValues: this.options.prePopulatedValues,
 		});
 
-		this.title = formState.title;
-		this.dueDate = formState.dueDate;
-		this.scheduledDate = formState.scheduledDate;
-		this.priority = formState.priority;
-		this.status = formState.status;
-		this.contexts = formState.contexts;
-		this.tags = formState.tags;
-		this.timeEstimate = formState.timeEstimate;
-		this.recurrenceRule = formState.recurrenceRule;
-		this.recurrenceAnchor = formState.recurrenceAnchor;
-		this.reminders = formState.reminders;
-		this.userFields = formState.userFields;
+		this.form.values.title = formState.title;
+		this.form.values.dueDate = formState.dueDate;
+		this.form.values.scheduledDate = formState.scheduledDate;
+		this.form.values.priority = formState.priority;
+		this.form.values.status = formState.status;
+		this.form.values.contexts = formState.contexts;
+		this.form.values.tags = formState.tags;
+		this.form.values.timeEstimate = formState.timeEstimate;
+		this.form.values.recurrenceRule = formState.recurrenceRule;
+		this.form.values.recurrenceAnchor = formState.recurrenceAnchor;
+		this.form.values.reminders = formState.reminders;
+		this.form.values.userFields = formState.userFields;
 
 		if (formState.projectStrings.length > 0) {
 			this.initializeProjectsFromStrings(formState.projectStrings, true);
 		}
+		// Only projects from the setting count as defaults. Projects supplied by a Bases view,
+		// a parent task or another caller are intentional, even if they name a default project.
+		this.defaultProjectItems =
+			this.options.prePopulatedValues?.projects === undefined
+				? [...this.selectedProjectItems]
+				: [];
 
-		this.details = this.normalizeDetails(this.details);
-		this.originalDetails = this.details;
+		this.attachmentEntries = createLinkedAttachmentEntries(
+			this.options.prePopulatedValues?.attachments,
+			""
+		);
+
+		this.form.values.details = this.normalizeDetails(this.form.values.details);
+		this.originalDetails = this.form.values.details;
+
+		// A prefilled title has to be visible next to the empty natural language field.
+		this.isExpanded = Boolean(this.form.values.title);
 	}
 
-	protected async handleSubmitShortcut(shift: boolean): Promise<void> {
-		await this.handleSave({ createAnother: shift });
+	protected hasUnsavedChanges(): boolean {
+		return (
+			this.form.isDirty() ||
+			this.getNLPInputValue().trim().length > 0 ||
+			this.blockingItems.length > 0 ||
+			this.blockedByItems.length > 0 ||
+			this.selectedSubtaskFiles.length > 0 ||
+			hasPendingAttachments(this.attachmentEntries)
+		);
 	}
 
-	async handleSave(options: { createAnother?: boolean } = {}): Promise<void> {
-		// If NLP is enabled and there's content in the NL field, parse it first
-		if (this.plugin.settings.enableNaturalLanguageInput) {
-			const nlContent = this.getNLPInputValue().trim();
-			if (nlContent && !this.title.trim()) {
-				// Only auto-parse if no title has been manually entered
-				const parsed = this.nlParser.parseInput(nlContent);
-				this.applyParsedData(parsed);
-			}
+	async handleSave(options: TaskSubmitOptions = {}): Promise<TaskSaveOutcome> {
+		// A title cleared by hand falls back to the natural language text.
+		if (!this.form.values.title.trim()) {
+			this.form.releaseField("title");
+			this.syncNaturalLanguageInput();
 		}
 
 		if (!this.validateForm()) {
-			new Notice(this.t("modals.taskCreation.notices.titleRequired"));
-			return;
+			return { status: "failed" };
 		}
 
+		let result: Awaited<ReturnType<TaskNotesPlugin["taskService"]["createTask"]>>;
 		try {
-			const taskData = this.buildTaskData();
 			// Disable defaults since they were already applied to form fields in initializeFormData()
-			const result = await this.plugin.taskService.createTask(taskData, {
+			result = await this.plugin.taskService.createTask(this.buildTaskData(), {
 				applyDefaults: false,
+				targetFolder: this.options.targetFolder,
 			});
-			let createdTask = result.taskInfo;
-
-			if (
-				shouldShowFilenameShortenedNotice(
-					this.plugin.settings,
-					result.taskInfo.title,
-					result.file.basename
-				)
-			) {
-				new Notice(
-					this.t("modals.taskCreation.notices.successShortened", {
-						title: createdTask.title,
-					})
-				);
-			} else {
-				new Notice(
-					this.t("modals.taskCreation.notices.success", { title: createdTask.title })
-				);
-			}
-
-			if (this.blockingItems.length > 0) {
-				const blockingUpdates = buildCreationBlockingUpdates(this.blockingItems);
-
-				if (blockingUpdates.added.length > 0) {
-					await this.plugin.taskService.updateBlockingRelationships(
-						createdTask,
-						blockingUpdates.added,
-						[],
-						blockingUpdates.raw
-					);
-					const refreshed = await this.plugin.cacheManager.getTaskInfo(createdTask.path);
-					if (refreshed) {
-						createdTask = refreshed;
-					}
-				}
-
-				if (blockingUpdates.unresolved.length > 0) {
-					new Notice(
-						this.t("modals.taskCreation.notices.blockingUnresolved", {
-							entries: blockingUpdates.unresolved.join(", "),
-						})
-					);
-				}
-
-				this.blockingItems = [];
-			}
-
-			// Handle subtask assignments
-			if (this.selectedSubtaskFiles.length > 0) {
-				await this.applySubtaskAssignments(createdTask);
-			}
-
-			if (this.options.onTaskCreated) {
-				this.options.onTaskCreated(createdTask);
-			}
-
-			await this.openCreatedTaskIfConfigured(result.file, options);
-
-			this.close();
-
-			if (options.createAnother) {
-				window.setTimeout(() => {
-					new TaskCreationModal(this.app, this.plugin, this.options).open();
-				}, 0);
-			}
 		} catch (error) {
 			tasknotesLogger.error("Failed to create task:", {
 				category: "persistence",
@@ -778,8 +483,187 @@ export class TaskCreationModal extends TaskModal {
 				error: error,
 			});
 			const message = getTaskCreationFailureNoticeMessage(error);
-			new Notice(this.t("modals.taskCreation.notices.failure", { message }));
+			new Notice(
+				this.t(
+					msg({
+						message: "Failed to create task: {message}",
+						context: "modals.taskCreation.notices.failure",
+					}),
+					{ message: displayError(message) }
+				)
+			);
+			return { status: "failed" };
 		}
+
+		// The task exists from here on: a failed step is reported, never retried by saving again.
+		let createdTask = result.taskInfo;
+		this.showTaskCreatedNotice(createdTask, result.file);
+
+		const reportFollowUpFailure = (error: unknown): void => {
+			tasknotesLogger.error("Failed to finish creating task:", {
+				category: "persistence",
+				operation: "finish-task-creation",
+				error: error,
+			});
+			new Notice(
+				this.t(
+					msg({
+						message: "Task created, but a follow-up step failed: {message}",
+						context: "modals.taskCreation.notices.followUpFailure",
+					}),
+					{
+						message: displayError(
+							error instanceof Error ? error.message : String(error)
+						),
+					}
+				)
+			);
+		};
+
+		const outcome = await runTaskSaveFollowUps([
+			{
+				// Disk files are copied only now that the task exists, next to its note.
+				run: async () => {
+					if (!hasPendingAttachments(this.attachmentEntries)) return;
+					const imported = await this.importPendingAttachments(createdTask.path);
+					try {
+						createdTask = await this.plugin.taskService.updateTask(createdTask, {
+							attachments: imported.references,
+						});
+					} catch (error) {
+						await imported.rollback();
+						throw error;
+					}
+				},
+				onError: (error) => {
+					tasknotesLogger.error("Failed to import task attachments:", {
+						category: "persistence",
+						operation: "import-task-attachments",
+						error: error,
+					});
+					new Notice(
+						this.t(
+							msg({
+								message:
+									"Task created, but some attachments could not be imported: {message}",
+								context: "modals.taskCreation.notices.attachmentImportFailure",
+							}),
+							{
+								message: displayError(
+									error instanceof Error ? error.message : String(error)
+								),
+							}
+						)
+					);
+				},
+			},
+			{
+				run: async () => {
+					createdTask = await this.applyBlockingItems(createdTask);
+				},
+				onError: reportFollowUpFailure,
+			},
+			{
+				run: async () => {
+					if (this.selectedSubtaskFiles.length > 0) {
+						await this.applySubtaskAssignments(createdTask);
+					}
+				},
+				onError: reportFollowUpFailure,
+			},
+			{
+				run: async () => {
+					this.options.onTaskCreated?.(createdTask);
+				},
+				onError: reportFollowUpFailure,
+			},
+		]);
+
+		await this.openCreatedTaskIfConfigured(result.file, options);
+		return outcome;
+	}
+
+	protected afterSubmit(options: TaskSubmitOptions): void {
+		if (options.createAnother) {
+			window.setTimeout(() => {
+				const nextModal = new TaskCreationModal(this.app, this.plugin, this.options);
+				nextModal.createMore = this.createMore;
+				nextModal.open();
+			}, 0);
+		}
+	}
+
+	private showTaskCreatedNotice(createdTask: TaskInfo, file: TFile): void {
+		const notify = (message: string) => showToast({ message, action: {
+			label: this.t(msg({ message: "Open", context: "interaction created open" })),
+			run: async () => { await this.app.workspace.getLeaf(false).openFile(file); },
+		} });
+		const filenameNotice = getTaskFilenameNotice(
+			this.plugin.settings,
+			createdTask.title,
+			file.basename
+		);
+		if (filenameNotice === "shortened") {
+			notify(
+				this.t(
+					msg({
+						message:
+							'Task created (filename shortened)',
+						context: "modals.taskCreation.notices.successShortened",
+					})
+				)
+			);
+		} else if (filenameNotice === "sanitized") {
+			notify(
+				this.t(
+					msg({
+						message:
+							'Task created as "{filename}". Unsupported filename characters omitted; full title kept in properties.',
+						context: "modals.taskCreation.notices.successFilenameSanitized",
+					}),
+					{
+						filename: file.basename,
+					}
+				)
+			);
+		} else {
+			notify(
+				this.t(
+					msg({
+						message: 'Task created',
+						context: "task creation feedback",
+					})
+				)
+			);
+		}
+	}
+
+	private async applyBlockingItems(createdTask: TaskInfo): Promise<TaskInfo> {
+		if (this.blockingItems.length === 0) return createdTask;
+
+		const blockingUpdates = buildCreationBlockingUpdates(this.blockingItems);
+		if (blockingUpdates.unresolved.length > 0) {
+			new Notice(
+				this.t(
+					msg({
+						message: "Could not resolve: {entries}",
+						context: "modals.taskCreation.notices.blockingUnresolved",
+					}),
+					{
+						entries: blockingUpdates.unresolved.join(", "),
+					}
+				)
+			);
+		}
+		if (blockingUpdates.added.length === 0) return createdTask;
+
+		await this.plugin.taskService.updateBlockingRelationships(
+			createdTask,
+			blockingUpdates.added,
+			[],
+			blockingUpdates.raw
+		);
+		return (await this.plugin.cacheManager.getTaskInfo(createdTask.path)) ?? createdTask;
 	}
 
 	private async openCreatedTaskIfConfigured(
@@ -799,32 +683,43 @@ export class TaskCreationModal extends TaskModal {
 				operation: "open-created-task-note",
 				error: error,
 			});
-			new Notice(this.t("modals.taskCreation.notices.openCreatedTaskFailure"));
+			new Notice(
+				this.t(
+					msg({
+						message: "Task created, but the task note could not be opened.",
+						context: "modals.taskCreation.notices.openCreatedTaskFailure",
+					})
+				)
+			);
 		}
 	}
 
 	private buildTaskData(): Partial<TaskInfo> {
 		const taskData = buildTaskCreationData({
-			title: this.title,
-			dueDate: this.dueDate,
-			scheduledDate: this.scheduledDate,
-			priority: this.priority,
-			status: this.status,
-			contexts: this.contexts,
-			projects: this.projects,
-			tags: this.tags,
-			timeEstimate: this.timeEstimate,
-			recurrenceRule: this.recurrenceRule,
-			recurrenceAnchor: this.recurrenceAnchor,
-			reminders: this.reminders,
+			title: this.form.values.title,
+			dueDate: this.form.values.dueDate,
+			scheduledDate: this.form.values.scheduledDate,
+			priority: this.form.values.priority,
+			status: this.form.values.status,
+			contexts: this.form.values.contexts,
+			projects: this.form.values.projects,
+			tags: this.form.values.tags,
+			timeEstimate: this.form.values.timeEstimate,
+			recurrenceRule: this.form.values.recurrenceRule,
+			recurrenceAnchor: this.form.values.recurrenceAnchor,
+			reminders: this.form.values.reminders,
 			blockedByItems: this.blockedByItems,
-			details: this.details,
-			userFields: this.userFields,
+			details: this.form.values.details,
+			userFields: this.form.values.userFields,
 			creationContext: this.options.creationContext,
 			taskIdentificationMethod: this.plugin.settings.taskIdentificationMethod,
 			taskTag: this.plugin.settings.taskTag,
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
+		const attachments = getLinkedAttachmentReferences(this.attachmentEntries);
+		if (attachments.length > 0) {
+			taskData.attachments = attachments;
+		}
 		const prePopulatedCustomFrontmatter = this.options.prePopulatedValues?.customFrontmatter;
 		if (prePopulatedCustomFrontmatter) {
 			taskData.customFrontmatter = {
@@ -834,14 +729,6 @@ export class TaskCreationModal extends TaskModal {
 		}
 
 		return taskData;
-	}
-
-	// Override to prevent creating duplicate title input when NLP is enabled
-	protected createTitleInput(container: HTMLElement): void {
-		// Only create title input if NLP is disabled
-		if (!this.plugin.settings.enableNaturalLanguageInput) {
-			super.createTitleInput(container);
-		}
 	}
 
 	protected async applySubtaskAssignments(createdTask: TaskInfo): Promise<void> {
@@ -872,17 +759,6 @@ export class TaskCreationModal extends TaskModal {
 			this.nlMarkdownEditor.destroy();
 			this.nlMarkdownEditor = null;
 		}
-
-		// Clean up NLP suggest
-		if (this.nlpSuggest) {
-			// NLPSuggest extends AbstractInputSuggest which has a close method
-			this.nlpSuggest.close();
-			this.nlpSuggest = null;
-		}
-
-		// Remove all tracked event listeners
-		this.removeAllEventListeners();
-
 		super.onClose();
 	}
 }

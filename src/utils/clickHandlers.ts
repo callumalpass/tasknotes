@@ -1,15 +1,38 @@
-import { TFile } from "obsidian";
+import { Keymap, TFile, type App } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
 
-interface BatchContextMenuAdapter {
-	show(event: MouseEvent): void;
+/** Where Obsidian opens a link: a new tab, a split or a window. */
+export type NotePaneType = "tab" | "split" | "window";
+
+/**
+ * Obsidian's link convention for a click: Ctrl/Cmd+click or middle-click opens
+ * a new tab, Ctrl/Cmd+Alt a split, Ctrl/Cmd+Alt+Shift a window. Returns false
+ * for a click that should follow the task-interaction settings.
+ */
+export function getModifierPaneType(
+	event: MouseEvent | KeyboardEvent | null | undefined
+): NotePaneType | false {
+	if (!event) return false;
+	const paneType = Keymap.isModEvent(event);
+	return paneType === true ? "tab" : paneType;
 }
 
-type BatchContextMenuFactory = (
-	selectedPaths: string[],
-	onUpdate: () => void
-) => BatchContextMenuAdapter;
+/** Opens a task's note in the current tab, or in the pane a modifier asked for. */
+export function openTaskNote(
+	app: App,
+	path: string,
+	paneType: NotePaneType | false = false,
+	subpath = ""
+): void {
+	const file = app.vault.getAbstractFileByPath(path);
+	if (!(file instanceof TFile)) return;
+	if (paneType || subpath) {
+		void app.workspace.openLinkText(path + subpath, "", paneType);
+	} else {
+		void app.workspace.getLeaf(false).openFile(file);
+	}
+}
 
 export interface ClickHandlerOptions {
 	task: TaskInfo;
@@ -17,14 +40,14 @@ export interface ClickHandlerOptions {
 	excludeSelector?: string; // CSS selector for elements that should not trigger click behavior
 	onSingleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for single click
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
-	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>; // Optional context menu handler
-	createBatchContextMenu?: BatchContextMenuFactory;
-	/** Optional view-specific handler for Shift+click task selection. */
-	selectionClickHandler?: (e: MouseEvent) => void;
-	navigationSubpath?: string | null;
+	/** A view can consume selection before standalone card navigation runs. */
+	onSelectionClick?: (e: MouseEvent) => boolean;
+	/** Opens the menu for a right-click; `openTaskMenu` handles batch selection. */
+	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>;
+	navigationSubpath?: string;
 }
 
-const DEFAULT_EXCLUDE_SELECTOR = [
+export const DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR = [
 	"a",
 	"button",
 	"input",
@@ -49,28 +72,17 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		onSingleClick,
 		onDoubleClick,
 		contextMenuHandler,
-		createBatchContextMenu,
-		selectionClickHandler,
+		onSelectionClick,
 		navigationSubpath,
 	} = options;
 	const clickExcludeSelector = excludeSelector
-		? `${DEFAULT_EXCLUDE_SELECTOR}, ${excludeSelector}`
-		: DEFAULT_EXCLUDE_SELECTOR;
+		? `${DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR}, ${excludeSelector}`
+		: DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR;
 
 	let clickTimeout: number | null = null;
 
-	const openNote = (newTab = false) => {
-		const file = plugin.app.vault.getAbstractFileByPath(task.path);
-		if (file instanceof TFile) {
-			if (navigationSubpath) {
-				void plugin.app.workspace.openLinkText(task.path + navigationSubpath, "", newTab);
-			} else if (newTab) {
-				void plugin.app.workspace.openLinkText(task.path, "", true);
-			} else {
-				void plugin.app.workspace.getLeaf(false).openFile(file);
-			}
-		}
-	};
+	const openNote = (paneType: NotePaneType | false = false) =>
+		openTaskNote(plugin.app, task.path, paneType, navigationSubpath);
 
 	const editTask = async () => {
 		await plugin.openTaskEditModal(task);
@@ -79,11 +91,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 	const handleSingleClick = async (e: MouseEvent) => {
 		if (onSingleClick) {
 			await onSingleClick(e);
-			return;
-		}
-
-		if (e.ctrlKey || e.metaKey) {
-			openNote(true); // Open in new tab
 			return;
 		}
 
@@ -115,7 +122,17 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			return;
 		}
 
-		// Check for selection mode - only shift+click triggers selection
+		if (onSelectionClick?.(e)) {
+			e.preventDefault();
+			e.stopPropagation();
+			if (clickTimeout) {
+				window.clearTimeout(clickTimeout);
+				clickTimeout = null;
+			}
+			return;
+		}
+
+		// Standalone cards keep Shift-selection and Ctrl/Cmd source navigation.
 		const selectionService = plugin.taskSelectionService;
 		if (selectionService) {
 			if (e.shiftKey && selectionClickHandler) {
@@ -146,6 +163,17 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 
 		// Stop propagation to prevent clicks from bubbling to parent cards
 		e.stopPropagation();
+
+		// Ctrl/Cmd+click opens the note in a new tab at once, whatever the click settings.
+		const paneType = getModifierPaneType(e);
+		if (paneType) {
+			if (clickTimeout) {
+				window.clearTimeout(clickTimeout);
+				clickTimeout = null;
+			}
+			openNote(paneType);
+			return;
+		}
 
 		if (plugin.settings.doubleClickAction === "none") {
 			await handleSingleClick(e);
@@ -184,7 +212,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 			window.clearTimeout(clickTimeout);
 			clickTimeout = null;
 		}
-		openNote(true);
+		openNote("tab");
 	};
 
 	const auxclickHandler = (event: MouseEvent) => {
@@ -198,47 +226,6 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 	const handleContextMenu = async (e: MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation(); // Prevent event from bubbling to parent cards
-
-		const selectionService = plugin.taskSelectionService;
-
-		// Shift+right-click adds to selection and opens batch context menu
-		if (e.shiftKey && selectionService) {
-			if (!selectionService.isSelectionModeActive()) {
-				selectionService.enterSelectionMode();
-			}
-			if (!selectionService.isSelected(task.path)) {
-				selectionService.addToSelection(task.path);
-			}
-
-			// Show batch context menu if we have selections
-			if (selectionService.getSelectionCount() > 0) {
-				const menu = createBatchContextMenu?.(selectionService.getSelectedPaths(), () => {});
-				menu?.show(e);
-			}
-			return;
-		}
-
-		// Check if multiple tasks are selected - show batch context menu
-		if (selectionService && selectionService.getSelectionCount() > 1) {
-			// Ensure the right-clicked task is in the selection
-			if (!selectionService.isSelected(task.path)) {
-				selectionService.addToSelection(task.path);
-			}
-
-			// Import and show batch context menu
-			const menu = createBatchContextMenu?.(selectionService.getSelectedPaths(), () => {
-				// Views will refresh via events
-			});
-			menu?.show(e);
-			return;
-		}
-
-		// Opening a single-task context menu exits selection mode
-		if (selectionService?.isSelectionModeActive()) {
-			selectionService.clearSelection();
-			selectionService.exitSelectionMode();
-		}
-
 		if (contextMenuHandler) {
 			await contextMenuHandler(e);
 		}
@@ -297,36 +284,22 @@ export async function handleCalendarTaskClick(
 	eventId: string,
 	onTaskUpdated?: () => void
 ) {
-	const openNote = (newTab = false) => {
-		const file = plugin.app.vault.getAbstractFileByPath(task.path);
-		if (file instanceof TFile) {
-			if (newTab) {
-				void plugin.app.workspace.openLinkText(task.path, "", true);
-			} else {
-				void plugin.app.workspace.getLeaf(false).openFile(file);
-			}
-		}
-	};
+	const openNote = () => openTaskNote(plugin.app, task.path);
 
 	const editTask = async () => {
 		await plugin.openTaskEditModal(task, onTaskUpdated ? () => onTaskUpdated() : undefined);
 	};
 
-	const handleSingleClick = async (e: MouseEvent) => {
-		if (e.ctrlKey || e.metaKey) {
-			openNote(true); // Open in new tab
-			return;
-		}
-
+	const handleSingleClick = async (_e: MouseEvent) => {
 		const action = plugin.settings.singleClickAction;
 		if (action === "edit") {
 			await editTask();
 		} else if (action === "openNote") {
-			openNote(false); // Open in current tab
+			openNote();
 		}
 	};
 
-	const handleDoubleClick = async (e: MouseEvent) => {
+	const handleDoubleClick = async (_e: MouseEvent) => {
 		const action = plugin.settings.doubleClickAction;
 		if (action === "edit") {
 			await editTask();
@@ -334,6 +307,14 @@ export async function handleCalendarTaskClick(
 			openNote();
 		}
 	};
+
+	// Ctrl/Cmd+click opens the note in a new tab at once, whatever the click settings.
+	const paneType = getModifierPaneType(jsEvent);
+	if (paneType) {
+		cleanupCalendarClickTimeout(eventId);
+		openTaskNote(plugin.app, task.path, paneType);
+		return;
+	}
 
 	// If double-click is disabled, handle single click immediately
 	if (plugin.settings.doubleClickAction === "none") {

@@ -1,36 +1,91 @@
 import { Platform } from "obsidian";
-import { STARTER_NOTE_CONTENT } from "../../../src/bootstrap/starterNote";
-import { settingsFixture, flattenSettings, control, page } from "../../helpers/native-settings";
+import { getStarterNoteContent } from "../../../src/bootstrap/starterNote";
+import { settingsFixture, flattenSettings, control, page, list } from "../../helpers/native-settings";
 
 describe("Native settings navigation and search", () => {
+	test("keeps main's recurring-status and calendar-height controls in native settings", async () => {
+		const { plugin, tab } = settingsFixture();
+		const definitions = tab.getSettingDefinitions();
+		expect(control(definitions, "resetRecurringStatusAfterOccurrence").name).toBe(
+			"Reset status after each occurrence"
+		);
+		expect(control(definitions, "calendarViewSettings.slotHeight").name).toBe("Time slot height");
+		await tab.setControlValue("resetRecurringStatusAfterOccurrence", false);
+		await tab.setControlValue("calendarViewSettings.slotHeight", 36);
+		expect(plugin.settings.resetRecurringStatusAfterOccurrence).toBe(false);
+		expect(plugin.settings.calendarViewSettings.slotHeight).toBe(36);
+		expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
+		await expect(tab.setControlValue("calendarViewSettings.slotHeight", -1)).rejects.toThrow();
+		expect(plugin.settings.calendarViewSettings.slotHeight).toBe(36);
+	});
+
+	test("mutable lists expose deletion in entry editors and plain rows", () => {
+		const { plugin, tab } = settingsFixture();
+		plugin.settings.userFields = [
+			{ id: "effort", key: "effort", displayName: "Effort", type: "number" },
+		];
+		plugin.settings.taskCreationDefaults.defaultProjects = "[[Test project]]";
+		plugin.settings.taskCreationDefaults.defaultReminders = [
+			{
+				id: "reminder",
+				type: "relative",
+				relatedTo: "due",
+				offset: 1,
+				unit: "hours",
+				direction: "before",
+				description: "",
+			},
+		];
+		plugin.settings.webhooks = [
+			{
+				id: "hook",
+				url: "",
+				events: [],
+				active: false,
+				secret: "",
+				createdAt: "",
+				failureCount: 0,
+				successCount: 0,
+				corsHeaders: true,
+			},
+		];
+		const definitions = tab.getSettingDefinitions();
+		for (const heading of ["Statuses", "Priorities", "Custom user fields", "Reminders", "Webhooks"]) {
+			const entry = list(definitions, heading).items![0];
+			expect(entry).toMatchObject({ type: "page" });
+			const deleteAction = "items" in entry
+				? entry.items?.find((item) => "action" in item && item.name.startsWith("Delete "))
+				: undefined;
+			expect(deleteAction).toEqual(expect.objectContaining({ action: expect.any(Function) }));
+		}
+		const project = list(definitions, "Projects").items![0];
+		expect(project).toMatchObject({ name: "[[Test project]]" });
+		expect(list(definitions, "Projects").onDelete).toEqual(expect.any(Function));
+	});
 	test("starter routes name real native settings pages and groups", () => {
 		const { tab } = settingsFixture();
 		const definitions = tab.getSettingDefinitions();
 		for (const name of ["Task files", "Properties", "Task creation", "Form fields", "Appearance & interaction"]) {
 			expect(page(definitions, name)).toBeDefined();
-			expect(STARTER_NOTE_CONTENT).toContain(name);
+			expect(getStarterNoteContent()).toContain(name);
 		}
 		expect(flattenSettings(definitions).some(item => "heading" in item && item.heading === "Views & base files")).toBe(true);
-		expect(STARTER_NOTE_CONTENT).toContain("Views & base files");
+		expect(getStarterNoteContent()).toContain("Views & base files");
 	});
 
-	test("includes keyboard shortcuts in the native page tree", () => {
+	test("does not expose retired settings", () => {
 		const { tab } = settingsFixture();
-		const shortcuts = page(tab.getSettingDefinitions(), "Task card keyboard shortcuts");
-		expect(shortcuts.items).toEqual([
-			expect.objectContaining({ name: "Task card keyboard shortcuts", render: expect.any(Function) }),
-		]);
-		expect(shortcuts.page).toBeUndefined();
-	});
-
-	test("does not expose retired settings while retaining the persisted legacy alignment key", () => {
-		const { plugin, tab } = settingsFixture();
-		plugin.settings.viewsButtonAlignment = "left";
 		const entries = flattenSettings(tab.getSettingDefinitions());
 		const keys = entries.flatMap(item => "control" in item && item.control ? [item.control.key] : []);
-		expect(keys).not.toContain("viewsButtonAlignment");
-		expect(keys).not.toContain("commandFileMapping.pomodoro-stats-base");
-		expect(plugin.settings.viewsButtonAlignment).toBe("left");
+		for (const retired of [
+			"viewsButtonAlignment",
+			"disableNoteIndexing",
+			"projectAutosuggest.enableFuzzy",
+			"calendarViewSettings.defaultShowDueWhenScheduled",
+			"calendarViewSettings.defaultShowICSEvents",
+		]) {
+			expect(keys).not.toContain(retired);
+		}
 	});
 
 	test("uses inline groups for ordinary preferences while retaining substantial editors", () => {

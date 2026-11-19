@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * TaskCreationModal Tests - Fixed Implementation
  *
@@ -85,7 +86,7 @@ jest.mock("../../../src/utils/filenameGenerator", () => ({
 		const dateStr = format(context.date || new Date("2025-01-15"), "yyyy-MM-dd");
 		return `${context.title.toLowerCase().replace(/\s+/g, "-")}-${dateStr}`;
 	}),
-	shouldShowFilenameShortenedNotice: jest.fn(() => false),
+	getTaskFilenameNotice: jest.fn(() => null),
 }));
 
 jest.mock("../../../src/services/NaturalLanguageParser", () => {
@@ -175,26 +176,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				}),
 			},
 			i18n: {
-				translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-					// Mock translations for specific keys used in tests
-					const translations: Record<string, string> = {
-						"modals.taskCreation.notices.success":
-							'Task "{title}" created successfully',
-						"modals.taskCreation.notices.failure": "Failed to create task: {message}",
-						"modals.taskCreation.notices.titleRequired": "Please enter a task title",
-					};
-
-					let result = translations[key] || key;
-
-					// Handle parameter substitution
-					if (params) {
-						Object.entries(params).forEach(([param, value]) => {
-							result = result.replace(`{${param}}`, String(value));
-						});
-					}
-
-					return result;
-				}),
+				translate: mockObserveTranslation(),
 			},
 		};
 
@@ -215,10 +197,10 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		it("should initialize modal with default values", () => {
 			modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
 			expect(modal).toBeInstanceOf(TaskCreationModal);
-			expect(modal.title).toBe("");
-			expect((modal as any).details).toBe("");
-			expect(modal.priority).toBe("normal");
-			expect(modal.status).toBe("open");
+			expect(modal.form.values.title).toBe("");
+			expect((modal as any).form.values.details).toBe("");
+			expect(modal.form.values.priority).toBe("normal");
+			expect(modal.form.values.status).toBe("open");
 		});
 
 		it("should initialize with pre-populated values", () => {
@@ -263,9 +245,9 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 
 			await (modal as any).initializeFormData();
 
-			expect((modal as any).priority).toBe("normal");
-			expect((modal as any).status).toBe("open");
-			expect((modal as any).scheduledDate).toBe("2025-01-15");
+			expect((modal as any).form.values.priority).toBe("normal");
+			expect((modal as any).form.values.status).toBe("open");
+			expect((modal as any).form.values.scheduledDate).toBe("2025-01-15");
 		});
 
 		it("should apply task creation defaults", async () => {
@@ -280,10 +262,10 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
 			await (modal as any).initializeFormData();
 
-			expect((modal as any).dueDate).toBe("2025-01-16");
-			expect((modal as any).contexts).toBe("work");
-			expect((modal as any).tags).toBe("important");
-			expect((modal as any).timeEstimate).toBe(60);
+			expect((modal as any).form.values.dueDate).toBe("2025-01-16");
+			expect((modal as any).form.values.contexts).toBe("work");
+			expect((modal as any).form.values.tags).toBe("important");
+			expect((modal as any).form.values.timeEstimate).toBe(60);
 		});
 
 		it("should apply default reminders", async () => {
@@ -310,8 +292,8 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			modal = new TaskCreationModal(createMockApp(mockApp), mockPlugin);
 			await (modal as any).initializeFormData();
 
-			expect((modal as any).reminders).toHaveLength(1);
-			expect((modal as any).reminders[0]).toMatchObject({
+			expect((modal as any).form.values.reminders).toHaveLength(1);
+			expect((modal as any).form.values.reminders[0]).toMatchObject({
 				type: "relative",
 				relatedTo: "due",
 				offset: "-PT15M",
@@ -346,7 +328,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		});
 
 		it.skip("should validate title length", async () => {
-			(modal as any).title = "a".repeat(201);
+			(modal as any).form.values.title = "a".repeat(201);
 
 			const result = await (modal as any).validateAndPrepareTask();
 			expect(result).toBe(false);
@@ -354,7 +336,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		});
 
 		it.skip("should validate weekly recurrence days", async () => {
-			(modal as any).title = "Test Task";
+			(modal as any).form.values.title = "Test Task";
 			(modal as any).frequencyMode = "WEEKLY";
 			(modal as any).rruleByWeekday = [];
 
@@ -366,7 +348,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		});
 
 		it.skip("should pass validation with valid data", async () => {
-			(modal as any).title = "Valid Task";
+			(modal as any).form.values.title = "Valid Task";
 			(modal as any).frequencyMode = "NONE";
 
 			const result = await (modal as any).validateAndPrepareTask();
@@ -380,13 +362,13 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		});
 
 		it("should create task with valid data", async () => {
-			(modal as any).title = "Test Task";
-			(modal as any).status = "open";
-			(modal as any).priority = "high";
-			(modal as any).details = "Task details";
-			(modal as any).contexts = "work, urgent";
-			(modal as any).tags = "important";
-			(modal as any).timeEstimate = 60;
+			(modal as any).form.values.title = "Test Task";
+			(modal as any).form.values.status = "open";
+			(modal as any).form.values.priority = "high";
+			(modal as any).form.values.details = "Task details";
+			(modal as any).form.values.contexts = "work, urgent";
+			(modal as any).form.values.tags = "important";
+			(modal as any).form.values.timeEstimate = 60;
 			(modal as any).frequencyMode = "NONE";
 
 			await modal.handleSave();
@@ -404,14 +386,29 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				{ applyDefaults: false }
 			);
 
-			expect(Notice).toHaveBeenCalledWith('Task "Test Task" created successfully');
+			expect(document.querySelector('.tn-toast__message')?.textContent).toBe('Task created');
+			expect(document.querySelector('.tn-toast__action')?.textContent).toBe('Open');
+		});
+
+		it.each(["", "   "])("keeps the form intact for invalid title %j", async (title) => {
+			(modal as any).form.values.title = title;
+			(modal as any).form.values.details = "Unsaved details";
+			const close = jest.spyOn(modal, "close");
+
+			await expect(modal.handleSave()).resolves.toEqual({ status: "failed" });
+
+			expect(mockPlugin.taskService.createTask).not.toHaveBeenCalled();
+			expect(close).not.toHaveBeenCalled();
+			expect((modal as any).form.values.details).toBe("Unsaved details");
 		});
 
 		it("should handle task creation errors", async () => {
-			(modal as any).title = "Test Task";
+			(modal as any).form.values.title = "Test Task";
 			mockPlugin.taskService.createTask.mockRejectedValue(new Error("Creation failed"));
+			const close = jest.spyOn(modal, "close");
 
-			await modal.handleSave();
+			await expect(modal.handleSave()).resolves.toEqual({ status: "failed" });
+			expect(close).not.toHaveBeenCalled();
 
 			expect(console.error).toHaveBeenCalledWith(
 				expect.stringContaining(
@@ -423,8 +420,8 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		});
 
 		it("should create task with recurrence rule", async () => {
-			(modal as any).title = "Recurring Task";
-			(modal as any).recurrenceRule = "FREQ=DAILY;INTERVAL=1";
+			(modal as any).form.values.title = "Recurring Task";
+			(modal as any).form.values.recurrenceRule = "FREQ=DAILY;INTERVAL=1";
 			(modal as any).frequencyMode = "NONE";
 
 			await modal.handleSave();
@@ -438,9 +435,9 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 		});
 
 		it("should filter out empty contexts and tags", async () => {
-			(modal as any).title = "Test Task";
-			(modal as any).contexts = "work, , urgent, ";
-			(modal as any).tags = ", important, ";
+			(modal as any).form.values.title = "Test Task";
+			(modal as any).form.values.contexts = "work, , urgent, ";
+			(modal as any).form.values.tags = ", important, ";
 			(modal as any).frequencyMode = "NONE";
 
 			await modal.handleSave();
@@ -454,17 +451,41 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			);
 		});
 
-		it("should reopen a fresh creation modal when saving and creating another task", async () => {
+		it("closes with a warning, not a retry, when a follow-up step fails", async () => {
+			mockPlugin.taskService.createTask.mockResolvedValue({
+				file: new TFile("created.md"),
+				taskInfo: { title: "Created", path: "created.md" },
+			});
+			mockPlugin.taskService.updateBlockingRelationships = jest
+				.fn()
+				.mockRejectedValue(new Error("Blocking failed"));
+			const forceClose = jest.spyOn(modal, "forceClose");
+			(modal as any).form.values.title = "Created";
+			(modal as any).blockingItems = [
+				{ path: "blocked.md", name: "blocked", dependency: { uid: "blocked.md" } },
+			];
+
+			await expect((modal as any).submit()).resolves.toBe(true);
+
+			expect(mockPlugin.taskService.createTask).toHaveBeenCalledTimes(1);
+			expect(forceClose).toHaveBeenCalledTimes(1);
+			expect(Notice).toHaveBeenCalledWith(
+				"Task created, but a follow-up step failed: Blocking failed"
+			);
+		});
+
+		it("should honor Create more when submitting with the keyboard", async () => {
 			jest.useFakeTimers();
 			const openSpy = jest
 				.spyOn(TaskCreationModal.prototype, "open")
 				.mockImplementation(() => undefined);
 
 			try {
-				(modal as any).title = "First Task";
+				(modal as any).form.values.title = "First Task";
 				(modal as any).frequencyMode = "NONE";
+				(modal as any).createMore = true;
 
-				await (modal as any).handleSave({ createAnother: true });
+				await (modal as any).handleSubmitShortcut(false);
 
 				expect(mockPlugin.taskService.createTask).toHaveBeenCalledWith(
 					expect.objectContaining({
@@ -476,6 +497,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				expect(openSpy).not.toHaveBeenCalled();
 				jest.runOnlyPendingTimers();
 				expect(openSpy).toHaveBeenCalledTimes(1);
+				expect((openSpy.mock.instances[0] as any).createMore).toBe(true);
 			} finally {
 				jest.useRealTimers();
 			}
@@ -504,15 +526,17 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 				{},
 				conversionOptions
 			);
-			(modal as any).title = "Converted Task";
+			(modal as any).form.values.title = "Converted Task";
 			(modal as any).frequencyMode = "NONE";
 
 			const mockFile = new TFile("converted-task.md");
-			mockPlugin.taskService.createTask.mockResolvedValue({ file: mockFile });
+			mockPlugin.taskService.createTask.mockResolvedValue({
+				file: mockFile,
+				taskInfo: { title: "Converted Task", path: mockFile.path },
+			});
 
 			await modal.handleSave();
 
-			// Since task creation failed, expect no editor replacement
 			expect(mockEditor.replaceRange).not.toHaveBeenCalled();
 		});
 	});
@@ -585,7 +609,7 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			mockPlugin.taskService.createTask.mockRejectedValue(new Error("Network error"));
 
 			// Simulate the modal creation process
-			(modal as any).title = "Test task";
+			(modal as any).form.values.title = "Test task";
 			await modal.handleSave();
 
 			expect(console.error).toHaveBeenCalledWith(
@@ -597,15 +621,5 @@ describe("TaskCreationModal - Fixed Implementation", () => {
 			expect(Notice).toHaveBeenCalledWith("Failed to create task: Network error");
 		});
 
-		it("should handle form population errors gracefully", () => {
-			const parsedData = {
-				title: "Test Task",
-				contexts: [],
-				tags: [],
-				invalidField: "should be ignored",
-			};
-
-			expect(() => (modal as any).applyParsedData(parsedData)).not.toThrow();
-		});
 	});
 });

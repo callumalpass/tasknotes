@@ -61,10 +61,7 @@ describe('Issue #1828: subtask project merging', () => {
 		});
 
 		await (modal as any).initializeFormData();
-		(modal as any).applyParsedData({
-			title: 'Child task',
-			projects: ['[[TaskNote B]]'],
-		});
+		(modal as any).syncNaturalLanguageProjects(['[[TaskNote B]]']);
 
 		const taskData = (modal as any).buildTaskData();
 
@@ -79,10 +76,7 @@ describe('Issue #1828: subtask project merging', () => {
 		});
 
 		await (modal as any).initializeFormData();
-		(modal as any).applyParsedData({
-			title: 'Child task',
-			projects: ['[[TaskNote A]]', '[[TaskNote B]]'],
-		});
+		(modal as any).syncNaturalLanguageProjects(['[[TaskNote A]]', '[[TaskNote B]]']);
 
 		const taskData = (modal as any).buildTaskData();
 

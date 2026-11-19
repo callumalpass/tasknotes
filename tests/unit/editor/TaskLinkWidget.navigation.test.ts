@@ -29,6 +29,7 @@ function setup() {
 		cacheManager: { getCachedTaskInfoSync: jest.fn(() => task) },
 		statusManager: {
 			isCompletedStatus: jest.fn(() => false),
+			getAllStatuses: jest.fn(() => []),
 			getStatusConfig: jest.fn((status: string) => ({ value: status, label: status, color: "#666666" })),
 			getNextStatus: jest.fn(() => "done"),
 		},
@@ -37,6 +38,8 @@ function setup() {
 		},
 		fieldMapper: {
 			toUserField: jest.fn((field: string) => field), toInternalField: jest.fn((field: string) => field),
+			getMapping: jest.fn(() => ({ status: "status" })),
+			isPropertyForField: jest.fn((property: string, field: string) => property === field),
 		},
 		projectSubtasksService: { isTaskUsedAsProjectSync: jest.fn(() => false) },
 		openTaskEditModal: jest.fn(),
@@ -51,17 +54,53 @@ function setup() {
 describe("Discussion #2355: inline heading and block navigation", () => {
 	afterEach(() => jest.useRealTimers());
 
+	it("keeps sentence status before the title and secondary options after it", () => {
+		const { task, plugin, render } = setup();
+		plugin.settings.inlineVisibleProperties = ["status"];
+		expect(render().querySelector(".task-card__inline-controls")).toBeNull();
+		const sentence = new TaskLinkWidget(task, plugin, "[[Lecture]]", "Alias", undefined, undefined, true).toDOM({} as EditorView);
+		const controls = sentence.querySelector(".task-card__inline-controls")!;
+		expect(controls.querySelector(".task-card__status-dot")).not.toBeNull();
+		expect(controls.querySelector(".task-card__context-menu")).toBeNull();
+		const menu = sentence.querySelector(".task-card__context-menu")!;
+		expect(menu.getAttribute("tabindex")).toBe("0");
+		expect(sentence.querySelector(".task-card__content")!.compareDocumentPosition(menu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		expect(controls.compareDocumentPosition(sentence.querySelector(".task-card__content")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+	});
+
+	it("preserves sentence control placement through Reading mode refresh", async () => {
+		const { plugin, container } = setup();
+		const paragraph = document.createElement("p");
+		paragraph.append("Review ");
+		const link = document.createElement("a");
+		link.className = "internal-link";
+		link.dataset.href = "Lecture";
+		link.href = "Lecture";
+		link.textContent = "Alias";
+		paragraph.append(link, ", then share.");
+		container.append(paragraph);
+		const processor = new ReadingModeTaskLinkProcessor(plugin);
+		const context = { sourcePath: "Links.md", getSectionInfo: () => ({ text: "Review [[Lecture|Alias]], then share.", lineStart: 0, lineEnd: 0 }) } as unknown as MarkdownPostProcessorContext;
+		await processor.createPostProcessor()(container, context);
+		await Promise.resolve();
+		expect(container.querySelector(".tasknotes-inline-widget--sentence .task-card__inline-controls")).not.toBeNull();
+		await (processor as any).refreshReadingModeWidgets();
+		expect(container.querySelector(".tasknotes-inline-widget--sentence .task-card__inline-controls")).not.toBeNull();
+		expect(paragraph.lastChild?.textContent).toBe(", then share.");
+	});
+
 	it.each(["#Details", "#^block"])("retains %s for all open-note gestures", subpath => {
 		const { plugin, render, title } = setup();
 		const element = title(render(subpath));
-		for (const options of [{}, { ctrlKey: true }, { metaKey: true }]) {
+		// Obsidian's Mod key is Ctrl off macOS (Cmd on macOS), where tests run.
+		for (const [options, paneType] of [[{}, false], [{ ctrlKey: true }, "tab"]] as const) {
 			element.dispatchEvent(new MouseEvent("click", { bubbles: true, ...options }));
 			expect(plugin.app.workspace.openLinkText).toHaveBeenLastCalledWith(
-				"Tasks/Lecture.md" + subpath, "", !!(options.ctrlKey || options.metaKey)
+				"Tasks/Lecture.md" + subpath, "", paneType
 			);
 		}
 		element.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, button: 1 }));
-		expect(plugin.app.workspace.openLinkText).toHaveBeenLastCalledWith("Tasks/Lecture.md" + subpath, "", true);
+		expect(plugin.app.workspace.openLinkText).toHaveBeenLastCalledWith("Tasks/Lecture.md" + subpath, "", "tab");
 	});
 
 	it("preserves the target for the configured double-click open action", () => {

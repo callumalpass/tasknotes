@@ -20,11 +20,14 @@ export interface TaskModalDetailsEditorOptions {
 	attachMobileKeyboardScrollGuard: (container: HTMLElement) => void;
 }
 
+let labelCount = 0;
+
 export function createTaskModalDetailsEditor(
 	options: TaskModalDetailsEditorOptions
 ): EmbeddableMarkdownEditor | null {
 	const labelEl = options.parent.createDiv("detail-label");
 	labelEl.textContent = options.label;
+	labelEl.id = `tn-task-modal-details-label-${++labelCount}`;
 
 	const editorContainer = options.parent.createDiv(
 		"tn-task-modal__markdown-editor tn-task-modal__markdown-editor--details"
@@ -32,7 +35,7 @@ export function createTaskModalDetailsEditor(
 
 	options.attachMobileKeyboardScrollGuard(editorContainer);
 
-	return createTaskModalMarkdownEditor(options.app, editorContainer, {
+	const editor = createTaskModalMarkdownEditor(options.app, editorContainer, {
 		value: options.value,
 		placeholder: options.placeholder,
 		cls: "details-editor",
@@ -48,6 +51,9 @@ export function createTaskModalDetailsEditor(
 		},
 		file: options.file ?? null,
 	});
+	// Referenced rather than set with aria-label, which Obsidian shows as a hover tooltip.
+	editor?.editor.cm.contentDOM.setAttribute("aria-labelledby", labelEl.id);
+	return editor;
 }
 
 export function setTaskModalDetailsEditorValue(

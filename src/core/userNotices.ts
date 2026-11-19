@@ -1,3 +1,5 @@
+import { displayError } from "../i18n/runtime";
+
 export const EVENT_USER_NOTICE = "user-notice";
 
 export interface UserNoticePayload {
@@ -14,5 +16,5 @@ export function publishUserNotice(
 	message: string,
 	timeout?: number
 ): void {
-	emitter?.trigger(EVENT_USER_NOTICE, { message, timeout });
+	emitter?.trigger(EVENT_USER_NOTICE, { message: displayError(message), timeout });
 }

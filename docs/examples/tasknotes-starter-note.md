@@ -14,7 +14,7 @@ TaskNotes works best when three things feel connected:
 - [ ] Confirm TaskNotes has created the default `.base` files in `TaskNotes/Views/`.
 - [ ] Open the command palette and run **TaskNotes: Open tasks view**.
 
-TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled. If the files are missing, use **Settings -> TaskNotes -> General -> Views & base files -> Create files**.
+TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled. If the files are missing, use **Settings -> TaskNotes -> Appearance & interaction -> Views & base files -> Create files**.
 
 ## 1. Create a task from the command palette
 
@@ -80,10 +80,10 @@ Use this when you want to move work through statuses like open, in progress, and
 
 The defaults are enough to start. Visit settings later when you know what you want to change:
 
-- If task files are going to the wrong place, check **Settings -> TaskNotes -> General**.
-- If converted inline tasks should be created somewhere else, check **Settings -> TaskNotes -> Inline Task Settings**.
-- If the task modal shows too much or too little, check **Settings -> TaskNotes -> Modal Fields**.
-- If your vault uses different property names, statuses, priorities, or custom fields, check **Settings -> TaskNotes -> Task Properties**.
+- If task files are going to the wrong place, check **Settings -> TaskNotes -> Task files**.
+- If converted inline tasks should be created somewhere else, check **Settings -> TaskNotes -> Task files -> Task storage**.
+- If the task modal shows too much or too little, check **Settings -> TaskNotes -> Task creation -> Form fields**.
+- If your vault uses different property names, statuses, priorities, or custom fields, check **Settings -> TaskNotes -> Properties**.
 
 ## 5. Make it yours
 

@@ -94,6 +94,32 @@ describe("Kanban render stability", () => {
 		expect(internals.renderFlat).toHaveBeenCalledTimes(3);
 	});
 
+	it("preserves scroll input received while refreshed task data is pending", async () => {
+		const { view, board, internals, task } = setupBoard();
+		await view.render();
+		board.scrollLeft = 25;
+		board.scrollTop = 40;
+		task.title = "Updated after a delayed refresh";
+		let finishRefresh!: (tasks: TaskInfo[]) => void;
+		jest.mocked(helpers.identifyTaskNotesFromBasesData).mockImplementationOnce(
+			() => new Promise(resolve => { finishRefresh = resolve; })
+		);
+		const render = internals.renderFlat.getMockImplementation();
+		internals.renderFlat.mockImplementation(async () => {
+			board.scrollLeft = 0;
+			board.scrollTop = 0;
+			await render();
+		});
+		const refreshed = view.render();
+		board.scrollLeft = 90;
+		board.scrollTop = 65;
+		finishRefresh([{ ...task }]);
+		await refreshed;
+		expect(board.textContent).toContain(task.title);
+		expect(board.scrollLeft).toBe(90);
+		expect(board.scrollTop).toBe(65);
+	});
+
 	it("applies changed property labels, sorting and plugin presentation settings", async () => {
 		const { view, internals } = setupBoard();
 		await view.render();
@@ -132,6 +158,47 @@ describe("Kanban render stability", () => {
 		cachedTasks.get("tasks/child.md")!.title = "Revised slides";
 		await view.render();
 		expect(board.textContent).toContain("Revised slides");
+	});
+
+	it("compares real Bases view configs, which link back to their query", async () => {
+		const { view, internals, board } = setupBoard();
+		const query: { views: Array<Record<string, unknown>> } = { views: [] };
+		const boardConfig = {
+			query,
+			type: "tasknotesKanban",
+			name: "Board",
+			groupBy: { property: "note.status", direction: "ASC" },
+			data: { columnWidth: 280 },
+		};
+		query.views.push(boardConfig);
+		internals.basesController = { query, viewName: "Board" };
+
+		await view.render();
+		const card = board.firstElementChild;
+		await view.render();
+		expect(internals.renderFlat).toHaveBeenCalledTimes(1);
+		expect(board.firstElementChild).toBe(card);
+
+		boardConfig.data = { columnWidth: 320 };
+		await view.render();
+		boardConfig.groupBy = { property: "note.priority", direction: "ASC" };
+		await view.render();
+		expect(internals.renderFlat).toHaveBeenCalledTimes(3);
+	});
+
+	it("repaints after a drop even when the drop left the data unchanged", async () => {
+		const { view, internals } = setupBoard();
+		await view.render();
+
+		jest.useFakeTimers({ doNotFake: ["Date"] });
+		try {
+			internals.schedulePostDropRender();
+			await jest.advanceTimersByTimeAsync(1000);
+		} finally {
+			jest.useRealTimers();
+		}
+
+		expect(internals.renderFlat).toHaveBeenCalledTimes(2);
 	});
 
 	it("retries a failed render instead of treating the board as current", async () => {

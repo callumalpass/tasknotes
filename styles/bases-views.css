@@ -21,7 +21,7 @@
 	cursor: var(--cursor-link, pointer);
 	display: flex;
 	font: inherit;
-	font-size: var(--font-ui-small, 13px);
+	font-size: var(--font-ui-small);
 	gap: var(--size-4-1);
 	height: auto;
 	margin: var(--size-2-1);
@@ -49,48 +49,67 @@
 }
 
 /* Notes in side panes inherit Obsidian's readable-line padding. Let TaskNotes Base
-   embeds reclaim that padding so the cards line up with directly opened Bases views. */
-.mod-left-split .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active,
-.mod-right-split .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active {
+   embeds reclaim that padding so the cards line up with directly opened Bases views
+   (#765, #2587). */
+:is(.mod-left-split, .mod-right-split) .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active {
 	margin-inline: calc(-1 * var(--file-margins, var(--size-4-5)));
 	max-width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
 	width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+}
+
+/* Live Preview forces `margin: 0 !important` on editor blocks, so shift the embed instead. */
+:is(.mod-left-split, .mod-right-split) .markdown-source-view.mod-cm6.is-live-preview .cm-content > .internal-embed.bases-embed.tasknotes-view-active {
+	position: relative;
+	inset-inline-start: calc(-1 * var(--file-margins, var(--size-4-5)));
+	max-width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+	width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+}
+
+/* A TaskNotes view embedded in a table cell (#2590). Table columns size to their content and a
+   Base embed has no width of its own, so the cell shrank until each card was only its status
+   and priority icons. Give the embed a readable minimum width, and undo the cell's text
+   alignment so titles stay left-aligned in centred columns. */
+:is(td, th) .internal-embed.bases-embed.tasknotes-view-active {
+	min-width: min(18rem, 80vw);
+	text-align: start;
 }
 
 /* Bases TaskNotes List View Container */
 .tn-bases-tasknotes-list {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     width: 100%;
-    padding: var(--tn-spacing-md);
+    padding: var(--tn-space-1);
 }
 
 /* Task Group Section (matches TaskListView structure) */
 .tn-bases-tasknotes-list .task-section.task-group {
-    margin-bottom: var(--tn-spacing-md);
+    margin-bottom: var(--tn-space-2);
 }
 
 /* Group Header */
 .tn-bases-tasknotes-list .task-group-header {
     display: flex;
     align-items: center;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     justify-content: flex-start;
-    padding: var(--tn-spacing-xs) var(--tn-spacing-md) var(--tn-spacing-xs) var(--tn-spacing-sm);
-    margin-bottom: var(--tn-spacing-sm);
-    border-bottom: 1px solid var(--tn-divider-color);
+    padding: var(--tn-space-2);
+    margin-bottom: var(--tn-space-1);
+    border-bottom: none;
     position: relative;
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-semibold);
-    color: var(--tn-text-muted);
-    letter-spacing: 0;
+    font-size: var(--tn-type-md);
+    font-weight: var(--tn-font-weight-medium);
+    color: var(--tn-text-normal);
+    letter-spacing: normal;
     line-height: 1.4;
     cursor: var(--cursor-link, pointer);
 }
 
 /* Count element within group headers */
 .tn-bases-tasknotes-list .task-group-header .agenda-view__item-count {
+    flex: none;
+    white-space: nowrap;
     margin-left: auto;
     margin-right: 0;
 }
@@ -98,13 +117,151 @@
 .tn-tasknotesTaskList .tn-search-container {
 	display: flex;
 	align-items: center;
-	gap: var(--tn-spacing-sm);
+	gap: var(--tn-space-1);
 	min-width: 0;
 }
 
 .tn-tasknotesTaskList .tn-search-box {
 	flex: 1;
 	min-width: 0;
+}
+
+.tasknotes-plugin .tn-search-box__input {
+    border-radius: var(--tn-radius-md);
+}
+
+.tasknotes-view-active .bases-toolbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-width: 0;
+}
+
+.tasknotes-view-active {
+    container: tn-bases-chrome / inline-size;
+}
+
+.tn-bases-toolbar-more {
+    display: none;
+}
+
+.tasknotes-plugin.tn-bases-toolbar-overflow-panel {
+    display: grid;
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-2);
+    min-width: var(--tn-space-8);
+}
+
+@container tn-bases-chrome (max-width: 480px) {
+    .tasknotes-view-active .bases-toolbar {
+        flex-wrap: nowrap;
+        gap: 0;
+        overflow: visible;
+        height: calc(var(--tn-touch-target) + var(--tn-space-2));
+        min-height: calc(var(--tn-touch-target) + var(--tn-space-2));
+    }
+
+    .tasknotes-view-active .bases-toolbar > .tn-bases-new-task-btn {
+        margin-inline-start: 0;
+    }
+
+    .tasknotes-view-active .bases-toolbar > :is(.bases-toolbar-results-menu, .bases-toolbar-sort-menu, .bases-toolbar-filter-menu, .bases-toolbar-properties-menu, .bases-toolbar-search, .tn-shortcut-help) {
+        display: none;
+    }
+
+    .tasknotes-view-active .bases-toolbar > .bases-toolbar-views-menu {
+        flex: 1 1 auto;
+        overflow: hidden;
+    }
+
+    .tasknotes-view-active .tn-bases-toolbar-more {
+        display: flex;
+        min-width: var(--tn-touch-target);
+        min-height: var(--tn-touch-target);
+        margin-inline-start: auto;
+    }
+
+    .tasknotes-view-active .bases-toolbar .bases-toolbar-item {
+        min-width: 0;
+        padding-inline: var(--tn-space-half);
+    }
+
+    .tn-bases-new-task-btn .tn-key-hint,
+    .tn-bases-new-task-btn .text-button-label {
+        display: none;
+    }
+
+    .tn-bases-new-task-btn > button.text-icon-button {
+        justify-content: center;
+        min-width: var(--tn-touch-target);
+        min-height: var(--tn-touch-target);
+        margin: 0;
+    }
+}
+
+.tasknotes-view-active .bases-toolbar > * {
+    flex-shrink: 0;
+    max-width: 100%;
+}
+
+.tasknotes-view-active .bases-toolbar > .tn-bases-new-task-btn {
+    margin-inline: 0;
+}
+
+/* Own the vertical scroll so group headers can stick relative to this container.
+   Embed overrides below set overflow-y: visible when a parent note scroller should win. */
+.tn-tasknotesTaskList .tn-bases-items-container {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	/* Equal space on both sides of the rows, so hover backgrounds sit evenly in the pane. */
+	scrollbar-gutter: stable both-edges;
+}
+
+/* The Bases wrapper never scrolls while the list owns scrolling, so its reserved
+   scrollbar gutter would only add space on the right. */
+.bases-view[data-tn-view="tasknotesTaskList"] {
+	scrollbar-gutter: auto;
+}
+
+/* Each section bounds its sticky header; nested offsets follow measured height. */
+.tn-tasknotesTaskList .task-list-group > .task-group,
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	position: sticky;
+	top: 0;
+	z-index: var(--tn-z-sticky);
+	background: var(--tn-bg-primary);
+	color: var(--tn-text-normal);
+}
+
+.tn-tasknotesTaskList .task-list-subgroup > .task-group {
+	top: var(--task-list-parent-header-height, 0px);
+	z-index: calc(var(--tn-z-sticky) - 1);
+}
+
+/*
+ * Virtualized lists position rows with transform, which breaks CSS sticky.
+ * A zero-height sticky pin overlays the active group header instead.
+ */
+.tn-tasknotesTaskList .task-list-virtual-sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: calc(var(--tn-z-sticky) + 1);
+	height: 0;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header.is-empty {
+	display: none;
+}
+
+.tn-tasknotesTaskList .task-list-virtual-sticky-header__group {
+	pointer-events: auto;
+	background: var(--tn-bg-primary);
+	color: var(--tn-text-normal);
+	position: relative;
+	top: auto;
+	z-index: auto;
 }
 
 /* Toggle button for groups */
@@ -121,11 +278,11 @@
     padding: 0;
     flex-shrink: 0;
     border: 0;
-    border-radius: var(--tn-radius-sm);
+    border-radius: var(--tn-radius-md);
     box-shadow: none;
     background: transparent;
     color: var(--tn-text-muted);
-    font-size: 14px;
+    font-size: var(--tn-type-md);
     line-height: 1;
     cursor: var(--cursor-link, pointer);
 }
@@ -148,22 +305,17 @@
     transform: rotate(0deg);
 }
 
-/* Hide task cards when collapsed */
-.tn-bases-tasknotes-list .task-group.is-collapsed .task-cards {
-    display: none;
-}
-
 /* Sub-group header styling */
 .tn-tasknotesTaskList .task-group[data-level="sub"] {
     padding-left: 16px; /* Subtle indentation */
-    margin-bottom: var(--tn-spacing-sm);
+    margin-bottom: var(--tn-space-1);
 }
 
 .tn-tasknotesTaskList .task-group[data-level="sub"] .task-group-header {
-    font-size: 0.95em;
+    font-size: var(--tn-type-md);
     font-weight: 500; /* Less bold than primary */
     color: var(--tn-text-muted);
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
+    padding: var(--tn-space-half) var(--tn-space-1);
 }
 
 .tn-tasknotesTaskList .task-group[data-level="sub"] .task-group-toggle {
@@ -175,30 +327,22 @@
     height: 14px;
 }
 
-/* Task cards container */
-.tn-bases-tasknotes-list .tasks-container.task-cards {
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-spacing-xs);
-    padding-left: var(--tn-spacing-md);
+/* Bottom spacing for TaskNotes views opened as Bases tabs, using the spacing
+   Obsidian applies to its own views. On phones the floating navbar covers the
+   bottom of the pane; Obsidian's --view-bottom-spacing (safe area + navbar,
+   less the keyboard) keeps every TaskNotes view above it, including views
+   that fit the pane instead of scrolling, such as the month grid. List
+   scrollers also end with the same --size-4-8 / safe-area padding as Obsidian's
+   .view-content, so the last row can scroll clear of the desktop status bar.
+   Embeds are not matched: the note's own scroller already clears these. */
+.is-phone .workspace-leaf-content[data-type="bases"] .tn-bases-integration {
+    box-sizing: border-box;
+    padding-bottom: var(--view-bottom-spacing, 0px);
 }
 
-body.is-mobile .tn-tasknotesTaskList .tn-bases-items-container,
-body.is-mobile .tn-bases-tasknotes-list {
-    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
-    scroll-padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
-}
-
-body.is-mobile .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
-body.is-mobile .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container {
-    padding-bottom: 0;
-    scroll-padding-bottom: 0;
-}
-
-body.is-mobile .internal-embed .tn-bases-tasknotes-list,
-body.is-mobile .markdown-embed .tn-bases-tasknotes-list {
-    padding-bottom: var(--tn-spacing-sm);
-    scroll-padding-bottom: 0;
+.workspace-leaf-content[data-type="bases"] .tn-bases-integration :is(.tn-bases-items-container, .tnc-list-scroll) {
+    padding-bottom: max(var(--size-4-8), var(--safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: max(var(--size-4-8), var(--safe-area-inset-bottom, 0px));
 }
 
 /* Sidebar and popout note embeds already have a constrained note scroller. Let
@@ -224,6 +368,13 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     overflow-y: visible;
 }
 
+/* Let the note be the sticky/virtual scroll root, rather than an unbounded
+   Bases wrapper that never actually scrolls. */
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed,
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed .bases-view {
+    overflow: visible;
+}
+
 /* Reset indentation for task cards after a primary group header */
 .tn-tasknotesTaskList .task-group[data-level="primary"] ~ .task-card {
     margin-left: 0;
@@ -235,188 +386,13 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
     margin-left: 16px;
 }
 
-/* Empty state */
-.tn-bases-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: var(--tn-spacing-xxl);
-    text-align: center;
-    color: var(--tn-text-muted);
-    background: transparent;
-    border: none;
-    border-radius: var(--tn-radius-md);
-    margin: var(--tn-spacing-lg) 0;
-    line-height: 1.5;
-}
-
-/* Kanban Board Styles */
-.tn-bases-kanban-board {
-    display: flex;
-    gap: var(--tn-spacing-md);
-    overflow-x: auto;
-    padding: var(--tn-spacing-sm);
-    min-height: 400px;
-}
-
-.tn-bases-kanban-column {
-    flex: 0 0 280px;
-    min-width: 280px;
-    display: flex;
-    flex-direction: column;
-    background: var(--tn-bg-secondary);
-    border: 1px solid var(--tn-border-color);
-    border-radius: var(--tn-radius-md);
-    overflow: hidden;
-}
-
-.tn-bases-kanban-column-header {
-    padding: var(--tn-spacing-md);
-    background: var(--tn-bg-primary);
-    border-bottom: 1px solid var(--tn-border-color);
-    font-weight: var(--tn-font-weight-medium);
-    color: var(--tn-text-normal);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.tn-bases-kanban-column-name {
-    font-size: var(--tn-font-size-md);
-}
-
-.tn-bases-kanban-column-count {
-    font-size: var(--tn-font-size-sm);
-    color: var(--tn-text-muted);
-    background: var(--tn-bg-secondary);
-    padding: 2px 8px;
-    border-radius: var(--tn-radius-sm);
-}
-
-.tn-bases-kanban-tasks {
-    flex: 1;
-    padding: var(--tn-spacing-sm);
-    display: flex;
-    flex-direction: column;
-    gap: var(--tn-spacing-xs);
-    overflow-y: auto;
-}
-
-/* Drag and drop styles */
-.tn-bases-kanban-tasks.drag-over {
-    background: var(--tn-interactive-hover);
-    border: 2px dashed var(--tn-interactive-accent);
-    border-radius: var(--tn-radius-sm);
-}
-
-/* Bases Calendar List View - minimalist styling */
-.fc-event-default-list {
-    padding: var(--tn-spacing-xs) var(--tn-spacing-sm);
-    margin: var(--tn-spacing-xs) 0;
-    background: transparent;
-    border: none;
-    border-radius: var(--tn-radius-sm);
-}
-
-#bases-calendar .fc-refreshCalendars-button.tasknotes-calendar-refresh-button--icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-}
-
-#bases-calendar .fc-refreshCalendars-button.tasknotes-calendar-refresh-button--icon .svg-icon {
-    width: 16px;
-    height: 16px;
-}
-
-/* Style FullCalendar list view structure */
-#bases-calendar .fc-list {
-    background: transparent;
-}
-
-#bases-calendar .fc-list-table {
-    background: transparent;
-}
-
-#bases-calendar .fc-list-event {
-    background: transparent;
-    border: none;
-}
-
-#bases-calendar .fc-list-event:hover {
-    background: var(--tn-interactive-hover);
-}
-
-#bases-calendar .fc-list-event.fc-list-task-card:hover,
-#bases-calendar .fc-list-event.fc-list-task-card:hover > td {
-    background: transparent;
-    background-color: transparent;
-}
-
-#bases-calendar .fc-list-day-cushion {
-    background: transparent;
-    padding: var(--tn-spacing-sm) var(--tn-spacing-xs);
-    border-bottom: 1px solid var(--tn-divider-color);
-    font-weight: var(--tn-font-weight-medium);
-}
-
-#bases-calendar .fc-list-day {
-    background: transparent;
-}
-
-/* Today highlight in list/agenda view */
-#bases-calendar .fc-list-day.fc-day-today .fc-list-day-cushion {
-    color: var(--interactive-accent);
-    font-weight: 600;
-    border-bottom-color: var(--interactive-accent);
-}
-
-.hide-today-highlight #bases-calendar .fc-list-day.fc-day-today .fc-list-day-cushion {
-    color: var(--text-normal);
-    font-weight: var(--tn-font-weight-medium);
-    border-bottom-color: var(--tn-divider-color);
-}
-
-/* Override FullCalendar's bright white border color in dark mode */
-.theme-dark #bases-calendar.fc-theme-standard {
-    --fc-border-color: var(--tn-divider-color);
-}
-
 /* Responsive design for Bases views */
-@media (max-width: 768px) {
-    .tn-bases-kanban-board {
-        gap: var(--tn-spacing-sm);
-    }
-
-	.tn-bases-kanban-column {
-	    flex: 0 0 min(76vw, 260px);
-	    min-width: min(76vw, 260px);
-    }
-}
 
 @media (max-width: 480px) {
     .tn-bases-tasknotes-list .task-group-header {
-        font-size: var(--tn-font-size-md);
-        padding: var(--tn-spacing-sm) 0 var(--tn-spacing-xs);
+        font-size: var(--tn-ui-type-xs);
+        padding: var(--tn-space-1) 0 var(--tn-space-half);
     }
-
-	.tn-bases-kanban-column {
-	    flex: 0 0 min(82vw, 240px);
-	    min-width: min(82vw, 240px);
-    }
-}
-
-body.is-mobile .tn-bases-kanban-board {
-    align-items: flex-start;
-    min-height: auto;
-    scroll-snap-type: x proximity;
-    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
-}
-
-body.is-mobile .tn-bases-kanban-column {
-    scroll-snap-align: start;
 }
 
 /* SWIMLANE KANBAN LAYOUT */
@@ -425,10 +401,10 @@ body.is-mobile .tn-bases-kanban-column {
 .kanban-view__board--swimlanes {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-sm);
+    gap: var(--tn-space-1);
     overflow: auto;
-    padding: var(--tn-spacing-sm);
-    min-height: 400px;
+    padding: var(--tn-space-1);
+    min-height: 0;
 }
 
 /* Each swimlane row */
@@ -441,8 +417,9 @@ body.is-mobile .tn-bases-kanban-column {
     grid-auto-flow: column;
     gap: 0;
     background: transparent;
-    border: 1px solid var(--tn-divider-color);
-    border-radius: var(--tn-radius-sm);
+    border: none;
+    border-bottom: 1px solid var(--tn-hairline);
+    border-radius: var(--tn-radius-none);
     min-width: max-content;
     overflow: hidden;
 }
@@ -453,7 +430,7 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Last row gets bottom border */
 .kanban-view__swimlane-row:last-child {
-    border-bottom: 1px solid var(--tn-border-color);
+    border-bottom: 1px solid var(--tn-hairline);
 }
 
 /* Header row styling */
@@ -467,18 +444,19 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Swimlane label cell (leftmost column) */
 .kanban-view__swimlane-label {
-    background: color-mix(in srgb, var(--tn-bg-secondary) 86%, var(--tn-bg-primary));
-    padding: var(--tn-spacing-md);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    padding: var(--tn-space-2);
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-half);
     align-items: flex-start;
     justify-content: flex-start;
-    border-right: 1px solid var(--tn-divider-color);
+    border-right: none;
     position: sticky;
     left: 0;
     z-index: 5;
-    min-height: 72px;
+    min-height: var(--tn-row-height);
     overflow: hidden;
 }
 
@@ -486,7 +464,7 @@ body.is-mobile .tn-bases-kanban-column {
 .kanban-view__swimlane-title {
     font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
-    font-size: var(--tn-font-size-md);
+    font-size: var(--tn-type-xs);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -526,28 +504,30 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Swimlane task count */
 .kanban-view__swimlane-count {
-    font-size: var(--tn-font-size-sm);
+    font-size: var(--tn-ui-type-xs);
     color: var(--tn-text-muted);
-    background: var(--tn-bg-primary);
-    border: 1px solid color-mix(in srgb, var(--tn-border-color) 72%, transparent);
-    padding: 2px 6px;
-    border-radius: var(--tn-radius-sm);
+    font-variant-numeric: tabular-nums;
 }
 
 /* Column header cell in header row */
 .kanban-view__column-header-cell {
-    background: var(--tn-bg-secondary);
-    padding: var(--tn-spacing-sm) var(--tn-spacing-md);
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    padding: var(--tn-space-1) var(--tn-space-2);
     display: flex;
     align-items: center;
     justify-content: flex-start;
     text-align: left;
     cursor: grab;
     user-select: none;
-    transition: background-color var(--tn-transition-fast), box-shadow var(--tn-transition-fast), opacity var(--tn-transition-fast), transform var(--tn-transition-fast);
-    gap: var(--tn-spacing-xs);
+    transition: opacity var(--tn-motion-fast) var(--tn-ease), transform var(--tn-motion-fast) var(--tn-ease);
+    gap: var(--tn-space-half);
     min-height: 40px;
-    border-right: 1px solid var(--tn-divider-color);
+    border-right: none;
+}
+
+.kanban-view__column-header-cell--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
 }
 
 .kanban-view__column-header-cell:active {
@@ -559,15 +539,10 @@ body.is-mobile .tn-bases-kanban-column {
     box-shadow: var(--tn-shadow-medium);
 }
 
-@media (pointer: coarse) {
-    .kanban-view__column-header-cell--dragging {
-        pointer-events: none;
-    }
-}
-
 .kanban-view__column-header-cell .kanban-view__column-title {
-    font-size: var(--tn-font-size-md);
-    font-weight: var(--tn-font-weight-semibold);
+    flex: 1;
+    font-size: var(--tn-ui-type-xs);
+    font-weight: var(--tn-font-weight-medium);
     color: var(--tn-text-normal);
     min-width: 0;
     overflow: hidden;
@@ -575,21 +550,21 @@ body.is-mobile .tn-bases-kanban-column {
     white-space: nowrap;
 }
 
-.kanban-view__column-header-cell--unknown-status {
-    background: var(--tn-bg-primary);
-    color: var(--tn-text-muted);
-}
-
 /* Individual swimlane column cells (data cells) */
 .kanban-view__swimlane-column {
-    background: color-mix(in srgb, var(--tn-bg-primary) 92%, var(--tn-bg-secondary));
-    padding: var(--tn-spacing-sm);
-    min-height: 112px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    padding: var(--tn-space-1);
+    min-height: var(--tn-row-height);
     max-height: var(--kanban-swimlane-max-height, 600px);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--tn-border-color);
+    border-right: none;
     overflow: hidden;
+}
+
+.kanban-view__swimlane-column--status-colored {
+    background: color-mix(in srgb, var(--tn-kanban-status-color) 5%, var(--background-secondary));
 }
 
 .kanban-view__swimlane-column.kanban-view__column--unknown-status {
@@ -601,10 +576,30 @@ body.is-mobile .tn-bases-kanban-column {
 .kanban-view__swimlane-column .kanban-view__tasks-container {
     display: flex;
     flex-direction: column;
-    gap: var(--tn-spacing-xs);
+    gap: var(--tn-space-2);
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__swimlane-label {
+    flex-direction: row;
+    align-items: center;
+    padding-block: var(--tn-space-1);
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__swimlane-column {
+    min-height: var(--tn-row-height);
+    padding-block: 0;
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__add-task-footer {
+    padding: 0;
+    min-height: var(--tn-row-height);
+}
+
+.tasknotes-plugin .kanban-view__swimlane-row--empty .kanban-view__tasks-container {
+    flex: 0 0 auto;
 }
 
 /* Drag over state for swimlane cells */
@@ -616,27 +611,47 @@ body.is-mobile .tn-bases-kanban-column {
 
 /* Responsive adjustments for swimlanes */
 @media (max-width: 1200px) {
-    .kanban-view__swimlane-row > :first-child {
-        width: 150px;
-        min-width: 150px;
-    }
-
     .kanban-view__swimlane-label {
-        padding: var(--tn-spacing-sm);
+        padding: var(--tn-space-1);
     }
 }
 
 @media (max-width: 768px) {
-    .kanban-view__swimlane-row > :first-child {
-        width: 120px;
-        min-width: 120px;
-    }
-
     .kanban-view__swimlane-title {
-        font-size: var(--tn-font-size-sm);
+        font-size: var(--tn-type-xs);
     }
 
     .kanban-view__column-header-cell .kanban-view__column-title {
-        font-size: var(--tn-font-size-sm);
+        font-size: var(--tn-ui-type-xs);
     }
+}
+
+/* Swimlane label drag-to-reorder */
+.kanban-view__swimlane-label[draggable="true"] {
+    cursor: grab;
+}
+
+.kanban-view__swimlane-label[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.kanban-view__swimlane-label .kanban-view__swimlane-drag-handle {
+    position: absolute;
+    top: var(--tn-space-half);
+    right: var(--tn-space-half);
+    opacity: 0;
+}
+
+.kanban-view__swimlane-label:hover .kanban-view__swimlane-drag-handle,
+.kanban-view__swimlane-label--dragging .kanban-view__swimlane-drag-handle {
+    opacity: 1;
+}
+
+.kanban-view__swimlane-label--dragging {
+    opacity: 0.5;
+}
+
+.kanban-view__swimlane-label--dragover {
+    background: var(--tn-interactive-hover);
+    box-shadow: inset 0 0 0 1px var(--tn-interactive-accent);
 }

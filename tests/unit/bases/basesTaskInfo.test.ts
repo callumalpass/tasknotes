@@ -26,6 +26,19 @@ function createPlugin(sortOrderField = "sort_order") {
 }
 
 describe("Bases TaskInfo assembly", () => {
+	it("leaves priority empty when the note has no priority property (#2581)", () => {
+		const task = createTaskInfoFromBasesData(
+			{
+				path: "Tasks/No priority.md",
+				name: "No priority",
+				properties: { title: "No priority", status: "open" },
+			},
+			createPlugin() as unknown as TaskNotesPlugin
+		);
+
+		expect(task?.priority).toBe("");
+	});
+
 	it("preserves mapped manual-order values on TaskInfo", () => {
 		const task = createTaskInfoFromBasesData(
 			{

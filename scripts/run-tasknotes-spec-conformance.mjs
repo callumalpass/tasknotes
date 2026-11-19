@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { adaptPinnedSpecRuntime } from "./conformance-adapter-compat.mjs";
+import { adaptPinnedSpecBuild, adaptPinnedSpecRuntime } from "./conformance-adapter-compat.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const tasknotesRoot = resolve(scriptDir, "..");
@@ -21,6 +21,7 @@ cpSync(specSource, specRoot, {
 });
 symlinkSync(tasknotesRoot, resolve(workspace, "tasknotes"), "dir");
 adaptPinnedSpecRuntime(specRoot);
+adaptPinnedSpecBuild(specRoot, tasknotesRoot);
 const adapterPath = resolve(specRoot, "conformance/adapters/tasknotes.adapter.mjs");
 const defaultWaiverPath = resolve(tasknotesRoot, "conformance/waivers.json");
 

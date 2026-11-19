@@ -40,7 +40,7 @@ describe("Issue #2413: missed reminders on startup", () => {
 			cacheManager: {
 				getAllCachedTasks: () => tasks.filter((task) => !unindexed.has(task.path)),
 			},
-			fieldMapper: { mapFromFrontmatter: (fm: TaskInfo) => fm },
+			fieldMapper: { mapFromFrontmatter: (fm: TaskInfo) => fm, toUserField: (field: string) => field },
 			app: {
 				loadLocalStorage: (key: string) => storage.get(key) ?? null,
 				saveLocalStorage: (key: string, value: unknown) => storage.set(key, value),

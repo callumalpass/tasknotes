@@ -1,90 +1,70 @@
+import { observeTranslation as mockObserveTranslation } from "../../helpers/real-i18n";
 import {
 	createTaskModalActionButtons,
-	runTaskModalSaveAction,
 	type TaskModalActionButtonContext,
 } from "../../../src/modals/taskModalActionButtons";
 
 function createContext(): TaskModalActionButtonContext {
 	return {
-		translate: (key) =>
-			({
-				"modals.task.buttons.save": "Save",
-				"common.cancel": "Cancel",
-			})[key] || key,
+		translate: mockObserveTranslation(),
 	};
 }
 
 describe("taskModalActionButtons", () => {
-	beforeEach(() => {
-		document.body.innerHTML = "";
-	});
-
-	it("renders leading actions before save and cancel and wires click handlers", () => {
+	it("renders leading actions, cancel, and a primary save with its keyboard hint", () => {
 		const container = document.createElement("div");
 		const open = jest.fn();
-		const archive = jest.fn();
+		const save = jest.fn();
 		const cancel = jest.fn();
 
 		const buttonContainer = createTaskModalActionButtons(createContext(), {
 			container,
-			leadingButtons: [
-				{ className: "open-button", text: "Open note", onClick: open },
-				{ className: "archive-button", text: "Archive", onClick: archive },
-			],
-			onSave: jest.fn().mockResolvedValue(undefined),
-			onSaved: jest.fn(),
+			leadingButtons: [{ className: "open-button", text: "Open note", onClick: open }],
+			onSave: save,
 			onCancel: cancel,
 		});
 
 		const buttons = Array.from(buttonContainer.querySelectorAll("button"));
-		expect(buttons.map((button) => button.textContent)).toEqual([
-			"Open note",
-			"Archive",
-			"Save",
-			"Cancel",
-		]);
-		expect(buttons[0].classList.contains("open-button")).toBe(true);
-		expect(buttons[1].classList.contains("archive-button")).toBe(true);
+		expect(buttons[0].textContent).toBe("Open note");
+		expect(buttons[1].textContent).toBe("Cancel");
+		expect(buttons[2].getAttribute("aria-label")).toBe("Save");
 		expect(buttons[2].classList.contains("mod-cta")).toBe(true);
+		expect(buttons[2].querySelector(".tn-key-hint")).not.toBeNull();
 
-		buttons[0].click();
-		buttons[1].click();
-		buttons[3].click();
+		buttons.forEach((button) => button.click());
 
 		expect(open).toHaveBeenCalledTimes(1);
-		expect(archive).toHaveBeenCalledTimes(1);
+		expect(save).toHaveBeenCalledTimes(1);
 		expect(cancel).toHaveBeenCalledTimes(1);
 	});
 
-	it("disables the save button while saving and calls the saved callback afterwards", async () => {
-		const saveButton = document.createElement("button");
-		const onSaved = jest.fn();
-		let resolveSave: (() => void) | undefined;
-		const savePromise = new Promise<void>((resolve) => {
-			resolveSave = resolve;
+	it("keeps repeat creation an explicit choice and preserves its checked state", () => {
+		const onCreateMoreChange = jest.fn();
+		const bar = createTaskModalActionButtons(createContext(), {
+			container: document.createElement("div"),
+			createMore: true,
+			onCreateMoreChange,
+			onSave: jest.fn(),
+			onCancel: jest.fn(),
 		});
-		const running = runTaskModalSaveAction(saveButton, () => savePromise, onSaved);
-
-		expect(saveButton.disabled).toBe(true);
-		expect(onSaved).not.toHaveBeenCalled();
-
-		resolveSave?.();
-		await running;
-
-		expect(onSaved).toHaveBeenCalledTimes(1);
-		expect(saveButton.disabled).toBe(false);
+		const checkbox = bar.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+		expect(checkbox.checked).toBe(true);
+		checkbox.checked = false;
+		checkbox.dispatchEvent(new Event("change"));
+		expect(onCreateMoreChange).toHaveBeenCalledWith(false);
 	});
 
-	it("reenables save and skips the saved callback when save fails", async () => {
-		const saveButton = document.createElement("button");
-		const onSaved = jest.fn();
-		const error = new Error("save failed");
+	it("puts overflow actions in a menu rather than the button bar", () => {
+		const container = document.createElement("div");
 
-		await expect(
-			runTaskModalSaveAction(saveButton, () => Promise.reject(error), onSaved)
-		).rejects.toThrow("save failed");
+		const buttonContainer = createTaskModalActionButtons(createContext(), {
+			container,
+			overflowActions: [{ title: "Delete", icon: "trash", warning: true, onClick: jest.fn() }],
+			onSave: jest.fn(),
+			onCancel: jest.fn(),
+		});
 
-		expect(onSaved).not.toHaveBeenCalled();
-		expect(saveButton.disabled).toBe(false);
+		expect(buttonContainer.textContent).not.toContain("Delete");
+		expect(buttonContainer.querySelector(".tn-task-modal__overflow-button")).not.toBeNull();
 	});
 });

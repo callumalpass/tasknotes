@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { createI18nService } from "../../../src/i18n";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import YAML from "yaml";
@@ -5,7 +7,8 @@ import { TFile } from "obsidian";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { SafeMetadata } from "../../../src/services/mdbase/SafeMetadata";
-import { METADATA_PENDING } from "../../../src/services/mdbase/MetadataTransaction";
+import { MDBASE_README, MDBASE_README_PATH } from "../../../src/services/mdbase/folders";
+import { MetadataTransaction, METADATA_PENDING } from "../../../src/services/mdbase/MetadataTransaction";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { parseMdbaseTaskTypeDocument } from "../../../src/services/mdbaseCanonicalConfig";
 
@@ -44,6 +47,7 @@ export function safetyHarness(entries: Record<string, string>) {
 	};
 	const notices: string[] = [];
 	const plugin: any = {
+		i18n: createI18nService(),
 		settings: { ...JSON.parse(JSON.stringify(DEFAULT_SETTINGS)), enableMdbaseSpec: true },
 		// Exactly the bootstrap state: no FieldMapper/runtime services yet.
 		app: { vault: {
@@ -100,7 +104,7 @@ describe("safe migration writes and recovery", () => {
 		expect(h.files.get("mdbase.yaml")).toBe("external");
 		expect([...h.files.keys()]).toEqual(["mdbase.yaml"]);
 	});
-	it.each(["_types/task.md", "_schemas/tasknotes/tasknotes-task.schema.json", "_contracts/tasknotes.task/0.3.0-rc.6.md", "_settings/dev.tasknotes.md", "mdbase.yaml"])("rolls back a beta upgrade when %s fails", async (target) => {
+	it.each(["_types/task.md", "_schemas/tasknotes/tasknotes-task.schema.json", "_contracts/tasknotes.task/0.3.0-rc.6.md", "_mdbase/settings/dev.tasknotes.md", "mdbase.yaml"])("rolls back a beta upgrade when %s fails", async (target) => {
 		const before = faultFixture(target);
 		const h = safetyHarness(before);
 		let failed = false;
@@ -298,7 +302,7 @@ describe("safe migration writes and recovery", () => {
 	});
 
 	it("refuses symlinked metadata directories before modifying external targets", async () => {
-		const scratch = await fs.mkdtemp(path.join(process.env.TMPDIR!, "safewrite-symlink-"));
+		const scratch = await fs.mkdtemp(path.join(tmpdir(), "safewrite-symlink-"));
 		const previousRequire = window.require;
 		window.require = require;
 		try {
@@ -342,4 +346,34 @@ describe("safe migration writes and recovery", () => {
 		expect(h.files.has("_types/tasknotes-task.md")).toBe(true);
 		expect(h.notices.join(" ")).toContain("move unavailable");
 	});
+});
+
+it.each([false, true])("recovers an interrupted new-layout setup, enforcing README bytes (edited: %s)", async (edited) => {
+	const h = safetyHarness({});
+	const config = "spec_version: 0.3.0\nsettings:\n  types_folder: _mdbase/types\n  contracts_folder: _mdbase/contracts\n";
+	const intendedWrites = [
+		{ path: "mdbase.yaml", content: config },
+		{ path: "_mdbase/types/task.md", content: "task type" },
+		{ path: "_mdbase/contracts/tasknotes.task/0.3.0-rc.6.md", content: "contract" },
+		{ path: "_mdbase/schemas/tasknotes.settings/1.0.0.schema.json", content: "schema" },
+		{ path: "_mdbase/_schemas/tasknotes/tasknotes-task.schema.json", content: "task schema" },
+		// Retain recovery of root schema targets written by earlier plugin versions.
+		{ path: "_schemas/tasknotes/tasknotes-task.schema.json", content: "legacy task schema" },
+		{ path: MDBASE_README_PATH, content: edited ? "Other README" : MDBASE_README },
+	];
+	const backupFolder = ".tasknotes/migrations/mdbase-v0.3-interrupted-setup";
+	const journal = JSON.stringify({ backupFolder, snapshots: intendedWrites.map(({ path }) => ({ path, content: null })), intendedWrites }, null, 2);
+	h.files.set(METADATA_PENDING, journal);
+	h.files.set(`${backupFolder}/manifest.json`, journal);
+	// The process stopped after metadata publication, before activating mdbase.yaml.
+	for (const write of intendedWrites.slice(1)) h.files.set(write.path, write.content);
+	const transaction = new MetadataTransaction(new SafeMetadata(h.adapter), h.adapter.mkdir, h.adapter.remove);
+	if (edited) {
+		await expect(transaction.recover()).rejects.toThrow("Unsafe recovery target: _mdbase/README.md");
+		expect(h.files.get(MDBASE_README_PATH)).toBe("Other README");
+	} else {
+		await transaction.recover();
+		for (const write of intendedWrites) expect(h.files.has(write.path)).toBe(false);
+		expect(h.files.has(METADATA_PENDING)).toBe(false);
+	}
 });

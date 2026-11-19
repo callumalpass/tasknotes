@@ -60,12 +60,12 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to weekly view
         const weekButton = page.locator(
-          '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+          '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
         );
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
@@ -73,15 +73,15 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         }
 
         // Verify we're in the weekly time grid view
-        const timeGridView = page.locator('.fc-timeGridWeek-view, .fc-timegrid');
+        const timeGridView = page.locator('.tnc--week, .tnc-tg');
         await expect(timeGridView).toBeVisible({ timeout: 5000 });
 
         // Check for the all-day slot (header area)
-        const allDaySlot = page.locator('.fc-daygrid-body, .fc-col-header, .fc-timegrid-axis');
+        const allDaySlot = page.locator('.tnc-tg-allday');
         const hasAllDaySlot = await allDaySlot.first().isVisible({ timeout: 2000 }).catch(() => false);
 
         // Check for the hourly time grid (slot lanes)
-        const timeSlots = page.locator('.fc-timegrid-slots, .fc-timegrid-slot');
+        const timeSlots = page.locator('.tnc-tg-body');
         const hasTimeSlots = await timeSlots.first().isVisible({ timeout: 2000 }).catch(() => false);
 
         // Currently both should be visible
@@ -94,7 +94,7 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         // Look for a toggle in the calendar header/toolbar
         const hideTimeSlotsToggle = page.locator(
           'button[aria-label*="time"], button[aria-label*="hourly"], ' +
-            '.fc-toolbar button:has-text("All Day"), .fc-toolbar button:has-text("Hide Hours"), ' +
+            '.tnc-toolbar button:has-text("All Day"), .tnc-toolbar button:has-text("Hide Hours"), ' +
             '[data-testid="hide-hourly-toggle"], .calendar-toggle-hourly'
         );
 
@@ -109,7 +109,7 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
           await page.waitForTimeout(500);
 
           // Time slots should now be hidden
-          const timeSlotsAfterToggle = page.locator('.fc-timegrid-slots');
+          const timeSlotsAfterToggle = page.locator('.tnc-tg-body');
           const timeSlotsVisible = await timeSlotsAfterToggle
             .isVisible({ timeout: 1000 })
             .catch(() => false);
@@ -194,12 +194,12 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to weekly view
         const weekButton = page.locator(
-          '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+          '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
         );
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
@@ -221,7 +221,7 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         // In all-day only mode, verify interactions still work
 
         // 1. Check that all-day slot accepts clicks for task creation
-        const allDayRow = page.locator('.fc-daygrid-day, .fc-day');
+        const allDayRow = page.locator('.tnc-tg-allday .tnc-allday-layer');
         const firstDay = allDayRow.first();
 
         if (await firstDay.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -241,13 +241,13 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         }
 
         // 2. Check that existing tasks in all-day slot are draggable
-        const allDayEvents = page.locator('.fc-daygrid-event, .fc-event');
+        const allDayEvents = page.locator('.tnc-dg .tnc-item, .tnc-item');
         const eventCount = await allDayEvents.count();
 
         if (eventCount > 0) {
           const firstEvent = allDayEvents.first();
           const isDraggable = await firstEvent.evaluate((el) => {
-            return el.classList.contains('fc-event-draggable') || el.getAttribute('draggable') === 'true';
+            return el.classList.contains('is-draggable') || el.getAttribute('draggable') === 'true';
           });
 
           // Events should remain draggable in all-day only mode
@@ -281,11 +281,11 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Find calendar events
-        const calendarEvents = page.locator('.fc-event');
+        const calendarEvents = page.locator('.tnc-item');
         const eventCount = await calendarEvents.count();
 
         if (eventCount >= 2) {
@@ -340,15 +340,15 @@ test.describe('Issue #1201: Calendar View Enhancements', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Look for grouping controls in the calendar toolbar
         const groupByControl = page.locator(
-          '.fc-toolbar [data-testid="group-by"], ' +
+          '.tnc-toolbar [data-testid="group-by"], ' +
             '.calendar-group-by, ' +
             'button:has-text("Group"), ' +
-            '.fc-toolbar select:has-text("Group")'
+            '.tnc-toolbar select:has-text("Group")'
         );
 
         const hasGroupByControl = await groupByControl.isVisible({ timeout: 2000 }).catch(() => false);

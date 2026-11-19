@@ -31,7 +31,7 @@ describe("taskModalTitleInput", () => {
 		expect(input.value).toBe("Initial title");
 		expect(input.rows).toBe(1);
 		expect(input.spellcheck).toBe(true);
-		expect(input.getAttribute("aria-label")).toBe("Task title");
+		expect(input.getAttribute("aria-label")).toBe("Title");
 		expect(container.querySelector("textarea")).toBe(input);
 		expect(attachFocusScrollGuard).toHaveBeenCalledWith(input);
 	});

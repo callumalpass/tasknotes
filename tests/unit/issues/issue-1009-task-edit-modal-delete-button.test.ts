@@ -1,6 +1,7 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TaskEditModal } from '../../../src/modals/TaskEditModal';
 import { showConfirmationModal } from '../../../src/modals/ConfirmationModal';
-import { MockObsidian, Notice } from '../../helpers/obsidian-runtime';
+import { createOriginalApp } from '../../helpers/obsidian-runtime';
 import { makeContainer } from '../../helpers/dom-helpers';
 import type { App } from 'obsidian';
 import type { TaskInfo } from '../../../src/types';
@@ -22,35 +23,13 @@ function createMockApp(mockApp: unknown): App {
 	return mockApp as App;
 }
 
-function translate(key: string, params?: Record<string, string | number>): string {
-	const translations: Record<string, string> = {
-		'common.cancel': 'Cancel',
-		'contextMenus.task.delete': 'Delete',
-		'contextMenus.task.deleteTitle': 'Delete file',
-		'contextMenus.task.deleteMessage': 'Are you sure you want to delete "{name}"?',
-		'contextMenus.task.deleteConfirm': 'Delete',
-		'modals.taskEdit.deleteConfirmation.title': 'Delete task',
-		'modals.taskEdit.deleteConfirmation.message':
-			'Are you sure you want to delete "{title}"? This moves the task note to Obsidian trash.',
-		'modals.taskEdit.deleteConfirmation.confirm': 'Delete task',
-		'modals.taskEdit.buttons.archive': 'Archive',
-		'modals.taskEdit.buttons.unarchive': 'Unarchive',
-		'modals.taskEdit.notices.deleteSuccess': 'Task "{title}" deleted successfully',
-		'modals.taskEdit.notices.deleteFailure': 'Failed to delete task: {message}',
-		'modals.task.buttons.openNote': 'Open note',
-		'modals.task.buttons.save': 'Save',
-	};
-	const template = translations[key] || key;
-	return template.replace(/\{(\w+)\}/g, (_match, name: string) =>
-		params?.[name] !== undefined ? String(params[name]) : `{${name}}`
-	);
-}
+function translate(...args: Parameters<typeof mockEnglishText>): string { return mockEnglishText(...args); }
 
 function createMockPlugin(app: App) {
 	return {
 		app,
 		i18n: {
-			translate: jest.fn(translate),
+			translate: mockObserveTranslation(),
 		},
 		settings: {
 			enableModalSplitLayout: false,
@@ -91,6 +70,13 @@ function createTask(): TaskInfo {
 	} as TaskInfo;
 }
 
+function chooseDelete(modal: TaskEditModal): void {
+	(modal as any)
+		.getOverflowActions()
+		.find((action: { warning?: boolean }) => action.warning)
+		.onClick();
+}
+
 function flushPromises(): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, 0));
 }
@@ -104,8 +90,7 @@ describe('Issue #1009 - Edit Task modal delete action', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
-		MockObsidian.reset();
-		app = createMockApp(MockObsidian.createMockApp());
+		app = createMockApp(createOriginalApp({ 'TaskNotes/Tasks/delete-me.md': '---\ntitle: Delete me\n---\n' }));
 		plugin = createMockPlugin(app);
 		task = createTask();
 		modal = new TaskEditModal(app, plugin as any, { task });
@@ -115,46 +100,14 @@ describe('Issue #1009 - Edit Task modal delete action', () => {
 			.createActionButtons(container);
 	});
 
-	it('adds a delete button to the edit modal action bar', () => {
-		const deleteButton = container.querySelector<HTMLButtonElement>(
-			'.tn-task-modal__delete-button'
-		);
-
-		expect(deleteButton).not.toBeNull();
-		expect(deleteButton?.textContent).toBe('Delete');
-		expect(deleteButton?.classList.contains('mod-warning')).toBe(false);
-	});
-
-	it('confirms before deleting the task file from the modal', async () => {
-		mockShowConfirmationModal.mockResolvedValue(true);
-
-		container
-			.querySelector<HTMLButtonElement>('.tn-task-modal__delete-button')!
-			.click();
+	it('deletes the task straight away, offers Undo and closes the modal', async () => {
+		(app.vault as unknown as { readBinary: jest.Mock }).readBinary = jest.fn(async () => new ArrayBuffer(0));
+		chooseDelete(modal);
 		await flushPromises();
 
-		expect(mockShowConfirmationModal).toHaveBeenCalledWith(app, {
-			title: 'Delete task',
-			message:
-				'Are you sure you want to delete "Delete me"? This moves the task note to Obsidian trash.',
-			confirmText: 'Delete task',
-			cancelText: 'Cancel',
-			isDestructive: true,
-		});
+		expect(mockShowConfirmationModal).not.toHaveBeenCalled();
 		expect(plugin.taskService.deleteTask).toHaveBeenCalledWith(task);
-		expect(Notice).toHaveBeenCalledWith('Task "Delete me" deleted successfully');
+		expect(document.body.textContent).toContain('1 task deleted · Delete me');
 		expect(modal.forceClose).toHaveBeenCalled();
-	});
-
-	it('does not delete when the confirmation is cancelled', async () => {
-		mockShowConfirmationModal.mockResolvedValue(false);
-
-		container
-			.querySelector<HTMLButtonElement>('.tn-task-modal__delete-button')!
-			.click();
-		await flushPromises();
-
-		expect(plugin.taskService.deleteTask).not.toHaveBeenCalled();
-		expect(modal.forceClose).not.toHaveBeenCalled();
 	});
 });

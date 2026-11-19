@@ -90,7 +90,7 @@ test.describe('Issue #1034: Embedded Calendar unusual proportions', () => {
     // Measure the dimensions of the embedded calendar
     const dimensions = await page.evaluate(() => {
       const embed = document.querySelector('.internal-embed');
-      const calendar = embed?.querySelector('.advanced-calendar-view, .tn-base-calendar-view, .fc');
+      const calendar = embed?.querySelector('.advanced-calendar-view, .tn-base-calendar-view, .tnc');
 
       if (embed && calendar) {
         const embedRect = embed.getBoundingClientRect();
@@ -286,7 +286,7 @@ test.describe('Issue #1034: Embedded Calendar unusual proportions', () => {
     // Measure embedded calendar proportions
     const embeddedMetrics = await page.evaluate(() => {
       const embed = document.querySelector('.internal-embed');
-      const calendar = embed?.querySelector('.advanced-calendar-view, .tn-base-calendar-view, .fc');
+      const calendar = embed?.querySelector('.advanced-calendar-view, .tn-base-calendar-view, .tnc');
 
       if (calendar) {
         const rect = calendar.getBoundingClientRect();

@@ -15,7 +15,7 @@ TaskNotes keeps a storage title and a filename-safe title separate. When **Store
 
 For existing tasks, the **Quick actions for current task** command opens a keyboard-searchable action palette. It includes status, priority, time-tracking, archive, edit, and date actions, including built-in due and scheduled date presets such as today, tomorrow, this weekend, next week, and next month.
 
-TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."
+TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority." The form updates as you type: removing text undoes what it set, and a field you change by hand keeps your value.
 
 In most workflows, users combine both approaches: fast capture with natural language, then occasional structured edits in the modal when more precision is needed.
 
@@ -29,6 +29,12 @@ Repeated project prefixes remove only the first configured prefix: `++personal` 
 
 Italian relative days `oggi`, `domani`, and `dopodomani` use the local calendar date. Bare words follow the default date setting; `entro oggi` and `per domani` set Due, while `programmato per oggi` sets Scheduled. This is partial Italian date support, not a complete Italian date grammar. Links, metadata, escaped words, and details containing these words are not converted to dates.
 
+### Highlighting in Natural Language Input
+
+As you type, the parts of the input that set a value are highlighted in the natural language field: dates (blue), recurrence (purple), time estimates (orange), priority (red), status (green), and tags, contexts, projects and custom fields (accent color). Text that is not highlighted becomes the title. A highlighted phrase can still stay in the title, as in "weekly review" or "Monday's meeting", where the phrase both names the task and sets the value.
+
+To change the colors, target the `tn-nlp-highlight` class, or one kind such as `tn-nlp-highlight--due`, in a CSS snippet.
+
 ### Auto-Suggestions in Natural Language Input
 
 The natural language input field includes auto-suggestion functionality that activates when typing specific trigger characters:
@@ -36,7 +42,7 @@ The natural language input field includes auto-suggestion functionality that act
 - **@** - Shows available contexts from existing tasks
 - **#** - Shows available tags from existing tasks
 - **+** - Shows files from your vault as project suggestions
-- **\*** - Shows available status options (configurable trigger in Settings → Features)
+- **\*** - Shows available status options (configurable trigger in Settings → TaskNotes → Properties → Status)
 
 In task creation and edit fields, focusing the tags or contexts input also opens the available suggestions immediately, so you can pick from the current vocabulary without typing a first character.
 
@@ -55,14 +61,14 @@ Project suggestions search across:
 - File names (basename without extension)
 - Frontmatter titles (using your configured field mapping)
 - Frontmatter aliases
-- Optional filtering by required tags, folders, and a specific frontmatter property/value defined in Settings → Appearance & UI → Project Autosuggest
+- Optional filtering by required tags, folders, and a specific frontmatter property/value defined in Settings → TaskNotes → Properties → Projects → Autosuggestion filters (advanced)
 
 Selecting a project suggestion inserts it as `+[[filename]]`, creating a wikilink to the file while maintaining the `+` project marker that the natural language parser recognizes.
 
 
 #### Enhanced Project Auto‑suggester (configurable cards)
 
-Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → Appearance & UI → Project Autosuggest.
+Project suggestions can display configurable multi‑row cards and support smarter search. Configure up to 3 rows using a simple token syntax in Settings → TaskNotes → Properties → Projects.
 
 - Properties: file.basename, file.name, file.path, file.parent, title, aliases, and any frontmatter key
 - Flags:
@@ -80,7 +86,7 @@ Search behavior
 
 - Defaults: + search always includes file basename, title (via your field mapping), and aliases
 - |s flag: add more searchable fields on top of the defaults (e.g., file.path or a custom frontmatter key like customer)
-- Fuzzy: optional fuzzy matching can be enabled in settings for broader, multi‑word matches
+- Fuzzy: the project picker always matches fuzzily, so partial and multi‑word queries find projects
 
 Performance tips
 
@@ -102,7 +108,7 @@ When typing the status trigger character (default `*`) in the natural language i
 
 Status suggestions allow quick selection of statuses when creating tasks. For example, typing `*in` shows "In Progress" as a suggestion if that's one of your configured statuses.
 
-Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → Task Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps.
+Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → TaskNotes → Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps. When **Reset status after each occurrence** is on and the first status marked **Completed** has a **Next status**, recurring tasks follow the same cycle and complete the occurrence when it reaches a completed status. Otherwise, a click completes the occurrence directly. See [Recurring Tasks](recurring-tasks.md#completion-tracking).
 
 Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 
@@ -113,6 +119,12 @@ Tasks store their data in YAML frontmatter with properties for status, priority,
 This frontmatter-first design keeps task data editable and portable while supporting consistent behavior across views and widgets.
 
 For property types and examples, see [Core Concepts](../core-concepts.md#yaml-frontmatter). For configuration options, see [Task Properties Settings](../settings/task-properties.md).
+
+### Task Dates
+
+Scheduled and due dates can be date-only or include a time. The **+1 day**, **-1 day**, **+1 week**, and **-1 week** actions in card date menus and task context menus shift the existing date while keeping its local time, including across daylight-saving changes. Date-only values stay date-only; for example, `2026-05-16T21:37` becomes `2026-05-17T21:37` with **+1 day**.
+
+Absolute presets such as **Today** and **Tomorrow** set a date without a time. Use **Pick date & time…** to choose a specific date and time.
 
 ## Projects
 
@@ -169,13 +181,43 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ![Task context menu](../assets/feature-task-context-menu.png)
 
+## Attachments
+
+Attachments are files that belong to a task, such as a receipt, a scan or a PDF. They are stored as an ordered list of links in the task's `attachments` frontmatter property:
+
+```yaml
+attachments:
+  - "[[Files/receipt.png]]"
+  - "[[Files/invoice.pdf]]"
+```
+
+Each entry links to a file in the vault by its full path. The property name follows the `attachments` field mapping, and the field can be used in Bases filters, formulas and columns like other list properties.
+
+### Managing attachments in the task modals
+
+The **Attachments** field in the task creation and edit modals shows the task's attachments in order. From there you can:
+
+- **Add from vault** to pick an existing file with fuzzy search. The picker only selects files; it does not create new ones.
+- **Import file** to choose a file from your device, or drag files onto the field. Imported files are copied into the vault only when you save the task, into the folder set by Obsidian's **Default location for new attachments** setting (relative to the task note). If you cancel or discard the modal, nothing is written.
+- Select a file name to open it in a new tab.
+- Use the arrow buttons to change the order.
+- Use the remove button to unlink a file from the task. Removing an attachment never deletes the file from the vault; delete it from Obsidian's file explorer if you no longer need it.
+
+Files need a file extension, and their names can't contain `[`, `]`, `#` or `|`, because those characters would break the link. Rename such a file before attaching it. If saving fails, files that save had already copied in are moved to the trash, and they stay in the list waiting to be imported again.
+
+All controls are buttons with labels, so they can be reached with the keyboard and used on touch devices. You can hide the field, or show it only in one of the modals, in [Modal Fields Settings](../settings/modal-fields.md).
+
+### Attachment indicators
+
+Task cards show a paperclip with the number of attachments next to their other badges. Calendar views show a paperclip after the title of task events, and the event tooltip includes the attachment count.
+
 ## Automation
 
 ### Auto-Archiving
 
 TaskNotes can automatically archive tasks when they transition into a status that has auto-archiving enabled. This keeps completed work out of your active lists without requiring manual cleanup.
 
-Configure auto-archiving per status from **Settings → Task Properties → Task Statuses**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1–1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
+Configure auto-archiving per status from **Settings → TaskNotes → Properties → Status**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1–1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
 
 The auto-archive queue runs in the background and persists across plugin restarts. If TaskNotes was closed while an archive was pending, the task will be archived shortly after the plugin loads again as long as it still matches the configured status.
 
@@ -201,13 +243,32 @@ You can record a task's completion — and choose the date it is recorded agains
 
 An action is disabled when the date it needs is not set — for example *Completed on schedule* on a task with no scheduled date — rather than silently falling back to another date. Recurring tasks also get a **Skip instance** action alongside these.
 
-By default the actions are grouped under a single **Mark complete or skip** entry (**Mark complete** for non-recurring tasks). To show them directly in the menu instead — set off by dividers — turn off **Settings → Appearance & UI → Task cards → Group complete and skip actions in a submenu**.
+By default the actions are grouped under a single **Mark complete or skip** entry (**Mark complete** for non-recurring tasks). To show them directly in the menu instead — set off by dividers — turn off **Settings → TaskNotes → Appearance & interaction → Task cards → Group complete and skip actions in a submenu**.
 
 ![Completion actions grouped under a submenu (default)](../assets/feature-completion-date-actions.png)
 
 With the submenu grouping turned off, the same actions appear directly in the menu:
 
 ![Completion actions shown flat in the menu](../assets/feature-completion-date-actions-flat.png)
+
+## Repeating a Completed Task
+
+For tasks that come back irregularly, **TaskNotes: Repeat current task** reuses the same note instead of creating a new one. Open the completed task's note and run the command from the command palette.
+
+A confirmation appears **before any changes**. Cancel or dismiss it to leave the note unchanged. Confirming:
+
+1. Unarchives the task, moving it back to the task folder if **Move archived tasks to folder** is enabled.
+2. Saves its completion date in `complete_instances`, returns it to the default status and clears `completedDate`.
+3. Resets body checkboxes if **Reset checkboxes on recurrence** is enabled.
+4. Opens the task editor to choose new scheduled and due dates.
+
+The previous scheduled and due dates stay unchanged until you save the editor. **Cancelling that editor does not undo the confirmed repeat.**
+
+The history stores **distinct completion dates**, not every completion: repeating a task completed twice on the same date adds that date only once. A completed task without `completedDate` is reopened without adding a history entry. This history is available in frontmatter and Bases; the editor's completions calendar remains specific to recurring tasks.
+
+Recurring tasks and materialized occurrence notes cannot be repeated with this command; they already have an occurrence workflow.
+
+If a step fails, earlier changes are kept, not rolled back, and later steps are not attempted. Check the note before retrying: for example, reopening can fail after unarchiving, or a checkbox reset can fail after the task has reopened and saved its history. Archive moves follow the existing best-effort behavior: if the move fails, a notice appears and the task is still unarchived and repeated at its existing path.
 
 ## Recurring Tasks
 

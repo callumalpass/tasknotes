@@ -60,7 +60,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Ensure we're showing both due tasks and recurring tasks
@@ -97,16 +97,16 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         // Look for due date events in the calendar
         // Due events should have eventType: "due" and title prefixed with "DUE: "
         const dueEvents = page.locator(
-          '.fc-event[data-event-type="due"], ' +
-            '.fc-event:has-text("DUE:"), ' +
-            '.fc-event.tasknotes-due-event'
+          '.tnc-item[data-event-type="due"], ' +
+            '.tnc-item:has-text("DUE:"), ' +
+            '.tnc-item.tasknotes-due-event'
         );
 
         // Look for recurring instance events
         const recurringEvents = page.locator(
-          '.fc-event[data-event-type="recurring"], ' +
-            '.fc-event.tasknotes-recurring-event, ' +
-            '.fc-event.recurring-instance'
+          '.tnc-item[data-event-type="recurring"], ' +
+            '.tnc-item.tasknotes-recurring-event, ' +
+            '.tnc-item.recurring-instance'
         );
 
         // Both types should be visible if there are recurring tasks with due dates
@@ -123,7 +123,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
 
         // Check for a specific pattern: a recurring task that has both
         // recurring instances AND a due date event
-        const allEvents = page.locator('.fc-event');
+        const allEvents = page.locator('.tnc-item');
         const eventCount = await allEvents.count();
 
         if (eventCount > 0) {
@@ -169,7 +169,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Configure: show due = ON, show recurring = OFF
@@ -207,16 +207,16 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
 
         // Due events should be visible
         const dueEvents = page.locator(
-          '.fc-event[data-event-type="due"], ' +
-            '.fc-event:has-text("DUE:"), ' +
-            '.fc-event.tasknotes-due-event'
+          '.tnc-item[data-event-type="due"], ' +
+            '.tnc-item:has-text("DUE:"), ' +
+            '.tnc-item.tasknotes-due-event'
         );
 
         // Recurring instances should NOT be visible
         const recurringInstances = page.locator(
-          '.fc-event[data-event-type="recurring"], ' +
-            '.fc-event.tasknotes-recurring-event, ' +
-            '.fc-event.recurring-instance'
+          '.tnc-item[data-event-type="recurring"], ' +
+            '.tnc-item.tasknotes-recurring-event, ' +
+            '.tnc-item.recurring-instance'
         );
 
         const dueEventCount = await dueEvents.count();
@@ -343,9 +343,9 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
 
         // Look for property-based event indicators
         const propertyBasedEvents = page.locator(
-          '.fc-event[data-event-type="property-based"], ' +
-            '.fc-event.property-based-event, ' +
-            '.fc-event[data-source="property"]'
+          '.tnc-item[data-event-type="property-based"], ' +
+            '.tnc-item.property-based-event, ' +
+            '.tnc-item[data-source="property"]'
         );
 
         // Check if any property-based events are TaskNotes tasks
@@ -457,7 +457,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Enable "show due" toggle
@@ -502,7 +502,7 @@ test.describe('Issue #1150: Calendar due dates and custom date properties', () =
         await page.waitForTimeout(500);
 
         // Now only due date events should be visible
-        const allEvents = page.locator('.fc-event');
+        const allEvents = page.locator('.tnc-item');
         const eventCount = await allEvents.count();
 
         // Each visible event should be a due date event

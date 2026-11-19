@@ -3,6 +3,29 @@ import { webcrypto } from "node:crypto";
 import { TaskNotesInteropPublisher } from "../../../src/api/tasknotes-interop";
 
 describe("TaskNotes interoperability publisher", () => {
+	it.each([
+		{ apiVersion: undefined, enabled: true },
+		{ apiVersion: 2, enabled: true },
+		{ apiVersion: 1, enabled: false },
+	])("ignores an unavailable bridge: %j", async ({ apiVersion, enabled }) => {
+		const connect = jest.fn();
+		const getPlugin = jest.fn(() => ({
+			api: {
+				apiVersion,
+				interop: { profileVersion: "0.1", connect },
+				getInteropStatus: () => ({ enabled, profileVersion: "0.1" }),
+			},
+		}));
+		const publisher = new TaskNotesInteropPublisher({
+			app: { plugins: { getPlugin } },
+		} as never, {} as never);
+		publisher.connect();
+		publisher.connect();
+		await publisher.dispose();
+		expect(getPlugin).toHaveBeenCalledWith("mdbase-sync");
+		expect(connect).not.toHaveBeenCalled();
+	});
+
 	it("publishes a minimal contract event with source identity and correlation", async () => {
 		globalThis.structuredClone ??= ((value) =>
 			JSON.parse(JSON.stringify(value)) as unknown) as typeof structuredClone;
@@ -41,20 +64,31 @@ describe("TaskNotes interoperability publisher", () => {
 		};
 		const mdbase = {
 			api: {
-				interop: { connect: jest.fn((): InteropClient => sourceClient) },
-				getInteropStatus: () => ({ enabled: true }),
+				apiVersion: 1,
+				interop: { profileVersion: "0.1", connect: jest.fn((): InteropClient => sourceClient) },
+				getInteropStatus: () => ({ enabled: true, profileVersion: "0.1" }),
 			},
 		};
+		let installed = false;
+		let enabled = false;
+		mdbase.api.getInteropStatus = () => ({ enabled, profileVersion: "0.1" });
 		const plugin = {
 			app: {
 				plugins: {
-					getPlugin: (id: string) => id === "mdbase-obsidian" ? mdbase : null,
+					getPlugin: (id: string) => installed && id === "mdbase-sync" ? mdbase : null,
 				},
 			},
 		};
 		const publisher = new TaskNotesInteropPublisher(plugin as never, api as never);
 		publisher.connect();
+		installed = true;
+		publisher.connect();
+		expect(mdbase.api.interop.connect).not.toHaveBeenCalled();
+		enabled = true;
+		publisher.connect();
+		publisher.connect();
 		await eventually(() => expect(typeof completedHandler).toBe("function"));
+		expect(mdbase.api.interop.connect).toHaveBeenCalledTimes(1);
 
 		completedHandler?.({
 			event: "task.completed",

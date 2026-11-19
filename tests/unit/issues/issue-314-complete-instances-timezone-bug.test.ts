@@ -23,6 +23,7 @@ describe('Issue #314: complete_instances timezone bug reproduction', () => {
     mockPlugin = PluginFactory.createMockPlugin({
       statusManager: {
         isCompletedStatus: jest.fn((status) => status === 'done'),
+        getConfiguredStatusAfterCompletion: jest.fn(),
         getCompletedStatuses: jest.fn(() => ['done', 'completed'])
       },
       getActiveTimeSession: jest.fn(),

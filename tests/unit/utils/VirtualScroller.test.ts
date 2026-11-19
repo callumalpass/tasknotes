@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { VirtualScroller } from "../../../src/utils/VirtualScroller";
 
 type TestItem = {
@@ -55,6 +57,59 @@ function renderedKeys(container: HTMLElement): string[] {
 }
 
 describe("VirtualScroller", () => {
+	it("defers a pinned item's invalidation until the interaction ends", () => {
+		const { container, scroller } = createTestScroller([{ id: "a", label: "A" }]);
+		const source = container.querySelector('[data-key="a"]');
+		scroller.setPinnedItemKeys(["a"]);
+		scroller.invalidateItem("a");
+		expect(container.querySelector('[data-key="a"]')).toBe(source);
+		scroller.setPinnedItemKeys([]);
+		expect(container.querySelector('[data-key="a"]')).not.toBe(source);
+		scroller.destroy();
+	});
+
+	it("keeps pinned drag sources connected outside the visible range and restores their layout", () => {
+		const stylesheet = document.createElement("style");
+		stylesheet.textContent = readFileSync(resolve(__dirname, "../../../styles/static-style-utilities.css"), "utf8");
+		document.head.appendChild(stylesheet);
+		const container = document.createElement("div");
+		container.style.overflowY = "auto";
+		Object.defineProperty(container, "clientHeight", { value: 40 });
+		document.body.appendChild(container);
+		const { scroller } = createTestScrollerWithContainer(container,
+			Array.from({ length: 30 }, (_, index) => ({ id: String(index), label: `Item ${index}` })));
+		const source = container.querySelector<HTMLElement>('[data-key="0"]')!;
+		source.style.position = "relative";
+		source.style.width = "295px";
+		scroller.setPinnedItemKeys(["0"]);
+		container.scrollTop = 240;
+		scroller.recalculate();
+		expect(source.isConnected).toBe(true);
+		expect(source.classList.contains("virtual-scroller__pinned")).toBe(true);
+		expect(source.style.position).toBe("");
+		expect(getComputedStyle(source).position).toBe("absolute");
+		expect(source.style.width).toBe("295px");
+		expect(parseFloat(source.style.top) + scroller.getState().offsetY).toBe(0);
+		expect(renderedKeys(container)).toContain("12");
+		container.scrollTop = 0;
+		scroller.recalculate();
+		expect(container.querySelector('[data-key="0"]')).toBe(source);
+		expect(source.classList.contains("virtual-scroller__pinned")).toBe(false);
+		expect(source.style.position).toBe("relative");
+		expect(getComputedStyle(source).position).toBe("relative");
+		expect(source.style.top).toBe("");
+		expect(source.style.width).toBe("295px");
+		container.scrollTop = 240;
+		scroller.recalculate();
+		scroller.setPinnedItemKeys([]);
+		expect(source.isConnected).toBe(false);
+		expect(source.classList.contains("virtual-scroller__pinned")).toBe(false);
+		expect(source.style.position).toBe("relative");
+		scroller.destroy();
+		container.remove();
+		stylesheet.remove();
+	});
+
 	it("includes container bottom padding in the spacer height", () => {
 		const container = document.createElement("div");
 		container.style.overflowY = "auto";
@@ -316,5 +371,45 @@ describe("VirtualScroller", () => {
 			expect(scroller.ensureIndexRendered(-1)).toBeNull();
 			expect(scroller.ensureIndexRendered(5)).toBeNull();
 		});
+	});
+});
+
+describe("VirtualScroller measurement", () => {
+	it("fills the viewport when measured rows are shorter than the estimate", () => {
+		const frames: FrameRequestCallback[] = [];
+		const raf = jest
+			.spyOn(window, "requestAnimationFrame")
+			.mockImplementation((callback) => frames.push(callback));
+		const flushFrames = () => {
+			for (let i = 0; i < 10 && frames.length > 0; i++) {
+				frames.splice(0).forEach((callback) => callback(0));
+			}
+		};
+
+		const container = document.createElement("div");
+		container.style.overflowY = "auto";
+		Object.defineProperty(container, "clientHeight", { value: 200 });
+		const items = Array.from({ length: 50 }, (_, i) => ({ id: `${i}`, label: `${i}` }));
+		const scroller = new VirtualScroller<TestItem>({
+			container,
+			items,
+			itemHeight: 50,
+			overscan: 0,
+			renderItem: (item) => {
+				const element = document.createElement("div");
+				element.dataset.key = item.id;
+				element.getBoundingClientRect = () => ({ height: 20 }) as DOMRect;
+				return element;
+			},
+			getItemKey: (item) => item.id,
+		});
+
+		expect(renderedKeys(container).length).toBeLessThan(10);
+		flushFrames();
+		// 200px of 20px rows: rows 0-10 reach the bottom of the viewport.
+		expect(renderedKeys(container).length).toBeGreaterThanOrEqual(10);
+
+		scroller.destroy();
+		raf.mockRestore();
 	});
 });

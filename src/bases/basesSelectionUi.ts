@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { createElementInDocument } from "../utils/documentDom";
 
 export type BasesSelectionVisualState = {
@@ -150,8 +152,9 @@ export function updateBasesSelectionIndicator({
 		event.preventDefault();
 		onClearSelection();
 	};
-	indicator.textContent = `${count} selected`;
-	indicator.setAttribute("aria-label", `${count} selected. Activate to clear selection.`);
+	indicator.textContent = uiText(msg({ message: "{count, number} selected", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count });
+	indicator.createSpan({ text: ` · ${uiText(msg({ message: "Clear selection", context: "interaction shortcut" }))}` });
+	indicator.setAttribute("aria-label", uiText(msg({ message: "{count, number} selected. Activate to clear selection.", context: "bases/basesSelectionUi: updateBasesSelectionIndicator display" }), { count: count }));
 	setDisplayUtility(indicator, "tn-static-display-block-2a1b75c9");
 	return indicator;
 }
@@ -165,12 +168,10 @@ export function handleBasesSelectionClick({
 }: SelectionClickOptions): boolean {
 	if (!selectionService) return false;
 
-	if (
-		!selectionService.isSelectionModeActive() &&
-		!event.shiftKey &&
-		!event.ctrlKey &&
-		!event.metaKey
-	) {
+	// Outside a selection, Ctrl/Cmd+click keeps Obsidian's meaning (open in a
+	// new tab); Shift+click starts a selection. Inside one, Ctrl/Cmd+click and
+	// a plain click toggle cards.
+	if (!selectionService.isSelectionModeActive() && !event.shiftKey) {
 		return false;
 	}
 
@@ -273,7 +274,7 @@ function createSelectionIndicator(rootElement: HTMLElement): HTMLElement {
 	indicator.className = "tn-selection-indicator";
 	indicator.setAttribute("role", "button");
 	indicator.tabIndex = 0;
-	rootElement.appendChild(indicator);
+	rootElement.prepend(indicator);
 	return indicator;
 }
 

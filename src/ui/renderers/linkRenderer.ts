@@ -1,8 +1,16 @@
+import { uiData } from "../../i18n/dataText";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Renderer utilities check created elements before attaching interactions. */
 // Link and tag rendering utilities for UI components
 
 import { App, TFile, Notice } from "obsidian";
-import { parseLinkToPath } from "../../utils/linkUtils";
+import {
+	parseLinkTarget,
+	parseLinkToPath,
+	parseMarkdownLinkTarget,
+	parseWikilinkTarget,
+} from "../../utils/linkUtils";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/Renderers/LinkRenderer" });
@@ -14,6 +22,7 @@ export type LinkNavigateHandler = (
 
 /** Minimal services required to render internal links (DI-friendly) */
 export interface LinkServices {
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	metadataCache: App["metadataCache"];
 	workspace: App["workspace"];
 	/**
@@ -61,6 +70,8 @@ export function appendInternalLink(
 		hoverSource?: string;
 		showErrorNotices?: boolean;
 		onPrimaryNavigate?: LinkNavigateHandler;
+		/** Heading or block subpath to navigate to (e.g. "#Heading", "#^block"). */
+		subpath?: string;
 	} = {}
 ): void {
 	const {
@@ -71,7 +82,30 @@ export function appendInternalLink(
 	} = options;
 
 	const sourcePath = deps.sourcePath ?? "";
-	const normalizedPath = parseLinkToPath(filePath);
+	const parsedTarget = parseLinkTarget(filePath);
+	const subpath = options.subpath ?? parsedTarget.subpath;
+	// A link with only a subpath ("#^block") points into the source note itself.
+	const normalizedPath = parsedTarget.subpath ? parsedTarget.path : parseLinkToPath(filePath);
+	const linkText = `${normalizedPath}${subpath}`;
+
+	const resolveLinkedFile = () => {
+		if (!normalizedPath) {
+			return sourcePath ? deps.metadataCache.getFirstLinkpathDest(sourcePath, "") : null;
+		}
+		return (
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, "")
+		);
+	};
+
+	const openLinkedFile = async (file: TFile, newLeaf: boolean): Promise<void> => {
+		const leaf = deps.workspace.getLeaf(newLeaf);
+		if (subpath) {
+			await leaf.openFile(file, { eState: { subpath } });
+		} else {
+			await leaf.openFile(file);
+		}
+	};
 
 	const linkEl = container.createEl("a", {
 		cls: cssClass,
@@ -90,7 +124,7 @@ export function appendInternalLink(
 			try {
 				if (e.ctrlKey || e.metaKey) {
 					// Ctrl/Cmd+Click opens in new tab
-					void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+					void deps.workspace.openLinkText(linkText, sourcePath, true);
 					return;
 				}
 
@@ -101,13 +135,13 @@ export function appendInternalLink(
 					}
 				}
 
-				const file =
-					deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
-					deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+				const file = resolveLinkedFile();
 				if (file instanceof TFile) {
-					await deps.workspace.getLeaf(false).openFile(file);
+					await openLinkedFile(file, false);
 				} else if (showErrorNotices) {
-					new Notice(`Note "${displayText}" not found`);
+					new Notice(
+						deps.translate(msg({ message: "Note “{title}” not found", context: "notices.interface.noteMissing" }), { title: displayText })
+					);
 				}
 			} catch (error) {
 				tasknotesLogger.error("[TaskNotes] Error opening internal link:", {
@@ -117,7 +151,9 @@ export function appendInternalLink(
 					error: error,
 				});
 				if (showErrorNotices) {
-					new Notice(`Failed to open note "${displayText}"`);
+					new Notice(
+						deps.translate(msg({ message: "Failed to open note “{title}”", context: "notices.interface.noteOpenFailed" }), { title: displayText })
+					);
 				}
 			}
 		})();
@@ -130,11 +166,9 @@ export function appendInternalLink(
 			e.stopPropagation();
 			void (async () => {
 				try {
-					const file =
-						deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
-						deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+					const file = resolveLinkedFile();
 					if (file instanceof TFile) {
-						void deps.workspace.openLinkText(normalizedPath, sourcePath, true);
+						await openLinkedFile(file, true);
 					}
 				} catch (error) {
 					tasknotesLogger.error("[TaskNotes] Error opening internal link:", {
@@ -156,16 +190,14 @@ export function appendInternalLink(
 	});
 
 	linkEl.addEventListener("mouseover", (event) => {
-		const file =
-			deps.metadataCache.getFirstLinkpathDest(normalizedPath, sourcePath) ||
-			deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+		const file = resolveLinkedFile();
 		if (file instanceof TFile) {
 			const hoverEvent: HoverLinkEvent = {
 				event: event,
 				source: hoverSource,
 				hoverParent: container,
 				targetEl: linkEl,
-				linktext: normalizedPath,
+				linktext: linkText,
 				sourcePath: sourcePath || file.path,
 			};
 			deps.workspace.trigger("hover-link", hoverEvent);
@@ -199,25 +231,28 @@ export function renderTextWithLinks(
 
 		if (wikiInner) {
 			const content = wikiInner;
-			let filePath = content;
 			let displayText = content;
 			if (content.includes("|")) {
-				const [fp, alias] = content.split("|");
-				filePath = fp;
-				displayText = alias;
+				displayText = content.split("|")[1];
 			}
-			appendInternalLink(container, filePath, displayText, deps);
+			const target = parseWikilinkTarget(content);
+			appendInternalLink(container, target.path, uiData(displayText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
+				subpath: target.subpath,
+			});
 		} else if (mdText && mdHref) {
 			const href = String(mdHref).trim();
 			const disp = String(mdText).trim();
 			if (isExternalHref(href)) {
-				appendExternalLink(container, href, disp);
+				appendExternalLink(container, href, uiData(disp, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"));
 			} else {
-				appendInternalLink(container, href, disp, deps);
+				const target = parseMarkdownLinkTarget(href);
+				appendInternalLink(container, target.path, uiData(disp, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
+					subpath: target.subpath,
+				});
 			}
 		} else if (autolinkHref || bareHref) {
 			const href = String(autolinkHref || bareHref);
-			appendExternalLink(container, href, href);
+			appendExternalLink(container, href, uiData(href, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"));
 		} else {
 			container.appendChild(activeDocument.createTextNode(full));
 		}
@@ -338,15 +373,16 @@ function isMarkdownLink(text: string): boolean {
 /**
  * Parse a markdown link to extract display text and file path
  */
-function parseMarkdownLink(text: string): { displayText: string; filePath: string } | null {
+function parseMarkdownLink(
+	text: string
+): { displayText: string; filePath: string; subpath: string } | null {
 	const match = text.match(/^\[([^\]]*)\]\(([^)]+)\)$/);
 	if (!match) return null;
 
 	const displayText = match[1].trim();
-	const rawPath = match[2].trim();
-	const filePath = parseLinkToPath(rawPath);
+	const target = parseMarkdownLinkTarget(match[2]);
 
-	return { displayText, filePath };
+	return { displayText, filePath: target.path, subpath: target.subpath };
 }
 
 function resolveProjectDisplayText(
@@ -411,23 +447,22 @@ export function renderProjectLinks(
 		if (isWikilink(project)) {
 			// Parse the wikilink to separate path and display text
 			const linkContent = project.slice(2, -2);
-			let filePath = linkContent;
+			const target = parseWikilinkTarget(linkContent);
 			let displayText = linkContent;
 
 			// Handle alias syntax: [[path|alias]]
 			// Note: parseLinktext() doesn't preserve alias info, so we parse manually
 			if (linkContent.includes("|")) {
-				const parts = linkContent.split("|");
-				filePath = parts[0].trim();
-				displayText = parts[1].trim();
+				displayText = linkContent.split("|")[1].trim();
 			}
 
-			const resolvedText = resolveProjectDisplayText(filePath, displayText, deps);
-			appendInternalLink(container, filePath, resolvedText, deps, {
+			const resolvedText = resolveProjectDisplayText(target.path, displayText, deps);
+			appendInternalLink(container, target.path, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
 				cssClass: "task-card__project-link internal-link",
 				hoverSource: "tasknotes-project-link",
 				showErrorNotices: true,
 				onPrimaryNavigate: options.onPrimaryNavigate,
+				subpath: target.subpath,
 			});
 		} else if (isMarkdownLink(project)) {
 			// Parse markdown link: [text](path)
@@ -438,11 +473,12 @@ export function renderProjectLinks(
 					parsed.displayText,
 					deps
 				);
-				appendInternalLink(container, parsed.filePath, resolvedText, deps, {
+				appendInternalLink(container, parsed.filePath, uiData(resolvedText, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), deps, {
 					cssClass: "task-card__project-link internal-link",
 					hoverSource: "tasknotes-project-link",
 					showErrorNotices: true,
 					onPrimaryNavigate: options.onPrimaryNavigate,
+					subpath: parsed.subpath,
 				});
 			} else {
 				// Fallback to plain text if parsing fails
@@ -453,6 +489,54 @@ export function renderProjectLinks(
 			container.appendChild(activeDocument.createTextNode(project));
 		}
 	});
+}
+
+/**
+ * Render task attachments as links named by their file, such as "Quarterly report.pdf". An alias
+ * in the link wins; a Markdown note shows its name without the extension. The links share the
+ * project link chip styling, so each one fits, collapses or wraps on its own on a card.
+ */
+export function renderAttachmentLinks(
+	container: HTMLElement,
+	attachments: string[],
+	deps: LinkServices
+): void {
+	container.empty();
+	for (const raw of attachments) {
+		if (typeof raw !== "string" || raw.trim() === "") continue;
+		const attachment = raw.trim();
+		let path = attachment;
+		let alias = "";
+		let subpath: string | undefined;
+		if (isWikilink(attachment)) {
+			const inner = attachment.slice(2, -2);
+			const target = parseWikilinkTarget(inner);
+			path = target.path;
+			subpath = target.subpath;
+			if (inner.includes("|")) alias = inner.slice(inner.indexOf("|") + 1).trim();
+		} else if (isMarkdownLink(attachment)) {
+			const parsed = parseMarkdownLink(attachment);
+			if (!parsed) continue;
+			path = parsed.filePath;
+			subpath = parsed.subpath;
+			alias = parsed.displayText;
+		}
+		const normalizedPath = parseLinkToPath(path);
+		const file =
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, deps.sourcePath ?? "") ||
+			deps.metadataCache.getFirstLinkpathDest(normalizedPath, "");
+		const name =
+			alias ||
+			(file instanceof TFile
+				? file.extension === "md" ? file.basename : file.name
+				: normalizedPath.split("/").pop() || normalizedPath);
+		appendInternalLink(container, path, uiData(name, "Attachment file name or link alias; preserve user-authored link data"), deps, {
+			cssClass: "task-card__project-link task-card__attachment-link internal-link",
+			hoverSource: "tasknotes-attachment-link",
+			showErrorNotices: true,
+			subpath,
+		});
+	}
 }
 
 /**

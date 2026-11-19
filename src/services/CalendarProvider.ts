@@ -20,6 +20,8 @@ export interface ProviderCalendar {
 	description?: string;
 	backgroundColor?: string;
 	primary?: boolean;
+	/** False when events cannot be created or changed here. Unset means unknown. */
+	canWrite?: boolean;
 }
 
 /**
@@ -178,6 +180,29 @@ export abstract class CalendarProvider extends EventEmitter {
 		const eventId = icsEvent.id.replace(`${this.providerId}-${calendarId}-`, "");
 		return { calendarId, eventId };
 	}
+
+	/**
+	 * Whether the user may delete this event from TaskNotes: the provider owns it and
+	 * its calendar is not known to be read-only.
+	 */
+	canDeleteEvent(icsEvent: ICSEvent): boolean {
+		if (!this.ownsEvent(icsEvent)) return false;
+		const { calendarId } = this.extractEventIds(icsEvent);
+		return findProviderCalendar(this.getAvailableCalendars(), calendarId)?.canWrite !== false;
+	}
+}
+
+/**
+ * Where Google Calendar events come from: the person's own Google application,
+ * or the TaskNotes calendar service. One is in use at a time, under the same
+ * provider id, so views and event mutations do not tell them apart.
+ */
+export abstract class GoogleCalendarSource extends CalendarProvider {
+	readonly providerId = "google";
+	readonly providerName = "Google Calendar";
+
+	/** Reads every shown calendar again. */
+	abstract refreshAllCalendars(options?: { propagateErrors?: boolean }): Promise<void>;
 }
 
 /**
@@ -269,4 +294,25 @@ export class CalendarProviderRegistry {
 		}
 		this.providers.clear();
 	}
+}
+
+/**
+ * Points the views at one Google source: the TaskNotes calendar service while
+ * this device is signed in to it, otherwise the person's own Google application.
+ * Both answer to the same provider id, so the registry holds whichever is in use.
+ * Returns whether the source changed.
+ */
+export function useGoogleCalendarSource(plugin: {
+	googleCalendarService: GoogleCalendarSource;
+	ownGoogleCalendarService: GoogleCalendarSource;
+	hostedGoogleCalendarService: GoogleCalendarSource & { isSignedIn(): boolean };
+	calendarProviderRegistry: CalendarProviderRegistry;
+}): boolean {
+	const source = plugin.hostedGoogleCalendarService.isSignedIn()
+		? plugin.hostedGoogleCalendarService
+		: plugin.ownGoogleCalendarService;
+	if (plugin.googleCalendarService === source) return false;
+	plugin.googleCalendarService = source;
+	plugin.calendarProviderRegistry.register(source);
+	return true;
 }

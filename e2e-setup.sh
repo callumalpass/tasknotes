@@ -62,6 +62,12 @@ else
     echo_warn "Skipping plugin build; using the existing bundle."
 fi
 
+# Bundle the test-only mdbase bridge against the same interop dependency.
+"$SCRIPT_DIR/node_modules/.bin/esbuild" \
+    tasknotes-e2e-vault/.obsidian/plugins/mdbase-sync/main.ts \
+    --bundle --platform=node --format=cjs --external:obsidian \
+    --outfile=tasknotes-e2e-vault/.obsidian/plugins/mdbase-sync/main.js
+
 # Step 4: Set up symlinks in the test vault
 echo_info "Setting up plugin symlinks in test vault..."
 mkdir -p "$PLUGIN_DIR"

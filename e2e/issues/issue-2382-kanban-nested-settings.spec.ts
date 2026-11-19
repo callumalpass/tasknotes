@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { parse, stringify } from 'yaml';
 import { launchObsidian, closeObsidian, type ObsidianApp } from '../obsidian';
 
@@ -133,18 +135,15 @@ test('generated default Kanban settings are flat and load through native Bases',
 });
 
 test('exported v3 Kanban settings load through native Bases', async () => {
-  const content = await instance.page.evaluate(settings => {
-    const plugin = (window as any).app.plugins.plugins.tasknotes;
-    return plugin.basesFilterConverter.convertAllSavedViewsToBasesFile([{
-      id: 'issue-2382', name: 'Purchase Board',
-      query: { type: 'group', conjunction: 'and', children: [], groupKey: 'status' },
-      viewOptions: settings,
-    }]);
-  }, settings);
+  const content = readFileSync(path.join(__dirname, '../fixtures/issue-2382-v4-exported-kanban.base'), 'utf8');
   const base = parse(content);
   expect(base.views[0].config).toBeUndefined();
   expect(base.views[0].options).toBeUndefined();
   expect(base.views[0]).toMatchObject(settings);
-  Object.assign(base.views[0], filteredView());
-  await renderBase('exported', stringify(base));
+  expect(base.views[0]).toMatchObject({
+    type: 'tasknotesKanban',
+    name: 'Purchase Board',
+    groupBy: { property: 'status', direction: 'ASC' },
+  });
+  await renderBase('exported', content);
 });

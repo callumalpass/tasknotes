@@ -25,6 +25,7 @@ describe("taskModalDetailsEditor", () => {
 		const editor = {
 			destroy: jest.fn(),
 			setValue: jest.fn(),
+			editor: { cm: { contentDOM: document.createElement("div") } },
 		} as never;
 		const onChange = jest.fn();
 		const onSubmit = jest.fn();
@@ -84,7 +85,10 @@ describe("taskModalDetailsEditor", () => {
 		const parent = document.createElement("div");
 		const focusNextField = jest.fn(() => true);
 		const focusPreviousField = jest.fn(() => false);
-		createTaskModalMarkdownEditorMock.mockReturnValue({ destroy: jest.fn() } as never);
+		createTaskModalMarkdownEditorMock.mockReturnValue({
+			destroy: jest.fn(),
+			editor: { cm: { contentDOM: document.createElement("div") } },
+		} as never);
 
 		createTaskModalDetailsEditor({
 			app: {} as never,

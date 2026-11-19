@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { MiniCalendarView } from "../../../src/bases/MiniCalendarView";
 import { ICSEvent } from "../../../src/types";
 import { PluginFactory } from "../../helpers/mock-factories";
@@ -8,12 +9,7 @@ type TestMiniCalendarView = {
 	data: { data: unknown[] };
 	readViewOptions(): void;
 	indexNotesByDate(data: unknown[]): void;
-	renderDay(
-		weekRow: HTMLElement,
-		dayDate: Date,
-		dayNum: number,
-		isOutsideMonth: boolean
-	): void;
+	renderDay(weekRow: HTMLElement, dayDate: Date, dayNum: number, isOutsideMonth: boolean): void;
 	notesByDate: Map<string, Array<Record<string, unknown>>>;
 	displayedMonth: number;
 	displayedYear: number;
@@ -82,6 +78,7 @@ function createGoogleEvent(overrides: Partial<ICSEvent> = {}): ICSEvent {
 function createView(configOverrides: Record<string, unknown> = {}): TestMiniCalendarView {
 	const googleEvent = createGoogleEvent();
 	const plugin = PluginFactory.createMockPlugin({
+		i18n: createI18nService(),
 		googleCalendarService: {
 			getAvailableCalendars: jest.fn(() => [{ id: "primary", summary: "Work" }]),
 			getAllEvents: jest.fn(() => [googleEvent]),
@@ -149,8 +146,6 @@ describe("Issue #1697: Mini Calendar external calendar events", () => {
 		view.indexNotesByDate([]);
 		view.renderDay(weekRow, day, 16, false);
 
-		expect(
-			weekRow.querySelectorAll(".mini-calendar-view__external-event-dot")
-		).toHaveLength(1);
+		expect(weekRow.querySelectorAll(".mini-calendar-view__external-event-dot")).toHaveLength(1);
 	});
 });

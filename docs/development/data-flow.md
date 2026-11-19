@@ -250,12 +250,13 @@ Refactor rule:
   the minute poll, next-midnight timeout, timer registration, and event trigger
 
 Calendar views should build events through normalized event builders before
-touching FullCalendar APIs. Drag/drop and resize handlers should ask planning
+handing them to `@tasknotes/calendar`; `calendarEngine` converts events to
+calendar items and calendar changes back to event objects. Drag/drop and resize handlers should ask planning
 helpers for explicit mutation plans before performing side effects. Event-mount
 list-card rendering and Bases-backed task enrichment belong in
 `calendarEventMount`. Initial-date option normalization, property-backed
 navigation candidates, and navigation-state snapshots belong in
-`calendarInitialDate`; Calendar views keep FullCalendar callback wiring, hover
+`calendarInitialDate`; Calendar views keep calendar callback wiring, hover
 previews, context menus, and refresh orchestration.
 
 Agenda date sections should ask `agendaTaskSelection` whether a task belongs to

@@ -9,6 +9,7 @@ import { parseMdbaseTaskTypeDocument } from "../../../src/services/mdbaseCanonic
 import { hasLegacyFieldsSchema, recognizeLegacyTaskType } from "../../../src/services/mdbase/legacyRecognition";
 import { renderHistoricalTaskTypes } from "../../../src/services/mdbase/historicalTaskTypeRenderers";
 import { recognitionVault } from "../../helpers/mdbaseRecognitionVault";
+import { buildSavedSettingsSnapshot, buildSettingsFromLoadedData } from "../../../src/settings/settingsPersistence";
 
 const root = path.join(__dirname, "../../fixtures/mdbase-upgrades/recognition");
 const captures = fs.readdirSync(root).filter((name) => !name.includes("edited"));
@@ -171,5 +172,45 @@ describe("historical generated type recognition", () => {
 				expect(h.notices.join(" ")).not.toContain("could not initialize");
 			}
 		}
+	});
+
+	// v5 migrates settings on load (legacy single user field, trimmed keys) before
+	// recognizing the type the old writer rendered from the saved settings.
+	it.each(["live-4.13.7-legacy-userfield", "live-4.9.2-padded-userfield"])(
+		"recognizes %s from settings as v5 loads them",
+		async (name) => {
+			const h = harness(name);
+			const saved = JSON.parse(JSON.stringify(h.settings));
+			Object.assign(h.settings, buildSettingsFromLoadedData(saved).settings);
+			(h.plugin as unknown as { savedSettingsSnapshot: unknown }).savedSettingsSnapshot = buildSavedSettingsSnapshot(saved);
+			await h.service.initialize();
+			assertMigrated(h);
+		}
+	);
+
+	it("recognizes a legacy single user field after the migrated settings were saved", async () => {
+		const h = harness("live-4.13.7-legacy-userfield");
+		const { settings } = buildSettingsFromLoadedData(JSON.parse(JSON.stringify(h.settings)));
+		// Next start: data.json already holds the migrated settings.
+		Object.assign(h.settings, buildSettingsFromLoadedData(JSON.parse(JSON.stringify(settings))).settings);
+		await h.service.initialize();
+		assertMigrated(h);
+		expect(h.settings.userFields.map((field) => field.key)).toContain("effort");
+	});
+
+	it("reuses an identical backup when a 4.x device keeps rewriting the v0.2 type", async () => {
+		const h = harness("live-4.17.0-defaults");
+		const backups = () => new Set([...h.files.keys()].filter((p) => p.includes("/mdbase-v0.2-") && !p.endsWith("pending.json")).map((p) => p.split("/").slice(0, 3).join("/")));
+		await h.service.initialize();
+		// A synced 4.x device regenerates its v0.2 type on every start. The first two
+		// re-migrations back up different support files and config; later ones repeat.
+		const counts: number[] = [];
+		for (let start = 0; start < 5; start++) {
+			h.files.set("_types/task.md", h.entries["_types/task.md"]);
+			await new MdbaseSpecService(h.plugin).initialize();
+			assertMigrated(h);
+			counts.push(backups().size);
+		}
+		expect(counts).toEqual([2, 3, 3, 3, 3]);
 	});
 });

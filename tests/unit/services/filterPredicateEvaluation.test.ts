@@ -229,6 +229,34 @@ describe("filter predicate evaluation", () => {
 			"Projects/Canonical",
 			""
 		);
+		expect(
+			compareProjectWikilinks("[[Projects/Canonical#Goals|Canon]]", "[[Canonical]]", app)
+		).toBe(true);
+	});
+
+	it("resolves relative project links from the task's own path", () => {
+		const alpha = { path: "Projects/Alpha.md", basename: "Alpha", name: "Alpha.md" };
+		const getFirstLinkpathDest = jest.fn((linkPath: string, sourcePath: string) => {
+			if (linkPath === "Alpha") return alpha;
+			// The relative link only resolves against the task's folder.
+			return linkPath === "../Projects/Alpha" && sourcePath === "Tasks/task.md"
+				? alpha
+				: null;
+		});
+		const app = {
+			metadataCache: {
+				getFirstLinkpathDest,
+				getFileCache: () => ({ frontmatter: { title: "Alpha Project" } }),
+			},
+		} as unknown as App;
+
+		expect(
+			evaluateFilterCondition(
+				condition({ property: "projects", operator: "contains", value: "[[Alpha]]" }),
+				task({ projects: ["[[../Projects/Alpha]]"] }),
+				context({ app })
+			)
+		).toBe(true);
 	});
 
 	it("preserves the existing wikilink-path extraction behavior", () => {

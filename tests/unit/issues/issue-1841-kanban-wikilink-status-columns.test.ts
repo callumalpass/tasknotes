@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { KanbanView } from "../../../src/bases/KanbanView";
 import { StatusManager } from "../../../src/services/StatusManager";
 import type { StatusConfig, TaskInfo } from "../../../src/types";
@@ -15,6 +16,7 @@ const WIKILINK_STATUS: StatusConfig = {
 
 function makePlugin() {
 	return {
+		i18n: createI18nService(),
 		app: {
 			metadataCache: {
 				getFirstLinkpathDest: () => null,

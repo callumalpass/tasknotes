@@ -3,7 +3,7 @@ import {
 	formatDateForInput,
 	getRecurrenceStartDate,
 	type BuildRecurrenceOptionsInput,
-} from "../../../src/components/RecurrenceContextMenu";
+} from "../../../src/components/CustomRecurrenceModal";
 
 const translate: BuildRecurrenceOptionsInput["translate"] = (key, vars) => {
 	if (vars?.day) return vars.day;

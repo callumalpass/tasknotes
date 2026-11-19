@@ -39,10 +39,36 @@ describe('recurring completion Undo receipt', () => {
 		expect(actual.body).toBe('- [x] Review\n');
 	});
 
+	it('restores a series status reset by the completion', () => {
+		const statusReceipt = buildCompletionContentUndo(
+			before.replace('dateModified: old', 'status: in-progress\ndateModified: old'),
+			after.replace('dateModified: new', 'status: open\ndateModified: new'),
+			[...properties, 'status'],
+			'dateModified'
+		);
+
+		const restored = restoreCompletionContent(
+			after.replace('dateModified: new', 'status: open\ndateModified: new'),
+			statusReceipt,
+			'dateModified',
+			'undone'
+		);
+
+		expect(restored).toContain('status: in-progress');
+	});
+
 	it('keeps later unrelated frontmatter edits', () => {
 		const edited = after.replace('dateModified: new', 'dateModified: edited\npriority: high\ntitle: Renamed');
 		const restored = restoreCompletionContent(edited, receipt(), 'dateModified', 'undo-time');
 		expect(readCompletionContent(restored!).frontmatter).toMatchObject({ priority: 'high', title: 'Renamed' });
+	});
+
+	it('preserves blank lines and trailing body whitespace for a frontmatter-only Undo', () => {
+		const previous = '---\npriority: normal\n---\n\n\nKeep trailing whitespace.  \n\n';
+		const next = previous.replace('priority: normal', 'priority: high');
+		const undo = buildCompletionContentUndo(previous, next, ['priority'], 'dateModified');
+		const restored = restoreCompletionContent(next, undo, 'dateModified', 'now');
+		expect(readCompletionContent(restored!).body).toBe(readCompletionContent(previous).body);
 	});
 
 	it.each([

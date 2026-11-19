@@ -95,15 +95,6 @@ export interface FilterQuery extends FilterGroup {
 	subgroupKey?: TaskGroupKey;
 }
 
-// A named, persistent configuration that encapsulates the entire state
-export interface SavedView {
-	id: string; // Unique ID for the view
-	name: string; // User-defined name (e.g., "High-Priority Work")
-	query: FilterQuery; // The complete configuration, including filters, sorting, and grouping
-	viewOptions?: { [key: string]: boolean }; // View-specific options (e.g., showOverdueOnToday, showNotes)
-	visibleProperties?: string[]; // Array of property IDs to display on task cards (e.g., ['due', 'priority', 'projects'])
-}
-
 // Property and operator definitions for the advanced filtering system
 export type FilterProperty =
 	// Placeholder for "Select..." option
@@ -465,11 +456,12 @@ export interface TaskInfo {
 	projects?: string[];
 	attachments?: string[]; // Ordered links to files that belong to this task
 	recurrence?: string; // RFC 5545 recurrence rule string
-	recurrence_anchor?: 'scheduled' | 'completion'; // Determines if recurrence is from scheduled date (fixed) or completion date (flexible). Defaults to 'scheduled'
+	recurrence_anchor?: "scheduled" | "completion"; // Determines if recurrence is from scheduled date (fixed) or completion date (flexible). Defaults to 'scheduled'
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	skipped_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was skipped
 	recurrence_parent?: string; // Link/path to the parent recurring task when this is a materialized occurrence
 	occurrence_date?: string; // Target recurrence date (YYYY-MM-DD) for materialized occurrences
+	recurrence_original_date?: string; // Original rule date (YYYY-MM-DD) of a pending moved virtual recurring occurrence
 	occurrence_materialization?: OccurrenceMaterializationMode; // Parent occurrence materialization policy
 	occurrence_next_trigger?: OccurrenceNextTrigger; // Parent policy for materializing the next occurrence
 	occurrence_template?: string; // Optional template note/link for generated occurrence notes
@@ -501,7 +493,13 @@ export interface TaskInfo {
 export interface TaskCreationData extends Partial<TaskInfo> {
 	details?: string; // Optional details/description for file content
 	parentNote?: string; // Optional parent note name/path for template variable
-	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
+	creationContext?:
+		| "inline-conversion"
+		| "manual-creation"
+		| "modal-inline-creation"
+		| "api"
+		| "import"
+		| "ics-event"; // Context for folder determination
 	customFrontmatter?: Record<string, unknown>; // Custom frontmatter properties (including user fields)
 	occurrenceFilenameTemplate?: string; // Resolved filename template for a materialized occurrence (creation-only)
 }
@@ -705,7 +703,7 @@ export interface FieldMapping {
 	contexts: string;
 	projects: string;
 	attachments: string;
-	assignees: string; // Links to person records (tasknotes.task 0.3.0-rc.5)
+	assignees: string;
 	timeEstimate: string;
 	completedDate: string;
 	dateCreated: string;
@@ -734,6 +732,15 @@ export interface FieldMapping {
 	googleCalendarMovedOriginalDates: string; // Historical moved recurring dates excluded from the master event
 	reminders: string; // For task reminders
 	sortOrder: string; // Numeric ordering within column (lower = higher)
+}
+
+/**
+ * onlyIf is for callers acting on state read earlier, such as a queued drop. The
+ * occurrence is completed only if it holds for the task as the operation reads it,
+ * and a completed occurrence is never reopened.
+ */
+export interface RecurringCompletionOptions {
+	onlyIf?: (task: TaskInfo) => boolean;
 }
 
 export interface StatusConfig {
@@ -823,6 +830,9 @@ export interface ICSSubscription {
 	color: string;
 	enabled: boolean;
 	refreshInterval: number; // minutes (for remote) or check interval (for local)
+	authType?: "none" | "basic"; // HTTP auth for remote feeds; the password lives in SecretStorage
+	username?: string;
+	filter?: string; // Case-insensitive literal title substring; empty/missing shows all events
 }
 
 export interface ICSEvent {
@@ -910,7 +920,10 @@ export interface PendingAutoArchive {
 }
 
 export interface PendingGoogleCalendarDeletion {
+	/** Task path, or the daily note path when `timeblockId` is set */
 	taskPath: string;
+	/** Set when the event belongs to a daily-note timeblock rather than a task */
+	timeblockId?: string;
 	calendarId: string;
 	eventId: string;
 	connectionId?: string;
@@ -926,6 +939,25 @@ export interface GoogleCalendarEventIndexEntry {
 	eventId: string;
 	connectionId?: string;
 	updatedAt: number;
+}
+
+/** Links a daily-note timeblock to the Google Calendar event created for it */
+export interface GoogleCalendarTimeblockEventIndexEntry {
+	notePath: string;
+	timeblockId: string;
+	calendarId: string;
+	eventId: string;
+	/** Event payload last written to Google, used to skip unchanged timeblocks */
+	fingerprint: string;
+	updatedAt: number;
+}
+
+export interface PendingGoogleCalendarTimeblockSync {
+	notePath: string;
+	timeblockId: string;
+	requestedAt: number;
+	attempts: number;
+	lastError?: string;
 }
 
 export interface PendingGoogleCalendarSync {

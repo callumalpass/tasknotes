@@ -1,0 +1,16 @@
+# All Saved Views
+# Converted from TaskNotes saved views
+
+views:
+  - type: tasknotesKanban
+    name: "Purchase Board"
+    filters:
+      and:
+        - 'file.path.lower().contains("issue2382-")'
+        - '(note.status.contains("ordered") || note.status.contains("shipped") || note.status.contains("received") || note.status.contains("returned"))'
+    groupBy:
+      property: status
+      direction: ASC
+    columnWidth: 300
+    hideEmptyColumns: true
+    pinnedColumns: "ordered, shipped, received, returned"

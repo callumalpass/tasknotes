@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { App, TFile } from "obsidian";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import { ProjectSelectModal } from "../../../src/modals/ProjectSelectModal";
@@ -37,9 +38,7 @@ function createPlugin(): TaskNotesPlugin {
 	const app = new App();
 	return {
 		app,
-		i18n: {
-			translate: jest.fn((key: string) => key),
-		},
+		i18n: createI18nService(),
 		statusManager: {
 			getAllStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
 			getNonCompletionStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
@@ -108,6 +107,6 @@ describe("Issue #2069: Quick Actions add project action", () => {
 		expect(closeSpy.mock.invocationCallOrder[0]).toBeLessThan(
 			mockProjectSelectModalOpen.mock.invocationCallOrder[0]
 		);
-		expect(addTaskToProject).toHaveBeenCalledWith(plugin, task, projectFile);
+		expect(addTaskToProject).toHaveBeenCalledWith(plugin, task, projectFile, expect.any(Function), expect.any(Function));
 	});
 });

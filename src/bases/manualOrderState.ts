@@ -1,6 +1,24 @@
 import type { TaskInfo } from "../types";
 import type { SortOrderPlan } from "./sortOrderUtils";
 
+export function captureTaskViewScroll(root: HTMLElement): () => void {
+	const elements = new Set<HTMLElement>([root, ...Array.from(root.querySelectorAll<HTMLElement>("*"))
+		.filter((element) => element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth)]);
+	let ancestor = root.parentElement;
+	while (ancestor) {
+		elements.add(ancestor);
+		ancestor = ancestor.parentElement;
+	}
+	const positions = [...elements].map((element) => ({ element, left: element.scrollLeft, top: element.scrollTop }));
+	return () => {
+		for (const { element, left, top } of positions) {
+			if (!element.isConnected) continue;
+			element.scrollLeft = left;
+			element.scrollTop = top;
+		}
+	};
+}
+
 export function buildSortOrderUpdateMap(
 	draggedPath: string,
 	sortOrderPlan: SortOrderPlan

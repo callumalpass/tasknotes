@@ -12,7 +12,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
-import hljs from "highlight.js";
+import { highlightDocumentationCode } from "./src/highlight-code.js";
 import yaml from "js-yaml";
 import { buildGeneratedPages } from "./src/generated-pages.js";
 
@@ -27,10 +27,7 @@ const CONFIG = path.join(ROOT, "mkdocs.yml");
 marked.use(
 	markedHighlight({
 		langPrefix: "hljs language-",
-		highlight(code, lang) {
-			const language = hljs.getLanguage(lang) ? lang : "plaintext";
-			return hljs.highlight(code, { language }).value;
-		},
+		highlight: highlightDocumentationCode,
 	})
 );
 

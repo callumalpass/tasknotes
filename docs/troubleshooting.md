@@ -8,12 +8,12 @@ When debugging, start with one affected task and one affected view. Record the T
 
 1. Confirm Obsidian meets the current [version requirement](reference/compatibility.md) and **Bases** is enabled.
 2. Open the affected task as Markdown and validate the `---` frontmatter delimiters and indentation.
-3. Confirm the task matches **Settings → TaskNotes → General → Task identification** and is not in an excluded folder.
+3. Confirm the task matches **Settings → TaskNotes → Task files → Task identification** and is not in an excluded folder.
 4. Run **TaskNotes: Refresh cache** from the command palette.
 5. Close and reopen the affected `.base` file.
 6. Restart Obsidian only after the targeted checks above.
 
-If the issue remains, enable **Settings → TaskNotes → Features → Debug logging**, reproduce it once, and inspect the developer console with `Ctrl/Cmd + Shift + I`. Disable debug logging after collecting the relevant entries.
+If the issue remains, enable **Settings → TaskNotes → Advanced → Debug logging**, reproduce it once, and inspect the developer console with `Ctrl/Cmd + Shift + I`. Disable debug logging after collecting the relevant entries.
 
 ## Bases and Views (v4)
 
@@ -21,13 +21,13 @@ If the issue remains, enable **Settings → TaskNotes → Features → Debug log
 
 **Symptoms**: TaskNotes views show errors or don't display tasks
 
-First confirm Bases is enabled (`Settings -> Core Plugins -> Bases`), then restart Obsidian once. If views are still missing, verify `.base` files exist in `TaskNotes/Views/`. If needed, regenerate defaults from `Settings -> TaskNotes -> General -> Views & base files` (`Create files`).
+First confirm Bases is enabled (`Settings -> Core Plugins -> Bases`), then restart Obsidian once. If views are still missing, verify `.base` files exist in `TaskNotes/Views/`. If needed, regenerate defaults from `Settings -> TaskNotes -> Appearance & interaction -> Views & base files` (`Create files`).
 
 ### Commands Open Wrong Files
 
 **Symptoms**: Ribbon icons or commands open unexpected files
 
-Check command mappings in `Settings -> TaskNotes -> General` (`View Commands`). Reset mappings that were changed unintentionally, then verify each referenced `.base` file exists at the configured path.
+Check command mappings in `Settings -> TaskNotes -> Appearance & interaction -> Views & base files`. Reset mappings that were changed unintentionally, then verify each referenced `.base` file exists at the configured path.
 
 ## Common Issues
 
@@ -38,7 +38,7 @@ Check command mappings in `Settings -> TaskNotes -> General` (`View Commands`). 
 Follow this decision tree:
 
 1. **Does Quick actions for current task work on the note?**
-   - **No:** compare its tag or identification property with **General → Task identification**.
+   - **No:** compare its tag or identification property with **Task files → Task identification**.
    - **Yes:** task recognition works; continue to the Base filter.
 2. **Is the note inside an excluded folder?**
    - **Yes:** move it or update **Excluded folders**.
@@ -71,7 +71,7 @@ Reduce visible event layers first (scheduled/due/recurring/time entries), then i
 
 **Symptoms**: Natural language input doesn't extract expected task properties
 
-Enable NLP in `Settings -> TaskNotes -> Features`, then verify your trigger characters (`@`, `#`, `!` by default) and any custom status/priority mappings. If parsing still seems inconsistent, compare input against the syntax in [NLP API](nlp-api.md).
+Enable NLP in `Settings -> TaskNotes -> Task creation -> Natural language processing`, then verify your trigger characters under `Settings -> TaskNotes -> Properties` (`@`, `#`, `!` by default) and any custom status/priority mappings. If parsing still seems inconsistent, compare input against the syntax in [NLP API](nlp-api.md).
 
 ### Time Tracking Issues
 

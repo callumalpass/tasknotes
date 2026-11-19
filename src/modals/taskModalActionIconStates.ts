@@ -1,26 +1,26 @@
+import { configLabel } from "../i18n/configLabels";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
 import type { PriorityConfig, StatusConfig } from "../types";
-
-const STATIC_COLOR_CLASSES = [
-	"tn-static-color-var-color-accent-d2cad743",
-	"tn-static-color-var-text-accent-65b47ee3",
-	"tn-static-color-var-text-muted-5872de20",
-	"tn-static-color-var-text-on-accent-f3e1679d",
-	"tn-static-color-var-text-warning-783d5f03",
-	"tn-static-color-var-tn-text-muted-a90fb6f3",
-	"tn-static-color-white-0a43e56a",
-	"tn-static-cursor-pointer-2723efcc",
-	"tn-static-font-size-12px-65574819",
-	"tn-static-font-weight-bold-0fe8c30d",
-	"tn-static-font-weight-bold-e0b452bd",
-	"tn-static-margin-2px-0-edce9b14",
-	"tn-static-padding-20px-7a035d95",
-	"tn-static-padding-20px-ebe8e48c",
-];
+import {
+	priorityGlyphState,
+	renderPriorityGlyph,
+	renderStatusGlyph,
+	statusGlyphState,
+	hasVisiblePriority,
+} from "../ui/kit/glyphs";
+import { taskDueUrgency } from "../ui/kit/dateLabel";
+import {
+	addDaysToDateTime,
+	type DateDisplaySettings,
+	formatDateTimeForDisplay,
+	getDatePart,
+	getTodayString,
+} from "../utils/dateUtils";
 
 export interface TaskModalActionIconStateContext {
-	translate: (key: string, params?: Record<string, string | number>) => string;
-	formatDate?: (value: string) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 }
 
 export interface TaskModalActionIconState {
@@ -35,6 +35,9 @@ export interface TaskModalActionIconState {
 	defaultPriority: string;
 	statusConfigs: readonly StatusConfig[];
 	priorityConfigs: readonly PriorityConfig[];
+	timeFormat: "12" | "24";
+	dateDisplayFormat?: DateDisplaySettings["dateDisplayFormat"];
+	hideCompletedFromOverdue?: boolean;
 }
 
 export function updateTaskModalActionIconStates(
@@ -44,13 +47,24 @@ export function updateTaskModalActionIconStates(
 ): void {
 	if (!actionBar) return;
 
-	updateDateIcon(actionBar, context, "due-date", state.dueDate, {
-		activeTooltipKey: "modals.task.tooltips.dueValue",
-		defaultTooltipKey: "modals.task.actions.due",
+	updateDateIcon(actionBar, context, state, "due-date", state.dueDate, {
+		activeKey: msg({ message: "Due: {value}", context: "modals.task.tooltips.dueValue" }),
+		defaultTooltipKey: msg({ message: "Set due date", context: "modals.task.actions.due" }),
+		emptyLabelKey: msg({ message: "Due date", context: "contextMenus.task.dueDate" }),
 	});
-	updateDateIcon(actionBar, context, "scheduled-date", state.scheduledDate, {
-		activeTooltipKey: "modals.task.tooltips.scheduledValue",
-		defaultTooltipKey: "modals.task.actions.scheduled",
+	updateDateIcon(actionBar, context, state, "scheduled-date", state.scheduledDate, {
+		activeKey: msg({
+			message: "Scheduled: {value}",
+			context: "modals.task.tooltips.scheduledValue",
+		}),
+		defaultTooltipKey: msg({
+			message: "Set scheduled date",
+			context: "modals.task.actions.scheduled",
+		}),
+		emptyLabelKey: msg({
+			message: "Scheduled date",
+			context: "contextMenus.task.scheduledDate",
+		}),
 	});
 	updateStatusIcon(actionBar, context, state);
 	updatePriorityIcon(actionBar, context, state);
@@ -58,37 +72,82 @@ export function updateTaskModalActionIconStates(
 	updateReminderIcon(actionBar, context, state.reminderCount);
 }
 
+/**
+ * Short enough for a chip: relative near today, without the year when it is this year.
+ * The ISO display preference asks for one consistent format, so it skips both shortcuts.
+ */
+export function formatTaskModalChipDate(
+	value: string,
+	context: TaskModalActionIconStateContext,
+	state: Pick<TaskModalActionIconState, "timeFormat" | "dateDisplayFormat">
+): string {
+	const { timeFormat, dateDisplayFormat } = state;
+	const today = getTodayString();
+	const date = getDatePart(value);
+	const time = formatDateTimeForDisplay(value, { dateFormat: "", userTimeFormat: timeFormat });
+
+	let day: string;
+	if (dateDisplayFormat !== "iso" && date === today) {
+		day = context.translate(msg({ message: "Today", context: "contextMenus.date.basic.today" }));
+	} else if (dateDisplayFormat !== "iso" && date === addDaysToDateTime(today, 1)) {
+		day = context.translate(msg({ message: "Tomorrow", context: "contextMenus.date.basic.tomorrow" }));
+	} else {
+		const dateFormat = date.slice(0, 4) === today.slice(0, 4) ? "MMM d" : "MMM d, yyyy";
+		day = formatDateTimeForDisplay(value, { dateFormat, dateDisplayFormat, showTime: false });
+	}
+
+	return time ? `${day} ${time}` : day;
+}
+
+function setChipLabel(icon: HTMLElement, label: string): void {
+	const labelEl = icon.querySelector<HTMLElement>(".action-icon__label");
+	if (labelEl) {
+		labelEl.textContent = label;
+	}
+}
+
 function updateDateIcon(
 	actionBar: HTMLElement,
 	context: TaskModalActionIconStateContext,
+	state: TaskModalActionIconState,
 	dataType: string,
 	value: string,
-	tooltipKeys: {
-		activeTooltipKey: string;
-		defaultTooltipKey: string;
+	keys: {
+		activeKey: MessageDescriptor;
+		defaultTooltipKey: MessageDescriptor;
+		emptyLabelKey: MessageDescriptor;
 	}
 ): void {
 	const icon = getActionIcon(actionBar, dataType);
 	if (!icon) return;
-	const displayValue = value ? (context.formatDate?.(value) ?? value) : "";
-	// Due and scheduled share similar icons, so the chip names which date it holds.
-	updateActionValue(
-		icon,
-		displayValue
-			? context.translate(tooltipKeys.activeTooltipKey, { value: displayValue })
-			: ""
-	);
+	icon.classList.add("tn-task-date");
+	icon.dataset.tnDateUrgency =
+		dataType === "due-date"
+			? taskDueUrgency(
+					value,
+					state.statusConfigs.some(
+						(config) => config.value === state.status && config.isCompleted
+					),
+					state.hideCompletedFromOverdue ?? true
+				)
+			: "neutral";
 
 	if (value) {
 		icon.classList.add("has-value");
-		setTooltip(icon, context.translate(tooltipKeys.activeTooltipKey, { value }), {
+		setChipLabel(icon, formatTaskModalChipDate(value, context, state));
+		const fullDate = formatDateTimeForDisplay(value, {
+			userTimeFormat: state.timeFormat,
+			dateDisplayFormat: state.dateDisplayFormat,
+		});
+		setTooltip(icon, context.translate(keys.activeKey, { value: fullDate }), {
 			placement: "top",
 		});
 		return;
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate(tooltipKeys.defaultTooltipKey), { placement: "top" });
+	setChipLabel(icon, context.translate(keys.emptyLabelKey));
+	setTooltip(icon, context.translate(keys.defaultTooltipKey), { placement: "top" });
 }
 
 function updateStatusIcon(
@@ -100,31 +159,36 @@ function updateStatusIcon(
 	if (!icon) return;
 
 	const statusConfig = state.statusConfigs.find((config) => config.value === state.status);
-	const statusLabel = statusConfig ? statusConfig.label : state.status;
-	setStatusIconSymbol(icon, getTaskModalStatusIconName(statusConfig));
+	const statusLabel = statusConfig ? configLabel(statusConfig) : state.status;
+	const statusGlyph = statusGlyphState(state.status, state.statusConfigs);
+	renderConfiguredGlyph(icon, statusConfig?.icon, statusGlyph, (host) =>
+		renderStatusGlyph(host, statusGlyph)
+	);
 	updateConfiguredValueIcon(icon, context, {
-		isActive: Boolean(
-			state.status && statusConfig && statusConfig.value !== state.defaultStatus
-		),
-		activeTooltipKey: "modals.task.tooltips.statusValue",
-		defaultTooltipKey: "modals.task.actions.status",
+		isActive: Boolean(state.status && state.status !== state.defaultStatus),
+		activeTooltipKey: msg({
+			message: "Status: {value}",
+			context: "modals.task.tooltips.statusValue",
+		}),
+		defaultTooltipKey: msg({ message: "Set status", context: "modals.task.actions.status" }),
 		label: statusLabel,
 		color: statusConfig?.color,
 	});
 }
 
-/** Match task cards: the configured status icon, otherwise a circle. */
-export function getTaskModalStatusIconName(statusConfig: StatusConfig | undefined): string {
-	if (statusConfig?.icon) return statusConfig.icon;
-	return statusConfig?.isCompleted ? "circle-check" : "circle";
-}
-
-function setStatusIconSymbol(icon: HTMLElement, iconName: string): void {
+function renderConfiguredGlyph(
+	icon: HTMLElement,
+	customIcon: string | undefined,
+	state: unknown,
+	render: (host: HTMLElement) => void
+): void {
 	const iconElement = icon.querySelector<HTMLElement>(".icon");
-	if (!iconElement || iconElement.dataset.statusIcon === iconName) return;
+	const signature = customIcon ?? JSON.stringify(state);
+	if (!iconElement || iconElement.dataset.glyphSignature === signature) return;
 	iconElement.empty();
-	setIcon(iconElement, iconName);
-	iconElement.dataset.statusIcon = iconName;
+	if (customIcon) setIcon(iconElement, customIcon);
+	else render(iconElement);
+	iconElement.dataset.glyphSignature = signature;
 }
 
 function updatePriorityIcon(
@@ -136,13 +200,24 @@ function updatePriorityIcon(
 	if (!icon) return;
 
 	const priorityConfig = state.priorityConfigs.find((config) => config.value === state.priority);
-	const priorityLabel = priorityConfig ? priorityConfig.label : state.priority;
+	const priorityLabel = priorityConfig ? configLabel(priorityConfig) : state.priority;
+	const priorityGlyph = priorityGlyphState(state.priority, state.priorityConfigs);
+	renderConfiguredGlyph(icon, priorityConfig?.icon, priorityGlyph, (host) =>
+		renderPriorityGlyph(host, priorityGlyph)
+	);
+	const glyphElement = icon.querySelector<HTMLElement>(".icon");
+	if (glyphElement)
+		glyphElement.hidden = !hasVisiblePriority(state.priority, state.priorityConfigs);
 	updateConfiguredValueIcon(icon, context, {
-		isActive: Boolean(
-			state.priority && priorityConfig && priorityConfig.value !== state.defaultPriority
-		),
-		activeTooltipKey: "modals.task.tooltips.priorityValue",
-		defaultTooltipKey: "modals.task.actions.priority",
+		isActive: Boolean(state.priority && state.priority !== state.defaultPriority),
+		activeTooltipKey: msg({
+			message: "Priority: {value}",
+			context: "modals.task.tooltips.priorityValue",
+		}),
+		defaultTooltipKey: msg({
+			message: "Set priority",
+			context: "modals.task.actions.priority",
+		}),
 		label: priorityLabel,
 		color: priorityConfig?.color,
 	});
@@ -153,14 +228,17 @@ function updateConfiguredValueIcon(
 	context: TaskModalActionIconStateContext,
 	options: {
 		isActive: boolean;
-		activeTooltipKey: string;
-		defaultTooltipKey: string;
+		activeTooltipKey: MessageDescriptor;
+		defaultTooltipKey: MessageDescriptor;
 		label: string;
 		color?: string;
 	}
 ): void {
-	// Status and priority always have a value, so always name it; accent marks non-defaults.
-	updateActionValue(icon, options.label);
+	const label = context.translate(options.activeTooltipKey, { value: options.label });
+	setChipLabel(icon, options.label);
+	icon.setAttribute("aria-label", label);
+	icon.dataset.valueState = options.isActive ? "set" : "default";
+
 	if (options.isActive) {
 		icon.classList.add("has-value");
 		setTooltip(icon, context.translate(options.activeTooltipKey, { value: options.label }), {
@@ -168,7 +246,7 @@ function updateConfiguredValueIcon(
 		});
 	} else {
 		icon.classList.remove("has-value");
-		setTooltip(icon, context.translate(options.defaultTooltipKey), { placement: "top" });
+		setTooltip(icon, label, { placement: "top" });
 	}
 
 	const iconElement = icon.querySelector<HTMLElement>(".icon");
@@ -179,7 +257,6 @@ function updateConfiguredValueIcon(
 		return;
 	}
 
-	iconElement.classList.remove(...STATIC_COLOR_CLASSES);
 	iconElement.style.removeProperty("color");
 }
 
@@ -190,24 +267,40 @@ function updateRecurrenceIcon(
 ): void {
 	const icon = getActionIcon(actionBar, "recurrence");
 	if (!icon) return;
-	updateActionValue(icon, state.recurrenceRule.trim() ? state.recurrenceDisplayText : "");
 
 	if (state.recurrenceRule.trim()) {
 		icon.classList.add("has-value");
+		setChipLabel(icon, state.recurrenceDisplayText);
 		setTooltip(
 			icon,
-			context.translate("modals.task.tooltips.recurrenceValue", {
-				value: state.recurrenceDisplayText,
-			}),
+			context.translate(
+				msg({
+					message: "Recurrence: {value}",
+					context: "modals.task.tooltips.recurrenceValue",
+				}),
+				{
+					value: state.recurrenceDisplayText,
+				}
+			),
 			{ placement: "top" }
 		);
 		return;
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate("modals.task.actions.recurrence"), {
-		placement: "top",
-	});
+	setChipLabel(
+		icon,
+		context.translate(msg({ message: "Recurrence", context: "contextMenus.task.recurrence" }))
+	);
+	setTooltip(
+		icon,
+		context.translate(
+			msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })
+		),
+		{
+			placement: "top",
+		}
+	);
 }
 
 function updateReminderIcon(
@@ -217,33 +310,35 @@ function updateReminderIcon(
 ): void {
 	const icon = getActionIcon(actionBar, "reminders");
 	if (!icon) return;
-	updateActionValue(icon, reminderCount > 0 ? String(reminderCount) : "");
 
 	if (reminderCount > 0) {
 		icon.classList.add("has-value");
-		const tooltip =
-			reminderCount === 1
-				? context.translate("modals.task.tooltips.remindersSingle")
-				: context.translate("modals.task.tooltips.remindersPlural", {
-						count: reminderCount,
-					});
+		const tooltip = context.translate(
+			msg({
+				message: "{count, plural, one {# reminder set} other {# reminders set}}",
+				context: "task modal reminder count",
+			}),
+			{ count: reminderCount }
+		);
+		setChipLabel(icon, tooltip);
 		setTooltip(icon, tooltip, { placement: "top" });
 		return;
 	}
 
 	icon.classList.remove("has-value");
-	setTooltip(icon, context.translate("modals.task.actions.reminders"), {
-		placement: "top",
-	});
-}
-
-function updateActionValue(icon: HTMLElement, value: string): void {
-	const label =
-		icon.querySelector<HTMLElement>(".action-icon__value") ??
-		icon.createSpan({ cls: "action-icon__value", attr: { "aria-hidden": "true" } });
-	// The button's translated tooltip supplies the complete accessible name.
-	// Text content also keeps user-defined status and priority labels literal.
-	label.textContent = value;
+	setChipLabel(
+		icon,
+		context.translate(msg({ message: "Reminders", context: "contextMenus.task.reminders" }))
+	);
+	setTooltip(
+		icon,
+		context.translate(
+			msg({ message: "Set reminders", context: "modals.task.actions.reminders" })
+		),
+		{
+			placement: "top",
+		}
+	);
 }
 
 function getActionIcon(actionBar: HTMLElement, dataType: string): HTMLElement | null {

@@ -7,6 +7,7 @@ import type {
 } from "obsidian";
 import { createTaskNotesLogger, type TaskNotesLogger } from "../utils/tasknotesLogger";
 import {
+	convertBasesGroupKeyToLinkTitle,
 	convertBasesGroupKeyToString,
 	convertBasesListGroupKeyToString,
 	convertBasesValueToNative,
@@ -134,8 +135,17 @@ export class BasesDataAdapter {
 		return convertBasesGroupKeyToString(key);
 	}
 
-	convertListGroupKeyToString(key: unknown): string {
-		return convertBasesListGroupKeyToString(key);
+	/** Link markup for the Bases group whose string key is `groupKey`, when its value is a link. */
+	getGroupLinkTitle(groupKey: string): string | null {
+		// Views can render headers before Bases has supplied data.
+		const groups: BasesEntryGroup[] = this.basesView.data?.groupedData ?? [];
+		const titles = new Set(
+			groups
+				.filter((group) => this.convertGroupKeyToString(group.key) === groupKey)
+				.map((group) => convertBasesGroupKeyToLinkTitle(group.key))
+		);
+		const [title] = titles;
+		return titles.size === 1 && title ? title : null;
 	}
 
 	/**

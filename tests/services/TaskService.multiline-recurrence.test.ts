@@ -18,7 +18,11 @@ it("completes a multiline completion-anchor task without losing FREQ", async () 
 		},
 		settings: { maintainDueDateOffsetInRecurring: false },
 		fieldMapper: { toUserField: (key: string) => key },
-		statusManager: { isCompletedStatus: (status: string) => status === "done", getCompletedStatuses: () => ["done"] },
+		statusManager: {
+			isCompletedStatus: (status: string) => status === "done",
+			getCompletedStatuses: () => ["done"],
+			getConfiguredStatusAfterCompletion: () => undefined,
+		},
 		cacheManager: { getTaskInfo: async () => task, updateTaskInfoInCache: jest.fn() },
 		emitter: { trigger: jest.fn() },
 	};

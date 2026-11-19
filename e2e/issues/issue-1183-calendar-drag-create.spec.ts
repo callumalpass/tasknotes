@@ -31,6 +31,7 @@
 
 import { test, expect } from '@playwright/test';
 import { launchObsidian, closeObsidian, ObsidianApp, runCommand } from '../obsidian';
+import { calendarTimeSlots } from '../calendar-helpers';
 
 let app: ObsidianApp;
 
@@ -68,12 +69,12 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view which has time slots for drag selection
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -81,12 +82,12 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       }
 
       // Verify we're in time grid view
-      const timeGrid = page.locator('.fc-timegrid-body, .fc-timegrid');
+      const timeGrid = page.locator('.tnc-tg-body, .tnc-tg');
       await expect(timeGrid).toBeVisible({ timeout: 5000 });
 
       // Find a time slot in the calendar
-      // FullCalendar time slots have class fc-timegrid-slot or fc-timegrid-slot-lane
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      // Time slots are computed from the time-grid column geometry
+      const timeSlots = calendarTimeSlots(page);
       const slotCount = await timeSlots.count();
 
       if (slotCount >= 4) {
@@ -148,12 +149,12 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to day view
       const dayButton = page.locator(
-        '.fc-timeGridDay-button, button:has-text("day"), .fc-toolbar button:has-text("Day")'
+        '.tnc-btn-view-day, button:has-text("day"), .tnc-toolbar button:has-text("Day")'
       );
       if (await dayButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await dayButton.click();
@@ -161,11 +162,11 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       }
 
       // Verify we're in time grid day view
-      const timeGrid = page.locator('.fc-timegrid-body, .fc-timegrid');
+      const timeGrid = page.locator('.tnc-tg-body, .tnc-tg');
       await expect(timeGrid).toBeVisible({ timeout: 5000 });
 
       // Find time slots
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      const timeSlots = calendarTimeSlots(page);
       const slotCount = await timeSlots.count();
 
       if (slotCount >= 4) {
@@ -215,12 +216,12 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -228,7 +229,7 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       }
 
       // Find time slots
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      const timeSlots = calendarTimeSlots(page);
       const slotCount = await timeSlots.count();
 
       if (slotCount >= 4) {
@@ -275,12 +276,12 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to month view
       const monthButton = page.locator(
-        '.fc-dayGridMonth-button, button:has-text("month"), .fc-toolbar button:has-text("Month")'
+        '.tnc-btn-view-month, button:has-text("month"), .tnc-toolbar button:has-text("Month")'
       );
       if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await monthButton.click();
@@ -288,11 +289,11 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       }
 
       // Verify we're in month/day grid view
-      const dayGrid = page.locator('.fc-daygrid-body, .fc-daygrid');
+      const dayGrid = page.locator('.tnc-dg-grid, .tnc-dg');
       await expect(dayGrid).toBeVisible({ timeout: 5000 });
 
       // Find day cells in the grid
-      const dayCells = page.locator('.fc-daygrid-day');
+      const dayCells = page.locator('.tnc-dg-day');
       const dayCount = await dayCells.count();
 
       if (dayCount >= 3) {
@@ -346,19 +347,19 @@ test.describe('Issue #1183: Calendar drag-to-create task does not work', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
         await page.waitForTimeout(500);
       }
 
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      const timeSlots = calendarTimeSlots(page);
       const slotCount = await timeSlots.count();
 
       if (slotCount >= 4) {

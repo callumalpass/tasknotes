@@ -1,3 +1,4 @@
+import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { PendingAutoArchive, TaskInfo, StatusConfig } from "../types";
 import TaskNotesPlugin from "../main";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -288,10 +289,12 @@ export class AutoArchiveService {
 	 * Save the auto-archive queue to plugin data
 	 */
 	private async saveQueue(queue: PendingAutoArchive[]): Promise<void> {
-		const data = await this.plugin.loadPluginDataForSafeWrite("save-auto-archive-queue");
-		if (!data) return;
-		data.autoArchiveQueue = queue;
-		await this.plugin.saveData(data);
+		await withPluginDataWriteLock(this.plugin, async () => {
+			const data = await this.plugin.loadPluginDataForSafeWrite("save-auto-archive-queue");
+			if (!data) return;
+			data.autoArchiveQueue = queue;
+			await this.plugin.saveData(data);
+		});
 	}
 
 	/**

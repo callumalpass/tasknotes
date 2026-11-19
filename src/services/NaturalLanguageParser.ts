@@ -1,6 +1,8 @@
+import { configLabel } from "../i18n/configLabels";
 import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
+import { shieldMarkdownLiterals } from "../utils/markdownLiterals";
 import {
 	NaturalLanguageParserCore,
 	type NaturalLanguageParserOptions,
@@ -8,6 +10,13 @@ import {
 } from "tasknotes-nlp-core";
 
 export type { ParsedTaskData };
+
+// A non-enumerable identity: API JSON remains exactly the pre-port payload.
+const EMPTY_NLP_TITLE = Symbol("empty-nlp-title");
+const LEGACY_UNTITLED_TITLE = "Untitled Task";
+export function hasMissingNlpTitle(parsed: ParsedTaskData): boolean {
+	return (parsed as ParsedTaskData & { [EMPTY_NLP_TITLE]?: boolean })[EMPTY_NLP_TITLE] === true;
+}
 
 function getBrowserLocale(): string | undefined {
 	return typeof navigator !== "undefined" && navigator.language ? navigator.language : undefined;
@@ -20,6 +29,18 @@ function getDateLocaleFromPlugin(plugin: TaskNotesPlugin): string {
 	}
 
 	return getBrowserLocale() || plugin.settings.nlpLanguage || "en";
+}
+
+/** The part of the parser that long-lived services use. */
+export type TaskTextParser = Pick<NaturalLanguageParser, "parseInput">;
+
+/**
+ * A parser for services that outlive a settings change. Each parse reads the
+ * current NLP settings, so changing the NLP language, statuses or triggers
+ * takes effect without reloading the plugin.
+ */
+export function createLivePluginParser(plugin: TaskNotesPlugin): TaskTextParser {
+	return { parseInput: (input) => NaturalLanguageParser.fromPlugin(plugin).parseInput(input) };
 }
 
 /**
@@ -69,15 +90,51 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		this.taskNotesPriorityConfigs = priorityConfigs;
 	}
 
+	getStatusSuggestions(query: string, limit = 10): Array<{ value: string; label: string; display: string }> {
+		const q = query.toLowerCase();
+		return this.taskNotesStatusConfigs.filter(config => [config.value, config.label, configLabel(config)].some(value => value.toLowerCase().includes(q)))
+			.slice(0, limit).map(config => ({ value: config.value, label: configLabel(config), display: configLabel(config) }));
+	}
+
 	parseInput(input: string): ParsedTaskData {
-		const parsed = super.parseInput(input);
-		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(input, parsed);
-		const withPriorityShortcutResidueRemoved = this.removePriorityShortcutResidue(
-			input,
+		// Locale may change after construction (including lazy language-pack load).
+		// Links and inline code are markup, so status and priority words in them stay text.
+		const shielded = shieldMarkdownLiterals(input);
+		let coreInput = shielded.text;
+		for (const [configs, trigger] of [[this.taskNotesStatusConfigs, this.getStatusTrigger()], [this.taskNotesPriorityConfigs, this.getPriorityTrigger()]] as const) {
+			if (!trigger) continue;
+			for (const config of [...configs].sort((a, b) => configLabel(b).length - configLabel(a).length)) {
+				const label = configLabel(config);
+				if (label === config.label) continue;
+				const pattern = new RegExp(`(^|\\s)${this.escapeRegexLiteral(trigger + label)}(?=${this.escapeRegexLiteral(trigger)}?(?:\\s|$))`, "giu");
+				coreInput = coreInput.replace(pattern, (_match, prefix: string) => prefix + trigger + config.value);
+			}
+		}
+		const priorityTrigger = this.getPriorityTrigger();
+		const triggeredPriority = priorityTrigger ? this.taskNotesPriorityConfigs.flatMap((config) =>
+			[config.value, config.label, configLabel(config)].map((label) => ({ config, token: `${priorityTrigger}${label}` }))
+		).sort((first, second) => second.token.length - first.token.length)
+			.find(({ token }) => this.containsToken(coreInput, token)) : undefined;
+		if (triggeredPriority) {
+			coreInput = coreInput.replace(new RegExp(`(^|\\s)${this.escapeRegexLiteral(triggeredPriority.token)}(?=\\s|$)`, "iu"), "$1");
+		}
+		const parsed = super.parseInput(shielded.restore(coreInput));
+		if (triggeredPriority) parsed.priority = triggeredPriority.config.value;
+		const withStatusShortcutResidueRemoved = this.applyTriggeredStatusMatch(shielded.text, parsed);
+		const withPriorityShortcutResidueRemoved = triggeredPriority ? withStatusShortcutResidueRemoved : this.removePriorityShortcutResidue(
+			shielded.text,
 			withStatusShortcutResidueRemoved
 		);
 		const withLinkedFields = this.extractLinkedUserFields(input, withPriorityShortcutResidueRemoved);
-		return this.normalizeUserFieldValues(withLinkedFields);
+		const result = this.normalizeUserFieldValues(withLinkedFields);
+		Object.defineProperty(result, EMPTY_NLP_TITLE, { value: !result.title.trim() || result.title === LEGACY_UNTITLED_TITLE });
+		return result;
+	}
+
+	/** Interactive entry rejects missing titles; programmatic paths keep legacy behaviour. */
+	parseInputForModal(input: string): ParsedTaskData {
+		const parsed = this.parseInput(input);
+		return hasMissingNlpTitle(parsed) ? { ...parsed, title: "" } : parsed;
 	}
 
 	private applyTriggeredStatusMatch(input: string, parsed: ParsedTaskData): ParsedTaskData {
@@ -93,7 +150,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title || "Untitled Task";
+		parsed.title = title || LEGACY_UNTITLED_TITLE;
 		return parsed;
 	}
 
@@ -140,7 +197,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	}
 
 	private getStatusPhrases(config: StatusConfig): string[] {
-		return [config.value, config.label]
+		return [config.value, config.label, configLabel(config)]
 			.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
 			.map((value) => value.trim());
 	}
@@ -158,10 +215,10 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		}
 
 		const trigger = this.getPriorityTrigger();
-		const tokenCandidates = [priorityConfig.value, priorityConfig.label]
+		const tokenCandidates = [priorityConfig.value, priorityConfig.label, configLabel(priorityConfig)]
 			.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
 			.flatMap((value) => (trigger ? [`${trigger}${value}`, value] : [value]));
-		const matchCandidates = [priorityConfig.label, priorityConfig.value].filter(
+		const matchCandidates = [priorityConfig.label, priorityConfig.value, configLabel(priorityConfig)].filter(
 			(value): value is string => typeof value === "string" && value.trim().length > 0
 		);
 		const residues = new Set<string>();
@@ -182,7 +239,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			title = this.removeTokenFragment(title, residue);
 		}
 
-		parsed.title = title || "Untitled Task";
+		parsed.title = title || LEGACY_UNTITLED_TITLE;
 		return parsed;
 	}
 
@@ -190,7 +247,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 		const priorityTrigger = this.taskNotesNlpTriggers?.triggers.find(
 			(trigger) => trigger.propertyId === "priority"
 		);
-		return priorityTrigger?.trigger || "";
+		return priorityTrigger?.trigger || "!";
 	}
 
 	private getStatusTrigger(): string {

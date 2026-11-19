@@ -54,6 +54,32 @@ describe("task movement edge scrolling", () => {
 		scroll.stop();
 	});
 
+	it("cannot reschedule after cancellation during hit testing", () => {
+		const scroll = new TaskMovementAutoScroll(container, () => scroll.stop());
+		scroll.update(100, 219);
+		tick();
+		expect(frames.size).toBe(0);
+	});
+
+	it("stops when its drag lease ends, ramps gently and clamps at the end", () => {
+		let active = true;
+		const scroll = new TaskMovementAutoScroll(container, onScroll, () => active);
+		scroll.update(100, 185);
+		tick();
+		const shallowStep = container.scrollTop;
+		scroll.stop();
+		container.scrollTop = 0;
+		scroll.update(100, 219);
+		tick();
+		expect(container.scrollTop).toBeGreaterThan(shallowStep * 4);
+		container.scrollTop = 399;
+		tick(32);
+		expect(container.scrollTop).toBe(400);
+		active = false;
+		tick(48);
+		expect(frames.size).toBe(0);
+	});
+
 	it.each([
 		[100, 120],
 		[400, 210],

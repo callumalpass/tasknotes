@@ -11,21 +11,21 @@ interface MockMenu {
 	showAtPosition: jest.Mock;
 	hide: jest.Mock;
 	onHide: jest.Mock;
-	hideCallbacks: Array<() => void>;
 }
 
 function createMockMenu(): MockMenu {
-	const hideCallbacks: Array<() => void> = [];
+	let hideCallback: (() => void) | undefined;
 	const menu = {
 		showAtMouseEvent: jest.fn(),
 		showAtPosition: jest.fn(),
 		hide: jest.fn(() => {
-			hideCallbacks.forEach((callback) => callback());
+			const callback = hideCallback;
+			hideCallback = undefined;
+			callback?.();
 		}),
 		onHide: jest.fn((callback: () => void) => {
-			hideCallbacks.push(callback);
+			hideCallback = callback;
 		}),
-		hideCallbacks,
 	};
 	return menu;
 }
@@ -48,6 +48,25 @@ describe("ContextMenuCoordinator", () => {
 	});
 
 	describe("showCoordinatedMenu", () => {
+		it("composes dismissal with coordination using the native single hide callback", () => {
+			const menu = createMockMenu();
+			const trigger = createTrigger();
+			const event = new MouseEvent("contextmenu");
+			Object.defineProperty(event, "target", { value: trigger });
+			const onHide = jest.fn();
+
+			showCoordinatedMenu(asMenu(menu), event, onHide);
+			expect(menu.onHide).toHaveBeenCalledTimes(1);
+			menu.hide();
+			expect(onHide).toHaveBeenCalledTimes(1);
+
+			const reopened = createMockMenu();
+			showCoordinatedMenuAtElement(asMenu(reopened), trigger, onHide);
+			expect(reopened.showAtPosition).toHaveBeenCalledTimes(1);
+			closeActiveContextMenu();
+			expect(onHide).toHaveBeenCalledTimes(2);
+		});
+
 		it("shows the menu at the mouse position on first activation", () => {
 			const menu = createMockMenu();
 			const trigger = createTrigger();

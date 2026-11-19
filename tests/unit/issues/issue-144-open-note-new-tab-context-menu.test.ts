@@ -85,10 +85,16 @@ function getTopLevelMenu(): MockMenu {
 	return menuMock.mock.results[0].value as MockMenu;
 }
 
-function findTopLevelTitle(menu: MockMenu, title: string): MockMenuItem | undefined {
-	return menu.items.find((item) =>
-		item.setTitle?.mock.calls.some(([value]) => value === title)
-	);
+function findMenuTitle(menu: MockMenu, title: string): MockMenuItem | undefined {
+	for (const item of menu.items) {
+		if (item.setTitle?.mock.calls.some(([value]) => value === title)) return item;
+		const submenu = item.setSubmenu?.mock.results[0]?.value as MockMenu | undefined;
+		if (submenu) {
+			const match = findMenuTitle(submenu, title);
+			if (match) return match;
+		}
+	}
+	return undefined;
 }
 
 describe("Issue #144: task context menu opens notes in a new tab", () => {
@@ -102,7 +108,7 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		menuMock.mockClear();
 	});
 
-	it("adds an Open note in new tab action under More in the task context menu", async () => {
+	it("adds a top-level Open note in new tab action to the task context menu", async () => {
 		const plugin = createPlugin();
 		await plugin.app.vault.create("Tasks/open-new-tab.md", "");
 
@@ -113,11 +119,13 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		});
 
 		const menu = getTopLevelMenu();
-		const moreItem = findTopLevelTitle(menu, "More");
-		const moreMenu = moreItem?.setSubmenu?.mock.results[0].value as MockMenu;
-		const newTabItem = findTopLevelTitle(moreMenu, "Open note in new tab");
+		const newTabItem = menu.items.find((item) =>
+			item.setTitle?.mock.calls.some(([value]) => value === "Open note in new tab")
+		);
 
 		expect(newTabItem).toBeDefined();
+		// The Note actions submenu does not repeat it.
+		expect(findMenuTitle(menu, "Open in new tab")).toBeUndefined();
 
 		const newTabHandler = newTabItem?.onClick?.mock.calls[0][0];
 		newTabHandler();
@@ -125,7 +133,7 @@ describe("Issue #144: task context menu opens notes in a new tab", () => {
 		expect(plugin.app.workspace.openLinkText).toHaveBeenCalledWith(
 			"Tasks/open-new-tab.md",
 			"",
-			true
+			"tab"
 		);
 	});
 });

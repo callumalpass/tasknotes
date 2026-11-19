@@ -1,8 +1,9 @@
+import { msg } from "@lingui/core/macro";
 import { type TFile } from "obsidian";
 import { createI18nService } from "../../i18n";
 import YAML from "yaml";
 import type TaskNotesPlugin from "../../main";
-import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, withCurrentTaskNotesContract } from "../mdbaseCanonicalConfig";
+import { parseMdbaseTaskTypeDocument, validateCanonicalTaskType, withAgreedVocabulary, withCurrentTaskNotesContract } from "../mdbaseCanonicalConfig";
 import { compileRecordSchema, validateTaskRecord, validationIssues } from "./contractValidation";
 import { taskExclusionExpression } from "./collectionConfig";
 import { recordDocument } from "./frontmatter";
@@ -47,7 +48,10 @@ export async function checkCollection(plugin: TaskNotesPlugin): Promise<Collecti
 		const validate = compileRecordSchema(schema);
 		const statusField = fields.status as string;
 		const dateCreatedField = fields.dateCreated as string;
-		const statusValues = object(object(implementation.binding).status).values as string[];
+		// The statuses TaskNotes reads from this type, which include one only its schema allows.
+		const agreed = withAgreedVocabulary(type);
+		const agreedImplementation = Array.isArray(agreed.implements) ? agreed.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
+		const statusValues = object(object((agreedImplementation ?? implementation).binding).status).values as string[];
 		const match = object(type.match);
 		try { assertSupportedMatch(type.match); }
 		catch (error) { throw new Error(`${provider.path}: ${String(error)}`); }
@@ -98,8 +102,8 @@ export async function repairCollectionRecord(
 	return withVaultFileMutation(problem.file, async () => {
 		// Recheck scope, bytes AND the current provider's repair semantics, not the old preview vocabulary.
 		const current = (await checkCollection(plugin)).find((candidate) => candidate.file.path === problem.file.path);
-		if (!current || current.content !== problem.content || current.dateCreatedField !== problem.dateCreatedField || current.statusField !== problem.statusField) throw new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.membershipChanged"));
-		const stale = () => new Error((plugin.i18n ?? createI18nService()).translate("collectionCheck.repairChanged"));
+		if (!current || current.content !== problem.content || current.dateCreatedField !== problem.dateCreatedField || current.statusField !== problem.statusField) throw new Error((plugin.i18n ?? createI18nService()).translate(msg({ message: "Collection membership or record changed since collection check; check again.", context: "collectionCheck.membershipChanged" })));
+		const stale = () => new Error((plugin.i18n ?? createI18nService()).translate(msg({ message: "The task type or allowed status values changed, or the proposed repair is no longer valid. Nothing was repaired; check the collection again.", context: "collectionCheck.repairChanged" })));
 		if (current.repairSignature !== problem.repairSignature || (statusChoice !== undefined && !current.statusValues.includes(statusChoice))) throw stale();
 		const { document, body, prefix } = recordDocument(problem.content);
 		let changed = false;

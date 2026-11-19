@@ -1,3 +1,5 @@
+import { NONE_GROUP_KEY, TRUE_GROUP_KEY, FALSE_GROUP_KEY } from "./groupKeys";
+import { isBasesEmptyPlaceholderValue } from "./basesValueKinds";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 type BasesFileLike = {
@@ -74,39 +76,60 @@ export function convertBasesValueToNative(value: unknown): unknown {
 
 export function convertBasesGroupKeyToString(key: unknown): string {
 	if (key === null || key === undefined) {
-		return "Unknown";
+		return NONE_GROUP_KEY;
 	}
 
 	const basesKey = key as BasesValueInternals;
 	if (basesKey.constructor?.name === "NullValue") {
-		return "Unknown";
+		return NONE_GROUP_KEY;
 	}
 
 	if (isBasesEmptyPlaceholderValue(basesKey)) {
-		return "None";
+		return NONE_GROUP_KEY;
 	}
 
 	const actualValue = extractBasesGroupKeyValue(basesKey);
 	return formatBasesGroupKeyValue(actualValue);
 }
 
-export function convertBasesListGroupKeyToString(key: unknown): string {
-	if (key === null || key === undefined) {
-		return convertBasesGroupKeyToString(key);
-	}
+const LINK_MARKUP = /^(?:\[\[[^\]]+\]\]|\[[^\]]*\]\([^)]+\))$/;
+
+function basesLinkMarkup(value: unknown): string | null {
+	if (value === null || typeof value !== "object") return null;
+	const data = (value as BasesValueInternals).data;
+	if (typeof data !== "string") return null;
+	const toString = Reflect.get(value, "toString");
+	if (typeof toString !== "function" || toString === Object.prototype.toString) return null;
+	const markup: unknown = Reflect.apply(toString, value, []);
+	return typeof markup === "string" && markup !== data && LINK_MARKUP.test(markup) ? markup : null;
+}
+
+/**
+ * Link markup for a Bases group key whose value is a link or a list of links.
+ * Group key strings drop link syntax ("[[Project]]" becomes "Project"), so headers use
+ * this to keep rendering links without resolving every bare name as a note.
+ */
+export function convertBasesGroupKeyToLinkTitle(key: unknown): string | null {
+	const single = basesLinkMarkup(key);
+	if (single) return single;
+	if (key === null || typeof key !== "object") return null;
 
 	const basesKey = key as BasesValueInternals;
-	const actualValue = extractBasesGroupKeyValue(basesKey);
-	if (!Array.isArray(actualValue)) {
-		return formatBasesGroupKeyValue(actualValue);
-	}
+	const getListItem =
+		typeof basesKey.get === "function"
+			? basesKey.get.bind(basesKey)
+			: typeof basesKey.at === "function"
+				? basesKey.at.bind(basesKey)
+				: null;
+	if (typeof basesKey.length !== "function" || !getListItem) return null;
 
-	const sortedValues = actualValue.map(stringifyUnknown).sort((left, right) => {
-		if (left < right) return -1;
-		if (left > right) return 1;
-		return 0;
-	});
-	return sortedValues.length > 0 ? sortedValues.join(", ") : "None";
+	const links: string[] = [];
+	for (let i = 0; i < basesKey.length(); i++) {
+		const markup = basesLinkMarkup(getListItem(i));
+		if (!markup) return null;
+		links.push(markup);
+	}
+	return links.length > 0 ? links.join(", ") : null;
 }
 
 function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
@@ -135,22 +158,6 @@ function extractBasesGroupKeyValue(basesKey: BasesValueInternals): unknown {
 	return basesKey;
 }
 
-function isBasesEmptyPlaceholderValue(value: BasesValueInternals): boolean {
-	return (
-		value.icon === "lucide-file-question" &&
-		typeof value.data === "undefined" &&
-		typeof value.display === "undefined" &&
-		typeof value.label === "undefined" &&
-		!(value.date instanceof Date) &&
-		!value.file &&
-		!Array.isArray(value.value) &&
-		typeof value.get !== "function" &&
-		typeof value.at !== "function" &&
-		typeof value.length !== "function" &&
-		typeof value.toISOString !== "function"
-	);
-}
-
 function extractBasesScalarValue(value: BasesValueInternals): string | number | boolean | undefined {
 	for (const candidate of [value.value, value.display, value.label]) {
 		if (
@@ -167,7 +174,7 @@ function extractBasesScalarValue(value: BasesValueInternals): string | number | 
 
 function formatBasesGroupKeyValue(actualValue: unknown): string {
 	if (actualValue === null || actualValue === undefined) {
-		return "None";
+		return NONE_GROUP_KEY;
 	}
 
 	if (actualValue instanceof Date) {
@@ -178,17 +185,17 @@ function formatBasesGroupKeyValue(actualValue: unknown): string {
 	}
 
 	if (typeof actualValue === "string") {
-		return actualValue || "None";
+		return actualValue || NONE_GROUP_KEY;
 	}
 	if (typeof actualValue === "number") return String(actualValue);
-	if (typeof actualValue === "boolean") return actualValue ? "True" : "False";
+	if (typeof actualValue === "boolean") return actualValue ? TRUE_GROUP_KEY : FALSE_GROUP_KEY;
 	if (Array.isArray(actualValue)) {
 		return actualValue.length > 0
 			? actualValue.map(stringifyUnknown).join(", ")
-			: "None";
+			: NONE_GROUP_KEY;
 	}
 
-	return stringifyUnknown(actualValue) || "None";
+	return stringifyUnknown(actualValue) || NONE_GROUP_KEY;
 }
 
 function convertBasesListValueToNative(basesValue: BasesValueInternals): unknown[] | null {

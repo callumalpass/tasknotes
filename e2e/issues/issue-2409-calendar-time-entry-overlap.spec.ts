@@ -67,30 +67,30 @@ views:
       await app.workspace.getLeaf().openFile(base);
     }, { notePath, basePath, note, firstDay, folder });
 
-    await page.locator('.fc').waitFor();
+    await page.locator('.tnc').waitFor();
     await page.waitForFunction(() =>
       (window as any).app.workspace.getMostRecentLeaf().view.controller?.view?.calendar
     );
     await page.evaluate((date) => {
       const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
-      view.calendar.changeView('timeGridWeek', date);
+      view.calendar.changeView('week', date);
     }, startDate);
 
     const segment = (date: string) => page
-      .locator(`.fc-timegrid-col[data-date="${date}"] .fc-timegrid-event`)
+      .locator(`.tnc-col[data-date="${date}"] .tnc-item--timed`)
       .filter({ hasText: title });
 
     await expect(segment(startDate)).toHaveCount(1);
-    await page.locator('.fc-next-button').click();
+    await page.locator('.tnc-btn-next').click();
     await expect(segment(endDate)).toHaveCount(1);
-    await page.locator('.fc-prev-button').click();
+    await page.locator('.tnc-btn-prev').click();
     await expect(segment(startDate)).toHaveCount(1);
-    await page.locator('.fc-next-button').click();
+    await page.locator('.tnc-btn-next').click();
     await expect(segment(endDate)).toHaveCount(1);
 
     await page.evaluate((date) => {
       const view = (window as any).app.workspace.getMostRecentLeaf().view.controller.view;
-      view.calendar.changeView('timeGridDay', date);
+      view.calendar.changeView('day', date);
     }, endDate);
     await expect(segment(endDate)).toHaveCount(1);
 

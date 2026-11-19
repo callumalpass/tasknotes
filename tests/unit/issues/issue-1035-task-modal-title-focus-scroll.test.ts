@@ -3,8 +3,11 @@ import { TaskModal } from '../../../src/modals/TaskModal';
 import { MockObsidian } from '../../helpers/obsidian-runtime';
 
 class TestTaskModal extends TaskModal {
+	protected readonly mode = "create" as const;
 	async initializeFormData(): Promise<void> {}
-	async handleSave(): Promise<void> {}
+	async handleSave() {
+		return { status: "saved" as const };
+	}
 	getModalTitle(): string {
 		return 'Test task modal';
 	}

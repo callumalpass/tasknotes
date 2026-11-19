@@ -13,6 +13,8 @@ export class TaskLinkWidget extends WidgetType {
 	private displayText?: string;
 	private targetDate: Date;
 	private targetDateKey: string;
+	/** Inline display settings this widget was drawn with, so a settings change redraws it. */
+	private displaySettingsKey: string;
 
 	constructor(
 		taskInfo: TaskInfo,
@@ -20,7 +22,8 @@ export class TaskLinkWidget extends WidgetType {
 		originalText: string,
 		displayText?: string,
 		targetDate: Date = createUTCDateFromLocalCalendarDate(new Date()),
-		private subpath?: string
+		private subpath?: string,
+		private inSentence = false
 	) {
 		super();
 		this.taskInfo = taskInfo;
@@ -29,6 +32,10 @@ export class TaskLinkWidget extends WidgetType {
 		this.displayText = displayText;
 		this.targetDate = targetDate;
 		this.targetDateKey = formatDateForStorage(targetDate);
+		this.displaySettingsKey = JSON.stringify([
+			plugin.settings?.inlineVisibleProperties,
+			plugin.settings?.wrapInlineTaskProperties,
+		]);
 	}
 
 	toDOM(view: EditorView): HTMLElement {
@@ -41,11 +48,15 @@ export class TaskLinkWidget extends WidgetType {
 			"scheduled",
 			"recurrence",
 		];
-		const visibleProperties = convertInternalToUserProperties(internalProperties, this.plugin);
+		const visibleProperties = convertInternalToUserProperties(
+			this.taskInfo.isBlocked ? [...new Set([...internalProperties, "blocked"])] : internalProperties,
+			this.plugin
+		);
 
 		// Create a wrapper span with the tasknotes-plugin class for CSS scoping
 		const wrapper = activeWindow.createSpan();
 		wrapper.className = "tasknotes-plugin tasknotes-inline-widget";
+		wrapper.classList.toggle("tasknotes-inline-widget--sentence", this.inSentence);
 		// Ensure wrapper displays inline to prevent line breaks
 		wrapper.classList.remove(
 			"tn-static-display-block-2a1b75c9",
@@ -65,9 +76,11 @@ export class TaskLinkWidget extends WidgetType {
 		wrapper.addEventListener("pointerdown", (event) => {
 			event.stopPropagation();
 		});
+		// A draggable wrapper already keeps the caret in place, and cancelling its
+		// mousedown would stop it from being dragged onto a Calendar view.
 		wrapper.addEventListener("mousedown", (event) => {
 			event.stopPropagation();
-			if (event.button === 0) {
+			if (event.button === 0 && !wrapper.draggable) {
 				event.preventDefault();
 			}
 		});
@@ -82,12 +95,27 @@ export class TaskLinkWidget extends WidgetType {
 			displayText: this.displayText,
 			navigationSubpath: this.subpath,
 		});
+		const mainRow = card.querySelector(".task-card__main-row");
+		const content = card.querySelector(".task-card__content");
+		const status = card.querySelector(".task-card__status-dot");
+		const menu = card.querySelector(".task-card__context-menu");
+		if (this.inSentence && mainRow && content && menu) {
+			const controls = activeWindow.createSpan();
+			controls.className = "task-card__inline-controls";
+			if (status) controls.append(status);
+			mainRow.insertBefore(controls, content);
+			mainRow.insertBefore(card.ownerDocument.createTextNode("\u2060"), content);
+			mainRow.append(menu);
+		}
 
 		// Add card to wrapper
 		wrapper.appendChild(card);
 
 		// Store original text for reference
 		card.dataset.originalText = this.originalText;
+
+		// Let the widget be dragged onto Calendar views to schedule the task
+		this.plugin.dragDropManager?.makeTaskCardDraggable(wrapper, this.taskInfo.path);
 
 		// Trigger update after status changes (for editor sync)
 		// Listen for task updates within the card
@@ -110,6 +138,7 @@ export class TaskLinkWidget extends WidgetType {
 			return false;
 		}
 		return (
+			this.inSentence === other.inSentence &&
 			this.taskInfo.path === other.taskInfo.path &&
 			this.taskInfo.status === other.taskInfo.status &&
 			this.taskInfo.title === other.taskInfo.title &&
@@ -118,10 +147,13 @@ export class TaskLinkWidget extends WidgetType {
 			this.taskInfo.due === other.taskInfo.due &&
 			this.taskInfo.scheduled === other.taskInfo.scheduled &&
 			this.taskInfo.recurrence === other.taskInfo.recurrence &&
+			this.taskInfo.isBlocked === other.taskInfo.isBlocked &&
+			JSON.stringify(this.taskInfo.blockedBy) === JSON.stringify(other.taskInfo.blockedBy) &&
 			this.displayText === other.displayText &&
 			this.subpath === other.subpath &&
 			this.originalText === other.originalText &&
 			this.targetDateKey === other.targetDateKey &&
+			this.displaySettingsKey === other.displaySettingsKey &&
 			JSON.stringify(this.taskInfo.complete_instances) ===
 				JSON.stringify(other.taskInfo.complete_instances) &&
 			JSON.stringify(this.taskInfo.skipped_instances) ===
@@ -137,7 +169,12 @@ export class TaskLinkWidget extends WidgetType {
 	ignoreEvent(event: Event): boolean {
 		// Ignore mouse events to prevent cursor from moving into widget
 		// This keeps the widget rendered while interacting with it
-		if (event.type === "mousedown" || event.type === "click") {
+		if (
+			event.type === "mousedown" ||
+			event.type === "click" ||
+			event.type === "dragstart" ||
+			event.type === "dragend"
+		) {
 			return true;
 		}
 		return false;

@@ -336,21 +336,23 @@ describe('Helpers', () => {
 
     describe('formatTime', () => {
       it('should format hours and minutes', () => {
-        expect(formatTime(90)).toBe('1h 30m');
-        expect(formatTime(120)).toBe('2h');
-        expect(formatTime(45)).toBe('45m');
-        expect(formatTime(0)).toBe('0m');
+        expect(formatTime(90)).toBe('1 hr 30 min');
+        expect(formatTime(120)).toBe('2 hr');
+        expect(formatTime(45)).toBe('45 min');
+        expect(formatTime(0)).toBe('0 min');
+        expect(formatTime(0.5)).toBe('0.5 min');
+        expect(formatTime(119.9999)).toBe('2 hr');
       });
 
       it('should handle edge cases', () => {
-        expect(formatTime(null as any)).toBe('0m');
-        expect(formatTime(undefined as any)).toBe('0m');
-        expect(formatTime(NaN)).toBe('0m');
+        expect(formatTime(null as any)).toBe('0 min');
+        expect(formatTime(undefined as any)).toBe('0 min');
+        expect(formatTime(NaN)).toBe('0 min');
       });
 
       it('should handle large values', () => {
-        expect(formatTime(1440)).toBe('24h'); // 24 hours
-        expect(formatTime(1500)).toBe('25h'); // 25 hours
+        expect(formatTime(1440)).toBe('24 hr'); // 24 hours
+        expect(formatTime(1500)).toBe('25 hr'); // 25 hours
       });
     });
 
@@ -483,7 +485,7 @@ describe('Helpers', () => {
         expect(result).toMatchObject({
           title: 'my-task',
           status: 'open',
-          priority: 'normal',
+          priority: '',
           path: '/tasks/my-task.md',
           archived: false
         });
@@ -497,6 +499,8 @@ describe('Helpers', () => {
 
         expect(result).toBeDefined();
         expect(result?.title).toBe('Test');
+        // #2581: a missing priority stays empty rather than becoming "normal".
+        expect(result?.priority).toBe('');
       });
     });
 
@@ -894,6 +898,64 @@ invalid yaml: [
         const result = extractTimeblocksFromNote(content, '/notes/test.md');
         expect(result).toEqual([]);
       });
+
+      it('should find the real closing fence when a value contains "---" mid-line', () => {
+        // Regression test: a `---` inside a frontmatter value used to be
+        // mistaken for the closing fence, truncating the frontmatter before
+        // the timeblocks list and silently dropping every timeblock.
+        const content = `---
+description: "Section A --- Section B"
+timeblocks:
+  - id: tb-1
+    title: Standup
+    startTime: "09:00"
+    endTime: "09:15"
+---
+
+# Daily Note Content`;
+
+        const result = extractTimeblocksFromNote(content, '/daily/2025-01-15.md');
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ id: 'tb-1', title: 'Standup' });
+      });
+
+      it('should find the real closing fence when a value is literally "---"', () => {
+        const content = `---
+marker: "---"
+timeblocks:
+  - id: tb-1
+    title: Standup
+    startTime: "09:00"
+    endTime: "09:15"
+---
+
+# Daily Note Content`;
+
+        const result = extractTimeblocksFromNote(content, '/daily/2025-01-15.md');
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ id: 'tb-1', title: 'Standup' });
+      });
+
+      it('should handle CRLF line endings', () => {
+        const content =
+          '---\r\ndescription: "A --- B"\r\ntimeblocks:\r\n  - id: tb-1\r\n    title: Standup\r\n    startTime: "09:00"\r\n    endTime: "09:15"\r\n---\r\n\r\n# Daily Note Content';
+
+        const result = extractTimeblocksFromNote(content, '/daily/2025-01-15.md');
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({ id: 'tb-1', title: 'Standup' });
+      });
+
+      it('should return empty array for content with no frontmatter at all', () => {
+        const content = '# Just a heading\n\nSome regular text';
+        const result = extractTimeblocksFromNote(content, '/notes/test.md');
+        expect(result).toEqual([]);
+      });
+
+      it('should return empty array (not throw) when the frontmatter fence is never closed', () => {
+        const content = '---\ntimeblocks:\n  - id: tb-1\n    title: Standup';
+        expect(() => extractTimeblocksFromNote(content, '/notes/test.md')).not.toThrow();
+        expect(extractTimeblocksFromNote(content, '/notes/test.md')).toEqual([]);
+      });
     });
   });
 
@@ -901,7 +963,7 @@ invalid yaml: [
     it('should handle null and undefined inputs gracefully', () => {
       expect(calculateTotalTimeSpent(null as any)).toBe(0);
       expect(getActiveTimeEntry(undefined as any)).toBeNull();
-      expect(formatTime(null as any)).toBe('0m');
+      expect(formatTime(null as any)).toBe('0 min');
       expect(parseTime(null as any)).toBeNull();
     });
 

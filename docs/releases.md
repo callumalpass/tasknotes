@@ -6,7 +6,15 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 
 ### Version 5.x (Current)
 
-- [5.0.0-beta.6.1](releases/5.0.0-beta.6.1.md)
+- [5.0.1](releases/5.0.1.md)
+- [5.0.0](releases/5.0.0.md)
+- [5.0.0-beta.13](releases/5.0.0-beta.13.md)
+- [5.0.0-beta.12](releases/5.0.0-beta.12.md)
+- [5.0.0-beta.11](releases/5.0.0-beta.11.md)
+- [5.0.0-beta.10](releases/5.0.0-beta.10.md)
+- [5.0.0-beta.9](releases/5.0.0-beta.9.md)
+- [5.0.0-beta.8](releases/5.0.0-beta.8.md)
+- [5.0.0-beta.7](releases/5.0.0-beta.7.md)
 - [5.0.0-beta.6](releases/5.0.0-beta.6.md)
 - [5.0.0-beta.5](releases/5.0.0-beta.5.md)
 - [5.0.0-beta.4](releases/5.0.0-beta.4.md)
@@ -17,6 +25,15 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 
 ### Version 4.x
 
+- [4.18.4](releases/4.18.4.md)
+- [4.18.3](releases/4.18.3.md)
+- [4.18.2](releases/4.18.2.md)
+- [4.18.1](releases/4.18.1.md)
+- [4.18.0](releases/4.18.0.md)
+- [4.17.0](releases/4.17.0.md)
+- [4.16.1](releases/4.16.1.md)
+- [4.16.0](releases/4.16.0.md)
+- [4.15.0](releases/4.15.0.md)
 - [4.14.0](releases/4.14.0.md)
 - [4.13.10](releases/4.13.10.md)
 - [4.13.9](releases/4.13.9.md)

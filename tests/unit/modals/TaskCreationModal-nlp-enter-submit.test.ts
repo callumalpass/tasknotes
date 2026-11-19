@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import { autocompletion, type CompletionSource } from "@codemirror/autocomplete";
+import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import type {
@@ -31,8 +31,7 @@ jest.mock("../../../src/editor/NLPCodeMirrorAutocomplete", () => ({
 jest.mock("../../../src/services/NaturalLanguageParser", () => ({
 	NaturalLanguageParser: {
 		fromPlugin: jest.fn(() => ({
-			parseInput: jest.fn(() => ({ title: "Captured task" })),
-			getPreviewData: jest.fn(() => []),
+			parseInputForModal: jest.fn(() => ({ title: "Captured task" })),
 		})),
 	},
 }));
@@ -73,14 +72,25 @@ function setup(nlpEnterToSubmit: boolean) {
 const views: EditorView[] = [];
 
 /** A real CodeMirror view behind the editor's completion helpers, after typing text. */
-async function typedEditor(source: CompletionSource, interactionDelay?: number) {
+async function typedEditor(
+	source: CompletionSource,
+	interactionDelay?: number,
+	until: "active" | "pending" = "active"
+) {
 	const view = new EditorView({
 		state: EditorState.create({ extensions: [autocompletion({ override: [source], interactionDelay })] }),
 		parent: document.body,
 	});
 	views.push(view);
 	view.dispatch({ changes: { from: 0, insert: "Buy milk" }, selection: { anchor: 8 }, userEvent: "input.type" });
-	await new Promise((resolve) => setTimeout(resolve, 250));
+	// Wait for the completion state rather than a fixed delay, which a loaded test run can outlast.
+	const deadline = Date.now() + 5000;
+	while (completionStatus(view.state) !== until && Date.now() < deadline) {
+		await new Promise((resolve) => setTimeout(resolve, 10));
+	}
+	expect(completionStatus(view.state)).toBe(until);
+	// CodeMirror refuses to accept a suggestion for interactionDelay (75 ms by default) after it opens.
+	await new Promise((resolve) => setTimeout(resolve, 150));
 	const editor = Object.create(RealEditor.prototype, { editor: { value: { cm: view } } }) as EditorType;
 	return { view, editor };
 }
@@ -107,7 +117,7 @@ describe("TaskCreationModal NLP input: Enter to submit", () => {
 
 	it("saves on Enter right after typing while a completion query is still pending", async () => {
 		const { options, submit } = setup(true);
-		const { editor } = await typedEditor(() => new Promise(() => undefined));
+		const { editor } = await typedEditor(() => new Promise(() => undefined), undefined, "pending");
 		expect(options.onEnter?.(editor, false, false)).toBe(true);
 		expect(submit).toHaveBeenCalledWith(false);
 	});
@@ -126,23 +136,5 @@ describe("TaskCreationModal NLP input: Enter to submit", () => {
 		expect(options.onEnter?.(editor, false, false)).toBe(true);
 		expect(view.state.doc.toString()).toBe("Buy milk");
 		expect(submit).not.toHaveBeenCalled();
-	});
-
-	it("does not save from the textarea fallback while Enter confirms IME composition", async () => {
-		MockedEditor.mockImplementationOnce(() => {
-			throw new Error("editor unavailable");
-		});
-		const { modal, submit } = setup(true);
-		const textarea = (modal as any).nlInput as HTMLTextAreaElement;
-		textarea.value = "買い物";
-		textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", isComposing: true }));
-		// WebKit order: compositionend, then the confirming Enter without isComposing
-		textarea.dispatchEvent(new Event("compositionstart"));
-		textarea.dispatchEvent(new Event("compositionend"));
-		textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-		expect(submit).not.toHaveBeenCalled();
-		await new Promise((resolve) => setTimeout(resolve, 0));
-		textarea.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-		expect(submit).toHaveBeenCalledWith(false);
 	});
 });

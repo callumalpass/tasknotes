@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -284,7 +285,7 @@ export class CalendarExportService {
 			parts.push(`Open in Obsidian: ${obsidianUri}`);
 		}
 
-		return parts.join("\n");
+		return uiData(parts.join("\n"), "Pre-port ICS DESCRIPTION contract; exported data stays stable English");
 	}
 
 	private static buildObsidianOpenUri(task: TaskInfo, options?: ICSExportOptions): string | null {
@@ -292,9 +293,9 @@ export class CalendarExportService {
 			return null;
 		}
 
-		return `obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
+		return uiData(`obsidian://open?vault=${encodeURIComponent(options.vaultName)}&file=${encodeURIComponent(
 			task.path
-		)}`;
+		)}`, "Obsidian deep-link URI; preserve the protocol and encoded vault/file data");
 	}
 
 	/**
@@ -434,6 +435,26 @@ export class CalendarExportService {
 				startLine: `DTSTART;VALUE=DATE:${this.formatDateOnlyToICS(startDate)}`,
 				endLine: `DTEND;VALUE=DATE:${this.formatDateOnlyToICS(endDateExclusive)}`,
 			};
+		}
+
+		// A task with only a due date is an event on that date, not a span
+		// ending at it.
+		if (!task.scheduled && task.due) {
+			if (!this.hasTimeComponent(task.due)) {
+				return {
+					startLine: `DTSTART;VALUE=DATE:${this.formatDateOnlyToICS(task.due)}`,
+					endLine: `DTEND;VALUE=DATE:${this.formatDateOnlyToICS(this.addDaysToDateString(task.due, 1))}`,
+				};
+			}
+			try {
+				const due = this.parseTaskDate(task.due);
+				return {
+					startLine: `DTSTART:${this.formatDateToICS(due)}`,
+					endLine: `DTEND:${this.formatDateToICS(new Date(due.getTime() + 60 * 60 * 1000))}`,
+				};
+			} catch {
+				// fall through to the range below
+			}
 		}
 
 		const { startICS, endICS } = this.getICSDateFormat(task, useScheduledAsDue, options);

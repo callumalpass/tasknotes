@@ -1,7 +1,10 @@
 import { requestUrl, requireApiVersion } from "obsidian";
 
-export const TASKNOTES_RELEASE_MANIFEST_URL =
-	"https://github.com/callumalpass/tasknotes/releases/latest/download/manifest.json";
+// Query the releases API and raw files rather than release assets: fetching a release
+// asset counts as a download in GitHub's statistics, which Obsidian reports as installs.
+export const TASKNOTES_LATEST_RELEASE_URL =
+	"https://api.github.com/repos/callumalpass/tasknotes/releases/latest";
+const TASKNOTES_RAW_BASE_URL = "https://raw.githubusercontent.com/callumalpass/tasknotes";
 export const TASKNOTES_VERSIONS_URL =
 	"https://raw.githubusercontent.com/callumalpass/tasknotes/main/versions.json";
 export const TASKNOTES_COMMUNITY_PLUGIN_URL = "obsidian://show-plugin?id=tasknotes";
@@ -98,9 +101,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-async function requestJson<T>(url: string): Promise<T> {
-	const response = await requestUrl({ url, method: "GET" });
+async function requestJson<T>(url: string, headers?: Record<string, string>): Promise<T> {
+	const response = await requestUrl({ url, method: "GET", headers });
 	return response.json as T;
+}
+
+function getReleaseTag(value: unknown): string | null {
+	if (!isRecord(value) || typeof value.tag_name !== "string") {
+		return null;
+	}
+	const tag = value.tag_name.trim();
+	return tag || null;
 }
 
 function normalizeManifest(value: unknown): PluginManifest | null {
@@ -166,8 +177,19 @@ export function shouldNotifyForRelease(
 }
 
 export async function getAvailableTaskNotesReleaseVersion(): Promise<string | null> {
+	const latestTag = getReleaseTag(
+		await requestJson<unknown>(TASKNOTES_LATEST_RELEASE_URL, {
+			Accept: "application/vnd.github+json",
+		})
+	);
+	if (!latestTag) {
+		return null;
+	}
+
 	const latestManifest = normalizeManifest(
-		await requestJson<unknown>(TASKNOTES_RELEASE_MANIFEST_URL)
+		await requestJson<unknown>(
+			`${TASKNOTES_RAW_BASE_URL}/${encodeURIComponent(latestTag)}/manifest.json`
+		)
 	);
 	if (!latestManifest) {
 		return null;

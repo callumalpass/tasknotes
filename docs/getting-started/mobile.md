@@ -6,6 +6,10 @@ description: What is shared between TaskNotes desktop and mobile, and which inte
 
 TaskNotes task files, Base files, settings, and most commands work on Obsidian mobile. Sync the complete vault, including `.base` files and `.obsidian/plugins/tasknotes/data.json`, when you want the same configuration on every device.
 
+## TaskNotes App
+
+TaskNotes App is a separate app for the web, iPhone and Android that works with the same task notes. To use it with your vault, choose either the mdbase desktop app or the [mdbase sync plugin for Obsidian](obsidian://show-plugin?id=mdbase-sync). You only need one. Use one sync service per vault: a vault synced with mdbase should not also be synced with Obsidian Sync, iCloud or another service. See [Use TaskNotes App with your vault](../guides/tasknotes-app.md).
+
 ## Before opening TaskNotes
 
 1. Install an Obsidian mobile version compatible with the current [TaskNotes requirement](../reference/compatibility.md).

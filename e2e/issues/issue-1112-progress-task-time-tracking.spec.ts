@@ -17,7 +17,7 @@
  *
  * Problems with current workarounds:
  * - Task Time Tracking: Shows total time, not per-period time
- * - Project Statistics: Can filter by date range but requires manual date picker updates
+ * - Bases views can total time entries with formulas, but not per recurrence period
  * - Recurring Tasks: Require manual completion to advance to next instance
  *
  * Use cases:
@@ -175,64 +175,6 @@ test.describe('Issue #1112: Progress Task Time Tracking Features', () => {
 
           // Document expected behavior
           expect(hasPeriodGrouping).toBe(true);
-        }
-
-        await page.keyboard.press('Escape');
-      }
-    );
-
-    test.fixme(
-      'reproduces issue #1112 - stats view should support "since last recurrence" filter',
-      async () => {
-        /**
-         * The Project and Task Statistics view can filter by date ranges,
-         * but requires manually updating "Date -> Custom Range" to see
-         * time since start of week/month/etc.
-         *
-         * Expected behavior:
-         * - Quick filter option: "Since last recurrence"
-         * - For weekly tasks: shows time tracked since Monday (or configured week start)
-         * - For daily tasks: shows time tracked today
-         * - For monthly tasks: shows time tracked since 1st of month
-         *
-         * This would make it easy to answer: "How much have I worked on X this period?"
-         */
-        const page = app.page;
-
-        // Open stats view
-        await runCommand(page, 'TaskNotes: Open statistics view');
-        await page.waitForTimeout(1000);
-
-        const statsView = page.locator('.tasknotes-stats-view, [data-view-type*="stats"]');
-        await expect(statsView).toBeVisible({ timeout: 10000 });
-
-        // Look for date range filters
-        const dateFilter = page.locator(
-          '.date-filter, ' +
-            '[data-testid="date-range-filter"], ' +
-            'button:has-text("Date"), ' +
-            '.stats-filter-date'
-        );
-
-        if (await dateFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await dateFilter.click();
-          await page.waitForTimeout(300);
-
-          // After implementation: look for "Since last recurrence" option
-          const recurrenceOption = page.locator(
-            'text=Since last recurrence, ' +
-              'text=This period, ' +
-              'text=Current recurrence, ' +
-              '[data-filter="since-recurrence"]'
-          );
-
-          const hasRecurrenceFilter = await recurrenceOption
-            .isVisible({ timeout: 1000 })
-            .catch(() => false);
-          console.log(`Has "since last recurrence" filter: ${hasRecurrenceFilter}`);
-
-          // Document expected behavior
-          expect(hasRecurrenceFilter).toBe(true);
         }
 
         await page.keyboard.press('Escape');
@@ -444,12 +386,12 @@ test.describe('Issue #1112: Progress Task Time Tracking Features', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Find a recurring task event
         const recurringEvent = page
-          .locator('.fc-event')
+          .locator('.tnc-item')
           .filter({ has: page.locator('[data-is-recurring="true"], .recurring-indicator') })
           .first();
 
@@ -705,46 +647,6 @@ test.describe('Issue #1112: Progress Task Time Tracking Features', () => {
   });
 
   test.describe('Edge Cases and Integration', () => {
-    test.fixme(
-      'reproduces issue #1112 - progress tasks should integrate with Project Statistics',
-      async () => {
-        /**
-         * Progress tasks should work well with the existing Project and Task Statistics view.
-         *
-         * Integration points:
-         * - Show progress tasks in project breakdown
-         * - Display per-period time for progress tasks (not just total)
-         * - Include progress tasks in "today/week/month" stats appropriately
-         * - Allow filtering to show only progress tasks or exclude them
-         */
-        const page = app.page;
-
-        await runCommand(page, 'TaskNotes: Open statistics view');
-        await page.waitForTimeout(1000);
-
-        const statsView = page.locator('.tasknotes-stats-view, [data-view-type*="stats"]');
-        await expect(statsView).toBeVisible({ timeout: 10000 });
-
-        // After implementation: progress tasks should be distinguishable
-        const progressTaskSection = statsView.locator(
-          '.progress-tasks-section, ' + '[data-task-type="progress"], ' + '.progress-task-stats'
-        );
-
-        const hasProgressSection = await progressTaskSection
-          .isVisible({ timeout: 2000 })
-          .catch(() => false);
-        console.log(`Stats view has progress task section: ${hasProgressSection}`);
-
-        // Check for progress-specific metrics
-        const periodProgress = statsView.locator(
-          '.period-progress, ' + '[data-metric="period-time"], ' + '.this-period-time'
-        );
-
-        const hasPeriodMetrics = await periodProgress.isVisible({ timeout: 1000 }).catch(() => false);
-        console.log(`Has period-specific metrics: ${hasPeriodMetrics}`);
-      }
-    );
-
     test.fixme('reproduces issue #1112 - handle timezone changes gracefully', async () => {
       /**
        * Progress tasks with time tracking need to handle timezone changes gracefully.

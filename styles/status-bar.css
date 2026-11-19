@@ -5,7 +5,7 @@
     align-items: center;
     gap: 4px;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--tn-radius-sm);
     background: transparent;
     transition: background-color 0.2s ease;
     min-width: 0; /* Allow text truncation */
@@ -16,13 +16,13 @@
 }
 
 .tasknotes-status-icon {
-    font-size: 12px;
+    font-size: var(--tn-type-xs);
     line-height: 1;
     flex-shrink: 0;
 }
 
 .tasknotes-status-text {
-    font-size: 12px;
+    font-size: var(--tn-type-xs);
     line-height: 1;
     white-space: nowrap;
     overflow: hidden;

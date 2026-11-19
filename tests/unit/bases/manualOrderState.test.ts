@@ -1,4 +1,5 @@
 import {
+	captureTaskViewScroll,
 	applySortOrderUpdatesToItems,
 	applySortOrderUpdatesToTaskCache,
 	buildSortOrderUpdateMap,
@@ -19,6 +20,23 @@ function createTask(path: string, sortOrder?: string): TaskInfo {
 }
 
 describe("manualOrderState", () => {
+	it("restores nested and ancestor scroll offsets after cancellation", () => {
+		const parent = document.body.createDiv();
+		const root = parent.createDiv();
+		const column = root.createDiv();
+		Object.defineProperties(column, { scrollHeight: { value: 1000 }, clientHeight: { value: 200 } });
+		parent.scrollTop = 25;
+		root.scrollLeft = 40;
+		column.scrollTop = 100;
+		const restore = captureTaskViewScroll(root);
+		parent.scrollTop = 80;
+		root.scrollLeft = 200;
+		column.scrollTop = 600;
+		restore();
+		expect([parent.scrollTop, root.scrollLeft, column.scrollTop]).toEqual([25, 40, 100]);
+		parent.remove();
+	});
+
 	it("builds sort-order updates for dragged and additional writes", () => {
 		const updates = buildSortOrderUpdateMap("Tasks/a.md", {
 			sortOrder: "tn0000000001",

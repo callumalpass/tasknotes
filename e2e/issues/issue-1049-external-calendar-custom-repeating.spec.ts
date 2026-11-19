@@ -72,13 +72,13 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for ICS/external calendar events
       // These typically have a distinct style (read-only, different source indicator)
       const externalEvents = page.locator(
-        '.fc-event[data-source="ics"], .fc-event.ics-event, .fc-event .external-event-indicator'
+        '.tnc-item[data-source="ics"], .tnc-item.ics-event, .tnc-item .external-event-indicator'
       );
 
       const externalEventCount = await externalEvents.count();
@@ -87,7 +87,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       // Check sidebar for ICS subscription toggles
       const icsToggle = page.locator(
         '.calendar-sidebar [data-calendar-type="ics"], ' +
-          '.fc-sidebar .ics-calendar-toggle, ' +
+          '.ics-calendar-toggle, ' +
           '[aria-label*="ICS"], ' +
           '.external-calendar-toggle'
       );
@@ -99,14 +99,14 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       // This is the core of the bug - recurring events with custom patterns don't show
       if (hasICSSubscriptions) {
         // Navigate through the calendar to find where events should be
-        const todayButton = page.locator('.fc-today-button');
+        const todayButton = page.locator('.tnc-btn-today');
         if (await todayButton.isVisible().catch(() => false)) {
           await todayButton.click();
           await page.waitForTimeout(500);
         }
 
         // Check for any events on the calendar
-        const allEvents = page.locator('.fc-event');
+        const allEvents = page.locator('.tnc-item');
         const totalEventCount = await allEvents.count();
 
         console.log(`Total events visible: ${totalEventCount}`);
@@ -138,12 +138,12 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to month view to see the pattern
       const monthButton = page.locator(
-        '.fc-dayGridMonth-button, button:has-text("month"), .fc-toolbar button:has-text("Month")'
+        '.tnc-btn-view-month, button:has-text("month"), .tnc-toolbar button:has-text("Month")'
       );
       if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await monthButton.click();
@@ -152,11 +152,11 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
 
       // In month view, look for events on the 2nd Monday cells
       // The 2nd Monday is between day 8-14 of the month
-      const monthGrid = page.locator('.fc-daygrid-body');
+      const monthGrid = page.locator('.tnc-dg-grid');
       await expect(monthGrid).toBeVisible({ timeout: 5000 });
 
       // Count events in the calendar
-      const calendarEvents = page.locator('.fc-event');
+      const calendarEvents = page.locator('.tnc-item');
       const eventCount = await calendarEvents.count();
 
       console.log(`Events visible in month view: ${eventCount}`);
@@ -184,7 +184,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Document that BYSETPOS patterns should work after fix
@@ -193,7 +193,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       console.log('Expected: Events on 2nd Monday of each month');
 
       // After fix, events using BYSETPOS should display correctly
-      const events = page.locator('.fc-event');
+      const events = page.locator('.tnc-item');
       const eventCount = await events.count();
       console.log(`Events found: ${eventCount}`);
 
@@ -216,7 +216,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Document that negative position BYDAY patterns should work
@@ -224,7 +224,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       console.log('RRULE: FREQ=MONTHLY;BYDAY=-1FR');
       console.log('Expected: Events on last Friday of each month');
 
-      const events = page.locator('.fc-event');
+      const events = page.locator('.tnc-item');
       const eventCount = await events.count();
       console.log(`Events found: ${eventCount}`);
 
@@ -246,12 +246,12 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view for better visibility
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -263,7 +263,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       console.log('RRULE: FREQ=WEEKLY;INTERVAL=2');
       console.log('Expected: Events every 2 weeks');
 
-      const events = page.locator('.fc-event');
+      const events = page.locator('.tnc-item');
       const eventCount = await events.count();
       console.log(`Events found: ${eventCount}`);
 
@@ -306,7 +306,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       console.log('Expected: Warnings logged for unsupported patterns');
       console.log('Expected: Base event shown as fallback');
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       await page.keyboard.press('Escape');
@@ -332,7 +332,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Check for Google Calendar in sidebar
@@ -347,7 +347,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
 
       if (hasGoogleCalendar) {
         // Google Calendar events should appear expanded
-        const googleEvents = page.locator('.fc-event[data-source="google"], .fc-event.google-event');
+        const googleEvents = page.locator('.tnc-item[data-source="google"], .tnc-item.google-event');
         const googleEventCount = await googleEvents.count();
         console.log(`Google Calendar events visible: ${googleEventCount}`);
       }
@@ -371,12 +371,12 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to month view to see multiple instances
       const monthButton = page.locator(
-        '.fc-dayGridMonth-button, button:has-text("month"), .fc-toolbar button:has-text("Month")'
+        '.tnc-btn-view-month, button:has-text("month"), .tnc-toolbar button:has-text("Month")'
       );
       if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await monthButton.click();
@@ -384,7 +384,7 @@ test.describe('Issue #1049: External calendar events with custom repeating sched
       }
 
       // Find all events and check their dates
-      const events = page.locator('.fc-event');
+      const events = page.locator('.tnc-item');
       const eventCount = await events.count();
 
       if (eventCount > 0) {

@@ -1,5 +1,8 @@
-import { formatDateTimeForDisplay } from "../utils/dateUtils";
-import { App, Modal, TAbstractFile, TFile } from "obsidian";
+import { applyModalShell } from "../ui/kit/modal";
+import { uiData } from "../i18n/dataText";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { App, Menu, Modal, Notice, Setting, setIcon, setTooltip, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -7,17 +10,26 @@ import TaskNotesPlugin from "../main";
 import { shouldShowFieldForModal } from "./taskModalFieldConfig";
 import type { ModalFieldConfigLike, ModalFieldsConfigLike } from "./taskModalFieldConfig";
 import {
-	renderTaskModalField,
 	renderTaskModalFieldGroups,
 	type TaskModalFieldRendererMap,
 } from "./taskModalFieldRenderer";
 import {
 	createTaskModalDetailsEditor,
 	destroyTaskModalDetailsEditor,
+	setTaskModalDetailsEditorValue,
 } from "./taskModalDetailsEditor";
 import { splitFrontmatterAndBody } from "../utils/helpers";
 import { ProjectSelectModal } from "./ProjectSelectModal";
-import { TaskDependency, Reminder } from "../types";
+import { AttachmentFileSuggestModal } from "./AttachmentFileSuggestModal";
+import {
+	TaskModalAttachmentsField,
+	materializeTaskModalAttachments,
+	type MaterializedTaskModalAttachments,
+	type TaskModalAttachmentEntry,
+} from "./taskModalAttachments";
+import { fieldLabelForId } from "../i18n/fieldLabels";
+import { createVaultBinaryFile } from "../services/VaultMutationService";
+import type { TaskDependency, TaskInfo } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { generateProjectReference } from "../utils/linkUtils";
@@ -29,7 +41,7 @@ import {
 	createTaskModalSubtasksField,
 	type TaskModalOrganizationFieldContext,
 } from "./taskModalOrganizationFields";
-import { createTaskCard } from "../ui/TaskCard";
+import { createTaskModalTaskRow } from "./taskModalTaskRow";
 import {
 	addDependencyItem,
 	createDependencyItemFromDependency as createDependencyItemFromDependencyHelper,
@@ -45,11 +57,11 @@ import {
 	createTaskModalContextsField,
 	createTaskModalTagsField,
 	createTaskModalTimeEstimateField,
+	formatTaskModalTimeEstimate,
 	type TaskModalMetadataFieldContext,
 } from "./taskModalMetadataFields";
 import {
 	createTaskModalConfiguredUserField,
-	createTaskModalUserFieldsSection,
 	updateTaskModalUserFieldControls,
 	type TaskModalUserFieldContext,
 	type TaskModalUserFieldToggleControl,
@@ -58,6 +70,7 @@ import {
 	createTaskModalActionButtons,
 	type TaskModalActionButtonContext,
 	type TaskModalLeadingButton,
+	type TaskModalOverflowAction,
 } from "./taskModalActionButtons";
 import {
 	createTaskModalActionIcon,
@@ -65,7 +78,6 @@ import {
 	type TaskModalActionIconSpec,
 } from "./taskModalActionBar";
 import {
-	type TaskModalActionIconState,
 	updateTaskModalActionIconStates,
 } from "./taskModalActionIconStates";
 import {
@@ -74,14 +86,13 @@ import {
 	createTaskModalActionMenuState,
 } from "./taskModalActionState";
 import {
-	showTaskModalDateContextMenu,
-	showTaskModalPriorityContextMenu,
-	showTaskModalRecurrenceContextMenu,
-	showTaskModalReminderContextMenu,
-	showTaskModalStatusContextMenu,
+	showTaskModalPropertyPicker,
+	showTaskModalRecurrencePicker,
+	showTaskModalReminderPicker,
 	type TaskModalActionMenuContext,
 	type TaskModalActionMenuState,
 } from "./taskModalActionMenus";
+import type { PopoverHandle } from "../ui/kit/popover";
 import {
 	addTaskModalProjectItemsFromStrings,
 	createTaskModalProjectItemFromFile,
@@ -104,7 +115,12 @@ import {
 	createTaskModalTitleTextarea,
 	type TaskModalTitleInputElement,
 } from "./taskModalTitleInput";
-import { collapseTaskModalDetailsLayout, expandTaskModalDetailsLayout } from "./taskModalLayout";
+import { createTaskModalTitleEditor } from "./taskModalTitleEditor";
+import { setTaskModalDetailsCollapsed } from "./taskModalLayout";
+import { resizeTaskModalTitleTextarea } from "./taskModalTitleInput";
+import { TaskFormModel, type TaskFormErrorField } from "./taskFormModel";
+import type { TaskSaveOutcome } from "./taskModalSave";
+import { ConfirmationModal } from "./ConfirmationModal";
 import {
 	TaskModalFocusGuards,
 	type TaskModalMobileKeyboardScrollGuardOptions,
@@ -113,10 +129,50 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskModal" });
 
+export interface TaskSubmitOptions {
+	createAnother?: boolean;
+}
+
+type UnsavedChangesChoice = "save" | "discard" | "cancel";
+
 export abstract class TaskModal extends Modal {
 	plugin: TaskNotesPlugin;
+	protected abstract readonly mode: "create" | "edit";
+	readonly form = new TaskFormModel({
+		title: "",
+		details: "",
+		dueDate: "",
+		scheduledDate: "",
+		priority: uiData(
+			"normal",
+			"Persisted priority value; preserve user metadata and matching semantics"
+		),
+		status: uiData(
+			"open",
+			"Persisted status value; preserve user metadata and matching semantics"
+		),
+		contexts: "",
+		projects: "",
+		tags: "",
+		timeEstimate: 0,
+		recurrenceRule: "",
+		recurrenceAnchor: "scheduled",
+		reminders: [],
+		userFields: {},
+	});
 	private keyboardHandler: ((e: KeyboardEvent) => void) | null = null;
+	private propertyPicker: PopoverHandle | undefined = undefined;
 	private focusGuards: TaskModalFocusGuards;
+	private unsubscribeForm: (() => void) | null = null;
+	private saveInFlight: Promise<boolean> | null = null;
+	private submitInFlight: Promise<boolean> | null = null;
+	private isShowingConfirmation = false;
+	private pendingClose = false;
+	private isModalOpen = false;
+	private isSyncingControls = false;
+	private saveButton: HTMLButtonElement | null = null;
+	protected createMore = false;
+	private readonly fieldErrorEls = new Map<TaskFormErrorField, HTMLElement>();
 
 	// Dependency item definition
 	protected createDependencyItemFromFile(
@@ -168,10 +224,6 @@ export abstract class TaskModal extends Modal {
 		return file instanceof TFile ? file : this.app.workspace.getActiveFile();
 	}
 
-	protected async openTaskNote(): Promise<void> {
-		// Creation modals do not have an existing task note to open.
-	}
-
 	protected renderDependencyLists(): void {
 		this.renderBlockedByList();
 		this.renderBlockingList();
@@ -179,6 +231,7 @@ export abstract class TaskModal extends Modal {
 
 	protected getLinkServices(): LinkServices {
 		return {
+			translate: this.t.bind(this),
 			metadataCache: this.plugin.app.metadataCache,
 			workspace: this.plugin.app.workspace,
 			sourcePath:
@@ -228,23 +281,6 @@ export abstract class TaskModal extends Modal {
 		return value.replace(/\r\n/g, "\n").trimEnd();
 	}
 
-	protected addBlockedByTask(file: TFile): void {
-		const dependency: TaskDependency = {
-			uid: formatDependencyLink(
-				this.plugin.app,
-				this.getDependencySourcePath(),
-				file.path,
-				this.plugin.settings.useFrontmatterMarkdownLinks
-			),
-			reltype: DEFAULT_DEPENDENCY_RELTYPE,
-		};
-		this.addBlockedByDependency(dependency);
-	}
-
-	protected addBlockingTask(file: TFile): void {
-		this.addBlockingTaskFromPath(file.path);
-	}
-
 	protected addBlockedByDependency(dependency: TaskDependency): void {
 		const sourcePath = this.getDependencySourcePath();
 		const item = this.createDependencyItemFromDependency(dependency, sourcePath);
@@ -291,8 +327,14 @@ export abstract class TaskModal extends Modal {
 				this.addBlockedByDependency(dependency);
 			},
 			translate: (key) => this.t(key),
-			noEligibleTasksMessageKey: "contextMenus.task.dependencies.notices.noEligibleTasks",
-			openFailedMessageKey: "contextMenus.task.dependencies.notices.updateFailed",
+			noEligibleTasksMessageKey: msg({
+				message: "No matching tasks available",
+				context: "contextMenus.task.dependencies.notices.noEligibleTasks",
+			}),
+			openFailedMessageKey: msg({
+				message: "Failed to update dependencies",
+				context: "contextMenus.task.dependencies.notices.updateFailed",
+			}),
 			logOperation: "open-blocked-by-selector",
 		});
 	}
@@ -314,30 +356,21 @@ export abstract class TaskModal extends Modal {
 				this.addBlockingTaskFromPath(selected.path);
 			},
 			translate: (key) => this.t(key),
-			noEligibleTasksMessageKey: "contextMenus.task.dependencies.notices.noEligibleTasks",
-			openFailedMessageKey: "contextMenus.task.dependencies.notices.updateFailed",
+			noEligibleTasksMessageKey: msg({
+				message: "No matching tasks available",
+				context: "contextMenus.task.dependencies.notices.noEligibleTasks",
+			}),
+			openFailedMessageKey: msg({
+				message: "Failed to update dependencies",
+				context: "contextMenus.task.dependencies.notices.updateFailed",
+			}),
 			logOperation: "open-blocking-selector",
 		});
 	}
 
-	// Core task properties
-	protected title = "";
-	protected details = "";
 	protected originalDetails = "";
-	protected dueDate = "";
-	protected scheduledDate = "";
-	protected priority = "normal";
-	protected status = "open";
-	protected contexts = "";
-	protected projects = "";
-	protected tags = "";
-	protected timeEstimate = 0;
-	protected recurrenceRule = "";
-	protected recurrenceAnchor: "scheduled" | "completion" = "scheduled";
-	protected reminders: Reminder[] = [];
 
-	// User-defined fields (dynamic based on settings)
-	protected userFields: Record<string, unknown> = {};
+	// User-defined field controls (dynamic based on settings)
 	protected userFieldInputs = new Map<string, HTMLInputElement>();
 	protected userFieldToggles = new Map<string, TaskModalUserFieldToggleControl>();
 
@@ -350,14 +383,18 @@ export abstract class TaskModal extends Modal {
 	// Project link storage
 	protected selectedProjectItems: TaskModalProjectItem[] = [];
 
+	// Attachments: linked vault files plus disk files imported on save
+	protected attachmentEntries: TaskModalAttachmentEntry[] = [];
+	protected attachmentsField: TaskModalAttachmentsField | null = null;
+
 	// Subtask storage - tracks tasks that should become subtasks of this task
 	protected selectedSubtaskFiles: TAbstractFile[] = [];
 	protected initialSubtaskFiles: TAbstractFile[] = [];
 
 	// UI elements
-	protected titleInput: TaskModalTitleInputElement =
-		undefined as unknown as TaskModalTitleInputElement;
-	protected detailsInput: HTMLTextAreaElement = undefined as unknown as HTMLTextAreaElement; // Legacy - kept for compatibility
+	protected titleInput: TaskModalTitleInputElement | undefined = undefined;
+	protected titleEditor: EmbeddableMarkdownEditor | null = null;
+	protected titleContainer: HTMLElement | null = null;
 	protected detailsMarkdownEditor: EmbeddableMarkdownEditor | null = null;
 	protected contextsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
 	protected projectsInput: HTMLInputElement = undefined as unknown as HTMLInputElement;
@@ -366,11 +403,13 @@ export abstract class TaskModal extends Modal {
 	protected projectsList: HTMLElement = undefined as unknown as HTMLElement;
 	protected subtasksList: HTMLElement = undefined as unknown as HTMLElement;
 	protected actionBar: HTMLElement = undefined as unknown as HTMLElement;
+	private projectChip: HTMLElement | undefined = undefined;
 	protected detailsContainer: HTMLElement = undefined as unknown as HTMLElement;
 	protected isExpanded = false;
 
 	constructor(app: App, plugin: TaskNotesPlugin) {
 		super(app);
+		applyModalShell(this);
 		this.plugin = plugin;
 		this.focusGuards = new TaskModalFocusGuards({
 			containerEl: this.containerEl,
@@ -379,29 +418,8 @@ export abstract class TaskModal extends Modal {
 		});
 	}
 
-	/**
-	 * Get the Obsidian app instance - useful for dependency injection in tests
-	 */
-	protected getApp(): App {
-		return this.app;
-	}
-
-	/**
-	 * Get the plugin instance - useful for dependency injection in tests
-	 */
-	protected getPlugin(): TaskNotesPlugin {
-		return this.plugin;
-	}
-
-	protected t(key: string, params?: Record<string, string | number>): string {
+	protected t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.plugin.i18n.translate(key, params);
-	}
-
-	/**
-	 * Get a file by path - useful for testing with mocked vault
-	 */
-	protected getFileByPath(path: string): unknown {
-		return this.app.vault.getAbstractFileByPath(path);
 	}
 
 	/**
@@ -412,38 +430,151 @@ export abstract class TaskModal extends Modal {
 	}
 
 	/**
-	 * Get file cache - useful for testing with mocked metadataCache
-	 */
-	protected getFileCache(file: TFile): unknown {
-		return this.app.metadataCache.getFileCache(file);
-	}
-
-	/**
 	 * Resolve a link to a file - useful for testing with mocked metadataCache
 	 */
 	protected resolveLink(linkPath: string, sourcePath: string): unknown {
 		return this.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath);
 	}
 
-	protected isEditMode(): boolean {
-		return false;
-	}
-
-	protected isCreationMode(): boolean {
-		return false;
-	}
-
 	abstract initializeFormData(): Promise<void>;
-	abstract handleSave(): Promise<void>;
+	/** Writes the task. The modal stays open only when the outcome is `failed`. */
+	abstract handleSave(options?: TaskSubmitOptions): Promise<TaskSaveOutcome>;
 	abstract getModalTitle(): string;
 
-	protected async handleSubmitShortcut(_shift: boolean): Promise<void> {
-		await this.handleSave();
+	protected async handleSubmitShortcut(shift: boolean): Promise<void> {
+		await this.submit({ createAnother: shift || (this.mode === "create" && this.createMore) });
+	}
+
+	/** Save and close. Save, the keyboard shortcuts and the close prompt all end up here. */
+	protected submit(options: TaskSubmitOptions = {}): Promise<boolean> {
+		this.submitInFlight ??= (async () => {
+			const saved = await this.runSave(options);
+			if (saved) {
+				this.forceClose();
+				this.afterSubmit(options);
+			}
+			return saved;
+		})().finally(() => {
+			this.submitInFlight = null;
+		});
+		return this.submitInFlight;
+	}
+
+	protected afterSubmit(_options: TaskSubmitOptions): void {
+		// Overridden by modals that continue after closing.
+	}
+
+	/** Every save shares one in-flight run, so repeated shortcuts cannot write twice. */
+	private runSave(options: TaskSubmitOptions = {}): Promise<boolean> {
+		this.saveInFlight ??= this.executeSave(options).finally(() => {
+			this.saveInFlight = null;
+			if (this.saveButton) this.saveButton.disabled = false;
+		});
+		return this.saveInFlight;
+	}
+
+	private async executeSave(options: TaskSubmitOptions): Promise<boolean> {
+		if (this.saveButton) this.saveButton.disabled = true;
+		return (await this.handleSave(options)).status !== "failed";
+	}
+
+	protected hasUnsavedChanges(): boolean {
+		return false;
+	}
+
+	/** Close without checking for unsaved changes. */
+	forceClose(): void {
+		if (this.pendingClose) return;
+		this.propertyPicker?.close();
+		this.propertyPicker = undefined;
+		this.pendingClose = true;
+		super.close();
+	}
+
+	/**
+	 * Prompts before discarding unsaved work. Synchronous to match Obsidian's
+	 * Modal.close() signature; the prompt runs separately.
+	 */
+	close(): void {
+		if (this.pendingClose || this.saveInFlight) return;
+
+		if (this.isShowingConfirmation) {
+			return;
+		}
+
+		if (!this.hasUnsavedChanges()) {
+			this.forceClose();
+			return;
+		}
+
+		void this.showUnsavedChangesConfirmation();
+	}
+
+	private async showUnsavedChangesConfirmation(): Promise<void> {
+		if (await this.resolveUnsavedChanges()) {
+			this.forceClose();
+		}
+	}
+
+	/** Returns true once it is safe to leave the form: saved, discarded or nothing to save. */
+	protected async resolveUnsavedChanges(): Promise<boolean> {
+		if (!this.hasUnsavedChanges()) {
+			return true;
+		}
+
+		this.isShowingConfirmation = true;
+		try {
+			const choice = await this.showThreeButtonConfirmation();
+			if (choice === "cancel") return false;
+			if (choice === "discard") return true;
+			return await this.runSave();
+		} finally {
+			this.isShowingConfirmation = false;
+		}
+	}
+
+	private showThreeButtonConfirmation(): Promise<UnsavedChangesChoice> {
+		return new Promise((resolve) => {
+			const modal = new ConfirmationModal(this.app, {
+				title: this.t(
+					msg({ message: "Unsaved changes", context: "modals.task.unsavedChanges.title" })
+				),
+				message: this.t(
+					msg({
+						message: "You have unsaved changes. Do you want to save them?",
+						context: "modals.task.unsavedChanges.message",
+					})
+				),
+				confirmText: this.t(
+					msg({ message: "Save changes", context: "modals.task.unsavedChanges.save" })
+				),
+				cancelText: this.t(
+					msg({
+						message: "Discard changes",
+						context: "modals.task.unsavedChanges.discard",
+					})
+				),
+				thirdButtonText: this.t(
+					msg({ message: "Keep editing", context: "modals.task.unsavedChanges.cancel" })
+				),
+				defaultToConfirm: true,
+				onThirdButton: () => resolve("cancel"),
+			});
+
+			void modal.show().then((confirmed) => {
+				resolve(confirmed ? "save" : "discard");
+			});
+		});
 	}
 
 	onOpen() {
+		this.pendingClose = false;
+		this.isModalOpen = true;
 		this.containerEl.addClass("tasknotes-plugin", "minimalist-task-modal");
-		if (this.plugin.settings.enableModalSplitLayout) {
+		if (
+			this.plugin.settings.enableModalSplitLayout &&
+			this.shouldShowField("details", this.plugin.settings.modalFieldsConfig)
+		) {
 			this.containerEl.addClass("split-layout-enabled");
 		}
 		this.modalEl.addClass("mod-tasknotes");
@@ -453,22 +584,35 @@ export abstract class TaskModal extends Modal {
 
 		// Add global keyboard shortcut handler for CMD/Ctrl+Enter
 		this.keyboardHandler = (e: KeyboardEvent) => {
-			if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-				// Skip if event comes from a markdown editor (which has its own handler)
-				const target = e.target as HTMLElement;
-				if (target.closest(".cm-editor")) {
-					return;
-				}
+			if (
+				e.key === "Enter" &&
+				(e.ctrlKey || e.metaKey) &&
+				!e.isComposing &&
+				!this.isShowingConfirmation
+			) {
 				e.preventDefault();
+				e.stopImmediatePropagation();
 				void this.handleSubmitShortcut(e.shiftKey);
 			}
 		};
-		this.containerEl.addEventListener("keydown", this.keyboardHandler);
+		this.containerEl.addEventListener("keydown", this.keyboardHandler, true);
 
-		void this.initializeFormData().then(() => {
-			this.createModalContent();
-			this.focusTitleInput();
-		});
+		this.unsubscribeForm = this.form.subscribe(() => this.syncFormControls());
+
+		this.contentEl.createDiv("tn-task-modal__loading");
+		void this.renderForm();
+	}
+
+	/** Loading can outlast the modal, which then has nothing to render into. */
+	private async renderForm(): Promise<void> {
+		await this.initializeFormData();
+		if (!this.isModalOpen) return;
+
+		this.form.markClean();
+		this.createModalContent();
+		this.renderProjectsList();
+		this.updateIconStates();
+		this.focusTitleInput();
 	}
 
 	// Store references to split layout containers for potential reuse
@@ -479,24 +623,26 @@ export abstract class TaskModal extends Modal {
 	protected createModalContent(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+		this.containerEl.classList.toggle("expanded", this.isExpanded);
+		this.syncCompactLayout();
 
 		// Create main container
 		const container = contentEl.createDiv("minimalist-modal-container");
 
-		// Create split content wrapper at the top level for wide screen layout
+		// Source order is the Tab order in every layout: title, details, properties, footer.
+		// On wide screens the details pane is placed beside the other two.
 		this.splitContentWrapper = container.createDiv("modal-split-content");
-		this.splitLeftColumn = this.splitContentWrapper.createDiv("modal-split-left");
 
 		// Create primary input area (title or NLP) - subclasses can override
-		this.createPrimaryInput(this.splitLeftColumn);
+		this.createPrimaryInput(this.splitContentWrapper.createDiv("modal-split-primary"));
 
-		// Create action bar with icons - goes in left column
-		this.createActionBar(this.splitLeftColumn);
-
-		this.splitRightColumn = this.splitLeftColumn.createDiv("modal-split-right");
+		this.splitRightColumn = this.splitContentWrapper.createDiv("modal-split-right");
+		this.splitLeftColumn = this.splitContentWrapper.createDiv("modal-split-left");
 
 		// Create collapsible details section (fields in left, details editor in right)
 		this.createDetailsSection(container);
+		this.createActionBar(this.splitLeftColumn);
+		this.detailsContainer.before(this.actionBar);
 
 		// Hook for subclasses to add additional sections to left column
 		this.createAdditionalSections(this.splitLeftColumn);
@@ -510,7 +656,12 @@ export abstract class TaskModal extends Modal {
 	 * Default: simple title input
 	 */
 	protected createPrimaryInput(container: HTMLElement): void {
-		this.createTitleInput(container);
+		if (
+			this.mode === "create" ||
+			this.shouldShowField("title", this.plugin.settings.modalFieldsConfig)
+		) {
+			this.createTitleInput(container);
+		}
 	}
 
 	/**
@@ -523,12 +674,42 @@ export abstract class TaskModal extends Modal {
 
 	protected createTitleInput(container: HTMLElement): void {
 		const titleContainer = container.createDiv("title-input-container");
-
-		this.titleInput = this.createTitleTextarea(
-			titleContainer,
-			"title-input",
-			this.t("modals.task.titlePlaceholder")
+		this.titleContainer = titleContainer;
+		const placeholder = this.t(
+			msg({ message: "What needs to be done?", context: "modals.task.titlePlaceholder" })
 		);
+
+		this.titleEditor = createTaskModalTitleEditor({
+			app: this.app,
+			container: titleContainer,
+			value: this.form.values.title,
+			placeholder,
+			file: this.getModalEditorFile(),
+			onChange: (value) => {
+				if (!this.isSyncingControls) this.form.edit("title", value);
+			},
+			onSubmit: (shift) => {
+				void this.handleSubmitShortcut(shift);
+			},
+			onEscape: () => {
+				this.close();
+			},
+			onEnter: () => {
+				this.focusFieldAfterTitle();
+			},
+			onTab: (shift) => shift || this.focusFieldAfterTitle(),
+			createFallback: () => {
+				this.titleInput = this.createTitleTextarea(
+					titleContainer,
+					"title-input",
+					placeholder
+				);
+			},
+		});
+		if (this.titleEditor) {
+			this.attachTitleFocusScrollGuard(this.titleEditor.editor.cm.contentDOM);
+			this.attachMobileKeyboardScrollGuard(titleContainer, { scrollOnFocus: false });
+		}
 	}
 
 	private createTitleTextarea(
@@ -540,9 +721,9 @@ export abstract class TaskModal extends Modal {
 			container,
 			className: cls,
 			placeholder,
-			value: this.title,
+			value: this.form.values.title,
 			onChange: (value) => {
-				this.title = value;
+				this.form.edit("title", value);
 			},
 			attachFocusScrollGuard: (input) => {
 				this.attachTitleFocusScrollGuard(input);
@@ -554,7 +735,94 @@ export abstract class TaskModal extends Modal {
 	protected createActionBar(container: HTMLElement): void {
 		this.actionBar = container.createDiv("tn-task-modal__action-bar");
 		this.createCoreActionIcons(this.actionBar);
+		this.projectChip = createTaskModalActionIcon(this.actionBar, {
+			iconName: "folder",
+			tooltip: this.t(
+				msg({ message: "Projects", context: "modals.task.organization.projects" })
+			),
+			chip: true,
+			dataType: "projects",
+			onClick: (icon) => this.showProjectsMenu(icon),
+		});
+		this.updateProjectChip();
+		// The visible label names the button; aria-expanded says whether the fields are shown
+		const label = this.t(msg({ message: "More fields", context: "task modal field disclosure" }));
+		const toggle = createTaskModalActionIcon(this.actionBar, {
+			iconName: this.isExpanded ? "chevron-up" : "chevron-down",
+			tooltip: label,
+			chip: true,
+			onClick: (icon) => {
+				this.toggleDetailedForm();
+				const glyph = icon.querySelector<HTMLElement>(".icon");
+				if (glyph) setIcon(glyph, this.isExpanded ? "chevron-up" : "chevron-down");
+				icon.setAttribute("aria-expanded", String(this.isExpanded));
+			},
+		});
+		toggle.addClass("tn-task-modal__details-toggle");
+		const labelEl = toggle.querySelector<HTMLElement>(".action-icon__label");
+		if (labelEl) labelEl.textContent = label;
+		toggle.setAttribute("aria-expanded", String(this.isExpanded));
 		this.updateIconStates();
+	}
+
+	protected toggleDetailedForm(): void {
+		if (!this.isExpanded) {
+			this.expandModal();
+			return;
+		}
+		this.animateModalResize(() => {
+			this.isExpanded = false;
+			setTaskModalDetailsCollapsed(
+				{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
+				true
+			);
+			this.containerEl.removeClass("expanded");
+			this.syncCompactLayout();
+			this.updateProjectChip();
+		});
+	}
+
+	/**
+	 * Applies a layout change, then eases the modal from its old size to its new one.
+	 * A details pane that appears fades in once the modal has made room for it.
+	 */
+	private animateModalResize(change: () => void): void {
+		const modal = this.modalEl;
+		const reduceMotion = modal.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+		if (reduceMotion || this.isMobileLikeEnvironment() || typeof modal.animate !== "function") {
+			change();
+			return;
+		}
+		const before = modal.getBoundingClientRect();
+		const paneWasShown = this.splitRightColumn?.offsetParent != null;
+		change();
+		const after = modal.getBoundingClientRect();
+		if (Math.abs(before.width - after.width) < 1 && Math.abs(before.height - after.height) < 1) return;
+		const easing = "cubic-bezier(0.2, 0, 0, 1)";
+		modal.animate(
+			[
+				{ width: `${before.width}px`, height: `${before.height}px` },
+				{ width: `${after.width}px`, height: `${after.height}px` },
+			],
+			{ duration: 220, easing }
+		);
+		if (!paneWasShown && this.splitRightColumn?.offsetParent != null) {
+			this.splitRightColumn.animate([{ opacity: 0 }, { opacity: 1 }], {
+				duration: 160,
+				delay: 120,
+				easing,
+				fill: "backwards",
+			});
+		}
+	}
+
+	/** A compact modal is the title and property row alone, until More fields opens the rest. */
+	protected usesCompactLayout(): boolean {
+		return false;
+	}
+
+	private syncCompactLayout(): void {
+		this.containerEl.classList.toggle("tn-task-modal--compact", this.usesCompactLayout());
 	}
 
 	protected createCoreActionIcons(container: HTMLElement): HTMLElement[] {
@@ -562,56 +830,75 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected getCoreActionIconSpecs(): TaskModalActionIconSpec[] {
-		return [
+		const specs: TaskModalActionIconSpec[] = [
 			{
 				iconName: "circle",
-				tooltip: this.t("modals.task.actions.status"),
+				tooltip: this.t(
+					msg({ message: "Set status", context: "modals.task.actions.status" })
+				),
 				onClick: (_, event) => {
-					this.showStatusContextMenu(event);
+					this.showStatusPicker(event);
 				},
 				dataType: "status",
+				chip: true,
 			},
 			{
 				iconName: "star",
-				tooltip: this.t("modals.task.actions.priority"),
+				tooltip: this.t(
+					msg({ message: "Set priority", context: "modals.task.actions.priority" })
+				),
 				onClick: (_, event) => {
-					this.showPriorityContextMenu(event);
+					this.showPriorityPicker(event);
 				},
 				dataType: "priority",
+				chip: true,
 			},
 			{
-				iconName: "calendar",
-				tooltip: this.t("modals.task.actions.due"),
+				iconName: "flag-triangle-right",
+				tooltip: this.t(
+					msg({ message: "Set due date", context: "modals.task.actions.due" })
+				),
 				onClick: (_, event) => {
-					this.showDateContextMenu(event, "due");
+					this.showDatePicker(event, "due");
 				},
 				dataType: "due-date",
+				chip: true,
 			},
 			{
 				iconName: "calendar-clock",
-				tooltip: this.t("modals.task.actions.scheduled"),
+				tooltip: this.t(
+					msg({ message: "Set scheduled date", context: "modals.task.actions.scheduled" })
+				),
 				onClick: (_, event) => {
-					this.showDateContextMenu(event, "scheduled");
+					this.showDatePicker(event, "scheduled");
 				},
 				dataType: "scheduled-date",
+				chip: true,
 			},
 			{
 				iconName: "refresh-ccw",
-				tooltip: this.t("modals.task.actions.recurrence"),
+				tooltip: this.t(
+					msg({ message: "Set recurrence", context: "modals.task.actions.recurrence" })
+				),
 				onClick: (_, event) => {
-					this.showRecurrenceContextMenu(event);
+					this.showRecurrencePicker(event);
 				},
 				dataType: "recurrence",
+				chip: true,
 			},
 			{
 				iconName: "bell",
-				tooltip: this.t("modals.task.actions.reminders"),
+				tooltip: this.t(
+					msg({ message: "Set reminders", context: "modals.task.actions.reminders" })
+				),
 				onClick: (_, event) => {
-					this.showReminderContextMenu(event);
+					this.showReminderPicker(event);
 				},
 				dataType: "reminders",
+				chip: true,
 			},
 		];
+		return specs.filter((spec) => spec.dataType !== "priority" || this.plugin.settings.customPriorities.length > 0);
 	}
 
 	protected createActionIcon(
@@ -639,43 +926,33 @@ export abstract class TaskModal extends Modal {
 			? this.splitLeftColumn.createDiv("details-container")
 			: container.createDiv("details-container");
 
-		if (!this.isExpanded) {
-			collapseTaskModalDetailsLayout({
-				detailsContainer: this.detailsContainer,
-				splitRightColumn: this.splitRightColumn,
-			});
-		}
+		setTaskModalDetailsCollapsed(
+			{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
+			!this.isExpanded
+		);
 
 		// Check field configuration to determine which fields to show
 		const config = this.plugin.settings.modalFieldsConfig;
 		const shouldShowTitle = this.shouldShowField("title", config);
 		const shouldShowDetails = this.shouldShowField("details", config);
-		this.splitContentWrapper.classList.toggle(
-			"modal-split-content--right-empty",
-			!shouldShowDetails
-		);
 
-		// Title field appears in details section for:
-		// 1. Edit modals (always, if enabled in config)
-		// 2. Creation modals when NLP is enabled (since the main title input is replaced by NLP textarea)
-		const isEditModal = this.isEditMode();
-		const isCreationWithNLP =
-			this.isCreationMode() && this.plugin.settings.enableNaturalLanguageInput;
-
-		if (shouldShowTitle && (isEditModal || isCreationWithNLP)) {
-			const titleLabel = this.detailsContainer.createDiv("detail-label");
-			titleLabel.textContent = this.t("modals.task.titleLabel");
-
-			const titleInputDetailed = this.createTitleTextarea(
-				this.detailsContainer,
-				"title-input-detailed",
-				this.t("modals.task.titleDetailedPlaceholder")
+		// With natural language input the primary field holds the raw text, so the
+		// parsed title gets its own field here.
+		if (shouldShowTitle && this.showsTitleInDetails()) {
+			const titleRow = new Setting(this.detailsContainer).setName(
+				this.t(msg({ message: "Title", context: "modals.task.titleLabel" }))
 			);
 
-			// Store reference for modals that use this as their title input
-			if ((isEditModal || isCreationWithNLP) && !this.titleInput) {
-				this.titleInput = titleInputDetailed;
-			}
+			this.titleInput = this.createTitleTextarea(
+				titleRow.controlEl,
+				"title-input-detailed",
+				this.t(
+					msg({
+						message: "Task title...",
+						context: "modals.task.titleDetailedPlaceholder",
+					})
+				)
+			);
 		}
 
 		// Details editor goes in the right column
@@ -685,13 +962,19 @@ export abstract class TaskModal extends Modal {
 			this.detailsMarkdownEditor = createTaskModalDetailsEditor({
 				app: this.app,
 				parent: rightColumn,
-				label: this.t("modals.task.detailsLabel"),
-				value: this.details,
-				placeholder: this.t("modals.task.detailsPlaceholder"),
+				label: this.t(msg({ message: "Details", context: "modals.task.detailsLabel" })),
+				value: this.form.values.details,
+				placeholder: this.t(
+					msg({
+						message: "Add more details...",
+						context: "modals.task.detailsPlaceholder",
+					})
+				),
 				file: this.getModalEditorFile(),
 				tabMovesFocus: this.plugin.settings.taskModalTabMovesFocus,
 				onChange: (value) => {
-					this.details = value;
+					// Syncing the editor from the form is not an edit.
+					if (!this.isSyncingControls) this.form.edit("details", value);
 				},
 				onSubmit: (shift) => {
 					void this.handleSubmitShortcut(shift);
@@ -715,7 +998,11 @@ export abstract class TaskModal extends Modal {
 	 * Check if a field should be shown based on field configuration
 	 */
 	protected shouldShowField(fieldId: string, config?: ModalFieldsConfigLike): boolean {
-		return shouldShowFieldForModal(fieldId, config, this.isCreationMode());
+		return shouldShowFieldForModal(fieldId, config, this.mode === "create");
+	}
+
+	protected showsTitleInDetails(): boolean {
+		return false;
 	}
 
 	protected createAdditionalFields(container: HTMLElement): void {
@@ -739,21 +1026,10 @@ export abstract class TaskModal extends Modal {
 		renderTaskModalFieldGroups({
 			container,
 			config,
-			isCreationMode: this.isCreationMode(),
+			isCreationMode: this.mode === "create",
 			fieldRenderers: this.getFieldRenderers(),
 			renderUserField: (fieldContainer, fieldConfig) => {
 				this.createUserFieldByConfig(fieldContainer, fieldConfig);
-			},
-		});
-	}
-
-	protected createField(container: HTMLElement, fieldConfig: ModalFieldConfigLike): void {
-		renderTaskModalField({
-			container,
-			fieldConfig,
-			fieldRenderers: this.getFieldRenderers(),
-			renderUserField: (fieldContainer, userFieldConfig) => {
-				this.createUserFieldByConfig(fieldContainer, userFieldConfig);
 			},
 		});
 	}
@@ -765,6 +1041,7 @@ export abstract class TaskModal extends Modal {
 			"time-estimate": (container) => this.createTimeEstimateField(container),
 			projects: (container) => this.createProjectsField(container),
 			subtasks: (container) => this.createSubtasksField(container),
+			attachments: (container) => this.createAttachmentsField(container),
 			"blocked-by": (container) => this.createBlockedByField(container),
 			blocking: (container) => this.createBlockingField(container),
 		};
@@ -773,9 +1050,9 @@ export abstract class TaskModal extends Modal {
 	protected createContextsField(container: HTMLElement): void {
 		this.contextsInput = createTaskModalContextsField(this.getMetadataFieldContext(), {
 			container,
-			value: this.contexts,
+			value: this.form.values.contexts,
 			onChange: (value) => {
-				this.contexts = value;
+				this.form.edit("contexts", value);
 			},
 		});
 	}
@@ -783,9 +1060,9 @@ export abstract class TaskModal extends Modal {
 	protected createTagsField(container: HTMLElement): void {
 		this.tagsInput = createTaskModalTagsField(this.getMetadataFieldContext(), {
 			container,
-			value: this.tags,
+			value: this.form.values.tags,
 			onChange: (value) => {
-				this.tags = value;
+				this.form.edit("tags", value);
 			},
 		});
 	}
@@ -793,9 +1070,20 @@ export abstract class TaskModal extends Modal {
 	protected createTimeEstimateField(container: HTMLElement): void {
 		this.timeEstimateInput = createTaskModalTimeEstimateField(this.getMetadataFieldContext(), {
 			container,
-			value: this.timeEstimate,
+			value: this.form.values.timeEstimate,
 			onChange: (value) => {
-				this.timeEstimate = value;
+				this.form.edit("timeEstimate", value ?? 0);
+				this.form.setError(
+					"timeEstimate",
+					value === null
+						? this.t(
+								msg({
+									message: "Enter a time such as 45 or 1h 30m",
+									context: "modals.task.timeEstimateInvalid",
+								})
+							)
+						: null
+				);
 			},
 		});
 	}
@@ -814,16 +1102,73 @@ export abstract class TaskModal extends Modal {
 	protected createProjectsField(container: HTMLElement): void {
 		this.projectsList = createTaskModalProjectsField(this.getOrganizationFieldContext(), {
 			container,
-			onButtonClick: () => {
-				const modal = new ProjectSelectModal(this.app, this.plugin, (file) => {
-					this.addProject(file);
-				});
-				modal.open();
-			},
+			onButtonClick: () => this.openProjectSelector(),
 			listElement: this.projectsList,
 		});
+		this.projectsList.addClass("tn-task-modal__project-list");
 
 		this.renderOrganizationLists();
+	}
+
+	private openProjectSelector(): void {
+		new ProjectSelectModal(this.app, this.plugin, (file) => {
+			this.addProject(file);
+		}).open();
+	}
+
+	/** The chip lists the projects as checked items; unchecking one removes it. */
+	private showProjectsMenu(anchor: HTMLElement): void {
+		const menu = new Menu();
+		for (const item of this.selectedProjectItems) {
+			menu.addItem((menuItem) =>
+				menuItem
+					.setTitle(item.name)
+					.setIcon("folder")
+					.setChecked(true)
+					.onClick(() => this.removeProject(item))
+			);
+		}
+		menu.addSeparator();
+		menu.addItem((menuItem) =>
+			menuItem
+				.setTitle(
+					this.t(
+						msg({
+							message: "Add to project…",
+							context: "contextMenus.task.organization.addToProject",
+						})
+					)
+				)
+				.setIcon("plus")
+				.onClick(() => this.openProjectSelector())
+		);
+		const rect = anchor.getBoundingClientRect();
+		menu.showAtPosition({ x: rect.left, y: rect.bottom + 4 }, anchor.ownerDocument);
+	}
+
+	/**
+	 * Projects get a chip in the property row once the task has any. While the expanded form
+	 * shows the Projects field, the chip would repeat it, so it is hidden.
+	 */
+	private updateProjectChip(): void {
+		const chip = this.projectChip;
+		if (!chip) return;
+		const items = this.selectedProjectItems;
+		const fieldShown = this.isExpanded && Boolean(this.projectsList && this.containerEl.contains(this.projectsList));
+		chip.hidden = items.length === 0 || fieldShown;
+		chip.classList.toggle("has-value", items.length > 0);
+		const label = chip.querySelector<HTMLElement>(".action-icon__label");
+		if (!label || items.length === 0) return;
+		const names = uiData(
+			items.map((item) => item.name).join(", "),
+			"Project note names chosen by the user"
+		);
+		label.textContent = uiData(
+			items.length > 1 ? `${items[0].name} +${items.length - 1}` : items[0].name,
+			"Project note name chosen by the user, with a count of further projects"
+		);
+		chip.setAttribute("aria-label", names);
+		setTooltip(chip, names, { placement: "top" });
 	}
 
 	protected createSubtasksField(container: HTMLElement): void {
@@ -836,6 +1181,83 @@ export abstract class TaskModal extends Modal {
 		});
 
 		this.renderOrganizationLists();
+	}
+
+	protected createAttachmentsField(container: HTMLElement): void {
+		this.attachmentsField = new TaskModalAttachmentsField({
+			container,
+			label: fieldLabelForId("attachments"),
+			translate: (key, params) => this.t(key, params),
+			getEntries: () => this.attachmentEntries,
+			setEntries: (entries) => {
+				this.attachmentEntries = entries;
+			},
+			pickVaultFile: (onChoose) => {
+				new AttachmentFileSuggestModal(
+					this.app,
+					this.plugin,
+					onChoose,
+					this.getCurrentTaskPath()
+				).open();
+			},
+			openAttachment: (path) => {
+				void this.app.workspace.openLinkText(path, "", "tab");
+			},
+			resolveExists: (path) => this.app.vault.getAbstractFileByPath(path) instanceof TFile,
+			onDuplicate: (name) => {
+				new Notice(
+					this.t(
+						msg({
+							message: '"{name}" is already attached',
+							context: "modals.task.attachments.duplicateNotice",
+						}),
+						{ name }
+					)
+				);
+			},
+			onUnsupportedName: (name) => {
+				new Notice(
+					this.t(
+						msg({
+							message:
+								'"{name}" can\'t be attached. Rename it so it has a file extension and no [ ] # or | characters.',
+							context: "modals.task.attachments.unsupportedNameNotice",
+						}),
+						{ name }
+					)
+				);
+			},
+		});
+	}
+
+	/**
+	 * Copy files picked from disk into the vault. Called only while saving so a
+	 * discarded modal never writes attachment files.
+	 */
+	protected async importPendingAttachments(
+		sourcePath: string
+	): Promise<MaterializedTaskModalAttachments> {
+		try {
+			const imported = await materializeTaskModalAttachments(this.attachmentEntries, {
+				sourcePath,
+				getAvailablePath: (filename, source) =>
+					this.app.fileManager.getAvailablePathForAttachment(filename, source),
+				writeBinary: (path, data) => createVaultBinaryFile(this.app, path, data),
+				trashFile: async (path) => {
+					const file = this.app.vault.getAbstractFileByPath(path);
+					if (file instanceof TFile) await this.app.fileManager.trashFile(file);
+				},
+			});
+			return {
+				references: imported.references,
+				rollback: async () => {
+					await imported.rollback();
+					this.attachmentsField?.render();
+				},
+			};
+		} finally {
+			this.attachmentsField?.render();
+		}
 	}
 
 	private getOrganizationFieldContext(): TaskModalOrganizationFieldContext {
@@ -889,11 +1311,11 @@ export abstract class TaskModal extends Modal {
 		createTaskModalConfiguredUserField(this.getUserFieldContext(), {
 			container,
 			field: userField,
-			values: this.userFields,
+			values: this.form.values.userFields,
 			inputRefs: this.userFieldInputs,
 			toggleRefs: this.userFieldToggles,
 			onValueChange: (key, value) => {
-				this.userFields[key] = value;
+				if (!this.isSyncingControls) this.form.editUserField(key, value);
 			},
 		});
 	}
@@ -901,97 +1323,117 @@ export abstract class TaskModal extends Modal {
 	protected updateUserFieldControls(): void {
 		updateTaskModalUserFieldControls({
 			fields: this.plugin.settings?.userFields || [],
-			values: this.userFields,
+			values: this.form.values.userFields,
 			inputRefs: this.userFieldInputs,
 			toggleRefs: this.userFieldToggles,
-		});
-	}
-
-	protected createUserFields(container: HTMLElement): void {
-		createTaskModalUserFieldsSection(this.getUserFieldContext(), {
-			container,
-			fields: this.plugin.settings?.userFields || [],
-			values: this.userFields,
-			inputRefs: this.userFieldInputs,
-			toggleRefs: this.userFieldToggles,
-			onValueChange: (key, value) => {
-				this.userFields[key] = value;
-			},
 		});
 	}
 
 	protected createActionButtons(container: HTMLElement): void {
-		const leadingButtons: TaskModalLeadingButton[] = [];
-		if (this.isEditMode()) {
-			leadingButtons.push({
-				className: "tn-task-modal__open-note-button",
-				text: this.t("modals.task.buttons.openNote"),
-				onClick: () => {
-					void this.openTaskNote();
-				},
-			});
-		}
-
-		createTaskModalActionButtons(this.getActionButtonContext(), {
+		const buttonBar = createTaskModalActionButtons(this.getActionButtonContext(), {
 			container,
-			leadingButtons,
-			onSave: () => this.handleSave(),
-			onSaved: () => {
-				this.close();
+			leadingButtons: this.getLeadingButtons(),
+			overflowActions: this.getOverflowActions(),
+			saveLabel: this.mode === "create" ? this.getModalTitle() : undefined,
+			onCreateMoreChange:
+				this.mode === "create"
+					? (checked) => {
+							this.createMore = checked;
+						}
+					: undefined,
+			createMore: this.createMore,
+			onSave: () => {
+				void this.submit({ createAnother: this.mode === "create" && this.createMore });
 			},
 			onCancel: () => {
 				this.close();
 			},
 		});
+		this.saveButton = buttonBar.querySelector("button.mod-cta");
+	}
+
+	protected getLeadingButtons(): TaskModalLeadingButton[] {
+		return [];
+	}
+
+	protected getOverflowActions(): TaskModalOverflowAction[] {
+		return [];
 	}
 
 	protected getActionButtonContext(): TaskModalActionButtonContext {
 		return {
-			translate: (key: string) => this.t(key),
+			translate: (key: MessageDescriptor) => this.t(key),
 		};
 	}
 
 	protected expandModal(): void {
 		if (this.isExpanded) return;
 
-		this.isExpanded = true;
-		expandTaskModalDetailsLayout({
-			containerEl: this.containerEl,
-			detailsContainer: this.detailsContainer,
-			splitRightColumn: this.splitRightColumn,
+		this.animateModalResize(() => {
+			this.isExpanded = true;
+			this.containerEl.classList.add("expanded");
+			this.syncCompactLayout();
+			this.updateProjectChip();
+			setTaskModalDetailsCollapsed(
+				{ detailsContainer: this.detailsContainer, splitRightColumn: this.splitRightColumn },
+				false
+			);
 		});
+		// Measured while hidden, the title has no height.
+		if (this.titleInput) resizeTaskModalTitleTextarea(this.titleInput);
 	}
 
-	protected showDateContextMenu(_event: UIEvent, type: "due" | "scheduled"): void {
-		showTaskModalDateContextMenu(this.getActionMenuContext(), type);
+	private async showPropertyPicker(
+		event: UIEvent,
+		property: "status" | "priority" | "due" | "scheduled"
+	): Promise<void> {
+		const anchor = event.currentTarget as HTMLElement;
+		this.propertyPicker?.close();
+		const picker = await showTaskModalPropertyPicker(
+			this.getActionMenuContext(),
+			property,
+			anchor
+		);
+		if (!this.isModalOpen) picker?.close();
+		else this.propertyPicker = picker;
 	}
 
-	protected showStatusContextMenu(event: UIEvent): void {
-		showTaskModalStatusContextMenu(this.getActionMenuContext(), event);
+	protected showDatePicker(event: UIEvent, type: "due" | "scheduled"): void {
+		void this.showPropertyPicker(event, type);
 	}
 
-	protected showPriorityContextMenu(event: UIEvent): void {
-		showTaskModalPriorityContextMenu(this.getActionMenuContext(), event);
+	protected showStatusPicker(event: UIEvent): void {
+		void this.showPropertyPicker(event, "status");
 	}
 
-	protected showRecurrenceContextMenu(event: UIEvent): void {
-		showTaskModalRecurrenceContextMenu(this.getActionMenuContext(), event);
+	protected showPriorityPicker(event: UIEvent): void {
+		void this.showPropertyPicker(event, "priority");
 	}
 
-	protected showReminderContextMenu(event: UIEvent): void {
-		showTaskModalReminderContextMenu(this.getActionMenuContext(), event);
+	protected showRecurrencePicker(event: UIEvent): void {
+		const anchor = event.currentTarget as HTMLElement | null;
+		if (!anchor) return;
+		this.propertyPicker?.close();
+		this.propertyPicker = showTaskModalRecurrencePicker(this.getActionMenuContext(), anchor);
+	}
+
+	protected showReminderPicker(event: UIEvent, taskBase?: TaskInfo): void {
+		const anchor = event.currentTarget as HTMLElement | null;
+		if (!anchor) return;
+		this.propertyPicker?.close();
+		this.propertyPicker = showTaskModalReminderPicker(this.getActionMenuContext(), anchor, taskBase);
 	}
 
 	protected getActionMenuState(): TaskModalActionMenuState {
 		return createTaskModalActionMenuState({
-			title: this.title,
-			status: this.status,
-			priority: this.priority,
-			dueDate: this.dueDate,
-			scheduledDate: this.scheduledDate,
-			recurrenceRule: this.recurrenceRule,
-			recurrenceAnchor: this.recurrenceAnchor,
-			reminders: this.reminders,
+			title: this.form.values.title,
+			status: this.form.values.status,
+			priority: this.form.values.priority,
+			dueDate: this.form.values.dueDate,
+			scheduledDate: this.form.values.scheduledDate,
+			recurrenceRule: this.form.values.recurrenceRule,
+			recurrenceAnchor: this.form.values.recurrenceAnchor,
+			reminders: this.form.values.reminders,
 		});
 	}
 
@@ -1002,48 +1444,28 @@ export abstract class TaskModal extends Modal {
 			translate: (key, params) => this.t(key, params),
 			getState: () => this.getActionMenuState(),
 			setDueDate: (value) => {
-				this.dueDate = value;
+				this.form.edit("dueDate", value);
 			},
 			setScheduledDate: (value) => {
-				this.scheduledDate = value;
+				this.form.edit("scheduledDate", value);
 			},
 			setStatus: (value) => {
-				this.status = value;
+				this.form.edit("status", value);
 			},
 			setPriority: (value) => {
-				this.priority = value;
+				this.form.edit("priority", value);
 			},
 			setRecurrenceRule: (value) => {
-				this.recurrenceRule = value;
+				this.form.edit("recurrenceRule", value);
 			},
 			setRecurrenceAnchor: (anchor) => {
-				this.recurrenceAnchor = anchor;
+				this.form.edit("recurrenceAnchor", anchor);
 			},
 			setReminders: (reminders) => {
-				this.reminders = reminders;
+				this.form.edit("reminders", reminders);
 			},
 			onChange: () => this.updateIconStates(),
 		});
-	}
-
-	protected updateDateIconState(): void {
-		this.updateIconStates();
-	}
-
-	protected updateStatusIconState(): void {
-		this.updateIconStates();
-	}
-
-	protected updatePriorityIconState(): void {
-		this.updateIconStates();
-	}
-
-	protected updateRecurrenceIconState(): void {
-		this.updateIconStates();
-	}
-
-	protected updateReminderIconState(): void {
-		this.updateIconStates();
 	}
 
 	protected updateIconStates(): void {
@@ -1051,47 +1473,106 @@ export abstract class TaskModal extends Modal {
 
 		updateTaskModalActionIconStates(
 			this.actionBar,
-			{
-				translate: (key, params) => this.t(key, params),
-				formatDate: (value) =>
-					formatDateTimeForDisplay(value, {
-						dateDisplayFormat: this.plugin.settings.dateDisplayFormat,
-						dateFormat: value.startsWith(`${new Date().getFullYear()}-`)
-							? "MMM d"
-							: "MMM d, yyyy",
-						userTimeFormat: this.plugin.settings.calendarViewSettings.timeFormat,
-					}),
-			},
-			{
-				...buildTaskModalActionIconState(actionMenuState, {
-					statusConfigs: this.plugin.settings.customStatuses || [],
-					priorityConfigs: this.plugin.settings.customPriorities || [],
-				}),
-				...this.getPendingActionIconValues(),
-			}
+			{ translate: (key, params) => this.t(key, params) },
+			buildTaskModalActionIconState(actionMenuState, {
+				defaultStatus: this.plugin.settings.defaultTaskStatus,
+				defaultPriority: this.plugin.settings.defaultTaskPriority,
+				statusConfigs: this.plugin.settings.customStatuses || [],
+				priorityConfigs: this.plugin.settings.customPriorities || [],
+				timeFormat: this.plugin.settings.calendarViewSettings?.timeFormat,
+				dateDisplayFormat: this.plugin.settings.dateDisplayFormat,
+				hideCompletedFromOverdue: this.plugin.settings.hideCompletedFromOverdue,
+			})
 		);
 	}
 
-	/** Values not yet applied to the form that the action bar should already show. */
-	protected getPendingActionIconValues(): Partial<
-		Pick<TaskModalActionIconState, "status" | "priority" | "dueDate" | "scheduledDate">
-	> {
-		return {};
+	/** Bring every control in line with the form. Runs after each form change. */
+	protected syncFormControls(): void {
+		const { values } = this.form;
+		this.isSyncingControls = true;
+		try {
+			if (this.titleInput && this.titleInput.value !== values.title) {
+				this.titleInput.value = values.title;
+				resizeTaskModalTitleTextarea(this.titleInput);
+			}
+			if (this.titleEditor && this.titleEditor.value !== values.title) {
+				this.titleEditor.setValue(values.title);
+			}
+			if (this.detailsMarkdownEditor && this.detailsMarkdownEditor.value !== values.details) {
+				setTaskModalDetailsEditorValue(this.detailsMarkdownEditor, values.details);
+			}
+			// Leave a focused list field alone: the stored value drops a trailing
+			// separator, so writing it back mid-typing would erase the comma.
+			syncUnfocusedInput(this.contextsInput, values.contexts);
+			syncUnfocusedInput(this.tagsInput, values.tags);
+			// The field may hold text being typed ("1h") or text that failed to parse.
+			if (
+				this.timeEstimateInput &&
+				this.timeEstimateInput !== this.timeEstimateInput.ownerDocument.activeElement &&
+				!this.form.getError("timeEstimate")
+			) {
+				this.timeEstimateInput.value = formatTaskModalTimeEstimate(values.timeEstimate);
+			}
+			this.updateUserFieldControls();
+			this.updateIconStates();
+			this.renderFieldError("title", this.getTitleErrorAnchor());
+			this.renderFieldError("timeEstimate", this.getTimeEstimateErrorAnchor());
+		} finally {
+			this.isSyncingControls = false;
+		}
+	}
+
+	protected getTitleErrorAnchor(): HTMLElement | null {
+		return this.titleContainer ?? this.titleInput ?? null;
+	}
+
+	private getTimeEstimateErrorAnchor(): HTMLElement | null {
+		return this.timeEstimateInput?.closest<HTMLElement>(".setting-item") ?? null;
+	}
+
+	private renderFieldError(field: TaskFormErrorField, anchor: HTMLElement | null): void {
+		const message = this.form.getError(field);
+		const existing = this.fieldErrorEls.get(field);
+		if (!message || !anchor) {
+			existing?.remove();
+			this.fieldErrorEls.delete(field);
+			return;
+		}
+
+		const errorEl =
+			existing ??
+			anchor.ownerDocument.win.createDiv({
+				cls: "tn-task-modal__field-error",
+				attr: { role: "alert" },
+			});
+		if (!existing) {
+			anchor.insertAdjacentElement("afterend", errorEl);
+			this.fieldErrorEls.set(field, errorEl);
+		}
+		errorEl.textContent = message;
 	}
 
 	protected focusTitleInput(): void {
-		this.focusGuards.focusTitleInput(this.titleInput);
+		const selectAll = this.mode === "create";
+		const { titleEditor } = this;
+		if (titleEditor) {
+			this.focusGuards.focusTitleTarget(titleEditor.editor.cm.contentDOM, () => {
+				titleEditor.focusWithSelection(selectAll ? "all" : "end");
+			});
+		} else if (this.titleInput) {
+			this.focusGuards.focusTitleInput(this.titleInput, selectAll);
+		}
 	}
 
-	protected getInitialFocusDelay(): number {
-		return this.focusGuards.getInitialFocusDelay();
+	protected focusInitialTarget(target: HTMLElement, focus: () => void): void {
+		this.focusGuards.focusTitleTarget(target, focus);
 	}
 
 	protected isMobileLikeEnvironment(): boolean {
 		return this.focusGuards.isMobileLikeEnvironment();
 	}
 
-	private attachTitleFocusScrollGuard(input: TaskModalTitleInputElement): void {
+	private attachTitleFocusScrollGuard(input: HTMLElement): void {
 		this.focusGuards.attachTitleFocusScrollGuard(input);
 	}
 
@@ -1126,7 +1607,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected updateProjectsFromFiles(): void {
-		this.projects = getTaskModalProjectsValue(this.selectedProjectItems);
+		this.form.values.projects = getTaskModalProjectsValue(this.selectedProjectItems);
 	}
 
 	protected buildProjectReference(targetFile: TFile, sourcePath: string): string {
@@ -1170,6 +1651,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected renderProjectsList(): void {
+		this.updateProjectChip();
 		renderTaskModalProjectsList({
 			app: this.app,
 			listEl: this.projectsList,
@@ -1187,9 +1669,10 @@ export abstract class TaskModal extends Modal {
 		const parentTask = parentPath
 			? await this.plugin.cacheManager.getTaskInfo(parentPath)
 			: null;
-		const creationDefaults = parentFile instanceof TFile && parentTask
-			? buildSubtaskCreationPrePopulatedValues(this.plugin, parentTask, parentFile)
-			: undefined;
+		const creationDefaults =
+			parentFile instanceof TFile && parentTask
+				? buildSubtaskCreationPrePopulatedValues(this.plugin, parentTask, parentFile)
+				: undefined;
 
 		await openTaskModalTaskSelector({
 			plugin: this.plugin,
@@ -1207,8 +1690,14 @@ export abstract class TaskModal extends Modal {
 				}
 			},
 			translate: (key) => this.t(key),
-			noEligibleTasksMessageKey: "modals.task.organization.notices.noEligibleSubtasks",
-			openFailedMessageKey: "modals.task.organization.notices.subtaskSelectFailed",
+			noEligibleTasksMessageKey: msg({
+				message: "No eligible tasks available to assign as subtasks",
+				context: "modals.task.organization.notices.noEligibleSubtasks",
+			}),
+			openFailedMessageKey: msg({
+				message: "Failed to open subtask selector",
+				context: "modals.task.organization.notices.subtaskSelectFailed",
+			}),
 			logOperation: "open-subtask-selector",
 		});
 	}
@@ -1235,12 +1724,7 @@ export abstract class TaskModal extends Modal {
 			files: this.selectedSubtaskFiles,
 			sourcePath: this.getCurrentTaskPath() || "",
 			getCachedTaskInfo: (path) => this.plugin.cacheManager.getCachedTaskInfo(path),
-			createTaskCard: (taskInfo) =>
-				createTaskCard(taskInfo, this.plugin, undefined, {
-					layout: "default",
-					showSecondaryBadges: false,
-					enableHoverPreview: false,
-				}),
+			createTaskCard: (taskInfo) => createTaskModalTaskRow(taskInfo, this.plugin),
 			translate: (key, params) => this.t(key, params),
 			onRemove: (file) => this.removeSubtask(file),
 		});
@@ -1251,54 +1735,82 @@ export abstract class TaskModal extends Modal {
 		void this.renderSubtasksList();
 	}
 
-	protected toggleProjectsList(): void {
-		if (!this.projectsList) return;
-		this.projectsList.toggleClass("collapsed", !this.projectsList.hasClass("collapsed"));
-	}
-
-	protected toggleSubtasksList(): void {
-		if (!this.subtasksList) return;
-		this.subtasksList.toggleClass("collapsed", !this.subtasksList.hasClass("collapsed"));
-	}
-
+	/** Shows problems on their fields. A field the modal hides reports through a notice. */
 	protected validateForm(): boolean {
-		return this.title.trim().length > 0;
+		const titleError = this.form.values.title.trim()
+			? null
+			: this.t(
+					msg({
+						message: "Please enter a task title",
+						context: "modals.taskCreation.notices.titleRequired",
+					})
+				);
+		this.form.setError("title", titleError);
+		if (titleError && !this.getTitleErrorAnchor()) {
+			new Notice(titleError);
+		}
+		if (this.form.getError("timeEstimate")) {
+			this.expandModal();
+		}
+		return !this.form.hasErrors();
+	}
+
+	/** Enter and Tab from the title land in the details, or the properties without them. */
+	protected focusFieldAfterTitle(): boolean {
+		if (this.detailsMarkdownEditor && !this.usesCompactLayout()) {
+			this.detailsMarkdownEditor.editor.cm.focus();
+			return true;
+		}
+		return this.focusNextField();
 	}
 
 	protected focusNextField(): boolean {
-		// Try to focus the contexts input as the next field after details
-		const nextField = this.contextsInput || this.tagsInput || this.timeEstimateInput;
+		const nextField = this.actionBar?.querySelector<HTMLElement>(".action-icon");
 		if (!nextField) {
 			return false;
 		}
 
-		window.setTimeout(() => {
-			nextField.focus();
-		}, 50);
+		nextField.focus();
 		return true;
 	}
 
 	protected focusPreviousField(): boolean {
+		if (this.titleEditor) {
+			this.titleEditor.editor.cm.focus();
+			return true;
+		}
 		if (!this.titleInput) {
 			return false;
 		}
 
-		window.setTimeout(() => {
-			this.titleInput?.focus();
-		}, 50);
+		this.titleInput.focus();
 		return true;
 	}
 
 	onClose(): void {
+		this.propertyPicker?.close();
+		this.propertyPicker = undefined;
+		this.isModalOpen = false;
+		this.unsubscribeForm?.();
+		this.unsubscribeForm = null;
+
 		// Clean up keyboard handler
 		if (this.keyboardHandler) {
-			this.containerEl.removeEventListener("keydown", this.keyboardHandler);
+			this.containerEl.removeEventListener("keydown", this.keyboardHandler, true);
 			this.keyboardHandler = null;
 		}
 		this.focusGuards.destroy();
 
+		this.titleEditor?.destroy();
+		this.titleEditor = null;
 		destroyTaskModalDetailsEditor(this.detailsMarkdownEditor);
 		this.detailsMarkdownEditor = null;
 		super.onClose();
+	}
+}
+
+function syncUnfocusedInput(input: HTMLInputElement | undefined, value: string): void {
+	if (input && input !== input.ownerDocument.activeElement && input.value !== value) {
+		input.value = value;
 	}
 }

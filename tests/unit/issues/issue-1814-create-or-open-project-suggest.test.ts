@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TaskSelectorWithCreateModal } from "../../../src/modals/TaskSelectorWithCreateModal";
 import { NLPSuggest } from "../../../src/modals/taskCreationSuggest";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
@@ -27,7 +28,7 @@ describe("Issue #1814: Create or open task project autosuggest", () => {
 			app: mockApp,
 			settings: {},
 			i18n: {
-				translate: jest.fn((key: string) => key),
+				translate: mockObserveTranslation(),
 			},
 			statusManager: {
 				isCompletedStatus: jest.fn(() => false),

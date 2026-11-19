@@ -40,9 +40,33 @@ function sameGeneratedType(content: string, expected: string): boolean {
 	}
 }
 
+/**
+ * Settings a v4 writer may have rendered the task type from. This version's
+ * load-time settings migrations change values the old writer used: the legacy
+ * single user field joins `userFields`, and user-field keys are trimmed. Try the
+ * current settings, the settings exactly as saved when this session loaded them,
+ * and the current settings without the migrated legacy field (which stays
+ * recorded in the disabled `userField` after the migrated settings are saved).
+ */
+export function legacyRecognitionSettings(
+	current: TaskNotesSettings,
+	saved?: TaskNotesSettings | null
+): TaskNotesSettings[] {
+	const candidates = [current];
+	if (saved) candidates.push(saved);
+	const legacyKey = current.userField?.key?.trim();
+	if (legacyKey && current.userFields?.some((field) => field.key.trim() === legacyKey)) {
+		candidates.push({
+			...current,
+			userFields: current.userFields.filter((field) => field.key.trim() !== legacyKey),
+		});
+	}
+	return candidates;
+}
+
 export function recognizeLegacyTaskType(
 	content: string,
-	settings: TaskNotesSettings,
+	settings: TaskNotesSettings | readonly TaskNotesSettings[],
 	currentWriter?: string
 ): boolean {
 	try {
@@ -54,8 +78,10 @@ export function recognizeLegacyTaskType(
 		// Invalid old enum YAML can still be recognized by complete writer bytes.
 	}
 	if (currentWriter && sameGeneratedType(content, currentWriter)) return true;
-	for (const writer of renderHistoricalTaskTypes(settings)) {
-		if (sameGeneratedType(content, writer.document)) return true;
+	for (const candidate of Array.isArray(settings) ? settings : [settings]) {
+		for (const writer of renderHistoricalTaskTypes(candidate)) {
+			if (sameGeneratedType(content, writer.document)) return true;
+		}
 	}
 	return false;
 }

@@ -50,10 +50,10 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 			const modal = new TaskCreationModal(mockApp, mockPlugin, jest.fn());
 
 			// Set up modal data
-			(modal as any).title = 'Test task';
-			(modal as any).tags = ''; // No tags provided by user
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
+			(modal as any).form.values.title = 'Test task';
+			(modal as any).form.values.tags = ''; // No tags provided by user
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
 
 			// Call buildTaskData which should NOT add the task tag
 			const taskData = (modal as any).buildTaskData();
@@ -65,10 +65,10 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 		test('should NOT add task tag when user provides other tags in property mode', () => {
 			const modal = new TaskCreationModal(mockApp, mockPlugin, jest.fn());
 
-			(modal as any).title = 'Test task';
-			(modal as any).tags = 'important, work';
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
+			(modal as any).form.values.title = 'Test task';
+			(modal as any).form.values.tags = 'important, work';
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
 
 			const taskData = (modal as any).buildTaskData();
 
@@ -79,10 +79,10 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 		test('should keep task tag if user explicitly added it in property mode', () => {
 			const modal = new TaskCreationModal(mockApp, mockPlugin, jest.fn());
 
-			(modal as any).title = 'Test task';
-			(modal as any).tags = 'task'; // User explicitly added the task tag
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
+			(modal as any).form.values.title = 'Test task';
+			(modal as any).form.values.tags = 'task'; // User explicitly added the task tag
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
 
 			const taskData = (modal as any).buildTaskData();
 
@@ -115,10 +115,10 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 		test('SHOULD add task tag when taskIdentificationMethod is "tag" (existing behavior)', () => {
 			const modal = new TaskCreationModal(mockApp, mockPlugin, jest.fn());
 
-			(modal as any).title = 'Test task';
-			(modal as any).tags = ''; // No tags provided
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
+			(modal as any).form.values.title = 'Test task';
+			(modal as any).form.values.tags = ''; // No tags provided
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
 
 			const taskData = (modal as any).buildTaskData();
 
@@ -128,10 +128,10 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 		test('should not duplicate task tag if already present in tag mode', () => {
 			const modal = new TaskCreationModal(mockApp, mockPlugin, jest.fn());
 
-			(modal as any).title = 'Test task';
-			(modal as any).tags = 'task, important'; // task already present
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
+			(modal as any).form.values.title = 'Test task';
+			(modal as any).form.values.tags = 'task, important'; // task already present
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
 
 			const taskData = (modal as any).buildTaskData();
 
@@ -180,13 +180,13 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
 
 			// Set fields directly
-			(modal as any).title = mockTask.title;
-			(modal as any).status = mockTask.status;
-			(modal as any).priority = mockTask.priority;
-			(modal as any).tags = 'important';
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
-			(modal as any).timeEstimate = 0;
+			(modal as any).form.values.title = mockTask.title;
+			(modal as any).form.values.status = mockTask.status;
+			(modal as any).form.values.priority = mockTask.priority;
+			(modal as any).form.values.tags = 'important';
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
+			(modal as any).form.values.timeEstimate = 0;
 
 			// Get changes
 			const changes = (modal as any).getChanges();
@@ -200,13 +200,13 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 		test('should keep existing tags and not add task tag in property mode', () => {
 			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
 
-			(modal as any).title = mockTask.title;
-			(modal as any).status = mockTask.status;
-			(modal as any).priority = mockTask.priority;
-			(modal as any).tags = 'existing, work';
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
-			(modal as any).timeEstimate = 0;
+			(modal as any).form.values.title = mockTask.title;
+			(modal as any).form.values.status = mockTask.status;
+			(modal as any).form.values.priority = mockTask.priority;
+			(modal as any).form.values.tags = 'existing, work';
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
+			(modal as any).form.values.timeEstimate = 0;
 
 			const changes = (modal as any).getChanges();
 
@@ -223,7 +223,7 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 
 			await modal.initializeFormData();
 
-			expect((modal as any).tags).toBe('task, existing');
+			expect((modal as any).form.values.tags).toBe('task, existing');
 		});
 
 		test('should not mark tags as changed when untouched in property mode', async () => {
@@ -277,13 +277,13 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 		test('SHOULD add task tag when taskIdentificationMethod is "tag"', () => {
 			const modal = new TaskEditModal(mockApp, mockPlugin, { task: mockTask });
 
-			(modal as any).title = mockTask.title;
-			(modal as any).status = mockTask.status;
-			(modal as any).priority = mockTask.priority;
-			(modal as any).tags = 'important';
-			(modal as any).contexts = '';
-			(modal as any).projects = '';
-			(modal as any).timeEstimate = 0;
+			(modal as any).form.values.title = mockTask.title;
+			(modal as any).form.values.status = mockTask.status;
+			(modal as any).form.values.priority = mockTask.priority;
+			(modal as any).form.values.tags = 'important';
+			(modal as any).form.values.contexts = '';
+			(modal as any).form.values.projects = '';
+			(modal as any).form.values.timeEstimate = 0;
 
 			const changes = (modal as any).getChanges();
 
@@ -300,7 +300,7 @@ describe('Issue #843: Property Mode Tag Bug', () => {
 
 			await modal.initializeFormData();
 
-			expect((modal as any).tags).toBe('existing');
+			expect((modal as any).form.values.tags).toBe('existing');
 		});
 
 		test('should not mark tags as changed when untouched in tag mode', async () => {

@@ -36,7 +36,7 @@
  * - src/views/PomodoroView.ts (potential integration with view headers)
  * - styles/status-bar.css (timer styling for both locations)
  * - styles/pomodoro.css (view header timer styling)
- * - src/i18n/resources/ (translation keys)
+ * - src/i18n/locales/en/messages.po (Lingui message descriptors)
  *
  * @see https://github.com/callumalpass/tasknotes/issues/820
  * @see https://github.com/callumalpass/tasknotes/issues/1040 (related)

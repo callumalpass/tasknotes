@@ -52,7 +52,7 @@
     color: var(--text-error);
     padding: 1em;
     text-align: center;
-    font-size: 0.9em;
+    font-size: var(--tn-type-sm);
 }
 
 /* Responsive design */

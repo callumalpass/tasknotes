@@ -1,3 +1,5 @@
+import { uiText } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from 'obsidian';
 import { debounce } from '../../settings/components/settingHelpers';
 import { createElementInDocument } from '../../utils/documentDom';
@@ -10,7 +12,8 @@ import { createElementInDocument } from '../../utils/documentDom';
  */
 export class SearchBox {
 	private container: HTMLElement;
-	private onSearch: (term: string) => void;
+	private onSearch: (term: string) => void | Promise<void>;
+	private searchSettled: Promise<void> = Promise.resolve();
 	private debounceMs: number;
 	private onDismiss?: () => void;
 	
@@ -18,7 +21,7 @@ export class SearchBox {
 	private inputEl: HTMLInputElement | null = null;
 	private clearBtnEl: HTMLElement | null = null;
 
-	private debouncedSearch: ((term: string) => void) | null = null;
+	private debouncedSearch: (((term: string) => void) & { flush: () => void }) | null = null;
 	private destroyed = false;
 
 	/**
@@ -28,9 +31,8 @@ export class SearchBox {
 	 */
 	constructor(
 		container: HTMLElement,
-		onSearch: (term: string) => void,
-		debounceMs = 300,
-		onDismiss?: () => void
+		onSearch: (term: string) => void | Promise<void>,
+		debounceMs = 300
 	) {
 		this.container = container;
 		this.onSearch = onSearch;
@@ -42,7 +44,7 @@ export class SearchBox {
 			(term: string) => {
 				// Don't execute if component has been destroyed
 				if (!this.destroyed) {
-					this.onSearch(term);
+					this.searchSettled = Promise.resolve(this.onSearch(term));
 				}
 			},
 			this.debounceMs,
@@ -74,15 +76,15 @@ export class SearchBox {
 		this.inputEl = createElementInDocument(doc, 'input');
 		this.inputEl.type = 'text';
 		this.inputEl.className = 'tn-search-box__input';
-		this.inputEl.placeholder = 'Search tasks...';
-		this.inputEl.setAttribute('aria-label', 'Search tasks');
+		this.inputEl.placeholder = uiText(msg({ message: "Search tasks...", context: "bases/components/SearchBox: SearchBox.render display" }));
+		this.inputEl.setAttribute('aria-label', uiText(msg({ message: "Search tasks", context: "bases/components/SearchBox: SearchBox.render display" })));
 
 		// Create clear button
 		const clearBtn = createElementInDocument(doc, 'button');
 		clearBtn.type = 'button';
 		clearBtn.className = 'tn-search-box__clear';
 		clearBtn.textContent = '×';
-		clearBtn.setAttribute('aria-label', 'Clear search');
+		clearBtn.setAttribute('aria-label', uiText(msg({ message: "Clear search", context: "bases/components/SearchBox: SearchBox.render display" })));
 		this.clearBtnEl = clearBtn;
 
 		// Assemble elements
@@ -135,23 +137,33 @@ export class SearchBox {
 	 * Handle keydown event
 	 */
 	private handleKeydown = (e: KeyboardEvent): void => {
-		if (e.key === 'Enter') {
+		if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+		if (e.key === 'Escape') {
 			e.preventDefault();
 			e.stopPropagation();
-			this.onDismiss?.();
-		} else if (e.key === 'Escape') {
-			e.preventDefault();
-			this.clear();
-			// Trigger search with empty term
-			if (this.debouncedSearch) {
-				this.debouncedSearch('');
+			if (!this.getValue()) {
+				this.exitSearch(false);
+				return;
 			}
-			this.onDismiss?.();
-		} else if (e.key === 'Backspace' && this.inputEl?.value.length === 0) {
+			this.clear();
+			this.debouncedSearch?.('');
+			this.debouncedSearch?.flush();
+		} else if (e.key === 'ArrowDown' || e.key === 'Enter') {
 			e.preventDefault();
-			this.onDismiss?.();
+			e.stopPropagation();
+			this.debouncedSearch?.flush();
+			this.exitSearch(true);
 		}
 	};
+
+	private exitSearch(firstResult: boolean): void {
+		void this.searchSettled.then(() => {
+			if (!this.destroyed && this.inputEl === this.inputEl?.ownerDocument.activeElement) {
+				this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-exit', { bubbles: true, detail: firstResult }));
+				if (!firstResult) this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-close', { bubbles: true }));
+			}
+		});
+	}
 
 	/**
 	 * Handle clear button click

@@ -157,7 +157,9 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 
 		expect(titles.indexOf("Status")).toBeLessThan(titles.indexOf("Priority"));
 		expect(titles.indexOf("Priority")).toBeLessThan(titles.indexOf("Mark complete or skip"));
-		expect(titles.indexOf("Scheduled date")).toBeLessThan(titles.indexOf("Mark complete or skip"));
+		expect(titles.indexOf("Scheduled date")).toBeLessThan(
+			titles.indexOf("Mark complete or skip")
+		);
 		expect(titles.indexOf("Mark complete or skip")).toBeLessThan(
 			titles.indexOf("Open or create occurrence note")
 		);
@@ -367,7 +369,7 @@ describe("Issue #1724: recurring task actions belong with date menu items", () =
 		});
 
 		expect(getTopLevelTitles()).toEqual(
-			expect.arrayContaining(["Open recurring parent", "Unskip occurrence"])
+			expect.arrayContaining(["Open recurring parent", "Unskip instance"])
 		);
 	});
 

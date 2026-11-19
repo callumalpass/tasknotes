@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import type { BasesAllOptions, BasesOptions } from "obsidian";
 import { buildCalendarViewOptions } from "../../../src/bases/calendarViewOptions";
 import type TaskNotesPlugin from "../../../src/main";
@@ -15,6 +16,17 @@ function createConfig(values: Record<string, unknown> = {}): TestConfig {
 	};
 }
 
+test("composition options preserve existing month behaviour and default the agenda strip on", () => {
+	const listOptions = buildCalendarViewOptions(createPlugin(), createConfig({ calendarView: "listWeek" }));
+	const monthOptions = buildCalendarViewOptions(createPlugin(), createConfig({ calendarView: "dayGridMonth" }));
+	expect(findOption(listOptions, "showAgendaStrip")).toMatchObject({ type: "toggle", default: true });
+	expect(findOption(monthOptions, "showMonthDayPanel")).toMatchObject({ type: "toggle", default: false });
+	expect(isHidden(findOption(listOptions, "showAgendaStrip"))).toBe(false);
+	expect(isHidden(findOption(monthOptions, "showAgendaStrip"))).toBe(true);
+	expect(isHidden(findOption(monthOptions, "showMonthDayPanel"))).toBe(false);
+	expect(isHidden(findOption(listOptions, "showMonthDayPanel"))).toBe(true);
+});
+
 function createPlugin(): TaskNotesPlugin {
 	return {
 		settings: {
@@ -25,7 +37,7 @@ function createPlugin(): TaskNotesPlugin {
 			},
 		},
 		i18n: {
-			translate: (key: string) => key,
+			translate: mockObserveTranslation(),
 		},
 	} as unknown as TaskNotesPlugin;
 }
@@ -35,7 +47,7 @@ function isGroup(option: BasesAllOptions): option is TestGroup {
 }
 
 function findGroup(options: BasesAllOptions[], groupKey: string): TestGroup {
-	const displayName = `views.basesCalendar.settings.groups.${groupKey}`;
+	const displayName = mockEnglishText(mockConceptDescriptor(`views.basesCalendar.settings.groups.${groupKey}`));
 	const group = options.find((option) => isGroup(option) && option.displayName === displayName);
 	if (!group || !isGroup(group)) {
 		throw new Error(`Missing group ${groupKey}`);
@@ -70,13 +82,12 @@ describe("calendar view options", () => {
 		const options = buildCalendarViewOptions(createPlugin(), createConfig());
 
 		expect(options.filter(isGroup).map((group) => group.displayName)).toEqual([
-			"views.basesCalendar.settings.groups.events",
-			"views.basesCalendar.settings.groups.dateNavigation",
-			"views.basesCalendar.settings.groups.view",
-			"views.basesCalendar.settings.groups.display",
-			"views.basesCalendar.settings.groups.timeGrid",
-			"views.basesCalendar.settings.groups.eventLayout",
-			"views.basesCalendar.settings.groups.propertyBasedEvents",
+			"What to show",
+			"Layout",
+			"Time grid",
+			"Day cells",
+			"Property-based events",
+			"Advanced",
 		]);
 	});
 
@@ -113,7 +124,11 @@ describe("calendar view options", () => {
 		expect(isHidden(findGroup(monthOptions, "timeGrid"))).toBe(true);
 		expect(isHidden(findGroup(weekOptions, "timeGrid"))).toBe(false);
 		expect(isHidden(findOption(monthOptions, "eventMaxStack"))).toBe(true);
+		expect(isHidden(findOption(monthOptions, "snapDuration"))).toBe(true);
+		expect(isHidden(findOption(monthOptions, "selectMirror"))).toBe(true);
 		expect(isHidden(findOption(weekOptions, "eventMaxStack"))).toBe(false);
+		expect(isHidden(findOption(weekOptions, "snapDuration"))).toBe(false);
+		expect(isHidden(findOption(weekOptions, "selectMirror"))).toBe(false);
 	});
 
 	it("shows day density controls for month, year, and week/day views (#2387)", () => {

@@ -15,5 +15,6 @@ First tag and SHA-256 of the tester-captured complete writer source:
 - 4.9.1: `cf3a40aa3f5273b1e196602dff4f3130140e8985568a29d4468d00ae182ec79e`
 - 4.10.0: `8afd253fc2ca7b6f45ca099a14cec5743328609f7bac91fbd7af3807c2cebc68`
 - 4.12.0: `dd64a11742f79f3ad26ce98779c2c211019ade0103eb65c278a48a7cc8d7d08f`
+- 4.15.0: `04ada2ea78e8a91bb1e3ff3761ceaa21ce8f6bb98f99d677810268049e9d3b3b`
 
-4.12.0 writer is unchanged through 4.13.7. Earlier fingerprints and all tags were audited in the migration compatibility campaign. Recognition permits YAML mapping-key reordering, comments, CRLF and a leading BOM, but requires exact generated body and schema semantics. Invalid YAML is recognized only when the normalized complete bytes equal a frozen writer rendered with the saved settings. Unknown edits are preserved.
+4.12.0 writer is unchanged through 4.14.0; 4.15.0 adds the `recurrence_original_date` role field and is unchanged through 4.18.0. Earlier fingerprints and all tags were audited in the migration compatibility campaign. Recognition permits YAML mapping-key reordering, comments, CRLF and a leading BOM, but requires exact generated body and schema semantics. Invalid YAML is recognized only when the normalized complete bytes equal a frozen writer rendered with the saved settings. Settings are tried as v5 loaded them, as saved (before v5's load migrations, such as key trimming), and without a legacy single user field that v5 copied into `userFields`. Unknown edits are preserved.

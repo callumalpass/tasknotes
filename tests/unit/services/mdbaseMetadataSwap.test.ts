@@ -1,3 +1,4 @@
+import { tmpdir } from "node:os";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { Platform, TFile } from "obsidian";
@@ -227,7 +228,7 @@ it("refuses adapters without a move instead of truncating active metadata", asyn
 });
 
 it.each(targets.flatMap((target) => [false, true].map((desktop) => [target, desktop] as const)))("native %s publication robustness (desktop=%s) retains actual bytes and late arrivals", async (target, emulateDesktop) => {
-	const scratch = await fs.mkdtemp(path.join(process.env.TMPDIR!, "swap-native-"));
+	const scratch = await fs.mkdtemp(path.join(tmpdir(), "swap-native-"));
 	const previousRequire = window.require;
 	const desktop = Platform.isDesktop;
 	window.require = require;

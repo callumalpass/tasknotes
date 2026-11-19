@@ -56,6 +56,7 @@ function buildMockPlugin(task: TaskInfo) {
         },
         statusManager: {
             isCompletedStatus: jest.fn((s: string) => s === "done"),
+            getConfiguredStatusAfterCompletion: jest.fn(),
             getCompletedStatuses: jest.fn(() => ["done"]),
         },
         fieldMapper: { toUserField: jest.fn((f: string) => f) },

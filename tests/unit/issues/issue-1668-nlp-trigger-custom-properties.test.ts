@@ -44,8 +44,11 @@ function createPlugin(userFields: UserMappedField[] = USER_FIELDS): TaskNotesPlu
 }
 
 class UserFieldModalHarness extends TaskModal {
+	protected readonly mode = "create" as const;
 	async initializeFormData(): Promise<void> {}
-	async handleSave(): Promise<void> {}
+	async handleSave() {
+		return { status: "saved" as const };
+	}
 	getModalTitle(): string {
 		return "Harness";
 	}
@@ -55,7 +58,7 @@ class UserFieldModalHarness extends TaskModal {
 	}
 
 	setUserFieldValue(key: string, value: unknown): void {
-		this.userFields[key] = value;
+		this.form.values.userFields[key] = value;
 	}
 
 	syncUserFieldControls(): void {

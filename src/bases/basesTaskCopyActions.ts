@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { App, TFile } from "obsidian";
 import type { TaskInfo } from "../types";
 import {
@@ -36,17 +38,17 @@ export function buildBasesTaskCopyActions(
 ): BasesViewAction[] {
 	return [
 		{
-			name: "Copy task filenames",
+			name: uiText(msg({ message: "Copy task filenames", context: "bases/basesTaskCopyActions: buildBasesTaskCopyActions name" })),
 			icon: "lucide-file-text",
 			callback: () => copyTasks("filenames"),
 		},
 		{
-			name: "Copy task links",
+			name: uiText(msg({ message: "Copy task links", context: "bases/basesTaskCopyActions: buildBasesTaskCopyActions name" })),
 			icon: "lucide-link",
 			callback: () => copyTasks("markdown-links"),
 		},
 		{
-			name: "Copy task titles",
+			name: uiText(msg({ message: "Copy task titles", context: "bases/basesTaskCopyActions: buildBasesTaskCopyActions name" })),
 			icon: "lucide-text",
 			callback: () => copyTasks("titles"),
 		},

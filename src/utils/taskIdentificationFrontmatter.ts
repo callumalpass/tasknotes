@@ -1,3 +1,7 @@
+import { getFrontmatterTags } from "../core/fieldMapping";
+
+export { getFrontmatterTags };
+
 export function coerceTaskIdentifierPropertyValue(value: string): string | boolean {
 	const lower = value.toLowerCase();
 	return lower === "true" || lower === "false" ? lower === "true" : value;
@@ -21,44 +25,30 @@ function propertyValuesMatch(left: unknown, right: string | boolean): boolean {
 	return left === right;
 }
 
-export function getFrontmatterTags(value: unknown): string[] {
-	const tags: string[] = [];
-	const seen = new Set<string>();
-	const addTag = (tagValue: unknown): void => {
-		const normalized = normalizeFrontmatterTag(String(tagValue));
-		if (!normalized || seen.has(normalized)) {
-			return;
-		}
-		seen.add(normalized);
-		tags.push(normalized);
-	};
-
-	if (Array.isArray(value)) {
-		value.forEach(addTag);
-		return tags;
-	}
-
-	if (typeof value === "string" && value.trim().length > 0) {
-		addTag(value);
-		return tags;
-	}
-
-	return [];
-}
-
 export function applyPropertyTaskIdentifier(
 	frontmatter: Record<string, unknown>,
 	propertyName: string,
 	propertyValue: string
 ): void {
-	if (!propertyName || !propertyValue) {
+	if (!propertyName) {
+		return;
+	}
+
+	// Without a value, the property only has to be present for the note to be a task.
+	if (!propertyValue?.trim()) {
+		if (!Object.prototype.hasOwnProperty.call(frontmatter, propertyName)) {
+			// null rather than "" so typed properties (such as dates) still validate.
+			frontmatter[propertyName] = isTagsTaskIdentifierProperty(propertyName) ? [] : null;
+		}
 		return;
 	}
 
 	if (isTagsTaskIdentifierProperty(propertyName)) {
 		const tags = getFrontmatterTags(frontmatter.tags);
 		const normalizedIdentifier = normalizeFrontmatterTag(propertyValue);
-		const hasIdentifier = tags.some((tag) => normalizeFrontmatterTag(tag) === normalizedIdentifier);
+		const hasIdentifier = tags.some(
+			(tag) => normalizeFrontmatterTag(tag) === normalizedIdentifier
+		);
 		if (!hasIdentifier) {
 			tags.push(normalizedIdentifier);
 		}

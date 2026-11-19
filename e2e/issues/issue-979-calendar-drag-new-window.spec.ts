@@ -28,6 +28,7 @@
 
 import { test, expect, Page, BrowserContext } from '@playwright/test';
 import { launchObsidian, closeObsidian, ObsidianApp, runCommand } from '../obsidian';
+import { calendarTimeSlots } from '../calendar-helpers';
 
 let app: ObsidianApp;
 
@@ -65,12 +66,12 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view which shows events in time slots
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -107,15 +108,15 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
             await popoutPage.waitForTimeout(2000);
 
             // Verify calendar is visible in pop-out window
-            const popoutCalendar = popoutPage.locator('.fc');
+            const popoutCalendar = popoutPage.locator('.tnc');
             await expect(popoutCalendar).toBeVisible({ timeout: 10000 });
 
             // Verify we're in time grid view
-            const timeGrid = popoutPage.locator('.fc-timegrid-body, .fc-timegrid');
+            const timeGrid = popoutPage.locator('.tnc-tg-body, .tnc-tg');
             await expect(timeGrid).toBeVisible({ timeout: 5000 });
 
             // Find events in the calendar
-            const events = popoutPage.locator('.fc-event');
+            const events = popoutPage.locator('.tnc-item');
             const eventCount = await events.count();
 
             if (eventCount > 0) {
@@ -164,7 +165,7 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
               }
             } else {
               // If no events exist, test drag-to-create instead
-              const timeSlots = popoutPage.locator('.fc-timegrid-slot-lane');
+              const timeSlots = calendarTimeSlots(popoutPage);
               const slotCount = await timeSlots.count();
 
               if (slotCount >= 4) {
@@ -187,7 +188,7 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
                   await popoutPage.waitForTimeout(500);
 
                   // Check if selection highlight or menu appears
-                  const selectionHighlight = popoutPage.locator('.fc-highlight, .fc-event-mirror');
+                  const selectionHighlight = popoutPage.locator('.tnc-sel, .tnc-item.is-mirror');
                   const menu = popoutPage.locator('.menu');
 
                   const hasHighlight = await selectionHighlight.isVisible({ timeout: 1000 }).catch(() => false);
@@ -229,12 +230,12 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -260,11 +261,11 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
             await popoutPage.waitForLoadState('domcontentloaded');
             await popoutPage.waitForTimeout(2000);
 
-            const popoutCalendar = popoutPage.locator('.fc');
+            const popoutCalendar = popoutPage.locator('.tnc');
             await expect(popoutCalendar).toBeVisible({ timeout: 10000 });
 
             // Find events
-            const events = popoutPage.locator('.fc-event');
+            const events = popoutPage.locator('.tnc-item');
             const eventCount = await events.count();
 
             if (eventCount > 0) {
@@ -314,12 +315,12 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to week view
       const weekButton = page.locator(
-        '.fc-timeGridWeek-button, button:has-text("week"), .fc-toolbar button:has-text("Week")'
+        '.tnc-btn-view-week, button:has-text("week"), .tnc-toolbar button:has-text("Week")'
       );
       if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await weekButton.click();
@@ -327,7 +328,7 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
       }
 
       // Test drag-to-select in main window
-      const timeSlots = page.locator('.fc-timegrid-slot-lane');
+      const timeSlots = calendarTimeSlots(page);
       let mainWindowDragWorks = false;
 
       if (await timeSlots.count() >= 4) {
@@ -349,7 +350,7 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
           await page.waitForTimeout(500);
 
           // Check if selection/menu appeared
-          const highlight = page.locator('.fc-highlight, .fc-event-mirror');
+          const highlight = page.locator('.tnc-sel, .tnc-item.is-mirror');
           const menu = page.locator('.menu');
 
           mainWindowDragWorks = await highlight.isVisible({ timeout: 1000 }).catch(() => false) ||
@@ -383,10 +384,10 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
             await popoutPage.waitForLoadState('domcontentloaded');
             await popoutPage.waitForTimeout(2000);
 
-            const popoutCalendar = popoutPage.locator('.fc');
+            const popoutCalendar = popoutPage.locator('.tnc');
             await expect(popoutCalendar).toBeVisible({ timeout: 10000 });
 
-            const popoutTimeSlots = popoutPage.locator('.fc-timegrid-slot-lane');
+            const popoutTimeSlots = calendarTimeSlots(popoutPage);
 
             if (await popoutTimeSlots.count() >= 4) {
               const slot = popoutTimeSlots.nth(4);
@@ -406,7 +407,7 @@ test.describe('Issue #979: Drag and drop broken in advanced calendar view in new
 
                 await popoutPage.waitForTimeout(500);
 
-                const highlight = popoutPage.locator('.fc-highlight, .fc-event-mirror');
+                const highlight = popoutPage.locator('.tnc-sel, .tnc-item.is-mirror');
                 const menu = popoutPage.locator('.menu');
 
                 popoutWindowDragWorks = await highlight.isVisible({ timeout: 1000 }).catch(() => false) ||

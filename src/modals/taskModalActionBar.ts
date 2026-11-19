@@ -5,6 +5,8 @@ export interface TaskModalActionIconSpec {
 	tooltip: string;
 	onClick: (icon: HTMLElement, event: UIEvent) => void;
 	dataType?: string;
+	/** Chips carry a text label, written by updateTaskModalActionIconStates. */
+	chip?: boolean;
 }
 
 export function createTaskModalActionIcon(
@@ -25,6 +27,11 @@ export function createTaskModalActionIcon(
 	const icon = iconContainer.createSpan("icon");
 	setIcon(icon, spec.iconName);
 
+	if (spec.chip) {
+		iconContainer.addClass("tn-task-modal__chip", "tn-chip", "tn-chip--property");
+		iconContainer.createSpan("action-icon__label");
+	}
+
 	const activate = (event: UIEvent): void => {
 		event.preventDefault();
 		event.stopPropagation();
@@ -33,7 +40,13 @@ export function createTaskModalActionIcon(
 
 	iconContainer.addEventListener("click", activate);
 	iconContainer.addEventListener("keydown", (event) => {
-		if (event.key === "Enter" || event.key === " ") {
+		if (
+			(event.key === "Enter" || event.key === " ") &&
+			!event.ctrlKey &&
+			!event.metaKey &&
+			!event.altKey &&
+			!event.shiftKey
+		) {
 			activate(event);
 		}
 	});

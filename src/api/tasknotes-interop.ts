@@ -15,6 +15,7 @@ import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 interface MdbaseObsidianPlugin {
 	api?: {
+		apiVersion: number;
 		interop?: {
 			connect(plugin: Plugin): InteropClient;
 		};
@@ -38,7 +39,11 @@ export class TaskNotesInteropPublisher {
 	connect(): void {
 		if (this.client || this.connecting) return;
 		const mdbase = this.getMdbasePlugin();
-		if (!mdbase?.api?.interop || mdbase.api.getInteropStatus?.().enabled === false) return;
+		if (
+			mdbase?.api?.apiVersion !== 1 ||
+			!mdbase.api.interop ||
+			mdbase.api.getInteropStatus?.().enabled !== true
+		) return;
 		this.connecting = this.register(mdbase)
 			.catch((error: unknown) => {
 				logger.error("Failed to register the TaskNotes event source.", {
@@ -123,7 +128,7 @@ export class TaskNotesInteropPublisher {
 		const app = this.plugin.app as unknown as {
 			plugins?: { getPlugin(id: string): unknown };
 		} | undefined;
-		return app?.plugins?.getPlugin("mdbase-obsidian") as MdbaseObsidianPlugin | null;
+		return app?.plugins?.getPlugin("mdbase-sync") as MdbaseObsidianPlugin | null;
 	}
 }
 

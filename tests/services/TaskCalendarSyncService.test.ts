@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../helpers/real-i18n";
 import { TaskCalendarSyncService } from "../../src/services/TaskCalendarSyncService";
 import { TaskInfo } from "../../src/types";
 
@@ -58,20 +59,7 @@ describe("TaskCalendarSyncService", () => {
                 getPriorityConfig: jest.fn((priority: string) => ({ label: priority === "2-high" ? "High" : "Medium" }))
             },
             i18n: {
-                translate: jest.fn((key: string, params?: Record<string, string | number>) => {
-                    const translations: Record<string, string> = {
-                        "settings.integrations.googleCalendarExport.eventDescription.untitledTask": "Untitled Task",
-                        "settings.integrations.googleCalendarExport.eventDescription.priority": "Priority: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.status": "Status: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.scheduled": "Scheduled: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.timeEstimate": "Time Estimate: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.contexts": "Contexts: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.projects": "Projects: {value}",
-                        "settings.integrations.googleCalendarExport.eventDescription.openInObsidian": "Open in Obsidian",
-                    };
-                    const translation = translations[key] || key;
-                    return translation.replace(/\{(\w+)\}/g, (_match, name) => String(params?.[name] ?? ""));
-                })
+                translate: mockObserveTranslation()
             }
         };
 
@@ -125,7 +113,7 @@ describe("TaskCalendarSyncService", () => {
         expect(syncService.executeTaskUpdate).toHaveBeenCalledWith(secondPayload);
     });
 
-    it("should build plain-text calendar descriptions for external calendar clients", () => {
+    it("should build calendar descriptions with display labels and a clickable Obsidian link", () => {
         const description = syncService.buildEventDescription({
             path: "Tasks/Prepare quarterly planning notes.md",
             title: "Prepare quarterly planning notes",
@@ -149,14 +137,35 @@ describe("TaskCalendarSyncService", () => {
         expect(description).toContain(
             "Projects: Quarterly Planning, Nested Project, Markdown Project"
         );
-        expect(description).toContain(
-            "Open in Obsidian: obsidian://open?vault=Example%20Vault&file=Tasks%2FPrepare%20quarterly%20planning%20notes.md"
+        // Google Calendar does not auto-link obsidian:// URIs, so the link is an anchor (#2267).
+        expect(description.split("\n").pop()).toBe(
+            '<a href="obsidian://open?vault=Example%20Vault&amp;file=Tasks%2FPrepare%20quarterly%20planning%20notes.md">Open in Obsidian</a>'
         );
         expect(description).not.toContain("[[");
         expect(description).not.toContain("]]");
-        expect(description).not.toContain("<a ");
-        expect(description).not.toContain("</a>");
         expect(description).not.toContain("](");
+    });
+
+    it("should escape task values once the description contains the HTML link", () => {
+        const task = {
+            path: "Tasks/R&D.md",
+            title: "R&D",
+            status: "ready",
+            tags: ["a<b>"],
+            projects: ['[[Projects/Q&A "Launch"|Q&A <Launch>]]'],
+        } as TaskInfo;
+
+        const description = syncService.buildEventDescription(task);
+        expect(description).toContain("Tags: #a&lt;b&gt;");
+        expect(description).toContain("Projects: Q&amp;A &lt;Launch&gt;");
+        expect(description).toContain('href="obsidian://open?vault=Example%20Vault&amp;file=Tasks%2FR%26D.md"');
+
+        // Without the link, the description stays plain text.
+        mockPlugin.settings.googleCalendarExport.includeObsidianLink = false;
+        const plain = syncService.buildEventDescription(task);
+        expect(plain).toContain("Tags: #a<b>");
+        expect(plain).toContain("Projects: Q&A <Launch>");
+        expect(plain).not.toContain("<a ");
     });
 
     it("should cancel a pending status update before syncing completion", async () => {

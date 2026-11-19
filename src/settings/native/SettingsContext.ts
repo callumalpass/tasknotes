@@ -1,5 +1,9 @@
-import { Notice, type SettingDefinition, type SettingControl } from "obsidian";
+import { displayError } from "../../i18n/runtime";
+import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
+import { Notice, setIcon, type SettingDefinition, type SettingControl } from "obsidian";
 import type TaskNotesPlugin from "../../main";
+import { IconSuggest, iconSettingName, isKnownIcon } from "../components/IconSuggest";
 
 interface ValueOptions<T> {
 	name: string;
@@ -26,7 +30,6 @@ export class SettingsContext {
 		archiveFolder: ["archive location", "directory"],
 		storeTitleInFilename: ["rename", "note name"],
 		enableNaturalLanguageInput: ["NLP", "quick capture", "parse dates"],
-		disableNoteIndexing: ["performance", "index", "cache"],
 	};
 	constructor(
 		readonly plugin: TaskNotesPlugin,
@@ -34,7 +37,7 @@ export class SettingsContext {
 		readonly rebuild: () => void
 	) {}
 
-	readonly t = (key: string, params?: Record<string, string | number>): string =>
+	readonly t = (key: MessageDescriptor, params?: Record<string, string | number>): string =>
 		this.plugin.i18n.translate(key, params);
 
 	readonly save = (): void => {
@@ -46,8 +49,8 @@ export class SettingsContext {
 			.catch((error: unknown) => {
 				this.saveError = error instanceof Error ? error : new Error(String(error));
 				new Notice(
-					this.t("settings.native.saveError", {
-						error: error instanceof Error ? error.message : String(error),
+					this.t(msg({ message: "Could not save TaskNotes settings: {error}", context: "settings.native.saveError" }), {
+						error: displayError(error),
 					})
 				);
 			})
@@ -157,7 +160,7 @@ export class SettingsContext {
 				(options.min !== undefined && value < options.min) ||
 				(options.max !== undefined && value > options.max)
 			) {
-				return this.t("settings.native.numberRange", {
+				return this.t(msg({ message: "Enter a number between {min} and {max}.", context: "settings.native.numberRange" }), {
 					min: options.min ?? "−∞",
 					max: options.max ?? "∞",
 				});
@@ -203,7 +206,7 @@ export class SettingsContext {
 						await options.onClick();
 						await this.flush();
 					} catch (error) {
-						new Notice(error instanceof Error ? error.message : String(error));
+						new Notice(displayError(error));
 					} finally {
 						busy = false;
 						this.refresh();
@@ -212,6 +215,55 @@ export class SettingsContext {
 			},
 		};
 	}
+	/** A Lucide icon name: a text input with icon suggestions and a preview of the chosen icon. */
+	icon<T extends object, K extends keyof T>(
+		object: T,
+		property: K,
+		key: string,
+		name: string,
+		config: { desc?: string; onChange?: () => void } = {}
+	): SettingDefinition {
+		const read = () => String(object[property] ?? "");
+		const write = (value: string) => {
+			object[property] = iconSettingName(value.trim()) as T[K];
+			config.onChange?.();
+			this.save();
+		};
+		const definition = this.text(key, {
+			name,
+			desc: config.desc,
+			getValue: read,
+			setValue: write,
+		});
+		return {
+			name: definition.name,
+			desc: definition.desc,
+			aliases: definition.aliases,
+			render: (setting) => {
+				setting.setName(name);
+				if (config.desc) setting.setDesc(config.desc);
+				setting.settingEl.addClass("tn-icon-setting");
+				const preview = setting.controlEl.createSpan({ cls: "tn-icon-setting__preview" });
+				const showPreview = (value: string) => {
+					preview.empty();
+					const known = isKnownIcon(value);
+					preview.toggleClass("is-empty", !known);
+					if (known) setIcon(preview, iconSettingName(value.trim()));
+				};
+				let suggest: IconSuggest | undefined;
+				setting.addText((text) => {
+					text.setValue(read()).onChange((value) => {
+						showPreview(value);
+						write(value);
+					});
+					suggest = new IconSuggest(this.plugin.app, text.inputEl);
+				});
+				showPreview(read());
+				return () => suggest?.close();
+			},
+		};
+	}
+
 	field<T extends object, K extends keyof T>(
 		object: T,
 		property: K,

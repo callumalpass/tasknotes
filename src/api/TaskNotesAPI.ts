@@ -1005,7 +1005,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 				method: settings.taskIdentificationMethod ?? "tag",
 				tag: settings.taskTag ?? "task",
 				propertyName: settings.taskPropertyName ?? "type",
-				propertyValue: settings.taskPropertyValue ?? "task",
+				propertyValue: (settings.taskPropertyValue ?? "task").trim(),
 				excludedFolders: settings.excludedFolders ?? "",
 			},
 			storeTitleInFilename: settings.storeTitleInFilename ?? false,
@@ -3007,7 +3007,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 				taskPath,
 				task,
 				changes: {},
-				data: payload,
+				data: task ? { ...data, task } : payload,
 				context,
 				rawEvent,
 			}),
@@ -3513,7 +3513,9 @@ function getRawEventForRuntimeEvent(event: TaskNotesRuntimeEventName): string {
 }
 
 function copyTaskInfo(task: TaskInfo): TaskInfo {
-	const copy = { ...task };
+	// `basesData` is the Bases entry a view attached to the cached task. It holds
+	// the Obsidian app, so it is circular and must not reach API consumers.
+	const { basesData: _basesData, ...copy }: TaskInfo = task;
 
 	if (task.tags) {
 		copy.tags = [...task.tags];

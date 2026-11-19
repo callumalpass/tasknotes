@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
@@ -28,6 +30,7 @@ function createPlugin(): TaskNotesPlugin {
 			),
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			getStatusConfig: jest.fn((status: string) => {
 				if (status === "open") {
 					return { value: "open", label: "Open", color: "#111111" };
@@ -40,6 +43,7 @@ function createPlugin(): TaskNotesPlugin {
 			getNextStatus: jest.fn((status: string) => (status === "open" ? "done" : "open")),
 		},
 		priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 			getPriorityConfig: jest.fn((priority: string) => {
 				if (priority === "high") {
 					return { value: "high", label: "High", color: "#ff0000", icon: "flame" };
@@ -51,12 +55,7 @@ function createPlugin(): TaskNotesPlugin {
 			}),
 		},
 		i18n: {
-			translate: jest.fn((key: string, vars?: Record<string, string>) => {
-				if (key === "ui.taskCard.priorityAriaLabel") {
-					return `Priority: ${vars?.label ?? ""}`;
-				}
-				return key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 	} as unknown as TaskNotesPlugin;
 }
@@ -91,7 +90,7 @@ describe("taskCardPrimaryIndicators", () => {
 
 		expect(statusDot).not.toBeNull();
 		expect(statusDot?.classList.contains("task-card__status-dot")).toBe(true);
-		expect(statusDot?.style.borderColor).toBe("rgb(17, 17, 17)");
+		expect(statusDot?.dataset.tnGlyph).toBe("open");
 		expect(statusDot?.dataset.tnNoDrag).toBe("true");
 		expect(card.style.getPropertyValue("--current-status-color")).toBe("#111111");
 		expect(card.style.getPropertyValue("--next-status-color")).toBe("#222222");
@@ -176,7 +175,7 @@ describe("taskCardPrimaryIndicators", () => {
 		expect(updated?.previousElementSibling?.classList.contains("task-card__status-dot")).toBe(
 			true
 		);
-		expect(updated?.classList.contains("task-card__priority-dot--icon")).toBe(false);
+		expect(updated?.dataset.tnGlyph).toBe("unknown");
 		expect(card.querySelector(".task-card__priority-dot")).toBe(updated);
 	});
 
@@ -190,7 +189,7 @@ describe("taskCardPrimaryIndicators", () => {
 		expect(card.style.getPropertyValue("--current-priority-color")).toBe("#888888");
 	});
 
-	it("removes priority indicators and stale priority colors when no priority config exists", () => {
+	it("shows unknown priority glyph and removes stale priority colors when no priority config exists", () => {
 		const plugin = createPlugin();
 		const { card, mainRow } = createCard();
 		mainRow.createSpan({ cls: "task-card__priority-dot" });
@@ -209,8 +208,8 @@ describe("taskCardPrimaryIndicators", () => {
 				plugin,
 				onClick: jest.fn(),
 			})
-		).toBeNull();
-		expect(card.querySelector(".task-card__priority-dot")).toBeNull();
+		).not.toBeNull();
+		expect(card.querySelector<HTMLElement>(".task-card__priority-dot")?.dataset.tnGlyph).toBe("unknown");
 	});
 
 	it("removes stale status colors when status configs are missing", () => {

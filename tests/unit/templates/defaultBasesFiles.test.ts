@@ -63,7 +63,7 @@ describe("defaultBasesFiles", () => {
 			const literal = JSON.stringify(text);
 			for (const command of commands) {
 				const base = parse(generateBasesFileTemplate(command, plugin as any));
-				expect(base.formulas.priorityWeight).toBe(`if(priority==${literal},0,999)`);
+				expect(base.formulas.priorityWeight).toBe(`if(priority==${literal},0,-1)`);
 				expect(base.formulas.priorityCategory).toBe(`if(priority==${literal},${literal},"No priority")`);
 				expect(base.formulas.isOverdue).toContain(`status != ${literal}`);
 				if (command === "open-tasks-view") {
@@ -101,6 +101,24 @@ describe("defaultBasesFiles", () => {
 				.toContain('file.hasTag("archived") != true');
 		}
 	);
+
+	it("ranks priorityWeight by configured weight, with unknown priorities lowest (#2379)", () => {
+		const plugin = createMockPlugin({
+			customPriorities: [
+				{ value: "high", label: "High", weight: 3 },
+				{ value: "none", label: "None", weight: 0 },
+				{ value: "normal", label: "Normal", weight: 2 },
+				{ value: "low", label: "Low", weight: 1 },
+			],
+		});
+		const base = parse(generateBasesFileTemplate("open-tasks-view", plugin as any));
+
+		// Sorting this formula descending lists High, Normal, Low, None, then tasks
+		// whose priority is missing or not configured.
+		expect(base.formulas.priorityWeight).toBe(
+			'if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))'
+		);
+	});
 
 	it("adds manual-order sorting to the default kanban template", () => {
 		const template = generateBasesFileTemplate("open-kanban-view", createMockPlugin() as any);
@@ -190,8 +208,10 @@ describe("defaultBasesFiles", () => {
 		const template = generateBasesFileTemplate("open-agenda-view", createMockPlugin() as any);
 
 		expect(parse(template).formulas.dueIn).toContain('if(due.isEmpty(), "", if(formula.daysUntilDue == 0');
-		expect(template).toContain("formula.dueIn:\n    displayName: Due in");
-		expect(template).toContain("      - due\n      - formula.dueIn\n      - file.name");
+		expect(parse(template).properties["formula.dueIn"].displayName).toBe("Due in");
+		const order = parse(template).views[0].order;
+		expect(order[order.indexOf("due") + 1]).toBe("formula.dueIn");
+		expect(order).not.toContain("file.name");
 		expect(template).toContain('calendarView: "listWeek"');
 		expect(template).toContain("listDayCount: 7");
 		expect(template).toContain("showOverdueOnToday: true");
@@ -230,7 +250,7 @@ describe("defaultBasesFiles", () => {
 		);
 
 		expect(template).not.toContain("      - formula.dueIn");
-		expect(template).not.toContain("formula.dueIn:\n    displayName: Due in");
+		expect(parse(template).properties?.["formula.dueIn"]).toBeUndefined();
 	});
 
 	it("quotes property-based task identifiers so names with spaces work in Bases filters", () => {
@@ -289,7 +309,7 @@ describe("defaultBasesFiles", () => {
 		expect(template).not.toContain('note["Task Type"] == "true"');
 	});
 
-	it.each([["Task Type", ""], ["", "task"], ["", ""], [" ", "task"], ["category", " "]])("matches no tasks with incomplete property identification (%s, %s) (#2363)", (name, value) => {
+	it.each([["", "task"], ["", ""], [" ", "task"]])("matches no tasks with incomplete property identification (%s, %s) (#2363)", (name, value) => {
 		const template = generateBasesFileTemplate(
 			"open-tasks-view",
 			createMockPlugin({
@@ -301,6 +321,19 @@ describe("defaultBasesFiles", () => {
 		expect(template).toContain('    - "false"');
 		expect(template).not.toContain('file.hasTag("task")');
 		expect(template).not.toContain('note["Task Type"] &&');
+	});
+
+	it.each([["Task Type", ""], ["Task Type", " "]])("matches notes that have the property when the value is empty (%s, %j) (#2138)", (name, value) => {
+		const template = generateBasesFileTemplate(
+			"open-tasks-view",
+			createMockPlugin({
+				taskIdentificationMethod: "property",
+				taskPropertyName: name,
+				taskPropertyValue: value,
+			}) as any
+		);
+		expect(template).toContain('file.hasProperty("Task Type")');
+		expect(template).not.toContain('    - "false"');
 	});
 
 	it("adds excluded folder filters to generated task Bases", () => {
@@ -464,7 +497,10 @@ describe("defaultBasesFiles", () => {
 		expect(boost("2026-04-28T09:00:00Z")).toBeGreaterThan(boost("2026-04-28T17:00:00Z"));
 	});
 
-	it("does not generate retired Pomodoro statistics Bases", () => {
-		expect(generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any)).toBe("");
+	it("generates Pomodoro statistics from daily notes as valid YAML", () => {
+		const template = generateBasesFileTemplate("pomodoro-stats-base", createMockPlugin() as any);
+		const parsed = parse(template) as { filters: { and: string[] }; views: Array<{ name: string }> };
+		expect(parsed.views.map((view) => view.name)).toEqual(["Daily", "Monthly"]);
+		expect(parsed.filters.and).toContain('file.hasProperty("pomodoros")');
 	});
 });

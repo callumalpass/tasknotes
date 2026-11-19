@@ -93,11 +93,18 @@ export function loadDeviceLocalSettings(
 	};
 }
 
-/** Removes device-local keys so they are never written to data.json. */
+/**
+ * Removes device-local keys so they are never written to data.json.
+ *
+ * TaskNotes 4.x treats a data.json without lastSeenVersion as a new install and adds
+ * its "Start Here" note, so a device still on 4.x that syncs this data.json would
+ * add one. Removing a recorded version therefore marks that note as created.
+ */
 export function stripDeviceLocalSettings(data: Record<string, unknown>): Record<string, unknown> {
 	if (!DEVICE_LOCAL_SETTING_KEYS.some((key) => hasOwn(data, key))) return data;
 	const sanitized = { ...data };
 	for (const key of DEVICE_LOCAL_SETTING_KEYS) delete sanitized[key];
+	if (nonEmptyString(data.lastSeenVersion)) sanitized.starterNoteCreated = true;
 	return sanitized;
 }
 

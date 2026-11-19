@@ -76,6 +76,103 @@ describe("taskModalFocusGuards", () => {
 		expect(scrollContainer.scrollTop).toBe(44);
 	});
 
+	it.each([false, true])(
+		"does not move focus from another modal control (mobile: %s)",
+		(mobile) => {
+			document.body.classList.toggle("is-mobile", mobile);
+			const elements = createElements();
+			const guards = new TaskModalFocusGuards(elements);
+			const title = elements.contentEl.createEl("textarea");
+			const tags = elements.contentEl.createEl("input");
+			guards.focusTitleInput(title);
+			tags.focus();
+			jest.advanceTimersByTime(mobile ? 350 : 100);
+			expect(document.activeElement).toBe(tags);
+		}
+	);
+
+	it("does not select over a title caret the user already positioned", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const title = elements.contentEl.createEl("textarea");
+		title.value = "Existing title";
+		guards.focusTitleInput(title);
+		title.focus();
+		title.setSelectionRange(4, 4);
+		jest.advanceTimersByTime(350);
+		expect(title.selectionStart).toBe(4);
+		expect(title.selectionEnd).toBe(4);
+	});
+
+	it("cancels the pending initial focus when the modal is destroyed", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const title = elements.contentEl.createEl("textarea");
+		const focus = jest.spyOn(title, "focus");
+		guards.focusTitleInput(title);
+		guards.destroy();
+		jest.advanceTimersByTime(350);
+		expect(focus).not.toHaveBeenCalled();
+	});
+
+	it("does not steal focus from a picker opened before initial title focus", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+		const focus = jest.spyOn(input, "focus");
+		guards.focusTitleInput(input);
+		elements.containerEl.createDiv({ cls: "tn-popover" });
+		jest.runOnlyPendingTimers();
+		expect(focus).not.toHaveBeenCalled();
+	});
+
+	it("does not steal focus from another field before initial title focus", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const title = elements.contentEl.createEl("textarea");
+		const tags = elements.contentEl.createEl("input");
+		const focus = jest.spyOn(title, "focus");
+		guards.focusTitleInput(title, false);
+		tags.focus();
+		jest.runOnlyPendingTimers();
+		expect(focus).not.toHaveBeenCalled();
+		expect(document.activeElement).toBe(tags);
+	});
+
+	it.each(["input", "button"])("does not steal focus from a selector's %s above the form", (kind) => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const title = elements.contentEl.createEl("textarea");
+		const selector = document.body.createDiv();
+		const target = selector.createEl(kind === "input" ? "input" : "button");
+		guards.focusTitleInput(title);
+		target.focus();
+		jest.runOnlyPendingTimers();
+		expect(document.activeElement).toBe(target);
+	});
+
+	it("places the edit caret at the end without selecting the title", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+		input.value = "Review launch";
+		guards.focusTitleInput(input, false);
+		jest.runOnlyPendingTimers();
+		expect(input.selectionStart).toBe(input.value.length);
+		expect(input.selectionEnd).toBe(input.value.length);
+	});
+
+	it("cancels delayed title focus when the modal closes", () => {
+		const elements = createElements();
+		const guards = new TaskModalFocusGuards(elements);
+		const input = elements.contentEl.createEl("textarea");
+		const focus = jest.spyOn(input, "focus");
+		guards.focusTitleInput(input);
+		guards.destroy();
+		jest.runOnlyPendingTimers();
+		expect(focus).not.toHaveBeenCalled();
+	});
+
 	it("scrolls mobile keyboard fields into view and cleans up on destroy", () => {
 		const elements = createElements();
 		const guards = new TaskModalFocusGuards(elements);

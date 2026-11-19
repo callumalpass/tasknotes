@@ -12,6 +12,7 @@ Use Obsidian’s settings search to find individual options without opening thei
 | **Appearance & interaction** | Task-card properties, inline tasks, click behaviour, calendar defaults, and view command files |
 | **Time & reminders** | Notifications, time tracking, recurrence, Pomodoro, and timeblocking |
 | **Calendars & integrations** | Calendar connections, subscriptions, exports, and interoperability |
+| **TaskNotes App** | Links to TaskNotes App on the web, iPhone and Android, the steps to use it with this vault through mdbase Connect, and the mdbase integration settings |
 | **Advanced** | Indexing, diagnostics, the desktop HTTP API, and webhooks |
 
 Interface language, release notes, and documentation links are also available on the main page.

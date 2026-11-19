@@ -59,12 +59,12 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to List view (listWeek)
       const listViewButton = page.locator(
-        '.fc-listWeek-button, button:has-text("list"), .fc-toolbar button:has-text("List")'
+        '.tnc-btn-view-list, button:has-text("list"), .tnc-toolbar button:has-text("List")'
       );
 
       if (await listViewButton.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -73,20 +73,20 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
       }
 
       // Verify we're in list view
-      const listViewContainer = page.locator('.fc-list, .fc-listWeek-view');
+      const listViewContainer = page.locator('.tnc-list, .tnc-list');
       await expect(listViewContainer).toBeVisible({ timeout: 5000 });
 
       // Count all events in list view
-      const allEvents = page.locator('.fc-list-event, .fc-event');
+      const allEvents = page.locator('.tnc-item--list, .tnc-item');
       const initialEventCount = await allEvents.count();
 
       // Count all-day events specifically (they have special styling or data attributes)
       // FullCalendar list view shows all-day events differently - they appear in the
       // event list but may have different time display or "all-day" indicator
       const allDayEvents = page.locator(
-        '.fc-list-event[data-allday="true"], ' +
-          '.fc-list-event .fc-list-event-time:has-text("all-day"), ' +
-          '.fc-list-event .fc-list-event-time:empty'
+        '.tnc-item--list[data-allday="true"], ' +
+          '.tnc-item--list .tnc-item--list-time:has-text("all-day"), ' +
+          '.tnc-item--list .tnc-item--list-time:empty'
       );
       const allDayEventCount = await allDayEvents.count();
 
@@ -127,7 +127,7 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
           await page.waitForTimeout(300);
 
           // Now count events again - all-day events should be hidden
-          const eventsAfterToggle = page.locator('.fc-list-event, .fc-event');
+          const eventsAfterToggle = page.locator('.tnc-item--list, .tnc-item');
           const eventCountAfterToggle = await eventsAfterToggle.count();
 
           console.log(
@@ -168,11 +168,11 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to List view
-      const listViewButton = page.locator('.fc-listWeek-button');
+      const listViewButton = page.locator('.tnc-btn-view-list');
       if (await listViewButton.isVisible({ timeout: 3000 }).catch(() => false)) {
         await listViewButton.click();
         await page.waitForTimeout(500);
@@ -180,9 +180,9 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
 
       // Look for ICS subscription events (they have specific styling/classes)
       const icsEvents = page.locator(
-        '.fc-list-event[data-source="ics"], ' +
-          '.fc-list-event.ics-event, ' +
-          '.fc-list-event .fc-event-ics'
+        '.tnc-item--list[data-source="ics"], ' +
+          '.tnc-item--list.ics-event, ' +
+          '.tnc-item--list.fc-ics-event'
       );
       const icsEventCount = await icsEvents.count();
 
@@ -213,7 +213,7 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
 
             // Check ICS events again - all-day ICS events should be hidden
             const icsEventsAfter = page.locator(
-              '.fc-list-event[data-source="ics"], .fc-list-event.ics-event'
+              '.tnc-item--list[data-source="ics"], .tnc-item--list.ics-event'
             );
             const icsEventCountAfter = await icsEventsAfter.count();
 
@@ -240,21 +240,21 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to List view
-      const listViewButton = page.locator('.fc-listWeek-button');
+      const listViewButton = page.locator('.tnc-btn-view-list');
       if (await listViewButton.isVisible({ timeout: 3000 }).catch(() => false)) {
         await listViewButton.click();
         await page.waitForTimeout(500);
       }
 
-      const listViewContainer = page.locator('.fc-list, .fc-listWeek-view');
+      const listViewContainer = page.locator('.tnc-list, .tnc-list');
       await expect(listViewContainer).toBeVisible({ timeout: 5000 });
 
       // Get initial event count
-      const allEvents = page.locator('.fc-list-event');
+      const allEvents = page.locator('.tnc-item--list');
       const initialCount = await allEvents.count();
 
       // Open View Options
@@ -307,18 +307,18 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Switch to Week view (grid)
-      const weekViewButton = page.locator('.fc-timeGridWeek-button');
+      const weekViewButton = page.locator('.tnc-btn-view-week');
       if (await weekViewButton.isVisible({ timeout: 3000 }).catch(() => false)) {
         await weekViewButton.click();
         await page.waitForTimeout(500);
       }
 
       // Check for all-day slot in grid view
-      const allDaySlot = page.locator('.fc-daygrid-day-frame, .fc-day-grid, .fc-timegrid-divider');
+      const allDaySlot = page.locator('.tnc-dg-day, .tnc-dg, .tnc-tg-allday');
       const hasAllDaySlot = await allDaySlot.isVisible({ timeout: 3000 }).catch(() => false);
 
       console.log(`Grid view has visible all-day slot: ${hasAllDaySlot}`);
@@ -343,7 +343,7 @@ test.describe('Issue #685: All-Day Tasks Not Hidden in List View', () => {
             await page.waitForTimeout(300);
 
             // In grid view, the all-day slot area should be hidden
-            const allDaySlotAfter = page.locator('.fc-daygrid-day-frame, .fc-day-grid');
+            const allDaySlotAfter = page.locator('.tnc-dg-day, .tnc-dg');
             const isSlotVisibleAfter = await allDaySlotAfter.isVisible({ timeout: 2000 }).catch(() => false);
 
             // The all-day slot UI element should be hidden in grid views

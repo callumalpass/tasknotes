@@ -9,13 +9,11 @@ dateModified: 2026-05-17T21:57:48+1000
 TaskNotes automatically generates [Bases](https://help.obsidian.md/Bases/Introduction+to+Bases) files for its built-in views when you first open them. These templates are configured based on your TaskNotes settings, including custom property names, statuses, and task identification methods.
 
 This page shows the default templates as they would appear with TaskNotes' default settings. The actual templates generated in your vault may differ if you've customized your settings.
-Version 5 no longer generates Pomodoro statistics files. Existing files and recorded session data are kept. Calendar, Agenda, Kanban, and Mini Calendar defaults exclude archived tasks without applying hidden filters to user-created Bases.
+Calendar, Agenda, Kanban, and Mini Calendar defaults exclude archived tasks without applying hidden filters to user-created Bases.
 
 This page documents generated defaults. It is reference material for understanding and editing `.base` files already created in your vault.
 
 Generated `.base` files are regular vault files. When you change task identification, field mapping, status, or priority settings, existing files keep their current content until you edit them. To replace the configured default files with templates generated from your current settings, use **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** or run the **TaskNotes: Update default base files** command. Automation clients can call `api.bases.updateDefaultFiles()` from the runtime API or `POST /api/bases/default-files/update` from the local HTTP API. These update actions overwrite the configured default `.base` files, including any manual edits in those files.
-
-Custom priority labels and priority/status values are escaped in generated expressions, so apostrophes, double quotes, backslashes, and line breaks do not break the generated formulas or YAML. YAML quoting and line wrapping may differ from the examples below without changing the formulas. If an existing generated file cannot open after these settings were customized, regenerate it using **Update default base files** (this replaces manual edits).
 
 Custom priority labels and priority/status values are escaped in generated expressions, so apostrophes, double quotes, backslashes, and line breaks do not break the generated formulas or YAML. YAML quoting and line wrapping may differ from the examples below without changing the formulas. If an existing generated file cannot open after these settings were customized, regenerate it using **Update default base files** (this replaces manual edits).
 
@@ -32,6 +30,8 @@ The examples below assume:
 When property identification is incomplete (either the name or value is blank), generated task filters match no tasks, just like TaskNotes' task lookup. They do not fall back to tags or match every note with that property. Configure both fields before generating or updating default files.
 
 When task identification uses a property instead of a tag, generated filters reference the identifying note property with bracket notation and list-tolerant matching, such as `list(note["Task Type"]).contains(true)`. This keeps filters valid when custom property names contain spaces or other characters that cannot be used with dot notation, and matches tasks whose identifying property is stored as either a scalar value or a list containing that value.
+
+Mapped field names follow the same rule. If a field mapping uses a name that is not a plain identifier, such as `due date`, generated filters and formulas read it as `note["due date"]`. Column, sort and grouping entries use the plain name (`due date`). Names made of letters, digits and underscores, such as `due`, are written as before.
 
 ## Included formulas
 
@@ -79,14 +79,14 @@ These formulas return string values useful for grouping tasks in views:
 | `scheduledMonth` | Scheduled date as year-month | "2025-01", "Not scheduled" | `if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-MM"), "Not scheduled")` |
 | `scheduledWeek` | Scheduled date as year-week | "2025-W01", "Not scheduled" | `if((scheduled.isEmpty() == false), date(scheduled).format("YYYY-[W]WW"), "Not scheduled")` |
 | `dueDateCategory` | Human-readable due date bucket | "Overdue", "Today", "Tomorrow", "This week", "Later", "No due date" | `if(due.isEmpty(), "No due date", if(date(due) < today(), "Overdue", if(date(due).format("YYYY-MM-DD") == today().format("YYYY-MM-DD"), "Today", if(date(due).format("YYYY-MM-DD") == (today() + "1 day").format("YYYY-MM-DD"), "Tomorrow", if(date(due).format("YYYY-MM-DD") <= (today() + "7 days").format("YYYY-MM-DD"), "This week", "Later")))))` |
-| `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(!timeEstimate \|\| timeEstimate == 0 \|\| timeEstimate == null, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))` |
+| `timeEstimateCategory` | Task size by time estimate | "No estimate", "Quick (<30m)", "Medium (30m-2h)", "Long (>2h)" | `if(timeEstimate.isEmpty() \|\| timeEstimate == 0, "No estimate", if(timeEstimate < 30, "Quick (<30m)", if(timeEstimate <= 120, "Medium (30m-2h)", "Long (>2h)")))` |
 | `ageCategory` | Task age bucket | "Today", "This week", "This month", "Older" | `if(((number(now()) - number(file.ctime)) / 86400000) < 1, "Today", if(((number(now()) - number(file.ctime)) / 86400000) < 7, "This week", if(((number(now()) - number(file.ctime)) / 86400000) < 30, "This month", "Older")))` |
 | `createdMonth` | Creation date as year-month | "2025-01" | `file.ctime.format("YYYY-MM")` |
 | `modifiedMonth` | Last modified date as year-month | "2025-01" | `file.mtime.format("YYYY-MM")` |
 | `priorityCategory` | Priority as readable label | "High", "Normal", "Low", "No priority" | `if(priority=="high","High",if(priority=="normal","Normal",if(priority=="low","Low","No priority")))` |
-| `projectCount` | Number of assigned projects | "No projects", "Single project", "Multiple projects" | `if(!projects \|\| list(projects).length == 0, "No projects", if(list(projects).length == 1, "Single project", "Multiple projects"))` |
-| `contextCount` | Number of assigned contexts | "No contexts", "Single context", "Multiple contexts" | `if(!contexts \|\| list(contexts).length == 0, "No contexts", if(list(contexts).length == 1, "Single context", "Multiple contexts"))` |
-| `trackingStatus` | Time tracking vs estimate | "No estimate", "Not started", "Under estimate", "Over estimate" | `if(!timeEstimate \|\| timeEstimate == 0 \|\| timeEstimate == null, "No estimate", if(!timeEntries \|\| list(timeEntries).length == 0, "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))` |
+| `projectCount` | Number of assigned projects | "No projects", "Single project", "Multiple projects" | `if(projects.isEmpty(), "No projects", if(list(projects).length == 1, "Single project", "Multiple projects"))` |
+| `contextCount` | Number of assigned contexts | "No contexts", "Single context", "Multiple contexts" | `if(contexts.isEmpty(), "No contexts", if(list(contexts).length == 1, "Single context", "Multiple contexts"))` |
+| `trackingStatus` | Time tracking vs estimate | "No estimate", "Not started", "Under estimate", "Over estimate" | `if(timeEstimate.isEmpty() \|\| timeEstimate == 0, "No estimate", if(timeEntries.isEmpty(), "Not started", if(formula.efficiencyRatio < 100, "Under estimate", "Over estimate")))` |
 
 ### Combined due/scheduled formulas
 
@@ -107,7 +107,7 @@ These formulas work with either due date or scheduled date, useful for finding t
 
 | Formula | Description | Expression |
 |---------|-------------|------------|
-| `priorityWeight` | Numeric weight for priority sorting (lower = higher priority) | `if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,999))))` |
+| `priorityWeight` | Priority rank in your configured order (higher = higher priority; missing or unknown priorities are `-1`) | `if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))` |
 | `urgencyScore` | Combines priority, next date proximity, and time-of-day (due or scheduled, higher = more urgent) | `if(due.isEmpty() && scheduled.isEmpty(), formula.priorityWeight, formula.priorityWeight + max(0, 10 - if(formula.daysUntilNext, formula.daysUntilNext, 0)) + (1 - ((number(date(formula.nextDate)) - number(date(date(formula.nextDate).format("YYYY-MM-DD")))) / 86400000)))` |
 
 ### Display formulas

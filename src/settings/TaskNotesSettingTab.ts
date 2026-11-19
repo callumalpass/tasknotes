@@ -1,3 +1,4 @@
+import { msg } from "@lingui/core/macro";
 import {
 	App,
 	PluginSettingTab,
@@ -13,7 +14,81 @@ import { appearanceDefinitions } from "./native/appearance";
 import { propertyDefinitions } from "./native/properties";
 import { creationDefaults, filenameDefinitions, formDefinitions } from "./native/creation";
 import { apiDefinitions, calendarDefinitions } from "./native/integrations";
-import { renderKeyboardShortcutsTab } from "./native/keyboardShortcutsTab";
+import { tasknotesAppDefinitions } from "./native/tasknotesApp";
+
+function exposeListRemoval(items: SettingDefinitionItem[], ctx: SettingsContext): void {
+	for (const item of items) {
+		if (
+			"type" in item &&
+			item.type === "list" &&
+			"onDelete" in item &&
+			item.onDelete &&
+			item.items
+		) {
+			const list = item;
+			item.items = item.items.map((entry, index) =>
+				"type" in entry && entry.type === "page"
+					? {
+							...entry,
+							items: [
+								...(entry.items ?? []),
+								{
+									name: ctx.t(
+										msg({
+											message: "Delete {name}?",
+											context: "settings.native.deleteEntry",
+										}),
+										{ name: entry.name }
+									),
+									action: () => list.onDelete?.(index),
+								},
+							],
+						}
+					: entry
+			);
+		}
+		if ("items" in item && item.items) exposeListRemoval(item.items, ctx);
+	}
+}
+
+export function openTaskPropertySettings(plugin: TaskNotesPlugin, property: "status" | "priority"): void {
+	plugin.app.setting.open();
+	const tab = plugin.app.setting.openTabById(plugin.manifest.id);
+	tab.update();
+	const heading = plugin.i18n.translate(property === "status"
+		? msg({ message: "Statuses", context: "settings.native.statuses" })
+		: msg({ message: "Priorities", context: "settings.native.priorities" }));
+	const findDefinition = (items: SettingDefinitionItem[], path: string[] = []): { definition: SettingDefinitionItem; path: string[] } | undefined => {
+		for (const item of items) {
+			if ("heading" in item && item.heading === heading) return { definition: item, path };
+			if ("items" in item) {
+				const match = findDefinition(item.items ?? [], item.type === "page" ? [...path, item.name] : path);
+				if (match) return match;
+			}
+		}
+	};
+	const match = findDefinition(tab.settingItems);
+	if (match) {
+		const navigation = plugin.app.setting as unknown as {
+			navigateToPage?: (target: typeof tab, path: string[]) => void;
+		};
+		navigation.navigateToPage?.(tab, match.path);
+		plugin.app.setting.scrollToDefinition(tab, match.definition);
+		tab.getElementForDefinition(match.definition)?.querySelector<HTMLElement>(".extra-setting-button")?.focus();
+	}
+}
+
+/** Opens Settings → TaskNotes → TaskNotes App. */
+export function openTaskNotesAppSettings(plugin: TaskNotesPlugin): void {
+	plugin.app.setting.open();
+	const tab = plugin.app.setting.openTabById(plugin.manifest.id);
+	tab.update();
+	const name = plugin.i18n.translate(msg({ message: "TaskNotes App", context: "settings.tasknotesApp.page.name" }));
+	const navigation = plugin.app.setting as unknown as {
+		navigateToPage?: (target: typeof tab, path: string[]) => void;
+	};
+	navigation.navigateToPage?.(tab, [name]);
+}
 
 /** Native definitions are both the settings UI and Obsidian's search index. */
 export class TaskNotesSettingTab extends PluginSettingTab {
@@ -69,47 +144,47 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 		): SettingDefinitionPage => ({ type: "page", name, desc, items });
 		const definitions: SettingDefinitionItem[] = [
 			page(
-				ctx.t("settings.native.taskFiles"),
-				ctx.t("settings.native.taskIdentificationFoldersFilenamesAndFrontmatter"),
+				ctx.t(msg({ message: "Task files", context: "settings.native.taskFiles" })),
+				ctx.t(msg({ message: "Task identification, folders, filenames, and frontmatter.", context: "settings.native.taskIdentificationFoldersFilenamesAndFrontmatter" })),
 				[
 					storage,
 					identification,
 					folders,
 					{
 						type: "group",
-						heading: ctx.t("settings.native.filenames"),
+						heading: ctx.t(msg({ message: "Filenames", context: "settings.native.filenames" })),
 						items: filenameDefinitions(ctx),
 					},
 					frontmatter,
 				]
 			),
 			page(
-				ctx.t("ui.filterBar.properties"),
-				ctx.t("settings.native.propertyMappingsStatusesPrioritiesAndCustomProperties"),
+				ctx.t(msg({ message: "Properties", context: "ui.filterBar.properties" })),
+				ctx.t(msg({ message: "Property mappings, statuses, priorities, and custom properties.", context: "settings.native.propertyMappingsStatusesPrioritiesAndCustomProperties" })),
 				propertyDefinitions(ctx)
 			),
 			page(
-				ctx.t("settings.features.taskCreation.header"),
-				ctx.t("settings.native.defaultsTemplatesNaturalLanguageInputAndFormFields"),
+				ctx.t(msg({ message: "Task creation", context: "settings.features.taskCreation.header" })),
+				ctx.t(msg({ message: "Defaults, templates, natural-language input, and form fields.", context: "settings.native.defaultsTemplatesNaturalLanguageInputAndFormFields" })),
 				[
 					creation,
 					{
 						type: "group",
-						heading: ctx.t("settings.native.defaults"),
+						heading: ctx.t(msg({ message: "Defaults", context: "settings.native.defaults" })),
 						items: creationDefaults(ctx),
 					},
-					{ ...templates, heading: ctx.t("settings.native.templates") },
+					{ ...templates, heading: ctx.t(msg({ message: "Templates", context: "settings.native.templates" })) },
 					nlp,
 					page(
-						ctx.t("settings.native.formFields"),
-						ctx.t("settings.native.chooseWhichFieldsAppearWhenCreatingAndEditingTasks"),
+						ctx.t(msg({ message: "Form fields", context: "settings.native.formFields" })),
+						ctx.t(msg({ message: "Choose which fields appear when creating and editing tasks.", context: "settings.native.chooseWhichFieldsAppearWhenCreatingAndEditingTasks" })),
 						formDefinitions(ctx)
 					),
 				]
 			),
 			page(
-				ctx.t("settings.native.appearanceInteraction"),
-				ctx.t("settings.native.taskCardsInlineTasksClickBehaviourAndViewDefaults"),
+				ctx.t(msg({ message: "Appearance & interaction", context: "settings.native.appearanceInteraction" })),
+				ctx.t(msg({ message: "Task cards, inline tasks, click behaviour, and view defaults.", context: "settings.native.taskCardsInlineTasksClickBehaviourAndViewDefaults" })),
 				[
 					cards,
 					formatting,
@@ -117,9 +192,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					inline,
 					interfaceElements,
 					page(
-						ctx.t("settings.native.calendarDefaults"),
+						ctx.t(msg({ message: "Calendar defaults", context: "settings.native.calendarDefaults" })),
 						ctx.t(
-							"settings.native.defaultsForCalendarViewsIndividualBasesViewsMayOverride"
+							msg({ message: "Defaults for calendar views. Individual Bases views may override these settings.", context: "settings.native.defaultsForCalendarViewsIndividualBasesViewsMayOverride" })
 						),
 						[calendar, visibility, times]
 					),
@@ -140,42 +215,31 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 				},
 			]),
 			page(
-				ctx.t("settings.native.timeReminders"),
-				ctx.t("settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblocking"),
+				ctx.t(msg({ message: "Time & reminders", context: "settings.native.timeReminders" })),
+				ctx.t(msg({ message: "Notifications, time tracking, recurrence, Pomodoro, and timeblocking.", context: "settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblocking" })),
 				[notifications, tracking, recurring, pomodoro, timeblocking]
 			),
 			page(
-				ctx.t("settings.native.calendarsIntegrations"),
-				ctx.t("settings.native.calendarAccountsSubscriptionsTaskExportAndInteroperability"),
-				[
-					...calendarDefinitions(ctx),
-					ctx.field(
-						this.plugin.settings,
-						"enableMdbaseSpec",
-						"enableMdbaseSpec",
-						t("settings.integrations.mdbaseSpec.enable.name"),
-						{ desc: t("settings.integrations.mdbaseSpec.enable.description") }
-					),
-					{
-						name: t("settings.integrations.mdbaseSpec.learnMore"),
-						action: () => window.open("https://mdbase.dev", "_blank"),
-					},
-				]
+				ctx.t(msg({ message: "Calendars & integrations", context: "settings.native.calendarsIntegrations" })),
+				ctx.t(msg({ message: "Calendar accounts, subscriptions, task export, and interoperability.", context: "settings.native.calendarAccountsSubscriptionsTaskExportAndInteroperability" })),
+				calendarDefinitions(ctx)
 			),
+			tasknotesAppDefinitions(ctx),
 			page(
-				ctx.t("settings.native.advanced"),
-				ctx.t("settings.native.indexingHTTPAPIWebhooksAndDiagnostics"),
+				ctx.t(msg({ message: "Advanced", context: "settings.native.advanced" })),
+				ctx.t(msg({ message: "Indexing, HTTP API, webhooks, and diagnostics.", context: "settings.native.indexingHTTPAPIWebhooksAndDiagnostics" })),
 				[performance, diagnostics, apiDefinitions(ctx)]
 			),
 			language,
-			page(t("settings.general.releaseNotes.header"), this.plugin.manifest.version, [
+			page(t(msg({ message: "Release notes", context: "settings.general.releaseNotes.header" })), this.plugin.manifest.version, [
 				releases,
 			]),
 			{
-				name: t("settings.header.documentation"),
-				action: () => window.open(t("settings.header.documentationUrl"), "_blank"),
+				name: t(msg({ message: "Documentation", context: "settings.header.documentation" })),
+				action: () => window.open("https://tasknotes.dev", "_blank"),
 			},
 		];
+		exposeListRemoval(definitions, ctx);
 		makePageNamesUnique(definitions);
 		preservePageNavigation(this.app, this, this.settingItems ?? [], definitions);
 		return definitions;
@@ -231,6 +295,7 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		await this.context.write(key, value);
 	}
+
 	hide(): void {
 		super.hide();
 		void this.context.flush().catch(() => {

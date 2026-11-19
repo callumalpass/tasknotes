@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type TaskNotesPlugin from "../main";
 import { parseFrontMatterAliases, type TFile } from "obsidian";
 import { scoreMultiword } from "../utils/fuzzyMatch";
@@ -260,11 +262,11 @@ export const FileSuggestHelper = {
 				if (bestScore > 0) {
 					// Build display
 					const extras: string[] = [];
-					if (title && title !== basename) extras.push(`title: ${title}`);
+					if (title && title !== basename) extras.push(uiText(msg({ message: "title: {title}", context: "suggest/FileSuggestHelper: suggest.run display" }), { title: title }));
 					const aliasList = Array.isArray(aliases)
 						? aliases.filter((a) => typeof a === "string")
 						: [];
-					if (aliasList.length) extras.push(`aliases: ${aliasList.join(", ")}`);
+					if (aliasList.length) extras.push(uiText(msg({ message: "aliases: {value1}", context: "suggest/FileSuggestHelper: suggest.run display" }), { value1: aliasList.join(", ") }));
 					const display = extras.length
 						? `${basename} [${extras.join(" | ")}]`
 						: basename;

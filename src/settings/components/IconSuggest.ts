@@ -1,171 +1,90 @@
 /**
- * Icon suggestion component for settings inputs
- *
- * Uses Obsidian's getIconIds() API to provide autosuggestion for Lucide icons.
- * Icons are displayed with a visual preview alongside the icon name.
+ * Lucide icon suggestions for settings inputs, from Obsidian's getIconIds().
  */
 
 import { App, AbstractInputSuggest, getIconIds, setIcon } from "obsidian";
 
-interface IconSuggestion {
-	id: string;
-	display: string;
+const LUCIDE_PREFIX = "lucide-";
+
+/** Icons offered before the user types: shapes that suit statuses and priorities. */
+const STARTER_ICONS = [
+	"circle",
+	"circle-dot",
+	"circle-dashed",
+	"circle-check",
+	"circle-x",
+	"circle-pause",
+	"circle-alert",
+	"flag",
+	"star",
+	"flame",
+	"zap",
+	"arrow-up",
+	"arrow-down",
+	"chevrons-up",
+	"chevron-up",
+	"minus",
+	"clock",
+	"hourglass",
+	"eye",
+	"ban",
+];
+
+/** Settings store Lucide names without Obsidian's "lucide-" prefix; setIcon accepts both. */
+export function iconSettingName(id: string): string {
+	return id.startsWith(LUCIDE_PREFIX) ? id.slice(LUCIDE_PREFIX.length) : id;
 }
 
-/**
- * Icon suggestion provider using AbstractInputSuggest
- */
-export class IconSuggest extends AbstractInputSuggest<IconSuggestion> {
-	private input: HTMLInputElement;
+/** Every icon name the setting accepts, without duplicates. */
+function availableIconNames(): string[] {
+	return Array.from(new Set(getIconIds().map(iconSettingName)));
+}
 
-	constructor(app: App, inputEl: HTMLInputElement) {
+export function isKnownIcon(name: string): boolean {
+	const trimmed = iconSettingName(name.trim());
+	return trimmed !== "" && availableIconNames().includes(trimmed);
+}
+
+/** Matches by name, with names that start with the query first. */
+export function matchIconNames(query: string, names: readonly string[]): string[] {
+	const needle = iconSettingName(query.trim().toLowerCase());
+	if (!needle) {
+		const available = new Set(names);
+		return STARTER_ICONS.filter((name) => available.has(name));
+	}
+	const prefix: string[] = [];
+	const contains: string[] = [];
+	for (const name of names) {
+		const lower = name.toLowerCase();
+		if (lower.startsWith(needle)) prefix.push(name);
+		else if (lower.includes(needle)) contains.push(name);
+	}
+	const byName = (a: string, b: string) => a.length - b.length || a.localeCompare(b);
+	return [...prefix.sort(byName), ...contains.sort(byName)];
+}
+
+export class IconSuggest extends AbstractInputSuggest<string> {
+	constructor(
+		app: App,
+		private readonly inputEl: HTMLInputElement
+	) {
 		super(app, inputEl);
-		this.input = inputEl;
+		this.limit = 50;
 	}
 
-	protected getSuggestions(query: string): IconSuggestion[] {
-		const icons = getIconIds();
-		const lowerQuery = query.toLowerCase().trim();
-
-		if (!lowerQuery) {
-			// Show some common/popular icons when empty
-			const popularIcons = [
-				"check",
-				"circle",
-				"clock",
-				"star",
-				"flag",
-				"alert-circle",
-				"calendar",
-				"bookmark",
-				"play",
-				"pause",
-				"square",
-				"x",
-				"check-circle",
-				"minus-circle",
-				"plus-circle",
-				"loader",
-				];
-				return popularIcons
-					.filter((id) => icons.includes(id))
-				.map((id) => ({
-					id,
-					display: id,
-				}));
-		}
-
-		return icons
-			.filter((icon) => icon.toLowerCase().includes(lowerQuery))
-			.map((id) => ({
-				id,
-				display: id,
-			}));
+	protected getSuggestions(query: string): string[] {
+		return matchIconNames(query, availableIconNames());
 	}
 
-	public renderSuggestion(suggestion: IconSuggestion, el: HTMLElement): void {
-		el.addClass("icon-suggestion-item");
-
-		// Create icon preview
-		const iconEl = el.createSpan("icon-suggestion-preview");
-		setIcon(iconEl, suggestion.id);
-
-		// Create text label
-		el.createSpan({
-			text: suggestion.display,
-			cls: "icon-suggestion-text",
-		});
+	renderSuggestion(name: string, el: HTMLElement): void {
+		el.addClass("tn-icon-suggestion");
+		setIcon(el.createSpan({ cls: "tn-icon-suggestion__icon" }), name);
+		el.createSpan({ cls: "tn-icon-suggestion__name", text: name });
 	}
 
-	public selectSuggestion(suggestion: IconSuggestion): void {
-		this.input.value = suggestion.id;
-		this.input.dispatchEvent(new Event("input", { bubbles: true }));
-		this.input.dispatchEvent(new Event("change", { bubbles: true }));
+	selectSuggestion(name: string): void {
+		this.setValue(name);
+		this.inputEl.dispatchEvent(new Event("input", { bubbles: true }));
 		this.close();
 	}
-}
-
-/**
- * Creates an icon input with autosuggestion and live preview
- */
-export function createIconInput(
-	app: App,
-	placeholder: string,
-	value?: string,
-	onChange?: (value: string) => void
-): { container: HTMLElement; input: HTMLInputElement } {
-	const container = activeWindow.createDiv();
-	container.addClass("icon-input-container");
-
-	// Create preview element
-	const preview = activeWindow.createSpan();
-	preview.addClass("icon-input-preview");
-	container.appendChild(preview);
-
-	// Create input
-	const input = activeWindow.createEl("input");
-	input.type = "text";
-	input.addClass("tasknotes-settings__card-input");
-	input.addClass("icon-input");
-	input.placeholder = placeholder;
-	if (value) {
-		input.value = value;
-		setIcon(preview, value);
-		preview.classList.remove(
-			"tn-static-display-block-2a1b75c9",
-			"tn-static-display-flex-4d51fc62",
-			"tn-static-display-flex-8bb39979",
-			"tn-static-display-inline-block-60e32dcb",
-			"tn-static-display-inline-cccfa456",
-			"tn-static-display-inline-flex-f984c520",
-			"tn-static-display-none-6b99de8b",
-			"tn-static-min-height-800px-997b4c8c"
-		);
-		preview.classList.add("tn-static-display-flex-75816cae");
-	}
-	container.appendChild(input);
-
-	// Update preview on input change
-	const updatePreview = () => {
-		const iconName = input.value.trim();
-		if (iconName && getIconIds().includes(iconName)) {
-			preview.empty();
-			setIcon(preview, iconName);
-			preview.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-display-none-6b99de8b",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			preview.classList.add("tn-static-display-flex-75816cae");
-		} else {
-			preview.classList.remove(
-				"tn-static-display-block-2a1b75c9",
-				"tn-static-display-flex-4d51fc62",
-				"tn-static-display-flex-75816cae",
-				"tn-static-display-flex-8bb39979",
-				"tn-static-display-inline-block-60e32dcb",
-				"tn-static-display-inline-cccfa456",
-				"tn-static-display-inline-flex-f984c520",
-				"tn-static-min-height-800px-997b4c8c"
-			);
-			preview.classList.add("tn-static-display-none-6b99de8b");
-		}
-	};
-
-	input.addEventListener("input", () => {
-		updatePreview();
-		if (onChange) {
-			onChange(input.value);
-		}
-	});
-
-	// Initialize suggester
-	new IconSuggest(app, input);
-
-	return { container, input };
 }

@@ -1,4 +1,5 @@
 import { ICSSubscriptionService } from "../../../src/services/ICSSubscriptionService";
+import { RRule } from "rrule";
 import { convertToGoogleRecurrence } from "../../../src/utils/rruleConverter";
 import { TaskCalendarSyncService } from "../../../src/services/TaskCalendarSyncService";
 import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
@@ -85,11 +86,14 @@ describe("bounded real-library recurrence", () => {
 		expect(result?.recurrence.slice(1)).toEqual((expected as string[]).map((date) => `EXDATE;VALUE=DATE:${date}`));
 	});
 
-	it("expands 3,650 exclusions once in under 200ms", () => {
+	it("checks 3,650 exclusions with one bounded expansion", () => {
+		// Count traversals rather than time them: a wall-clock budget flakes on shared CI runners.
+		const between = jest.spyOn(RRule.prototype, "between");
+		const all = jest.spyOn(RRule.prototype, "all");
 		const dates = Array.from({ length: 3650 }, (_, index) => new Date(Date.UTC(2010, 0, index + 1)).toISOString().slice(0, 10));
-		const started = performance.now();
 		const result = convertToGoogleRecurrence("DTSTART:20100101;FREQ=DAILY", { completedInstances: dates });
 		expect(result?.recurrence).toHaveLength(3651);
-		expect(performance.now() - started).toBeLessThan(200);
+		expect(between).toHaveBeenCalledTimes(1);
+		expect(all).not.toHaveBeenCalled();
 	});
 });

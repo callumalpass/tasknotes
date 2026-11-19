@@ -71,21 +71,21 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for recurring task events with completion status indicators
       // Completed instances have specific styling (dimmed, strikethrough)
       const completedRecurringEvents = page.locator(
-        '.fc-event.fc-completed-event, ' +
-        '.fc-event[style*="opacity: 0.6"], ' +
-        '.fc-event[style*="opacity: 0.4"]'
+        '.tnc-item.fc-completed-event, ' +
+        '.tnc-item[style*="opacity: 0.6"], ' +
+        '.tnc-item[style*="opacity: 0.4"]'
       );
 
       // Look for pending recurring events (no completion styling)
       const allRecurringEvents = page.locator(
-        '.fc-event[id^="recurring-"], ' +
-        '.fc-event[id^="next-scheduled-"]'
+        '.tnc-item[id^="recurring-"], ' +
+        '.tnc-item[id^="next-scheduled-"]'
       );
 
       const completedCount = await completedRecurringEvents.count();
@@ -100,7 +100,7 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       // Look for a settings button or dropdown in the calendar view
       const settingsButton = page.locator(
         '.calendar-settings-button, ' +
-        '.fc-toolbar button[title*="settings"], ' +
+        '.tnc-toolbar button[title*="settings"], ' +
         'button[aria-label*="settings"], ' +
         '.bases-toolbar-actions button'
       );
@@ -149,18 +149,18 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Count all recurring events
       const allRecurringEvents = page.locator(
-        '.fc-event[id^="recurring-"], ' +
-        '.fc-event[id^="next-scheduled-"]'
+        '.tnc-item[id^="recurring-"], ' +
+        '.tnc-item[id^="next-scheduled-"]'
       );
       const totalCount = await allRecurringEvents.count();
 
       // Count events that appear completed (have completion styling)
-      const completedEvents = page.locator('.fc-event.fc-completed-event');
+      const completedEvents = page.locator('.tnc-item.fc-completed-event');
       const completedCount = await completedEvents.count();
 
       console.log(`Before toggle: ${totalCount} total, ${completedCount} completed`);
@@ -194,13 +194,13 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Skipped instances have a distinct gray styling
       const skippedEvents = page.locator(
-        '.fc-event[style*="rgba(128,128,128"], ' +
-        '.fc-event.fc-skipped-event'
+        '.tnc-item[style*="rgba(128,128,128"], ' +
+        '.tnc-item.is-skipped'
       );
       const skippedCount = await skippedEvents.count();
 
@@ -230,7 +230,7 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Find the settings/toggles panel
@@ -282,7 +282,7 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Configure view to hide completed instances
@@ -317,7 +317,7 @@ test.describe('Issue #1603: Recurring Task Instance Visibility Toggle', () => {
       await runCommand(page, 'TaskNotes: Open calendar view');
       await page.waitForTimeout(1000);
 
-      const calendarContainer = page.locator('.fc');
+      const calendarContainer = page.locator('.tnc');
       await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
       // Look for filter options related to recurring task instances

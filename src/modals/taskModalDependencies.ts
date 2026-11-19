@@ -1,4 +1,7 @@
-import { setTooltip, TFile } from "obsidian";
+import { uiData } from "../i18n/dataText";
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { setIcon, setTooltip, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskDependency, TaskInfo } from "../types";
 import {
@@ -8,7 +11,7 @@ import {
 	resolveDependencyEntry,
 } from "../utils/dependencyUtils";
 import { appendInternalLink, type LinkServices } from "../ui/renderers/linkRenderer";
-import { createTaskCard } from "../ui/TaskCard";
+import { createTaskModalTaskRow } from "./taskModalTaskRow";
 import { stringifyUnknown } from "../utils/stringUtils";
 
 export interface DependencyItem {
@@ -28,7 +31,7 @@ export interface RenderDependencyListOptions {
 	listEl: HTMLElement | undefined;
 	items: DependencyItem[];
 	linkServices: LinkServices;
-	translate: (key: string, params?: Record<string, string | number>) => string;
+	translate: (key: MessageDescriptor, params?: Record<string, string | number>) => string;
 	onRemove: (index: number) => void;
 }
 
@@ -178,7 +181,7 @@ export async function renderDependencyList({
 			itemEl.addClass("task-project-item--unresolved");
 			setTooltip(
 				itemEl,
-				translate("contextMenus.task.dependencies.notices.unresolved", {
+				translate(msg({ message: "Could not resolve: {entries}", context: "contextMenus.task.dependencies.notices.unresolved" }), {
 					entries: item.dependency.uid,
 				}),
 				{ placement: "top" }
@@ -200,7 +203,7 @@ export async function renderDependencyList({
 			cls: "task-project-remove",
 			text: "×",
 		});
-		setTooltip(removeBtn, translate("modals.task.dependencies.removeTaskTooltip"), {
+		setTooltip(removeBtn, translate(msg({ message: "Remove task", context: "modals.task.dependencies.removeTaskTooltip" })), {
 			placement: "top",
 		});
 		removeBtn.addEventListener("click", (event) => {
@@ -229,17 +232,12 @@ async function renderResolvedDependency(
 
 	const taskInfo = await plugin.cacheManager.getCachedTaskInfo(item.path);
 	if (taskInfo) {
-		const taskCard = createTaskCard(taskInfo, plugin, undefined, {
-			layout: "default",
-			showSecondaryBadges: false,
-			enableHoverPreview: false,
-		});
-		contentEl.appendChild(taskCard);
+		contentEl.appendChild(createTaskModalTaskRow(taskInfo, plugin));
 		return;
 	}
 
 	const nameEl = contentEl.createSpan({ cls: "task-project-name clickable-dependency" });
-	appendInternalLink(nameEl, item.path, item.name, linkServices, {
+	appendInternalLink(nameEl, item.path, uiData(item.name, "Resolved vault/Markdown link alias or filename; preserve user-authored link data"), linkServices, {
 		cssClass: "task-dependency-link internal-link",
 		hoverSource: "tasknotes-dependency-link",
 		showErrorNotices: true,
@@ -249,11 +247,11 @@ async function renderResolvedDependency(
 	}
 }
 
+/** Sits where a task's status glyph would, so missing tasks align with the found ones. */
 function renderUnresolvedDependency(contentEl: HTMLElement, item: DependencyItem): void {
+	setIcon(contentEl.createSpan({ cls: "tn-task-modal__task-row-placeholder" }), "unlink");
 	const nameEl = contentEl.createSpan({ cls: "task-project-name" });
 	nameEl.textContent = item.name;
-	const pathText = item.path ?? item.dependency.uid;
-	contentEl.createDiv({ cls: "task-project-path", text: pathText });
 }
 
 export function candidateDependencyUid(

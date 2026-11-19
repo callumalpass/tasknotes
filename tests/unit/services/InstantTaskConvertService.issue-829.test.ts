@@ -29,7 +29,7 @@ jest.mock('../../../src/utils/dateUtils', () => ({
 jest.mock('../../../src/utils/filenameGenerator', () => ({
   generateTaskFilename: jest.fn((context) => `${context.title.toLowerCase().replace(/\s+/g, '-')}.md`),
   generateUniqueFilename: jest.fn((base) => base),
-  shouldShowFilenameShortenedNotice: jest.fn(() => false)
+  getTaskFilenameNotice: jest.fn(() => null)
 }));
 
 jest.mock('../../../src/utils/helpers', () => ({

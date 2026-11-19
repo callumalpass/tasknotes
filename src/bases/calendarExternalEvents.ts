@@ -1,8 +1,7 @@
-import type { EventInput } from "@fullcalendar/core";
 import type TaskNotesPlugin from "../main";
-import type { ICSEvent } from "../types";
-import { createICSEvent } from "./calendar-core";
-import { PRIMARY_CALENDAR_ALIAS, ProviderCalendar } from "../services/CalendarProvider";
+import type { ICSEvent, TaskInfo } from "../types";
+import { createICSEvent, type CalendarEvent } from "./calendar-core";
+import { findProviderCalendar, PRIMARY_CALENDAR_ALIAS, ProviderCalendar } from "../services/CalendarProvider";
 
 export type ExternalCalendarProvider = "ics" | "google" | "microsoft";
 
@@ -10,7 +9,7 @@ export type ExternalCalendarEventFactory = (
 	event: ICSEvent,
 	plugin: TaskNotesPlugin,
 	options: { relatedNoteCount?: number }
-) => Nullable<EventInput>;
+) => Nullable<CalendarEvent>;
 
 type Nullable<T> = T | null;
 
@@ -60,6 +59,39 @@ export function shouldIncludeExternalCalendarEvent(
 	return toggles?.get(getExternalCalendarToggleId(event, provider)) !== false;
 }
 
+/**
+ * Match only mirrors with a task entry on the same day in this view. In particular,
+ * a rendered recurring occurrence must not hide every Google instance in its series.
+ */
+export function buildLinkedGoogleEventPredicate(
+	entries: readonly { task: Pick<TaskInfo, "googleCalendarEventId" | "googleCalendarExceptionEventId">; date: string }[],
+	plugin: TaskNotesPlugin
+): (event: ICSEvent) => boolean {
+	const targetId = plugin.settings?.googleCalendarExport?.targetCalendarId;
+	const calendars = plugin.googleCalendarService?.getAvailableCalendars() ?? [];
+	const canonicalId = (id: string) => findProviderCalendar(calendars, id)?.id ?? id;
+	const datesByEventId = new Map<string, Set<string>>();
+	for (const { task, date } of entries) {
+		for (const id of [task.googleCalendarEventId, task.googleCalendarExceptionEventId]) {
+			if (!id) continue;
+			const dates = datesByEventId.get(id) ?? new Set<string>();
+			dates.add(date.slice(0, 10));
+			datesByEventId.set(id, dates);
+		}
+	}
+	return (event) => {
+		if (!targetId || !event.subscriptionId.startsWith("google-")) return false;
+		const calendarId = getExternalCalendarToggleId(event, "google");
+		if (canonicalId(calendarId) !== canonicalId(targetId)) return false;
+		// Calendar ids may contain hyphens: remove the entire known prefix.
+		const prefix = `google-${calendarId}-`;
+		const rawId = (id: string) => id.startsWith(prefix) ? id.slice(prefix.length) : id;
+		return [event.id, event.recurringEventId].some(id =>
+			id !== undefined && datesByEventId.get(rawId(id))?.has(event.start.slice(0, 10))
+		);
+	};
+}
+
 export function buildExternalCalendarEvents({
 	events,
 	provider,
@@ -67,8 +99,8 @@ export function buildExternalCalendarEvents({
 	toggles,
 	relatedNoteCountsByEventId,
 	createEvent = createICSEvent,
-}: BuildExternalCalendarEventsInput): EventInput[] {
-	const calendarEvents: EventInput[] = [];
+}: BuildExternalCalendarEventsInput): CalendarEvent[] {
+	const calendarEvents: CalendarEvent[] = [];
 
 	for (const event of events) {
 		if (!shouldIncludeExternalCalendarEvent(event, provider, toggles)) {

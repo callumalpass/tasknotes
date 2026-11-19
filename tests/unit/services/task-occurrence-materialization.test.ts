@@ -95,6 +95,9 @@ describe("TaskService materialized occurrences", () => {
 			cacheManager: {
 				getTaskInfo: jest.fn(async (path: string) => tasks[path] ?? null),
 				getAllTasks: jest.fn(async () => Object.values(tasks)),
+				getAllTaskSnapshots: jest.fn(
+					async () => new Map(Object.values(tasks).map((task) => [task.path, () => task]))
+				),
 				updateTaskInfoInCache: jest.fn((path: string, task: TaskInfo) => {
 					tasks[path] = task;
 				}),
@@ -509,7 +512,8 @@ describe("TaskService materialized occurrences", () => {
 
 		expect(virtualComplete).toHaveBeenCalledWith(
 			expect.objectContaining({ path: parent.path }),
-			new Date("2026-06-01T12:00:00Z")
+			new Date("2026-06-01T12:00:00Z"),
+			{}
 		);
 		expect(materializeOccurrence).not.toHaveBeenCalled();
 	});

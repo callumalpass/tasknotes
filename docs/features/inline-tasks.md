@@ -6,7 +6,7 @@ Inline features support capture and task updates without leaving the current not
 
 ## Task Link Overlays
 
-When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Features` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
+When a wikilink to a task note is created, TaskNotes can replace it with an interactive **Task Link Overlay**. Enable or disable overlays from `Settings -> TaskNotes -> Appearance & interaction -> Inline tasks` (`Task link overlay`). The widget displays information about the task, such as status, priority, and due date, and allows actions like status/priority changes or opening the edit modal.
 
 ![Task Link Overlays in Live Preview mode](../assets/2025-07-17_21-03-55.png)
 
@@ -35,7 +35,9 @@ Task link overlays work in both Live Preview and Reading modes:
 - **Live Preview Mode**: Widgets hide when the cursor is within the wikilink range, allowing for easy editing.
 - **Reading Mode**: Widgets display with full functionality and integrate with the reading mode typography.
 
-On Obsidian mobile, long titles are ellipsized to fit the available line after the status and priority indicators, including in nested bullets. Enabled properties remain available in a horizontally scrollable strip that can flow onto the next line. Configure these properties under `Settings -> TaskNotes -> Features -> Inline Task Card Properties`.
+On Obsidian mobile, long titles are ellipsized to fit the available line after the status and priority indicators, including in nested bullets. Enabled properties remain available in a horizontally scrollable strip that can flow onto the next line. Configure these properties under `Settings -> TaskNotes -> Appearance & interaction -> Inline tasks` (`Inline task card properties`). Custom fields and attachments can be added there; attachments appear as links named by their file.
+
+A task link on its own line shows its properties on the same line as the title, and hides the ones that do not fit behind a count such as **+3**; select the count to see them. Turn on `Show all properties on inline task cards` in the same section to list every property on extra lines under the title instead. Task links inside a sentence always show only the title.
 
 The overlays support drag-and-drop to calendar views and provide keyboard shortcuts for quick navigation (Ctrl/Cmd+Click to open the source file).
 
@@ -49,14 +51,14 @@ To turn the current line into a TaskNote, use `Convert to TaskNote` or the insta
 
 ## Instant Task Conversion
 
-The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Features` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
+The **Instant Task Conversion** feature transforms lines in your notes into TaskNotes files. This works with both checkbox tasks and regular lines of text. Turn the feature on or off from `Settings -> TaskNotes -> Appearance & interaction -> Inline tasks` (`Show convert button next to checkboxes`). When enabled, a "convert" button appears next to content in edit mode. Clicking this button creates a new task note using the line text as the title and replaces the original line with a link to the new task file.
 This supports progressive conversion from draft notes to dedicated task files.
 
 With a selection, `Convert to TaskNote` uses the first selected line as the title and additional selected text as details. Text outside the selection is left in place. Selecting a whole line through the start of the next line (for example, Home then Shift+Down) does not include that next line in the conversion.
 
 ### Folder Configuration
 
-By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in `Settings -> TaskNotes -> General` (`Folder for converted tasks`):
+By default, converted tasks are placed in the same folder as the current note (`{{currentNotePath}}`). You can change this behavior in `Settings -> TaskNotes -> Task files -> Task storage` (`Folder for inline-created tasks`):
 
 - **Leave empty**: Uses your default tasks folder (configured in the same section)
 - **`{{currentNotePath}}`**: Places tasks in the same folder as the note you're editing (default)
@@ -85,6 +87,12 @@ When converting lines:
 Conversion preserves surrounding formatting, including callouts, outlines, and nested lists.
 
 The feature handles edge cases like nested blockquotes and maintains proper indentation in the final link replacement.
+
+### Converting into an Existing Note
+
+If the line links to a note with the alias `note`, for example `- [ ] Practise the demo [[Skills/Live demos|note]] 📅 2026-05-08`, conversion makes that note the task instead of creating a new file. The link is resolved the same way Obsidian resolves any link from the current note. The note keeps its name, body and existing properties: TaskNotes only adds task properties it doesn't already have (such as the due date above, or the task tag or identifying property) and adds any new tags. If the line says more than the note's name, or sets a value the note already has differently, the line's text is appended to the end of the note so nothing from it is lost. Any selected details are appended too. The line is then replaced with a link to the note.
+
+A link with any other alias, or one that doesn't resolve to an existing note, is converted as usual.
 
 ## Bulk Task Conversion
 
@@ -178,7 +186,7 @@ Additional behavior:
 
 ### Configuration
 
-Enable or disable the widget in `Settings -> TaskNotes -> Appearance` (`Show relationships widget`).
+Enable or disable the widget in `Settings -> TaskNotes -> Appearance & interaction -> UI elements` (`Show relationships widget`).
 
 Position the widget at the top (after frontmatter) or bottom of the note using the **Relationships Position** setting.
 
@@ -187,7 +195,7 @@ Position the widget at the top (after frontmatter) or bottom of the note using t
 Tasks with subtasks can display an expand/collapse chevron that toggles subtask visibility.
 
 - The chevron can be positioned on the Right (default, hover to show) or on the Left (always visible, matches group chevrons).
-- Configure this in `Settings -> TaskNotes -> Appearance` (`Subtask chevron position`).
+- Configure this in `Settings -> TaskNotes -> Appearance & interaction -> UI elements` (`Subtask chevron position`).
 
 ![Left subtask chevron](../assets/left-task-subtask-chevron.gif)
 
@@ -241,7 +249,7 @@ Features include:
 
 ### Customizable Triggers
 
-**New in v4**: Triggers for NLP properties can be customized in `Settings -> TaskNotes -> Features` (`NLP Triggers`).
+Triggers for NLP properties can be customized for each property in `Settings -> TaskNotes -> Properties`.
 
 You can configure trigger characters or strings for:
 

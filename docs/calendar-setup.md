@@ -1,10 +1,28 @@
 # Calendar Integration Setup
 
-TaskNotes supports Google Calendar and Microsoft Calendar integration via OAuth 2.0.
+TaskNotes shows Google Calendar and Microsoft Calendar events beside your tasks. Google Calendar can be connected in two ways: by signing in with Google, or with your own OAuth credentials. Microsoft Calendar uses your own OAuth credentials.
+
+## Sign in with Google
+
+Signing in with Google needs no Google Cloud project.
+
+1. Open `Settings -> TaskNotes -> Calendars & integrations -> Google Calendar`.
+2. Select **Sign in with Google**. Google's sign-in page opens in your browser.
+3. Sign in. The browser then shows an eight-character code.
+4. Enter the code in Obsidian. Your browser opens once more, this time to ask for access to Google Calendar.
+
+TaskNotes then shows your primary calendar and the calendars that are ticked in Google Calendar, up to five at a time. Choose which are shown under **Calendars shown**.
+
+- Events are read through the TaskNotes Calendar service, from about two months back to four months ahead. They are held in memory while Obsidian is open. They are not saved in your vault, and the service does not store them. See the [privacy policy](privacy.md#tasknotes-calendar-hosted-service).
+- Events refresh every 30 minutes while Obsidian is on screen, when you return to Obsidian after that long, and when you select **Refresh calendar events**.
+- You can create events, and move, edit and delete events, on calendars you can write to. Calendars shared with you as read-only are shown but cannot be changed.
+- Exporting tasks and timeblocks to Google Calendar is not available when you sign in with Google. It needs your own OAuth credentials, described below. Task events you exported earlier appear as ordinary events.
+- Each device signs in separately. **Sign out on this device** leaves your other devices signed in. Under **Access and account**, **Disconnect Google Calendar** withdraws access on every device, and **Delete calendar service account** also removes what the service holds about you.
+- TaskNotes uses one Google connection at a time. Disconnect your own Google Cloud project before signing in with Google, and sign out before connecting your own.
 
 ## Setup (Your Own OAuth Credentials)
 
-To connect calendars, create OAuth credentials with Google and/or Microsoft, then paste them into TaskNotes Integrations settings. The sections below walk through each provider.
+To connect Microsoft Calendar, or to connect Google Calendar without the TaskNotes Calendar service, create OAuth credentials with the provider and paste them into TaskNotes settings. The sections below walk through each provider.
 
 ![Integrations calendar settings](assets/settings-integrations-calendar.png)
 
@@ -14,9 +32,11 @@ To connect calendars, create OAuth credentials with Google and/or Microsoft, the
 
 *Video by [@antoneheyward](https://www.youtube.com/@antoneheyward)*
 
-In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Integrations`) and click **Connect Google Calendar**.
+In [Google Cloud Console](https://console.cloud.google.com), create or select a project, enable the Google Calendar API, and create OAuth 2.0 credentials using the Desktop application type. Then copy the Client ID and Client Secret into TaskNotes (`Settings -> TaskNotes -> Calendars & integrations -> Google Calendar -> Advanced: use your own Google Cloud project`) and select **Connect Google Calendar**.
 
 If your Google OAuth app is still in testing mode, add the Google account you will connect with under **Google Auth Platform -> Audience -> Test users**. Otherwise Google may block sign-in with a 403 `access_denied` error saying the app has not completed verification.
+
+Google expires the connection of an OAuth app in testing mode 7 days after you connect, so TaskNotes will ask you to reconnect about once a week. To keep the connection, open **Google Auth Platform -> Audience** and click **Publish app** to move it to **In production**. For a personal OAuth app you do not need to submit it for verification: when you next connect, Google shows a "Google hasn't verified this app" screen, where you can choose **Advanced** and continue to your app. Reconnect in TaskNotes after publishing, because connections made in testing mode keep their 7-day limit.
 
 ### Microsoft Calendar
 
@@ -43,6 +63,8 @@ Next, add delegated Microsoft Graph API permissions (`Calendars.Read`, `Calendar
 
 ## Security Notes
 
+These notes apply to your own OAuth credentials. When you sign in with Google instead, Google's tokens stay with the TaskNotes Calendar service, and Obsidian Secret Storage holds only this device's session with that service.
+
 OAuth client IDs, client secrets, and account tokens are stored locally in Obsidian Secret Storage, which is encrypted at rest when supported by the operating system. They are not written to TaskNotes' `data.json`. Tokens refresh automatically, calendar data syncs directly between your vault and provider, and you can disconnect at any time to revoke account access.
 
 Secret Storage is local to the Obsidian installation and vault. When setting up TaskNotes on another device, enter the OAuth app credentials and connect the calendar again. After disconnecting, use **Forget saved credentials** if you also want to remove the client ID and client secret.
@@ -68,3 +90,7 @@ Disconnect and reconnect to refresh OAuth tokens, then re-check provider-side ca
 **Connection lost after Obsidian restart**
 
 Tokens should persist between sessions. If reconnection is required each restart, check whether Obsidian Secret Storage is available and retaining secrets for the vault.
+
+**Google connection expires after about a week**
+
+If TaskNotes reports that the Google connection expired and you need to reconnect every few days, your Google OAuth app is probably in testing mode. Google limits connections from testing-mode apps to 7 days. Publish the app to **In production** as described in [Google Calendar](#google-calendar), then reconnect.

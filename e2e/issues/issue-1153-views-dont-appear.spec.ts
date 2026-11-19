@@ -31,7 +31,7 @@ import * as path from 'path';
 import { launchObsidian, closeObsidian, ObsidianApp, runCommand } from '../obsidian';
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
-const E2E_VAULT_DIR = path.join(PROJECT_ROOT, 'tasknotes-e2e-vault');
+const E2E_VAULT_DIR = path.resolve(process.env.TASKNOTES_E2E_VAULT_DIR ?? path.join(PROJECT_ROOT, 'tasknotes-e2e-vault'));
 const PLUGIN_DATA_PATH = path.join(E2E_VAULT_DIR, '.obsidian/plugins/tasknotes/data.json');
 
 let app: ObsidianApp;

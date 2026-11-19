@@ -1,5 +1,7 @@
 # i18n-state-manager
 
+This page describes the historical keyed translation tool. TaskNotes now uses Lingui PO catalogues; its old resources, state files and command wrappers have been removed. Use the [current translation workflow](translations.md), not the commands below.
+
 i18n-state-manager is a translation management tool developed for TaskNotes and published as an open-source npm package. It addresses a limitation common to most translation tools: the inability to detect when translations become outdated after source text changes.
 
 ## Purpose
@@ -24,11 +26,17 @@ A translation is considered:
 - **Missing**: No translation exists for the key
 - **Stale**: Source hash has changed since the translation was created
 
-## Integration with TaskNotes
+## Current TaskNotes translation workflow
 
-TaskNotes uses i18n-state-manager to manage translations across seven languages. The tool runs in continuous integration to prevent deployment of incomplete or outdated translations.
+TaskNotes UI now uses the shared Lingui kit across ten locales. Author `src/i18n/locales/<locale>/messages.po`; generated JSON is ignored and prepared on fresh checkouts by ordinary tests and production builds. Run `npm run i18n:extract` after changing marked English copy, then `npm run i18n:check`. The latter verifies extraction sync, authored completeness before fallback, ICU contracts, reviewed identical-term exceptions and both source guards, then compiles strict JSON. `npm run i18n:compile` uses the same strict gate; it accepts no bypass flags.
 
-Available commands:
+Ordinary `npm test` and CI require complete authored catalogues. `npm run test:dev` and `npm run test:watch` explicitly prepare incomplete development fallback data and are not release/translation acceptance. The old TS resources and converter are retired; PO catalogues are the only authored translation source. Historical migration ledgers are immutable evidence and must not be regenerated. NLP configuration in `src/locales/` is separate and unchanged. See [language packs](language-packs.md). The migration handoff and machine-readable audit inventories are internal development evidence, not published user guides.
+
+## Historical TaskNotes integration
+
+The keyed-resource integration below is retained as history of the standalone tool; these are not the current plugin commands.
+
+Historical commands:
 
 - `i18n-state sync` – Update manifest and state files after changing translations
 - `i18n-state verify` – Check for missing or stale translations (fails on issues)
@@ -38,7 +46,7 @@ Available commands:
 - `i18n-state check-duplicates` – Detect duplicate translation keys
 - `i18n-state generate-template` – Create translation file templates with markers for missing or stale entries
 
-Configuration is stored in `i18n-state.config.json`, which defines the source locale, file locations, and patterns for detecting translation function calls in code.
+Historically, configuration was stored in `i18n-state.config.json` (now removed), which defines the source locale, file locations, and patterns for detecting translation function calls in code.
 
 ## Requirements
 

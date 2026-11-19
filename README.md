@@ -1,144 +1,136 @@
 # <img src="tasknotes-gradient.svg" width="32" height="32" style="vertical-align: middle;"> TaskNotes for Obsidian
 
-A task management plugin where each task is a separate Markdown note, and all views are powered by [Obsidian Bases](https://help.obsidian.md/bases).
+A task management plugin for Obsidian. Each task is a separate Markdown note, and the task list, Kanban, calendar and agenda views are [Obsidian Bases](https://help.obsidian.md/bases) views.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/hero-dark.png">
+  <img alt="TaskNotes Task List view beside the week calendar in Obsidian" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/hero-light.png">
+</picture>
+
+Documentation: [tasknotes.dev](https://tasknotes.dev/)
 
 > [!NOTE]
-> **TaskNotes is also available in Beta on the web and iPhone.** [Open TaskNotes on the web](https://app.tasknotes.dev/) or [download it from the App Store](https://apps.apple.com/app/tasknotes/id6797168033).
-
-<img src="https://github.com/callumalpass/tasknotes/blob/main/media/2025-12-07T15-43-26.png?raw=true" />
+> **TaskNotes is also available in Beta on the web, iPhone and Android.** [Open TaskNotes on the web](https://app.tasknotes.dev/), [download it from the App Store](https://apps.apple.com/app/tasknotes/id6797168033) or [get it on Google Play](https://play.google.com/store/apps/details?id=dev.tasknotes.app). To use it with the tasks in your vault, sync the vault with [mdbase Connect](https://mdbase.dev/downloads/), which needs an mdbase Connect account. See [Use TaskNotes App with your vault](https://tasknotes.dev/guides/tasknotes-app/).
 
 ## Overview
 
-Each task is a Markdown note with YAML frontmatter. Every view is a [Bases](https://help.obsidian.md/bases) query.
+Each task is a Markdown note. Its status, dates, projects and other properties are stored in YAML frontmatter, and the rest of the note is ordinary Markdown.
 
-Bases is Obsidian's core plugin for turning notes into databases—it reads properties from your notes and lets you filter, sort, and group them without writing code. TaskNotes stores tasks as notes with structured frontmatter, then uses Bases to query and display them. The Task List, Kanban, Calendar, and Agenda views are all `.base` files.
+The views are `.base` files in `TaskNotes/Views/`. You can change their filters, sorting and grouping in the Bases UI, edit the files directly, or copy them to make new views.
 
-This keeps your data portable. Tasks are just Markdown files with YAML, so you can read them with any tool, transform them with scripts, or migrate them elsewhere. There's no plugin-specific database.
+There is no separate database, so other tools and scripts can read and edit tasks. Property names are configurable, and extra frontmatter fields you add to tasks can be used in Bases.
 
-The frontmatter is extensible—add fields like `energy-level` or `client` and they're immediately available in Bases for filtering and grouping. The `.base` files are plain text too, so you can edit filters and sorting directly or duplicate them to create new views.
+## Views
 
-![Screenshot of TaskNotes plugin](https://github.com/callumalpass/tasknotes/blob/main/media/175266750_comp.gif)
+<table>
+  <tr>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/task-list-dark.png">
+        <img alt="Task List view" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/task-list-light.png">
+      </picture>
+      <p><b>Task List</b>. The default file includes Today, Inbox, Overdue, This Week and Not Blocked views.</p>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/kanban-dark.png">
+        <img alt="Kanban board" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/kanban-light.png">
+      </picture>
+      <p><b>Kanban</b>. Columns can be grouped by status or any other property, with optional swimlanes.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/calendar-dark.png">
+        <img alt="Week calendar" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/calendar-light.png">
+      </picture>
+      <p><b>Calendar</b>. Shows scheduled and due tasks, recurring instances, tracked time, timeblocks and calendar subscriptions. Tasks can be dragged to reschedule them.</p>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/agenda-dark.png">
+        <img alt="Agenda view" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/agenda-light.png">
+      </picture>
+      <p><b>Agenda</b>. Scheduled and due tasks, listed by day.</p>
+    </td>
+  </tr>
+</table>
 
-**[Full Documentation](https://tasknotes.dev/)**
+There are also mini calendar, Pomodoro and relationships views.
 
-## Quick start
+## Task notes
 
-Create a task with **TaskNotes: Create new task**. The plugin parses natural language—type "Buy groceries tomorrow #errands" and it extracts the due date and context automatically.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/task-note-dark.png">
+  <img alt="A task note showing its YAML frontmatter, task card and checklist" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/task-note-light.png">
+</picture>
 
-Tasks are stored as Markdown files in your vault. Open them directly, edit the frontmatter, or use the plugin's views to manage them.
+TaskNotes reads and writes the frontmatter. The task card above it can be turned off in settings.
 
-Open a view with commands like **TaskNotes: Open tasks view** or **TaskNotes: Open kanban board**. These open the corresponding `.base` files from `TaskNotes/Views/`.
-
-## How it works with Bases
-
-TaskNotes registers as a Bases data source and provides custom view types: `tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar`, and `tasknotesMiniCalendar`. The default Agenda file is a preconfigured `tasknotesCalendar` list view (`listWeek`). Your task notes become rows; frontmatter properties become columns.
-
-The default `.base` files include formula properties for computed values:
-
-```yaml
-formulas:
-  daysUntilDue: if(due, ((number(date(due)) - number(today())) / 86400000).floor(), null)
-  isOverdue: due && date(due) < today() && status != "done"
-  urgencyScore: formula.priorityWeight + max(0, 10 - formula.daysUntilDue)
-  efficiencyRatio: (timeTracked / timeEstimate * 100).round()
-```
-
-You can sort by `urgencyScore`, filter to show only `isOverdue` tasks, or add these as columns. Edit the `.base` files directly or use the Bases UI. See [default base templates](./docs/views/default-base-templates.md) for the full list of included formulas.
-
-## Task structure
-
-```yaml
-title: "Complete documentation"
-status: "in-progress"
-due: "2024-01-20"
-priority: "high"
-contexts: ["work"]
-projects: ["[[Website Redesign]]"]
-timeEstimate: 120
-timeEntries:
-  - startTime: "2024-01-15T10:30:00Z"
-    endTime: "2024-01-15T11:15:00Z"
-```
-
-Recurring tasks use RRULE format with per-instance completion tracking:
-
-```yaml
-title: "Weekly meeting"
-recurrence: "FREQ=WEEKLY;BYDAY=MO"
-complete_instances: ["2024-01-08"]
-```
-
-When an individual recurrence needs its own note, TaskNotes can materialize that occurrence as a normal task. Calendar views show the note-backed occurrence in place of the matching virtual recurrence instance:
+Recurring tasks use RRULE strings with per-instance completion tracking:
 
 ```yaml
-title: "Weekly meeting"
-recurrence_parent: "[[Tasks/Weekly meeting]]"
-occurrence_date: "2024-01-15"
-scheduled: "2024-01-15T09:30"
-timeEstimate: 60
+title: "Weekly review"
+recurrence: "DTSTART:20261016;FREQ=WEEKLY;BYDAY=FR"
+complete_instances: ["2026-11-06", "2026-11-13"]
 ```
 
-Occurrence notes inherit planning metadata from the recurring parent, such as scheduled time, due offset, tags, contexts, projects, reminders, details, and time estimate. They do not copy the parent's recurrence rule, completion history, or time entries.
+An individual occurrence can also be given its own note. See [recurring tasks](https://tasknotes.dev/features/recurring-tasks/).
 
-All property names are configurable. If you already use `deadline` instead of `due`, remap it in settings.
+## Natural language input
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/create-task-dark.png">
+  <img alt="Create task dialog parsing a date, tag, context, project, priority and estimate from one line" src="https://raw.githubusercontent.com/callumalpass/tasknotes/main/media/readme/create-task-light.png">
+</picture>
+
+The create task dialog parses dates, times, recurrence, `#tags`, `@contexts`, `+projects`, priority, status and time estimates from the text, and highlights the parts it recognised. Checkboxes (`- [ ]`) in notes can also be converted to tasks.
 
 ## Other features
 
-Calendar sync with Google and Microsoft (OAuth) or any ICS feed. Time tracking with start/stop per task, Pomodoro timer, and session history. Recurring tasks with fixed or flexible schedules, per-instance completion tracking, and optional materialized occurrence notes. Dependencies between tasks. Natural language parsing for task creation. Custom statuses, priorities, and user-defined fields.
+- Calendar sync with Google Calendar and Microsoft Outlook, and read-only ICS subscriptions
+- Time tracking per task, a Pomodoro timer and session history
+- Recurring tasks with fixed or flexible schedules and per-instance completion
+- Dependencies between tasks
+- Reminders, relative to due or scheduled dates or at a fixed time
+- Custom statuses, priorities and fields
+- Task link overlays, which show a linked task's status, priority and dates in the editor
+
+## How it works with Bases
+
+TaskNotes registers its view types with Bases: `tasknotesTaskList`, `tasknotesKanban`, `tasknotesCalendar` and `tasknotesMiniCalendar`. Task notes are the rows, and their frontmatter properties are the columns.
+
+The default `.base` files include formulas that can be used for sorting, filtering, grouping or as columns:
+
+```yaml
+formulas:
+  priorityWeight: if(priority=="none",0,if(priority=="low",1,if(priority=="normal",2,if(priority=="high",3,-1))))
+  daysUntilDue: if((due.isEmpty() == false), ((number(date(due)) - number(today())) / 86400000).floor(), null)
+  isOverdue: (due.isEmpty() == false) && date(due) < today() && status != "done"
+  isRecurring: recurrence && !recurrence.isEmpty()
+```
+
+See [default base templates](https://tasknotes.dev/views/default-base-templates/) for the full list.
+
+## Getting started
+
+1. Install **TaskNotes** from **Settings → Community plugins** and enable it. TaskNotes needs Obsidian 1.13.1 or later.
+2. Make sure the **Bases** core plugin is enabled under **Settings → Core plugins**.
+3. Create a task with **TaskNotes: Create new task**. Open views with **TaskNotes: Open tasks view**, **Open Kanban board**, **Open calendar view** or **Open agenda view**.
+
+For a vault that already has task notes, see [Adopt TaskNotes in an existing vault](https://tasknotes.dev/getting-started/existing-vault/). For upgrading from v4, see the [upgrade guide](https://tasknotes.dev/migration-v4-to-v5/).
 
 ## Integrations
 
-TaskNotes has an optional HTTP API. There's a [browser extension](https://github.com/callumalpass/tasknotes-browser-extension) and a [CLI](https://github.com/callumalpass/tasknotes-cli). Webhooks can notify external services on task changes. See [HTTP API docs](./docs/HTTP_API.md) and [Webhooks docs](./docs/webhooks.md).
+TaskNotes has an optional HTTP API, and webhooks can notify other services when tasks change. There is a [browser extension](https://github.com/callumalpass/tasknotes-browser-extension) and a [CLI](https://github.com/callumalpass/tasknotes-cli). See the [HTTP API](https://tasknotes.dev/HTTP_API/), [webhooks](https://tasknotes.dev/webhooks/) and [JavaScript API](https://tasknotes.dev/javascript-api/) docs.
 
 ## Language support
 
-UI: English, German, Spanish, French, Japanese, Russian, Chinese, Portuguese, Korean.
+Interface: English, German, Spanish, French, Italian, Japanese, Korean, Portuguese, Russian and Chinese.
 
-Natural language parsing: English, German, Spanish, French, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Ukrainian, Chinese.
-
-## Screenshots
-
-<details>
-<summary>View screenshots</summary>
-
-Screenshots are generated from the Playwright documentation suite (`npm run e2e:docs`).
-
-### Calendar
-
-![Month](media/docs/views-calendar-month.png)
-
-![Week](media/docs/views-calendar-week.png)
-
-![Day](media/docs/views-calendar-day.png)
-
-![Year](media/docs/views-calendar-year.png)
-
-### Task views
-
-![Tasks](media/docs/views-tasks-list.png)
-
-![Kanban](media/docs/views-kanban.png)
-
-![Agenda](media/docs/views-agenda.png)
-
-![Mini Calendar](media/docs/views-mini-calendar.png)
-
-### Features
-
-![Task Modal](media/docs/modal-task-create.png)
-
-![Pomodoro](media/docs/feature-pomodoro-timer.png)
-
-![Stats](media/docs/feature-task-statistics.png)
-
-![Settings](media/docs/ui-settings-panel.png)
-
-</details>
-
-## Credits
-
-Calendar components by [FullCalendar.io](https://fullcalendar.io/).
+Natural language parsing: English, German, Spanish, French, Italian, Japanese, Dutch, Portuguese, Russian, Swedish, Ukrainian and Chinese.
 
 ## License
 
-MIT—see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

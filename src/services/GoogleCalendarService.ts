@@ -1,3 +1,6 @@
+import { uiData } from "../i18n/dataText";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Calendar sync validates credentials before accessing token fields. */
 import { requestUrl } from "obsidian";
 import { format } from "date-fns";
@@ -14,7 +17,7 @@ import {
 } from "./errors";
 import { validateCalendarId, validateEventId, validateRequired } from "./validation";
 import {
-	CalendarProvider,
+	GoogleCalendarSource,
 	findProviderCalendar,
 	PRIMARY_CALENDAR_ALIAS,
 	ProviderCalendar,
@@ -68,13 +71,14 @@ type GoogleCalendarEventPayload = Record<string, unknown> & {
  * Uses OAuth for authentication and provides calendar event access.
  * Implements the CalendarProvider interface for abstraction.
  */
-export class GoogleCalendarService extends CalendarProvider {
-	readonly providerId = "google";
-	readonly providerName = "Google Calendar";
+export class GoogleCalendarService extends GoogleCalendarSource {
 	private plugin: TaskNotesPlugin;
 	private oauthService: OAuthService;
 	private baseUrl = "https://www.googleapis.com/calendar/v3";
 	private cache: Map<string, ICSEvent[]> = new Map();
+	// Calendars whose events are in the in-memory cache. Sync tokens are persisted, but the
+	// cache is not, so a saved token is only usable once this session has a full sync (#2243).
+	private cachedCalendarIds: Set<string> = new Set();
 	private refreshTimer: number | null = null;
 	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
@@ -197,6 +201,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		this.availableCalendars = [];
 		this.calendarColors.clear();
 		this.cache.clear();
+		this.cachedCalendarIds.clear();
 	}
 
 	private async prepareConnectionGeneration(connectionGeneration: number): Promise<void> {
@@ -354,6 +359,9 @@ export class GoogleCalendarService extends CalendarProvider {
 						description: calendar.description,
 						backgroundColor: calendar.backgroundColor,
 						primary: calendar.primary || false,
+						canWrite: calendar.accessRole
+							? calendar.accessRole === "owner" || calendar.accessRole === "writer"
+							: undefined,
 					});
 				}
 
@@ -384,7 +392,8 @@ export class GoogleCalendarService extends CalendarProvider {
 		calendarId: string,
 		timeMin?: Date,
 		timeMax?: Date,
-		expectedGeneration?: number
+		expectedGeneration?: number,
+		options: { forceFullSync?: boolean } = {}
 	): Promise<{
 		events: GoogleCalendarEvent[];
 		isFullSync: boolean;
@@ -393,7 +402,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		const connectionGeneration = expectedGeneration ?? this.getConnectionGeneration();
 		try {
 			const token = await this.oauthService.getValidToken("google", connectionGeneration);
-			const syncToken = this.getSyncToken(calendarId);
+			const syncToken = options.forceFullSync ? undefined : this.getSyncToken(calendarId);
 
 			let allEvents: GoogleCalendarEvent[] = [];
 			let nextPageToken: string | undefined;
@@ -489,7 +498,8 @@ export class GoogleCalendarService extends CalendarProvider {
 							calendarId,
 							timeMin,
 							timeMax,
-							connectionGeneration
+							connectionGeneration,
+							options
 						);
 					}
 					throw error;
@@ -587,7 +597,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		return {
 			id: `google-${calendarId}-${googleEvent.id}`,
 			subscriptionId: `google-${calendarId}`,
-			title: googleEvent.summary || "Untitled Event",
+			title: googleEvent.summary || uiData("Untitled Event", "Persisted/cache provider fallback title; preserve English data seed"),
 			description: normalizeCalendarDescription(googleEvent.description),
 			start: start,
 			end: end,
@@ -619,6 +629,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Get current cached events
 			let cachedEvents = this.getAllEvents();
+			const cachedCalendarIds = new Set(this.cachedCalendarIds);
 			const calendarErrors: { calendarId: string; message: string }[] = [];
 
 			// Fetch events from each enabled calendar
@@ -628,7 +639,8 @@ export class GoogleCalendarService extends CalendarProvider {
 						calendarId,
 						undefined,
 						undefined,
-						connectionGeneration
+						connectionGeneration,
+						{ forceFullSync: !cachedCalendarIds.has(calendarId) }
 					);
 
 					if (isFullSync) {
@@ -644,6 +656,7 @@ export class GoogleCalendarService extends CalendarProvider {
 							.map((event) => this.convertToICSEvent(event, calendarId));
 
 						cachedEvents.push(...icsEvents);
+						cachedCalendarIds.add(calendarId);
 					} else {
 						// Incremental sync: Update cache with changes
 						for (const googleEvent of googleEvents) {
@@ -687,6 +700,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Update caches together for the same connection.
 			this.availableCalendars = refreshedCalendars;
 			this.cache.set("all", cachedEvents);
+			this.cachedCalendarIds = cachedCalendarIds;
 
 			this.syncStatus = {
 				lastSuccess: calendarErrors.length === 0 ? new Date().toISOString() : this.syncStatus.lastSuccess,
@@ -769,7 +783,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 		if (timeSinceLastRefresh < minInterval) {
 			const remainingMs = minInterval - timeSinceLastRefresh;
-			publishUserNotice(this.plugin.emitter, `Please wait ${Math.ceil(remainingMs / 1000)}s before refreshing again`);
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "{seconds, plural, one {Please wait # second before refreshing again} other {Please wait # seconds before refreshing again}}", context: "calendar refresh throttling" }), { seconds: Math.ceil(remainingMs / 1000) }));
 			return;
 		}
 
@@ -782,6 +796,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	clearCache(): void {
 		this.cache.clear();
+		this.cachedCalendarIds.clear();
 	}
 
 	/**
@@ -1188,6 +1203,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	destroy(): void {
 		this.stopRefreshTimer();
 		this.cache.clear();
+		this.cachedCalendarIds.clear();
 		this.removeAllListeners();
 	}
 }

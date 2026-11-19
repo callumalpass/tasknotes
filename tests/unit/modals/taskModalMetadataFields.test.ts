@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 const mockTextControls: Array<{
 	inputEl: HTMLInputElement;
 	onChangeCallback?: (value: string) => void;
@@ -81,7 +82,7 @@ function createContext(): TaskModalMetadataFieldContext {
 	return {
 		app: {} as never,
 		plugin: {} as TaskNotesPlugin,
-		translate: (key) => `translated:${key}`,
+		translate: mockObserveTranslation(),
 		attachMobileKeyboardScrollGuard: jest.fn(),
 	};
 }
@@ -95,7 +96,7 @@ describe("taskModalMetadataFields", () => {
 		mockSanitizeTags.mockClear();
 	});
 
-	it("creates the contexts field with input ref, wide setting class, guard, and suggest", () => {
+	it("creates the contexts field with input ref, guard, and suggest", () => {
 		const context = createContext();
 		const container = document.createElement("div");
 		const onChange = jest.fn();
@@ -107,9 +108,8 @@ describe("taskModalMetadataFields", () => {
 		});
 
 		expect(input.value).toBe("home");
-		expect(input.placeholder).toBe("translated:modals.task.contextsPlaceholder");
-		expect(container.textContent).toContain("translated:modals.task.contextsLabel");
-		expect(container.querySelector(".tn-task-modal__wide-text-setting")).not.toBeNull();
+		expect(input.placeholder).toBe(mockEnglishText(mockConceptDescriptor("modals.task.contextsPlaceholder")));
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.contextsLabel")));
 		expect(context.attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(input);
 		expect(mockContextSuggest).toHaveBeenCalledWith(context.app, input, context.plugin);
 
@@ -129,8 +129,8 @@ describe("taskModalMetadataFields", () => {
 		});
 
 		expect(input.value).toBe("project");
-		expect(input.placeholder).toBe("translated:modals.task.tagsPlaceholder");
-		expect(container.textContent).toContain("translated:modals.task.tagsLabel");
+		expect(input.placeholder).toBe(mockEnglishText(mockConceptDescriptor("modals.task.tagsPlaceholder")));
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.tagsLabel")));
 		expect(context.attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(input);
 		expect(mockTagSuggest).toHaveBeenCalledWith(context.app, input, context.plugin);
 
@@ -151,20 +151,26 @@ describe("taskModalMetadataFields", () => {
 		});
 
 		expect(input.value).toBe("25");
-		expect(input.placeholder).toBe("translated:modals.task.timeEstimatePlaceholder");
-		expect(container.textContent).toContain("translated:modals.task.timeEstimateLabel");
+		expect(input.placeholder).toBe(mockEnglishText(mockConceptDescriptor("modals.task.timeEstimatePlaceholder")));
+		expect(container.textContent).toContain(mockEnglishText(mockConceptDescriptor("modals.task.timeEstimateLabel")));
 		expect(context.attachMobileKeyboardScrollGuard).toHaveBeenCalledWith(input);
 
 		mockTextControls[0].onChangeCallback?.("45");
 		mockTextControls[0].onChangeCallback?.("not a number");
 
 		expect(onChange).toHaveBeenNthCalledWith(1, 45);
-		expect(onChange).toHaveBeenNthCalledWith(2, 0);
+		expect(onChange).toHaveBeenNthCalledWith(2, null);
 	});
 
-	it("parses blank and invalid time estimates as zero", () => {
-		expect(parseTaskModalTimeEstimate("60")).toBe(60);
-		expect(parseTaskModalTimeEstimate("")).toBe(0);
-		expect(parseTaskModalTimeEstimate("later")).toBe(0);
+	it.each([
+		["60", 60],
+		["", 0],
+		["1h", 60],
+		["1.5h", 90],
+		["1h 30m", 90],
+		["1:30", 90],
+		["later", null],
+	])("parses time estimate %j", (text, minutes) => {
+		expect(parseTaskModalTimeEstimate(text)).toBe(minutes);
 	});
 });

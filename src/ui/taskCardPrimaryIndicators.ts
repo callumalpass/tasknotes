@@ -1,8 +1,18 @@
+import { configLabel } from "../i18n/configLabels";
+import { msg } from "@lingui/core/macro";
 import { setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { PriorityConfig, TaskInfo } from "../types";
 import { isPropertyForField } from "../utils/propertyMapping";
 import { prepareInteractiveControl } from "./taskCardIndicators";
+import {
+	priorityGlyphState,
+	renderPriorityGlyph,
+	renderStatusGlyph,
+	statusGlyphState,
+	unconfiguredValueLabel,
+	hasVisiblePriority,
+} from "./kit/glyphs";
 
 type StatusConfig = ReturnType<TaskNotesPlugin["statusManager"]["getStatusConfig"]>;
 
@@ -47,6 +57,24 @@ export function shouldShowPriorityIndicator(
 	);
 }
 
+/**
+ * When the view shows neither status nor priority, the card drops its first layout column so the
+ * title starts at the edge. This follows the view's properties, not the task, so every card in a
+ * view lines up.
+ */
+export function syncTaskCardLeadColumn(
+	card: HTMLElement,
+	visibleProperties: string[] | undefined,
+	plugin: TaskNotesPlugin,
+	hideStatusIndicator = false
+): void {
+	card.classList.toggle(
+		"task-card--no-lead",
+		!shouldShowStatusIndicator(visibleProperties, plugin, hideStatusIndicator) &&
+			!shouldShowPriorityIndicator(visibleProperties, plugin)
+	);
+}
+
 export function applyTaskCardStatusColors(
 	card: HTMLElement,
 	effectiveStatus: string,
@@ -86,24 +114,24 @@ export function applyTaskCardPriorityColor(
 
 export function configureStatusIndicator(
 	statusDot: HTMLElement,
-	statusConfig: StatusConfig | null | undefined
+	statusConfig: StatusConfig | null | undefined,
+	plugin: TaskNotesPlugin,
+	statusValue = statusConfig?.value ?? ""
 ): void {
-	if (statusConfig?.color) {
-		statusDot.style.borderColor = statusConfig.color;
-	} else {
-		statusDot.style.removeProperty("border-color");
-	}
-
+	statusDot.addClass("task-card__status-dot--icon");
+	const label = statusConfig ? configLabel(statusConfig) : unconfiguredValueLabel(statusValue);
+	statusDot.setAttribute("aria-label", label);
+	statusDot.setAttribute("aria-keyshortcuts", "S");
+	statusDot.empty();
 	if (statusConfig?.icon) {
-		statusDot.addClass("task-card__status-dot--icon");
-		statusDot.empty();
+		delete statusDot.dataset.tnGlyph;
 		setIcon(statusDot, statusConfig.icon);
-	} else {
-		statusDot.removeClass("task-card__status-dot--icon");
-		statusDot.empty();
-		statusDot.removeAttribute("data-icon");
-		statusDot.classList.remove("has-icon");
+		return;
 	}
+	renderStatusGlyph(
+		statusDot,
+		statusGlyphState(statusValue, plugin.statusManager.getAllStatuses())
+	);
 }
 
 export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElement | null {
@@ -126,7 +154,12 @@ export function createStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	const statusDot = mainRow.createSpan({ cls: "task-card__status-dot" });
-	configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+	configureStatusIndicator(
+		statusDot,
+		plugin.statusManager.getStatusConfig(effectiveStatus),
+		plugin,
+		effectiveStatus
+	);
 	prepareInteractiveControl(statusDot);
 	statusDot.addEventListener("click", onClick);
 	statusDot.dataset.taskPath = task.path;
@@ -167,7 +200,12 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 	}
 
 	if (statusDot) {
-		configureStatusIndicator(statusDot, plugin.statusManager.getStatusConfig(effectiveStatus));
+		configureStatusIndicator(
+			statusDot,
+			plugin.statusManager.getStatusConfig(effectiveStatus),
+			plugin,
+			effectiveStatus
+		);
 		return statusDot;
 	}
 	if (!mainRow) {
@@ -183,36 +221,62 @@ export function updateStatusIndicator(config: StatusIndicatorConfig): HTMLElemen
 
 export function configurePriorityIndicator(
 	priorityDot: HTMLElement,
-	priorityConfig: PriorityConfig,
-	plugin: TaskNotesPlugin
+	priorityConfig: PriorityConfig | undefined,
+	plugin: TaskNotesPlugin,
+	priorityValue = priorityConfig?.value
 ): void {
-	priorityDot.style.borderColor = priorityConfig.color;
-	priorityDot.setAttribute(
-		"aria-label",
-		plugin.i18n.translate("ui.taskCard.priorityAriaLabel", {
-			label: priorityConfig.label,
-		})
+	const label = priorityConfig
+		? configLabel(priorityConfig)
+		: (priorityValue ? unconfiguredValueLabel(priorityValue) : "") ||
+			plugin.i18n.translate(msg({ message: "None", context: "ui.taskCard.noPriority" }));
+	const priorityLabel = plugin.i18n.translate(
+		msg({ message: "Priority: {label}", context: "ui.taskCard.priorityAriaLabel" }),
+		{ label }
 	);
 	priorityDot.replaceChildren();
-	priorityDot.classList.toggle("task-card__priority-dot--icon", !!priorityConfig.icon);
+	priorityDot.setAttribute("aria-label", priorityLabel);
+	priorityDot.setAttribute("aria-keyshortcuts", "P");
+	priorityDot.classList.add("task-card__priority-dot--icon");
 
-	if (priorityConfig.icon) {
+	if (priorityConfig?.icon) {
+		delete priorityDot.dataset.tnGlyph;
 		setIcon(priorityDot, priorityConfig.icon);
-	} else {
-		priorityDot.removeAttribute("data-icon");
-		priorityDot.classList.remove("has-icon");
+		return;
 	}
+	renderPriorityGlyph(
+		priorityDot,
+		priorityGlyphState(priorityValue, plugin.priorityManager.getAllPriorities())
+	);
+}
+
+/**
+ * Cards in a view that shows priority get a bar in the priority's colour along their left edge,
+ * so priority reads at a glance as it did with 4.x's larger dot. Tasks with no priority, or a
+ * priority of weight zero such as "None", get no bar.
+ */
+export function syncTaskCardPriorityBar(
+	card: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	priorityShown: boolean
+): void {
+	const ranked =
+		priorityShown &&
+		priorityGlyphState(task.priority, plugin.priorityManager.getAllPriorities()).kind === "dot";
+	card.classList.toggle("task-card--has-priority-bar", ranked);
 }
 
 export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLElement | null {
 	const { mainRow, task, plugin, visibleProperties, onClick } = config;
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
+	const shown = shouldShowPriorityIndicator(visibleProperties, plugin);
+	const card = mainRow?.closest<HTMLElement>(".task-card");
+	if (card) syncTaskCardPriorityBar(card, task, plugin, shown);
 	if (
-		!task.priority ||
-		!priorityConfig ||
-		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
-		!mainRow
+		!shown ||
+		!mainRow ||
+		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
 	) {
 		return null;
 	}
@@ -220,7 +284,7 @@ export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	const priorityDot = mainRow.createSpan({
 		cls: "task-card__priority-dot",
 	});
-	configurePriorityIndicator(priorityDot, priorityConfig, plugin);
+	configurePriorityIndicator(priorityDot, priorityConfig, plugin, task.priority);
 	prepareInteractiveControl(priorityDot);
 	priorityDot.addEventListener("click", onClick);
 	return priorityDot;
@@ -236,11 +300,12 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	}
 	const existingPriorityDot = card.querySelector<HTMLElement>(".task-card__priority-dot");
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
+	const shown = shouldShowPriorityIndicator(visibleProperties, plugin);
+	syncTaskCardPriorityBar(card, task, plugin, shown);
 
 	if (
-		!task.priority ||
-		!priorityConfig ||
-		!shouldShowPriorityIndicator(visibleProperties, plugin)
+		!shown ||
+		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
 	) {
 		existingPriorityDot?.remove();
 		return null;
@@ -257,7 +322,7 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 		return priorityDot;
 	}
 
-	configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin);
+	configurePriorityIndicator(existingPriorityDot, priorityConfig, plugin, task.priority);
 	const newPriorityDot = existingPriorityDot.cloneNode(true) as HTMLElement;
 	prepareInteractiveControl(newPriorityDot);
 	newPriorityDot.addEventListener("click", config.onClick);

@@ -65,6 +65,7 @@ describe('TaskService Completion (Issue #160)', () => {
         },
         statusManager: {
           isCompletedStatus: jest.fn(status => status === 'done'),
+          getConfiguredStatusAfterCompletion: jest.fn(),
           getCompletedStatuses: jest.fn(() => ['done']),
         },
         fieldMapper: {
@@ -142,6 +143,76 @@ describe('TaskService Completion (Issue #160)', () => {
 
       // Verify that updateProperty was called with the completion removed
       expect(taskService['plugin'].app.fileManager.processFrontMatter).toHaveBeenCalled();
+    });
+  });
+
+  describe('status after an occurrence', () => {
+    const written = () => {
+      const frontmatter: Record<string, unknown> = {};
+      taskService['plugin'].app.fileManager.processFrontMatter.mockImplementation(
+        (_file: unknown, fn: (frontmatter: Record<string, unknown>) => void) => {
+          fn(frontmatter);
+          return Promise.resolve();
+        }
+      );
+      return frontmatter;
+    };
+    const taskWithStatus = (status: string) => {
+      const task = TaskFactory.createTask({ ...fridayRecurringTask, status });
+      taskService['plugin'].cacheManager.getTaskInfo.mockResolvedValue(task);
+      return task;
+    };
+
+    beforeEach(() => {
+      taskService['plugin'].statusManager.getConfiguredStatusAfterCompletion.mockReturnValue('open');
+      taskService['plugin'].settings.resetRecurringStatusAfterOccurrence = true;
+    });
+
+    it('keeps the status when the reset is off, even with a Next status on Done (#2521)', async () => {
+      taskService['plugin'].settings.resetRecurringStatusAfterOccurrence = false;
+      const frontmatter = written();
+
+      const updated = await taskService.toggleRecurringTaskComplete(
+        taskWithStatus('calendar'),
+        new Date('2024-01-12T12:00:00.000Z')
+      );
+
+      expect(updated.complete_instances).toContain('2024-01-12');
+      expect(updated.status).toBe('calendar');
+      expect(frontmatter.status).toBeUndefined();
+    });
+
+    it('moves an in-progress series to the status configured after completion', async () => {
+      const frontmatter = written();
+
+      await taskService.toggleRecurringTaskComplete(
+        taskWithStatus('in-progress'),
+        new Date('2024-01-12T12:00:00.000Z')
+      );
+
+      expect(frontmatter.status).toBe('open');
+    });
+
+    it('does the same when an occurrence is skipped', async () => {
+      const frontmatter = written();
+
+      await taskService.toggleRecurringTaskSkipped(
+        taskWithStatus('in-progress'),
+        new Date('2024-01-12T12:00:00.000Z')
+      );
+
+      expect(frontmatter.status).toBe('open');
+    });
+
+    it('leaves a task already in a completed status alone', async () => {
+      const frontmatter = written();
+
+      await taskService.toggleRecurringTaskComplete(
+        taskWithStatus('done'),
+        new Date('2024-01-12T12:00:00.000Z')
+      );
+
+      expect(frontmatter.status).toBeUndefined();
     });
   });
 

@@ -235,6 +235,7 @@ export function updateKanbanDropMarker(
 	insertionIndex: number
 ): void {
 	cardsContainer.classList.remove("kanban-view__cards--drop-marker-end");
+	cardsContainer.style.removeProperty("--tn-kanban-drop-top");
 	for (const card of visibleCards) {
 		card.classList.remove("kanban-view__card-wrapper--drop-marker");
 	}
@@ -245,7 +246,12 @@ export function updateKanbanDropMarker(
 		return;
 	}
 
-	if (visibleCards.length > 0 && insertionIndex >= visibleCards.length) {
+	if (insertionIndex >= visibleCards.length) {
+		const lastCard = visibleCards[visibleCards.length - 1];
+		const top = lastCard
+			? lastCard.getBoundingClientRect().bottom - cardsContainer.getBoundingClientRect().top + cardsContainer.scrollTop
+			: 0;
+		cardsContainer.style.setProperty("--tn-kanban-drop-top", `${top}px`);
 		cardsContainer.classList.add("kanban-view__cards--drop-marker-end");
 	}
 }
@@ -256,6 +262,7 @@ export function clearKanbanDropMarkers(root: ParentNode): void {
 			"kanban-view__card-wrapper--drop-marker",
 			"kanban-view__cards--drop-marker-end"
 		);
+		(root as HTMLElement).style.removeProperty("--tn-kanban-drop-top");
 	}
 
 	root
@@ -266,6 +273,7 @@ export function clearKanbanDropMarkers(root: ParentNode): void {
 	root
 		.querySelectorAll<HTMLElement>(".kanban-view__cards--drop-marker-end")
 		.forEach((container) => {
+			container.style.removeProperty("--tn-kanban-drop-top");
 			container.classList.remove("kanban-view__cards--drop-marker-end");
 		});
 }
@@ -475,12 +483,7 @@ export function applyKanbanTaskDropFrontmatterPlan(
 	}
 }
 
-export function planKanbanStatusDerivativeUpdate({
-	plan,
-	task,
-	dateModifiedField,
-	dateModifiedValue,
-}: KanbanStatusDerivativePlanInput): KanbanStatusDerivativePlan | null {
+export function getKanbanDropStatusValue(plan: KanbanTaskDropUpdatePlan): string | null {
 	const statusValue =
 		plan.needsGroupUpdate && plan.groupByTaskProp === "status"
 			? plan.newGroupValue
@@ -490,13 +493,24 @@ export function planKanbanStatusDerivativeUpdate({
 				? plan.newSwimLaneValue
 				: null;
 
+	// The NONE_GROUP_KEY column clears status; never evaluate the label as a status value.
+	return statusValue === null ? null : (normalizeGroupValue(statusValue) ?? "");
+}
+
+export function planKanbanStatusDerivativeUpdate({
+	plan,
+	task,
+	dateModifiedField,
+	dateModifiedValue,
+}: KanbanStatusDerivativePlanInput): KanbanStatusDerivativePlan | null {
+	const statusValue = getKanbanDropStatusValue(plan);
+
 	if (statusValue === null) {
 		return null;
 	}
 
 	return {
-		// The "None" column clears status; never evaluate the label as a status value.
-		statusValue: normalizeGroupValue(statusValue) ?? "",
+		statusValue,
 		isRecurring: !!task?.recurrence,
 		dateModifiedField,
 		dateModifiedValue,
@@ -560,7 +574,7 @@ export function planKanbanDropSideEffect({
 	};
 }
 
-// Match the frontmatter write: dropping into "None" deletes the property.
+// Match the frontmatter write: dropping into NONE_GROUP_KEY deletes the property.
 function toKanbanDropTaskValue(value: unknown): unknown {
 	return typeof value === "string" ? (normalizeGroupValue(value) ?? undefined) : value;
 }

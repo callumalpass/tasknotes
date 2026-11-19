@@ -9,4 +9,10 @@ The Pomodoro View includes a timer with controls to start, stop, and reset the t
 
 ![Pomodoro Timer](../assets/feature-pomodoro-timer.png)
 
-Pomodoro history and task time entries remain stored in your vault or plugin data according to your settings. Version 5 removes the separate statistics dashboards, not the timer or recorded sessions.
+## Recent sessions
+
+Below the timer, the view shows how many Pomodoros you completed today. Expand **Recent sessions** to see your last ten work sessions with their start time, length and task. Interrupted sessions are marked.
+
+To remove a session, select the delete button on its row and confirm. With a mouse, the button appears when you point at the row. Deleting a session removes it from your Pomodoro history; it does not change the task's time entries.
+
+Pomodoro history is stored in your daily notes or in plugin data, depending on **Pomodoro data storage**. For totals by day and month, run **TaskNotes: Open Pomodoro statistics**. See [Recorded data](../features/time-management.md#recorded-data).

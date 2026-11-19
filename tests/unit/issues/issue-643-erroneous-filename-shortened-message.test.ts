@@ -1,6 +1,6 @@
 import {
 	generateTaskFilename,
-	shouldShowFilenameShortenedNotice,
+	getTaskFilenameNotice,
 } from "../../../src/utils/filenameGenerator";
 import type { TaskNotesSettings } from "../../../src/types/settings";
 
@@ -21,6 +21,12 @@ function makeSettings(
 	};
 }
 
+function isShortenedNotice(
+	...args: Parameters<typeof getTaskFilenameNotice>
+): boolean {
+	return getTaskFilenameNotice(...args) === "shortened";
+}
+
 describe("Issue #643 - filename shortened notice", () => {
 	it("does not warn for a custom template that legitimately starts with task-", () => {
 		const settings = makeSettings();
@@ -36,7 +42,7 @@ describe("Issue #643 - filename shortened notice", () => {
 
 		expect(generatedFilename).toBe("task-202602091435");
 		expect(
-			shouldShowFilenameShortenedNotice(settings, "Buy groceries", generatedFilename)
+			isShortenedNotice(settings, "Buy groceries", generatedFilename)
 		).toBe(false);
 	});
 
@@ -47,7 +53,7 @@ describe("Issue #643 - filename shortened notice", () => {
 			storeTitleInFilename: false,
 		});
 
-		expect(shouldShowFilenameShortenedNotice(settings, "Any title", "task-202605181120")).toBe(
+		expect(isShortenedNotice(settings, "Any title", "task-202605181120")).toBe(
 			false
 		);
 	});
@@ -59,7 +65,7 @@ describe("Issue #643 - filename shortened notice", () => {
 			storeTitleInFilename: true,
 		});
 
-		expect(shouldShowFilenameShortenedNotice(settings, "A normal task title", "task-lx7")).toBe(
+		expect(isShortenedNotice(settings, "A normal task title", "task-lx7")).toBe(
 			true
 		);
 	});
@@ -72,7 +78,7 @@ describe("Issue #643 - filename shortened notice", () => {
 		});
 
 		expect(
-			shouldShowFilenameShortenedNotice(
+			isShortenedNotice(
 				settings,
 				"A normal task title",
 				"A normal task title"

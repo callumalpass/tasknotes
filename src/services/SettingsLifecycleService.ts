@@ -1,3 +1,5 @@
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import type { EventRef } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -21,7 +23,6 @@ interface CacheSettingsSnapshot {
 	taskPropertyValue: string;
 	taskTag: string;
 	excludedFolders: string;
-	disableNoteIndexing: boolean;
 	storeTitleInFilename: boolean;
 	fieldMapping: TaskNotesSettings["fieldMapping"];
 }
@@ -147,7 +148,7 @@ export class SettingsLifecycleService {
 	}
 
 	async onExternalSettingsChange(): Promise<void> {
-		await this.plugin.loadSettings();
+		await this.plugin.loadSettings(true);
 		await this.plugin.mdbaseSpecService?.reloadCanonicalSettingsFromDisk();
 		this.applyEffectiveSettings();
 	}
@@ -221,10 +222,7 @@ export class SettingsLifecycleService {
 		try {
 			await this.plugin.stopTimeTracking(updatedTask);
 			if (this.plugin.settings.autoStopTimeTrackingNotification) {
-				publishUserNotice(
-					this.plugin.emitter,
-					`Auto-stopped time tracking for: ${updatedTask.title}`
-				);
+				publishUserNotice(this.plugin.emitter, uiText(msg({ message: "Auto-stopped time tracking for: {title}", context: "services/SettingsLifecycleService: SettingsLifecycleService.handleAutoStopTimeTracking display" }), { title: updatedTask.title }));
 			}
 		} catch (error) {
 			tasknotesLogger.error("Error auto-stopping time tracking:", {
@@ -246,7 +244,6 @@ export class SettingsLifecycleService {
 			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
-			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
 			storeTitleInFilename: this.plugin.settings.storeTitleInFilename,
 			fieldMapping: this.plugin.settings.fieldMapping,
 		};
@@ -257,7 +254,6 @@ export class SettingsLifecycleService {
 			current.taskPropertyValue !== this.previousCacheSettings.taskPropertyValue ||
 			current.taskTag !== this.previousCacheSettings.taskTag ||
 			current.excludedFolders !== this.previousCacheSettings.excludedFolders ||
-			current.disableNoteIndexing !== this.previousCacheSettings.disableNoteIndexing ||
 			current.storeTitleInFilename !== this.previousCacheSettings.storeTitleInFilename ||
 			JSON.stringify(current.fieldMapping) !==
 				JSON.stringify(this.previousCacheSettings.fieldMapping)
@@ -282,7 +278,6 @@ export class SettingsLifecycleService {
 			taskPropertyValue: this.plugin.settings.taskPropertyValue,
 			taskTag: this.plugin.settings.taskTag,
 			excludedFolders: this.plugin.settings.excludedFolders,
-			disableNoteIndexing: this.plugin.settings.disableNoteIndexing,
 			storeTitleInFilename: this.plugin.settings.storeTitleInFilename,
 			fieldMapping: JSON.parse(JSON.stringify(this.plugin.settings.fieldMapping)),
 		};

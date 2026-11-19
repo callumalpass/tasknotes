@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
@@ -45,18 +46,7 @@ function createPlugin(): TaskNotesPlugin {
 			},
 		},
 		i18n: {
-			translate: jest.fn((key: string) => {
-				const translations: Record<string, string> = {
-					"contextMenus.task.subtasks.loading": "Loading subtasks...",
-					"contextMenus.task.subtasks.noSubtasks": "No subtasks found",
-					"contextMenus.task.subtasks.loadFailed": "Failed to load subtasks",
-					"ui.taskCard.loadingDependencies": "Loading dependencies...",
-					"ui.taskCard.blockingEmpty": "No blocked tasks",
-					"ui.taskCard.blockingLoadError": "Failed to load dependencies",
-					"ui.taskCard.blockedBadge": "Blocked",
-				};
-				return translations[key] ?? key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 		projectSubtasksService: {
 			getTasksLinkedToProject: jest.fn(),

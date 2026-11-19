@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 import { TFile } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -5,9 +7,11 @@ import { generateLink, parseLinkToPath } from "../utils/linkUtils";
 import { filterTaskIdentificationTags } from "../utils/taskTagFiltering";
 import { publishUserNotice } from "../core/userNotices";
 
+type UpdateProjects = (task: TaskInfo, projects: string[]) => Promise<TaskInfo | null>;
+
 function translate(
 	plugin: TaskNotesPlugin,
-	key: string,
+	key: MessageDescriptor,
 	params?: Record<string, string | number>
 ): string {
 	return plugin.i18n.translate(key, params);
@@ -30,11 +34,7 @@ function uniqueNonEmptyStrings(values: string[]): string[] {
 	return uniqueValues;
 }
 
-function buildStableFileLink(
-	plugin: TaskNotesPlugin,
-	file: TFile,
-	sourcePath: string
-): string {
+function buildStableFileLink(plugin: TaskNotesPlugin, file: TFile, sourcePath: string): string {
 	return generateLink(
 		plugin.app,
 		file,
@@ -86,7 +86,9 @@ function projectReferenceMatchesFile(
 export async function addTaskToProject(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
-	projectFile: TFile
+	projectFile: TFile,
+	updateProjects?: UpdateProjects,
+	notify = (message: string) => publishUserNotice(plugin.emitter, message)
 ): Promise<TaskInfo | null> {
 	const projectReference = generateLink(
 		plugin.app,
@@ -100,22 +102,31 @@ export async function addTaskToProject(
 	const currentProjects = Array.isArray(task.projects) ? task.projects : [];
 
 	if (currentProjects.includes(projectReference) || currentProjects.includes(legacyReference)) {
-		publishUserNotice(
-			plugin.emitter,
-			translate(plugin, "contextMenus.task.organization.notices.alreadyInProject")
+		notify(
+			translate(
+				plugin,
+				msg({
+					message: "Task is already in this project",
+					context: "contextMenus.task.organization.notices.alreadyInProject",
+				})
+			)
 		);
 		return null;
 	}
 
 	const sanitizedProjects = currentProjects.filter((entry) => entry !== legacyReference);
 	const updatedProjects = [...sanitizedProjects, projectReference];
+	if (updateProjects) return updateProjects(task, updatedProjects);
 	const updatedTask = await plugin.updateTaskProperty(task, "projects", updatedProjects);
-
-	publishUserNotice(
-		plugin.emitter,
-		translate(plugin, "contextMenus.task.organization.notices.addedToProject", {
-			project: projectFile.basename,
-		})
+	notify(
+		translate(
+			plugin,
+			msg({
+				message: "Added to project: {project}",
+				context: "contextMenus.task.organization.notices.addedToProject",
+			}),
+			{ project: projectFile.basename }
+		)
 	);
 	return updatedTask;
 }
@@ -157,7 +168,9 @@ export async function removeTaskFromProject(
 export async function assignTaskAsSubtask(
 	plugin: TaskNotesPlugin,
 	parentFile: TFile,
-	subtask: TaskInfo
+	subtask: TaskInfo,
+	updateProjects?: UpdateProjects,
+	notify = (message: string) => publishUserNotice(plugin.emitter, message)
 ): Promise<TaskInfo | null> {
 	const projectReference = generateLink(
 		plugin.app,
@@ -171,23 +184,31 @@ export async function assignTaskAsSubtask(
 	const subtaskProjects = Array.isArray(subtask.projects) ? subtask.projects : [];
 
 	if (subtaskProjects.includes(projectReference) || subtaskProjects.includes(legacyReference)) {
-		publishUserNotice(
-			plugin.emitter,
-			translate(plugin, "contextMenus.task.organization.notices.alreadySubtask")
+		notify(
+			translate(
+				plugin,
+				msg({
+					message: "Task is already a subtask of this task",
+					context: "contextMenus.task.organization.notices.alreadySubtask",
+				})
+			)
 		);
 		return null;
 	}
 
 	const sanitizedProjects = subtaskProjects.filter((entry) => entry !== legacyReference);
 	const updatedProjects = [...sanitizedProjects, projectReference];
+	if (updateProjects) return updateProjects(subtask, updatedProjects);
 	const updatedSubtask = await plugin.updateTaskProperty(subtask, "projects", updatedProjects);
-
-	publishUserNotice(
-		plugin.emitter,
-		translate(plugin, "contextMenus.task.organization.notices.addedAsSubtask", {
-			subtask: subtask.title,
-			parent: parentFile.basename,
-		})
+	notify(
+		translate(
+			plugin,
+			msg({
+				message: "Added {subtask} as subtask of {parent}",
+				context: "contextMenus.task.organization.notices.addedAsSubtask",
+			}),
+			{ subtask: subtask.title, parent: parentFile.basename }
+		)
 	);
 	return updatedSubtask;
 }
@@ -209,16 +230,15 @@ export function buildSubtaskCreationPrePopulatedValues(
 				)
 			: []
 		: [];
-	const inheritedTags =
-		shouldInheritParentProperties
-			? plugin.settings.taskIdentificationMethod === "tag"
-				? filterTaskIdentificationTags(
-						parentTags,
-						plugin.settings.taskTag,
-						plugin.settings.hideIdentifyingTagsMode
-					)
-				: [...parentTags]
-			: [];
+	const inheritedTags = shouldInheritParentProperties
+		? plugin.settings.taskIdentificationMethod === "tag"
+			? filterTaskIdentificationTags(
+					parentTags,
+					plugin.settings.taskTag,
+					plugin.settings.hideIdentifyingTagsMode
+				)
+			: [...parentTags]
+		: [];
 	const values: Partial<TaskInfo> = {
 		projects: uniqueNonEmptyStrings([...parentProjects, projectReference]),
 	};

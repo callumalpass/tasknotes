@@ -22,7 +22,7 @@ If commands open empty or unexpected views, first confirm Bases is enabled and t
 
 ### View File Location
 
-When you use the "Open Tasks View" command or ribbon icon, TaskNotes opens the `.base` file configured under `Settings -> TaskNotes -> General -> Views & base files` (initially `TaskNotes/Views/tasks-default.base`). TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled, and you can point the command to any other `.base` file if you maintain multiple task-list layouts.
+When you use the "Open Tasks View" command or ribbon icon, TaskNotes opens the `.base` file configured under `Settings -> TaskNotes -> Appearance & interaction -> Views & base files` (initially `TaskNotes/Views/tasks-default.base`). TaskNotes creates missing default `.base` files automatically on startup when **Auto-create default files** is enabled, and you can point the command to any other `.base` file if you maintain multiple task-list layouts.
 
 ## Configuration
 
@@ -59,14 +59,14 @@ views:
 For existing `.base` files, add `file.tasks` in YAML manually; once present in `order`, it appears in the Bases picker as `tasks`.
 
 **`sort`**: Array of sort criteria. Tasks are sorted by the first criterion, with ties broken by subsequent criteria.
-- `column`: Property to sort by (e.g., `due`, `scheduled`, `priority`, `title`)
+- `column`: Property to sort by (e.g., `due`, `scheduled`, `formula.priorityWeight`, `title`). Sorting by `priority` itself is alphabetical; see [Sort by priority](../guides/custom-bases.md#sort-by-priority).
 - `direction`: `ASC` (ascending) or `DESC` (descending)
 
 **`groupBy`**: Optional grouping configuration
 - `property`: Property to group by (e.g., `note.status`, `note.priority`)
 - `direction`: Sort direction for group headers
 
-**`hideTopLevelSubtasks`**: Optional boolean. When `true`, tasks whose Projects field links to another task in the current filtered result set are hidden as top-level rows and remain available through the parent task's expanded subtasks.
+**`hideTopLevelSubtasks`**: Optional boolean. When `true`, tasks whose Projects field links to another task in the current filtered result set are hidden as top-level rows and remain available through the parent task's expanded subtasks. Expanded subtasks in the filtered result set follow the current view's sort order, including formula sorts such as `formula.priorityWeight`. Changing that order refreshes already-expanded subtasks without needing to collapse and reopen the parent.
 
 **`filters`**: Optional filter conditions using Bases query syntax
 ```yaml
@@ -98,7 +98,7 @@ TaskNotes properties are accessed in Bases YAML using these paths:
 | Created | `file.ctime` | File creation date |
 | Modified | `file.mtime` | File modification date |
 
-The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Task Properties`). The table above shows default mappings.
+The exact property names depend on your TaskNotes field mapping settings (`Settings -> TaskNotes -> Properties`). The table above shows default mappings.
 
 ## Filtering and Sorting
 
@@ -142,7 +142,7 @@ sort:
 Multiple sort criteria:
 ```yaml
 sort:
-  - column: priority
+  - column: formula.priorityWeight
     direction: DESC
   - column: due
     direction: ASC
@@ -158,7 +158,8 @@ Drag a task into another group or subgroup to update its grouping properties. Th
 - Dropping on a primary group header changes only the primary property. It does not assign a subgroup value.
 - A highlighted destination previews the properties that will change. An insertion line means manual reordering instead.
 - Collapsed headers remain drop targets. While dragging, **Other destinations** offers configured empty status/priority groups and an empty value.
-- Use the **Move task** handle to open a destination menu without dragging. When the view is sorted by manual order, the menu also offers **Move up** and **Move down** within the current group. On touch screens, tap the handle for the menu, or drag from it so ordinary row gestures remain available for scrolling. A touch move only applies after the handle has actually moved; lifting your finger in place does nothing.
+- Moving a recurring task to a status marked **Completed** completes the occurrence shown on its row, as its checkbox does, instead of setting the task to that status. Other property changes in the move are not applied. If that occurrence has since been completed, skipped or rescheduled, the move changes nothing and a notice says so. See [Recurring Tasks](../features/recurring-tasks.md#completion-tracking).
+- Use the **Move task** handle to move a task without dragging. It opens a searchable list with **Add as subtask of…**, then every group the task can move to, with subgroups listed as *Group / Subgroup*. Type to filter it, for example by a group's name. When the view is sorted by manual order, the list also offers **Move up** and **Move down** within the current group. On touch screens, tap the handle for the menu, or drag from it so ordinary row gestures remain available for scrolling. A touch move only applies after the handle has actually moved; lifting your finger in place does nothing.
 - Press Escape, or release the task back on its own row, to cancel. Holding a dragged task near the view's top or bottom edge scrolls the list.
 - Grouping by a list property such as contexts, projects, or tags groups by the whole list. Moving a task to another such group replaces its list with that group's values, and the preview shows the values before and after, for example `contexts: work, call → home, focus`. If a group's values cannot be determined from its notes' properties (for example, a tag group that only comes from inline tags), the move is blocked rather than guessed.
 
@@ -290,28 +291,17 @@ The v3 FilterBar UI component no longer exists - all configuration is done throu
 
 The Task List View provides interaction with tasks through clicking and context menus:
 
-- **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> General` in click-action controls)
+- **Click on a task**: Opens the task for editing or navigates to the task note (behavior configured in `Settings -> TaskNotes -> Appearance & interaction -> Task interaction`)
+- **Ctrl/Cmd-click or middle-click on a task**: Opens the task note in a new tab, as with a link in Obsidian. Ctrl/Cmd+Alt-click opens it to the side, and Ctrl/Cmd+Alt+Shift-click in a new window. The context menu also has **Open note in new tab**.
 - **Right-click on a task**: Opens a context menu with actions:
   - Mark as complete
-  - Change priority
-  - Change status
-  - Edit dates
-  - Delete task
+  - Change status, priority, tags, dates, recurrence and reminders. Each opens the same searchable picker as the task's own controls.
+  - Delete task. The task note moves to the trash straight away, and the notice that follows offers **Undo**.
   - And more
 
 Context menu availability depends on your TaskNotes settings and task properties.
 
-## Keyboard Shortcuts
-
-Once a task card has keyboard focus (click a card, tab to it, or hover it), the Task List View supports keyboard shortcuts for the same actions available by mouse, plus navigation and multi-select:
-
-- Move focus between cards and jump to the first/last card
-- Toggle selection on the focused card, select all visible cards, or clear focus and selection
-- Edit due/scheduled dates, priority, status, and recurrence
-- Mark complete, toggle archive, add tags/context/project
-- Copy task titles, open the task note, open the context menu, or delete
-
-Shortcuts are configurable per action, including per-user-field bindings, in **Settings → TaskNotes → Keyboard shortcuts**. Kanban and Agenda share this same shortcut set on their own task cards, and Calendar's month/week/day/year views support the single-task subset of it against whichever task is currently hovered.
+For batch date changes in Task List or Kanban, Shift-click a task card to start a selection (Shift-click another card to select the range between them), then click or Ctrl/Cmd-click cards to add or remove them, and right-click a selected card. While no selection is active, Ctrl/Cmd-click opens the task note in a new tab instead; links and other card controls keep their own actions. **Status**, **Priority**, **Tags**, **Due date** and **Scheduled date** open the same pickers as a single task's. A date assigns that same value to each selected task, and the +/- day and week options move each task's own date. A date-only choice removes the time from that property; dismissing the picker changes nothing. Each change, and **Delete**, can be undone from the notice that follows.
 
 ## Virtual Scrolling
 

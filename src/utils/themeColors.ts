@@ -1,3 +1,4 @@
+import { uiData } from "../i18n/dataText";
 const OBSIDIAN_THEME_COLOR_NAMES = [
 	"red",
 	"orange",
@@ -14,7 +15,7 @@ const CSS_VARIABLE_PATTERN = /^var\(\s*(--[a-z0-9_-]+)\s*\)$/i;
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 const CSS_COLOR_FUNCTION_PATTERN = /^(?:rgb|rgba|hsl|hsla|oklch|lab|color|color-mix)\(/i;
 
-export const THEME_COLOR_INPUT_PLACEHOLDER = "#6366f1, red, blue, cyan";
+export const THEME_COLOR_INPUT_PLACEHOLDER = uiData("#6366f1, red, blue, cyan", "CSS color literal/name examples; translated words would not parse as CSS colors");
 export const THEME_COLOR_SUGGESTIONS = [
 	...OBSIDIAN_THEME_COLOR_NAMES,
 	"accent",

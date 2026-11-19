@@ -33,7 +33,7 @@ Access these options through the Bases view settings panel. In YAML, put them di
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Hide top-level subtasks**: When enabled, tasks whose Projects field links to another task in the current filtered board are hidden as standalone cards and remain available through the parent task's expanded subtasks
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
-- **Swim Lane Order**: Advanced JSON configuration for pinning swimlane rows in a stable order
+- **Swim Lane Order**: Managed automatically when dragging swimlane labels. Can also be edited as JSON to pin swimlane rows in a stable order
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
@@ -41,6 +41,8 @@ A common setup is to keep one board grouped by status and another grouped by pro
 ### Standard Layout
 
 In standard mode, the Kanban board displays a horizontal row of columns. Each column corresponds to a unique value of the `groupBy` property.
+
+When columns are grouped by Status (including a mapped status property), their backgrounds and borders use a subtle tint from the configured status colour. Swimlane column headers and cells use the same colour. Other grouping properties, unknown statuses and missing or unresolved colours keep the normal theme surface. Updating a status colour refreshes open boards.
 
 Each column includes:
 - A header showing the property value and task count
@@ -84,7 +86,7 @@ Use the **Card Layout** setting when a board needs a different density from othe
 To show checklist progress on cards, include `file.tasks` in the view `order` array.
 For existing `.base` files, add this in YAML manually first; after it is in `order`, it appears in the Bases picker as `tasks`.
 
-Click a card to open the task file for editing. Right-click to access the context menu for task actions. Drag cards between columns or swimlane cells to update the task's properties.
+Click a card to open the task file for editing. Ctrl/Cmd-click or middle-click a card to open its note in a new tab. Right-click to access the context menu for task actions. Drag cards between columns or swimlane cells to update the task's properties.
 
 ## Keyboard Shortcuts
 
@@ -94,13 +96,25 @@ Keyboard navigation reaches only cards currently rendered by a column's virtual 
 
 ## Column Operations
 
+### Collapsing Columns
+
+In a standard (non-swimlane) board, use the chevron button in a column header to collapse that column to a narrow strip. The strip keeps the column's status icon (when **Show status icon in column header only** is on) and shows its title vertically, reading from top to bottom; long titles are cut off with an ellipsis. Click it again, or focus the button and press Enter or Space, to expand it. You can still reorder collapsed columns or drop tasks onto them.
+
+Collapsed columns are saved per view and grouping property in the `collapsedColumns` configuration of the `.base` file, so they stay collapsed after Obsidian restarts. Swimlane columns are unchanged.
+
 ### Reordering Columns
 
 Drag column headers to reorder columns. The new order persists across sessions and is stored in the `columnOrder` configuration.
 
+In swimlane mode, drag a swimlane label to reorder rows. The new order persists across sessions and is stored in the `swimLaneOrder` configuration. Rows hidden by search or by **Hide Empty Swimlanes** keep their positions. As with a hand-written `swimLaneOrder`, saved rows stay visible as empty rows when **Hide Empty Swimlanes** is off. Row dragging needs a mouse; on touch devices, edit `swimLaneOrder` instead.
+
 ### Drag-and-Drop Tasks
 
+Use a mouse to drag immediately, including on touchscreen laptops. With touch, hold a card or column header for 350 ms before dragging. Moving before the hold completes keeps normal scrolling; no input-mode setting is needed when switching between mouse and touch.
+
 Drag task cards between columns to update the `groupBy` property value. In swimlane mode, dragging a task to a different cell updates both the `groupBy` and `swimLane` properties.
+
+Dropping a recurring task on a status marked **Completed** completes the occurrence shown on its card, as its checkbox does, instead of setting the task to that status. The task moves on to its next date, and the notification offers **Undo**. Nothing else in the drop is applied, including a change of swimlane. If that occurrence has since been completed, skipped or rescheduled, for example on another device, the drop changes nothing and a notice says so. To change the task's own status, use the context menu or edit modal.
 
 When grouping by a list property (contexts, tags, projects) with "Show items in multiple columns" enabled, dragging a task between columns modifies the list rather than replacing it. The source column's value is removed and the target column's value is added. For example, dragging a task from the "work" column to the "home" column changes `contexts: [work, call]` to `contexts: [call, home]`.
 Drag operations write directly to task metadata, so consistent grouping values reduce ambiguity.
@@ -168,3 +182,9 @@ This configuration creates a Kanban board with:
 ## Filtering and Sorting
 
 Filtering and sorting are configured through the Bases view settings, not through a separate FilterBar component. Use the Bases filter editor to define conditions based on task properties. Use the Bases sort editor to specify the order of tasks within each column.
+
+## Keyboard Navigation
+
+With the board focused, Left/Right or H/L moves task focus between populated, expanded columns. Up/Down or J/K moves through tasks. Press **?** for the shortcut reference. **Shift+H** opens the scheduled-date picker. See [Keyboard shortcuts](../views.md#keyboard-shortcuts) for the full list. Column collapse buttons also support Enter and Space.
+
+Empty, unpinned columns start as compact drop-target rails unless hidden by **Hide empty columns**. Expand a rail with its chevron to create a task there. Explicit column collapse choices remain saved in the view; automatically compacting an empty column does not change its configuration. Columns adapt to the available width, with horizontal scrolling and a next-column peek on narrow boards.

@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 import { describe, expect, it, jest } from "@jest/globals";
 import { createICSEventCard, updateICSEventCard } from "../../../src/ui/ICSCard";
 import type { ICSEvent } from "../../../src/types";
@@ -33,7 +35,7 @@ function createPlugin() {
 	return {
 		app: {},
 		i18n: {
-			translate: (key: string) => (key === "ui.icsCard.calendarFallback" ? "Calendar" : key),
+			translate: mockObserveTranslation(),
 		},
 		settings: {
 			calendarViewSettings: {

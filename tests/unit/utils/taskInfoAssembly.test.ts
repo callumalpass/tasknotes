@@ -66,7 +66,7 @@ describe("buildTaskInfoFromMappedTask", () => {
 
 		expect(task.title).toBe("Untitled task");
 		expect(task.status).toBe("todo");
-		expect(task.priority).toBe("normal");
+		expect(task.priority).toBe("");
 		expect(task.archived).toBe(false);
 		expect(task.tags).toEqual([]);
 		expect(task.contexts).toEqual([]);

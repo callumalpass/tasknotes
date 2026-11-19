@@ -46,6 +46,7 @@ const createService = () => {
 			notificationType: "in-app",
 		},
 		cacheManager,
+		fieldMapper: { toUserField: (field: string) => field },
 		emitter,
 		app: {
 			loadLocalStorage: () => null,

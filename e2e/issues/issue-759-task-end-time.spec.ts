@@ -304,19 +304,19 @@ test.describe('Issue #759: Add end time feature to tasks', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to week view to see time-based events
-        const weekButton = page.locator('.fc-timeGridWeek-button, button:has-text("Week")');
+        const weekButton = page.locator('.tnc-btn-view-week, button:has-text("Week")');
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
           await page.waitForTimeout(500);
         }
 
         // Navigate to January 2026
-        const nextButton = page.locator('.fc-next-button, button[aria-label*="next"]');
-        const monthTitle = page.locator('.fc-toolbar-title');
+        const nextButton = page.locator('.tnc-btn-next, button[aria-label*="next"]');
+        const monthTitle = page.locator('.tnc-title');
 
         let attempts = 0;
         while (attempts < 24) {
@@ -331,7 +331,7 @@ test.describe('Issue #759: Add end time feature to tasks', () => {
 
         // After implementation: Find an event with end_time
         // The event should visually span from start to end time
-        const timedEvent = page.locator('.fc-timegrid-event').first();
+        const timedEvent = page.locator('.tnc-item--timed').first();
 
         if (await timedEvent.isVisible({ timeout: 2000 }).catch(() => false)) {
           // Get the event's visual height/duration
@@ -367,19 +367,19 @@ test.describe('Issue #759: Add end time feature to tasks', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to month view to see multi-day events
-        const monthButton = page.locator('.fc-dayGridMonth-button, button:has-text("Month")');
+        const monthButton = page.locator('.tnc-btn-view-month, button:has-text("Month")');
         if (await monthButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await monthButton.click();
           await page.waitForTimeout(500);
         }
 
         // Navigate to January 2026
-        const nextButton = page.locator('.fc-next-button');
-        const monthTitle = page.locator('.fc-toolbar-title');
+        const nextButton = page.locator('.tnc-btn-next');
+        const monthTitle = page.locator('.tnc-title');
 
         let attempts = 0;
         while (attempts < 24) {
@@ -394,8 +394,8 @@ test.describe('Issue #759: Add end time feature to tasks', () => {
 
         // After implementation: Look for multi-day event spanning element
         const multiDayEvent = page.locator(
-          '.fc-daygrid-event.fc-event-end, ' + // Event that has an end
-            '.fc-h-event:not(.fc-daygrid-dot-event)' // Horizontal spanning event
+          '.tnc-dg .tnc-item:not(.is-cont-end), ' + // Event that has an end
+            '.tnc-item--bar:not(.tnc-item--dot)' // Horizontal spanning event
         );
 
         if (await multiDayEvent.first().isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -581,25 +581,25 @@ test.describe('Issue #759: Add end time feature to tasks', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarContainer = page.locator('.fc');
+        const calendarContainer = page.locator('.tnc');
         await expect(calendarContainer).toBeVisible({ timeout: 10000 });
 
         // Switch to week view for time-based event manipulation
-        const weekButton = page.locator('.fc-timeGridWeek-button');
+        const weekButton = page.locator('.tnc-btn-view-week');
         if (await weekButton.isVisible({ timeout: 2000 }).catch(() => false)) {
           await weekButton.click();
           await page.waitForTimeout(500);
         }
 
         // Find a timed event
-        const timedEvent = page.locator('.fc-timegrid-event').first();
+        const timedEvent = page.locator('.tnc-item--timed').first();
 
         if (await timedEvent.isVisible({ timeout: 2000 }).catch(() => false)) {
           const eventBox = await timedEvent.boundingBox();
           if (eventBox) {
             // Find the resize handle at the bottom of the event
             const resizeHandle = timedEvent.locator(
-              '.fc-event-resizer-end, ' + '.fc-event-resizer'
+              '.tnc-resize-end, ' + '.tnc-resize'
             );
 
             if (await resizeHandle.isVisible({ timeout: 1000 }).catch(() => false)) {

@@ -1,5 +1,5 @@
-import { buildCustomRecurrenceRule } from "../../../src/components/RecurrenceContextMenu";
-import type { CustomRecurrenceRuleInput } from "../../../src/components/RecurrenceContextMenu";
+import { buildCustomRecurrenceRule } from "../../../src/components/CustomRecurrenceModal";
+import type { CustomRecurrenceRuleInput } from "../../../src/components/CustomRecurrenceModal";
 
 function buildRule(overrides: Partial<CustomRecurrenceRuleInput>): string {
 	return buildCustomRecurrenceRule({

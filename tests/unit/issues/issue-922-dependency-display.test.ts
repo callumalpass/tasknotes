@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 /**
  * Issue #922: dependency display behavior on task cards.
  *
@@ -22,10 +23,12 @@ function createPlugin(
 ): TaskNotesPlugin {
 	const plugin = PluginFactory.createMockPlugin({
 		priorityManager: {
+        getAllPriorities: jest.fn(() => [{ value: "low", label: "Low", color: "#666666", weight: 1 }, { value: "high", label: "High", color: "#ff0000", weight: 2 }]),
 			getPriorityConfig: jest.fn().mockReturnValue({ color: "#666666", label: "Normal" }),
 			getPriorityWeight: jest.fn().mockReturnValue(0),
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			isCompletedStatus: jest.fn().mockReturnValue(false),
 			getCompletedStatuses: jest.fn(() => ["done"]),
 			getStatusConfig: jest.fn().mockReturnValue({ color: "#666666" }),
@@ -46,15 +49,7 @@ function createPlugin(
 	plugin.cacheManager.getTaskInfo = jest.fn(async (path: string) =>
 		path === blocker.path ? blocker : null
 	);
-	plugin.i18n.translate = jest.fn((key: string, vars?: Record<string, string | number>) => {
-		const translations: Record<string, string> = {
-			"ui.taskCard.blockedBadge": "Blocked",
-			"ui.taskCard.blockedBadgeTooltip": "This task is blocked",
-			"ui.taskCard.taskOptions": "Task options",
-			"ui.taskCard.priorityAriaLabel": `Priority: ${vars?.label ?? ""}`,
-		};
-		return translations[key] ?? key;
-	});
+	plugin.i18n.translate = mockObserveTranslation();
 
 	return plugin;
 }

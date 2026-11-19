@@ -1,0 +1,577 @@
+/* Task card layout shared by Kanban cards, Task List rows and calendar list rows.
+   Kanban adds card chrome in kanban-view.css; the list draws rows without it. */
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+    --tn-kanban-card-menu: var(--tn-icon-sm);
+    align-items: flex-start;
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+    --tn-kanban-card-menu: var(--tn-mobile-task-card-menu-size);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--tn-space-1);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__context-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__badges {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1 / 3;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    pointer-events: none;
+    flex: none;
+    flex-wrap: wrap;
+    row-gap: var(--tn-space-1);
+    padding-right: calc(var(--tn-kanban-card-menu) + var(--tn-space-1));
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title > * {
+    pointer-events: auto;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title-text,
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex-basis: 100%;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding-right: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    overflow: hidden;
+    text-overflow: clip;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata {
+    grid-column: 1;
+    grid-row: 2;
+    flex: none;
+    max-width: 100%;
+    padding: 0;
+    mask-image: none;
+    -webkit-mask-image: none;
+    justify-content: flex-start;
+    gap: var(--tn-space-1) var(--tn-space-2);
+    flex-wrap: wrap;
+    white-space: nowrap;
+    overflow: visible;
+    max-height: none;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) :is(.tag, .context-tag, .task-card__project-link) {
+    border: none;
+    border-radius: var(--tn-radius-none);
+    background: transparent;
+    box-shadow: none;
+    padding-inline: 0;
+    color: var(--tn-text-metadata);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata > * {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata > .task-card__metadata-overflow {
+    flex: none;
+    min-width: max-content;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__date-slot {
+    order: 0;
+    flex: none;
+    overflow: visible;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-values {
+    order: 3;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-property--due,
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-property--scheduled {
+    flex-shrink: 0;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata-property--tags {
+    flex-wrap: nowrap;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata:empty {
+    display: none;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card--layout-compact {
+    padding: var(--tn-space-1) var(--tn-space-2);
+    border-radius: var(--tn-radius-md);
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card--layout-compact .task-card__title {
+    font-size: var(--tn-type-xs);
+    line-height: 1.3;
+}
+
+:is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card--layout-compact .task-card__metadata {
+    gap: 2px var(--tn-space-1);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu) {
+    min-width: var(--tn-task-control);
+    min-height: var(--tn-task-control);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) :is(.task-card__metadata-date, .task-card__metadata-overflow:not([hidden])) {
+    min-width: var(--tn-task-line-control);
+    min-height: var(--tn-task-line-control);
+}
+
+body.is-mobile .tasknotes-plugin :is(.kanban-view__column-collapse-button, .kanban-view__column-header .kanban-view__add-task-button, .kanban-view__column-header-cell .kanban-view__add-task-button) {
+    min-width: var(--tn-touch-target);
+    min-height: var(--tn-touch-target);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__title-text {
+    padding-right: 0;
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) > .task-card {
+    padding: var(--tn-space-1) var(--tn-space-2);
+}
+
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__context-menu {
+    width: var(--tn-task-control);
+    height: var(--tn-task-control);
+    opacity: 1;
+}
+
+.tn-tasknotesKanban {
+    container-type: inline-size;
+}
+
+/* Touch-sized controls by default. Kept at low specificity so the fine-pointer size below wins. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+    --tn-board-control-size: var(--tn-task-control);
+}
+
+/* Stacked layout: status, title, badges, priority and menu on the first line; metadata below the title.
+   Priority keeps one column beside the menu on every row, so priorities line up down the list.
+   --tn-task-lead is the first column; it collapses when a card shows neither status nor priority. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__main-row {
+    grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, 1fr) auto auto var(--tn-board-control-size);
+    grid-template-rows: auto minmax(var(--tn-task-line-control), auto);
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > .task-card__main-row {
+    grid-template-rows: minmax(var(--tn-board-control-size), auto);
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) :is(.task-card__status-dot, .task-card__priority-dot) {
+    align-self: center;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__content {
+    grid-row: 1 / span 2;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__metadata {
+    grid-column: 2 / 3;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--has-interactive-badges) > :where(.task-card__main-row) .task-card__metadata {
+    grid-column: 2 / -1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__priority-dot {
+    grid-column: 4;
+    grid-row: 1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__status-dot {
+    grid-row: 1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__badges:not(:empty) {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    max-width: 100%;
+    overflow: visible;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__badges.task-card__badges--interactive {
+    grid-column: 3 / -1;
+    grid-row: 2;
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+/* Without metadata the badges join the first line, before the priority. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty > :where(.task-card__main-row) .task-card__badges.task-card__badges--interactive {
+    grid-column: 3;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__context-menu {
+    grid-column: 5;
+    grid-row: 1;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__title {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    grid-column: 1 / -1;
+    grid-row: 1 / span 2;
+    padding: 0;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__title-text {
+    grid-column: 2;
+    padding: 0;
+}
+
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__metadata > .task-card__date-slot {
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+}
+
+/* Metadata separators. Any property can sit on the metadata line, so a faint dot marks where one
+   value ends and the next begins: after a date, between properties, and between the items of a list
+   such as tags or projects. Hidden items are skipped. Every separated pair is the same distance
+   apart whatever gap its container uses: the item's start margin makes up the difference, and the
+   dot is centred in that space. The dot is never part of a link or hover background, and the
+   item's measured width (which decides what fits on the line) includes the space.
+   --tn-meta-line-gap is the metadata line's own gap, set where that gap is set.
+   Cards that wrap their metadata ("Show all properties on task cards") have no dots: one would
+   land at the start of a wrapped line, so the items are spaced by a wider gap instead. */
+.tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata {
+    --tn-meta-gap: var(--tn-space-2);
+    --tn-meta-separator-width: 14px;
+}
+
+.tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__metadata-values, .task-card__metadata-chips) {
+    gap: var(--tn-meta-gap);
+}
+
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__date-slot--scheduled:not([hidden]) ~ .task-card__date-slot--due:not([hidden]) {
+    position: relative;
+    margin-inline-start: calc(var(--tn-meta-separator-width) - var(--tn-meta-line-gap, var(--tn-space-1)));
+}
+
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata-values > :not([hidden]) ~ :not([hidden]),
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata-chips > :not([hidden]) ~ :not([hidden]) {
+    position: relative;
+    margin-inline-start: calc(var(--tn-meta-separator-width) - var(--tn-meta-gap));
+}
+
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__date-slot--scheduled:not([hidden]) ~ .task-card__date-slot--due:not([hidden])::before,
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata-values > :not([hidden]) ~ :not([hidden])::before,
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata-chips > :not([hidden]) ~ :not([hidden])::before {
+    content: "·";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 100%;
+    width: var(--tn-meta-separator-width);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tn-text-faint);
+    font-weight: var(--tn-font-weight-normal);
+    text-decoration: none;
+    pointer-events: none;
+}
+
+/* After a date the dot opens the properties group. The group clips its overflow, so this dot is a
+   zero-width flex item inside it, half the separator width from the date and from the first property,
+   with the glyph centred on it. */
+.tasknotes-plugin .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata--dated > .task-card__metadata-values::before {
+    content: "·";
+    display: flex;
+    justify-content: center;
+    flex: none;
+    width: 0;
+    margin-inline: calc(var(--tn-meta-separator-width) / 2 - var(--tn-meta-line-gap, var(--tn-space-1))) calc(var(--tn-meta-separator-width) / 2 - var(--tn-meta-gap));
+    color: var(--tn-text-faint);
+    pointer-events: none;
+}
+
+/* Too narrow for status, title, priority and menu on one line: priority moves under the status,
+   the title and metadata take the full width, and interactive badges get a line of their own. */
+@container tn-task-card (max-width: 240px) {
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__priority-dot {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__title-text {
+        grid-column: 2 / 5;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__metadata {
+        grid-column: 2 / -1;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) > .task-card__main-row {
+        grid-template-rows: auto minmax(var(--tn-board-control-size), auto) auto;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) > :where(.task-card__main-row) :is(.task-card__content, .task-card__title) {
+        grid-row: 1 / span 3;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--has-interactive-badges:not(.task-card--layout-inline, .task-card--metadata-empty) > :where(.task-card__main-row) .task-card__badges.task-card__badges--interactive {
+        grid-column: 2 / -1;
+        grid-row: 3;
+        justify-self: start;
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > .task-card__main-row {
+        grid-template-rows: auto minmax(var(--tn-board-control-size), auto);
+    }
+
+    body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) .task-card__priority-dot {
+        grid-row: 2;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+        --tn-board-control-size: var(--tn-control-sm);
+    }
+
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card, .tasknotes-plugin.task-card-note-widget) .task-card :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-date, .task-card__metadata-overflow:not([hidden]), .task-card__badges [role="button"]) {
+        min-width: var(--tn-control-sm);
+        min-height: var(--tn-control-sm);
+        width: auto;
+        height: auto;
+    }
+
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__context-menu {
+        opacity: 0;
+    }
+
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--nested-interactive-hover):is(:hover, :focus-within) > .task-card__main-row .task-card__context-menu {
+        opacity: 1;
+    }
+}
+
+/* With a mouse, every badge sits on the title line before the priority, as display-only badges
+   already do, so the metadata line keeps its full width for properties. Touch keeps interactive
+   badges on the metadata line, where their larger targets do not squeeze the title. */
+@media (hover: hover) and (pointer: fine) {
+    @container tn-task-card (width > 240px) {
+        body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__badges.task-card__badges--interactive {
+            grid-column: 3;
+            grid-row: 1;
+        }
+
+        body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) .task-card__metadata {
+            grid-column: 2 / -1;
+        }
+    }
+}
+
+/* Task List rows with a mouse. Rows have no card chrome, so they size to their text:
+   24px controls keep their hit areas but overhang the text line instead of setting its height. */
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) {
+        --tn-task-title-line: calc(var(--tn-type-md) * 1.4);
+        --tn-task-meta-line: calc(var(--tn-type-xs) * 1.5);
+        min-height: 0;
+        padding-block: var(--tn-space-1);
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row {
+        grid-template-rows: auto auto;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > .task-card__main-row {
+        grid-template-rows: auto;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__priority-dot, .task-card__badges, .task-card__context-menu) {
+        margin-block: min(0px, calc((var(--tn-task-title-line) - var(--tn-control-sm)) / 2));
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) :is(.task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges) {
+        margin-block: min(0px, calc((var(--tn-task-meta-line) - var(--tn-control-sm)) / 2));
+    }
+
+    body:not(.is-mobile) .tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row::before {
+        inset-block: calc(-1 * var(--tn-space-1));
+    }
+}
+
+/* Wide Task List: one line per task. Badges follow the title; metadata, priority and the menu
+   sit in right-hand columns so dates and priorities line up from row to row. */
+@media (hover: hover) and (pointer: fine) {
+    @container tn-task-list (min-width: 640px) {
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row {
+            grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, max-content) auto minmax(0, 1fr) fit-content(50%) var(--tn-control-sm) var(--tn-board-control-size);
+            grid-template-rows: auto;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row :is(.task-card__content, .task-card__title) {
+            grid-row: 1;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__context-menu) {
+            margin-block: 0;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) :is(.task-card__priority-dot, .task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges) {
+            margin-block: 0;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__title-text {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata {
+            grid-column: 5;
+            grid-row: 1;
+            flex-wrap: nowrap;
+            justify-content: flex-end;
+            --tn-meta-line-gap: var(--tn-space-2);
+            gap: var(--tn-meta-line-gap);
+            /* The end padding leaves room for the last date's hover background. */
+            padding-inline: var(--tn-space-4) var(--tn-space-1);
+            overflow: hidden;
+        }
+
+        /* Dates go last, in fixed-width slots, so they line up from row to row. */
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata > .task-card__date-slot {
+            order: 5;
+            min-width: var(--tn-task-date-width-wide);
+            max-width: none;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata > .task-card__date-slot--due {
+            order: 6;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata > .task-card__metadata-values {
+            flex: 0 1 auto;
+        }
+
+        /* Dates sit in their own columns after the properties, so only the properties are separated. */
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) :is(.task-card__metadata-values > :not([hidden]), .task-card__date-slot:not([hidden])) {
+            margin-inline-start: 0;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) :is(.task-card__metadata-values, .task-card__metadata-values > :not([hidden]), .task-card__date-slot:not([hidden]))::before {
+            content: none;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata-values > :not([hidden]) ~ :not([hidden]) {
+            margin-inline-start: calc(var(--tn-meta-separator-width) - var(--tn-meta-gap));
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline, .task-card--metadata-wrap) .task-card__metadata-values > :not([hidden]) ~ :not([hidden])::before {
+            content: "·";
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row > .task-card__priority-dot {
+            grid-column: 6;
+            grid-row: 1;
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__badges:not(:empty) {
+            grid-column: 3;
+            grid-row: 1;
+            justify-self: start;
+            margin-inline-start: var(--tn-space-2);
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row > .task-card__context-menu {
+            grid-column: 7;
+            grid-row: 1;
+        }
+    }
+}
+
+/* A view that shows neither status nor priority (a Kanban board grouped by status, for one)
+   drops the empty first column, so titles start at the edge. */
+body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--no-lead:not(.task-card--layout-inline) > .task-card__main-row {
+    --tn-task-lead: 0px;
+}
+
+/* Icon controls with a mouse: one shape everywhere. Each is a 24px square with Obsidian's small
+   radius, gets the same hover background, and its icon turns to the normal text colour.
+   Display-only badges (details, attachments) take the same 24px slot so icons stay evenly spaced. */
+@media (hover: hover) and (pointer: fine) {
+    /* The main row has no column gap, so the first column carries the space between status and title. */
+    body:not(.is-mobile) :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
+        --tn-task-lead: calc(var(--tn-control-sm) + var(--tn-space-1));
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__priority-dot) {
+        justify-self: start;
+    }
+
+    /* Kanban cards size to their content, so a card with only a title is one line tall. */
+    body:not(.is-mobile) .tasknotes-plugin .kanban-view__card-wrapper .task-card:not(.task-card--layout-inline) {
+        min-height: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) :is(.task-card__status-dot, .task-card__priority-dot, .task-card__context-menu, .task-card__metadata-overflow:not([hidden]), .task-card__badges > *) {
+        min-width: var(--tn-control-sm);
+        min-height: var(--tn-control-sm);
+        border-radius: var(--tn-radius-sm);
+    }
+
+    /* The reorder handle keeps its own 20 by 28 size in the left gutter, clear of the status. */
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__drag-handle {
+        min-width: 0;
+        min-height: 0;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__badges > [role="button"]:not(.task-card__blocking-toggle--expanded, .task-card__blocked-toggle--expanded):hover {
+        color: var(--tn-text-normal);
+    }
+
+    /* Dates: the hover background reaches past the text on both sides. Two offset shadows draw the
+       extension, so the date's measured width, which decides what fits on the line, does not change. */
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata-date:not(.task-card__metadata-date--readonly):hover {
+        box-shadow: calc(-1 * var(--tn-space-1)) 0 0 var(--tn-hover), var(--tn-space-1) 0 0 var(--tn-hover);
+    }
+
+    /* Tags, contexts and projects read as text links: no background, just colour and an underline. */
+    body:not(.is-mobile) .tasknotes-plugin .task-card .task-card__metadata :is(.tag, .context-tag, .task-card__project-link):hover {
+        background: transparent;
+        color: var(--tn-text-normal);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}

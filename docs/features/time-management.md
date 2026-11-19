@@ -45,4 +45,48 @@ When a task is associated with a Pomodoro session, TaskNotes starts a task track
 
 ## Recorded data
 
-Version 5 removes the Statistics and Pomodoro statistics dashboards and no longer generates a Pomodoro statistics Base. Time tracking, the timer, session storage settings, recorded history, and the API remain available. Existing statistics Base files are kept as ordinary user-editable Bases. No task notes or history are deleted. Close any old statistics dashboard tabs after upgrading.
+Version 5 removes the Statistics and Pomodoro statistics dashboards. Time tracking, the timer, session storage settings, recorded history, and the API remain available. No task notes or history are deleted. TaskNotes closes any statistics tabs left in your workspace.
+
+New installs store each Pomodoro session in the `pomodoros` property of that day's daily note, creating the note if needed. If the Daily notes core plugin (or Periodic Notes) is off, or the daily note can't be created, the session is saved in the plugin's data file (`data.json`) instead, and still appears in your history. Vaults set up before this change keep using `data.json`. To change where sessions go, set **Pomodoro data storage** under `Settings → TaskNotes → Time & reminders`. Switching to **Daily notes** moves existing sessions from `data.json` into your daily notes.
+
+To remove a session recorded by mistake, for example one left running overnight, open **Recent sessions** under the timer in the [Pomodoro View](../views/pomodoro-view.md) and select the delete button on its row. Deleting a session does not change the task's time entries.
+
+### Pomodoro statistics Base
+
+Run **TaskNotes: Open Pomodoro statistics** to open `TaskNotes/Views/pomodoro-stats.base`. TaskNotes creates this file if it is missing. Its **Daily** view lists one row per daily note with completed, attempted and interrupted Pomodoros, focus time, completion rate and breaks. Its **Monthly** view groups the same rows by month and totals them.
+
+The Base reads the `pomodoros` property of your daily notes, so it only counts sessions stored in daily notes. Sessions kept in `data.json` are not included. The file is an ordinary Base that you can edit; see the [generated template reference](../reference/default-base-templates.md#pomodoro-statsbase) for its contents. To use a different file, change the path for **Pomodoro statistics base** under `Settings → TaskNotes → Appearance & interaction → Views & base files`.
+
+### Time by project with Bases
+
+A Bases table can total tracked time by project. Save the following as a `.base` file, for example `Time by project.base`:
+
+```yaml
+filters:
+  and:
+    - file.hasTag("task")
+formulas:
+  trackedMinutes: 'if(timeEntries, list(timeEntries).filter(value.endTime).map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
+  trackedLast7Days: 'if(timeEntries, list(timeEntries).filter(value.endTime && date(value.startTime) >= today() - "7d").map((number(date(value.endTime)) - number(date(value.startTime))) / 60000).reduce(acc + value, 0).round(), 0)'
+views:
+  - type: table
+    name: Time by project
+    filters:
+      and:
+        - formula.trackedMinutes > 0
+    groupBy:
+      property: projects
+      direction: ASC
+    order:
+      - file.name
+      - status
+      - timeEstimate
+      - formula.trackedMinutes
+      - formula.trackedLast7Days
+    summaries:
+      timeEstimate: Sum
+      formula.trackedMinutes: Sum
+      formula.trackedLast7Days: Sum
+```
+
+Each project gets a group with the total estimate, total tracked minutes and minutes tracked in the last seven days. A task in several projects forms its own group. The example uses the default property names and the `task` tag; if you have changed them under `Settings → TaskNotes → Properties`, use your names instead. To count a different period, change `"7d"` to, for example, `"30d"`.

@@ -1,24 +1,27 @@
-# General Settings
+# Task files and folders
 
-These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior.
-
+These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior. Most are on the **Task files** settings page; each section below names where to find it.
 
 ## Task Storage
+
+Location: **Settings → TaskNotes → Task files → Task storage**
 
 Task storage settings define where new and inline-created task files are created and how archived tasks are relocated. **Default tasks folder** sets the base location and supports folder template variables, including `{{currentNotePath}}` and `{{currentNoteTitle}}` for creating command-palette or ribbon tasks beside the active note. It also supports date variables such as `{{year}}` and Daily Notes-style date tokens such as `YYYY/MM/DD`. **Folder for inline-created tasks** controls the Create Inline Task command and instant conversion output. Leave it empty to use the default tasks folder, set a fixed folder path to centralize inline tasks, or use `{{currentNotePath}}` and `{{currentNoteTitle}}` placeholders for contextual routing. Relative path segments such as `../` are normalized after variables are expanded. If archive moves are enabled, completed archived tasks are moved automatically to your configured archive folder.
 
 ## Task Identification
+
+Location: **Settings → TaskNotes → Task files → Task identification**
 
 TaskNotes can identify task notes using either a tag or a frontmatter property.
 
 Use **Identify tasks by** to select a strategy.
 
 - **Tag mode** uses a configured task tag (for example `task`) and can optionally hide that identifying tag in card displays.
-- **Property mode** matches a property/value pair (for example `isTask: true` or `category: task`) and is useful when you avoid tag-based identification.
+- **Property mode** matches a property/value pair (for example `isTask: true` or `category: task`), or only the presence of a property (for example any note with a `status` property). It is useful when you avoid tag-based identification.
 
-In property mode, enter both **Task property name** and **Task property value** explicitly. The input prompts are not saved defaults. An inline warning appears while either field is empty or whitespace-only; TaskNotes does not recognize tasks until both are configured.
+In property mode, enter **Task property name** explicitly. The input prompts are not saved defaults. An inline warning appears while the name is empty or whitespace-only; TaskNotes does not recognize tasks until a name is configured. Leave **Task property value** empty to treat every note that has the property as a task, whatever its value, including an empty value. New and converted tasks get the property (with an empty value) if they don't already have it.
 
-If you change task identification after creating default Base views, existing `.base` filters keep their old settings until you update the default Base files or edit those filters. For `category: task`, filter on that value, not merely whether `category` exists. Updating default files overwrites their manual edits, so back them up first.
+If you change task identification after creating default Base views, existing `.base` filters keep their old settings until you update the default Base files or edit those filters. For `category: task`, filter on that value, not merely whether `category` exists. With an empty value, the default Base files filter with `file.hasProperty("category")`. Updating default files overwrites their manual edits, so back them up first.
 
 ### Hide Identification Tags
 
@@ -40,11 +43,17 @@ If your task identification tag is `task` and a task has the tags `#task`, `#tas
 - With the setting **disabled** (default): All tags are shown: `#task`, `#task/project`, `#important`, `#review`
 - With the setting **enabled**: Only non-identifying tags are shown: `#important`, `#review`
 
+The task edit modal follows the same visibility setting. Visible child tags such as `task/project` can be changed or removed; hidden identification tags are preserved when you save. In **Exact only** mode, only the exact task tag is hidden, so child tags remain editable. The exact configured task tag remains protected in tag-based identification mode, even when visible, so editing tags does not accidentally remove the task identifier. In property-based identification mode, all tags are editable.
+
 ## Folder Management
+
+Location: **Settings → TaskNotes → Task files → Folder management**
 
 Use **Excluded folders** to omit paths from Notes tab indexing and keep large archive areas out of regular task browsing.
 
 ## Views & Base Files
+
+Location: **Settings → TaskNotes → Appearance & interaction → Views & base files**
 
 TaskNotes uses Obsidian Bases files (`.base`) to power its task views. By default, missing view files are created automatically on startup.
 
@@ -52,14 +61,18 @@ Use **Create files** to generate missing default files in `TaskNotes/Views/` wit
 
 ## Frontmatter
 
-This section only appears when you have markdown links enabled globally in Obsidian settings.
+Location: **Settings → TaskNotes → Task files → Frontmatter**
 
-**Use markdown links in frontmatter** switches project/dependency serialization from wikilinks (`[[path]]`) to markdown links (`[text](path)`). This requires the `obsidian-frontmatter-markdown-links` plugin.
+**Use Markdown links in frontmatter** switches project/dependency serialization from wikilinks (`[[path]]`) to markdown links (`[text](path)`). TaskNotes writes Markdown links even when Obsidian's **Use [[Wikilinks]]** setting is on. Obsidian needs the `obsidian-frontmatter-markdown-links` plugin to resolve them.
 
 ## Task Interaction
+
+Location: **Settings → TaskNotes → Appearance & interaction → Task interaction**
 
 Task interaction settings define default click behavior on task cards. You can independently choose single-click and double-click actions (edit task, open note, or no action for double click).
 
 ## Release Notes
 
-**View release notes** opens the release notes view for the current version. Notes also open automatically after updates and remain available from the command palette.
+Location: **Settings → TaskNotes**
+
+**Release notes**, on the main TaskNotes settings page, opens the release notes for the current version. Notes also open automatically after updates and remain available from the command palette.

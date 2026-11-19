@@ -240,7 +240,7 @@ async function openTaskListByPath(page: Page, relativePath: string): Promise<voi
 
 async function openCalendarByPath(page: Page, relativePath: string): Promise<void> {
 	await openFileByPath(page, relativePath);
-	const calendar = page.locator(".workspace-leaf.mod-active .fc, .workspace-leaf.mod-active .tasknotes-calendar-view").first();
+	const calendar = page.locator(".workspace-leaf.mod-active .tnc, .workspace-leaf.mod-active .tasknotes-calendar-view").first();
 	await calendar.waitFor({ state: "visible", timeout: 10000 });
 }
 
@@ -345,7 +345,7 @@ tags:
 		await ensureCleanState(page);
 		const recorder = new GifRecorder("release-1704-today-column-width");
 		const getCalendarClip = async () => {
-			const calendar = page.locator(".workspace-leaf.mod-active .fc").first();
+			const calendar = page.locator(".workspace-leaf.mod-active .tnc").first();
 			const box = await calendar.boundingBox();
 			if (!box) return undefined;
 			return {
@@ -357,9 +357,9 @@ tags:
 		};
 
 		await openCalendarByPath(page, normalBasePath);
-		const weekButton = page.locator('.workspace-leaf.mod-active button.fc-timeGridWeek-button').first();
+		const weekButton = page.locator('.workspace-leaf.mod-active .tnc-toolbar-view-select').first();
 		if (await weekButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-			await weekButton.click();
+			await weekButton.selectOption('week');
 			await page.waitForTimeout(700);
 		}
 		await recorder.capture(page, 4, { clip: await getCalendarClip() });
@@ -615,9 +615,9 @@ tags:
 		const recorder = new GifRecorder("release-1513-calendar-visible-date-preserved");
 
 		await openCalendarByPath(page, basePath);
-		const nextButton = page.locator(".workspace-leaf.mod-active .fc-next-button").first();
-		const heading = page.locator('.workspace-leaf.mod-active .fc-toolbar-title').first();
-		const targetDay = page.locator(`.workspace-leaf.mod-active .fc-timegrid-col[data-date="${formatDate(future)}"]`);
+		const nextButton = page.locator(".workspace-leaf.mod-active .tnc-btn-next").first();
+		const heading = page.locator('.workspace-leaf.mod-active .tnc-title').first();
+		const targetDay = page.locator(`.workspace-leaf.mod-active .tnc-col[data-date="${formatDate(future)}"]`);
 		// Next advances one week; the fixture can be several weeks into next month.
 		for (let i = 0; i < 7 && await targetDay.count() === 0; i++) {
 			const previousDate = await heading.innerText();
@@ -627,19 +627,19 @@ tags:
 		await expect(targetDay.first()).toBeVisible();
 		await recorder.capture(page, 3);
 		const visibleDate = await heading.innerText();
-		const event = page.locator('.workspace-leaf.mod-active .fc-event[data-event-type="scheduled"]:has-text("Future calendar edit"):visible').first();
+		const event = page.locator('.workspace-leaf.mod-active .tnc-item[data-event-type="scheduled"]:has-text("Future calendar edit"):visible').first();
 		await expect(event).toBeVisible({ timeout: 10000 });
 		await event.click();
 		await page.waitForTimeout(800);
-		const titleInput = page.locator('.modal textarea.title-input-detailed');
-		await expect(titleInput).toHaveValue('Future calendar edit');
+		const titleInput = page.locator('.modal .title-input');
+		await expect(titleInput).toHaveText('Future calendar edit');
 		await titleInput.fill("Future calendar edit updated");
 		await page.waitForTimeout(400);
 		const saveButton = page.locator('.modal').getByRole('button', { name: /^Save(?: task)?$/i });
 		await saveButton.click();
 		await page.waitForTimeout(1500);
 		await expect(heading).toHaveText(visibleDate);
-		await expect(page.locator('.workspace-leaf.mod-active .fc-event[data-event-type="scheduled"]:has-text("Future calendar edit updated"):visible').first()).toBeVisible();
+		await expect(page.locator('.workspace-leaf.mod-active .tnc-item[data-event-type="scheduled"]:has-text("Future calendar edit updated"):visible').first()).toBeVisible();
 		await recorder.capture(page, 5);
 
 		recorder.finalize();

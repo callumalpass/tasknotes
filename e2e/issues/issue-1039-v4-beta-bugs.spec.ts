@@ -388,15 +388,15 @@ test.describe('Issue #1039: v4.0.0-beta.0 Bugs/Differences with 3.25.5', () => {
         await runCommand(page, 'TaskNotes: Open calendar view');
         await page.waitForTimeout(1000);
 
-        const calendarView = page.locator('.calendar-view, .bases-calendar-view, .fc');
+        const calendarView = page.locator('.calendar-view, .bases-calendar-view, .tnc');
         await expect(calendarView).toBeVisible({ timeout: 10000 });
 
         // Find the refresh button in the calendar toolbar
         const refreshButton = page.locator(
-          '.fc-refreshCalendars-button, ' +
+          '.tnc-btn-refreshCalendars, ' +
             'button:has-text("Refresh"), ' +
-            '.fc-toolbar button[title*="Refresh"], ' +
-            '.fc-toolbar button[title*="refresh"]'
+            '.tnc-toolbar button[title*="Refresh"], ' +
+            '.tnc-toolbar button[title*="refresh"]'
         );
 
         const refreshVisible = await refreshButton.isVisible({ timeout: 3000 }).catch(() => false);

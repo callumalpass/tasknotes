@@ -1,7 +1,11 @@
+import { createI18nService } from "../../../src/i18n";
 import { App } from "obsidian";
 import { TaskActionPaletteModal } from "../../../src/modals/TaskActionPaletteModal";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
+import { changeTaskProperty } from "../../../src/ui/taskPropertyPickers";
+
+jest.mock("../../../src/ui/taskPropertyPickers", () => ({ changeTaskProperty: jest.fn() }));
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 	return {
@@ -17,6 +21,7 @@ function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
 function createPlugin(): TaskNotesPlugin {
 	return {
 		app: new App(),
+		i18n: createI18nService(),
 		statusManager: {
 			getAllStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
 			getNonCompletionStatuses: jest.fn(() => [{ value: "open", label: "Open" }]),
@@ -117,7 +122,7 @@ describe("Issue #887: quick-action date presets", () => {
 
 		await action?.execute(task, plugin, new Date("2026-05-18T12:00:00+10:00"));
 
-		expect(plugin.updateTaskProperty).toHaveBeenCalledWith(task, "scheduled", "2026-05-19");
+		expect(changeTaskProperty).toHaveBeenCalledWith(plugin, [task], "scheduled", "2026-05-19");
 		expect(plugin.openScheduledDateModal).not.toHaveBeenCalled();
 	});
 

@@ -28,7 +28,7 @@
  * - src/main.ts (view registration)
  * - src/services/PomodoroService.ts (may need minor adjustments)
  * - styles/ (new countdown-timer-view.css)
- * - src/i18n/resources/ (translation keys)
+ * - src/i18n/locales/en/messages.po (Lingui message descriptors)
  *
  * @see https://github.com/callumalpass/tasknotes/issues/1160
  */

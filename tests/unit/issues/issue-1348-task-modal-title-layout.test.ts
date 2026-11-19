@@ -11,8 +11,11 @@ import { TaskModal } from "../../../src/modals/TaskModal";
 import { MockObsidian } from "../../helpers/obsidian-runtime";
 
 class TaskModalHarness extends TaskModal {
+	protected readonly mode = "create" as const;
 	async initializeFormData(): Promise<void> {}
-	async handleSave(): Promise<void> {}
+	async handleSave() {
+		return { status: "saved" as const };
+	}
 	getModalTitle(): string {
 		return "Harness";
 	}
@@ -23,7 +26,7 @@ class TaskModalHarness extends TaskModal {
 	}
 
 	getTitleValue(): string {
-		return (this as { title: string }).title;
+		return this.form.values.title;
 	}
 }
 
@@ -80,10 +83,8 @@ describe("Issue #1348: task modal title layout", () => {
 	it("keeps the modal polish scoped to title and context/tag text fields", () => {
 		const css = readRepoFile("styles/task-modal.css");
 
-		expect(css).toContain(".tasknotes-plugin .title-input");
-		expect(css).toContain(".tasknotes-plugin .title-input-detailed");
-		expect(css).toContain("max-height: calc((var(--font-ui-large) * 1.4 * 3)");
-		expect(css).toContain(".details-container .setting-item > .setting-item-control");
-		expect(css).toContain("flex: 0 0 35%;");
+		expect(css).toContain(".tasknotes-plugin textarea.title-input");
+		expect(css).toContain("textarea.title-input-detailed");
+		expect(css).toContain("--tn-title-line");
 	});
 });

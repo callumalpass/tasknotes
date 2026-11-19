@@ -14,8 +14,11 @@ import { MockObsidian } from "../../helpers/obsidian-runtime";
 const cssFilePath = path.resolve(__dirname, "../../../styles/task-modal.css");
 
 class TestTaskModal extends TaskModal {
+	protected readonly mode = "create" as const;
 	async initializeFormData(): Promise<void> {}
-	async handleSave(): Promise<void> {}
+	async handleSave() {
+		return { status: "saved" as const };
+	}
 	getModalTitle(): string {
 		return "Test task modal";
 	}
@@ -103,13 +106,20 @@ describe("Issue #1023: mobile custom field keyboard visibility", () => {
 		});
 	});
 
-	it("adds temporary mobile scroll padding while keyboard-backed fields are focused", () => {
+	it("uses host keyboard and toolbar insets while preserving safe-area padding", () => {
 		const cssContent = fs.readFileSync(cssFilePath, "utf-8");
+		const keyboardRule = cssContent.match(
+			/body\.is-mobile \.tasknotes-plugin\.minimalist-task-modal \{([^}]+)\}/
+		)?.[1];
+		const toolbarRule = cssContent.match(
+			/body\.is-mobile\.mod-toolbar-open \.tasknotes-plugin\.minimalist-task-modal \{([^}]+)\}/
+		)?.[1];
 
-		expect(cssContent).toContain(
-			".is-mobile-keyboard-focused.expanded .modal-split-content"
+		expect(keyboardRule).toContain("bottom: var(--keyboard-height, 0px)");
+		expect(toolbarRule).toContain(
+			"bottom: calc(var(--keyboard-height, 0px) + var(--mobile-toolbar-height, 0px))"
 		);
-		expect(cssContent).toContain("scroll-padding-bottom");
 		expect(cssContent).toContain("env(safe-area-inset-bottom)");
+		expect(cssContent).not.toContain(".is-mobile-keyboard-focused .modal-split-content");
 	});
 });

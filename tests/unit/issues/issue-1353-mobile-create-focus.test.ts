@@ -53,6 +53,7 @@ describe("Issue #1353: mobile create modal autofocus", () => {
 			editor: {
 				cm: {
 					focus,
+					contentDOM: modal.contentEl.createDiv(),
 					scrollDOM,
 				},
 			},
@@ -75,6 +76,7 @@ describe("Issue #1353: mobile create modal autofocus", () => {
 			editor: {
 				cm: {
 					focus,
+					contentDOM: modal.contentEl.createDiv(),
 					scrollDOM,
 				},
 			},
@@ -91,20 +93,38 @@ describe("Issue #1353: mobile create modal autofocus", () => {
 		expect(scrollDOM.scrollTop).toBe(0);
 	});
 
-	it("falls back to the NLP textarea when the markdown editor is unavailable", () => {
+	it("does not focus NLP after the user has chosen another field", () => {
+		const modal = new TaskCreationModal(app, createPlugin(true));
+		const modalEl = (modal as any).modalEl as HTMLElement;
+		document.body.appendChild(modalEl);
+		const tags = modalEl.createEl("input");
+		const focus = jest.fn();
+		(modal as any).nlMarkdownEditor = {
+			editor: { cm: { focus, scrollDOM: { scrollTop: 42 } } },
+		};
+		try {
+			(modal as any).focusTitleInput();
+			tags.focus();
+			jest.advanceTimersByTime(100);
+			expect(focus).not.toHaveBeenCalled();
+			expect(document.activeElement).toBe(tags);
+		} finally {
+			modalEl.remove();
+		}
+	});
+
+	it("falls back to the title input when the markdown editor is unavailable", () => {
 		document.body.classList.add("is-mobile");
 		const modal = new TaskCreationModal(app, createPlugin(true));
-		const textarea = document.createElement("textarea");
-		textarea.focus = jest.fn();
-		textarea.select = jest.fn();
+		const title = document.createElement("textarea");
+		title.focus = jest.fn();
 
-		(modal as any).nlMarkdownEditor = null;
-		(modal as any).nlInput = textarea;
+		(modal as any).nlEditorFailed = true;
+		(modal as any).titleInput = title;
 
 		(modal as any).focusTitleInput();
 		jest.advanceTimersByTime(350);
 
-		expect(textarea.focus).toHaveBeenCalledWith({ preventScroll: true });
-		expect(textarea.select).toHaveBeenCalledTimes(1);
+		expect(title.focus).toHaveBeenCalled();
 	});
 });

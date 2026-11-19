@@ -1,8 +1,11 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import {
 	renderTaskCardMetadata,
 	renderTaskCardMetadataLine,
+	cleanupTaskCardMetadata,
+	fitTaskCardMetadata,
 } from "../../../src/ui/taskCardMetadata";
 
 function createTask(overrides: Partial<TaskInfo> = {}): TaskInfo {
@@ -41,26 +44,10 @@ function createPlugin(): TaskNotesPlugin {
 			toUserField: jest.fn((field: string) => field),
 		},
 		i18n: {
-			translate: jest.fn((key: string, vars?: Record<string, string | number>) => {
-				const translations: Record<string, string> = {
-					"ui.taskCard.blockedBadge": "Blocked",
-					"ui.taskCard.blockedBadgeTooltip": "This task is blocked",
-					"ui.taskCard.blockingBadge": "Blocking",
-					"ui.taskCard.blockingBadgeTooltip": "This task is blocking another task",
-					"ui.taskCard.googleCalendarSyncTooltip": "Synced to Google Calendar",
-					"ui.taskCard.labels.due": "Due",
-					"ui.taskCard.labels.scheduled": "Scheduled",
-				};
-				if (translations[key]) {
-					return translations[key];
-				}
-				if (vars) {
-					return `${key} ${Object.values(vars).join(" ")}`;
-				}
-				return key;
-			}),
+			translate: mockObserveTranslation(),
 		},
 		statusManager: {
+        getAllStatuses: jest.fn(() => [{ value: "open", label: "Open", color: "#666666", isCompleted: false, order: 0 }, { value: "done", label: "Done", color: "#00ff00", isCompleted: true, order: 1 }]),
 			isCompletedStatus: jest.fn((status: string) => status === "done"),
 		},
 		updateTaskProperty: jest.fn(),
@@ -106,9 +93,242 @@ function getDateMetadata(metadataLine: HTMLElement, dateType: "due" | "scheduled
 }
 
 describe("taskCardMetadata", () => {
+	it("keeps configured date tracks even for empty values and removes them when unconfigured", () => {
+		const { card, metadataLine } = createMetadataHost();
+		const plugin = createPlugin();
+		jest.mocked(plugin.fieldMapper.isPropertyForField).mockImplementation((property, field) => property === field);
+		const config = { card, metadataLine, task: createTask(), plugin, onBlockedByToggle: jest.fn() };
+		renderTaskCardMetadata({ ...config, visibleProperties: ["scheduled", "due"] });
+		expect(metadataLine.classList.contains("task-card__metadata--with-scheduled")).toBe(true);
+		expect(metadataLine.classList.contains("task-card__metadata--with-due")).toBe(true);
+		expect(metadataLine.querySelectorAll(".task-card__date-slot")).toHaveLength(2);
+		expect(metadataLine.hidden).toBe(true);
+		expect(Array.from(metadataLine.querySelectorAll<HTMLElement>(".task-card__date-slot")).every(slot => slot.hidden)).toBe(true);
+		renderTaskCardMetadata({ ...config, visibleProperties: ["due"] });
+		expect(metadataLine.classList.contains("task-card__metadata--with-scheduled")).toBe(false);
+		expect(metadataLine.classList.contains("task-card__metadata--with-due")).toBe(true);
+		expect(metadataLine.querySelectorAll(".task-card__date-slot")).toHaveLength(1);
+		cleanupTaskCardMetadata(metadataLine);
+	});
+
+	it("restores the supporting line when a date is added to an empty task", () => {
+		const { card, metadataLine } = createMetadataHost();
+		const plugin = createPlugin();
+		jest.mocked(plugin.fieldMapper.isPropertyForField).mockImplementation((property, field) => property === field);
+		const config = { card, metadataLine, task: createTask(), plugin, onBlockedByToggle: jest.fn(), visibleProperties: ["scheduled", "due"] };
+		renderTaskCardMetadata(config);
+		expect(metadataLine.hidden).toBe(true);
+		renderTaskCardMetadata({ ...config, task: createTask({ due: "2026-11-08" }) });
+		expect(metadataLine.hidden).toBe(false);
+		expect(metadataLine.querySelector<HTMLElement>(".task-card__date-slot--scheduled")?.hidden).toBe(true);
+		expect(metadataLine.querySelector<HTMLElement>(".task-card__date-slot--due")?.hidden).toBe(false);
+		cleanupTaskCardMetadata(metadataLine);
+	});
+
+	it("never paints a zero overflow count after final geometry fits all metadata", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
+			const values = metadataLine.createSpan();
+			const chip = values.createSpan({ text: "Studio" });
+			let measurements = 0;
+			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			chip.getBoundingClientRect = () => ({ right: measurements++ === 0 ? 300 : 100 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			expect(overflow.textContent).toBe("");
+			expect(overflow.hidden).toBe(true);
+			resize();
+			expect(overflow.hidden).toBe(true);
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
+	it("retains disclosure focus while measuring a resized metadata line", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		const { metadataLine } = createMetadataHost();
+		try {
+			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
+			const values = metadataLine.createSpan();
+			const chip = values.createSpan({ text: "Long metadata" });
+			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			chip.getBoundingClientRect = () => {
+				const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow");
+				if (overflow?.hidden && document.activeElement === overflow) overflow.blur();
+				return { right: 300 } as DOMRect;
+			};
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			overflow.focus();
+			expect(document.activeElement).toBe(overflow);
+			resize();
+			expect(overflow.hidden).toBe(false);
+			expect(document.activeElement).toBe(overflow);
+		} finally {
+			cleanupTaskCardMetadata(metadataLine);
+			window.ResizeObserver = original;
+		}
+	});
 	beforeEach(() => {
 		document.body.innerHTML = "";
 		jest.clearAllMocks();
+	});
+
+	afterEach(() => {
+		jest.useRealTimers();
+	});
+
+	it("keeps due before scheduled when only one date fits and summarizes the hidden date", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 100 });
+			const values = metadataLine.createSpan();
+			const scheduled = metadataLine.createSpan({ cls: "task-card__date-slot" });
+			scheduled.createSpan({ attr: { "aria-label": "Scheduled: tomorrow" } });
+			const due = metadataLine.createSpan({ cls: "task-card__date-slot" });
+			due.createSpan({ text: "Today" });
+			metadataLine.getBoundingClientRect = () => ({ right: 100 }) as DOMRect;
+			scheduled.getBoundingClientRect = () => ({ right: 80 }) as DOMRect;
+			due.getBoundingClientRect = () => ({ right: scheduled.hidden ? 80 : 140 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			expect(scheduled.hidden).toBe(true);
+			expect(due.hidden).toBe(false);
+			expect(values.hidden).toBe(true);
+			expect(metadataLine.querySelector(".task-card__metadata-overflow")?.getAttribute("aria-label")).toBe("Scheduled: tomorrow");
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
+
+	it("removes the empty values gap after rejecting a chip so both dates fit", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		const observe = jest.fn();
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe = observe;
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 250 });
+			const values = metadataLine.createSpan();
+			const chip = values.createSpan({ cls: "task-card__metadata-property", text: "Long project" });
+			const scheduled = metadataLine.createSpan({ cls: "task-card__date-slot", text: "Today 10:00" });
+			const due = metadataLine.createSpan({ cls: "task-card__date-slot", text: "Today 14:00" });
+			metadataLine.getBoundingClientRect = () => ({ right: 250 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ right: 50 }) as DOMRect;
+			chip.getBoundingClientRect = () => ({ right: 400 }) as DOMRect;
+			scheduled.getBoundingClientRect = () => ({ right: 100 }) as DOMRect;
+			due.getBoundingClientRect = () => ({ right: values.hidden ? 200 : 260 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			expect(chip.hidden).toBe(true);
+			expect(values.hidden).toBe(true);
+			expect(observe).toHaveBeenCalledWith(values);
+			expect(observe).toHaveBeenCalledWith(metadataLine);
+			expect(scheduled.hidden).toBe(false);
+			expect(due.hidden).toBe(false);
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
+
+	it("moves a clipped atom wholly into overflow and restores it when its lane grows", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
+			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			const values = metadataLine.createSpan();
+			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			const project = values.createSpan({ text: "+Product refresh" });
+			let width = 27;
+			Object.defineProperties(project, {
+				clientWidth: { get: () => width },
+				scrollWidth: { value: 94 },
+			});
+			project.getBoundingClientRect = () => ({ right: width }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			expect(project.hidden).toBe(true);
+			expect(overflow.textContent).toBe("+1");
+			expect(overflow.getAttribute("aria-label")).toBe("+Product refresh");
+			width = 94;
+			resize();
+			expect(project.hidden).toBe(false);
+			expect(values.hidden).toBe(false);
+			expect(overflow.hidden).toBe(true);
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
+
+	it("disconnects overflow observers on rerender, removal and explicit cleanup", () => {
+		const original = window.ResizeObserver;
+		const callbacks: Array<() => void> = [];
+		const disconnect = jest.fn();
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { callbacks.push(callback); }
+			observe() {}
+			unobserve() {}
+			disconnect = disconnect;
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { card, metadataLine } = createMetadataHost();
+			const config = { card, metadataLine, task: createTask(), plugin: createPlugin(), visibleProperties: ["tags"], onBlockedByToggle: jest.fn() };
+			renderTaskCardMetadata(config);
+			renderTaskCardMetadata(config);
+			expect(disconnect).toHaveBeenCalledTimes(1);
+			card.remove();
+			callbacks[1]();
+			expect(disconnect).toHaveBeenCalledTimes(2);
+			cleanupTaskCardMetadata(metadataLine);
+			expect(disconnect).toHaveBeenCalledTimes(2);
+		} finally {
+			window.ResizeObserver = original;
+		}
 	});
 
 	describe("date metadata state classes", () => {
@@ -198,6 +418,30 @@ describe("taskCardMetadata", () => {
 			}
 		);
 
+		it.each([
+			{ state: "unresolved", instances: {}, past: true },
+			{ state: "completed", instances: { complete_instances: ["2026-08-05"] }, past: false },
+			{ state: "skipped", instances: { skipped_instances: ["2026-08-05"] }, past: false },
+		])("classifies a past occurrence by its own $state state", ({ instances, past }) => {
+			const { card, metadataLine } = createMetadataHost();
+
+			renderTaskCardMetadata({
+				metadataLine,
+				card,
+				task: createTask({ scheduled: "2026-08-19", ...instances }),
+				plugin: createPlugin(),
+				visibleProperties: ["scheduled"],
+				propertyOptions: { occurrenceScheduled: "2026-08-05" },
+				onBlockedByToggle: jest.fn(),
+			});
+
+			expect(
+				getDateMetadata(metadataLine, "scheduled").classList.contains(
+					"task-card__metadata-date--past"
+				)
+			).toBe(past);
+		});
+
 		it("does not classify a completed past due date as future when overdue styling is hidden", () => {
 			const { metadataLine } = renderMetadataForTask(
 				createTask({
@@ -211,6 +455,30 @@ describe("taskCardMetadata", () => {
 			expect(dueElement.classList.contains("task-card__metadata-date--overdue")).toBe(false);
 			expect(dueElement.classList.contains("task-card__metadata-date--future")).toBe(false);
 		});
+	});
+
+	it("shows an occurrence's own date read-only instead of the series' date controls", () => {
+		// Keep the fixed Nov 15 occurrence outside Today/Tomorrow formatting.
+		jest.useFakeTimers({ now: new Date("2026-11-01T12:00:00Z") });
+		const plugin = createPlugin();
+		plugin.settings.dateDisplayFormat = "iso";
+		const { card, metadataLine } = createMetadataHost();
+
+		renderTaskCardMetadata({
+			metadataLine,
+			card,
+			task: createTask({ scheduled: "2026-11-08", due: "2026-11-10" }),
+			plugin,
+			visibleProperties: ["scheduled", "due"],
+			propertyOptions: { occurrenceScheduled: "2026-11-15" },
+			onBlockedByToggle: jest.fn(),
+		});
+
+		const scheduled = getDateMetadata(metadataLine, "scheduled");
+		expect(scheduled.textContent).toContain("2026-11-15");
+		expect(scheduled.dataset.tnAction).toBeUndefined();
+		expect(scheduled.getAttribute("role")).toBeNull();
+		expect(metadataLine.querySelector(".task-card__metadata-date--due")).toBeNull();
 	});
 
 	it("renders blocked metadata as an interactive blocked-by expansion control", () => {

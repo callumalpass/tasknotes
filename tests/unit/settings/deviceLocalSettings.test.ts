@@ -89,7 +89,7 @@ describe("device-local settings (#2345)", () => {
 			taskTag: "task",
 		});
 
-		expect(written).toEqual({ taskTag: "task" });
+		expect(written).toEqual({ taskTag: "task", starterNoteCreated: true });
 		expect(secrets.get(API_AUTH_TOKEN_SECRET_ID)).toBe("new-token");
 		expect(local.get("tasknotes-last-seen-version")).toBe("5.0.0");
 		expect(local.has("tasknotes-last-notified-release-version")).toBe(false);

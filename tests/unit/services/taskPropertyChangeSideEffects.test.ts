@@ -85,6 +85,37 @@ describe("taskPropertyChangeSideEffects", () => {
 		});
 	});
 
+	it("does not republish an Undo snapshot over a newer status while metadata refresh is delayed", async () => {
+		const originalTask = createTask({ status: "in-progress" });
+		const restoredTask = createTask({ status: "open" });
+		const newerTask = createTask({ status: "none" });
+		let cachedTask = restoredTask;
+		let releaseMetadata!: () => void;
+		const metadata = new Promise<void>(resolve => { releaseMetadata = resolve; });
+		const context = createContext();
+		(context.cacheManager.waitForFreshTaskData as jest.Mock)
+			.mockImplementationOnce(() => metadata);
+		(context.cacheManager.updateTaskInfoInCache as jest.Mock)
+			.mockImplementation((_path: string, task: TaskInfo) => { cachedTask = task; });
+
+		const restoring = runTaskPropertyChangeSideEffects(context, {
+			file, originalTask, updatedTask: restoredTask,
+			property: "status", oldValue: "in-progress", newValue: "open",
+			cacheAlreadyUpdated: true,
+		});
+		const changing = runTaskPropertyChangeSideEffects(context, {
+			file, originalTask: restoredTask, updatedTask: newerTask,
+			property: "status", oldValue: "open", newValue: "none",
+		});
+		// Allow the unblocked operation to publish before the delayed refresh.
+		await Promise.resolve();
+		releaseMetadata();
+		await Promise.all([restoring, changing]);
+
+		expect(cachedTask.status).toBe("none");
+		expect(context.cacheManager.updateTaskInfoInCache).not.toHaveBeenCalledWith(file.path, restoredTask);
+	});
+
 	it("emits dependent task updates when status completion state changes", async () => {
 		const originalTask = createTask({ path: "TaskNotes/Blocker.md", status: "open" });
 		const updatedTask = createTask({ path: "TaskNotes/Blocker.md", status: "done" });

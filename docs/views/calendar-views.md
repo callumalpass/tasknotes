@@ -26,26 +26,48 @@ The Mini Calendar displays a month-based view that shows which days contain task
 
 - **Date Navigation**: Click any date to open a fuzzy selector modal showing all notes associated with that date
 - **Keyboard Navigation**: Navigate the calendar using arrow keys and select dates with Enter
-- **Heatmap Styling**: Visual indicators show the density of tasks or notes on each day
+- **Date Density**: Small marks beneath dates show the density of tasks or notes without filling the cells. Today keeps the strong accent mark independently of the selected date.
 - **Configurable Date Property**: Set which date property to track (not limited to tasks - can display any dated notes based on configured property)
 - **Month Navigation**: Browse forward and backward through months to view historical and future task distribution
 Mini Calendar is commonly used as an entry view: select a date, then open Task List, Agenda, or Calendar for execution.
 
 ## Calendar View
 
-The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times.
+The Calendar View provides multiple view modes (month, week, day, year, list, and custom days) with drag-and-drop scheduling and time-blocking capabilities. Tasks can be created by clicking on dates or time slots, and rescheduled by dragging them to new dates or times. To schedule a task from elsewhere, drag its inline task widget, or its card in a Task List or Kanban view, onto a date or time slot: TaskNotes sets the task's scheduled date, with a time when it is dropped on a time slot.
+
+### Selecting and Rescheduling Multiple Tasks
+
+Use **Shift-click** to start a selection or select a range, then click or **Ctrl/Cmd-click** markers to add or remove them. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. While no selection is active, Ctrl/Cmd-click or middle-click opens a task's note in a new tab. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
+
+Open **Task options** in the toolbar, or right-click a selected marker, to change the selected tasks together. **Scheduled date** and **Due date** open the date picker, with quick dates, +/- day and week options and **Pick date & time…** for any date with an optional time. A date assigns the same value to every selected task, and the +/- options move each task's own date; choosing a date without a time makes that property date-only. Dismissing the picker leaves the tasks unchanged.
+
+Drag a selected marker to move the group while keeping relative dates and local times:
+
+- Dragging a scheduled marker changes scheduled dates only. Dragging a due marker changes deadlines only.
+- Each selected task must have a visible, editable marker of the same type. Incompatible or hidden selections are rejected before writing.
+- Date-only tasks stay date-only. Timed tasks retain their relative times, including across daylight-saving changes. A group drag cannot convert the dragged marker between all-day and timed areas.
+- Recurring templates/previews, scheduled-to-due span bars, tracked time, external events, and property-based events are not included in task selection. Materialized occurrence notes with ordinary scheduled/due markers can be selected.
+- **Undo** is available briefly after a group move. It refuses to overwrite a task whose dates have since changed. If a write fails partway through, the result reports the number moved and Undo covers those successful moves.
+
+The focused marker's Alt+arrow keyboard move also moves the selected group. Resizing remains a single-task action. While dragging, the other selected markers preview their proposed dates with dashed outlines, including in crowded cells with a "+ more" limit. Preview markers are non-interactive, and no task files change until you drop. Escape, a cancelled pointer gesture, or the window losing focus removes the previews.
 
 ### View Modes
 
 The Calendar View supports the following view modes:
 
-- **Month**: Month grid showing all-day and timed events
+- **Month**: Month grid showing all-day and timed events. By default, clicking a day opens the creation menu and clicking a date number opens the daily note. Turn on **Show selected day panel** in the view options to select a day and list its tasks, with **Add task** for that date.
+
+Busy timed columns collapse overlapping appointments into a labelled stack when there is not enough room to read them side by side. Open the stack to access its appointments without widening the whole week. At narrow widths, day buttons above the grid reveal offscreen dates; **Today** also brings the current day into view. Overflow lists stay within the visible calendar pane and scroll vertically. All-day bars use single-line ellipsis in the grid, while overflow rows wrap their titles.
 - **Week**: Week view with hourly time slots for detailed scheduling
 - **Day**: Single day view with hourly breakdown
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
 - **Custom Days**: Configurable multi-day view (2-10 days)
 View modes can be switched within a single `.base` file based on planning horizon (day, week, month, year, or custom range).
+
+The view switch shows full names when there is room and short labels in narrow panes. A week view temporarily opens as a list below 640px unless you explicitly choose a view in that pane. This automatic adjustment does not change the `.base` file, and widening the pane restores the week view.
+
+Constrained calendar blocks prioritize the task title over glyphs and time labels; hover for the full details. Due markers use a flag and dotted edge to distinguish a deadline from the same task's scheduled placement. List entries retain their event times and label deadlines separately. Recurring projections remain available through the date's **+ more** chooser on crowded days.
 
 | Week View | Day View | Year View |
 |-----------|----------|-----------|
@@ -121,19 +143,36 @@ This flexibility allows for complete control over both the recurring pattern and
 
 ### View Options
 
+Open a Calendar Base, then open its view settings from the Bases toolbar. These collapsible sections change only that saved view:
+
+- **What to show**: scheduled and due tasks, recurring tasks, time entries, timeblocks, and events from note properties. Scheduled-to-due spans appear when both scheduled and due tasks are enabled.
+- **Layout**: calendar mode, custom/list day count, height, week start, clock format, week numbers, weekends, today's highlight, and search.
+- **Time grid**: all-day area, day start/end, time between grid lines, time slot height, pinch to resize, initial scroll time, current-time marker, and hourly breakdown. Available for Week, Day, and Custom days.
+- **Day cells**: events shown before a “+ more” link, for Month, Year, and the all-day area of time-grid views. `0` chooses the automatic limit.
+- **Property-based events**: start, end, and title properties. Hidden when property-based events are off.
+- **Advanced**: opening date (fixed or taken from a property), daily-note creation, completed/skipped recurring instances, today column width, drag/resize step, selection preview, overlapping events, minimum event height, simultaneous-event limit, and the row-limit override.
+- Connected calendars have their own visibility sections.
+
+The **row limit override** in Advanced takes priority over the Day cells limit when positive. It counts rows including the “+ more” link; `0` turns off the override, not the ordinary event limit. The simultaneous-event limit applies to timed events; `0` means no limit.
+
+Existing `.base` keys and their values have not changed. Moving a control to Advanced does not reset it. Older files with settings nested under `config:` or `options:` are still read; direct view keys take precedence. Remove a per-view key to return to the plugin default on the next opening.
+
+For reusable setups, save separate Bases (for example a Day planner, Month overview, or List/Agenda) with different settings; there is no preset selector that overwrites several settings at once.
+
 The Calendar View provides several display options that control what types of events appear on the calendar:
 
 - **Show scheduled**: Display tasks with scheduled dates
 - **Show due**: Display tasks with due dates
 - **Show timeblocks**: Display time-blocking entries
 - **Show recurring**: Display recurring task events
-- **Show ICS events**: Display events from imported ICS calendars
+- **Calendar subscriptions**: Show or hide each ICS calendar subscription
 - **Show time entries**: Display time tracking entries
 - **All-day slot**: Show or hide the all-day event area at the top of time grid views (Week, Day, and Custom views)
 - **Show hourly breakdown**: Turn this off to show only the all-day area in Week, Day, and Custom views. The all-day area then fills the calendar height (unless the height is set to auto) and shows every event by default. Timed events are not shown while the hourly breakdown is hidden.
-- **Max events per day / Max event rows per day**: Limit how many events a day cell shows before a "+ more" link, in Month and Year views and in the all-day area of Week, Day, and Custom views. `0` uses the automatic limit.
+- **Events before “+ more”** (Day cells): Limit events in Month and Year day cells and the all-day area of Week, Day, and Custom views. `0` uses the automatic limit. **Row limit override** (Advanced) takes precedence when positive, counts the “+ more” row, and is disabled at `0`.
 - **Create daily notes from date links**: Let date header links create a missing daily note before opening it. Turn this off if date links should only open existing daily notes.
-- **Drag/drop resolution**: Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
+- **Pinch to resize** (touch): Spread or pinch two fingers on the time grid to change the slot height, between 16 and 96 pixels. The time under your fingers stays in place. The new height is kept on that device only, and applies until the configured **Time slot height** changes. Turn the option off to let the pinch reach the page instead.
+- **Drag and resize step** (Advanced): Set `snapDuration` when you want events to drag or resize in smaller increments than the visible `slotDuration`, such as 5-minute dragging on a 30-minute grid.
 - **Span tasks between scheduled and due dates**: Display tasks as multi-day bars spanning from their scheduled date to their due date (see below)
 Multiple saved calendar views can store different option sets (for example planning vs focus), avoiding repeated manual toggles.
 

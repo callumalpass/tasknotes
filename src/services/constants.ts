@@ -52,6 +52,32 @@ export const GOOGLE_CALENDAR_CONSTANTS = {
 } as const;
 
 // Microsoft Calendar Service Constants
+/** Google Calendar through the TaskNotes calendar service, without the person's own credentials. */
+export const CALENDAR_SERVICE_CONSTANTS = {
+	ORIGIN: "https://calendar.tasknotes.dev",
+
+	/** Obsidian SecretStorage ID of this device's session with the service */
+	SESSION_SECRET_ID: "tasknotes-calendar-service-session",
+
+	/** Vault-local storage prefix for what the service client may forget */
+	STORAGE_PREFIX: "tasknotes-calendar-service:",
+
+	/**
+	 * Every person shares one Google quota here, so events are read less often
+	 * than with their own credentials, and only while Obsidian is on screen.
+	 */
+	REFRESH_INTERVAL_MS: 30 * 60 * 1000,
+
+	/** Minimum time between manual refreshes (30 seconds) */
+	MIN_MANUAL_REFRESH_INTERVAL_MS: 30 * 1000,
+
+	/** Two of the service's 93-day reads cover this range. */
+	VIEW_RANGE: {
+		DAYS_BEFORE: 60,
+		DAYS_AFTER: 120,
+	},
+} as const;
+
 export const MICROSOFT_CALENDAR_CONSTANTS = {
 	/** Refresh interval for polling calendar events (15 minutes in milliseconds) */
 	REFRESH_INTERVAL_MS: 15 * 60 * 1000,

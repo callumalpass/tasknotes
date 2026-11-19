@@ -1,3 +1,4 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
 import { PomodoroView } from "../../../src/views/PomodoroView";
 import { EVENT_POMODORO_TICK, PomodoroState } from "../../../src/types";
 import type { WorkspaceLeaf } from "obsidian";
@@ -12,13 +13,11 @@ type ViewInternals = {
 	updateTimer(seconds: number): void;
 	timerDisplay: HTMLElement;
 	sessionMetaDisplay: HTMLElement;
-	progressCircle: SVGCircleElement;
 	statusDisplay: HTMLElement;
 	startButton: HTMLButtonElement;
 	pauseButton: HTMLButtonElement;
 	stopButton: HTMLButtonElement;
 	taskCardContainer: HTMLElement;
-	currentCircumference: number;
 };
 
 function fixture() {
@@ -57,7 +56,7 @@ function fixture() {
 		onReady: jest.fn(async () => undefined),
 		settings: { calendarViewSettings: { timeFormat: "24" } },
 		i18n: {
-			translate: (key: string, params?: object) => `${key}:${JSON.stringify(params ?? {})}`,
+			translate: mockObserveTranslation(),
 		},
 		pomodoroService: { getState: () => ({ ...state }) },
 	};
@@ -86,9 +85,6 @@ function fixture() {
 		internals[key] = document.createElement("button");
 		root.append(internals[key]);
 	}
-	internals.progressCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-	root.append(internals.progressCircle);
-	internals.currentCircumference = 100;
 	const tick = () =>
 		callbacks.get(EVENT_POMODORO_TICK)?.({
 			session: state.currentSession,
@@ -131,9 +127,6 @@ describe("Issue #2356: economical Pomodoro rendering", () => {
 		tick();
 		expect(timer).toHaveBeenCalledTimes(1);
 		expect(internals.timerDisplay.textContent).toBe("01:59");
-		expect(Number(internals.progressCircle.getAttribute("stroke-dashoffset"))).toBeCloseTo(
-			(100 * 119) / 120
-		);
 		expect(observer.takeRecords()).toHaveLength(0);
 		observer.disconnect();
 	});
@@ -165,8 +158,8 @@ describe("Issue #2356: economical Pomodoro rendering", () => {
 		state.timeRemaining = 55;
 		tick();
 		expect(root.classList.contains("pomodoro-view--rendering-paused")).toBe(true);
-		expect(internals.startButton.textContent).toContain("resume");
-		expect(internals.statusDisplay.textContent).toContain("paused");
+		expect(internals.startButton.textContent).toBe("Resume");
+		expect(internals.statusDisplay.textContent).toBe("Paused");
 		state.isRunning = true;
 		tick();
 		expect(root.classList.contains("pomodoro-view--rendering-paused")).toBe(false);
@@ -177,7 +170,7 @@ describe("Issue #2356: economical Pomodoro rendering", () => {
 		state.currentSession = undefined;
 		state.nextSessionType = "short-break";
 		tick();
-		expect(internals.startButton.textContent).toContain("startShortBreak");
+		expect(internals.startButton.textContent).toBe("Start short break");
 	});
 
 	it("defers hidden countdowns and task cards, then catches up immediately when shown", () => {

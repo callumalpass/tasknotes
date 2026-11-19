@@ -43,6 +43,23 @@ describe("settings persistence helpers", () => {
 		jest.restoreAllMocks();
 	});
 
+	it("keeps recurring statuses in saved setups and resets them in new ones (#2521)", () => {
+		expect(
+			buildSettingsFromLoadedData({ defaultTaskStatus: "inbox" }).settings
+				.resetRecurringStatusAfterOccurrence
+		).toBe(false);
+		expect(buildSettingsFromLoadedData(null).settings.resetRecurringStatusAfterOccurrence).toBe(
+			true
+		);
+	});
+
+	it("stores Pomodoro history in daily notes for new installs and plugin data for saved setups", () => {
+		expect(
+			buildSettingsFromLoadedData({ defaultTaskStatus: "inbox" }).settings.pomodoroStorageLocation
+		).toBe("plugin");
+		expect(buildSettingsFromLoadedData(null).settings.pomodoroStorageLocation).toBe("daily-notes");
+	});
+
 	it("builds the plugin data path from manifest dir first", () => {
 		const host = createHost({
 			dir: ".obsidian/plugins/tasknotes",
@@ -73,7 +90,8 @@ describe("settings persistence helpers", () => {
 			data: null,
 			compromised: true,
 		});
-		expect(host.loadData).toHaveBeenCalledTimes(4);
+		// The first read plus 20 retries, about two seconds at the default delay.
+		expect(host.loadData).toHaveBeenCalledTimes(21);
 	});
 
 	it("does not mark a new install as compromised when data.json is absent", async () => {
@@ -158,8 +176,10 @@ describe("settings persistence helpers", () => {
 			useNativeMetadataCache: true,
 			enableBases: false,
 			calendarViewSettings: {
-				defaultShowScheduledToDueSpan: false,
-				eventMaxStack: null,
+				showWeekends: false,
+			},
+			googleCalendarExport: {
+				defaultReminderMinutes: null,
 			},
 		});
 
@@ -173,8 +193,8 @@ describe("settings persistence helpers", () => {
 		expect(
 			settings.nlpTriggers.triggers.find((trigger) => trigger.propertyId === "status")
 		).toMatchObject({ trigger: "/" });
-		expect(settings.calendarViewSettings.defaultShowScheduledToDueSpan).toBe(false);
-		expect(settings.calendarViewSettings.eventMaxStack).toBeNull();
+		expect(settings.calendarViewSettings.showWeekends).toBe(false);
+		expect(settings.googleCalendarExport.defaultReminderMinutes).toBeNull();
 		expect(settings.modalFieldsConfig?.fields.map((field) => field.id)).toEqual(
 			expect.arrayContaining(["title", "details", "contexts", "tags", "projects"])
 		);
@@ -217,47 +237,10 @@ describe("settings persistence helpers", () => {
 		expect(shouldPersistMigratedSettings).toBe(false);
 	});
 
-	it("deep-merges saved task-list shortcuts with current defaults", () => {
-		const { settings } = buildSettingsFromLoadedData({
-			taskListShortcuts: {
-				"edit-due": ["Ctrl+K"],
-			} as TaskNotesSettings["taskListShortcuts"],
-		});
-
-		expect(settings.taskListShortcuts["edit-due"]).toEqual(["mod+k"]);
-		expect(settings.taskListShortcuts["create-task"]).toEqual(["c"]);
-	});
-
-	it("migrates supported legacy keyboard action names", () => {
-		const { settings, shouldPersistMigratedSettings } = buildSettingsFromLoadedData({
-			fieldMapping: DEFAULT_SETTINGS.fieldMapping,
-			calendarViewSettings: DEFAULT_SETTINGS.calendarViewSettings,
-			commandFileMapping: DEFAULT_SETTINGS.commandFileMapping,
-			keyboardShortcuts: {
-				navigateDown: ["J", "Arrow Down"],
-				navigateUp: ["K", "Arrow Up"],
-				copyTaskTitles: ["Control+C"],
-				toggleSelect: ["Space"],
-				selectAll: ["Meta+A"],
-				clearFocusAndSelection: ["Backspace"],
-				newTask: ["N"],
-				editDueDates: ["Control+Shift+D"],
-				deleteTasks: ["Cmd+Delete"],
-				toggleArchive: ["a"],
-			},
-		});
-
-		expect(settings.taskListShortcuts["create-task"]).toEqual(["n"]);
-		expect(settings.taskListShortcuts["navigate-next"]).toEqual(["j", "arrowdown"]);
-		expect(settings.taskListShortcuts["navigate-previous"]).toEqual(["k", "arrowup"]);
-		expect(settings.taskListShortcuts["copy-task-titles"]).toEqual(["mod+c"]);
-		expect(settings.taskListShortcuts["toggle-select"]).toEqual(["space"]);
-		expect(settings.taskListShortcuts["select-all"]).toEqual(["mod+a"]);
-		expect(settings.taskListShortcuts["clear-focus-and-selection"]).toEqual(["backspace"]);
-		expect(settings.taskListShortcuts["toggle-archive"]).toEqual(["a"]);
-		expect(settings.taskListShortcuts["edit-due"]).toEqual(["mod+shift+d"]);
-		expect(settings.taskListShortcuts["delete-tasks"]).toEqual(["mod+delete"]);
-		expect(shouldPersistMigratedSettings).toBe(true);
+	it("starts mdbase type definitions on for new installs only", () => {
+		expect(buildSettingsFromLoadedData(null).settings.enableMdbaseSpec).toBe(true);
+		expect(buildSettingsFromLoadedData({ enableMdbaseSpec: false } as any).settings.enableMdbaseSpec).toBe(false);
+		expect(buildSettingsFromLoadedData({ tasksFolder: "Tasks" } as any).settings.enableMdbaseSpec).toBe(false);
 	});
 
 	it("merges only known settings keys into saved data while preserving other persisted data", () => {
@@ -281,6 +264,36 @@ describe("settings persistence helpers", () => {
 				pomodoroState: { isRunning: true },
 				unknownRuntimeKey: "preserve disk value",
 				tasksFolder: "Projects/Tasks",
+			})
+		);
+	});
+
+	it("keeps settings retired in v5 in data.json for devices still on v4", () => {
+		const loaded = {
+			viewsButtonAlignment: "left",
+			disableNoteIndexing: true,
+			savedViews: [{ id: "sv1", name: "My view" }],
+			projectAutosuggest: { ...DEFAULT_SETTINGS.projectAutosuggest, enableFuzzy: true },
+			calendarViewSettings: {
+				...DEFAULT_SETTINGS.calendarViewSettings,
+				defaultShowICSEvents: false,
+				eventMaxStack: 3,
+			},
+		};
+		const { settings } = buildSettingsFromLoadedData(loaded);
+		settings.tasksFolder = "Projects/Tasks";
+
+		expect(buildSettingsDataForSave(loaded, settings)).toEqual(
+			expect.objectContaining({
+				tasksFolder: "Projects/Tasks",
+				viewsButtonAlignment: "left",
+				disableNoteIndexing: true,
+				savedViews: [{ id: "sv1", name: "My view" }],
+				projectAutosuggest: expect.objectContaining({ enableFuzzy: true }),
+				calendarViewSettings: expect.objectContaining({
+					defaultShowICSEvents: false,
+					eventMaxStack: 3,
+				}),
 			})
 		);
 	});

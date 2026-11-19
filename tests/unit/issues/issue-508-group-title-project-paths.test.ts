@@ -1,3 +1,4 @@
+import { createI18nService } from "../../../src/i18n";
 import { TFile } from "obsidian";
 import { renderGroupTitle } from "../../../src/bases/groupTitleRenderer";
 import type { LinkServices } from "../../../src/ui/renderers/linkRenderer";
@@ -9,6 +10,7 @@ function makeServices(frontmatterTitle?: string): LinkServices {
 	]);
 
 	return {
+		translate: (key, params) => createI18nService().translate(key, params),
 		metadataCache: {
 			getFirstLinkpathDest: jest.fn((linkPath: string) => files.get(linkPath) ?? null),
 			getCache: jest.fn(() =>

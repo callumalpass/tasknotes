@@ -1,10 +1,17 @@
 import { parseYaml, stringifyYaml, TFile } from "obsidian";
 import type TaskNotesPlugin from "../../main";
-import { EVENT_TASK_UPDATED, type TaskInfo, type FieldMapping } from "../../types";
+import {
+	EVENT_TASK_UPDATED,
+	type FieldMapping,
+	type RecurringCompletionOptions,
+	type TaskInfo,
+} from "../../types";
 import { getCurrentTimestamp, formatDateForStorage } from "../../utils/dateUtils";
-import { splitFrontmatterAndBody, resetMarkdownCheckboxes } from "../../utils/helpers";
+import { resetMarkdownCheckboxes } from "../../utils/helpers";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import { buildTaskInfoFromMappedTask } from "../../utils/taskInfoAssembly";
+import { cloneSnapshotData } from "../../utils/cloneSnapshotData";
+import { getRecurringTaskActionDate } from "./taskRecurringPlanning";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "RecurringCompletionUndo" });
 import { applyTaskMovementUndo, type TaskMovementUndoChange } from "../../bases/taskMovementUndo";
@@ -17,6 +24,7 @@ const completionFields = [
 	"due",
 	"recurrence",
 	"recurrence_anchor",
+	"recurrence_original_date",
 	"complete_instances",
 	"skipped_instances",
 	"status",
@@ -31,6 +39,7 @@ const completionFields = [
 
 function mappingKey(field: (typeof completionFields)[number]): keyof FieldMapping {
 	if (field === "recurrence_anchor") return "recurrenceAnchor";
+	if (field === "recurrence_original_date") return "recurrenceOriginalDate";
 	if (field === "complete_instances") return "completeInstances";
 	if (field === "skipped_instances") return "skippedInstances";
 	if (field === "recurrence_parent") return "recurrenceParent";
@@ -42,7 +51,9 @@ export function readCompletionContent(content: string): {
 	frontmatter: Record<string, unknown>;
 	body: string;
 } {
-	const { frontmatter, body } = splitFrontmatterAndBody(content);
+	const match = /^---[\t ]*\r?\n([\s\S]*?)\r?\n---[\t ]*(?:\r?\n|$)/.exec(content);
+	const frontmatter = match?.[1] ?? null;
+	const body = match ? content.slice(match[0].length) : content;
 	const parsed: unknown = frontmatter === null ? {} : parseYaml(frontmatter);
 	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
 		throw new Error("Invalid task frontmatter");
@@ -69,8 +80,8 @@ export function buildCompletionContentUndo(
 			.filter((property) => property !== modifiedProperty)
 			.map((property) => ({
 				property,
-				before: structuredClone(previous.frontmatter[property]),
-				after: structuredClone(next.frontmatter[property]),
+				before: cloneSnapshotData(previous.frontmatter[property]),
+				after: cloneSnapshotData(next.frontmatter[property]),
 				hadBefore: Object.prototype.hasOwnProperty.call(previous.frontmatter, property),
 				hadAfter: Object.prototype.hasOwnProperty.call(next.frontmatter, property),
 			})),
@@ -102,17 +113,26 @@ export function restoreCompletionContent(
 export async function completeRecurringTaskWithUndo(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo,
-	date: Date
-): Promise<{ updatedTask: TaskInfo; completed: boolean; undo: () => Promise<boolean> }> {
+	date: Date,
+	options: RecurringCompletionOptions = {}
+): Promise<{
+	updatedTask: TaskInfo;
+	occurrenceDate: string;
+	completed: boolean;
+	changed: boolean;
+	undo: () => Promise<boolean>;
+}> {
 	const service = plugin.taskService;
 	const parent = (await plugin.cacheManager.getTaskInfo(task.path)) || task;
-	let occurrence = await service.findMaterializedOccurrence(parent, date);
+	const identityDate = getRecurringTaskActionDate(parent, date);
+	let occurrence = await service.findMaterializedOccurrence(parent, identityDate);
 	if (
 		!occurrence &&
 		parent.occurrence_materialization === "on_completion" &&
-		!parent.complete_instances?.includes(formatDateForStorage(date))
+		!parent.complete_instances?.includes(formatDateForStorage(identityDate)) &&
+		(options.onlyIf?.(parent) ?? true)
 	) {
-		occurrence = await service.materializeOccurrence(parent, date);
+		occurrence = await service.materializeOccurrence(parent, identityDate);
 	}
 	const tasks = occurrence ? [parent, occurrence] : [parent];
 	const before = await Promise.all(
@@ -121,7 +141,7 @@ export async function completeRecurringTaskWithUndo(
 			if (!(file instanceof TFile)) throw new Error("Task file no longer exists");
 			return {
 				file,
-				taskInfo: structuredClone(taskInfo),
+				taskInfo: cloneSnapshotData(taskInfo),
 				content: await plugin.app.vault.read(file),
 			};
 		})
@@ -129,18 +149,20 @@ export async function completeRecurringTaskWithUndo(
 	const parentTransition: { original?: TaskInfo; updated?: TaskInfo } = {};
 	const result = await service.toggleRecurringTaskCompleteWithOccurrenceNotes(
 		parent,
-		date,
+		identityDate,
 		(original, updated) => {
-			parentTransition.original = structuredClone(original);
-			parentTransition.updated = structuredClone(updated);
-		}
+			parentTransition.original = cloneSnapshotData(original);
+			parentTransition.updated = cloneSnapshotData(updated);
+		},
+		options
 	);
 	const updatedTask = result.path === parent.path ? result : parentTransition.updated || parent;
 	const modifiedProperty = plugin.fieldMapper.toUserField("dateModified");
 	const properties = completionFields.map((field) =>
 		plugin.fieldMapper.toUserField(mappingKey(field))
 	);
-	const entries = await Promise.all(
+	const buildEntries = () =>
+		Promise.all(
 		before.map(async (previous) => {
 			const nextTask = previous.file.path === result.path ? result : updatedTask;
 			const afterContent = await plugin.app.vault.read(previous.file);
@@ -193,20 +215,38 @@ export async function completeRecurringTaskWithUndo(
 					resetMarkdownCheckboxes(undo.beforeBody).content.trimEnd() ===
 						undo.afterBody.trimEnd();
 			}
-			return { ...previous, nextTask, undo, safe };
+			return { ...previous, nextTask, undo, safe, changed: afterContent !== previous.content };
 		})
 	);
+	// The completion has already been written. A receipt that cannot be built
+	// only makes it not undoable; it must never report the completion as failed.
+	let entries: Awaited<ReturnType<typeof buildEntries>>;
+	let receiptAvailable = true;
+	try {
+		entries = await buildEntries();
+	} catch (error) {
+		tasknotesLogger.warn("Could not build Undo for recurring completion", {
+			category: "persistence", operation: "recurring-completion-undo-receipt", error,
+		});
+		receiptAvailable = false;
+		entries = [];
+	}
 	const completed = occurrence
 		? plugin.statusManager.isCompletedStatus(result.status)
-		: (updatedTask.complete_instances ?? []).some(
-				(day) => !parent.complete_instances?.includes(day)
-			);
+		: (updatedTask.complete_instances ?? []).some(day => !parent.complete_instances?.includes(day));
+	const previousDays = parent.complete_instances ?? [];
+	const updatedDays = updatedTask.complete_instances ?? [];
+	const changedDay = completed
+		? updatedDays.find(day => !previousDays.includes(day))
+		: previousDays.find(day => !updatedDays.includes(day));
 	let used = false;
 	return {
 		updatedTask,
+		occurrenceDate: occurrence?.occurrence_date ?? changedDay ?? formatDateForStorage(identityDate),
 		completed,
+		changed: receiptAvailable ? entries.some(entry => entry.changed) : true,
 		undo: async () => {
-			if (used || entries.some((entry) => !entry.safe)) return false;
+			if (used || !receiptAvailable || entries.some((entry) => !entry.safe)) return false;
 			used = true;
 			const syncUpdates: { current: TaskInfo; restored: TaskInfo }[] = [];
 			// Lock both parent and occurrence in stable order. Validate every receipt

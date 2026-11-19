@@ -41,6 +41,8 @@ export interface TaskPropertyChangeSideEffectsInput {
 	property: keyof TaskInfo;
 	oldValue: unknown;
 	newValue: unknown;
+	/** Receipt restoration publishes cache state inside its file mutation lock. */
+	cacheAlreadyUpdated?: boolean;
 }
 
 interface CompletionTransition {
@@ -247,7 +249,9 @@ export async function runTaskPropertyChangeSideEffects(
 	context: TaskPropertyChangeSideEffectsContext,
 	input: TaskPropertyChangeSideEffectsInput
 ): Promise<void> {
-	await refreshCache(context, input);
+	// Undo has already published under the file lock. Repeating that publication
+	// after a metadata wait can replace a newer property change with its snapshot.
+	if (!input.cacheAlreadyUpdated) await refreshCache(context, input);
 	await emitTaskUpdateEvents(context, input);
 	await triggerWebhookSideEffect(context, input);
 	triggerCalendarSideEffect(context, input);

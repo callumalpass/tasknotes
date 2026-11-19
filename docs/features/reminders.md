@@ -60,6 +60,12 @@ This prevents invalid reminder states and keeps the quick menu focused on option
 
 ![Task context menu](../assets/feature-task-context-menu.png)
 
+## Editing Reminders
+
+In the reminders dialog, select the pencil button next to a reminder to load it into the form, change its timing or description, then select **Update reminder**. Select **Save changes** to write the edit to the task. The **Cancel** button beside **Update reminder** leaves the reminder unchanged.
+
+An edited reminder keeps its identity, so it is rescheduled for its new time rather than treated as a new reminder.
+
 ## Reminder Data Format
 
 Reminders are stored in YAML frontmatter arrays.
@@ -112,7 +118,7 @@ These indicators are intended to make reminders discoverable in list-heavy views
 
 Default reminders can be configured in:
 
-`Settings -> TaskNotes -> Task Properties -> Reminders`
+`Settings -> TaskNotes -> Task creation -> Defaults` (Default reminders)
 
 Defaults are applied to:
 
@@ -141,4 +147,4 @@ Archived tasks and completed tasks do not deliver reminders. For recurring tasks
 - Reminders follow iCalendar `VALARM` concepts with ISO 8601 offsets
 - The reminder property name can be customized through field mapping
 
-For settings-level behavior (notification channels, enable/disable state), see [Features Settings](../settings/features.md).
+For settings-level behavior (notification channels, enable/disable state), see [Time and workflow features](../settings/features.md).

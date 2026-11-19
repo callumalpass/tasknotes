@@ -21,6 +21,7 @@ describe("VaultMutationService", () => {
 				}),
 			},
 			vault: {
+				adapter: { read: jest.fn(async () => "---\ntitle: x\n---\n") },
 				process: jest.fn(async (_file: TFile, update: (content: string) => string) => {
 					calls.push("content");
 					return update("body");
@@ -30,8 +31,7 @@ describe("VaultMutationService", () => {
 
 		const first = processVaultFrontMatter(app, file, () => {});
 		const second = processVaultFile(app, file, (content) => content);
-		await Promise.resolve();
-		await Promise.resolve();
+		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		expect(app.fileManager.processFrontMatter).toHaveBeenCalledTimes(1);
 		expect(app.vault.process).not.toHaveBeenCalled();
@@ -86,5 +86,27 @@ describe("VaultMutationService", () => {
 		await expect(first).rejects.toThrow("write failed");
 		await expect(second).resolves.toBeUndefined();
 		expect(app.fileManager.processFrontMatter).toHaveBeenCalledTimes(2);
+	});
+
+	it("edits frontmatter behind a byte order mark instead of adding a second block", async () => {
+		let content = "\uFEFF---\ntags:\n  - task\n---\nBody\n";
+		const file = {} as TFile;
+		const app = {
+			fileManager: {
+				// Like Obsidian: frontmatter only counts at the very start of the file.
+				processFrontMatter: jest.fn(async () => {
+					if (!content.startsWith("---\n")) content = "---\npriority: high\n---\n" + content;
+					else content = content.replace("---\n", "---\npriority: high\n");
+				}),
+			},
+			vault: {
+				adapter: { read: jest.fn(async () => content) },
+				process: jest.fn(async (_file: TFile, update: (current: string) => string) => (content = update(content))),
+			},
+		};
+
+		await processVaultFrontMatter(app, file, () => {});
+
+		expect(content).toBe("---\npriority: high\ntags:\n  - task\n---\nBody\n");
 	});
 });

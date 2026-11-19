@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { NotificationService } from "../../../src/ui/NotificationService";
+import { NotificationService, reminderNotificationTag } from "../../../src/ui/NotificationService";
 import { Reminder, TaskInfo } from "../../../src/types";
 
 describe("Issue #408: reminder system notification title", () => {
@@ -77,7 +77,7 @@ describe("Issue #408: reminder system notification title", () => {
 			"Follow up with Erin",
 			expect.objectContaining({
 				body: "Reminder: Follow up with Erin",
-				tag: "tasknotes-Tasks/follow-up.md-rem_issue_408",
+				tag: reminderNotificationTag("Tasks/follow-up.md", "rem_issue_408"),
 			})
 		);
 	});

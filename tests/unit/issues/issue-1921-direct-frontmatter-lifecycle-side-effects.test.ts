@@ -53,7 +53,9 @@ function createPlugin(initialTasks: TaskInfo[] = []) {
 			},
 		},
 		cacheManager: {
-			getAllTasks: jest.fn().mockResolvedValue(initialTasks),
+			getAllTaskSnapshots: jest
+				.fn()
+				.mockResolvedValue(new Map(initialTasks.map((task) => [task.path, () => task]))),
 		},
 		emitter,
 		taskService,

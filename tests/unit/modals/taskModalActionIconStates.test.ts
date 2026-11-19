@@ -1,3 +1,5 @@
+import { observeTranslation as mockObserveTranslation, englishText as mockEnglishText, conceptDescriptor as mockConceptDescriptor } from "../../helpers/real-i18n";
+import { msg } from "@lingui/core/macro";
 const mockSetTooltip = jest.fn();
 const mockSetIcon = jest.fn();
 
@@ -7,6 +9,7 @@ jest.mock("obsidian", () => ({
 }));
 
 import type { PriorityConfig, StatusConfig } from "../../../src/types";
+import { getTodayString } from "../../../src/utils/dateUtils";
 import {
 	updateTaskModalActionIconStates,
 	type TaskModalActionIconState,
@@ -25,6 +28,7 @@ function createActionBar(): HTMLElement {
 		const icon = actionBar.createDiv({ cls: "action-icon" });
 		icon.dataset.type = dataType;
 		icon.createSpan({ cls: "icon" });
+		icon.createSpan({ cls: "action-icon__label" });
 	}
 	return actionBar;
 }
@@ -78,19 +82,12 @@ function createState(overrides: Partial<TaskModalActionIconState> = {}): TaskMod
 				weight: 10,
 			},
 		] satisfies PriorityConfig[],
+		timeFormat: "24",
 		...overrides,
 	};
 }
 
-function translate(key: string, params?: Record<string, string | number>): string {
-	const suffix =
-		params && Object.keys(params).length > 0
-			? `:${Object.entries(params)
-					.map(([name, value]) => `${name}=${value}`)
-					.join(",")}`
-			: "";
-	return `${key}${suffix}`;
-}
+function translate(...args: Parameters<typeof mockEnglishText>): string { return mockEnglishText(...args); }
 
 describe("taskModalActionIconStates", () => {
 	beforeEach(() => {
@@ -99,7 +96,7 @@ describe("taskModalActionIconStates", () => {
 		mockSetIcon.mockClear();
 	});
 
-	it("shows the status as a circle, check circle, or configured icon like task cards (#2401)", () => {
+	it("shares workflow glyphs with task cards and preserves configured icons (#2401)", () => {
 		const actionBar = createActionBar();
 		const statusIconElement = actionBar.querySelector('[data-type="status"] .icon');
 		const base = createState();
@@ -109,56 +106,41 @@ describe("taskModalActionIconStates", () => {
 
 		updateTaskModalActionIconStates(actionBar, { translate }, base);
 		updateTaskModalActionIconStates(actionBar, { translate }, base);
+		expect(statusIconElement?.getAttribute("data-tn-glyph")).toBe("open");
 		updateTaskModalActionIconStates(actionBar, { translate }, createState({ status: "done" }));
+		expect(statusIconElement?.getAttribute("data-tn-glyph")).toBe("complete");
 		updateTaskModalActionIconStates(
 			actionBar,
 			{ translate },
 			createState({ statusConfigs: withIcon })
 		);
 
-		expect(mockSetIcon.mock.calls).toEqual([
-			[statusIconElement, "circle"],
-			[statusIconElement, "circle-check"],
-			[statusIconElement, "clock"],
-		]);
+		expect(mockSetIcon.mock.calls).toEqual([[statusIconElement, "clock"]]);
 	});
 
-	it("refreshes visible values and clears them without duplicating labels or changing icons", () => {
+	it("labels chips with the current value, not only when hovered (#2048)", () => {
 		const actionBar = createActionBar();
-		const context = { translate, formatDate: (value: string) => `Formatted ${value}` };
-		const priority = actionBar.querySelector<HTMLElement>('[data-type="priority"]')!;
-		const originalIcon = priority.querySelector(".icon");
-		const state = createState({
-			dueDate: "2026-05-20",
-			priority: "high",
-			recurrenceRule: "FREQ=WEEKLY",
-			recurrenceDisplayText: "Weekly",
-			reminderCount: 2,
-		});
-		state.priorityConfigs = state.priorityConfigs.map((config) =>
-			config.value === "high" ? { ...config, label: "Review <draft>" } : config
+		const label = (type: string) =>
+			actionBar.querySelector(`[data-type="${type}"] .action-icon__label`)?.textContent;
+
+		updateTaskModalActionIconStates(actionBar, { translate }, createState());
+		expect(label("due-date")).toBe("Due date");
+		expect(label("status")).toBe("Open");
+
+		updateTaskModalActionIconStates(
+			actionBar,
+			{ translate },
+			createState({
+				dueDate: `${getTodayString()}T14:30`,
+				scheduledDate: "2020-05-19",
+				status: "done",
+				reminderCount: 2,
+			})
 		);
-
-		updateTaskModalActionIconStates(actionBar, context, state);
-		updateTaskModalActionIconStates(actionBar, context, { ...state, dueDate: "2026-05-21" });
-
-		expect(actionBar.querySelectorAll(".action-icon__value")).toHaveLength(6);
-		expect(
-			actionBar.querySelector('[data-type="due-date"] .action-icon__value')?.textContent
-		).toBe("modals.task.tooltips.dueValue:value=Formatted 2026-05-21");
-		expect(priority.querySelector(".action-icon__value")?.textContent).toBe("Review <draft>");
-		expect(priority.querySelector("draft")).toBeNull();
-		expect(priority.querySelector(".icon")).toBe(originalIcon);
-
-		updateTaskModalActionIconStates(actionBar, context, createState());
-		for (const label of actionBar.querySelectorAll(".action-icon__value")) {
-			// Status and priority always name their current value; other chips clear.
-			const dataType = label.parentElement?.dataset.type;
-			const expected =
-				dataType === "status" ? "Open" : dataType === "priority" ? "Normal" : "";
-			expect(label.textContent).toBe(expected);
-			expect(label.getAttribute("aria-hidden")).toBe("true");
-		}
+		expect(label("due-date")).toBe("Today 14:30");
+		expect(label("scheduled-date")).toBe("May 19, 2020");
+		expect(label("status")).toBe("Done");
+		expect(label("reminders")).toBe("2 reminders set");
 	});
 
 	it("marks date icons active and updates translated tooltips when values exist", () => {
@@ -179,14 +161,37 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="due-date"]'),
-			"modals.task.tooltips.dueValue:value=2026-05-20",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.dueValue"), {"value":"May 20, 2026"}),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="scheduled-date"]'),
-			"modals.task.tooltips.scheduledValue:value=2026-05-19T09:30",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.scheduledValue"), {"value":"May 19, 2026 09:30"}),
 			{ placement: "top" }
 		);
+	});
+
+	it("shows ISO dates on chips and tooltips when the ISO preference is set (#2354)", () => {
+		const actionBar = createActionBar();
+		const label = (type: string) =>
+			actionBar.querySelector(`[data-type="${type}"] .action-icon__label`)?.textContent;
+
+		updateTaskModalActionIconStates(
+			actionBar,
+			{ translate },
+			createState({
+				dueDate: getTodayString(),
+				scheduledDate: "2026-05-19T09:30",
+				dateDisplayFormat: "iso",
+			})
+		);
+
+		expect(label("due-date")).toContain(getTodayString());
+		expect(label("scheduled-date")).toContain("2026-05-19 09:30");
+		const scheduledIcon = actionBar.querySelector('[data-type="scheduled-date"]');
+		const tooltip = mockSetTooltip.mock.calls.find(([element]) => element === scheduledIcon)?.[1];
+		expect(tooltip).toContain("2026-05-19");
+		expect(tooltip).not.toContain("May");
 	});
 
 	it("marks non-default status and priority active and applies configured colors", () => {
@@ -209,12 +214,12 @@ describe("taskModalActionIconStates", () => {
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			statusIcon,
-			"modals.task.tooltips.statusValue:value=Done",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.statusValue"), {"value":"Done"}),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			priorityIcon,
-			"modals.task.tooltips.priorityValue:value=High",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.priorityValue"), {"value":"High"}),
 			{ placement: "top" }
 		);
 	});
@@ -238,12 +243,16 @@ describe("taskModalActionIconStates", () => {
 		expect(priorityIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe(
 			"rgb(153, 153, 153)"
 		);
-		expect(mockSetTooltip).toHaveBeenCalledWith(statusIcon, "modals.task.actions.status", {
-			placement: "top",
-		});
-		expect(mockSetTooltip).toHaveBeenCalledWith(priorityIcon, "modals.task.actions.priority", {
-			placement: "top",
-		});
+		expect(mockSetTooltip).toHaveBeenCalledWith(
+			statusIcon,
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.statusValue"), { value: "Open" }),
+			{ placement: "top" }
+		);
+		expect(mockSetTooltip).toHaveBeenCalledWith(
+			priorityIcon,
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.priorityValue"), { value: "Normal" }),
+			{ placement: "top" }
+		);
 	});
 
 	it("removes stale icon colors when no config color is available", () => {
@@ -285,12 +294,12 @@ describe("taskModalActionIconStates", () => {
 		expect(reminderIcon?.classList.contains("has-value")).toBe(true);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			recurrenceIcon,
-			"modals.task.tooltips.recurrenceValue:value=Weekly",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.recurrenceValue"), {"value":"Weekly"}),
 			{ placement: "top" }
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			reminderIcon,
-			"modals.task.tooltips.remindersPlural:count=2",
+			mockEnglishText(mockConceptDescriptor("modals.task.tooltips.remindersPlural"), {"count":"2"}),
 			{ placement: "top" }
 		);
 	});
@@ -306,7 +315,7 @@ describe("taskModalActionIconStates", () => {
 
 		expect(mockSetTooltip).toHaveBeenCalledWith(
 			actionBar.querySelector('[data-type="reminders"]'),
-			"modals.task.tooltips.remindersSingle",
+			mockEnglishText(msg({ message: "1 reminder set", context: "modals.task.tooltips.remindersSingle" })),
 			{ placement: "top" }
 		);
 	});

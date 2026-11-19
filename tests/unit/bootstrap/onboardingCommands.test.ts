@@ -45,9 +45,10 @@ it("only exposes Google sync when configured, and current-task sync in task cont
 	expect(syncAllTasks).toHaveBeenCalledTimes(1);
 });
 
-it("keeps the timer but does not register statistics commands", () => {
-	const ids = createTaskNotesCommandDefinitions({} as TaskNotesPlugin).map(command => command.id);
-	expect(ids).toContain("open-pomodoro-view");
-	expect(ids).not.toContain("open-statistics");
-	expect(ids).not.toContain("open-pomodoro-stats");
+it("opens Pomodoro statistics as a Base, without the retired statistics dashboards", async () => {
+	const plugin = { openBasesFileForCommand: jest.fn() } as unknown as TaskNotesPlugin;
+	const definitions = createTaskNotesCommandDefinitions(plugin);
+	expect(definitions.map(command => command.id)).not.toContain("open-statistics");
+	await definitions.find(command => command.id === "open-pomodoro-stats")?.callback?.(plugin);
+	expect(plugin.openBasesFileForCommand).toHaveBeenCalledWith("pomodoro-stats-base");
 });
