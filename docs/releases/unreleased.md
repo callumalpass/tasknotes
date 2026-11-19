@@ -38,3 +38,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @minchinweb for reporting
 - (#2618) Fixed the "About default `.base` files" note at the end of the release notes pointing to a General settings page that no longer exists. It now points to **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** and mentions the **TaskNotes: Update default base files** command.
   - Thanks to @Alireza-RS for reporting
+- (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
+  - Thanks to @prepare4robots for reporting
