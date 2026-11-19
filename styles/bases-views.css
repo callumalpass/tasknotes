@@ -136,6 +136,12 @@
     min-width: 0;
 }
 
+/* Obsidian fixes the header at --bases-header-height. Let it grow with the
+   wrapping toolbar, or embeds clip the tops of the first row of controls. */
+.tasknotes-view-active .bases-header {
+    height: auto;
+}
+
 .tasknotes-view-active {
     container: tn-bases-chrome / inline-size;
 }

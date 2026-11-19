@@ -40,3 +40,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @Alireza-RS for reporting
 - (#2579) Fixed task links in notes taking extra space on phones in Live Preview. A task link on a checkbox line (`- [ ] [[Task]]`) took three lines (checkbox, task, then the convert button) and now stays on one row, level with the checkbox. When no status or priority is shown, the title no longer starts after an empty gap.
   - Thanks to @BrucePlumb for reporting
+- (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
+  - Thanks to @prepare4robots for reporting
