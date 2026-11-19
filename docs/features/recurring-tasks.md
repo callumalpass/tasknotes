@@ -241,6 +241,10 @@ With **Reset status after each occurrence** turned on under [Settings → Time &
 
 With the reset on and a Next status set, clicking a recurring task's status indicator follows the status cycle, as it does for other tasks: it moves the series to the next status, and when that status is marked **Completed** it completes the occurrence shown on the card instead. Otherwise, the click completes the occurrence directly and keeps the series' status. On a completed occurrence, the click reopens it.
 
+### When a series ends
+
+A series with a `COUNT` or `UNTIL` limit ends once every occurrence its rule generates is completed or skipped. Completing or skipping that last occurrence sets the task to the first status marked **Completed**, so it is treated like any other completed task: it drops out of views that hide completed tasks, and if that status has **Auto-archive** turned on, the task is archived after the status's delay (see [Auto-Archiving](task-management.md#auto-archiving)). Reopening one of its occurrences sets the task back to the **Next status** of that completed status, or the default status. Dates recorded outside the rule do not count towards the end of a series. Series without a limit never end, and are never auto-archived.
+
 Completed instances are stored in:
 
 ```yaml
