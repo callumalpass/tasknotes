@@ -1,40 +1,21 @@
-import { BatchContextMenu } from "../../../src/components/BatchContextMenu";
+import { updateTasksProperty } from "../../../src/bases/basesTaskCardActions";
 import type { TaskInfo } from "../../../src/types";
 
-describe("BatchContextMenu selection persistence", () => {
+describe("Batch keyboard action selection persistence", () => {
 	it("keeps selection after applying a property edit", async () => {
-		const task = {
-			path: "selected.md",
-			title: "Selected",
-			status: "open",
-		} as TaskInfo;
+		const task = { path: "selected.md", title: "Selected", status: "open" } as TaskInfo;
 		const clearSelection = jest.fn();
 		const exitSelectionMode = jest.fn();
-		const updateProperty = jest.fn(async () => undefined);
-		const onUpdate = jest.fn();
-		const menu = {
-			options: {
-				plugin: {
-					cacheManager: {
-						getTaskInfo: jest.fn(async () => task),
-					},
-					taskService: { updateProperty },
-					taskSelectionService: { clearSelection, exitSelectionMode },
-				},
-				selectedPaths: [task.path],
-				onUpdate,
-			},
+		const updateTaskProperty = jest.fn(async () => undefined);
+		const context = {
+			plugin: { updateTaskProperty },
+			taskSelectionService: { clearSelection, exitSelectionMode },
 		};
 
-		await (BatchContextMenu.prototype as any).batchUpdateProperty.call(
-			menu,
-			"status",
-			"done"
-		);
+		await updateTasksProperty(context as any, [task], "status", "done");
 
-		expect(updateProperty).toHaveBeenCalledWith(task, "status", "done");
+		expect(updateTaskProperty).toHaveBeenCalledWith(task, "status", "done");
 		expect(clearSelection).not.toHaveBeenCalled();
 		expect(exitSelectionMode).not.toHaveBeenCalled();
-		expect(onUpdate).toHaveBeenCalled();
 	});
 });

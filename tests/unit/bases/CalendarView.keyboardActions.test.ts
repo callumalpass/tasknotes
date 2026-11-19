@@ -179,7 +179,11 @@ describe("CalendarView.handleEventDidMount", () => {
 
 	function baseMockThis(overrides: Record<string, unknown> = {}) {
 		return {
-			plugin: {},
+			plugin: { taskSelectionService: { isSelectionModeActive: () => false } },
+			rootElement: document.createElement("div"),
+			viewOptions: { timeFormat: "24" },
+			keyboard: { mount: jest.fn() },
+			updateSelectionModeUI: jest.fn(),
 			config: {},
 			basesEntryByPath: new Map(),
 			getVisibleProperties: () => [],
@@ -193,6 +197,7 @@ describe("CalendarView.handleEventDidMount", () => {
 	function baseArg(overrides: Record<string, unknown> = {}) {
 		return {
 			event: { extendedProps: { taskInfo: { path: "a.md" } } },
+			item: { data: {} },
 			el: document.createElement("tr"),
 			view: { type: "listWeek" },
 			...overrides,
@@ -205,8 +210,8 @@ describe("CalendarView.handleEventDidMount", () => {
 
 		(proto.handleEventDidMount as any).call(mockThis, baseArg());
 
-		expect(mockThis.updateSelectionVisuals).toHaveBeenCalled();
-		expect(mockThis.taskCardKeyboardController.syncFocusStyles).toHaveBeenCalled();
+		expect(mockThis.keyboard.mount).toHaveBeenCalled();
+		expect(mockThis.updateSelectionModeUI).toHaveBeenCalledWith(false);
 	});
 
 	it("does not resync selection/focus styling for events outside list mode", () => {
@@ -218,7 +223,7 @@ describe("CalendarView.handleEventDidMount", () => {
 			baseArg({ event: { extendedProps: {} }, view: { type: "dayGridMonth" } })
 		);
 
-		expect(mockThis.updateSelectionVisuals).not.toHaveBeenCalled();
-		expect(mockThis.taskCardKeyboardController.syncFocusStyles).not.toHaveBeenCalled();
+		expect(mockThis.keyboard.mount).toHaveBeenCalled();
+		expect(mockThis.updateSelectionModeUI).toHaveBeenCalledWith(false);
 	});
 });

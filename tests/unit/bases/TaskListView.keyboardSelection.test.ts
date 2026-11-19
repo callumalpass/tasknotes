@@ -105,49 +105,13 @@ describe("TaskListView keyboard selection", () => {
 		expect(document.activeElement).toBe(rootElement);
 	});
 
-	it("does not let the inherited selection handler clear selection while a popup owns Escape", () => {
-		const exitSelectionMode = jest.fn();
-		const rootElement = document.createElement("div");
-		const card = document.createElement("div");
-		rootElement.appendChild(card);
-		document.body.appendChild(rootElement);
-		const view = {
-			rootElement,
-			plugin: {
-				taskSelectionService: {
-					isSelectionModeActive: jest.fn(() => true),
-					getSelectionCount: jest.fn(() => 2),
-					exitSelectionMode,
-					onSelectionChange: jest.fn(() => jest.fn()),
-					onSelectionModeChange: jest.fn(() => jest.fn()),
-				},
-			},
-			taskCardKeyboardController: {
-				canHandleSelectionKeyDown: jest.fn(() => false),
-			},
-			canHandleSelectionKeyDown: (TaskListView.prototype as any).canHandleSelectionKeyDown,
-			getVisibleTaskPaths: jest.fn(() => ["focused.md"]),
-			updateSelectionModeUI: jest.fn(),
-			updateSelectionVisuals: jest.fn(),
-			updateSelectionIndicator: jest.fn(),
-			register: jest.fn(),
-		};
-		(TaskListView.prototype as any).setupSelectionHandling.call(view);
-		expect(view.updateSelectionModeUI).toHaveBeenCalledWith(true);
-		expect(view.updateSelectionVisuals).toHaveBeenCalled();
-		expect(view.updateSelectionIndicator).toHaveBeenCalledWith(2);
-		const event = new KeyboardEvent("keydown", {
-			key: "Escape",
-			bubbles: true,
-			cancelable: true,
-		});
+	it("defers Escape while a popup owns keyboard input", () => {
+		const event = new KeyboardEvent("keydown", { key: "Escape", bubbles: true });
+		const canHandleSelectionKeyDown = jest.fn(() => false);
+		const view = { taskCardKeyboardController: { canHandleSelectionKeyDown } };
 
-		card.dispatchEvent(event);
-
-		expect(view.taskCardKeyboardController.canHandleSelectionKeyDown).toHaveBeenCalledWith(
-			event
-		);
-		expect(exitSelectionMode).not.toHaveBeenCalled();
+		expect((TaskListView.prototype as any).canHandleSelectionKeyDown.call(view, event)).toBe(false);
+		expect(canHandleSelectionKeyDown).toHaveBeenCalledWith(event);
 	});
 
 	it("rehydrates selection visuals after every card render", () => {

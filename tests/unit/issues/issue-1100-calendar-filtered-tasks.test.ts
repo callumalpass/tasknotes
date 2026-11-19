@@ -134,7 +134,7 @@ describe("Issue #1100: Advanced Calendar View filtering", () => {
 	});
 
 	it("updates an existing calendar with the filtered task set", async () => {
-		const view = createCalendarViewProbe({ refetchEvents: jest.fn() });
+		const view = createCalendarViewProbe({ refetchEvents: jest.fn(), setOptions: jest.fn() });
 
 		await view.render();
 
