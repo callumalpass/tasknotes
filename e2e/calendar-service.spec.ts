@@ -106,6 +106,13 @@ function fakeCalendarService() {
 						{ id: WORK, name: "Work", can_write: true, is_primary: true, color: "#0b8043" },
 						{ id: TEAM, name: "Team", can_write: false, is_primary: false, is_selected: true },
 						{ id: HOLIDAYS, name: "Holidays", can_write: false, is_primary: false },
+						// More calendars than can be shown at once.
+						...[1, 2, 3].map((n) => ({
+							id: `5555555${n}-5555-4555-8555-555555555555`,
+							name: `Project ${n}`,
+							can_write: false,
+							is_primary: false,
+						})),
 					],
 				});
 			if (pathname === "/v1/devices/session-1" && method === "DELETE") {
@@ -288,6 +295,16 @@ test("signs in with Google from settings, shows the person's events, and signs o
 	await settings.screenshot({ path: "test-results/calendar-service/signed-in.png" });
 	await shown("Holidays").click();
 	await expect.poll(titles).toEqual(["Holiday", "Review", "Standup"]);
+
+	// At five, the limit is stated and the rest can't be turned on until one is off.
+	await expect(nativeSettingRow(settings, "You can show up to 5 calendars at a time.")).toBeVisible();
+	await shown("Project 1").click();
+	await shown("Project 2").click();
+	await expect(shown("Project 2")).toHaveClass(/is-enabled/);
+	await expect(shown("Project 3")).toHaveClass(/is-disabled/);
+	await settings.screenshot({ path: "test-results/calendar-service/limit.png" });
+	await shown("Project 2").click();
+	await expect(shown("Project 3")).not.toHaveClass(/is-disabled/);
 
 	// The session credential is in secret storage, and in nothing that syncs.
 	expect(await plugin("plugin.app.secretStorage.getSecret('tasknotes-calendar-service-session')")).toBe(CREDENTIAL);

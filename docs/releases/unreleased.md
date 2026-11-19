@@ -33,3 +33,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Changed
+
+- (#2619) With Sign in with Google, **Calendars shown** now states that up to five calendars can be shown at a time, and the remaining calendars' toggles are disabled once five are on, instead of turning on and switching back off. See [Calendar setup](https://tasknotes.dev/calendar-setup/).
+  - Thanks to @Alireza-RS for the request

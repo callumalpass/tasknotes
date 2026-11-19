@@ -122,6 +122,14 @@ describe("Google Calendar sign-in settings", () => {
 		await expect(ctx.write("calendarService.calendar.calendar-5", true)).rejects.toThrow(
 			"You can show up to 5 calendars at a time."
 		);
+		// The limit is stated, and calendars that can't turn on say so before a click.
+		const disabled = (name: string) => {
+			const control = named([google], name)?.control as { disabled?: () => boolean } | undefined;
+			return control?.disabled?.() ?? false;
+		};
+		expect(named([google], "You can show up to 5 calendars at a time.")).toBeDefined();
+		expect(disabled("Calendar 5")).toBe(true);
+		expect(disabled("Calendar 4")).toBe(false);
 
 		await ctx.write(`calendarService.calendar.${WORK}`, false);
 		expect(hosted.setShownCalendars).toHaveBeenLastCalledWith([
@@ -130,6 +138,7 @@ describe("Google Calendar sign-in settings", () => {
 			"calendar-3",
 			"calendar-4",
 		]);
+		expect(disabled("Calendar 5")).toBe(false);
 	});
 
 	test("signs out, disconnects and deletes the account only when asked", async () => {
