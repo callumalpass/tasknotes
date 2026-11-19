@@ -944,10 +944,10 @@ msgstr "+1周"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] 关于默认 `.base` 文件\n"
 "> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n"
-"> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 视图与 base 文件 → 更新文件** 中重新生成 base 文件。"
+"> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 外观与交互 → 视图与 Base 文件 → 更新文件** 中重新生成 base 文件，或运行 **TaskNotes: 更新默认 Base 文件** 命令。"
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"

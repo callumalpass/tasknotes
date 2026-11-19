@@ -33,3 +33,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2618) Fixed the "About default `.base` files" note at the end of the release notes pointing to a General settings page that no longer exists. It now points to **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** and mentions the **TaskNotes: Update default base files** command.
+  - Thanks to @Alireza-RS for reporting
