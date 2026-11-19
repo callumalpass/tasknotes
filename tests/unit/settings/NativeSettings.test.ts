@@ -14,6 +14,15 @@ describe("Native settings navigation and search", () => {
 		expect(STARTER_NOTE_CONTENT).toContain("Views & base files");
 	});
 
+	test("includes keyboard shortcuts in the native page tree", () => {
+		const { tab } = settingsFixture();
+		const shortcuts = page(tab.getSettingDefinitions(), "Task card keyboard shortcuts");
+		expect(shortcuts.items).toEqual([
+			expect.objectContaining({ name: "Task card keyboard shortcuts", render: expect.any(Function) }),
+		]);
+		expect(shortcuts.page).toBeUndefined();
+	});
+
 	test("does not expose retired settings while retaining the persisted legacy alignment key", () => {
 		const { plugin, tab } = settingsFixture();
 		plugin.settings.viewsButtonAlignment = "left";

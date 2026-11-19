@@ -1,7 +1,6 @@
 import {
 	App,
 	PluginSettingTab,
-	SettingPage,
 	type SettingDefinitionItem,
 	type SettingDefinitionPage,
 } from "obsidian";
@@ -15,19 +14,6 @@ import { propertyDefinitions } from "./native/properties";
 import { creationDefaults, filenameDefinitions, formDefinitions } from "./native/creation";
 import { apiDefinitions, calendarDefinitions } from "./native/integrations";
 import { renderKeyboardShortcutsTab } from "./native/keyboardShortcutsTab";
-
-/** Renders the existing keyboard shortcut editor inside Obsidian's native settings page. */
-class KeyboardShortcutsSettingPage extends SettingPage {
-	constructor(private readonly plugin: TaskNotesPlugin) {
-		super();
-	}
-
-	display(): void {
-		renderKeyboardShortcutsTab(this.containerEl, this.plugin, () => {
-			void this.plugin.saveSettings();
-		});
-	}
-}
 
 /** Native definitions are both the settings UI and Obsidian's search index. */
 export class TaskNotesSettingTab extends PluginSettingTab {
@@ -140,12 +126,19 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					bases,
 				]
 			),
-			{
-				type: "page",
-				name: t("settings.keyboardShortcuts.header"),
-				desc: t("settings.keyboardShortcuts.description"),
-				page: () => new KeyboardShortcutsSettingPage(this.plugin),
-			},
+			page(t("settings.keyboardShortcuts.header"), t("settings.keyboardShortcuts.description"), [
+				{
+					name: t("settings.keyboardShortcuts.header"),
+					// Keep the interactive shortcut editor inside the native page tree so
+					// Obsidian includes its navigation entry with other declarative pages.
+					render: (setting) => {
+						setting.settingEl.addClass("tasknotes-settings__shortcut-editor");
+						renderKeyboardShortcutsTab(setting.settingEl, this.plugin, () => {
+							void this.plugin.saveSettings();
+						});
+					},
+				},
+			]),
 			page(
 				ctx.t("settings.native.timeReminders"),
 				ctx.t("settings.native.notificationsTimeTrackingRecurrencePomodoroAndTimeblocking"),
