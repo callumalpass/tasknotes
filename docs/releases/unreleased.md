@@ -33,3 +33,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2604) Fixed the task card in a narrow Pomodoro view (about 350 px wide or less) running the title under the status and priority icons. On narrow task cards in any view, the due-date icon could also sit on its own line above the date. It now stays beside the date. Turn on **Show all properties on task cards** to show time estimate and time tracked on extra lines instead of in a count such as +2.
+  - Thanks to @RumiaKitinari for reporting
+- (#2613) Fixed status and priority icons not lining up with the task title. In a wide Task List the priority icon sat slightly higher than the title, and when a title wrapped onto several lines with nothing below it, both icons sat between its lines. They now line up with the first line of the title in Task List, Kanban, Agenda and Pomodoro views.
+  - Thanks to @wivi-prod for reporting
