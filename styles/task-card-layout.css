@@ -191,7 +191,14 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 }
 
 body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card.task-card--metadata-empty:not(.task-card--layout-inline) > :where(.task-card__main-row) :is(.task-card__status-dot, .task-card__priority-dot) {
-    align-self: center;
+    align-self: start;
+}
+
+/* Status and priority line up with the first line of the title, also when it wraps (#2613):
+   the title starts lower by half the difference between the control and its line height. */
+body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card:not(.task-card--layout-inline) > .task-card__main-row .task-card__title-text {
+    align-self: start;
+    margin-top: max(0px, calc((var(--tn-board-control-size) - var(--tn-type-md) * 1.4) / 2));
 }
 
 body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card .task-card__content {
@@ -423,6 +430,10 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
         margin-block: min(0px, calc((var(--tn-task-title-line) - var(--tn-control-sm)) / 2));
     }
 
+    body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row .task-card__title-text {
+        margin-top: 0;
+    }
+
     body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) :is(.task-card__metadata-date, .task-card__metadata-overflow, .task-card__badges) {
         margin-block: min(0px, calc((var(--tn-task-meta-line) - var(--tn-control-sm)) / 2));
     }
@@ -445,7 +456,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
             grid-row: 1;
         }
 
-        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__context-menu) {
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__priority-dot, .task-card__badges, .task-card__context-menu) {
             margin-block: 0;
         }
 
@@ -456,6 +467,11 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
         body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__title-text {
             grid-column: 2;
             grid-row: 1;
+        }
+
+        /* Controls no longer overhang here, so the title's first line centres on them. */
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row .task-card__title-text {
+            margin-top: max(0px, calc((var(--tn-control-sm) - var(--tn-task-title-line)) / 2));
         }
 
         body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata {
@@ -538,6 +554,11 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 
     body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline) > .task-card__main-row > :is(.task-card__status-dot, .task-card__priority-dot) {
         justify-self: start;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card:not(.task-card--layout-inline, .tn-task-modal__task-row) > .task-card__main-row .task-card__title-text {
+        align-self: start;
+        margin-top: max(0px, calc((var(--tn-board-control-size, var(--tn-control-sm)) - var(--tn-type-md) * 1.4) / 2));
     }
 
     /* Kanban cards size to their content, so a card with only a title is one line tall. */

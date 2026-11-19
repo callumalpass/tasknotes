@@ -85,15 +85,25 @@ test('narrow Pomodoro task card keeps the title clear of its icons', async () =>
       const status = box('.task-card__status-dot');
       const priority = box('.task-card__priority-dot');
       const icon = box('.task-card__metadata-date .task-card__date-icon');
+      // #2613: the icons centre on the title's first line, which wraps at these widths.
+      const range = document.createRange();
+      range.selectNodeContents(element.querySelector('.task-card__title-text')!);
+      const line = range.getClientRects()[0];
+      const centredOnLine = (selector: string) => {
+        const glyph = element.querySelector(`${selector} svg`)!.getBoundingClientRect();
+        return Math.abs((glyph.top + glyph.bottom) / 2 - (line.top + line.bottom) / 2) <= 1;
+      };
       return {
         clearOfStatus: title.left >= status.right - 1,
         clearOfPriority: title.right <= priority.left + 1,
         dateBelowTitle: icon.top >= title.bottom - 1,
+        statusOnFirstLine: centredOnLine('.task-card__status-dot'),
+        priorityOnFirstLine: centredOnLine('.task-card__priority-dot'),
         iconBesideDate: icon.top < box('.task-card__metadata-date .task-card__date-value:not(.task-card__date-value--compact)').bottom &&
           icon.right <= box('.task-card__metadata-date .task-card__date-value:not(.task-card__date-value--compact)').left + 1,
       };
     });
-    expect(layout, `sidebar width ${width}`).toEqual({ clearOfStatus: true, clearOfPriority: true, dateBelowTitle: true, iconBesideDate: true });
+    expect(layout, `sidebar width ${width}`).toEqual({ clearOfStatus: true, clearOfPriority: true, dateBelowTitle: true, statusOnFirstLine: true, priorityOnFirstLine: true, iconBesideDate: true });
   }
 });
 
