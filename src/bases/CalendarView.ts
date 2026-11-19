@@ -39,7 +39,7 @@ import { calendarTaskId } from "@tasknotes/model/calendar";
 import { buildCalendarBatchPreview, isCalendarBatchTarget, isCalendarSelectionTarget, planCalendarBatchMove, type CalendarBatchMove } from "./calendarBatchMove";
 import { installCalendarSwipe } from "./calendarSwipe";
 import { CalendarBatchPreview } from "./calendarBatchPreview";
-import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR } from "../utils/clickHandlers";
+import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR, openTaskNote } from "../utils/clickHandlers";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
@@ -404,6 +404,20 @@ export class CalendarView extends BasesViewBase {
 			}, { capture: true });
 			this.registerDomEvent(this.rootElement, "keydown", (event: KeyboardEvent) => {
 				if (event.key === "Enter" || event.key === " ") this.openMonthChipOverflow(event);
+			}, { capture: true });
+			// The calendar reports only primary clicks on its items, so middle-click
+			// opens a task's note in a new tab here, for every calendar layout.
+			this.registerDomEvent(this.rootElement, "auxclick", (event: MouseEvent) => {
+				if (event.button !== 1) return;
+				const target = event.target as HTMLElement;
+				const item = target.closest<HTMLElement>(".tnc-item[data-task-path]");
+				if (!item?.dataset.taskPath) return;
+				// Links and controls inside the item keep their own middle-click; the item is itself a button.
+				const control = target.closest(DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR);
+				if (control && control !== item && item.contains(control)) return;
+				event.preventDefault();
+				event.stopPropagation();
+				openTaskNote(this.plugin.app, item.dataset.taskPath, "tab");
 			}, { capture: true });
 			const preview = new CalendarBatchPreview({
 				root: this.rootElement,

@@ -8434,6 +8434,11 @@ msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "노트 열기"
 
+#: src/components/TaskContextMenu.ts
+msgctxt "contextMenus.task.openNoteInNewTab"
+msgid "Open note in new tab"
+msgstr "새 탭에서 노트 열기"
+
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
 #: src/modals/taskEditCompletions.ts

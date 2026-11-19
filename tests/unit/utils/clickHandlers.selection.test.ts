@@ -42,7 +42,7 @@ it("keeps ordinary clicking and standalone Ctrl-click source navigation unchange
 	const h = harness();
 	h.inner.dispatchEvent(new MouseEvent("click", { bubbles: true, ctrlKey: true }));
 	jest.runAllTimers(); await Promise.resolve();
-	expect(h.openLinkText).toHaveBeenCalledWith("Tasks/Selection.md", "", true);
+	expect(h.openLinkText).toHaveBeenCalledWith("Tasks/Selection.md", "", "tab");
 	const normal = harness(() => false);
 	normal.inner.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 	jest.runAllTimers(); await Promise.resolve();

@@ -86,7 +86,7 @@ Use the **Card Layout** setting when a board needs a different density from othe
 To show checklist progress on cards, include `file.tasks` in the view `order` array.
 For existing `.base` files, add this in YAML manually first; after it is in `order`, it appears in the Bases picker as `tasks`.
 
-Click a card to open the task file for editing. Right-click to access the context menu for task actions. Drag cards between columns or swimlane cells to update the task's properties.
+Click a card to open the task file for editing. Ctrl/Cmd-click or middle-click a card to open its note in a new tab. Right-click to access the context menu for task actions. Drag cards between columns or swimlane cells to update the task's properties.
 
 ## Column Operations
 

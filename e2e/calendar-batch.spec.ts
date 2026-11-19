@@ -99,7 +99,7 @@ async function picker(page: Page, card: Locator, role: string): Promise<Locator>
 
 test("modifier selection, visible clear control, range and keyboard select-all", async () => {
 	const page = obsidian.page;
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	expect(await selected(page)).toHaveLength(2);
 	await expect(page.locator(".tn-selection-indicator:visible")).toBeVisible();
@@ -111,7 +111,7 @@ test("modifier selection, visible clear control, range and keyboard select-all",
 	await page.locator(".tn-selection-indicator:visible").click();
 	expect(await selected(page)).toEqual([]);
 	await expect(page.locator(".tnc-btn-selectTasks")).toHaveAttribute("aria-pressed", "false");
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "Charlie").click({ modifiers: ["Shift"] });
 	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Charlie.md`]));
 	await page.getByRole("button", { name: "Task options", exact: true }).click();
@@ -128,7 +128,7 @@ test("calendar list mode keeps selection consistent and includes recurring tasks
 		const app = (window as any).app;
 		return app.vault.read(app.vault.getAbstractFileByPath(path));
 	}, basePath)).toMatch(/calendarView:\s*listWeek/);
-	await event(page, "Alpha").locator(".task-card").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").locator(".task-card").click({ modifiers: ["Shift"] });
 	await event(page, "Bravo").locator(".task-card").click({ modifiers: ["Control"] });
 	await page.locator(`.tnc:visible .tnc-item[data-task-path="${folder}/Recurring.md"] .task-card`).first().click({ modifiers: ["Control"] });
 	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
@@ -146,14 +146,14 @@ test("select-all excludes tasks hidden by the all-day setting", async () => {
 		await app.vault.modify(file, (await app.vault.read(file)).replace("    scrollTime:", "    showAllDaySlot: false\n    scrollTime:"));
 	}, basePath);
 	await expect(page.locator(".tnc:visible .tnc-tg-allday")).toHaveCount(0);
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await page.keyboard.press("Control+a");
 	expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`, `${folder}/Recurring.md`]));
 });
 
 test("group dragging keeps relative days, local times and deadlines, and offers Undo", async () => {
 	const page = obsidian.page;
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	await dragByColumn(page, event(page, "Alpha"));
 	await expect.poll(() => Promise.all([taskDates(page, "Alpha"), taskDates(page, "Bravo")])).toEqual([
@@ -169,7 +169,7 @@ test("group dragging keeps relative days, local times and deadlines, and offers 
 
 test("peer previews precede writes and Escape restores all placements", async () => {
 	const page = obsidian.page;
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	const columns = page.locator(".tnc:visible .tnc-tg .tnc-col");
 	const first = (await columns.nth(0).boundingBox())!, second = (await columns.nth(1).boundingBox())!;
@@ -204,7 +204,7 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 	}, basePath)).toContain("calendarView: dayGridMonth");
 	await page.evaluate(() => (window as any).app.workspace.getMostRecentLeaf().view.controller.view.calendar.gotoDate("2031-05-05"));
 	await expect(event(page, "Busy")).toBeVisible();
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	await page.evaluate(() => {
 		const calendar = (window as any).app.workspace.getMostRecentLeaf().view.controller.view.calendar;
@@ -235,15 +235,15 @@ test("crowded month cells do not fold peer previews into the more menu", async (
 });
 
 for (const view of ["List", "Kanban"]) {
-	test(`${view} Ctrl/Cmd clicks toggle card selection without navigation`, async () => {
+	test(`${view} Shift starts a selection and Ctrl/Cmd clicks then toggle cards without navigation`, async () => {
 		const page = obsidian.page;
 		await page.locator(".bases-toolbar-views-menu:visible").click();
 		await page.getByText(`${view} Batch`, { exact: true }).last().click();
 		const content = (name: string) => page.locator(`.task-card[data-task-path="${folder}/${name}.md"]:visible`).first().locator(".task-card__title-text");
-		await content("Alpha").click({ modifiers: ["Control"] });
-		await content("Bravo").click({ modifiers: ["Meta"] });
+		await content("Alpha").click({ modifiers: ["Shift"] });
+		await content("Bravo").click({ modifiers: ["ControlOrMeta"] });
 		expect(new Set(await selected(page))).toEqual(new Set([`${folder}/Alpha.md`, `${folder}/Bravo.md`]));
-		await content("Alpha").click({ modifiers: ["Control"] });
+		await content("Alpha").click({ modifiers: ["ControlOrMeta"] });
 		expect(await selected(page)).toEqual([`${folder}/Bravo.md`]);
 		await expect(page.locator(".modal-container")).toHaveCount(0);
 		expect(await page.evaluate(() => (window as any).app.workspace.getMostRecentLeaf().view.file?.path)).toBe(basePath);
@@ -252,7 +252,7 @@ for (const view of ["List", "Kanban"]) {
 
 test("keyboard moves shift selected tasks by the same half-hour", async () => {
 	const page = obsidian.page;
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "Bravo").click({ modifiers: ["Control"] });
 	await event(page, "Alpha").focus();
 	await page.keyboard.press("Alt+ArrowDown");
@@ -262,7 +262,7 @@ test("keyboard moves shift selected tasks by the same half-hour", async () => {
 
 test("incompatible markers are rejected without partially moving the selection", async () => {
 	const page = obsidian.page;
-	await event(page, "Alpha").click({ modifiers: ["Control"] });
+	await event(page, "Alpha").click({ modifiers: ["Shift"] });
 	await event(page, "DueOnly", "due").click({ modifiers: ["Control"] });
 	await dragByColumn(page, event(page, "Alpha"));
 	const rejection = page.locator(".notice").filter({ hasText: "Group moves require" });
@@ -282,7 +282,7 @@ for (const view of ["Calendar", "List", "Kanban"]) {
 		const card = (name: string) => view === "Calendar" ? event(page, name) :
 			page.locator(`.task-card[data-task-path="${folder}/${name}.md"]:visible`).first();
 		const modifier = "Control";
-		await card("Alpha").click({ modifiers: [modifier] });
+		await card("Alpha").click({ modifiers: ["Shift"] });
 		await card("Bravo").click({ modifiers: [modifier] });
 		await picker(page, card("Alpha"), "Scheduled date");
 		await page.keyboard.press("Escape");

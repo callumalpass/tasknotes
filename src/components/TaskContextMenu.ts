@@ -22,6 +22,7 @@ import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 import { downloadTaskICSFile, openCalendarURL } from "../ui/calendarExportActions";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { getModifierPaneType, openTaskNote } from "../utils/clickHandlers";
 
 export type { TaskContextMenuOptions } from "./task-context-menu/types";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
@@ -77,12 +78,23 @@ export class TaskContextMenu {
 				this.t(msg({ message: "Open note", context: "contextMenus.task.openNote" }))
 			);
 			item.setIcon("file-text");
-			item.onClick(() => {
-				const file = plugin.app.vault.getAbstractFileByPath(task.path);
-				if (file instanceof TFile) {
-					void plugin.app.workspace.getLeaf(false).openFile(file);
-				}
-			});
+			// Ctrl/Cmd+click on the item opens a new tab, as on an Obsidian link.
+			item.onClick((event) =>
+				openTaskNote(plugin.app, task.path, getModifierPaneType(event))
+			);
+		});
+
+		this.menu.addItem((item) => {
+			item.setTitle(
+				this.t(
+					msg({
+						message: "Open note in new tab",
+						context: "contextMenus.task.openNoteInNewTab",
+					})
+				)
+			);
+			item.setIcon("external-link");
+			item.onClick(() => openTaskNote(plugin.app, task.path, "tab"));
 		});
 
 		this.menu.addSeparator();
@@ -443,6 +455,7 @@ export class TaskContextMenu {
 			if (file instanceof TFile) {
 				addNoteFileActions(submenu, file, plugin, {
 					task,
+					includeOpenInNewTab: false,
 					source: "tasknotes-context-menu",
 					onUpdate: this.options.onUpdate,
 				});
