@@ -35,3 +35,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - Restored the task card keyboard shortcuts page in the current settings navigation.
+- Prevented project notes from jumping to the relationships board when their tab is activated.

@@ -430,6 +430,38 @@ describe("BasesTaskCardKeyboardController.handleKeyDown / handleRootKeyDown", ()
 });
 
 describe("BasesTaskCardKeyboardController overlay + Scope lifecycle", () => {
+	it("does not scroll an embedded relationships board into view when its note tab activates", () => {
+		jest.useFakeTimers();
+		try {
+			const leafContainer = document.createElement("div");
+			const widget = document.createElement("div");
+			widget.className = "tasknotes-relationships-widget";
+			const root = document.createElement("div");
+			widget.appendChild(root);
+			leafContainer.appendChild(widget);
+			document.body.appendChild(leafContainer);
+			const restoreFocusedElement = jest.fn();
+			const mockThis = {
+				root,
+				containerEl: widget,
+				focusController: { restoreFocusedElement },
+				isThisLeaf: () => true,
+			};
+
+			proto.restoreFocusForActivatedLeaf.call(mockThis, { view: { containerEl: leafContainer } });
+			jest.runAllTimers();
+			expect(restoreFocusedElement).not.toHaveBeenCalled();
+
+			leafContainer.appendChild(root);
+			proto.restoreFocusForActivatedLeaf.call(mockThis, { view: { containerEl: leafContainer } });
+			jest.runAllTimers();
+			expect(restoreFocusedElement).toHaveBeenCalledTimes(1);
+		} finally {
+			document.body.empty();
+			jest.useRealTimers();
+		}
+	});
+
 	it("defers task-card focus until after Obsidian modal cleanup", () => {
 		jest.useFakeTimers();
 		try {

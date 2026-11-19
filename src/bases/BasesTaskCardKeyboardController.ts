@@ -237,6 +237,8 @@ private handleRootKeyDown(event: KeyboardEvent): void {
 
 	private restoreFocusForActivatedLeaf(leaf: LeafLike): void {
 		if (!this.isThisLeaf(leaf)) return;
+		// An embedded relationships board belongs to the note's leaf; activating that leaf must not scroll to a remembered card.
+		if (this.root.closest(".tasknotes-relationships-widget")) return;
 
 		const win = this.containerEl.ownerDocument.defaultView ?? window;
 		win.setTimeout(() => {
