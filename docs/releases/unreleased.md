@@ -32,6 +32,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Changed
+
+- (#2619) With Sign in with Google, up to ten calendars can now be shown at a time, up from five. **Calendars shown** states the limit when an account has more calendars than that, and the remaining toggles are disabled once the limit is reached, instead of turning on and switching back off. See [Calendar setup](https://tasknotes.dev/calendar-setup/).
+  - Thanks to @Alireza-RS for the request
+
 ## Fixed
 
 - (#2606) Fixed Ctrl/Cmd-click on a task in Task List, Kanban, Calendar and Agenda views selecting the task instead of opening its note in a new tab. Ctrl/Cmd-click and middle-click now open the note in a new tab on every task card, calendar event and task link in a note, as links do in Obsidian; Ctrl/Cmd+Alt-click opens it to the side. To select several tasks, Shift-click a task first; while a selection is active, Ctrl/Cmd-click adds or removes tasks as before. The task menu again has **Open note in new tab** next to **Open note**, instead of only under **Note actions**. See [Task List view](https://tasknotes.dev/views/task-list/#task-actions).
