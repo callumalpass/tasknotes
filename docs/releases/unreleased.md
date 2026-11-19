@@ -33,3 +33,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2608) Fixed recurring tasks recording completions and skips on dates outside their rule. After a `COUNT` or `UNTIL` series had ended, **Completed today**, **Completed on (pick date)** and the edit modal's completion calendar could add dates past the end of the series to `complete_instances`. TaskNotes now records completions only against the series' own dates; actions with no occurrence to update are shown disabled or explain why, and dates already recorded can still be cleared. Completion-anchored series still accept any date. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#completion-tracking).
+  - Thanks to @14790897 for reporting
