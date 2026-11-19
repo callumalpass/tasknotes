@@ -256,7 +256,7 @@ test('shared compact cards and inline task links retain their layout', async () 
   await page.screenshot({ path: 'test-results/list-redesign-inline.png' });
 });
 
-test('empty lists use the shared empty state and creation action', async () => {
+test('empty lists use the shared empty state and the toolbar creation action', async () => {
   const content = stringify({
     filters: { and: [`file.inFolder("${folder}/Missing")`, 'file.hasTag("task")'] },
     views: [{ type: 'tasknotesTaskList', name: 'Empty' }],
@@ -267,7 +267,8 @@ test('empty lists use the shared empty state and creation action', async () => {
   }, { folder, content });
   const empty = page.locator('.workspace-leaf.mod-active .tn-empty');
   await expect(empty).toBeVisible();
-  await empty.getByRole('button', { name: 'New', exact: true }).click();
+  await expect(empty.locator('button')).toHaveCount(0);
+  await page.locator('.workspace-leaf.mod-active .tn-bases-new-task-btn').click();
   await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
   await page.keyboard.press('Escape');
 });

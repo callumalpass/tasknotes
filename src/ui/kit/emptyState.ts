@@ -7,10 +7,12 @@ export interface EmptyStateOptions {
 	onAction?: () => void;
 	secondaryActionLabel?: string;
 	onSecondaryAction?: () => void;
+	/** A single quiet line with little padding, for an expected empty result. */
+	compact?: boolean;
 }
 
 export function renderEmptyState(container: HTMLElement, options: EmptyStateOptions): HTMLElement {
-	const el = container.createDiv({ cls: "tn-empty" });
+	const el = container.createDiv({ cls: options.compact ? "tn-empty tn-empty--compact" : "tn-empty" });
 	el.createDiv({ cls: "tn-empty__message", text: options.message });
 
 	if (options.actionLabel && options.onAction) {

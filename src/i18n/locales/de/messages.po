@@ -5916,11 +5916,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Container füllen"
 
-#: src/bases/BasesViewBase.ts
-msgctxt "views.stats.sections.filters"
-msgid "Filters"
-msgstr "Filter"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
@@ -7914,9 +7909,9 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "Keine Aufgaben entsprechen „{searchTerm}“"
 
 #: src/bases/BasesViewBase.ts
-msgctxt "empty task view recovery"
-msgid "No tasks match this view. Review its filters."
-msgstr "Keine Aufgaben entsprechen dieser Ansicht. Prüfe ihre Filter."
+msgctxt "empty task view"
+msgid "No tasks match this view."
+msgstr "Keine Aufgaben entsprechen dieser Ansicht."
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"

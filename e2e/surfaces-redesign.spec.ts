@@ -237,15 +237,16 @@ test('empty list and board actions create tasks and search clearing restores res
         await expect(page.locator('.tn-search-no-results')).toHaveCount(0);
         await expect(page.locator('.workspace-leaf.mod-active .task-card').first()).toBeVisible();
       } else {
-        await expect(page.locator('.tn-empty__message')).toHaveText('No tasks match this view. Review its filters.');
-        await expect(page.locator('.tn-empty').getByRole('button', { name: 'Filters', exact: true })).toBeVisible();
+        // #2626: an empty view is one quiet line; Filter and New stay in the toolbar.
+        await expect(page.locator('.tn-empty__message')).toHaveText('No tasks match this view.');
+        await expect(page.locator('.tn-empty button')).toHaveCount(0);
         for (const theme of ['theme-light', 'theme-dark']) {
           for (const mobile of [false, true]) {
             await appearance(theme, mobile);
             await screenshot(`empty-${type}-${theme}-${mobile ? 'mobile' : 'desktop'}`);
           }
         }
-        await page.locator('.tn-empty').getByRole('button', { name: 'New', exact: true }).click();
+        await page.locator('.workspace-leaf.mod-active .tn-bases-new-task-btn').click();
         await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
         await page.keyboard.press('Escape');
       }

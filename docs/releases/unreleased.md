@@ -38,3 +38,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @minchinweb for reporting
 - (#2618) Fixed the "About default `.base` files" note at the end of the release notes pointing to a General settings page that no longer exists. It now points to **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** and mentions the **TaskNotes: Update default base files** command.
   - Thanks to @Alireza-RS for reporting
+
+## Changed
+
+- (#2626) A Task List or Kanban view, or a Calendar in list mode, with no matching tasks now shows one short line, "No tasks match this view.", instead of a tall block with Filters and New buttons. Filter and New stay in the view's toolbar. This keeps notes with several embedded views, and the Relationship Widget, compact. A vault with no tasks at all still shows New and the Start Here guide.
+  - Thanks to @prepare4robots for reporting
