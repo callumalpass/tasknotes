@@ -92,6 +92,17 @@ export function convertBasesGroupKeyToString(key: unknown): string {
 	return formatBasesGroupKeyValue(actualValue);
 }
 
+/** Formats list group keys in stable value order so equivalent groups share a label. */
+export function convertBasesListGroupKeyToString(key: unknown): string {
+	if (key === null || key === undefined) return convertBasesGroupKeyToString(key);
+	const actualValue = extractBasesGroupKeyValue(key);
+	if (!Array.isArray(actualValue)) return formatBasesGroupKeyValue(actualValue);
+	const sortedValues = actualValue.map(stringifyUnknown).sort((left, right) =>
+		left < right ? -1 : left > right ? 1 : 0
+	);
+	return sortedValues.length > 0 ? sortedValues.join(", ") : NONE_GROUP_KEY;
+}
+
 const LINK_MARKUP = /^(?:\[\[[^\]]+\]\]|\[[^\]]*\]\([^)]+\))$/;
 
 function basesLinkMarkup(value: unknown): string | null {

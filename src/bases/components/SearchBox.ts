@@ -32,7 +32,8 @@ export class SearchBox {
 	constructor(
 		container: HTMLElement,
 		onSearch: (term: string) => void | Promise<void>,
-		debounceMs = 300
+		debounceMs = 300,
+		onDismiss?: () => void
 	) {
 		this.container = container;
 		this.onSearch = onSearch;
@@ -138,11 +139,18 @@ export class SearchBox {
 	 */
 	private handleKeydown = (e: KeyboardEvent): void => {
 		if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
-		if (e.key === 'Escape') {
+		if (e.key === 'Backspace' && !this.getValue()) {
+			e.preventDefault();
+			e.stopPropagation();
+			// Empty search hands keyboard ownership back to the containing task view.
+			this.exitSearch(false);
+			this.onDismiss?.();
+		} else if (e.key === 'Escape') {
 			e.preventDefault();
 			e.stopPropagation();
 			if (!this.getValue()) {
 				this.exitSearch(false);
+				this.onDismiss?.();
 				return;
 			}
 			this.clear();
@@ -153,12 +161,14 @@ export class SearchBox {
 			e.stopPropagation();
 			this.debouncedSearch?.flush();
 			this.exitSearch(true);
+			this.onDismiss?.();
 		}
 	};
 
 	private exitSearch(firstResult: boolean): void {
+		const wasFocused = this.inputEl === this.inputEl?.ownerDocument.activeElement;
 		void this.searchSettled.then(() => {
-			if (!this.destroyed && this.inputEl === this.inputEl?.ownerDocument.activeElement) {
+			if (!this.destroyed && wasFocused) {
 				this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-exit', { bubbles: true, detail: firstResult }));
 				if (!firstResult) this.searchBoxEl?.dispatchEvent(new CustomEvent('tn-search-close', { bubbles: true }));
 			}

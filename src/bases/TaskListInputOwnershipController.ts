@@ -41,7 +41,7 @@ export class TaskListInputOwnershipController {
 
 	noteOverlayOpening(): void {
 		const activeElement = this.viewRoot.ownerDocument.activeElement;
-		if (activeElement instanceof Element && this.viewRoot.contains(activeElement)) {
+		if (activeElement?.instanceOf(Element) && this.viewRoot.contains(activeElement)) {
 			this.suspendedForOverlay = true;
 			this.scheduleRestoreAfterOverlayClose();
 		}

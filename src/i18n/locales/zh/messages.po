@@ -332,6 +332,11 @@ msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
 msgstr "{count, plural, other {正在转换{count, number}个任务...}}"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copiedTitles"
+msgid "{count, plural, one {Copied # task title} other {Copied # task titles}}"
+msgstr "{count, plural, other {已复制 # 个任务标题}}"
+
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
@@ -763,6 +768,11 @@ msgstr "{seconds, plural, other {已超出速率限制。请在 # 秒后重试�
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
 msgid "{sessionLabel} paused"
 msgstr "{sessionLabel} 已暂停"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateMessage"
+msgid "{shortcut} is assigned to {actions}. Replace the existing assignment?"
+msgstr "{shortcut} 已分配给 {actions}。要替换现有分配吗？"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
@@ -1210,6 +1220,11 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "活动："
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirm"
+msgid "Add"
+msgstr "添加"
+
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
 msgid "Add “blocked by”…"
@@ -1220,10 +1235,20 @@ msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "添加“受此任务阻塞”的任务…"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmMessage"
+msgid "Add {shortcut} to {action}?"
+msgstr "将 {shortcut} 添加到 {action}？"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.description"
 msgid "Add a link back to the task in Obsidian in the event description."
 msgstr "在事件描述中添加返回Obsidian中任务的链接。"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserFieldDescription"
+msgid "Add a shortcut for a configured user-defined task field."
+msgstr "为已配置的自定义任务字段添加快捷键。"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -1256,6 +1281,11 @@ msgstr "添加附件"
 msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "添加日历订阅"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-context"
+msgid "Add context"
+msgstr "添加上下文"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsPlaceholder"
@@ -1313,6 +1343,11 @@ msgctxt "modals.task.projectsAdd"
 msgid "Add project"
 msgstr "添加项目"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-project"
+msgid "Add project"
+msgstr "添加项目"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.addProjectToCurrentTask"
 msgid "Add project to current task"
@@ -1328,6 +1363,11 @@ msgstr "添加提醒"
 msgctxt "modals.reminder.quickTooltip"
 msgid "Add reminder: {timing}"
 msgstr "添加提醒：{timing}"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmTitle"
+msgid "Add shortcut?"
+msgstr "添加快捷键？"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.addNew.buttonText"
@@ -1351,6 +1391,11 @@ msgstr "添加子任务…"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "添加标签"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-tags"
 msgid "Add tags"
 msgstr "添加标签"
 
@@ -1397,6 +1442,11 @@ msgstr "添加到项目"
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "添加到项目…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserField"
+msgid "Add user field"
+msgstr "添加用户字段"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.addNew.buttonText"
@@ -1653,6 +1703,16 @@ msgstr "归档任务"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "归档此任务"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneMessage"
+msgid "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+msgstr "确定要删除“{title}”吗？此操作无法撤销。"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyMessage"
+msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
+msgstr "确定要删除 {count} 个任务吗？此操作无法撤销。"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2233,6 +2293,7 @@ msgctxt "settings.calendarService.calendars.heading"
 msgid "Calendars shown"
 msgstr "显示的日历"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/modals/CalendarEventCreationModal.ts
@@ -2246,6 +2307,7 @@ msgstr "显示的日历"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "取消"
@@ -2616,6 +2678,11 @@ msgctxt "modals.dueDate.quickOptions.clearAriaLabel"
 msgid "Clear due date"
 msgstr "清除截止日期"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.clear-focus-and-selection"
+msgid "Clear focus and selection"
+msgstr "清除焦点和选择"
+
 #: src/main.ts
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
@@ -2652,10 +2719,20 @@ msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "清除任务"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actionDescription"
+msgid "Click a shortcut to remove it, or add another binding."
+msgstr "点击快捷键可将其移除，也可以添加其他按键组合。"
+
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
 msgid "Click to open"
 msgstr "点击打开"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.captureHint"
+msgid "Click, then press the desired key combination"
+msgstr "点击后按下所需的组合键"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientID"
@@ -2888,6 +2965,11 @@ msgctxt "integration.Configurationconflict"
 msgid "Configuration conflict"
 msgstr "配置冲突"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.description"
+msgid "Configure shortcuts for task cards in the task list, Kanban, and agenda views, and for the task currently hovered in calendar grid views. They only run while a task has keyboard focus or is hovered."
+msgstr "设置任务列表、看板和议程中的任务卡片快捷键，以及日历网格视图中鼠标悬停任务的快捷键。只有任务获得键盘焦点或鼠标悬停其上时才会生效。"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
@@ -2902,6 +2984,11 @@ msgstr "确认"
 msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "确认"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.conflict"
+msgid "Conflict: {shortcuts} is also assigned to another task card action."
+msgstr "冲突：{shortcuts} 也分配给了其他任务卡片操作。"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/googleCalendarService.ts
@@ -3133,6 +3220,11 @@ msgstr "复制任务标题"
 
 #: src/bases/basesTaskCopyActions.ts
 msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
+msgid "Copy task titles"
+msgstr "复制任务标题"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.copy-task-titles"
 msgid "Copy task titles"
 msgstr "复制任务标题"
 
@@ -3396,6 +3488,11 @@ msgstr "创建任务"
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
+msgid "Create task"
+msgstr "创建任务"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.create-task"
 msgid "Create task"
 msgstr "创建任务"
 
@@ -4015,6 +4112,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "显示建议前的延迟毫秒数"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteConfirm"
+msgid "Delete"
+msgstr "删除"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmButton"
 msgid "Delete"
@@ -4109,13 +4211,28 @@ msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
 msgstr "删除订阅"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneTitle"
+msgid "Delete task"
+msgstr "删除任务"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.taskEdit.deleteConfirmation.title"
 msgid "Delete task"
 msgstr "删除任务"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyTitle"
+msgid "Delete tasks"
+msgstr "删除任务"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.deleteTitle"
+msgid "Delete tasks"
+msgstr "删除任务"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.delete-tasks"
 msgid "Delete tasks"
 msgstr "删除任务"
 
@@ -4579,10 +4696,35 @@ msgctxt "commands.editCurrentTask"
 msgid "Edit current task"
 msgstr "编辑当前任务"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-due"
+msgid "Edit due date"
+msgstr "编辑截止日期"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-priority"
+msgid "Edit priority"
+msgstr "编辑优先级"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-recurrence"
+msgid "Edit recurrence"
+msgstr "编辑重复规则"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "编辑提醒"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-scheduled"
+msgid "Edit scheduled date"
+msgstr "编辑计划日期"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-status"
+msgid "Edit status"
+msgstr "编辑状态"
 
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
@@ -4598,6 +4740,11 @@ msgstr "编辑任务"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.general.taskInteraction.actions.edit"
+msgid "Edit task"
+msgstr "编辑任务"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-task"
 msgid "Edit task"
 msgstr "编辑任务"
 
@@ -5228,6 +5375,11 @@ msgstr "连接到 {provider} 失败：{message}"
 msgctxt "services.instantTaskConvert.notices.conversionFailed"
 msgid "Failed to convert task. Please try again."
 msgstr "转换任务失败。请重试。"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copyTitlesFailed"
+msgid "Failed to copy task titles"
+msgstr "无法复制任务标题"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyFailure"
@@ -5970,6 +6122,21 @@ msgctxt "generated Bases column name"
 msgid "Focus minutes"
 msgstr "专注时长（分钟）"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-next"
+msgid "Focus next task"
+msgstr "聚焦下一个任务"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-previous"
+msgid "Focus previous task"
+msgstr "聚焦上一个任务"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.focus-search"
+msgid "Focus search"
+msgstr "聚焦搜索框"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Focus time"
@@ -6666,6 +6833,16 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options p
 msgid "JSON object keyed by swim lane property"
 msgstr "以泳道属性为键的 JSON 对象"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-first"
+msgid "Jump to first task"
+msgstr "跳到第一个任务"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-last"
+msgid "Jump to last task"
+msgstr "跳到最后一个任务"
+
 #: src/settings/native/relativeSyncTime.ts
 msgctxt "settings.integrations.timeFormats.justNow"
 msgid "Just now"
@@ -7053,6 +7230,11 @@ msgstr "手动顺序"
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
 msgid "Mark complete"
 msgstr "标记完成"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.mark-complete"
+msgid "Mark complete"
+msgstr "标记为完成"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.markComplete"
@@ -8479,10 +8661,20 @@ msgctxt "settings.features.taskCreation.openAfterCreate.name"
 msgid "Open task after creation"
 msgstr "创建后打开任务"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-context-menu"
+msgid "Open task context menu"
+msgstr "打开任务菜单"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFile"
 msgid "Open task file"
 msgstr "打开任务文件"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-task-notes"
+msgid "Open task note"
+msgstr "打开任务笔记"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.openApp.name"
@@ -8970,6 +9162,11 @@ msgstr "将逾期的计划任务推迟到今天"
 msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "正在推迟任务：{count} 个…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.recording"
+msgid "Press keys…"
+msgstr "请按键…"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
@@ -9496,6 +9693,11 @@ msgctxt "modals.task.projectsRemoveTooltip"
 msgid "Remove project"
 msgstr "移除项目"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.remove"
+msgid "Remove shortcut"
+msgstr "移除快捷键"
+
 #: src/modals/taskModalSubtasks.ts
 msgctxt "modals.task.organization.removeSubtaskTooltip"
 msgid "Remove subtask"
@@ -9559,6 +9761,11 @@ msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "重复当前任务"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.replace"
+msgid "Replace"
+msgstr "替换"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
 msgid "Require due date"
@@ -9605,6 +9812,11 @@ msgctxt "settings.features.recurring.resetCheckboxesDesc"
 msgid "Reset all Markdown checkboxes in the task body when a recurring task is completed and rescheduled"
 msgstr "重复任务完成并重新计划后，重置任务正文中的所有 Markdown 复选框"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAll"
+msgid "Reset all shortcuts"
+msgstr "重置所有快捷键"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.resetCheckboxesName"
 msgid "Reset checkboxes on recurrence"
@@ -9634,6 +9846,16 @@ msgstr "重置表单字段？"
 msgctxt "settings.features.recurring.resetStatusName"
 msgid "Reset status after each occurrence"
 msgstr "每次重复后重置状态"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAction"
+msgid "Reset this action"
+msgstr "重置此操作"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAllDescription"
+msgid "Restore every task card shortcut to its default binding."
+msgstr "恢复所有任务卡片快捷键的默认设置。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
@@ -9938,6 +10160,11 @@ msgctxt "modals.task.dependencies.selectTaskTooltip"
 msgid "Select a task note using fuzzy search"
 msgstr "使用模糊搜索选择任务笔记"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.select-all"
+msgid "Select all visible tasks"
+msgstr "选择所有可见任务"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "ui.audit.selectNote"
 msgid "Select an item to open"
@@ -9994,6 +10221,11 @@ msgctxt "modals.taskSelector.title"
 msgid "Select task"
 msgstr "选择任务"
 
+#: src/ui/TaskCard.ts
+msgctxt "ui.taskCard.selectTask"
+msgid "Select task"
+msgstr "选择任务"
+
 #: src/modals/PropertySelectorModal.ts
 msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
@@ -10008,6 +10240,11 @@ msgstr "选择任务"
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
 msgstr "选择任务将其设为此任务的子任务"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.mixedArchiveState"
+msgid "Select tasks with the same archive state"
+msgstr "请选择归档状态相同的任务"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.dropdown.description"
@@ -10213,6 +10450,11 @@ msgstr "短休息已开始"
 msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "短休息"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateTitle"
+msgid "Shortcut already assigned"
+msgstr "快捷键已分配"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11156,6 +11398,11 @@ msgstr "找不到任务正文模板：{path}"
 msgctxt "settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
 msgid "Task calendar sync service not available"
 msgstr "任务日历同步服务不可用"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.header"
+msgid "Task card keyboard shortcuts"
+msgstr "任务卡片键盘快捷键"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.header"
@@ -12215,7 +12462,9 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "已为 {taskTitle} 创建时间记录（{duration} 分钟）"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/modals/taskModalMetadataFields.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate"
 msgstr "预估时长"
@@ -12619,6 +12868,16 @@ msgstr "今天的列宽（倍）"
 msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "折叠或展开“{column}”列"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-archive"
+msgid "Toggle archive"
+msgstr "切换归档状态"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-select"
+msgid "Toggle focused task selection"
+msgstr "切换聚焦任务的选择状态"
 
 #: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"

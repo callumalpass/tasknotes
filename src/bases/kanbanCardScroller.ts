@@ -12,6 +12,8 @@ export function createKanbanCardScroller(options: {
 	plugin: TaskNotesPlugin;
 	document: Document;
 	onRender: (wrapper: HTMLElement, task: TaskInfo) => void;
+	/** Refreshes selection styling when virtualization mounts a new set of cards. */
+	onRenderedElementsChanged?: () => void;
 }): VirtualScroller<TaskInfo> {
 	return new VirtualScroller<TaskInfo>({
 		container: options.container,
@@ -29,5 +31,6 @@ export function createKanbanCardScroller(options: {
 			return wrapper;
 		},
 		getItemKey: (task) => task.path,
+		onRenderedElementsChanged: options.onRenderedElementsChanged,
 	});
 }

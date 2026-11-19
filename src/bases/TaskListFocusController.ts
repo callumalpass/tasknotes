@@ -93,7 +93,7 @@ export class TaskListFocusController {
 		this.lastMouseCard = card;
 		const activeElement = this.root.ownerDocument.activeElement;
 		if (
-			activeElement instanceof Element &&
+			activeElement?.instanceOf(Element) &&
 			card.contains(activeElement) &&
 			activeElement.closest(INTERACTIVE_SELECTOR)
 		) {
@@ -157,7 +157,7 @@ export class TaskListFocusController {
 
 	prepareForRender(): void {
 		const activeElement = this.root.ownerDocument.activeElement;
-		this.restoreDomFocus = activeElement instanceof Element && this.root.contains(activeElement);
+		this.restoreDomFocus = !!activeElement?.instanceOf(Element) && this.root.contains(activeElement);
 	}
 
 	restoreAfterRender(): void {

@@ -2166,6 +2166,24 @@ export class TaskService {
 		return updatedTask;
 	}
 
+	/** Returns occurrence identity and completion state for callers that need the normalized date. */
+	async toggleRecurringTaskCompleteWithResult(
+		task: TaskInfo,
+		date?: Date
+	): Promise<{ task: TaskInfo; dateStr: string; isCompleted: boolean }> {
+		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
+		// Compute the occurrence identity with the same rule as the write path.
+		const { dateStr } = buildRecurringTaskCompletePlan({
+			freshTask,
+			targetDate: this.getRecurringTaskActionDate(freshTask, date),
+			currentTimestamp: getCurrentTimestamp(),
+			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
+			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
+		});
+		const updated = await this.toggleRecurringTaskComplete(freshTask, date, { repairCompletedParentStatus: true });
+		return { task: updated, dateStr, isCompleted: updated.complete_instances?.includes(dateStr) ?? false };
+	}
+
 	async toggleRecurringTaskComplete(
 		task: TaskInfo,
 		date?: Date,
@@ -2191,9 +2209,9 @@ export class TaskService {
 			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
-		const resetCompletedParentStatus =
+		const resetCompletedParentStatus = options.repairCompletedParentStatus && (
 			this.plugin.statusManager?.isCompletedStatus?.(freshTask.status) ??
-			["done", "completed"].includes(freshTask.status);
+			["done", "completed"].includes(freshTask.status));
 		if (resetCompletedParentStatus) {
 			updatedTask.status = this.plugin.settings.defaultTaskStatus;
 		}
@@ -2316,7 +2334,7 @@ export class TaskService {
 		}
 
 		// Step 7: Return authoritative data
-		return { task: updatedTask, dateStr, isCompleted: newComplete };
+		return updatedTask;
 	}
 
 	/**

@@ -332,6 +332,11 @@ msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
 msgstr "{count, plural, other {작업 {count, number}개 변환 중...}}"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copiedTitles"
+msgid "{count, plural, one {Copied # task title} other {Copied # task titles}}"
+msgstr "{count, plural, other {작업 제목 #개를 복사했습니다}}"
+
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
@@ -763,6 +768,11 @@ msgstr "{seconds, plural, other {요청 한도를 초과했습니다. #초 후 �
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
 msgid "{sessionLabel} paused"
 msgstr "{sessionLabel} 일시 정지됨"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateMessage"
+msgid "{shortcut} is assigned to {actions}. Replace the existing assignment?"
+msgstr "{shortcut}이(가) {actions}에 지정되어 있습니다. 기존 지정을 바꿀까요?"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
@@ -1210,6 +1220,11 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "활성:"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirm"
+msgid "Add"
+msgstr "추가"
+
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
 msgid "Add “blocked by”…"
@@ -1220,10 +1235,20 @@ msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "\"차단 중\" 추가..."
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmMessage"
+msgid "Add {shortcut} to {action}?"
+msgstr "{action}에 {shortcut}을(를) 추가할까요?"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.description"
 msgid "Add a link back to the task in Obsidian in the event description."
 msgstr "이벤트 설명에 Obsidian의 작업으로 돌아가는 링크를 추가합니다."
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserFieldDescription"
+msgid "Add a shortcut for a configured user-defined task field."
+msgstr "설정된 사용자 정의 작업 필드에 단축키를 추가합니다."
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -1256,6 +1281,11 @@ msgstr "첨부 파일 추가"
 msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "캘린더 구독 추가"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-context"
+msgid "Add context"
+msgstr "컨텍스트 추가"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsPlaceholder"
@@ -1313,6 +1343,11 @@ msgctxt "modals.task.projectsAdd"
 msgid "Add project"
 msgstr "프로젝트 추가"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-project"
+msgid "Add project"
+msgstr "프로젝트 추가"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.addProjectToCurrentTask"
 msgid "Add project to current task"
@@ -1328,6 +1363,11 @@ msgstr "리마인더 추가"
 msgctxt "modals.reminder.quickTooltip"
 msgid "Add reminder: {timing}"
 msgstr "리마인더 추가: {timing}"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmTitle"
+msgid "Add shortcut?"
+msgstr "단축키를 추가할까요?"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.addNew.buttonText"
@@ -1351,6 +1391,11 @@ msgstr "하위 작업 추가..."
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "태그 추가"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-tags"
 msgid "Add tags"
 msgstr "태그 추가"
 
@@ -1397,6 +1442,11 @@ msgstr "프로젝트에 추가"
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "프로젝트에 추가..."
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserField"
+msgid "Add user field"
+msgstr "사용자 필드 추가"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.addNew.buttonText"
@@ -1653,6 +1703,16 @@ msgstr "작업 보관"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "이 작업 보관"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneMessage"
+msgid "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+msgstr "\"{title}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyMessage"
+msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
+msgstr "작업 {count}개를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2233,6 +2293,7 @@ msgctxt "settings.calendarService.calendars.heading"
 msgid "Calendars shown"
 msgstr "표시할 캘린더"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/modals/CalendarEventCreationModal.ts
@@ -2246,6 +2307,7 @@ msgstr "표시할 캘린더"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "취소"
@@ -2616,6 +2678,11 @@ msgctxt "modals.dueDate.quickOptions.clearAriaLabel"
 msgid "Clear due date"
 msgstr "마감일 지우기"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.clear-focus-and-selection"
+msgid "Clear focus and selection"
+msgstr "포커스와 선택 지우기"
+
 #: src/main.ts
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
@@ -2652,10 +2719,20 @@ msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "작업 지우기"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actionDescription"
+msgid "Click a shortcut to remove it, or add another binding."
+msgstr "단축키를 클릭해 제거하거나 다른 키 조합을 추가하세요."
+
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
 msgid "Click to open"
 msgstr "클릭하여 열기"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.captureHint"
+msgid "Click, then press the desired key combination"
+msgstr "클릭한 다음 원하는 키 조합을 누르세요"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientID"
@@ -2888,6 +2965,11 @@ msgctxt "integration.Configurationconflict"
 msgid "Configuration conflict"
 msgstr "설정 충돌"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.description"
+msgid "Configure shortcuts for task cards in the task list, Kanban, and agenda views, and for the task currently hovered in calendar grid views. They only run while a task has keyboard focus or is hovered."
+msgstr "작업 목록, 칸반, 아젠다의 작업 카드와 달력 격자 보기에서 마우스 포인터 아래에 있는 작업의 단축키를 설정합니다. 작업에 키보드 포커스가 있거나 마우스를 올렸을 때만 작동합니다."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
@@ -2902,6 +2984,11 @@ msgstr "확인"
 msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "확인"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.conflict"
+msgid "Conflict: {shortcuts} is also assigned to another task card action."
+msgstr "충돌: {shortcuts}이(가) 다른 작업에도 지정되어 있습니다."
 
 #: src/settings/native/connections.ts
 #: src/settings/native/googleCalendarService.ts
@@ -3133,6 +3220,11 @@ msgstr "작업 제목 복사"
 
 #: src/bases/basesTaskCopyActions.ts
 msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
+msgid "Copy task titles"
+msgstr "작업 제목 복사"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.copy-task-titles"
 msgid "Copy task titles"
 msgstr "작업 제목 복사"
 
@@ -3396,6 +3488,11 @@ msgstr "작업 만들기"
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
+msgid "Create task"
+msgstr "작업 만들기"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.create-task"
 msgid "Create task"
 msgstr "작업 만들기"
 
@@ -4015,6 +4112,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "제안 표시 전 지연 시간 (밀리초)"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteConfirm"
+msgid "Delete"
+msgstr "삭제"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmButton"
 msgid "Delete"
@@ -4109,13 +4211,28 @@ msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
 msgstr "구독 삭제"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneTitle"
+msgid "Delete task"
+msgstr "작업 삭제"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.taskEdit.deleteConfirmation.title"
 msgid "Delete task"
 msgstr "작업 삭제"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyTitle"
+msgid "Delete tasks"
+msgstr "작업 삭제"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.deleteTitle"
+msgid "Delete tasks"
+msgstr "작업 삭제"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.delete-tasks"
 msgid "Delete tasks"
 msgstr "작업 삭제"
 
@@ -4579,10 +4696,35 @@ msgctxt "commands.editCurrentTask"
 msgid "Edit current task"
 msgstr "현재 작업 편집"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-due"
+msgid "Edit due date"
+msgstr "마감일 편집"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-priority"
+msgid "Edit priority"
+msgstr "우선순위 편집"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-recurrence"
+msgid "Edit recurrence"
+msgstr "반복 편집"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "리마인더 편집"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-scheduled"
+msgid "Edit scheduled date"
+msgstr "예정일 편집"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-status"
+msgid "Edit status"
+msgstr "상태 편집"
 
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
@@ -4598,6 +4740,11 @@ msgstr "작업 편집"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.general.taskInteraction.actions.edit"
+msgid "Edit task"
+msgstr "작업 편집"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-task"
 msgid "Edit task"
 msgstr "작업 편집"
 
@@ -5228,6 +5375,11 @@ msgstr "{provider}에 연결하지 못했습니다: {message}"
 msgctxt "services.instantTaskConvert.notices.conversionFailed"
 msgid "Failed to convert task. Please try again."
 msgstr "작업 변환 실패. 다시 시도하세요."
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copyTitlesFailed"
+msgid "Failed to copy task titles"
+msgstr "작업 제목을 복사하지 못했습니다"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyFailure"
@@ -5970,6 +6122,21 @@ msgctxt "generated Bases column name"
 msgid "Focus minutes"
 msgstr "집중 시간(분)"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-next"
+msgid "Focus next task"
+msgstr "다음 작업에 포커스"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-previous"
+msgid "Focus previous task"
+msgstr "이전 작업에 포커스"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.focus-search"
+msgid "Focus search"
+msgstr "검색에 포커스"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Focus time"
@@ -6668,6 +6835,16 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options p
 msgid "JSON object keyed by swim lane property"
 msgstr "스윔레인 속성을 키로 사용하는 JSON 객체"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-first"
+msgid "Jump to first task"
+msgstr "첫 번째 작업으로 이동"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-last"
+msgid "Jump to last task"
+msgstr "마지막 작업으로 이동"
+
 #: src/settings/native/relativeSyncTime.ts
 msgctxt "settings.integrations.timeFormats.justNow"
 msgid "Just now"
@@ -7053,6 +7230,11 @@ msgstr "수동 순서"
 
 #: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
+msgid "Mark complete"
+msgstr "완료로 표시"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.mark-complete"
 msgid "Mark complete"
 msgstr "완료로 표시"
 
@@ -8481,10 +8663,20 @@ msgctxt "settings.features.taskCreation.openAfterCreate.name"
 msgid "Open task after creation"
 msgstr "생성 후 작업 열기"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-context-menu"
+msgid "Open task context menu"
+msgstr "작업 메뉴 열기"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFile"
 msgid "Open task file"
 msgstr "작업 파일 열기"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-task-notes"
+msgid "Open task note"
+msgstr "작업 노트 열기"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.openApp.name"
@@ -8972,6 +9164,11 @@ msgstr "예정일이 지난 작업을 오늘로 연기"
 msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "작업 연기 중: {count}개…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.recording"
+msgid "Press keys…"
+msgstr "키를 누르세요…"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
@@ -9498,6 +9695,11 @@ msgctxt "modals.task.projectsRemoveTooltip"
 msgid "Remove project"
 msgstr "프로젝트 제거"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.remove"
+msgid "Remove shortcut"
+msgstr "단축키 제거"
+
 #: src/modals/taskModalSubtasks.ts
 msgctxt "modals.task.organization.removeSubtaskTooltip"
 msgid "Remove subtask"
@@ -9561,6 +9763,11 @@ msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "현재 작업 반복"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.replace"
+msgid "Replace"
+msgstr "바꾸기"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
 msgid "Require due date"
@@ -9607,6 +9814,11 @@ msgctxt "settings.features.recurring.resetCheckboxesDesc"
 msgid "Reset all Markdown checkboxes in the task body when a recurring task is completed and rescheduled"
 msgstr "반복 작업이 완료되고 다음 일정으로 넘어갈 때 작업 본문의 모든 Markdown 체크박스를 초기화"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAll"
+msgid "Reset all shortcuts"
+msgstr "모든 단축키 초기화"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.resetCheckboxesName"
 msgid "Reset checkboxes on recurrence"
@@ -9636,6 +9848,16 @@ msgstr "양식 필드를 초기화할까요?"
 msgctxt "settings.features.recurring.resetStatusName"
 msgid "Reset status after each occurrence"
 msgstr "각 회차 후 상태 초기화"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAction"
+msgid "Reset this action"
+msgstr "이 동작 초기화"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAllDescription"
+msgid "Restore every task card shortcut to its default binding."
+msgstr "작업 카드 단축키를 모두 기본값으로 복원합니다."
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
@@ -9940,6 +10162,11 @@ msgctxt "modals.task.dependencies.selectTaskTooltip"
 msgid "Select a task note using fuzzy search"
 msgstr "퍼지 검색을 사용하여 작업 노트 선택"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.select-all"
+msgid "Select all visible tasks"
+msgstr "보이는 모든 작업 선택"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "ui.audit.selectNote"
 msgid "Select an item to open"
@@ -9996,6 +10223,11 @@ msgctxt "modals.taskSelector.title"
 msgid "Select task"
 msgstr "작업 선택"
 
+#: src/ui/TaskCard.ts
+msgctxt "ui.taskCard.selectTask"
+msgid "Select task"
+msgstr "작업 선택"
+
 #: src/modals/PropertySelectorModal.ts
 msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
@@ -10010,6 +10242,11 @@ msgstr "작업 선택"
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
 msgstr "이 작업의 하위 작업으로 만들 작업 선택"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.mixedArchiveState"
+msgid "Select tasks with the same archive state"
+msgstr "보관 상태가 같은 작업을 선택하세요"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.dropdown.description"
@@ -10215,6 +10452,11 @@ msgstr "짧은 휴식이 시작되었습니다"
 msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "짧은 휴식"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateTitle"
+msgid "Shortcut already assigned"
+msgstr "이미 지정된 단축키"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11158,6 +11400,11 @@ msgstr "작업 본문 템플릿을 찾을 수 없습니다: {path}"
 msgctxt "settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
 msgid "Task calendar sync service not available"
 msgstr "작업 캘린더 동기화 서비스를 사용할 수 없습니다"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.header"
+msgid "Task card keyboard shortcuts"
+msgstr "작업 카드 키보드 단축키"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.header"
@@ -12217,7 +12464,9 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "{taskTitle}에 대한 시간 기록이 생성되었습니다 ({duration}분)"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/modals/taskModalMetadataFields.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate"
 msgstr "예상 시간"
@@ -12621,6 +12870,16 @@ msgstr "오늘 열 너비 (배)"
 msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "{column} 열 접기/펼치기"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-archive"
+msgid "Toggle archive"
+msgstr "보관 상태 전환"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-select"
+msgid "Toggle focused task selection"
+msgstr "포커스된 작업 선택 전환"
 
 #: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"

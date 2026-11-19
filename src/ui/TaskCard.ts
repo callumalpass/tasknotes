@@ -1,4 +1,5 @@
 import { TaskInfo } from "../types";
+import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
 import { createTaskClickHandler, createTaskHoverHandler } from "../utils/clickHandlers";
 import { type TaskCardPresentationOptions } from "./taskCardPresentation";
@@ -34,6 +35,8 @@ export { openTaskMenu, showTaskContextMenu } from "./taskCardContextMenu";
 // Property labels are resolved in taskCardProperties via getTaskCardPropertyLabel.
 
 export interface TaskCardOptions {
+	/** Optional selection checkbox managed by a containing task view. */
+	selectionControl?: TaskCardSelectionControl;
 	targetDate?: Date;
 	/** List/board cards represent the pending commitment, not a projected date. */
 	usePendingOccurrenceIdentity?: boolean;
@@ -77,6 +80,12 @@ export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
 	showSecondaryBadges: true,
 	enableHoverPreview: true,
 };
+
+/** Connects a task card checkbox to its owning view's selection state. */
+export interface TaskCardSelectionControl {
+	isSelected(taskPath: string): boolean;
+	onClick(taskPath: string, event: MouseEvent): void;
+}
 
 type TaskCardElement = HTMLElement & {
 	_taskPath?: string;
@@ -332,7 +341,7 @@ function createTaskSelectionCheckbox({
 		type: "checkbox",
 	});
 	checkbox.checked = selectionControl.isSelected(taskPath);
-	checkbox.setAttribute("aria-label", plugin.i18n.translate("ui.taskCard.selectTask"));
+	checkbox.setAttribute("aria-label", plugin.i18n.translate(msg({ message: "Select task", context: "ui.taskCard.selectTask" })));
 	checkbox.addEventListener("click", (event) => {
 		event.stopPropagation();
 		selectionControl.onClick(taskPath, event);

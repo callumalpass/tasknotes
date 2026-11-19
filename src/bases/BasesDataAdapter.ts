@@ -135,6 +135,11 @@ export class BasesDataAdapter {
 		return convertBasesGroupKeyToString(key);
 	}
 
+	/** Formats list-valued group keys consistently with the fork's grouping order. */
+	convertListGroupKeyToString(key: unknown): string {
+		return convertBasesListGroupKeyToString(key);
+	}
+
 	/** Link markup for the Bases group whose string key is `groupKey`, when its value is a link. */
 	getGroupLinkTitle(groupKey: string): string | null {
 		// Views can render headers before Bases has supplied data.

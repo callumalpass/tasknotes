@@ -332,6 +332,11 @@ msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
 msgstr "{count, plural, one {Convertendo {count, number} tarefa...} many {Convertendo {count, number} tarefas...} other {Convertendo {count, number} tarefas...}}"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copiedTitles"
+msgid "{count, plural, one {Copied # task title} other {Copied # task titles}}"
+msgstr "{count, plural, one {# título de tarefa copiado} other {# títulos de tarefas copiados}}"
+
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
@@ -763,6 +768,11 @@ msgstr "{seconds, plural, one {Limite de solicitações excedido. Tente novament
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
 msgid "{sessionLabel} paused"
 msgstr "{sessionLabel} pausado"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateMessage"
+msgid "{shortcut} is assigned to {actions}. Replace the existing assignment?"
+msgstr "{shortcut} está atribuído a {actions}. Substituir a atribuição existente?"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
@@ -1212,6 +1222,11 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "Ativo:"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirm"
+msgid "Add"
+msgstr "Adicionar"
+
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
 msgid "Add “blocked by”…"
@@ -1222,10 +1237,20 @@ msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "Adicionar \"bloqueando\"..."
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmMessage"
+msgid "Add {shortcut} to {action}?"
+msgstr "Adicionar {shortcut} a {action}?"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.description"
 msgid "Add a link back to the task in Obsidian in the event description."
 msgstr "Adicionar um link de volta para a tarefa no Obsidian na descrição do evento."
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserFieldDescription"
+msgid "Add a shortcut for a configured user-defined task field."
+msgstr "Adicionar um atalho para um campo de tarefa personalizado configurado."
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -1258,6 +1283,11 @@ msgstr "Adicionar Anexo"
 msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "Adicionar Inscrição de Calendário"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-context"
+msgid "Add context"
+msgstr "Adicionar contexto"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsPlaceholder"
@@ -1315,6 +1345,11 @@ msgctxt "modals.task.projectsAdd"
 msgid "Add project"
 msgstr "Adicionar Projeto"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-project"
+msgid "Add project"
+msgstr "Adicionar projeto"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.addProjectToCurrentTask"
 msgid "Add project to current task"
@@ -1330,6 +1365,11 @@ msgstr "Adicionar lembrete"
 msgctxt "modals.reminder.quickTooltip"
 msgid "Add reminder: {timing}"
 msgstr "Adicionar lembrete: {timing}"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmTitle"
+msgid "Add shortcut?"
+msgstr "Adicionar atalho?"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.addNew.buttonText"
@@ -1353,6 +1393,11 @@ msgstr "Adicionar subtarefas…"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "Adicionar etiquetas"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-tags"
 msgid "Add tags"
 msgstr "Adicionar etiquetas"
 
@@ -1399,6 +1444,11 @@ msgstr "Adicionar ao projeto"
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "Adicionar ao projeto…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserField"
+msgid "Add user field"
+msgstr "Adicionar campo personalizado"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.addNew.buttonText"
@@ -1655,6 +1705,16 @@ msgstr "Arquivar tarefa"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "Arquivar esta tarefa"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneMessage"
+msgid "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+msgstr "Tem certeza de que deseja excluir “{title}”? Esta ação não pode ser desfeita."
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyMessage"
+msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
+msgstr "Tem certeza de que deseja excluir {count} tarefas? Esta ação não pode ser desfeita."
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2235,6 +2295,7 @@ msgctxt "settings.calendarService.calendars.heading"
 msgid "Calendars shown"
 msgstr "Agendas mostradas"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/modals/CalendarEventCreationModal.ts
@@ -2248,6 +2309,7 @@ msgstr "Agendas mostradas"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "Cancelar"
@@ -2618,6 +2680,11 @@ msgctxt "modals.dueDate.quickOptions.clearAriaLabel"
 msgid "Clear due date"
 msgstr "Limpar data de vencimento"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.clear-focus-and-selection"
+msgid "Clear focus and selection"
+msgstr "Limpar foco e seleção"
+
 #: src/main.ts
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
@@ -2654,10 +2721,20 @@ msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "Limpar tarefa"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actionDescription"
+msgid "Click a shortcut to remove it, or add another binding."
+msgstr "Clique num atalho para o remover ou adicione outra combinação."
+
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
 msgid "Click to open"
 msgstr "Clique para abrir"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.captureHint"
+msgid "Click, then press the desired key combination"
+msgstr "Clique e prima a combinação de teclas pretendida"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientID"
@@ -2890,6 +2967,11 @@ msgctxt "integration.Configurationconflict"
 msgid "Configuration conflict"
 msgstr "Conflito de configuração"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.description"
+msgid "Configure shortcuts for task cards in the task list, Kanban, and agenda views, and for the task currently hovered in calendar grid views. They only run while a task has keyboard focus or is hovered."
+msgstr "Configure atalhos para cartões de tarefas na Lista de tarefas, Kanban e Agenda, e para a tarefa sob o cursor nas vistas de calendário. Só funcionam quando uma tarefa tem foco do teclado ou está sob o cursor."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
@@ -2904,6 +2986,11 @@ msgstr "Confirmar"
 msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "Confirmar"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.conflict"
+msgid "Conflict: {shortcuts} is also assigned to another task card action."
+msgstr "Conflito: {shortcuts} também está atribuído a outra ação."
 
 #: src/settings/native/connections.ts
 #: src/settings/native/googleCalendarService.ts
@@ -3135,6 +3222,11 @@ msgstr "Copiar título da tarefa"
 
 #: src/bases/basesTaskCopyActions.ts
 msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
+msgid "Copy task titles"
+msgstr "Copiar títulos das tarefas"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.copy-task-titles"
 msgid "Copy task titles"
 msgstr "Copiar títulos das tarefas"
 
@@ -3398,6 +3490,11 @@ msgstr "Criar tarefa"
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
+msgid "Create task"
+msgstr "Criar tarefa"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.create-task"
 msgid "Create task"
 msgstr "Criar tarefa"
 
@@ -4017,6 +4114,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "Atraso em milissegundos antes de mostrar sugestões"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteConfirm"
+msgid "Delete"
+msgstr "Excluir"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmButton"
 msgid "Delete"
@@ -4111,15 +4213,30 @@ msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
 msgstr "Excluir inscrição"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneTitle"
+msgid "Delete task"
+msgstr "Excluir tarefa"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.taskEdit.deleteConfirmation.title"
 msgid "Delete task"
 msgstr "Excluir tarefa"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyTitle"
+msgid "Delete tasks"
+msgstr "Excluir tarefas"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.deleteTitle"
 msgid "Delete tasks"
 msgstr "Excluir tarefas"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.delete-tasks"
+msgid "Delete tasks"
+msgstr "Eliminar tarefas"
 
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmOccurrence"
@@ -4581,10 +4698,35 @@ msgctxt "commands.editCurrentTask"
 msgid "Edit current task"
 msgstr "Editar tarefa atual"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-due"
+msgid "Edit due date"
+msgstr "Editar data limite"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-priority"
+msgid "Edit priority"
+msgstr "Editar prioridade"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-recurrence"
+msgid "Edit recurrence"
+msgstr "Editar recorrência"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "Editar lembrete"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-scheduled"
+msgid "Edit scheduled date"
+msgstr "Editar data agendada"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-status"
+msgid "Edit status"
+msgstr "Editar estado"
 
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
@@ -4600,6 +4742,11 @@ msgstr "Editar tarefa"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.general.taskInteraction.actions.edit"
+msgid "Edit task"
+msgstr "Editar tarefa"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-task"
 msgid "Edit task"
 msgstr "Editar tarefa"
 
@@ -5230,6 +5377,11 @@ msgstr "Falha ao conectar a {provider}: {message}"
 msgctxt "services.instantTaskConvert.notices.conversionFailed"
 msgid "Failed to convert task. Please try again."
 msgstr "Falha ao converter tarefa. Por favor, tente novamente."
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copyTitlesFailed"
+msgid "Failed to copy task titles"
+msgstr "Não foi possível copiar os títulos das tarefas"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyFailure"
@@ -5972,6 +6124,21 @@ msgctxt "generated Bases column name"
 msgid "Focus minutes"
 msgstr "Minutos de foco"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-next"
+msgid "Focus next task"
+msgstr "Focar a tarefa seguinte"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-previous"
+msgid "Focus previous task"
+msgstr "Focar a tarefa anterior"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.focus-search"
+msgid "Focus search"
+msgstr "Focar a pesquisa"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Focus time"
@@ -6670,6 +6837,16 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options p
 msgid "JSON object keyed by swim lane property"
 msgstr "Objeto JSON com chaves correspondentes à propriedade da raia"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-first"
+msgid "Jump to first task"
+msgstr "Ir para a primeira tarefa"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-last"
+msgid "Jump to last task"
+msgstr "Ir para a última tarefa"
+
 #: src/settings/native/relativeSyncTime.ts
 msgctxt "settings.integrations.timeFormats.justNow"
 msgid "Just now"
@@ -7055,6 +7232,11 @@ msgstr "Ordem manual"
 
 #: src/components/task-context-menu/completion.ts
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
+msgid "Mark complete"
+msgstr "Marcar como concluída"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.mark-complete"
 msgid "Mark complete"
 msgstr "Marcar como concluída"
 
@@ -8483,10 +8665,20 @@ msgctxt "settings.features.taskCreation.openAfterCreate.name"
 msgid "Open task after creation"
 msgstr "Abrir tarefa após criação"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-context-menu"
+msgid "Open task context menu"
+msgstr "Abrir menu da tarefa"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFile"
 msgid "Open task file"
 msgstr "Abrir arquivo da tarefa"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-task-notes"
+msgid "Open task note"
+msgstr "Abrir nota da tarefa"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.openApp.name"
@@ -8974,6 +9166,11 @@ msgstr "Adiar tarefas agendadas em atraso para hoje"
 msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "Adiando tarefas: {count}…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.recording"
+msgid "Press keys…"
+msgstr "Prima as teclas…"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
@@ -9500,6 +9697,11 @@ msgctxt "modals.task.projectsRemoveTooltip"
 msgid "Remove project"
 msgstr "Remover projeto"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.remove"
+msgid "Remove shortcut"
+msgstr "Remover atalho"
+
 #: src/modals/taskModalSubtasks.ts
 msgctxt "modals.task.organization.removeSubtaskTooltip"
 msgid "Remove subtask"
@@ -9563,6 +9765,11 @@ msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "Repetir tarefa atual"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.replace"
+msgid "Replace"
+msgstr "Substituir"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
 msgid "Require due date"
@@ -9609,6 +9816,11 @@ msgctxt "settings.features.recurring.resetCheckboxesDesc"
 msgid "Reset all Markdown checkboxes in the task body when a recurring task is completed and rescheduled"
 msgstr "Redefinir todas as caixas de seleção markdown no corpo da tarefa quando uma tarefa recorrente é concluída e reagendada"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAll"
+msgid "Reset all shortcuts"
+msgstr "Repor todos os atalhos"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.resetCheckboxesName"
 msgid "Reset checkboxes on recurrence"
@@ -9638,6 +9850,16 @@ msgstr "Redefinir campos do formulário?"
 msgctxt "settings.features.recurring.resetStatusName"
 msgid "Reset status after each occurrence"
 msgstr "Redefinir o status após cada ocorrência"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAction"
+msgid "Reset this action"
+msgstr "Repor esta ação"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAllDescription"
+msgid "Restore every task card shortcut to its default binding."
+msgstr "Restaurar os atalhos predefinidos dos cartões de tarefas."
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
@@ -9942,6 +10164,11 @@ msgctxt "modals.task.dependencies.selectTaskTooltip"
 msgid "Select a task note using fuzzy search"
 msgstr "Selecionar uma nota de tarefa usando busca difusa"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.select-all"
+msgid "Select all visible tasks"
+msgstr "Selecionar todas as tarefas visíveis"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "ui.audit.selectNote"
 msgid "Select an item to open"
@@ -9998,6 +10225,11 @@ msgctxt "modals.taskSelector.title"
 msgid "Select task"
 msgstr "Selecionar tarefa"
 
+#: src/ui/TaskCard.ts
+msgctxt "ui.taskCard.selectTask"
+msgid "Select task"
+msgstr "Selecionar tarefa"
+
 #: src/modals/PropertySelectorModal.ts
 msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
@@ -10012,6 +10244,11 @@ msgstr "Selecionar tarefas"
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
 msgstr "Selecionar tarefas para torná-las subtarefas desta tarefa"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.mixedArchiveState"
+msgid "Select tasks with the same archive state"
+msgstr "Selecione tarefas com o mesmo estado de arquivamento"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.dropdown.description"
@@ -10217,6 +10454,11 @@ msgstr "Pausa curta iniciada"
 msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "Pausas curtas"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateTitle"
+msgid "Shortcut already assigned"
+msgstr "Atalho já atribuído"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11160,6 +11402,11 @@ msgstr "Modelo de corpo da tarefa não encontrado: {path}"
 msgctxt "settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
 msgid "Task calendar sync service not available"
 msgstr "Serviço de sincronização de calendário não disponível"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.header"
+msgid "Task card keyboard shortcuts"
+msgstr "Atalhos de teclado das tarefas"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.header"
@@ -12219,7 +12466,9 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "Registro de tempo criado para {taskTitle} ({duration} minutos)"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/modals/taskModalMetadataFields.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate"
 msgstr "Estimativa de tempo"
@@ -12623,6 +12872,16 @@ msgstr "Largura da coluna de hoje (×)"
 msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "Recolher ou expandir a coluna {column}"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-archive"
+msgid "Toggle archive"
+msgstr "Alternar arquivo"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-select"
+msgid "Toggle focused task selection"
+msgstr "Alternar seleção da tarefa focada"
 
 #: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"

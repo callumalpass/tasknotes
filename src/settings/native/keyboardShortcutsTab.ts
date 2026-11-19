@@ -11,7 +11,7 @@ import {
 	type TaskListKeyboardAction,
 } from "../../bases/taskListKeyboardActions";
 import { createSettingGroup } from "../components/settingHelpers";
-import type { TranslationKey } from "../../i18n";
+import { keyboardShortcutMessages } from "./keyboardShortcutMessages";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { UserMappedField } from "../../types/settings";
 
@@ -79,7 +79,7 @@ export function pushKeyboardShortcutCaptureScope(
 	return stop;
 }
 
-function actionKey(action: TaskListKeyboardAction): TranslationKey {
+function actionKey(action: TaskListKeyboardAction): string {
 	if (action === "edit-time-estimate") return "modals.task.timeEstimateLabel";
 	return `settings.keyboardShortcuts.actions.${action}`;
 }
@@ -88,7 +88,7 @@ function actionKey(action: TaskListKeyboardAction): TranslationKey {
 export function formatShortcutOwnerLabel(
 	owner: string,
 	fields: readonly UserMappedField[],
-	translate: (key: TranslationKey) => string
+	translate: (key: string) => string
 ): string {
 	if ((TASK_LIST_KEYBOARD_ACTIONS as readonly string[]).includes(owner)) {
 		return translate(actionKey(owner as TaskListKeyboardAction));
@@ -130,8 +130,8 @@ export function renderKeyboardShortcutsTab(
 ): void {
 	activeCaptureCleanup.get(container)?.();
 	container.empty();
-	const translate = (key: TranslationKey, params?: Record<string, string | number>) =>
-		plugin.i18n.translate(key, params);
+	const translate = (key: string, params?: Record<string, string | number>) =>
+		plugin.i18n.translate(keyboardShortcutMessages[key], params);
 	const shortcuts = plugin.settings.taskListShortcuts;
 	const conflicts = findTaskListShortcutConflicts(shortcuts);
 

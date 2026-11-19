@@ -18,7 +18,7 @@ export function canHoverClaimBasesTaskFocus(root: HTMLElement): boolean {
 
 	const activeElement = root.ownerDocument.activeElement;
 	return !(
-		activeElement instanceof Element &&
+		activeElement?.instanceOf(Element) &&
 		sourceView.contains(activeElement) &&
 		Boolean(activeElement.closest(EDITOR_FOCUS_SELECTOR)) &&
 		!widget.contains(activeElement)

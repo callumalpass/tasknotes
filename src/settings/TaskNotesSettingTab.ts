@@ -15,6 +15,8 @@ import { propertyDefinitions } from "./native/properties";
 import { creationDefaults, filenameDefinitions, formDefinitions } from "./native/creation";
 import { apiDefinitions, calendarDefinitions } from "./native/integrations";
 import { tasknotesAppDefinitions } from "./native/tasknotesApp";
+import { renderKeyboardShortcutsTab } from "./native/keyboardShortcutsTab";
+import { keyboardShortcutMessages } from "./native/keyboardShortcutMessages";
 
 function exposeListRemoval(items: SettingDefinitionItem[], ctx: SettingsContext): void {
 	for (const item of items) {
@@ -201,9 +203,9 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 					bases,
 				]
 			),
-			page(t("settings.keyboardShortcuts.header"), t("settings.keyboardShortcuts.description"), [
+			page(t(keyboardShortcutMessages["settings.keyboardShortcuts.header"]), t(keyboardShortcutMessages["settings.keyboardShortcuts.description"]), [
 				{
-					name: t("settings.keyboardShortcuts.header"),
+					name: t(keyboardShortcutMessages["settings.keyboardShortcuts.header"]),
 					// Keep the interactive shortcut editor inside the native page tree so
 					// Obsidian includes its navigation entry with other declarative pages.
 					render: (setting) => {

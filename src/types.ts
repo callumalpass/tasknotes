@@ -741,6 +741,8 @@ export interface FieldMapping {
  */
 export interface RecurringCompletionOptions {
 	onlyIf?: (task: TaskInfo) => boolean;
+	/** Repair a completed series status when using the fork's occurrence-result API. */
+	repairCompletedParentStatus?: boolean;
 }
 
 export interface StatusConfig {

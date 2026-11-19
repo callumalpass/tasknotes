@@ -2,24 +2,14 @@ import { Notice, TFile, type App } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { showTaskContextMenu } from "../ui/TaskCard";
-import { DateContextMenu } from "../components/DateContextMenu";
-import { PriorityContextMenu } from "../components/PriorityContextMenu";
-import { StatusContextMenu } from "../components/StatusContextMenu";
-import { RecurrenceContextMenu } from "../components/RecurrenceContextMenu";
-import { addContextToList } from "../components/TaskContextMenu";
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
+import { archiveTasksWithUndo, openTaskPropertyPicker } from "../ui/taskPropertyPickers";
+import { openRecurrenceChoices } from "../ui/taskRecurrencePicker";
 import { showConfirmationModal } from "../modals/ConfirmationModal";
-import { showTextInputModal } from "../modals/TextInputModal";
-import { ProjectSelectModal } from "../modals/ProjectSelectModal";
-import { TagSuggest } from "../modals/taskModalSuggests";
 import { UserFieldEditModal } from "../modals/UserFieldEditModal";
-import { getDatePart, getTimePart, parseDateToUTC } from "../utils/dateUtils";
-import { addTagsToList, parseTaskTagInput } from "../utils/taskTagList";
+import { getDatePart, parseDateToUTC } from "../utils/dateUtils";
 import { formatTasksForClipboard } from "../utils/taskClipboard";
-import {
-	addTaskToProject,
-	getTaskProjectFiles,
-	removeTaskFromProject,
-} from "../services/taskRelationshipActions";
 import type { TaskSelectionService } from "../services/TaskSelectionService";
 import type { TaskListAction } from "./taskListKeyboardActions";
 
@@ -154,9 +144,9 @@ export async function executeBasesTaskCardAction(
 			if (tasks.length === 0) return;
 			try {
 				await navigator.clipboard.writeText(formatTasksForClipboard(tasks, "titles"));
-				new Notice(`Copied ${tasks.length} task title${tasks.length === 1 ? "" : "s"}`);
+				new Notice(uiText(msg({ message: "{count, plural, one {Copied # task title} other {Copied # task titles}}", context: "bases.taskCardActions.copiedTitles" }), { count: tasks.length }));
 			} catch {
-				new Notice("Failed to copy task titles");
+				new Notice(uiText(msg({ message: "Failed to copy task titles", context: "bases.taskCardActions.copyTitlesFailed" })));
 			}
 			return;
 		}
@@ -165,17 +155,10 @@ export async function executeBasesTaskCardAction(
 			if (tasks.length === 0) return;
 			const archived = tasks[0].archived === true;
 			if (!tasks.every((task) => (task.archived === true) === archived)) {
-				new Notice("Select tasks with the same archive state");
+				new Notice(uiText(msg({ message: "Select tasks with the same archive state", context: "bases.taskCardActions.mixedArchiveState" })));
 				return;
 			}
-			for (const task of tasks) {
-				await context.plugin.taskService.toggleArchive(task);
-			}
-			new Notice(
-				`${archived ? "Unarchived" : "Archived"} ${tasks.length} task${
-					tasks.length === 1 ? "" : "s"
-				}`
-			);
+			await archiveTasksWithUndo(context.plugin, tasks, !archived);
 			return;
 		}
 		case "create-task":
@@ -222,40 +205,13 @@ export async function executeBasesTaskCardAction(
 			return;
 		}
 		case "edit-due":
-		case "edit-scheduled": {
-			const dateType = action === "edit-due" ? "due" : "scheduled";
-			const tasks = await getActionTargets(context);
-			const anchor = context.getAnchor();
-			if (tasks.length === 0 || !anchor) return;
-
-			const currentValue = dateType === "due" ? tasks[0].due : tasks[0].scheduled;
-			new DateContextMenu({
-				currentValue: getDatePart(currentValue || ""),
-				currentTime: getTimePart(currentValue || ""),
-				onSelect: (dateValue, timeValue) => {
-					const value = dateValue
-						? timeValue
-							? `${dateValue}T${timeValue}`
-							: dateValue
-						: undefined;
-					void updateTasksProperty(context, tasks, dateType, value);
-				},
-				dateRole: dateType,
-				plugin: context.plugin,
-				app: context.app,
-			}).showAtElement(anchor);
-			return;
-		}
+		case "edit-scheduled":
 		case "edit-priority": {
 			const tasks = await getActionTargets(context);
 			const anchor = context.getAnchor();
-			if (tasks.length === 0 || !anchor) return;
-
-			new PriorityContextMenu({
-				currentValue: tasks[0].priority,
-				onSelect: (value) => void updateTasksProperty(context, tasks, "priority", value),
-				plugin: context.plugin,
-			}).showAtElement(anchor);
+			if (!tasks.length || !anchor) return;
+			const property = action === "edit-due" ? "due" : action === "edit-scheduled" ? "scheduled" : "priority";
+			await openTaskPropertyPicker(context.plugin, property, tasks, anchor);
 			return;
 		}
 		case "mark-complete": {
@@ -279,35 +235,25 @@ export async function executeBasesTaskCardAction(
 		case "edit-status": {
 			const tasks = await getActionTargets(context);
 			const anchor = context.getAnchor();
-			if (tasks.length === 0 || !anchor) return;
-
-			new StatusContextMenu({
-				currentValue: tasks[0].status,
-				onSelect: (value) => void updateTasksStatus(context, tasks, value),
-				plugin: context.plugin,
-			}).showAtElement(anchor);
+			if (!tasks.length || !anchor) return;
+			await openTaskPropertyPicker(context.plugin, "status", tasks, anchor);
 			return;
 		}
 		case "edit-recurrence": {
 			const tasks = await getActionTargets(context);
 			const anchor = context.getAnchor();
-			if (tasks.length === 0 || !anchor) return;
-
-			new RecurrenceContextMenu({
-				currentValue: typeof tasks[0].recurrence === "string" ? tasks[0].recurrence : undefined,
-				currentAnchor: tasks[0].recurrence_anchor || "scheduled",
-				scheduledDate: tasks[0].scheduled,
-				onSelect: (value, recurrenceAnchor) => {
-					void (async () => {
-						await updateTasksProperty(context, tasks, "recurrence", value || undefined);
-						if (recurrenceAnchor !== undefined) {
-							await updateTasksProperty(context, tasks, "recurrence_anchor", recurrenceAnchor);
-						}
-					})();
-				},
-				app: context.plugin.app,
-				plugin: context.plugin,
-			}).showAtElement(anchor);
+			if (!tasks.length || !anchor) return;
+			// The upstream recurrence picker is single-task; keep this fork's bulk edit by sharing its choices.
+			openRecurrenceChoices(context.plugin, context.app, {
+				recurrence: typeof tasks[0].recurrence === "string" ? tasks[0].recurrence : undefined,
+				anchor: tasks[0].recurrence_anchor || "scheduled",
+				scheduled: tasks[0].scheduled,
+			}, anchor, (value, recurrenceAnchor) => {
+				void (async () => {
+					await updateTasksProperty(context, tasks, "recurrence", value);
+					if (recurrenceAnchor) await updateTasksProperty(context, tasks, "recurrence_anchor", recurrenceAnchor);
+				})();
+			});
 			return;
 		}
 		case "edit-time-estimate": {
@@ -319,7 +265,7 @@ export async function executeBasesTaskCardAction(
 			new UserFieldEditModal(context.plugin.app, context.plugin, {
 				field: {
 					id: "builtin-time-estimate",
-					displayName: context.plugin.i18n.translate("modals.task.timeEstimateLabel"),
+					displayName: context.plugin.i18n.translate(msg({ message: "Time estimate", context: "modals.task.timeEstimateLabel" })),
 					key: "timeEstimate",
 					type: "number",
 				},
@@ -339,79 +285,14 @@ export async function executeBasesTaskCardAction(
 			}).open();
 			return;
 		}
-		case "add-tags": {
-			const tasks = await getActionTargets(context);
-			if (tasks.length === 0) return;
-
-			const input = await showTextInputModal(context.plugin.app, {
-				title: context.plugin.i18n.translate("contextMenus.task.addTag"),
-				placeholder: context.plugin.i18n.translate("contextMenus.task.tagPlaceholder"),
-				confirmText: context.plugin.i18n.translate("common.confirm"),
-				cancelText: context.plugin.i18n.translate("common.cancel"),
-				onInputReady: (inputEl) => {
-					new TagSuggest(context.plugin.app, inputEl, context.plugin);
-				},
-			});
-			const tags = parseTaskTagInput(input);
-			if (tags.length === 0) return;
-
-			for (const task of tasks) {
-				await context.plugin.updateTaskProperty(task, "tags", addTagsToList(task.tags, tags));
-			}
-			return;
-		}
-		case "add-context": {
-			const tasks = await getActionTargets(context);
-			if (tasks.length === 0) return;
-
-			const contextValue = await showTextInputModal(context.plugin.app, {
-				title: context.plugin.i18n.translate("contextMenus.task.organization.addContext"),
-				placeholder: context.plugin.i18n.translate(
-					"contextMenus.task.organization.contextPlaceholder"
-				),
-				confirmText: context.plugin.i18n.translate("common.confirm"),
-				cancelText: context.plugin.i18n.translate("common.cancel"),
-			});
-			if (!contextValue?.trim()) return;
-
-			for (const task of tasks) {
-				await context.plugin.updateTaskProperty(
-					task,
-					"contexts",
-					addContextToList(task.contexts, contextValue)
-				);
-			}
-			return;
-		}
+		case "add-tags":
+		case "add-context":
 		case "add-project": {
-			const paths = context.getTargetPaths();
-			if (paths.length === 0) return;
-
-			const tasks = (
-				await Promise.all(paths.map((path) => context.plugin.cacheManager.getTaskInfo(path)))
-			).filter((task): task is TaskInfo => task !== null);
-			new ProjectSelectModal(
-				context.plugin.app,
-				context.plugin,
-				(projectFile) => {
-					if (!(projectFile instanceof TFile)) return;
-					void (async () => {
-						const targetTasks = await getTasksForPaths(context, paths);
-						for (const task of targetTasks) {
-							await addTaskToProject(context.plugin, task, projectFile);
-						}
-					})();
-				},
-				{
-					selectedProjects: getTaskProjectFiles(context.plugin, tasks),
-					onRemove: async (projectFile) => {
-						const targetTasks = await getTasksForPaths(context, paths);
-						for (const task of targetTasks) {
-							await removeTaskFromProject(context.plugin, task, projectFile);
-						}
-					},
-				}
-			).open();
+			const tasks = await getActionTargets(context);
+			const anchor = context.getAnchor();
+			if (!tasks.length || !anchor) return;
+			const property = action === "add-tags" ? "tags" : action === "add-context" ? "contexts" : "projects";
+			await openTaskPropertyPicker(context.plugin, property, tasks, anchor);
 			return;
 		}
 		case "delete-tasks": {
@@ -419,13 +300,15 @@ export async function executeBasesTaskCardAction(
 			if (tasks.length === 0) return;
 
 			const confirmed = await showConfirmationModal(context.plugin.app, {
-				title: tasks.length === 1 ? "Delete task" : "Delete tasks",
+			title: tasks.length === 1
+					? uiText(msg({ message: "Delete task", context: "bases.taskCardActions.deleteOneTitle" }))
+					: uiText(msg({ message: "Delete tasks", context: "bases.taskCardActions.deleteManyTitle" })),
 				message:
 					tasks.length === 1
-						? `Are you sure you want to delete "${tasks[0].title}"? This action cannot be undone.`
-						: `Are you sure you want to delete ${tasks.length} tasks? This action cannot be undone.`,
-				confirmText: "Delete",
-				cancelText: context.plugin.i18n.translate("common.cancel"),
+						? uiText(msg({ message: "Are you sure you want to delete \"{title}\"? This action cannot be undone.", context: "bases.taskCardActions.deleteOneMessage" }), { title: tasks[0].title })
+						: uiText(msg({ message: "Are you sure you want to delete {count} tasks? This action cannot be undone.", context: "bases.taskCardActions.deleteManyMessage" }), { count: tasks.length }),
+				confirmText: uiText(msg({ message: "Delete", context: "bases.taskCardActions.deleteConfirm" })),
+				cancelText: context.plugin.i18n.translate(msg({ message: "Cancel", context: "common.cancel" })),
 				isDestructive: true,
 			});
 			if (!confirmed) return;

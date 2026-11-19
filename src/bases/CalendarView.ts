@@ -44,6 +44,7 @@ import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccur
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
 import type { EventRef } from "obsidian";
+import { createUTCDateFromLocalCalendarDate } from "../utils/dateUtils";
 import {
 	resolveTaskListKeyboardAction,
 	type TaskListAction,
@@ -170,6 +171,8 @@ export class CalendarView extends BasesViewBase {
 	private calendarEl: HTMLElement | null = null;
 	private dayPanel: TaskCalendar | null = null;
 	private dayPanelEl: HTMLElement | null = null;
+	private hoveredGridTaskPath: string | null = null;
+	private hoveredGridTaskElement: HTMLElement | null = null;
 	private selectedMonthDay: string | null = null;
 	/** Range the current items were built for. */
 	private visibleView: ViewInfo | null = null;

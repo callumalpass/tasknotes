@@ -332,6 +332,11 @@ msgctxt "services.instantTaskConvert.notices.convertingTasks"
 msgid "{count, plural, one {Converting {count, number} task...} other {Converting {count, number} tasks...}}"
 msgstr "{count, plural, other {{count, number}件のタスクを変換中…}}"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copiedTitles"
+msgid "{count, plural, one {Copied # task title} other {Copied # task titles}}"
+msgstr "{count, plural, other {タスクのタイトルを # 件コピーしました}}"
+
 #: src/ui/calendarExportActions.ts
 msgctxt "services.calendarExport.notices.downloadSuccess"
 msgid "{count, plural, one {Downloaded {filename} with {count, number} task} other {Downloaded {filename} with {count, number} tasks}}"
@@ -763,6 +768,11 @@ msgstr "{seconds, plural, other {リクエスト数の上限を超えました�
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
 msgid "{sessionLabel} paused"
 msgstr "{sessionLabel}を一時停止中"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateMessage"
+msgid "{shortcut} is assigned to {actions}. Replace the existing assignment?"
+msgstr "{shortcut} は {actions} に割り当てられています。既存の割り当てを置き換えますか？"
 
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderPomodoroStatusBar display"
@@ -1210,6 +1220,11 @@ msgctxt "settings.integrations.webhooks.labels.active"
 msgid "Active:"
 msgstr "アクティブ："
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirm"
+msgid "Add"
+msgstr "追加"
+
 #: src/components/task-context-menu/relationships.ts
 msgctxt "contextMenus.task.dependencies.addBlockedBy"
 msgid "Add “blocked by”…"
@@ -1220,10 +1235,20 @@ msgctxt "contextMenus.task.dependencies.addBlocking"
 msgid "Add “blocking”…"
 msgstr "「ブロックしている」を追加…"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmMessage"
+msgid "Add {shortcut} to {action}?"
+msgstr "{action} に {shortcut} を追加しますか？"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.googleCalendarExport.includeObsidianLink.description"
 msgid "Add a link back to the task in Obsidian in the event description."
 msgstr "イベントの説明にObsidianのタスクへのリンクを追加します。"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserFieldDescription"
+msgid "Add a shortcut for a configured user-defined task field."
+msgstr "設定済みのユーザー定義タスクフィールドにショートカットを追加します。"
 
 #: src/bases/TaskListView.ts
 #: src/i18n/messages.ts
@@ -1256,6 +1281,11 @@ msgstr "添付ファイルを追加"
 msgctxt "settings.integrations.subscriptionsList.addSubscription.name"
 msgid "Add calendar subscription"
 msgstr "カレンダー購読を追加"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-context"
+msgid "Add context"
+msgstr "コンテキストを追加"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.contextsPlaceholder"
@@ -1313,6 +1343,11 @@ msgctxt "modals.task.projectsAdd"
 msgid "Add project"
 msgstr "プロジェクトを追加"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-project"
+msgid "Add project"
+msgstr "プロジェクトを追加"
+
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.addProjectToCurrentTask"
 msgid "Add project to current task"
@@ -1328,6 +1363,11 @@ msgstr "リマインダーを追加"
 msgctxt "modals.reminder.quickTooltip"
 msgid "Add reminder: {timing}"
 msgstr "リマインダーを追加：{timing}"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.confirmTitle"
+msgid "Add shortcut?"
+msgstr "ショートカットを追加しますか？"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskStatuses.addNew.buttonText"
@@ -1351,6 +1391,11 @@ msgstr "サブタスクを追加…"
 
 #: src/modals/taskModalMetadataFields.ts
 msgctxt "modals.task.tagsPlaceholder"
+msgid "Add tags"
+msgstr "タグを追加"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.add-tags"
 msgid "Add tags"
 msgstr "タグを追加"
 
@@ -1397,6 +1442,11 @@ msgstr "プロジェクトに追加"
 msgctxt "contextMenus.task.organization.addToProject"
 msgid "Add to project…"
 msgstr "プロジェクトに追加…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.addUserField"
+msgid "Add user field"
+msgstr "ユーザーフィールドを追加"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.customUserFields.addNew.buttonText"
@@ -1653,6 +1703,16 @@ msgstr "タスクをアーカイブ"
 msgctxt "modals.actionPalette.archiveDesc"
 msgid "Archive this task"
 msgstr "このタスクをアーカイブ"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneMessage"
+msgid "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+msgstr "「{title}」を削除しますか？この操作は元に戻せません。"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyMessage"
+msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
+msgstr "{count} 件のタスクを削除しますか？この操作は元に戻せません。"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2233,6 +2293,7 @@ msgctxt "settings.calendarService.calendars.heading"
 msgid "Calendars shown"
 msgstr "表示するカレンダー"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/bases/KanbanView.ts
 #: src/bases/TaskListView.ts
 #: src/modals/CalendarEventCreationModal.ts
@@ -2246,6 +2307,7 @@ msgstr "表示するカレンダー"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
 msgstr "キャンセル"
@@ -2616,6 +2678,11 @@ msgctxt "modals.dueDate.quickOptions.clearAriaLabel"
 msgid "Clear due date"
 msgstr "期限日をクリア"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.clear-focus-and-selection"
+msgid "Clear focus and selection"
+msgstr "フォーカスと選択を解除"
+
 #: src/main.ts
 msgctxt "contextMenus.task.completion.clearInstancesConfirmTitle"
 msgid "Clear recorded instances?"
@@ -2652,10 +2719,20 @@ msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "タスクをクリア"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actionDescription"
+msgid "Click a shortcut to remove it, or add another binding."
+msgstr "ショートカットをクリックすると削除できます。別のキー割り当ても追加できます。"
+
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
 msgid "Click to open"
 msgstr "クリックして開く"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.captureHint"
+msgid "Click, then press the desired key combination"
+msgstr "クリックして、割り当てるキーの組み合わせを押してください"
 
 #: src/settings/native/connections.ts
 msgctxt "settings.native.clientID"
@@ -2888,6 +2965,11 @@ msgctxt "integration.Configurationconflict"
 msgid "Configuration conflict"
 msgstr "設定の競合"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.description"
+msgid "Configure shortcuts for task cards in the task list, Kanban, and agenda views, and for the task currently hovered in calendar grid views. They only run while a task has keyboard focus or is hovered."
+msgstr "タスクリスト、カンバン、アジェンダのタスクカードと、カレンダーのグリッド表示でマウスカーソル下にあるタスクのショートカットを設定します。タスクにキーボードフォーカスがあるか、カーソルが重なっているときだけ動作します。"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.appearance.projectAutosuggest.displayRowsHelp"
 msgid "Configure up to 3 lines of information to show for each project suggestion."
@@ -2902,6 +2984,11 @@ msgstr "確認"
 msgctxt "modals/TextInputModal: TextInputModal confirmText"
 msgid "Confirm"
 msgstr "確認"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.conflict"
+msgid "Conflict: {shortcuts} is also assigned to another task card action."
+msgstr "競合: {shortcuts} は別の操作にも割り当てられています。"
 
 #: src/settings/native/connections.ts
 #: src/settings/native/googleCalendarService.ts
@@ -3135,6 +3222,11 @@ msgstr "タスクタイトルをコピー"
 msgctxt "bases/basesTaskCopyActions: buildBasesTaskCopyActions name"
 msgid "Copy task titles"
 msgstr "タスクのタイトルをコピー"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.copy-task-titles"
+msgid "Copy task titles"
+msgstr "タスク名をコピー"
 
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.copyTitleDesc"
@@ -3396,6 +3488,11 @@ msgstr "タスクを作成"
 #: src/modals/ICSEventInfoModal.ts
 #: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.title"
+msgid "Create task"
+msgstr "タスクを作成"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.create-task"
 msgid "Create task"
 msgstr "タスクを作成"
 
@@ -4015,6 +4112,11 @@ msgctxt "settings.features.suggestions.debounceDesc"
 msgid "Delay in milliseconds before showing suggestions"
 msgstr "提案を表示する前の遅延（ミリ秒）"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteConfirm"
+msgid "Delete"
+msgstr "削除"
+
 #: src/components/providerEventDeletion.ts
 msgctxt "contextMenus.ics.deleteEvent.confirmButton"
 msgid "Delete"
@@ -4109,13 +4211,28 @@ msgctxt "settings.integrations.subscriptionsList.actions.deleteSubscription"
 msgid "Delete subscription"
 msgstr "購読を削除"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteOneTitle"
+msgid "Delete task"
+msgstr "タスクを削除"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.taskEdit.deleteConfirmation.title"
 msgid "Delete task"
 msgstr "タスクを削除"
 
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.deleteManyTitle"
+msgid "Delete tasks"
+msgstr "タスクを削除"
+
 #: src/components/BatchContextMenu.ts
 msgctxt "notices.audit.deleteTitle"
+msgid "Delete tasks"
+msgstr "タスクを削除"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.delete-tasks"
 msgid "Delete tasks"
 msgstr "タスクを削除"
 
@@ -4579,10 +4696,35 @@ msgctxt "commands.editCurrentTask"
 msgid "Edit current task"
 msgstr "現在のタスクを編集"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-due"
+msgid "Edit due date"
+msgstr "期限を編集"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-priority"
+msgid "Edit priority"
+msgstr "優先度を編集"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-recurrence"
+msgid "Edit recurrence"
+msgstr "繰り返しを編集"
+
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.edit"
 msgid "Edit reminder"
 msgstr "リマインダーを編集"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-scheduled"
+msgid "Edit scheduled date"
+msgstr "予定日を編集"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-status"
+msgid "Edit status"
+msgstr "ステータスを編集"
 
 #: src/ui/taskViewKeyboard.ts
 msgctxt "interaction shortcut"
@@ -4598,6 +4740,11 @@ msgstr "タスクを編集"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.general.taskInteraction.actions.edit"
+msgid "Edit task"
+msgstr "タスクを編集"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.edit-task"
 msgid "Edit task"
 msgstr "タスクを編集"
 
@@ -5228,6 +5375,11 @@ msgstr "{provider}への接続に失敗しました: {message}"
 msgctxt "services.instantTaskConvert.notices.conversionFailed"
 msgid "Failed to convert task. Please try again."
 msgstr "タスクの変換に失敗しました。再試行してください。"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.copyTitlesFailed"
+msgid "Failed to copy task titles"
+msgstr "タスクのタイトルをコピーできませんでした"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.notices.copyFailure"
@@ -5970,6 +6122,21 @@ msgctxt "generated Bases column name"
 msgid "Focus minutes"
 msgstr "集中した分数"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-next"
+msgid "Focus next task"
+msgstr "次のタスクにフォーカス"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.navigate-previous"
+msgid "Focus previous task"
+msgstr "前のタスクにフォーカス"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.focus-search"
+msgid "Focus search"
+msgstr "検索にフォーカス"
+
 #: src/templates/defaultBasesFiles.ts
 msgctxt "generated Bases column name"
 msgid "Focus time"
@@ -6668,6 +6835,16 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options p
 msgid "JSON object keyed by swim lane property"
 msgstr "スイムレーンのプロパティをキーとする JSON オブジェクト"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-first"
+msgid "Jump to first task"
+msgstr "最初のタスクへ移動"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.jump-last"
+msgid "Jump to last task"
+msgstr "最後のタスクへ移動"
+
 #: src/settings/native/relativeSyncTime.ts
 msgctxt "settings.integrations.timeFormats.justNow"
 msgid "Just now"
@@ -7055,6 +7232,11 @@ msgstr "手動順序"
 msgctxt "contextMenus.task.completion.submenuCompleteOnly"
 msgid "Mark complete"
 msgstr "完了としてマーク"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.mark-complete"
+msgid "Mark complete"
+msgstr "完了にする"
 
 #: src/modals/taskEditCompletions.ts
 msgctxt "contextMenus.task.markComplete"
@@ -8481,10 +8663,20 @@ msgctxt "settings.features.taskCreation.openAfterCreate.name"
 msgid "Open task after creation"
 msgstr "作成後にタスクを開く"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-context-menu"
+msgid "Open task context menu"
+msgstr "タスクメニューを開く"
+
 #: src/modals/TaskActionPaletteModal.ts
 msgctxt "modals.actionPalette.openFile"
 msgid "Open task file"
 msgstr "タスクのファイルを開く"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.open-task-notes"
+msgid "Open task note"
+msgstr "タスクノートを開く"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.openApp.name"
@@ -8972,6 +9164,11 @@ msgstr "期限超過の予定タスクを今日に延期"
 msgctxt "notices.interface.postponing"
 msgid "Postponing tasks: {count}…"
 msgstr "タスクを延期中：{count}件…"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.recording"
+msgid "Press keys…"
+msgstr "キーを押してください…"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.notifications.soundPreviewButton"
@@ -9498,6 +9695,11 @@ msgctxt "modals.task.projectsRemoveTooltip"
 msgid "Remove project"
 msgstr "プロジェクトを削除"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.remove"
+msgid "Remove shortcut"
+msgstr "ショートカットを削除"
+
 #: src/modals/taskModalSubtasks.ts
 msgctxt "modals.task.organization.removeSubtaskTooltip"
 msgid "Remove subtask"
@@ -9561,6 +9763,11 @@ msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "現在のタスクを再利用"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.replace"
+msgid "Replace"
+msgstr "置き換え"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
 msgid "Require due date"
@@ -9607,6 +9814,11 @@ msgctxt "settings.features.recurring.resetCheckboxesDesc"
 msgid "Reset all Markdown checkboxes in the task body when a recurring task is completed and rescheduled"
 msgstr "繰り返しタスクの完了後、次回に向けて予定を更新するときに、タスク本文のすべての Markdown チェックボックスをリセットします。"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAll"
+msgid "Reset all shortcuts"
+msgstr "すべてのショートカットをリセット"
+
 #: src/settings/native/features.ts
 msgctxt "settings.features.recurring.resetCheckboxesName"
 msgid "Reset checkboxes on recurrence"
@@ -9636,6 +9848,16 @@ msgstr "フォームのフィールドをリセットしますか？"
 msgctxt "settings.features.recurring.resetStatusName"
 msgid "Reset status after each occurrence"
 msgstr "各回の後にステータスをリセット"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAction"
+msgid "Reset this action"
+msgstr "この操作をリセット"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.resetAllDescription"
+msgid "Restore every task card shortcut to its default binding."
+msgstr "タスクカードのショートカットをすべて初期設定に戻します。"
 
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
@@ -9940,6 +10162,11 @@ msgctxt "modals.task.dependencies.selectTaskTooltip"
 msgid "Select a task note using fuzzy search"
 msgstr "ファジー検索を使用してタスクノートを選択"
 
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.select-all"
+msgid "Select all visible tasks"
+msgstr "表示中のすべてのタスクを選択"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "ui.audit.selectNote"
 msgid "Select an item to open"
@@ -9996,6 +10223,11 @@ msgctxt "modals.taskSelector.title"
 msgid "Select task"
 msgstr "タスクを選択"
 
+#: src/ui/TaskCard.ts
+msgctxt "ui.taskCard.selectTask"
+msgid "Select task"
+msgstr "タスクを選択"
+
 #: src/modals/PropertySelectorModal.ts
 msgctxt "modals.propertySelector.title"
 msgid "Select task card properties"
@@ -10010,6 +10242,11 @@ msgstr "タスクを選択"
 msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
 msgstr "このタスクのサブタスクにするタスクを選択"
+
+#: src/bases/basesTaskCardActions.ts
+msgctxt "bases.taskCardActions.mixedArchiveState"
+msgid "Select tasks with the same archive state"
+msgstr "アーカイブ状態が同じタスクを選択してください"
 
 #: src/settings/native/general.ts
 msgctxt "settings.features.uiLanguage.dropdown.description"
@@ -10215,6 +10452,11 @@ msgstr "短い休憩を開始しました"
 msgctxt "generated Bases column name"
 msgid "Short breaks"
 msgstr "短い休憩"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.duplicateTitle"
+msgid "Shortcut already assigned"
+msgstr "ショートカットは割り当て済みです"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.calendarView.selectionMirror.description"
@@ -11158,6 +11400,11 @@ msgstr "タスクボディテンプレートが見つかりません：{path}"
 msgctxt "settings.integrations.googleCalendarExport.notices.serviceNotAvailable"
 msgid "Task calendar sync service not available"
 msgstr "タスクカレンダー同期サービスが利用できません"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.header"
+msgid "Task card keyboard shortcuts"
+msgstr "タスクカードのキーボードショートカット"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.taskCards.header"
@@ -12217,7 +12464,9 @@ msgctxt "modals.timeEntry.created"
 msgid "Time entry created for {taskTitle} ({duration} minutes)"
 msgstr "{taskTitle}の時間エントリを作成しました（{duration}分）"
 
+#: src/bases/basesTaskCardActions.ts
 #: src/modals/taskModalMetadataFields.ts
+#: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "modals.task.timeEstimateLabel"
 msgid "Time estimate"
 msgstr "見積時間"
@@ -12621,6 +12870,16 @@ msgstr "今日の列幅（倍）"
 msgctxt "views.kanban.toggleColumn"
 msgid "Toggle {column} column"
 msgstr "列「{column}」を折りたたみ・展開"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-archive"
+msgid "Toggle archive"
+msgstr "アーカイブ状態を切り替え"
+
+#: src/settings/native/keyboardShortcutMessages.ts
+msgctxt "settings.keyboardShortcuts.actions.toggle-select"
+msgid "Toggle focused task selection"
+msgstr "フォーカス中のタスクの選択を切り替え"
 
 #: src/bases/taskListGroupHeader.ts
 msgctxt "bases/TaskListView: TaskListView.createGroupHeader display"

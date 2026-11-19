@@ -16,6 +16,7 @@ export type CreateBasesSearchControlsOptions = {
 	visibleProperties: readonly string[];
 	currentSearchTerm: string;
 	onSearch: (term: string) => void | Promise<void>;
+	onDismiss?: () => void;
 	debounceMs?: number;
 };
 

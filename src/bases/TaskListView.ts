@@ -18,7 +18,7 @@ import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Legacy Bases view rendering narrows DOM references through lifecycle checks. */
-import { Menu, Notice, TFile, setIcon } from "obsidian";
+import { Menu, Notice, Platform, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
@@ -40,6 +40,7 @@ import { TASK_PATH_DRAG_TYPE } from "../utils/DragDropManager";
 import {
 	isSortOrderInSortConfig,
 	prepareBatchSortOrderUpdate,
+	getSortOrderDirection,
 	prepareSortOrderUpdate,
 	applySortOrderPlan,
 	DropOperationQueue,
@@ -72,6 +73,7 @@ import {
 	getTaskListPropertyValue,
 	stringifyTaskListGroupValue,
 	orderTaskListGroups,
+	normalizeTaskListGroups,
 	reconcileTaskListGroups,
 	type TaskListGroup,
 	type TaskListHeaderItem,
@@ -122,6 +124,10 @@ import {
 } from "../services/taskParentAssignment";
 import { openTaskSelector } from "../modals/TaskSelectorWithCreateModal";
 import { openListPicker, type PickerItem } from "../ui/kit/listPicker";
+import { clearStaticStyleClasses } from "../utils/staticStyleClasses";
+import type { TaskListAction } from "./taskListKeyboardActions";
+import type { BasesTaskCardActionViewContext } from "./BasesTaskCardKeyboardController";
+import type { TaskListFocusMoveDirection } from "./TaskListFocusController";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Bases/TaskListView" });
 
@@ -806,14 +812,6 @@ export class TaskListView extends BasesViewBase {
 		return this.getVirtualItemTask(item)?.path ?? null;
 	}
 
-	protected getVisibleTaskPaths(): string[] {
-		if (!this.useVirtualScrolling) return super.getVisibleTaskPaths();
-		return this.lastVirtualItems.flatMap((item) => {
-			const path = this.getVirtualItemPath(item);
-			return path ? [path] : [];
-		});
-	}
-
 	protected revealKeyboardTask(path: string): void {
 		if (!this.useVirtualScrolling) return;
 		const index = this.lastVirtualItems.findIndex(
@@ -831,6 +829,49 @@ export class TaskListView extends BasesViewBase {
 			key: JSON.stringify([group, subgroup]),
 			paths: this.getVisibleTaskPaths().filter((candidate) => this.taskGroupKeys.get(candidate) === group && this.movementSubGroupKeys.get(candidate) === subgroup),
 		};
+	}
+
+	private resolveOffscreenTaskCard(
+		currentPath: string | null,
+		direction: TaskListFocusMoveDirection
+	): HTMLElement | null {
+		const scroller = this.virtualScroller;
+		if (!scroller) return null;
+
+		const items = scroller.getItems();
+		if (items.length === 0) return null;
+
+		const currentIndex = currentPath
+			? items.findIndex((item) => this.getVirtualItemPath(item) === currentPath)
+			: -1;
+
+		let targetIndex: number;
+		if (direction === "first") {
+			targetIndex = 0;
+		} else if (direction === "last") {
+			targetIndex = items.length - 1;
+		} else if (currentIndex < 0) {
+			return null;
+		} else {
+			targetIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+		}
+
+		// Skip over group-header pseudo-items, continuing to search in the
+		// direction we're already moving.
+		const searchStep = direction === "previous" || direction === "last" ? -1 : 1;
+		while (
+			targetIndex >= 0 &&
+			targetIndex < items.length &&
+			!this.getVirtualItemPath(items[targetIndex])
+		) {
+			targetIndex += searchStep;
+		}
+
+		if (targetIndex < 0 || targetIndex >= items.length || targetIndex === currentIndex) {
+			return null;
+		}
+
+		return scroller.ensureIndexRendered(targetIndex);
 	}
 
 	private getVirtualItemGroupKey(item: TaskListVirtualItem): string | null {
@@ -1240,7 +1281,7 @@ export class TaskListView extends BasesViewBase {
 
 			// Cancel any pending rAF
 			if (this.dragOverRafId) {
-				cancelAnimationFrame(this.dragOverRafId);
+				window.cancelAnimationFrame(this.dragOverRafId);
 				this.dragOverRafId = 0;
 			}
 			this.pendingDragClientY = null;
@@ -2867,7 +2908,7 @@ export class TaskListView extends BasesViewBase {
 				this.currentInsertionIndex = -1;
 				this.pendingDragClientY = null;
 
-				await this.handleSortOrderDrop(
+				await this.handleBatchSortOrderDrop(
 					draggedPath,
 					dropTarget.taskPath,
 					dropTarget.above,
@@ -2900,51 +2941,17 @@ export class TaskListView extends BasesViewBase {
 		destination?: TaskListDestination,
 		undos?: Array<() => Promise<void>>
 	): Promise<void> {
-		const preserveExistingListValues =
-			typeof preserveExistingListValuesOrDestination === "boolean"
-				? preserveExistingListValuesOrDestination
-				: false;
 		const groupByPropertyId = this.getGroupByPropertyId() ?? this.subGroupPropertyId;
 		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
 		await this.dropQueue.enqueue(reorderScopeKey, async () => {
-			const pathsToUpdate = Array.from(
-				new Set([draggedPath, ...draggedPaths.filter((path) => path !== draggedPath)])
-			);
-			const groupDropPlans = new Map(
-				pathsToUpdate.map((path) => {
-					// Selected tasks may originate in different groups. Plan each
-					// mutation from its own source so replace/add behavior remains
-					// correct for every task in the batch.
-					const pathSourceGroupKey = this.taskGroupKeys.has(path)
-						? (this.taskGroupKeys.get(path) ?? null)
-						: sourceGroupKey;
-					return [
-						path,
-						buildTaskListGroupDropPlan({
-							groupByPropertyId,
-							sourceGroupKey: pathSourceGroupKey,
-							targetGroupKey,
-							preserveExistingListValues,
-							lookupMappingKey: (propertyName) =>
-								this.plugin.fieldMapper.lookupMappingKey(propertyName),
-							isListTypeProperty: (propertyName) =>
-								this.isListTypeProperty(propertyName),
-							normalizeListGroupValue: (
-								taskProperty,
-								_propertyName,
-								groupValue
-							) =>
-								this.normalizeListGroupValueForDrop(
-									taskProperty,
-									groupValue,
-									path
-								),
-						}),
-					] as const;
-				})
-			);
-			const groupDropPlan = groupDropPlans.get(draggedPath);
-			if (!groupDropPlan) return;
+			const groupDropPlan = buildTaskListGroupDropPlan({
+				groupByPropertyId,
+				sourceGroupKey,
+				targetGroupKey,
+				lookupMappingKey: (propertyName) =>
+					this.plugin.fieldMapper.lookupMappingKey(propertyName),
+				isListTypeProperty: (propertyName) => this.isListTypeProperty(propertyName),
+			});
 
 			if (groupDropPlan.isFormulaGrouping && groupDropPlan.needsGroupUpdate) {
 				new Notice(
@@ -2959,38 +2966,33 @@ export class TaskListView extends BasesViewBase {
 				return;
 			}
 
-			// Compute sort_order first (read-only — no file writes yet)
-			const sortOrderOptions = {
-				taskInfoCache: this.taskInfoCache,
-				visibleTaskPaths:
-					targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
-				candidateTaskPaths: this.getCandidateSortScopePaths(targetGroupKey),
-			};
-			// A selected drag is a single ordered block, so every selected path must
-			// receive a rank at the destination rather than only the grabbed card.
-			const sortOrderPlan =
-				pathsToUpdate.length > 1
-					? await prepareBatchSortOrderUpdate(
-							targetPath,
-							above,
-							targetGroupKey,
-							groupDropPlan.cleanGroupBy,
-							pathsToUpdate,
-							this.plugin,
-							sortOrderOptions
-						)
-					: await prepareSortOrderUpdate(
-							targetPath,
-							above,
-							targetGroupKey,
-							groupDropPlan.cleanGroupBy,
-							draggedPath,
-							this.plugin,
-							sortOrderOptions
-						);
+			// Compute sort_order first (read-only â€” no file writes yet)
+			const sortOrderPlan = await prepareSortOrderUpdate(
+				targetPath,
+				above,
+				targetGroupKey,
+				destination ? null : groupDropPlan.cleanGroupBy,
+				draggedPath,
+				this.plugin,
+				{
+					taskInfoCache: this.taskInfoCache,
+					visibleTaskPaths: this.filterMovementSortScope(
+						targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
+						destination
+					),
+					candidateTaskPaths: this.filterMovementSortScope(
+						this.getCandidateSortScopePaths(targetGroupKey),
+						destination
+					),
+					sortDirection: getSortOrderDirection(
+						this.dataAdapter,
+						this.plugin.settings.fieldMapping.sortOrder
+					),
+				}
+			);
 			if (sortOrderPlan.sortOrder === null) return;
 
-			const totalEditedNotes = sortOrderPlan.additionalWrites.length + pathsToUpdate.length;
+			const totalEditedNotes = sortOrderPlan.additionalWrites.length + 1;
 			if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
 				this.applyOptimisticSortOrderResult(draggedPath, targetPath, above, targetGroupKey, sourceGroupKey, {
 					sortOrder: null, additionalWrites: [], reason: "sparse-init",
@@ -3005,6 +3007,12 @@ export class TaskListView extends BasesViewBase {
 			// Determine if we need to write anything
 			const needsWrite = groupDropPlan.needsGroupUpdate || sortOrderPlan !== null;
 			if (!needsWrite) {
+				this.debouncedRefresh();
+				return;
+			}
+
+			const file = this.plugin.app.vault.getAbstractFileByPath(draggedPath);
+			if (!file || !(file instanceof TFile)) {
 				this.debouncedRefresh();
 				return;
 			}
@@ -3087,6 +3095,200 @@ export class TaskListView extends BasesViewBase {
 								groupDropPlan.normalizedTargetGroupKey
 							);
 						}
+					}
+				} catch (sideEffectError) {
+					tasknotesLogger.warn(
+						"[TaskNotes][TaskListView] Side-effect error after drop:",
+						{
+							category: "persistence",
+							operation: "side-effect-drop",
+							error: sideEffectError,
+						}
+					);
+				}
+			}
+
+			const didOptimisticallyReorder = this.applyOptimisticSortOrderResult(
+				draggedPath,
+				targetPath,
+				above,
+				targetGroupKey,
+				sourceGroupKey,
+				sortOrderPlan
+			);
+			if (!didOptimisticallyReorder) {
+				this.debouncedRefresh();
+			}
+		});
+	}
+
+	private async handleBatchSortOrderDrop(
+		draggedPath: string,
+		targetPath: string,
+		above: boolean,
+		targetGroupKey: string | null,
+		sourceGroupKey: string | null,
+		targetVisiblePaths?: string[],
+		preserveExistingListValuesOrDestination: boolean | TaskListDestination = false,
+		draggedPaths: string[] = [draggedPath]
+	): Promise<void> {
+		const preserveExistingListValues =
+			typeof preserveExistingListValuesOrDestination === "boolean"
+				? preserveExistingListValuesOrDestination
+				: false;
+		const groupByPropertyId = this.getGroupByPropertyId() ?? this.subGroupPropertyId;
+		const reorderScopeKey = this.getReorderScopeQueueKey(targetGroupKey, groupByPropertyId);
+		await this.dropQueue.enqueue(reorderScopeKey, async () => {
+			const pathsToUpdate = Array.from(
+				new Set([draggedPath, ...draggedPaths.filter((path) => path !== draggedPath)])
+			);
+			const groupDropPlans = new Map(
+				pathsToUpdate.map((path) => {
+					// Selected tasks may originate in different groups. Plan each
+					// mutation from its own source so replace/add behavior remains
+					// correct for every task in the batch.
+					const pathSourceGroupKey = this.taskGroupKeys.has(path)
+						? (this.taskGroupKeys.get(path) ?? null)
+						: sourceGroupKey;
+					return [
+						path,
+						buildTaskListGroupDropPlan({
+							groupByPropertyId,
+							sourceGroupKey: pathSourceGroupKey,
+							targetGroupKey,
+							preserveExistingListValues,
+							lookupMappingKey: (propertyName) =>
+								this.plugin.fieldMapper.lookupMappingKey(propertyName),
+							isListTypeProperty: (propertyName) =>
+								this.isListTypeProperty(propertyName),
+							normalizeListGroupValue: (
+								taskProperty,
+								_propertyName,
+								groupValue
+							) =>
+								this.normalizeListGroupValueForDrop(
+									taskProperty,
+									groupValue,
+									path
+								),
+						}),
+					] as const;
+				})
+			);
+			const groupDropPlan = groupDropPlans.get(draggedPath);
+			if (!groupDropPlan) return;
+
+			if (groupDropPlan.isFormulaGrouping && groupDropPlan.needsGroupUpdate) {
+				new Notice(
+					this.plugin.i18n.translate(msg({ message: "Cannot reorder tasks in formula-based groups. Formula values are computed and cannot be directly modified.", context: "views.taskList.errors.formulaGroupingReadOnly" }))
+				);
+				return;
+			}
+
+			// Compute sort_order first (read-only â€” no file writes yet)
+			const sortOrderOptions = {
+				taskInfoCache: this.taskInfoCache,
+				visibleTaskPaths:
+					targetVisiblePaths ?? this.getVisibleSortScopePaths(targetGroupKey),
+				candidateTaskPaths: this.getCandidateSortScopePaths(targetGroupKey),
+			};
+			// A selected drag is a single ordered block, so every selected path must
+			// receive a rank at the destination rather than only the grabbed card.
+			const sortOrderPlan =
+				pathsToUpdate.length > 1
+					? await prepareBatchSortOrderUpdate(
+							targetPath,
+							above,
+							targetGroupKey,
+							groupDropPlan.cleanGroupBy,
+							pathsToUpdate,
+							this.plugin,
+							sortOrderOptions
+						)
+					: await prepareSortOrderUpdate(
+							targetPath,
+							above,
+							targetGroupKey,
+							groupDropPlan.cleanGroupBy,
+							draggedPath,
+							this.plugin,
+							sortOrderOptions
+						);
+			if (sortOrderPlan.sortOrder === null) return;
+
+			const totalEditedNotes = sortOrderPlan.additionalWrites.length + pathsToUpdate.length;
+			if (totalEditedNotes > this.LARGE_REORDER_WARNING_THRESHOLD) {
+				const confirmed = await this.confirmLargeReorder(totalEditedNotes, targetGroupKey);
+				if (!confirmed) return;
+			}
+
+			// Determine if we need to write anything
+			const needsWrite = groupDropPlan.needsGroupUpdate || sortOrderPlan !== null;
+			if (!needsWrite) {
+				this.debouncedRefresh();
+				return;
+			}
+
+			const sortOrderField = this.plugin.settings.fieldMapping.sortOrder;
+
+			await applySortOrderPlan(draggedPath, sortOrderPlan, this.plugin, {
+				includeDragged: false,
+			});
+
+			for (const path of pathsToUpdate) {
+				const pathDropPlan = groupDropPlans.get(path);
+				if (!pathDropPlan) continue;
+				if (path !== draggedPath && !pathDropPlan.needsGroupUpdate) continue;
+
+				const file = this.plugin.app.vault.getAbstractFileByPath(path);
+				if (!file || !(file instanceof TFile)) continue;
+
+				// Each task gets its group mutation. Only the card under the pointer
+				// receives the insertion sort order.
+			await processVaultFrontMatter(this.plugin.app, file, (fm) => {
+					applyTaskListDropFrontmatterMutation({
+						frontmatter: fm,
+						plan: pathDropPlan,
+						sortOrderField,
+						sortOrder: path === draggedPath ? sortOrderPlan.sortOrder : null,
+						isRecurring: !!this.taskInfoCache.get(path)?.recurrence,
+						dateModifiedField: this.plugin.fieldMapper.toUserField("dateModified"),
+						coerceGroupKeyForFrontmatter: (property, groupKey) =>
+							this.coerceGroupKeyForFrontmatter(property, groupKey),
+						updateCompletedDateInFrontmatter: (frontmatter, status, isRecurring) =>
+							this.plugin.taskService.updateCompletedDateInFrontmatter(
+								frontmatter,
+								status,
+								isRecurring
+							),
+						getTimestamp: getCurrentTimestamp,
+					});
+				});
+
+				// Fire post-write side effects for known TaskInfo property changes.
+				if (pathDropPlan.needsGroupUpdate && pathDropPlan.groupByTaskProp) {
+					try {
+						const originalTask =
+							this.taskInfoCache.get(path) ??
+							(await this.plugin.cacheManager.getTaskInfo(path));
+						if (originalTask) {
+							const updatedTask = buildTaskListDropSideEffectTask(originalTask, {
+								plan: pathDropPlan,
+								isCompletedStatus: (status) =>
+									this.plugin.statusManager.isCompletedStatus(status),
+								getTimestamp: getCurrentTimestamp,
+								getCompletedDate: () => new Date().toISOString().split("T")[0],
+							});
+							if (updatedTask) {
+								await this.plugin.taskService.applyPropertyChangeSideEffects(
+									file,
+									originalTask,
+									updatedTask,
+									pathDropPlan.groupByTaskProp as keyof TaskInfo,
+									pathDropPlan.sourceGroupKey,
+									pathDropPlan.normalizedTargetGroupKey
+								);
+							}
 						}
 					} catch (sideEffectError) {
 						tasknotesLogger.warn(
@@ -3098,6 +3300,7 @@ export class TaskListView extends BasesViewBase {
 							}
 						);
 					}
+				}
 			}
 
 			const didOptimisticallyReorder =

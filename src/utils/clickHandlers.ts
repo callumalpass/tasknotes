@@ -42,6 +42,8 @@ export interface ClickHandlerOptions {
 	onDoubleClick?: (e: MouseEvent) => void | Promise<void>; // Optional override for double click
 	/** A view can consume selection before standalone card navigation runs. */
 	onSelectionClick?: (e: MouseEvent) => boolean;
+	/** Legacy view callback for clicks that toggle keyboard selection. */
+	selectionClickHandler?: (e: MouseEvent) => void;
 	/** Opens the menu for a right-click; `openTaskMenu` handles batch selection. */
 	contextMenuHandler?: (e: MouseEvent) => void | Promise<void>;
 	navigationSubpath?: string;
@@ -73,6 +75,7 @@ export function createTaskClickHandler(options: ClickHandlerOptions) {
 		onDoubleClick,
 		contextMenuHandler,
 		onSelectionClick,
+		selectionClickHandler,
 		navigationSubpath,
 	} = options;
 	const clickExcludeSelector = excludeSelector

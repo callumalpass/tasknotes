@@ -28,6 +28,8 @@ export interface VirtualScrollerOptions<T> {
 	renderItem: (item: T, index: number) => HTMLElement;
 	/** Optional function to get unique key for item */
 	getItemKey?: (item: T, index: number) => string;
+	/** Reapplies card selection and focus after the virtual DOM changes. */
+	onRenderedElementsChanged?: () => void;
 	/**
 	 * Called on scroll (RAF-throttled) with the current scrollTop.
 	 * Fires even when the visible item range does not change — useful for sticky headers.
@@ -87,6 +89,7 @@ export class VirtualScroller<T> {
 	private renderItem: (item: T, index: number) => HTMLElement;
 	private getItemKey: (item: T, index: number) => string;
 	private onScroll: ((scrollTop: number) => void) | null;
+	private onRenderedElementsChanged?: () => void;
 
 	private state: VirtualScrollState = {
 		startIndex: 0,
@@ -118,6 +121,7 @@ export class VirtualScroller<T> {
 		this.renderItem = options.renderItem;
 		this.getItemKey = options.getItemKey ?? ((item, index) => String(index));
 		this.onScroll = options.onScroll ?? null;
+		this.onRenderedElementsChanged = options.onRenderedElementsChanged;
 
 		this.setupDOM();
 		this.attachScrollListener();
