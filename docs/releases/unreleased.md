@@ -49,3 +49,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @BrucePlumb for reporting
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
+- (#2628) Fixed the scheduled date, due date, priority and other property pickers on phones and tablets opening the keyboard straight away, and running behind the keyboard so the lower options couldn't be reached. On mobile, these pickers now open as a bottom sheet again, and the keyboard opens only when you tap the search field. The sheet stays above the keyboard, and its list scrolls to every option.
+  - Thanks to @prepare4robots for reporting
