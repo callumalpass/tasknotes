@@ -62,6 +62,7 @@ Busy timed columns collapse overlapping appointments into a labelled stack when 
 - **Day**: Single day view with hourly breakdown
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
+  Task cards in the list leave out the scheduled or due date their row already sits under. Click the calendar or flag icon before a task (which also shows the time of timed tasks) to change that date. Recurring tasks show their occurrence date on the card instead.
 - **Custom Days**: Configurable multi-day view (2-10 days)
 View modes can be switched within a single `.base` file based on planning horizon (day, week, month, year, or custom range).
 
