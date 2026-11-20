@@ -7380,6 +7380,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, one {# tarea movida} other {# tareas movidas}} a {destination}"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "La repetición del {from} se movió al {to}. Las demás repeticiones no cambian."
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -10077,6 +10082,11 @@ msgstr "Separe las etiquetas con comas."
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Separe los valores con comas."
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "La hora de la serie cambió a las {time}. Las repeticiones posteriores aparecen ahora a esta hora; la próxima repetición conserva su propia hora."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"

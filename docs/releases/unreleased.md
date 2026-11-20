@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- (#2631) Fixed dragging a later occurrence of a recurring task (dashed border) to another day in the calendar. The drop kept the occurrence on its original day, sometimes changed the time or removed the time from the recurrence rule for every later occurrence, and showed a notice saying the occurrence had moved. A drop on another day, or between the all-day row and a time slot, now moves only that occurrence by creating its occurrence note, and leaves the recurrence rule unchanged. A drop at another time on the same day still changes the series' time, and the notice now says so. A drop at the same day and time changes nothing. See [Calendar Views](https://tasknotes.dev/views/calendar-views/#drag-and-drop-behavior).
+  - Thanks to @martin-forge for reporting
 - (#2602) Fixed the time range shown while dragging to create a timeblock, task or time entry in the calendar being hidden behind existing events. The selection now draws above existing events, so its time range can be read while dragging over them.
   - Thanks to @RumiaKitinari for reporting
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
