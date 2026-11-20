@@ -140,3 +140,45 @@ test('narrow agenda cards show every property when the setting is on', async () 
   })).toBe(true);
   expect((await wrapped.boundingBox())!.height).toBeGreaterThan(collapsedHeight);
 });
+
+test('properties that do not fit beside the dates move under them instead of squeezing', async () => {
+  const day = (offset: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+  const content = stringify({
+    filters: { and: [`file.inFolder("${folder}")`] },
+    views: [{ type: 'tasknotesTaskList', name: 'Dated', order: ['status', 'scheduled', 'due', 'projects'] }],
+  });
+  await page.evaluate(async ({ folder, path, content, scheduled, due }) => {
+    const app = (window as any).app;
+    const plugin = app.plugins.plugins.tasknotes;
+    plugin.settings.wrapTaskCardProperties = true;
+    await plugin.saveSettings();
+    await app.vault.create(`${folder}/Dated task.md`,
+      `---\ntags: [task]\ntitle: Dated task\nstatus: open\nscheduled: ${scheduled}\ndue: ${due}\n` +
+      `projects: ["[[${folder}/Community garden programme|Community garden programme]]"]\n---\n`);
+    await app.workspace.getLeaf(false).openFile(await app.vault.create(path, content));
+  }, { folder, path: `${folder}/Dated.base`, content, scheduled: day(0), due: day(3) });
+
+  const leaf = page.locator('.workspace-leaf.mod-active');
+  await leaf.evaluate(element => { (element as HTMLElement).style.maxWidth = '320px'; });
+  const card = leaf.locator('.task-card', { hasText: 'Dated task' });
+  await expect(card).toHaveClass(/task-card--metadata-wrap/);
+  await expect(card.locator('.task-card__project-link')).toHaveText('Community garden programme');
+
+  // The project fits the card's width but not the rest of the dates' line, so it takes the next
+  // line whole rather than wrapping beside the dates.
+  expect(await card.evaluate(card => {
+    const top = (element: Element) => Math.round(element.getBoundingClientRect().top);
+    const project = card.querySelector('.task-card__project-link')!;
+    const range = document.createRange();
+    range.selectNodeContents(project);
+    return {
+      dates: card.querySelectorAll('.task-card__date-slot:not([hidden])').length,
+      belowDates: Array.from(card.querySelectorAll('.task-card__date-slot:not([hidden])')).every(date => top(project) > top(date)),
+      lines: new Set(Array.from(range.getClientRects(), rect => Math.round(rect.top))).size,
+    };
+  })).toEqual({ dates: 2, belowDates: true, lines: 1 });
+});
