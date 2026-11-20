@@ -1070,7 +1070,8 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 }
 
 .tasknotes-plugin .tn-calendar-agenda-strip .tnc-strip-head,
-.tasknotes-plugin .tnc-list-day-link {
+.tasknotes-plugin .tnc-list-day-link,
+.tasknotes-plugin .tnc-list-day > .tn-calendar-day-heading {
     min-height: var(--tn-touch-target);
 }
 
