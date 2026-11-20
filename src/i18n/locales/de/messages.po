@@ -10286,6 +10286,11 @@ msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
 msgstr "Fällige Aufgaben anzeigen"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar list option"
+msgid "Show event date on task cards"
+msgstr "Ereignisdatum auf Aufgabenkarten anzeigen"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showExpandableSubtasks.name"
 msgid "Show expandable subtasks"

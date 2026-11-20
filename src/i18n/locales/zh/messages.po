@@ -10285,6 +10285,11 @@ msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
 msgstr "显示有截止日期的任务"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar list option"
+msgid "Show event date on task cards"
+msgstr "在任务卡片上显示事件日期"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showExpandableSubtasks.name"
 msgid "Show expandable subtasks"

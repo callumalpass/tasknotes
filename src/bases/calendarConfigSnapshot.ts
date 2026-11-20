@@ -22,6 +22,7 @@ const CALENDAR_CONFIG_SNAPSHOT_KEYS = [
 	"showAgendaStrip",
 	"showMonthDayPanel",
 	"hideTopLevelSubtasks",
+	"showEventDateOnCards",
 	"slotMinTime",
 	"slotMaxTime",
 	"slotDuration",

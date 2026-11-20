@@ -34,6 +34,8 @@ export type CalendarListEventCardInput = {
 	plugin: TaskNotesPlugin;
 	config?: BasesViewConfig;
 	visibleProperties: string[];
+	/** Keep the date property the row's gutter already shows on the card. */
+	showEventDate?: boolean;
 	basesEntryByPath: ReadonlyMap<string, BasesEntryWithGetValue>;
 	buildTaskCardOptions: (
 		options: Partial<TaskCardOptions> & { targetDate: Date }
@@ -221,6 +223,7 @@ export function createCalendarListEventCard({
 	plugin,
 	config,
 	visibleProperties,
+	showEventDate = false,
 	basesEntryByPath,
 	buildTaskCardOptions,
 	logDebug,
@@ -233,7 +236,7 @@ export function createCalendarListEventCard({
 	if (taskInfo && eventType !== "ics" && eventType !== "property-based") {
 		const hasDue = visibleProperties.some(property => isPropertyForField(property, "due", plugin));
 		const cardProperties = visibleProperties.filter(property => {
-			if (!taskInfo.recurrence && (eventType === "scheduled" || eventType === "due") && isPropertyForField(property, eventType, plugin)) return false;
+			if (!showEventDate && !taskInfo.recurrence && (eventType === "scheduled" || eventType === "due") && isPropertyForField(property, eventType, plugin)) return false;
 			return property !== "formula.dueIn" || !hasDue;
 		});
 		const enrichedTask = enrichCalendarListTaskInfo({
