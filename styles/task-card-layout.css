@@ -437,7 +437,7 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
 @media (hover: hover) and (pointer: fine) {
     @container tn-task-list (min-width: 640px) {
         body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) > .task-card__main-row {
-            grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, max-content) auto minmax(0, 1fr) fit-content(50%) var(--tn-control-sm) var(--tn-board-control-size);
+            grid-template-columns: var(--tn-task-lead, var(--tn-board-control-size)) minmax(0, max-content) auto minmax(0, 1fr) minmax(auto, max-content) var(--tn-control-sm) var(--tn-board-control-size);
             grid-template-rows: auto;
         }
 
@@ -467,7 +467,32 @@ body :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-task
             gap: var(--tn-meta-line-gap);
             /* The end padding leaves room for the last date's hover background. */
             padding-inline: var(--tn-space-4) var(--tn-space-1);
-            overflow: hidden;
+            /* The column never gets narrower than the dates and the +N count (or, when properties
+               wrap, a short run of them), so nothing is clipped at its start. Otherwise the
+               metadata takes at most half the row, and properties that don't fit go behind +N. */
+            min-width: auto;
+            --tn-meta-dates: 0px;
+            --tn-meta-extra: calc(var(--tn-control-sm) + 2 * var(--tn-meta-line-gap));
+            max-width: max(50cqi, calc(var(--tn-space-4) + var(--tn-space-1) + var(--tn-meta-dates) + var(--tn-meta-extra)));
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata[data-dates="1"] {
+            --tn-meta-dates: var(--tn-task-date-width-wide);
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata[data-dates="2"] {
+            --tn-meta-dates: calc(2 * var(--tn-task-date-width-wide) + var(--tn-meta-line-gap));
+        }
+
+        /* "Show all properties on task cards": properties wrap between words in a run at least 12
+           characters wide, instead of shrinking to nothing and breaking after every letter. */
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata--wrap {
+            --tn-meta-extra: calc(12ch + 2 * var(--tn-meta-line-gap));
+        }
+
+        body:not(.is-mobile) .tasknotes-plugin.tn-tasknotesTaskList .task-card:not(.task-card--layout-inline) .task-card__metadata--wrap > .task-card__metadata-values {
+            min-width: 12ch;
+            justify-content: flex-end;
         }
 
         /* Dates go last, in fixed-width slots, so they line up from row to row. */

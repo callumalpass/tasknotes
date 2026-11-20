@@ -49,3 +49,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @BrucePlumb for reporting
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
+- (#2630) Fixed Task List rows from 640 px wide, where each task is on one line, cutting off the start of the scheduled date and squeezing or hiding properties. With **Show all properties on task cards** on, a project shrank to nothing and broke after every letter, making the row very tall; it now wraps between words and the title gives up some width instead. With the setting off, the +N count for hidden properties was itself cut off, and widening the list didn't bring the hidden properties back. The count now stays visible, and the properties come back when there is room.
+  - Thanks to @martin-forge for reporting
