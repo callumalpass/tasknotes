@@ -41,6 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2649) The **Next week** shortcut in date menus, Quick Actions, and the date and time picker now follows the **First day of week** setting. If today is that weekday, the shortcut selects the same weekday seven days later.
+  - Thanks to @erezbm for reporting
 - (#2645) TaskNotes retries temporary settings read errors instead of treating an unreadable file as missing. If the file remains unreadable, TaskNotes stops without overwriting it and logs what failed.
   - Thanks to @chrabia for reporting
 - (#2643) Fixed task links in [Note Toolbar](https://github.com/chrisgurney/obsidian-note-toolbar) callout toolbars (`> [!note-toolbar]`) breaking the toolbar layout since 5.0. A task link as a toolbar item turned into a narrow card whose title wrapped over several lines and overlapped the next item. Task links in these toolbars now show the task's status and title on one line, as a task link inside a sentence does.
