@@ -279,12 +279,7 @@ async function applyTaskCalendarGesture(
 		const start = info.event.start.toISOString();
 		const current = await context.plugin.cacheManager.getTaskInfo(taskInfo.path);
 		if (!current) throw new Error(`Missing task: ${taskInfo.path}`);
-		const change = {
-			kind,
-			start,
-			end: info.event.end?.toISOString(),
-			allDay: info.event.allDay,
-		};
+		const change = { kind, start, end: info.event.end?.toISOString(), allDay: info.event.allDay };
 		const timeFormat = (context.options.timeFormat ?? context.plugin.settings.calendarViewSettings?.timeFormat) === "12" ? "12" : "24";
 		const when = (value: string) => {
 			const date = parseDateToLocal(value);
@@ -327,7 +322,12 @@ async function applyTaskCalendarGesture(
 		const result = await captureTaskUndo(context.plugin, current, () => context.plugin.taskService.applyCalendarEdit(
 			current,
 			modelEntry,
-			change,
+			{
+				kind,
+				start,
+				end: info.event.end?.toISOString(),
+				allDay: info.event.allDay,
+			},
 			context.timezone
 		));
 		if (result.task) {

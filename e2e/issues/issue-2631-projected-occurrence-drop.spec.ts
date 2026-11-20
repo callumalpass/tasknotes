@@ -164,7 +164,7 @@ test('dropping a projected occurrence on another day moves only that occurrence'
   await expect.poll(() => occurrenceNotes(page, water)).toEqual([
     expect.objectContaining({ occurrence_date: SUNDAY, scheduled: `${MONDAY}T09:00` }),
   ]);
-  expect((await frontmatter(page, water)).recurrence).toBe('DTSTART:20270103T090000Z;FREQ=WEEKLY;BYDAY=SU');
+  await expect.poll(async () => (await frontmatter(page, water))?.recurrence).toBe('DTSTART:20270103T090000Z;FREQ=WEEKLY;BYDAY=SU');
   await expect.poll(() => items(page, water)).toEqual([`${MONDAY}T09:00 note`]);
   const moved = page.locator('.tn-toast').filter({ hasText: `${prefix} water` });
   await expect(moved).toContainText('occurrence to');
@@ -176,9 +176,9 @@ test('dropping a projected occurrence on another day moves only that occurrence'
 
   // Same day, another time: the series' time changes, and the notice says so.
   await drag(page, 'filter', { day: SUNDAY, hour: 14 });
-  await expect.poll(async () => (await frontmatter(page, filter)).recurrence)
+  await expect.poll(async () => (await frontmatter(page, filter))?.recurrence)
     .toBe('DTSTART:20270103T140000Z;FREQ=WEEKLY;BYDAY=SU');
-  expect((await frontmatter(page, filter)).scheduled).toBe('2027-01-10T11:00');
+  await expect.poll(async () => (await frontmatter(page, filter))?.scheduled).toBe('2027-01-10T11:00');
   expect(await occurrenceNotes(page, filter)).toEqual([]);
   await expect(page.locator('.tn-toast').filter({ hasText: `${prefix} filter` }))
     .toContainText('Series time changed to 14:00');
@@ -188,5 +188,5 @@ test('dropping a projected occurrence on another day moves only that occurrence'
   await expect.poll(() => occurrenceNotes(page, post)).toEqual([
     expect.objectContaining({ occurrence_date: SUNDAY, scheduled: MONDAY }),
   ]);
-  expect((await frontmatter(page, post)).recurrence).toBe('DTSTART:20270103T090000Z;FREQ=WEEKLY;BYDAY=SU');
+  await expect.poll(async () => (await frontmatter(page, post))?.recurrence).toBe('DTSTART:20270103T090000Z;FREQ=WEEKLY;BYDAY=SU');
 });
