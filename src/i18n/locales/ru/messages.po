@@ -7380,6 +7380,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, one {# задача перемещена} few {# задачи перемещены} many {# задач перемещены} other {# задачи перемещены}} в {destination}"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "Повторение от {from} перенесено на {to}. Остальные повторения не изменились."
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -9270,6 +9275,11 @@ msgstr "Экземпляр повторения завершен"
 msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "Родительская повторяющаяся задача не найдена"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Время шаблона повторения изменено на {time}. Последующие повторения теперь отображаются в это время; следующее повторение сохраняет своё время."
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"

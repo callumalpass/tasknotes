@@ -7377,6 +7377,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "已将{count, plural, other { # 个任务}}移至 {destination}"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "已将 {from} 的这次重复移至 {to}。其他重复未更改。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -9267,6 +9272,11 @@ msgstr "重复实例已完成"
 msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "未找到重复任务的父任务"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "重复规则的时间已改为 {time}。之后的重复现在显示在此时间；下一次重复保留其自身的时间。"
 
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"
