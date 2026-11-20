@@ -1,12 +1,13 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
+import { format } from "date-fns";
 import { App, Menu, moment as obsidianMoment, type MenuItem } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { ContextMenu } from "./ContextMenu";
 import { showCoordinatedMenu, showCoordinatedMenuAtElement } from "./ContextMenuCoordinator";
 import { DateTimePickerModal } from "../modals/DateTimePickerModal";
-import { addDaysToDateTime, combineDateAndTime } from "../utils/dateUtils";
+import { addDaysToDateTime, combineDateAndTime, getFirstDayOfNextWeek } from "../utils/dateUtils";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/DateContextMenu" });
@@ -17,6 +18,7 @@ type SubmenuMenuItem = {
 
 type MomentLike = {
 	format(format: string): string;
+	toDate(): Date;
 	clone(): MomentLike;
 	add(amount: number, unit: string): MomentLike;
 	day(day: number): MomentLike;
@@ -210,10 +212,13 @@ export class DateContextMenu {
 			category: "basic",
 		});
 
-		const nextMonday = today.clone().day(1).add(1, "week");
+		const nextWeek = getFirstDayOfNextWeek(
+			today.toDate(),
+			this.options.plugin?.settings?.calendarViewSettings?.firstDay
+		);
 		options.push({
 			label: this.t(msg({ message: "Next week", context: "contextMenus.date.basic.nextWeek" })),
-			value: nextMonday.format("YYYY-MM-DD"),
+			value: format(nextWeek, "yyyy-MM-dd"),
 			icon: "calendar-plus",
 			category: "basic",
 		});
