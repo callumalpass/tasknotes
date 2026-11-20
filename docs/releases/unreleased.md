@@ -39,6 +39,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2615) Added **Hide top-level subtasks** to the Calendar view's list (Agenda) layout and the month view's selected day panel, as in Task List and Kanban. When on, a subtask whose parent task is listed on the same day shows only under the parent's expanded subtasks instead of also as its own row. A subtask whose parent isn't listed that day keeps its own row. See [Agenda View](https://tasknotes.dev/views/agenda-view/#customization).
   - Thanks to @tistieom for the request
 
+## Changed
+
+- (#2632) Recurring tasks now label their status control **Series status** in the task context menu, the status picker (including the **S** shortcut and the action palette), the edit modal's status button and the notice after a change. It sets the status of the whole series and records no occurrence; to complete one occurrence, use **Mark complete or skip**. Materialized occurrence notes keep **Status**. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).
+  - Thanks to @martin-forge for the suggestion
+
 ## Fixed
 
 - (#2606) Fixed Ctrl/Cmd-click on a task in Task List, Kanban, Calendar and Agenda views selecting the task instead of opening its note in a new tab. Ctrl/Cmd-click and middle-click now open the note in a new tab on every task card, calendar event and task link in a note, as links do in Obsidian; Ctrl/Cmd+Alt-click opens it to the side. To select several tasks, Shift-click a task first; while a selection is active, Ctrl/Cmd-click adds or removes tasks as before. The task menu again has **Open note in new tab** next to **Open note**, instead of only under **Note actions**. See [Task List view](https://tasknotes.dev/views/task-list/#task-actions).

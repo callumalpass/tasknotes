@@ -570,7 +570,9 @@ export class TaskActionPaletteModal {
 	private getCategoryLabel(category: TaskAction["category"]): string {
 		const key =
 			category === "status"
-				? msg({ message: "Status", context: "contextMenus.task.status" })
+				? this.task.recurrence
+					? msg({ message: "Series status", context: "contextMenus.task.seriesStatus" })
+					: msg({ message: "Status", context: "contextMenus.task.status" })
 				: category === "priority"
 					? msg({ message: "Priority", context: "contextMenus.task.priority" })
 					: messageForKey(`modals.actionPalette.categories.${category}`);

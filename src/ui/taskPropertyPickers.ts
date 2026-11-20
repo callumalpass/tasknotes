@@ -52,7 +52,7 @@ export type TaskPickerProperty =
 	| "projects";
 
 type PropertyValue = string | string[] | undefined;
-export type TaskPickerValues = Pick<TaskInfo, TaskPickerProperty>;
+export type TaskPickerValues = Pick<TaskInfo, TaskPickerProperty | "recurrence">;
 export type TaskPropertyChoice = PropertyValue | ((task: TaskPickerValues) => PropertyValue);
 
 export interface TaskUndoFeedback {
@@ -69,10 +69,24 @@ export function updateTaskProjectsWithUndo(
 		(await changeTaskProperty(plugin, [task], "projects", projects))[0] ?? null;
 }
 
-export function taskPropertyLabel(property: TaskPickerProperty): string {
+/**
+ * Status on a recurring task sets the series' own status; completing one occurrence is
+ * Mark complete or skip (#2440). Occurrence notes have no rule, so they keep "Status" (#2632).
+ */
+export function setsSeriesStatus(tasks: readonly Pick<TaskInfo, "recurrence">[]): boolean {
+	return tasks.length > 0 && tasks.every((task) => !!task.recurrence);
+}
+
+/** `tasks` names the tasks a status label applies to, so recurring ones read "Series status". */
+export function taskPropertyLabel(
+	property: TaskPickerProperty,
+	tasks: readonly Pick<TaskInfo, "recurrence">[] = []
+): string {
 	switch (property) {
 		case "status":
-			return uiText(msg({ message: "Status", context: "interaction property" }));
+			return setsSeriesStatus(tasks)
+				? uiText(msg({ message: "Series status", context: "interaction property" }))
+				: uiText(msg({ message: "Status", context: "interaction property" }));
 		case "priority":
 			return uiText(msg({ message: "Priority", context: "interaction property" }));
 		case "due":
@@ -379,8 +393,8 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			}
 			return config ? configLabel(config) : String(task[property] ?? "—");
 		});
-		const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}", context: "interaction property feedback" }), { count: updatedTasks.length, property: taskPropertyLabel(property as TaskPickerProperty), value: [...new Set(values)].join(", ") });
-		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty)} · ${failedTitles.join(", ")}` : outcome,
+		const outcome = uiText(msg({ message: "{count, plural, one {# task updated} other {# tasks updated}}: {property} → {value}", context: "interaction property feedback" }), { count: updatedTasks.length, property: taskPropertyLabel(property as TaskPickerProperty, updatedTasks), value: [...new Set(values)].join(", ") });
+		showTaskUndo(undo, failed, undo.length, plugin.app.vault, failed ? `${taskPropertyLabel(property as TaskPickerProperty, tasks)} · ${failedTitles.join(", ")}` : outcome,
 			undefined, undefined,
 			failedPaths.length ? {
 				label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
@@ -519,7 +533,7 @@ export async function openTaskPropertyChoices(
 	const blocked = () => !!doc.querySelector(".modal-container") && !("closest" in anchor && anchor.closest(".modal-container"));
 	if (blocked()) return;
 	const clear = uiText(msg({ message: "Clear", context: "interaction clear" }));
-	const label = taskPropertyLabel(property);
+	const label = taskPropertyLabel(property, tasks);
 	const title = tasks.length > 1 ? `${label} · ${uiText(msg({ message: "{count, plural, one {# task selected} other {# tasks selected}}", context: "components/BatchContextMenu: BatchContextMenu.buildMenu display" }), { count: tasks.length })}` : undefined;
 	let items: PickerItem[] = [];
 	if (property === "status" || property === "priority") {
