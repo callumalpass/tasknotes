@@ -337,7 +337,7 @@ async function applyTaskCalendarGesture(
 				: pattern?.kind === "series-time"
 					? `${result.task.title} · ${uiText(
 						msg({
-							message: "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time.",
+							message: "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time.",
 							context: "calendar recurring pattern drop feedback",
 						}),
 						{ time: formatTime(info.event.start, timeFormat) }

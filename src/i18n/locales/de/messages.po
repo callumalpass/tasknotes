@@ -9274,11 +9274,6 @@ msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "Übergeordnete wiederkehrende Aufgabe nicht gefunden"
 
-#: src/bases/calendarMutations.ts
-msgctxt "calendar recurring pattern drop feedback"
-msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
-msgstr "Uhrzeit des Wiederholungsmusters auf {time} geändert. Spätere Vorkommen erscheinen jetzt zu dieser Uhrzeit; das nächste Vorkommen behält seine eigene Uhrzeit."
-
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
@@ -10085,6 +10080,11 @@ msgstr "Tags durch Kommas trennen."
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Werte durch Kommas trennen."
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Serienuhrzeit auf {time} geändert. Spätere Vorkommen erscheinen jetzt zu dieser Uhrzeit; das nächste Vorkommen behält seine eigene Uhrzeit."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"

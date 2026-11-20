@@ -9276,11 +9276,6 @@ msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "Attività principale della ricorrenza non trovata"
 
-#: src/bases/calendarMutations.ts
-msgctxt "calendar recurring pattern drop feedback"
-msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
-msgstr "Orario dello schema di ricorrenza cambiato in {time}. Le occorrenze successive ora compaiono a quest'ora; la prossima occorrenza mantiene il proprio orario."
-
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
@@ -10087,6 +10082,11 @@ msgstr "Separa le etichette con virgole."
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Separa i valori con virgole."
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Orario della serie cambiato in {time}. Le occorrenze successive ora compaiono a quest'ora; la prossima occorrenza mantiene il proprio orario."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"

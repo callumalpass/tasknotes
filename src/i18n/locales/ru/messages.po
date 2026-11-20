@@ -9276,11 +9276,6 @@ msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "Родительская повторяющаяся задача не найдена"
 
-#: src/bases/calendarMutations.ts
-msgctxt "calendar recurring pattern drop feedback"
-msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
-msgstr "Время шаблона повторения изменено на {time}. Последующие повторения теперь отображаются в это время; следующее повторение сохраняет своё время."
-
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
@@ -10087,6 +10082,11 @@ msgstr "Разделяйте теги запятыми."
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Разделяйте значения запятыми."
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Время серии изменено на {time}. Последующие повторения теперь отображаются в это время; следующее повторение сохраняет своё время."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"

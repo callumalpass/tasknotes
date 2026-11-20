@@ -181,7 +181,7 @@ test('dropping a projected occurrence on another day moves only that occurrence'
   expect((await frontmatter(page, filter)).scheduled).toBe('2027-01-10T11:00');
   expect(await occurrenceNotes(page, filter)).toEqual([]);
   await expect(page.locator('.tn-toast').filter({ hasText: `${prefix} filter` }))
-    .toContainText('Recurring pattern time changed to 14:00');
+    .toContainText('Series time changed to 14:00');
 
   // Another day's all-day row: a date-only occurrence note; the rule keeps its time.
   await drag(page, 'post', { day: MONDAY, allDay: true });

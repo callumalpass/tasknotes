@@ -9273,11 +9273,6 @@ msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "未找到重复任务的父任务"
 
-#: src/bases/calendarMutations.ts
-msgctxt "calendar recurring pattern drop feedback"
-msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
-msgstr "重复规则的时间已改为 {time}。之后的重复现在显示在此时间；下一次重复保留其自身的时间。"
-
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
@@ -10084,6 +10079,11 @@ msgstr "用逗号分隔标签。"
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "用逗号分隔值。"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "系列时间已改为 {time}。之后的重复现在显示在此时间；下一次重复保留其自身的时间。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"

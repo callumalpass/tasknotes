@@ -9275,11 +9275,6 @@ msgctxt "notices.interface.parentMissing"
 msgid "Recurring parent not found"
 msgstr "상위 반복 작업을 찾을 수 없습니다"
 
-#: src/bases/calendarMutations.ts
-msgctxt "calendar recurring pattern drop feedback"
-msgid "Recurring pattern time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
-msgstr "반복 패턴 시간을 {time}(으)로 바꿨습니다. 이후 회차는 이제 이 시간에 표시되며, 다음 회차는 자체 시간을 유지합니다."
-
 #: src/ui/recurringCompletionNotice.ts
 msgctxt "notices.recurringCompletion.undone"
 msgid "Recurring task change undone."
@@ -10086,6 +10081,11 @@ msgstr "태그를 쉼표로 구분하세요."
 msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "값을 쉼표로 구분하세요."
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "시리즈 시간을 {time}(으)로 바꿨습니다. 이후 회차는 이제 이 시간에 표시되며, 다음 회차는 자체 시간을 유지합니다."
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"

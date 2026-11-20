@@ -128,7 +128,7 @@ The calendar provides different behaviors depending on which type of recurring e
 
 What a drop changes depends on where the instance lands:
 
-- **Same day, another time**: updates the time in the recurrence rule's `DTSTART`, so every later pattern instance appears at the new time. The independently scheduled next occurrence keeps its own time. Notice: "Recurring pattern time changed to 14:00. Later occurrences now appear at this time; the next occurrence keeps its own time."
+- **Same day, another time**: updates the time in the recurrence rule's `DTSTART`, so every later pattern instance appears at the new time. The independently scheduled next occurrence keeps its own time. Notice: "Series time changed to 14:00. Later occurrences now appear at this time; the next occurrence keeps its own time."
 - **Another day, or between the all-day row and a time slot**: moves only that instance. TaskNotes creates an [occurrence note](../features/recurring-tasks.md#materialized-occurrence-notes) for the instance's date, scheduled where you dropped it, and leaves the recurrence rule unchanged. Notice: "Moved the Nov 29, 2026 occurrence to Nov 30, 2026 09:00. Other occurrences are unchanged." Undo deletes the new occurrence note.
 - **Same day and time**: nothing changes.
 
