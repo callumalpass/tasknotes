@@ -191,11 +191,11 @@ attachments:
   - "[[Files/invoice.pdf]]"
 ```
 
-Each entry links to a file in the vault by its full path. The property name follows the `attachments` field mapping, and the field can be used in Bases filters, formulas and columns like other list properties.
+Each entry links to a file in the vault by its full path. If you rename or move an attachment or its folder, Obsidian updates the link in the format set in **Settings → Files and links → New link format**, which by default is the shortest path that identifies the file, such as `[[invoice.pdf]]`. TaskNotes finds the file either way. The property name follows the `attachments` field mapping, and the field can be used in Bases filters, formulas and columns like other list properties.
 
 ### Showing file names in a Bases table
 
-TaskNotes views (Task List, Kanban, Calendar and task links in notes) name each attachment by its file, such as *invoice.pdf*. Obsidian's own table view shows the property as stored, so the `attachments` column lists full vault paths. To show file names in a table, add this formula to the `.base` file and show `formula.attachmentNames` as a column instead of `attachments`:
+TaskNotes views (Task List, Kanban, Calendar and task links in notes) name each attachment by its file, such as *invoice.pdf*. Obsidian's own table view shows the property as stored, so the `attachments` column lists full vault paths, except for links Obsidian has rewritten after a rename. To show file names in a table, add this formula to the `.base` file and show `formula.attachmentNames` as a column instead of `attachments`:
 
 ```yaml
 formulas:
