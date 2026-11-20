@@ -929,8 +929,10 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     background: none;
 }
 
+/* List rows have square corners and no shadow, unlike task blocks on the grids (.fc-task-event). */
 .tasknotes-plugin .tnc .tnc-item--list {
     box-shadow: none;
+    border-radius: var(--tn-radius-none);
 }
 
 .tasknotes-plugin .tnc .tnc-item--list .task-card:is(:hover, .is-selected, .task-card--selected) {
