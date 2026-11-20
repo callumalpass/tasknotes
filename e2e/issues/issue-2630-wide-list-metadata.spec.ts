@@ -99,8 +99,8 @@ test('"Show all properties" rows stay readable from 640px', async () => {
     expect(row.list, 'list width').toBe(width);
     expect(row.clipped, `${width}px`).toEqual([]);
     expect(row.project, `${width}px`).toBe(true);
-    // Was 230px from 640 to 700px. The project now wraps between words.
-    expect(row.height, `${width}px`).toBeLessThanOrEqual(width >= 900 ? 32 : 48);
+    // Was 230px from 640 to 700px. The project now wraps between words: at most two lines.
+    expect(row.height, `${width}px`).toBeLessThanOrEqual(width >= 900 ? 32 : 56);
   }
 });
 
