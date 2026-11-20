@@ -285,7 +285,9 @@ async function applyTaskCalendarGesture(
 				end: info.event.end?.toISOString(),
 				allDay: info.event.allDay,
 			},
-			context.timezone
+			context.timezone,
+			// Declining returns null, which reverts the gesture below and keeps the recorded instances.
+			{ confirmClearInstances: (cleared) => context.plugin.confirmClearRescheduledInstances(cleared) }
 		));
 		if (result.task) {
 			await context.refreshTask(result.task);

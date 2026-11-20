@@ -1285,7 +1285,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Ask the user to confirm clearing recorded completed/skipped instances that a
 	 * reschedule would remove (those on or after the new scheduled date).
 	 */
-	private async confirmClearRescheduledInstances(cleared: {
+	async confirmClearRescheduledInstances(cleared: {
 		complete: string[];
 		skipped: string[];
 	}): Promise<boolean> {
