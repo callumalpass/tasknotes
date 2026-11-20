@@ -59,11 +59,13 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 	let hiddenLabels: string[] = [];
 	// Styles separate the first property from a date before it; dates come first on the line but
 	// after the properties in the DOM, so CSS cannot tell on its own whether one is showing.
-	const markVisibleDates = () =>
-		metadataLine.classList.toggle(
-			"task-card__metadata--dated",
-			dateSlots.some((slot) => !slot.hidden)
-		);
+	// The wide Task List also reserves room for each date showing (data-dates), so the dates
+	// are never clipped at the start of the line.
+	const markVisibleDates = () => {
+		const shown = dateSlots.filter((slot) => !slot.hidden).length;
+		metadataLine.classList.toggle("task-card__metadata--dated", shown > 0);
+		metadataLine.dataset.dates = String(shown);
+	};
 	markVisibleDates();
 	metadataLine.classList.toggle("task-card__metadata--wrap", wrap);
 	metadataLine.closest(".task-card")?.classList.toggle("task-card--metadata-wrap", wrap);
@@ -125,8 +127,9 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			return [...atoms, ...dateSlots, summary].every((element) => {
 				if (element.hidden) return true;
 				const bounds = element.getBoundingClientRect();
-				const boundary = atoms.includes(element) ? values.getBoundingClientRect().right : metadataLine.getBoundingClientRect().right;
-				return bounds.right <= boundary + 0.5 && element.scrollWidth <= element.clientWidth + 1;
+				const box = (atoms.includes(element) ? values : metadataLine).getBoundingClientRect();
+				// The line is end-aligned in wide lists, so an item can also overflow at its start.
+				return bounds.left >= box.left - 0.5 && bounds.right <= box.right + 0.5 && element.scrollWidth <= element.clientWidth + 1;
 			});
 		};
 		if (fits()) return;
@@ -166,6 +169,10 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		const observer = new Observer(fit);
 		observer.observe(values);
 		observer.observe(metadataLine);
+		// The line can be sized to what it shows, so it does not grow when the list widens. The
+		// row does, so it is watched too and hidden properties come back when there is room.
+		const row = metadataLine.closest<HTMLElement>(".task-card__main-row");
+		if (row) observer.observe(row);
 		metadataObservers.set(metadataLine, observer);
 	}
 }
