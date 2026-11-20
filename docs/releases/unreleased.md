@@ -49,3 +49,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @BrucePlumb for reporting
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
+- Fixed task rows in the Calendar view's list (Agenda) layout having rounded corners, which curved the divider under each task up at both ends while the divider under a calendar event ran straight. Task rows now have square corners like event rows; task blocks in the day, week and month grids keep their rounded corners.
