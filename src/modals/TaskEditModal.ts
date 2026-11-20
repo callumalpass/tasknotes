@@ -113,7 +113,8 @@ export class TaskEditModal extends TaskModal {
 		this.form.values.reminders = formState.reminders;
 		this.attachmentEntries = createLinkedAttachmentEntries(
 			this.task.attachments,
-			this.task.path
+			this.task.path,
+			this.resolveAttachmentLink
 		);
 		this.form.values.details = formState.details;
 		this.originalDetails = formState.originalDetails;
