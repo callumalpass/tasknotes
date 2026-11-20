@@ -41,6 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2643) Fixed task links in [Note Toolbar](https://github.com/chrisgurney/obsidian-note-toolbar) callout toolbars (`> [!note-toolbar]`) breaking the toolbar layout since 5.0. A task link as a toolbar item turned into a narrow card whose title wrapped over several lines and overlapped the next item. Task links in these toolbars now show the task's status and title on one line, as a task link inside a sentence does.
+  - Thanks to @hm-24 for reporting
 - (#2606) Fixed Ctrl/Cmd-click on a task in Task List, Kanban, Calendar and Agenda views selecting the task instead of opening its note in a new tab. Ctrl/Cmd-click and middle-click now open the note in a new tab on every task card, calendar event and task link in a note, as links do in Obsidian; Ctrl/Cmd+Alt-click opens it to the side. To select several tasks, Shift-click a task first; while a selection is active, Ctrl/Cmd-click adds or removes tasks as before. The task menu again has **Open note in new tab** next to **Open note**, instead of only under **Note actions**. See [Task List view](https://tasknotes.dev/views/task-list/#task-actions).
   - Thanks to @minchinweb for reporting
 - (#2641) Fixed tasks in the calendar's Month view not moving when dragged while the calendar is 850px wide or narrower. At that width Month shows tasks as compact chips, and dragging one selected days and opened the create menu instead. The chips can now be dragged to another day, clicked to open the task and right-clicked for the task menu, as in the wider layout. With **Show selected day panel** on, pressing a chip still selects its day.
