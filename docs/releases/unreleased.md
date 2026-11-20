@@ -41,6 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2651) Unskipping an occurrence in the task editor's **Completions** calendar now stays saved, even when it was the last skipped occurrence. Reopening a skipped or completed occurrence also recalculates the dates without marking the task as manually rescheduled.
+  - Thanks to @prepare4robots for reporting
 - (#2645) TaskNotes retries temporary settings read errors instead of treating an unreadable file as missing. If the file remains unreadable, TaskNotes stops without overwriting it and logs what failed.
   - Thanks to @chrabia for reporting
 - (#2643) Fixed task links in [Note Toolbar](https://github.com/chrisgurney/obsidian-note-toolbar) callout toolbars (`> [!note-toolbar]`) breaking the toolbar layout since 5.0. A task link as a toolbar item turned into a narrow card whose title wrapped over several lines and overlapped the next item. Task links in these toolbars now show the task's status and title on one line, as a task link inside a sentence does.
