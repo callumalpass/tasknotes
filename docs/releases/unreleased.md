@@ -41,6 +41,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2645) TaskNotes retries temporary settings read errors instead of treating an unreadable file as missing. If the file remains unreadable, TaskNotes stops without overwriting it and logs what failed.
+  - Thanks to @chrabia for reporting
 - (#2643) Fixed task links in [Note Toolbar](https://github.com/chrisgurney/obsidian-note-toolbar) callout toolbars (`> [!note-toolbar]`) breaking the toolbar layout since 5.0. A task link as a toolbar item turned into a narrow card whose title wrapped over several lines and overlapped the next item. Task links in these toolbars now show the task's status and title on one line, as a task link inside a sentence does.
   - Thanks to @hm-24 for reporting
 - (#2606) Fixed Ctrl/Cmd-click on a task in Task List, Kanban, Calendar and Agenda views selecting the task instead of opening its note in a new tab. Ctrl/Cmd-click and middle-click now open the note in a new tab on every task card, calendar event and task link in a note, as links do in Obsidian; Ctrl/Cmd+Alt-click opens it to the side. To select several tasks, Shift-click a task first; while a selection is active, Ctrl/Cmd-click adds or removes tasks as before. The task menu again has **Open note in new tab** next to **Open note**, instead of only under **Note actions**. See [Task List view](https://tasknotes.dev/views/task-list/#task-actions).
