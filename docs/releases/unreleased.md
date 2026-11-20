@@ -49,5 +49,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @BrucePlumb for reporting
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
-- (#2622) Fixed the task dialog listing an attachment as "File not found", with no way to open it, after the folder holding the attachment was renamed. TaskNotes stores attachment links by full vault path, and when a file or folder is renamed Obsidian rewrites them in its own link format, such as `[[Quarterly report.pdf]]`. The dialog now finds those files the same way Obsidian and task cards do.
+- (#2622, #2640) Fixed the task dialog listing an attachment as "File not found", with no way to open it, after the attachment or its folder was renamed or moved. TaskNotes stores attachment links by full vault path, and when a file or folder is renamed Obsidian rewrites them in its own link format, such as `[[Quarterly report.pdf]]`. The dialog now finds those files the same way Obsidian and task cards do.
   - Thanks to @dh-gh-1 for reporting
