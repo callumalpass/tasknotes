@@ -48,6 +48,8 @@ Edit the `.base` file to tailor the agenda:
 - Modify `order` to control which task properties appear in the row layout
 - Turn on **Hide top-level subtasks** (`hideTopLevelSubtasks: true`) to drop a subtask's own row on days its parent task is also listed; the subtask stays available under the parent's expanded subtasks. On days the parent isn't listed, the subtask keeps its own row. The option also applies to the month view's selected day panel.
 
+- Turn on **Show event date on task cards** (`showEventDateOnCards: true`) to keep the scheduled or due date that the row's date gutter already shows on the card itself, so it stays visible and clickable for quick editing. It is off by default, and applies when the date property is among the view's visible properties. The option also applies to the month view's selected day panel.
+
 Because the view runs inside Bases, any YAML changes are applied immediately after saving the file.
 
 ## Usage Tips
