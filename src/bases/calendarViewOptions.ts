@@ -314,6 +314,18 @@ function buildCalendarViewModeOptions(
 			},
 		},
 		{
+			// Applies to list rows only; the gutter date is otherwise left off the card.
+			type: "toggle",
+			key: "showEventDateOnCards",
+			displayName: uiText(msg({ message: "Show event date on task cards", context: "calendar list option" })),
+			default: false,
+			shouldHide: () => {
+				const viewType = getCalendarView(config, defaultView);
+				return viewType !== "listWeek" &&
+					!(viewType === "dayGridMonth" && config.get("showMonthDayPanel") === true);
+			},
+		},
+		{
 			type: "dropdown",
 			key: "heightMode",
 			displayName: t("layout.heightMode"),

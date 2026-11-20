@@ -110,6 +110,18 @@ describe("calendar view options", () => {
 		expect(isHidden(findOption(customOptions, "customDayCount"))).toBe(false);
 	});
 
+	it("offers the event date card option only for list rows and the month day panel", () => {
+		const plugin = createPlugin();
+		const option = (config: ReturnType<typeof createConfig>) =>
+			findOption(buildCalendarViewOptions(plugin, config), "showEventDateOnCards");
+
+		expect(option(createConfig({ calendarView: "listWeek" })).default).toBe(false);
+		expect(isHidden(option(createConfig({ calendarView: "listWeek" })))).toBe(false);
+		expect(isHidden(option(createConfig({ calendarView: "timeGridWeek" })))).toBe(true);
+		expect(isHidden(option(createConfig({ calendarView: "dayGridMonth" })))).toBe(true);
+		expect(isHidden(option(createConfig({ calendarView: "dayGridMonth", showMonthDayPanel: true })))).toBe(false);
+	});
+
 	it("hides time-grid controls outside time-grid views", () => {
 		const plugin = createPlugin();
 		const monthOptions = buildCalendarViewOptions(

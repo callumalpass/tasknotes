@@ -10287,6 +10287,11 @@ msgctxt "views.basesCalendar.settings.events.showDueTasks"
 msgid "Show due tasks"
 msgstr "期限のあるタスクを表示"
 
+#: src/bases/calendarViewOptions.ts
+msgctxt "calendar list option"
+msgid "Show event date on task cards"
+msgstr "タスクカードにイベントの日付を表示"
+
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showExpandableSubtasks.name"
 msgid "Show expandable subtasks"

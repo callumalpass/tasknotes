@@ -217,6 +217,7 @@ export class CalendarView extends BasesViewBase {
 		showAgendaStrip: boolean;
 		showMonthDayPanel: boolean;
 		hideTopLevelSubtasks: boolean;
+		showEventDateOnCards: boolean;
 		slotMinTime: string;
 		slotMaxTime: string;
 		slotDuration: string;
@@ -290,6 +291,7 @@ export class CalendarView extends BasesViewBase {
 			showAgendaStrip: true,
 			showMonthDayPanel: false,
 			hideTopLevelSubtasks: false,
+			showEventDateOnCards: false,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -936,6 +938,7 @@ export class CalendarView extends BasesViewBase {
 			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
 			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
 			this.viewOptions.hideTopLevelSubtasks = this.getConfigOption<unknown>("hideTopLevelSubtasks", false) === true;
+			this.viewOptions.showEventDateOnCards = this.getConfigOption<unknown>("showEventDateOnCards", false) === true;
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
@@ -2367,6 +2370,7 @@ export class CalendarView extends BasesViewBase {
 			plugin: this.plugin,
 			config: this.config,
 			visibleProperties: this.getVisibleProperties(),
+			showEventDate: this.viewOptions.showEventDateOnCards,
 			basesEntryByPath: this.basesEntryByPath,
 			buildTaskCardOptions: (options) => this.buildTaskCardOptions({ ...options, layout: "default" }),
 			logDebug: (message, ...data) =>

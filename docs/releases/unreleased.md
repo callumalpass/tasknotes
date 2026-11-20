@@ -56,3 +56,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
 - Fixed task rows in the Calendar view's list (Agenda) layout having rounded corners, which curved the divider under each task up at both ends while the divider under a calendar event ran straight. Task rows now have square corners like event rows; task blocks in the day, week and month grids keep their rounded corners.
+
+- (#2612) Added **Show event date on task cards** to the Calendar view's list (Agenda) layout and the month view's selected day panel. By default the scheduled or due date shown in the row's date gutter is left off the card; turning this on keeps that date property on the card so it can still be clicked to change it. See [Agenda View](https://tasknotes.dev/views/agenda-view/#customization).
+  - Thanks to @djagoo for the request
