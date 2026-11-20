@@ -49,3 +49,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @BrucePlumb for reporting
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
+- Fixed moving a recurring task in the Calendar view clearing its completed and skipped occurrences without asking. Dragging the next occurrence to another day, or dropping the task onto the calendar from elsewhere, such as a task link in a note, removed every completed or skipped occurrence on or after the new date. The calendar now asks first and lists those dates, as changing the scheduled date from the date picker does; **Cancel** leaves the task where it was, with its history. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-clears-later-instances).
+  - Thanks to @martin-forge for the fix
