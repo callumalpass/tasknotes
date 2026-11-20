@@ -935,6 +935,11 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     border-radius: var(--tn-radius-none);
 }
 
+/* An event row with a linked note shows the note icon, not the grid's ring, which outranks the rule above. */
+.tasknotes-plugin .tnc .tnc-item--list.has-related-note {
+    box-shadow: none;
+}
+
 .tasknotes-plugin .tnc .tnc-item--list .task-card:is(:hover, .is-selected, .task-card--selected) {
     background: none;
     box-shadow: none;
