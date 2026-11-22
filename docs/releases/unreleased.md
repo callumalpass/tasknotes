@@ -16,6 +16,8 @@ Example:
 ```
 ## Fixed
 
+- (#2657) Fixed task links that make up a callout title collapsing in Live Preview and Reading View. The task card now fits its title and properties instead of squeezing into a narrow column.
+  - Thanks to @EddyCurrrent for reporting
 - (#2602) Fixed the time range shown while dragging to create a timeblock, task or time entry in the calendar being hidden behind existing events. The selection now draws above existing events, so its time range can be read while dragging over them.
   - Thanks to @RumiaKitinari for reporting
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
@@ -43,6 +45,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2649) The **Next week** shortcut in date menus, Quick Actions, and the date and time picker now follows the **First day of week** setting. If today is that weekday, the shortcut selects the same weekday seven days later.
   - Thanks to @erezbm for reporting
+- (#2655) Calendar dates that only open a daily note are now plain text when no daily-note provider is enabled. Dates that switch views or select a day in the month panel still work.
+  - Thanks to @martin-forge for reporting
 - (#2645) TaskNotes retries temporary settings read errors instead of treating an unreadable file as missing. If the file remains unreadable, TaskNotes stops without overwriting it and logs what failed.
   - Thanks to @chrabia for reporting
 - (#2643) Fixed task links in [Note Toolbar](https://github.com/chrisgurney/obsidian-note-toolbar) callout toolbars (`> [!note-toolbar]`) breaking the toolbar layout since 5.0. A task link as a toolbar item turned into a narrow card whose title wrapped over several lines and overlapped the next item. Task links in these toolbars now show the task's status and title on one line, as a task link inside a sentence does.
@@ -58,3 +62,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
   - Thanks to @prepare4robots for reporting
 - Fixed task rows in the Calendar view's list (Agenda) layout having rounded corners, which curved the divider under each task up at both ends while the divider under a calendar event ran straight. Task rows now have square corners like event rows; task blocks in the day, week and month grids keep their rounded corners.
+- Fixed calendar events with a linked note having a grey outline around their whole row in the Calendar view's list (Agenda) layout and the month view's selected day panel, which made the row look selected. The note icon after the title still marks these events; the outline in the calendar grids is unchanged.
