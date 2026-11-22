@@ -5,6 +5,7 @@ import type { TaskInfo } from "../types";
 import { uiText } from "../i18n/runtime";
 import { TaskActionPaletteModal, type TaskAction } from "../modals/TaskActionPaletteModal";
 import { openPopover } from "./kit/popover";
+import { wasContextMenuOpenForKeyEvent } from "../components/ContextMenuCoordinator";
 import { renderKeyHint } from "./kit/keyHint";
 import {
 	archiveTasksWithUndo,
@@ -362,6 +363,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	const handle = async (event: KeyboardEvent) => {
 		const target = event.target as HTMLElement | null;
 		if (!target?.closest || !root.contains(target) || event.defaultPrevented ||
+			(event.key === "Escape" && wasContextMenuOpenForKeyEvent(event)) ||
 			event.isComposing || root.ownerDocument.querySelector(".modal-container, .menu")) return;
 		const isSelectionCheckbox = target.matches("input.task-card__selection-checkbox[type=checkbox]");
 		if (!isSelectionCheckbox && target.closest(

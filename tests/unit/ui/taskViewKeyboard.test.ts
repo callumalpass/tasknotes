@@ -3,6 +3,7 @@ import type { TaskInfo } from "../../../src/types";
 import { installTaskViewKeyboard, revealTaskViewCard } from "../../../src/ui/taskViewKeyboard";
 import { openTaskPropertyPicker } from "../../../src/ui/taskPropertyPickers";
 import { resolveTaskListKeyboardAction } from "../../../src/bases/taskListKeyboardActions";
+import { showCoordinatedMenu } from "../../../src/components/ContextMenuCoordinator";
 import type { TaskViewKeyboardOptions } from "../../../src/ui/taskViewKeyboard";
 
 jest.mock("../../../src/ui/taskPropertyPickers", () => ({
@@ -15,7 +16,7 @@ beforeEach(() => {
 	HTMLElement.prototype.scrollIntoView = jest.fn();
 });
 
-function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOptions["resolveTaskShortcut"]) {
+function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOptions["resolveTaskShortcut"], selectedCount = 0) {
 	const root = document.body.createDiv();
 	root.tabIndex = 0;
 	for (const path of ["first.md", "second.md"]) {
@@ -25,9 +26,10 @@ function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOp
 		card.createEl("button", { cls: "task-card__priority-dot" });
 	}
 	const toggleSelection = jest.fn();
+	const clearSelection = jest.fn();
 	const plugin = {
 		app: { scope: {}, keymap: { pushScope: jest.fn(), popScope: jest.fn() } },
-		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => 0, toggleSelection },
+		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => selectedCount, toggleSelection, clearSelection, exitSelectionMode: jest.fn() },
 		emitter: { on: jest.fn(), offref: jest.fn() },
 	} as unknown as TaskNotesPlugin;
 	const dispose = installTaskViewKeyboard({
@@ -38,7 +40,7 @@ function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOp
 		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
 	});
 	const first = root.querySelector<HTMLElement>('[data-task-path="first.md"]')!;
-	return { root, first, dispose, toggleSelection, keymap: plugin.app.keymap };
+	return { root, first, dispose, toggleSelection, clearSelection, keymap: plugin.app.keymap };
 }
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
@@ -197,6 +199,37 @@ it.each(["ArrowDown", "p", "Escape"])("defers %s to an open native menu while it
 		expect(openTaskPropertyPicker).not.toHaveBeenCalled();
 	} finally {
 		document.removeEventListener("keydown", received);
+		state.dispose();
+	}
+});
+
+it("preserves selection when Obsidian hides a task menu before the view handles Escape", () => {
+	const state = harness(false, undefined, 2);
+	const control = state.first.querySelector<HTMLElement>("button")!;
+	const callbacks: Array<() => void> = [];
+	const menu = {
+		onHide: (callback: () => void) => callbacks.push(callback),
+		hide: () => callbacks.forEach((callback) => callback()),
+		showAtMouseEvent: jest.fn(),
+		showAtPosition: jest.fn(),
+	};
+	const hideBeforeView = (event: KeyboardEvent) => {
+		if (event.key === "Escape") menu.hide();
+	};
+	try {
+		showCoordinatedMenu(menu, new MouseEvent("contextmenu"));
+		control.focus();
+		document.addEventListener("keydown", hideBeforeView, true);
+		const event = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+		control.dispatchEvent(event);
+		expect(state.clearSelection).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+		const nextEscape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+		Object.defineProperty(nextEscape, "timeStamp", { value: event.timeStamp + 1001 });
+		control.dispatchEvent(nextEscape);
+		expect(state.clearSelection).toHaveBeenCalledTimes(1);
+	} finally {
+		document.removeEventListener("keydown", hideBeforeView, true);
 		state.dispose();
 	}
 });
