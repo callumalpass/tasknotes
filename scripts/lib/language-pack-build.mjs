@@ -20,13 +20,14 @@ export function createLanguagePackBuildPlugin({ baseUrl, root = process.cwd(), o
 			build.onStart(async () => {
 				exported = await exportLanguagePacks({ root, ...(outdir ? { outdir } : {}) });
 			});
-			build.onLoad({ filter: /\/src\/i18n\/bundledResources\.ts$/ }, () => ({
+			// Match native separators so opt-in builds replace both modules on Windows.
+			build.onLoad({ filter: /[/\\]src[/\\]i18n[/\\]bundledResources\.ts$/ }, () => ({
 				contents:
 					'import en from "./locales/en/messages.json"; import { compiledMessages } from "./catalogue"; export const translationResources = { en: compiledMessages(en.messages) };',
 				loader: "ts",
 				resolveDir: resolve(root, "src/i18n"),
 			}));
-			build.onLoad({ filter: /\/src\/i18n\/languagePackConfig\.ts$/ }, (args) => ({
+			build.onLoad({ filter: /[/\\]src[/\\]i18n[/\\]languagePackConfig\.ts$/ }, (args) => ({
 				contents: `export const languagePackConfig = ${JSON.stringify({ baseUrl: normalizedBaseUrl, manifest: exported.manifest })};`,
 				loader: "ts",
 				watchFiles: [

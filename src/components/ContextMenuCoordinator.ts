@@ -100,7 +100,9 @@ function showWithTrigger(
 			// Obsidian may dismiss the menu before view key handlers run. Keep the
 			// close visible to those handlers until this event turn completes.
 			menuHiddenThisTurn = true;
-			queueMicrotask(() => { menuHiddenThisTurn = false; });
+			// Chromium can process microtasks between listeners for a native keydown.
+			const menuWindow = trigger?.ownerDocument.defaultView ?? window;
+			menuWindow.setTimeout(() => { menuHiddenThisTurn = false; }, 0);
 			activeMenu = null;
 			activeTrigger = null;
 		}

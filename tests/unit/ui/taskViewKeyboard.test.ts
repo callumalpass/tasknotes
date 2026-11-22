@@ -242,7 +242,7 @@ it("preserves selection when Obsidian hides a task menu before the view handles 
 		control.dispatchEvent(event);
 		expect(state.clearSelection).not.toHaveBeenCalled();
 		expect(event.defaultPrevented).toBe(false);
-		await Promise.resolve();
+		await new Promise(resolve => setTimeout(resolve, 0));
 		const nextEscape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
 		control.dispatchEvent(nextEscape);
 		expect(state.clearSelection).toHaveBeenCalledTimes(1);

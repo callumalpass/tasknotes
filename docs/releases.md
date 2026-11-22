@@ -7,6 +7,7 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 ### Version 5.x (Current)
 
 - [5.0.1](releases/5.0.1.md)
+- [5.0.1-kbd.1](releases/5.0.1-kbd.1.md)
 - [5.0.0](releases/5.0.0.md)
 - [5.0.0-beta.13](releases/5.0.0-beta.13.md)
 - [5.0.0-beta.12](releases/5.0.0-beta.12.md)
@@ -15,6 +16,7 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 - [5.0.0-beta.9](releases/5.0.0-beta.9.md)
 - [5.0.0-beta.8](releases/5.0.0-beta.8.md)
 - [5.0.0-beta.7](releases/5.0.0-beta.7.md)
+- [5.0.0-beta.6.1](releases/5.0.0-beta.6.1.md)
 - [5.0.0-beta.6](releases/5.0.0-beta.6.md)
 - [5.0.0-beta.5](releases/5.0.0-beta.5.md)
 - [5.0.0-beta.4](releases/5.0.0-beta.4.md)

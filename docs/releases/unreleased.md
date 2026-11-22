@@ -16,8 +16,6 @@ Example:
 ```
 ## Fixed
 
-- Restored Home and End navigation and Backspace selection clearing in Task List and Kanban.
-- Fixed Escape dismissing a keyboard-opened task context menu and clearing task selection on the same key press.
 - (#2606) Fixed Ctrl/Cmd-click on a task in Task List, Kanban, Calendar and Agenda views selecting the task instead of opening its note in a new tab. Ctrl/Cmd-click and middle-click now open the note in a new tab on every task card, calendar event and task link in a note, as links do in Obsidian; Ctrl/Cmd+Alt-click opens it to the side. To select several tasks, Shift-click a task first; while a selection is active, Ctrl/Cmd-click adds or removes tasks as before. The task menu again has **Open note in new tab** next to **Open note**, instead of only under **Note actions**. See [Task List view](https://tasknotes.dev/views/task-list/#task-actions).
   - Thanks to @minchinweb for reporting
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
@@ -35,16 +33,3 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
-
-## Changed
-
-- Updated task-card keyboard actions and shortcut settings for TaskNotes 5.0.1. The actions use the current property and recurrence pickers, and shortcut labels use the Lingui translation catalogs.
-- Changed the default Task List shortcuts to Shift+M for marking tasks complete and Shift+T for editing time estimates to avoid conflicts with tasknotes core.
-
-## Fixed
-
-- Fixed keyboard-opened task context menus appearing beside the card and Escape clearing task selection while dismissing a menu. Menus now open below the card.
-- Fixed Task List's `x` selection shortcut targeting the last clicked task after the mouse hovered another task, including after a selection rerender. The selection count now overlays the list without moving task cards.
-- Restored task view shortcuts for projects, contexts, tags, and deleting tasks, along with other fork actions that were disconnected from the Bases keyboard handler.
-- Restored a remove button for each assigned project in the project picker, including when only some selected tasks have the project.
-- Fixed Task List selection checkboxes appearing below the status indicator, removed the fork's indicator outlines, and restored opening or editing a task when its row is clicked while batch selection is active. The checkbox remains the plain-click selection control.

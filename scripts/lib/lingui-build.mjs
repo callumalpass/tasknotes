@@ -15,8 +15,9 @@ export function linguiMacros() {
       // One compact data module per bundled catalogue, decoded synchronously the
       // first time its messages are read, so startup only pays for the locales in
       // use. Downloaded pack/manifest JSON remains byte-for-byte untouched.
+      // esbuild passes native paths, including backslashes on Windows.
       if (build.initialOptions.minify && process.env.TASKNOTES_RAW_CATALOGUES !== "1") {
-        build.onLoad({ filter: /\/src\/i18n\/locales\/[^/]+\/messages\.json$/ }, async ({ path }) => {
+        build.onLoad({ filter: /[/\\]src[/\\]i18n[/\\]locales[/\\][^/\\]+[/\\]messages\.json$/ }, async ({ path }) => {
           const catalogue = JSON.parse(await readFile(path, "utf8"));
           const compressed = deflateSync(Buffer.from(JSON.stringify(catalogue.messages)), { level: 9 }).toString("base64");
           return {
