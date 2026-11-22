@@ -179,8 +179,9 @@ export async function executeBasesTaskCardAction(
 			const menuEvent = new MouseEvent("contextmenu", {
 				bubbles: true,
 				cancelable: true,
-				clientX: rect?.right ?? 0,
-				clientY: rect?.top ?? 0,
+				// Keyboard menus use the same below-left anchor as property menus.
+				clientX: rect?.left ?? 0,
+				clientY: (rect?.bottom ?? 0) + 4,
 			});
 			const selectionService = context.taskSelectionService;
 			if (selectionService && selectionService.getSelectionCount() > 1) {

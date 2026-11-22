@@ -191,10 +191,12 @@ export class BasesTaskCardKeyboardController {
 			this.inputOwnershipController.handleOverlayInteraction(event);
 		});
 		component.registerDomEvent(
-			doc,
+			doc.defaultView ?? window,
 			"keydown",
 			(event: KeyboardEvent) => {
 				if (event.key === "Escape" || event.key === "Backspace") {
+					// Observe the overlay before its own key handler dismisses it.
+					// This keeps the same key from reaching selection shortcuts.
 					this.inputOwnershipController.handleOverlayInteraction(event);
 				}
 			},

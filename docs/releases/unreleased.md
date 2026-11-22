@@ -37,10 +37,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Changed
 
 - Updated task-card keyboard actions and shortcut settings for TaskNotes 5.0.1. The actions use the current property and recurrence pickers, and shortcut labels use the Lingui translation catalogs.
-- Changed the default Task List shortcuts to Shift+M for marking tasks complete and Shift+T for editing time estimates.
+- Changed the default Task List shortcuts to Shift+M for marking tasks complete and Shift+T for editing time estimates to avoid conflicts with tasknotes core.
 
 ## Fixed
 
+- Fixed keyboard-opened task context menus appearing beside the card and Escape clearing task selection while dismissing a menu. Menus now open below the card.
 - Fixed Task List's `x` selection shortcut targeting the last clicked task after the mouse hovered another task, including after a selection rerender. The selection count now overlays the list without moving task cards.
 - Restored task view shortcuts for projects, contexts, tags, and deleting tasks, along with other fork actions that were disconnected from the Bases keyboard handler.
 - Restored a remove button for each assigned project in the project picker, including when only some selected tasks have the project.
