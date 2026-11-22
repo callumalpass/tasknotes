@@ -13,7 +13,7 @@ beforeEach(() => {
 	HTMLElement.prototype.scrollIntoView = jest.fn();
 });
 
-function harness() {
+function harness(selectOnHover = false) {
 	const root = document.body.createDiv();
 	root.tabIndex = 0;
 	for (const path of ["first.md", "second.md"]) {
@@ -22,21 +22,42 @@ function harness() {
 		card.createEl("button", { cls: "task-card__status-dot" });
 		card.createEl("button", { cls: "task-card__priority-dot" });
 	}
+	const toggleSelection = jest.fn();
 	const plugin = {
 		app: { scope: {}, keymap: { pushScope: jest.fn(), popScope: jest.fn() } },
-		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => 0 },
+		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => 0, toggleSelection },
 		emitter: { on: jest.fn(), offref: jest.fn() },
 	} as unknown as TaskNotesPlugin;
 	const dispose = installTaskViewKeyboard({
 		plugin, root, paths: () => ["first.md", "second.md"],
+		selectOnHover,
 		taskForPath: async path => ({ path, title: path, status: "open", priority: "normal" }) as TaskInfo,
 		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
 	});
 	const first = root.querySelector<HTMLElement>('[data-task-path="first.md"]')!;
-	return { root, first, dispose, keymap: plugin.app.keymap };
+	return { root, first, dispose, toggleSelection, keymap: plugin.app.keymap };
 }
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
+
+it("toggles the task under the pointer through the installed keyboard handler", () => {
+	const state = harness(true);
+	const second = state.root.querySelector<HTMLElement>('[data-task-path="second.md"]')!;
+	const originalHitTest = Object.getOwnPropertyDescriptor(document, "elementFromPoint");
+	Object.defineProperty(document, "elementFromPoint", { configurable: true, value: () => second });
+	try {
+		const control = state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		second.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: 30, clientY: 60 }));
+		control.dispatchEvent(new KeyboardEvent("keydown", { key: "x", bubbles: true, cancelable: true }));
+		expect(state.toggleSelection).toHaveBeenCalledTimes(1);
+		expect(state.toggleSelection).toHaveBeenCalledWith("second.md");
+	} finally {
+		if (originalHitTest) Object.defineProperty(document, "elementFromPoint", originalHitTest);
+		else Reflect.deleteProperty(document, "elementFromPoint");
+		state.dispose();
+	}
+});
 
 it("reveals the whole target below stacked sticky headers using their live bounds", () => {
 	const root = document.body.createDiv();

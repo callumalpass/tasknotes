@@ -40,4 +40,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed Task List's `x` selection shortcut targeting the last clicked task after the mouse hovered another task, including after a selection rerender. The selection count now overlays the list without moving task cards.
 - Fixed Task List selection checkboxes appearing below the status indicator, removed the fork's indicator outlines, and restored opening or editing a task when its row is clicked while batch selection is active. The checkbox remains the plain-click selection control.

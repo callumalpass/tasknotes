@@ -1047,6 +1047,7 @@ export abstract class BasesViewBase extends Component {
 				installTaskViewKeyboard({
 					plugin: this.plugin,
 					root: this.rootElement,
+					selectOnHover: this.type === "tasknotesTaskList",
 					paths: () => this.getVisibleTaskPaths(),
 					reveal: (path) => this.revealKeyboardTask(path),
 					groupForPath: (path) => this.getKeyboardTaskGroup(path),

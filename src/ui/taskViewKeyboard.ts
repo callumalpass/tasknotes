@@ -53,6 +53,8 @@ export interface TaskViewKeyboardOptions {
 	refreshSelection: () => void;
 	horizontal?: (path: string | null, direction: number) => string | null;
 	horizontalLabel?: string;
+	/** Let the selection shortcut use the task currently under the mouse. */
+	selectOnHover?: boolean;
 	groupForPath?: (path: string) => { key: string; paths: string[] } | undefined;
 	elementForPath?: (path: string) => HTMLElement | undefined;
 	pathFromElement?: (element: HTMLElement) => string | null;
@@ -70,6 +72,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	let rangeBase: string[] = [];
 	let keyboardFocus = false;
 	let pointerFocus = false;
+	let mousePosition: { x: number; y: number } | undefined;
 	let focusedControl: HTMLElement | null = null;
 	let paintedCard: HTMLElement | undefined;
 	let highlightTimer: number | undefined;
@@ -227,6 +230,14 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		paint();
 		if (!target.closest("button, a, input, textarea, select, [contenteditable], [role=button]"))
 			root.focus({ preventScroll: true });
+	};
+	/** Remember the cursor position so selection can hit test after a list rerender. */
+	const trackMouse = (event: MouseEvent) => {
+		mousePosition = { x: event.clientX, y: event.clientY };
+	};
+	/** Yield to the keyboard cursor when the mouse leaves the list or keys move focus. */
+	const clearMouse = () => {
+		mousePosition = undefined;
 	};
 	const help = () => {
 		const anchor = helpButton.closest(".tn-bases-toolbar-overflow-panel")
@@ -399,6 +410,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			return;
 		}
 		if (!mod && ["arrowup", "arrowdown", "arrowleft", "arrowright", "j", "k"].includes(key)) {
+			clearMouse();
 			const direction = ["arrowup", "arrowleft", "k"].includes(key) ? -1 : 1;
 			const currentIndex = focusedPath ? paths.indexOf(focusedPath) : -1;
 			const index =
@@ -437,6 +449,16 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (!focusedPath) return;
 		if (key === "x") {
 			rangeAnchor = null;
+			// Cards can move or be replaced without a mousemove. Hit test the current DOM.
+			if (mousePosition) {
+				const hit = root.ownerDocument.elementFromPoint(mousePosition.x, mousePosition.y);
+				const card = hit?.closest<HTMLElement>(selector);
+				const hoveredPath = card?.dataset.taskPath;
+				if (card && root.contains(card) && hoveredPath && paths.includes(hoveredPath)) {
+					focusedPath = hoveredPath;
+					keyboardFocus = false;
+				}
+			}
 			const path = selectionPath(focusedPath);
 			if (path) selection.toggleSelection(path);
 			paint();
@@ -585,6 +607,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	root.addEventListener("keydown", listener);
 	root.addEventListener("tn-search-exit", searchExit);
 	root.addEventListener("pointerdown", pointer);
+	if (options.selectOnHover) {
+		root.addEventListener("mousemove", trackMouse, true);
+		root.addEventListener("mouseleave", clearMouse);
+	}
 	return () => {
 		helpButton.remove();
 		root.ownerDocument.defaultView?.clearTimeout(highlightTimer);
@@ -600,6 +626,8 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		root.removeEventListener("keydown", listener);
 		root.removeEventListener("tn-search-exit", searchExit);
 		root.removeEventListener("pointerdown", pointer);
+		root.removeEventListener("mousemove", trackMouse, true);
+		root.removeEventListener("mouseleave", clearMouse);
 		root.ownerDocument.removeEventListener("keydown", keyboard, true);
 	};
 }

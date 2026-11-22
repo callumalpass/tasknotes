@@ -600,6 +600,8 @@ export class TaskListView extends BasesViewBase {
 		if (!rootElement) return;
 
 		// Make rootElement fill its container and establish flex context
+		// Anchor the selection badge without letting its visibility reflow task cards.
+		rootElement.classList.add("task-list-view--selection-overlay");
 		{
 			rootElement.classList.remove(
 				"tn-static-display-block-2a1b75c9",

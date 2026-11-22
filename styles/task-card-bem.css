@@ -1913,6 +1913,18 @@ body:not(.is-mobile) .tasknotes-plugin .task-card--selected:hover {
 }
 
 /* Selection indicator floating badge */
+.tasknotes-plugin.task-list-view--selection-overlay {
+    position: relative;
+}
+
+.tasknotes-plugin.task-list-view--selection-overlay > .tn-selection-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    /* The virtual list's sticky group header uses --tn-z-sticky + 1. */
+    z-index: calc(var(--tn-z-sticky) + 2);
+}
+
 .tasknotes-plugin .tn-selection-indicator {
     position: static;
     align-self: flex-end;
