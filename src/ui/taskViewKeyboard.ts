@@ -55,6 +55,9 @@ export interface TaskViewKeyboardOptions {
 	horizontalLabel?: string;
 	/** Let the selection shortcut use the task currently under the mouse. */
 	selectOnHover?: boolean;
+	/** Resolve a view-specific chord before checking the built-in key bindings. */
+	resolveAdditionalShortcut?: (event: KeyboardEvent) =>
+		((path: string, anchor: HTMLElement) => Promise<void>) | undefined;
 	groupForPath?: (path: string) => { key: string; paths: string[] } | undefined;
 	elementForPath?: (path: string) => HTMLElement | undefined;
 	pathFromElement?: (element: HTMLElement) => string | null;
@@ -239,6 +242,14 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	const clearMouse = () => {
 		mousePosition = undefined;
 	};
+	/** Find the visible task under the recorded cursor, even if a render replaced its card. */
+	const hoveredTask = (paths: readonly string[]) => {
+		if (!mousePosition) return;
+		const hit = root.ownerDocument.elementFromPoint(mousePosition.x, mousePosition.y);
+		const card = hit?.closest<HTMLElement>(selector);
+		const path = card?.dataset.taskPath;
+		if (card && root.contains(card) && path && paths.includes(path)) return path;
+	};
 	const help = () => {
 		const anchor = helpButton.closest(".tn-bases-toolbar-overflow-panel")
 			? chrome?.querySelector<HTMLElement>(".tn-bases-toolbar-more") ?? helpButton : helpButton;
@@ -301,20 +312,46 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	const chromeObserver = new MutationObserver(placeHelp);
 	if (chrome) chromeObserver.observe(chrome, { childList: true, subtree: true });
 	helpButton.addEventListener("click", help);
-	const handle = async (event: KeyboardEvent) => {
+	const handle = async (
+		event: KeyboardEvent,
+		additionalShortcut = options.resolveAdditionalShortcut?.(event)
+	) => {
 		const target = event.target as HTMLElement;
+		const isTaskSelectionCheckbox = target.matches("input.task-card__selection-checkbox[type=checkbox]");
+		const isEditing = target.closest(
+			"input, textarea, select, [contenteditable]:not([contenteditable=false]), .cm-editor"
+		);
 		if (
 			event.defaultPrevented ||
 			root.ownerDocument.querySelector(".modal-container") ||
 			root.ownerDocument.querySelector(".menu") ||
 			event.isComposing ||
-			event.altKey ||
-			target.closest(
-				"input, textarea, select, [contenteditable]:not([contenteditable=false]), .cm-editor"
-			)
+			(event.altKey && !additionalShortcut) ||
+			(isEditing && !(additionalShortcut && isTaskSelectionCheckbox))
 		)
 			return;
 		reconcileFocus(target);
+		if (additionalShortcut) {
+			const paths = options.paths();
+			const path = hoveredTask(paths) ??
+				(focusedPath && paths.includes(focusedPath) ? focusedPath : undefined) ??
+				selection?.getSelectedPaths().find((selected) => paths.includes(selected));
+			if (!path) return;
+			// Claim the chord before an Obsidian command can consume it or open another UI.
+			event.preventDefault();
+			event.stopPropagation();
+			if (pending || event.repeat) return;
+			pending = true;
+			root.focus({ preventScroll: true });
+			try {
+				await additionalShortcut(path, cardFor(path) ?? root);
+			} catch {
+				new Notice(uiText(msg({ message: "Could not update tasks", context: "interaction failure" })));
+			} finally {
+				pending = false;
+			}
+			return;
+		}
 		const key = event.key.toLowerCase();
 		const mod = event.metaKey || event.ctrlKey;
 		if (!mod && target.closest("button, a, [role=button]") && ["enter", " "].includes(key)) return;
@@ -449,15 +486,10 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		if (!focusedPath) return;
 		if (key === "x") {
 			rangeAnchor = null;
-			// Cards can move or be replaced without a mousemove. Hit test the current DOM.
-			if (mousePosition) {
-				const hit = root.ownerDocument.elementFromPoint(mousePosition.x, mousePosition.y);
-				const card = hit?.closest<HTMLElement>(selector);
-				const hoveredPath = card?.dataset.taskPath;
-				if (card && root.contains(card) && hoveredPath && paths.includes(hoveredPath)) {
-					focusedPath = hoveredPath;
-					keyboardFocus = false;
-				}
+			const hoveredPath = hoveredTask(paths);
+			if (hoveredPath) {
+				focusedPath = hoveredPath;
+				keyboardFocus = false;
 			}
 			const path = selectionPath(focusedPath);
 			if (path) selection.toggleSelection(path);
@@ -579,8 +611,15 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	};
 	const keyboard = (event: KeyboardEvent) => {
 		pointerFocus = false;
+		if (!(event.target instanceof Element) || !root.contains(event.target)) return;
+		const additionalShortcut = options.resolveAdditionalShortcut?.(event);
+		if (additionalShortcut) {
+			void handle(event, additionalShortcut);
+			if (event.defaultPrevented) event.stopImmediatePropagation();
+			return;
+		}
 		if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "k" ||
-			!root.contains(event.target as Node) || (event.target as HTMLElement).closest("input, textarea, select, [contenteditable], .cm-editor")) return;
+			event.target.closest("input, textarea, select, [contenteditable], .cm-editor")) return;
 		for (const element of [root, ...Array.from(root.querySelectorAll<HTMLElement>(".task-card"))]) {
 			(element as HTMLElement & { hoverPopover?: { hide(): void } }).hoverPopover?.hide();
 		}

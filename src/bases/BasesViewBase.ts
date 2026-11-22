@@ -78,7 +78,15 @@ import {
 } from "./BasesTaskCardKeyboardController";
 import type { TaskListFocusOffscreenResolver } from "./TaskListFocusController";
 import { canHoverClaimBasesTaskFocus } from "./embeddedBasesKeyboard";
-import type { TaskListAction } from "./taskListKeyboardActions";
+import { resolveTaskListKeyboardAction, type TaskListAction } from "./taskListKeyboardActions";
+import { executeBasesTaskCardAction } from "./basesTaskCardActions";
+import { resolveTaskListTargetPaths } from "./taskListTargetResolver";
+
+const ADDITIONAL_TASK_VIEW_ACTIONS: ReadonlySet<TaskListAction> = new Set([
+	"add-project", "add-context", "add-tags", "delete-tasks", "toggle-archive",
+	"copy-task-titles", "open-context-menu", "open-task-notes", "edit-recurrence",
+	"edit-scheduled", "edit-time-estimate", "mark-complete",
+]);
 
 type BasesEphemeralState = {
 	scrollTop?: unknown;
@@ -1035,9 +1043,35 @@ export abstract class BasesViewBase extends Component {
 	// Selection Mode Methods
 	// =====================
 
-	/**
-	 * Setup selection mode handling (keyboard shortcuts and listeners).
-	 */
+	/** Connects the fork's additional actions to the active Bases keyboard handler. */
+	private resolveAdditionalTaskViewShortcut(event: KeyboardEvent) {
+		const action = resolveTaskListKeyboardAction(
+			event, this.plugin.settings.taskListShortcuts, this.plugin.settings.taskListUserFieldShortcuts
+		);
+		if (!action || (!ADDITIONAL_TASK_VIEW_ACTIONS.has(action) && !action.startsWith("edit-user-field:"))) return;
+		// The default fork bindings for completion and estimate collide with the current edit and tags keys.
+		if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey &&
+			((action === "mark-complete" && event.key === "e") ||
+			 (action === "edit-time-estimate" && event.key === "t"))) return;
+		const config = this.getTaskCardActionsConfig();
+		if (!config?.isActionSupported(action)) return;
+
+		return (path: string, anchor: HTMLElement) => {
+			const context = config.buildViewContext();
+			return executeBasesTaskCardAction(action, path, {
+				...context,
+				getTargetPaths: () => resolveTaskListTargetPaths(context.taskSelectionService, path)
+					.filter((target) => context.isPathVisible(target)),
+				getAnchor: () => anchor.isConnected ? anchor : context.fallbackAnchor ?? null,
+				restoreFocus: () => {
+					context.rootElement?.focus({ preventScroll: true });
+					return Boolean(context.rootElement);
+				},
+			});
+		};
+	}
+
+	/** Setup selection mode handling (keyboard shortcuts and listeners). */
 	protected setupSelectionHandling(): void {
 		if (!this.rootElement) return;
 		const hasTaskKeyboard =
@@ -1048,6 +1082,7 @@ export abstract class BasesViewBase extends Component {
 					plugin: this.plugin,
 					root: this.rootElement,
 					selectOnHover: this.type === "tasknotesTaskList",
+					resolveAdditionalShortcut: (event) => this.resolveAdditionalTaskViewShortcut(event),
 					paths: () => this.getVisibleTaskPaths(),
 					reveal: (path) => this.revealKeyboardTask(path),
 					groupForPath: (path) => this.getKeyboardTaskGroup(path),

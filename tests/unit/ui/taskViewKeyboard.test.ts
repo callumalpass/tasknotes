@@ -2,6 +2,8 @@ import type TaskNotesPlugin from "../../../src/main";
 import type { TaskInfo } from "../../../src/types";
 import { installTaskViewKeyboard, revealTaskViewCard } from "../../../src/ui/taskViewKeyboard";
 import { openTaskPropertyPicker } from "../../../src/ui/taskPropertyPickers";
+import { resolveTaskListKeyboardAction } from "../../../src/bases/taskListKeyboardActions";
+import type { TaskViewKeyboardOptions } from "../../../src/ui/taskViewKeyboard";
 
 jest.mock("../../../src/ui/taskPropertyPickers", () => ({
 	openTaskPropertyPicker: jest.fn(),
@@ -13,7 +15,7 @@ beforeEach(() => {
 	HTMLElement.prototype.scrollIntoView = jest.fn();
 });
 
-function harness(selectOnHover = false) {
+function harness(selectOnHover = false, resolveAdditionalShortcut?: TaskViewKeyboardOptions["resolveAdditionalShortcut"]) {
 	const root = document.body.createDiv();
 	root.tabIndex = 0;
 	for (const path of ["first.md", "second.md"]) {
@@ -31,6 +33,7 @@ function harness(selectOnHover = false) {
 	const dispose = installTaskViewKeyboard({
 		plugin, root, paths: () => ["first.md", "second.md"],
 		selectOnHover,
+		resolveAdditionalShortcut,
 		taskForPath: async path => ({ path, title: path, status: "open", priority: "normal" }) as TaskInfo,
 		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
 	});
@@ -39,6 +42,32 @@ function harness(selectOnHover = false) {
 }
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
+
+it.each([
+	["+", { shiftKey: true }, "add-project"],
+	["@", { shiftKey: true }, "add-context"],
+	["#", { shiftKey: true }, "add-tags"],
+	["Delete", { ctrlKey: true }, "delete-tasks"],
+] as const)("dispatches %s through the installed task view handler", (key, modifiers, expectedAction) => {
+	const dispatch = jest.fn(async (_action: string, _path: string) => {});
+	const state = harness(false, (event) => {
+		const action = resolveTaskListKeyboardAction(event);
+		return action ? (path) => dispatch(action, path) : undefined;
+	});
+	try {
+		const control = key === "Delete"
+			? state.first.createEl("input", { cls: "task-card__selection-checkbox", type: "checkbox" })
+			: state.first.querySelector<HTMLElement>("button")!;
+		control.focus();
+		const event = new KeyboardEvent("keydown", { key, ...modifiers, bubbles: true, cancelable: true });
+		control.dispatchEvent(event);
+		expect(event.defaultPrevented).toBe(true);
+		expect(dispatch).toHaveBeenCalledTimes(1);
+		expect(dispatch).toHaveBeenCalledWith(expectedAction, "first.md");
+	} finally {
+		state.dispose();
+	}
+});
 
 it("toggles the task under the pointer through the installed keyboard handler", () => {
 	const state = harness(true);
