@@ -1049,10 +1049,11 @@ export abstract class BasesViewBase extends Component {
 			event, this.plugin.settings.taskListShortcuts, this.plugin.settings.taskListUserFieldShortcuts
 		);
 		if (!action || (!ADDITIONAL_TASK_VIEW_ACTIONS.has(action) && !action.startsWith("edit-user-field:"))) return;
-		// The default fork bindings for completion and estimate collide with the current edit and tags keys.
+		// Legacy bindings may remain when the new defaults already belong to custom actions.
+		const key = event.key.toLowerCase();
 		if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey &&
-			((action === "mark-complete" && event.key === "e") ||
-			 (action === "edit-time-estimate" && event.key === "t"))) return;
+			((action === "mark-complete" && key === "e") ||
+			 (action === "edit-time-estimate" && key === "t"))) return;
 		const config = this.getTaskCardActionsConfig();
 		if (!config?.isActionSupported(action)) return;
 

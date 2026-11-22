@@ -48,6 +48,8 @@ it.each([
 	["@", { shiftKey: true }, "add-context"],
 	["#", { shiftKey: true }, "add-tags"],
 	["Delete", { ctrlKey: true }, "delete-tasks"],
+	["M", { shiftKey: true }, "mark-complete"],
+	["T", { shiftKey: true }, "edit-time-estimate"],
 ] as const)("dispatches %s through the installed task view handler", (key, modifiers, expectedAction) => {
 	const dispatch = jest.fn(async (_action: string, _path: string) => {});
 	const state = harness(false, (event) => {

@@ -43,6 +43,32 @@ describe("settings persistence helpers", () => {
 		jest.restoreAllMocks();
 	});
 
+	it("moves saved legacy completion and estimate defaults to the new bindings", () => {
+		const data = {
+			taskListShortcuts: { ...DEFAULT_SETTINGS.taskListShortcuts, "mark-complete": ["e"], "edit-time-estimate": ["t"] },
+		};
+		const result = buildSettingsFromLoadedData(data);
+		expect(result.settings.taskListShortcuts["mark-complete"]).toEqual(["shift+m"]);
+		expect(result.settings.taskListShortcuts["edit-time-estimate"]).toEqual(["shift+t"]);
+		expect(result.shouldPersistMigratedSettings).toBe(true);
+	});
+
+	it("preserves custom shortcuts, disabled actions, and occupied replacement keys", () => {
+		const result = buildSettingsFromLoadedData({
+			taskListShortcuts: {
+				...DEFAULT_SETTINGS.taskListShortcuts,
+				"mark-complete": ["e", "shift+c"],
+				"edit-time-estimate": ["t"],
+				"edit-recurrence": [],
+			},
+			taskListUserFieldShortcuts: { example: ["shift+t"] },
+		});
+		expect(result.settings.taskListShortcuts["mark-complete"]).toEqual(["e", "shift+c"]);
+		expect(result.settings.taskListShortcuts["edit-time-estimate"]).toEqual(["t"]);
+		expect(result.settings.taskListShortcuts["edit-recurrence"]).toEqual([]);
+		expect(result.settings.taskListUserFieldShortcuts.example).toEqual(["shift+t"]);
+	});
+
 	it("keeps recurring statuses in saved setups and resets them in new ones (#2521)", () => {
 		expect(
 			buildSettingsFromLoadedData({ defaultTaskStatus: "inbox" }).settings

@@ -8,7 +8,12 @@ import type {
 } from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
-import { normalizeTaskListShortcutMap } from "../bases/taskListKeyboardActions";
+import {
+	DEFAULT_TASK_LIST_SHORTCUTS,
+	findTaskListShortcutOwners,
+	normalizeTaskListShortcut,
+	normalizeTaskListShortcutMap,
+} from "../bases/taskListKeyboardActions";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/SettingsPersistence" });
 
@@ -321,6 +326,24 @@ function normalizeNLPTriggers(
 	return triggers;
 }
 
+/** Replaces saved old defaults when the new key is free, preserving custom bindings. */
+function migrateConflictingTaskShortcutDefaults(settings: TaskNotesSettings): boolean {
+	const shortcuts = settings.taskListShortcuts;
+	const userFieldKeys = new Set(
+		Object.values(settings.taskListUserFieldShortcuts).flat().map(normalizeTaskListShortcut)
+	);
+	let changed = false;
+	for (const [action, oldKey] of [["mark-complete", "e"], ["edit-time-estimate", "t"]] as const) {
+		const [newKey] = DEFAULT_TASK_LIST_SHORTCUTS[action];
+		// An exact old default is the only saved value we can safely treat as unchanged.
+		if (shortcuts[action].length !== 1 || shortcuts[action][0] !== oldKey ||
+			userFieldKeys.has(newKey) || findTaskListShortcutOwners(shortcuts, newKey, action).length) continue;
+		shortcuts[action] = [newKey];
+		changed = true;
+	}
+	return changed;
+}
+
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
 	const normalizedUserFieldPropertyKeys = Boolean(
 		data?.userFields?.some(
@@ -377,6 +400,7 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		customStatuses: (loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses).map((status) => ({ ...status })),
 		customPriorities: (loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities).map((priority) => ({ ...priority })),
 	};
+	const migratedConflictingTaskShortcuts = migrateConflictingTaskShortcutDefaults(settings);
 
 	return {
 		settings,
@@ -385,7 +409,8 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			migratedLegacyCustomFilenameTemplate ||
 			migratedParentNoteTaskCreationDefault ||
 			normalizedUserFieldPropertyKeys ||
-			migratedLegacyKeyboardShortcuts,
+			migratedLegacyKeyboardShortcuts ||
+			migratedConflictingTaskShortcuts,
 	};
 }
 

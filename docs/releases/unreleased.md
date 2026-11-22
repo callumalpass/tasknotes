@@ -37,6 +37,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Changed
 
 - Updated task-card keyboard actions and shortcut settings for TaskNotes 5.0.1. The actions use the current property and recurrence pickers, and shortcut labels use the Lingui translation catalogs.
+- Changed the default Task List shortcuts to Shift+M for marking tasks complete and Shift+T for editing time estimates.
 
 ## Fixed
 
