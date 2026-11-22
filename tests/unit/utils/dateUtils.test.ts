@@ -15,6 +15,7 @@ import {
   isSameDateSafe,
   isBeforeDateSafe,
   getTodayString,
+  getFirstDayOfNextWeek,
   normalizeDateString,
   createSafeDate,
   validateDateInput,
@@ -72,6 +73,20 @@ describe('DateUtils', () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
+  });
+
+  describe('getFirstDayOfNextWeek', () => {
+    it.each([
+      [new Date(2026, 11, 30, 23, 45), 0, new Date(2027, 0, 3, 23, 45)],
+      [new Date(2026, 11, 30, 23, 45), 3, new Date(2027, 0, 6, 23, 45)],
+      [new Date(2026, 11, 30, 23, 45), 6, new Date(2027, 0, 2, 23, 45)],
+      [new Date(2027, 0, 3, 0, 15), 0, new Date(2027, 0, 10, 0, 15)],
+      [new Date(2027, 0, 3, 0, 15), 1, new Date(2027, 0, 4, 0, 15)],
+      [new Date(2027, 0, 4, 0, 15), undefined, new Date(2027, 0, 11, 0, 15)],
+      [new Date(2027, 2, 13, 23, 45), 1, new Date(2027, 2, 15, 23, 45)],
+    ] as const)('advances %s to the next week starting on %s', (today, firstDay, expected) => {
+      expect(getFirstDayOfNextWeek(today, firstDay)).toEqual(expected);
+    });
   });
 
   describe('parseDate', () => {

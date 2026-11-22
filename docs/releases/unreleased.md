@@ -43,6 +43,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2649) The **Next week** shortcut in date menus, Quick Actions, and the date and time picker now follows the **First day of week** setting. If today is that weekday, the shortcut selects the same weekday seven days later.
+  - Thanks to @erezbm for reporting
 - (#2651) Unskipping an occurrence in the task editor's **Completions** calendar now stays saved, even when it was the last skipped occurrence. Reopening a skipped or completed occurrence also recalculates the dates without marking the task as manually rescheduled.
   - Thanks to @prepare4robots for reporting
 - (#2655) Calendar dates that only open a daily note are now plain text when no daily-note provider is enabled. Dates that switch views or select a day in the month panel still work.
