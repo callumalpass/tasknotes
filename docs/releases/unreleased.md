@@ -37,3 +37,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Changed
 
 - Updated task-card keyboard actions and shortcut settings for TaskNotes 5.0.1. The actions use the current property and recurrence pickers, and shortcut labels use the Lingui translation catalogs.
+
+## Fixed
+
+- Fixed Task List selection checkboxes appearing below the status indicator, removed the fork's indicator outlines, and restored opening or editing a task when its row is clicked while batch selection is active. The checkbox remains the plain-click selection control.

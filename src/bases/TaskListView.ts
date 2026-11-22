@@ -297,7 +297,7 @@ export class TaskListView extends BasesViewBase {
 			clickTimeouts: this.clickTimeouts,
 			getTargetDate: () => this.currentTargetDate,
 			getApp: () => this.app || this.plugin.app,
-			handleSelectionClick: (event, path) => this.handleSelectionClick(event, path),
+			handleSelectionClick: (event, path) => this.handleTaskListSelectionClick(event, path),
 		});
 		// BasesView now provides this.data, this.config, and this.app directly
 		// Update the data adapter to use this BasesView instance
@@ -4205,7 +4205,7 @@ export class TaskListView extends BasesViewBase {
 			targetDate,
 			plainTags: true,
 			usePendingOccurrenceIdentity: true,
-			onSelectionClick: (event, path) => this.handleSelectionClick(event, path),
+			onSelectionClick: (event, path) => this.handleTaskListSelectionClick(event, path),
 			expandedRelationshipFilterMode: this.expandedRelationshipFilterMode,
 			resolveExpandedRelationshipFilterMode: (): "inherit" | "show-all" =>
 				normalizeExpandedRelationshipFilterMode(
@@ -4218,6 +4218,13 @@ export class TaskListView extends BasesViewBase {
 				onClick: (taskPath, event) => this.handleSelectionCheckboxClick(event, taskPath),
 			},
 		});
+	}
+
+	/** Keeps ordinary row clicks available for edit while the checkbox owns plain selection. */
+	private handleTaskListSelectionClick(event: MouseEvent, path: string): boolean {
+		// Modifiers still use the shared range and additive selection behavior.
+		if (!event.shiftKey && !event.ctrlKey && !event.metaKey) return false;
+		return this.handleSelectionClick(event, path);
 	}
 
 	private getTopLevelRenderTasks(tasks: readonly TaskInfo[]): TaskInfo[] {

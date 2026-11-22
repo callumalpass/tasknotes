@@ -6,6 +6,22 @@
     align-items: flex-start;
 }
 
+/* Task List selection shares the lead cell with status, with the checkbox to its left. */
+body .tasknotes-plugin.tn-tasknotesTaskList .task-card.task-card--selectable:not(.task-card--layout-inline) > .task-card__main-row {
+    --tn-task-lead: calc(var(--tn-board-control-size) + 20px + var(--tn-space-1));
+}
+
+body .tasknotes-plugin.tn-tasknotesTaskList .task-card.task-card--selectable:not(.task-card--layout-inline) > .task-card__main-row > .task-card__selection-checkbox {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    align-self: center;
+}
+
+body .tasknotes-plugin.tn-tasknotesTaskList .task-card.task-card--selectable:not(.task-card--layout-inline) > .task-card__main-row > .task-card__status-dot {
+    justify-self: end;
+}
+
 body.is-mobile :is(.tasknotes-plugin .kanban-view__card-wrapper, .tasknotes-plugin.tn-tasknotesTaskList, .tasknotes-plugin .tn-calendar-list-card) .task-card__main-row {
     --tn-kanban-card-menu: var(--tn-mobile-task-card-menu-size);
 }

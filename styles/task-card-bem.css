@@ -1847,7 +1847,6 @@ body.tn-drag-active:not(.is-mobile) .tasknotes-plugin .task-card:hover {
     height: var(--tn-control-sm);
     flex-shrink: 0;
     border-radius: var(--tn-radius-sm);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 }
 
 .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__priority-dot--icon svg {

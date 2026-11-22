@@ -241,6 +241,43 @@ describe("TaskCard Component", () => {
 	});
 
 	describe("createTaskCard", () => {
+		it("places the selection checkbox before status and keeps its click separate", () => {
+			const task = TaskFactory.createTask({ title: "Selectable task", status: "open" });
+			const onClick = jest.fn();
+			const card = createTaskCard(task, mockPlugin, undefined, {
+				selectionControl: { isSelected: () => false, onClick },
+			});
+			const row = card.querySelector(".task-card__main-row")!;
+			const checkbox = row.querySelector<HTMLInputElement>(".task-card__selection-checkbox")!;
+			const status = row.querySelector(".task-card__status-dot")!;
+
+			expect(card.classList.contains("task-card--selectable")).toBe(true);
+			expect(Array.from(row.children).indexOf(checkbox)).toBeLessThan(Array.from(row.children).indexOf(status));
+			checkbox.click();
+			expect(onClick).toHaveBeenCalledWith(task.path, expect.any(MouseEvent));
+			expect(mockPlugin.openTaskEditModal).not.toHaveBeenCalled();
+		});
+
+		it("opens the edit dialog from the task body while checkbox selection is active", async () => {
+			const task = TaskFactory.createTask({ title: "Selected task", status: "open" });
+			const clearSelection = jest.fn();
+			const exitSelectionMode = jest.fn();
+			mockPlugin.taskSelectionService = {
+				isSelectionModeActive: () => true,
+				clearSelection,
+				exitSelectionMode,
+			};
+			const card = createTaskCard(task, mockPlugin, undefined, {
+				selectionControl: { isSelected: () => true, onClick: jest.fn() },
+				onSelectionClick: () => false,
+			});
+			card.querySelector<HTMLElement>(".task-card__title-text")!.click();
+			await Promise.resolve();
+
+			expect(clearSelection).toHaveBeenCalled();
+			expect(exitSelectionMode).toHaveBeenCalled();
+			expect(mockPlugin.openTaskEditModal).toHaveBeenCalledWith(task);
+		});
 		it.each(["default", "compact", "inline"] as const)(
 			"keeps title and metadata separate in the %s layout",
 			(layout) => {

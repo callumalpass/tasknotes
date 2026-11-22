@@ -11,6 +11,18 @@ jest.mock(
 );
 
 describe("TaskListView keyboard selection", () => {
+	it("reserves plain row clicks for the task action and keeps modifier selection", () => {
+		const handleSelectionClick = jest.fn(() => true);
+		const view = { handleSelectionClick };
+		const select = (event: MouseEvent) =>
+			(TaskListView.prototype as any).handleTaskListSelectionClick.call(view, event, "focused.md");
+
+		expect(select(new MouseEvent("click"))).toBe(false);
+		expect(handleSelectionClick).not.toHaveBeenCalled();
+		expect(select(new MouseEvent("click", { shiftKey: true }))).toBe(true);
+		expect(select(new MouseEvent("click", { ctrlKey: true }))).toBe(true);
+		expect(handleSelectionClick).toHaveBeenCalledTimes(2);
+	});
 	it("toggles the focused task through the existing selection service", async () => {
 		const toggleSelection = jest.fn();
 		const context = {

@@ -162,6 +162,7 @@ export function createTaskCard(
 	taskCardElement._taskCardOptions = opts;
 
 	card.className = renderState.cardClasses.join(" ");
+	card.classList.toggle("task-card--selectable", Boolean(opts.selectionControl && layout !== "inline"));
 	taskCardElement._taskCardStateClasses = renderState.cardClasses;
 	card.dataset.taskPath = task.path;
 	card.dataset.key = task.path; // For DOMReconciler compatibility
