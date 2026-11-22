@@ -63,7 +63,7 @@ it("keeps the chosen view while config.set synchronously notifies its readers", 
 it.each([true, false])("keeps the correct toolbar selection after an all-day layout rebuild (narrow Week: %s)", narrowWeek => {
 	const calendarEl = document.createElement("div");
 	calendarEl.innerHTML = '<select class="tnc-toolbar-view-select"><option value="week">Week</option><option value="days">3 days</option></select><button class="tnc-btn-view tnc-btn-view-week"></button><button class="tnc-btn-view tnc-btn-view-days"></button>';
-	let options = { slotEventOverlap: true, dayMaxEventRows: 3 };
+	let options = { slotEventOverlap: true, dayMaxEventRows: 3, navLinks: false };
 	const calendar = {
 		view: { type: "days" },
 		getOptions: () => options,
