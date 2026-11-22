@@ -127,6 +127,11 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			const before = cloneSnapshotData(
 				(await plugin.cacheManager.getTaskInfo(task.path)) ?? task
 			);
+			const nextValue = typeof value === "function"
+				? (value as (task: TaskInfo) => TaskInfo[Property])(before)
+				: value;
+			// A project removal can target a mixed selection. Skip tasks without the assignment.
+			if (property === "projects" && typeof value === "function" && nextValue === before[property]) continue;
 			const parent =
 				property === "status" && before.recurrence_parent
 					? await plugin.taskService.getMaterializedOccurrenceParent(before)
@@ -143,9 +148,7 @@ export async function changeTaskProperty<Property extends keyof TaskInfo>(
 			const updated = await plugin.updateTaskProperty(
 				before,
 				property,
-				typeof value === "function"
-					? (value as (task: TaskInfo) => TaskInfo[Property])(before)
-					: value,
+				nextValue,
 				{
 					suppressNotice: true,
 					onRecurringParentUpdated: (original, next) => {
@@ -682,11 +685,17 @@ export async function openTaskPropertyChoices(
 				values.delete(value);
 	const toggle = (value: string, selected: boolean) =>
 		apply((task) => {
+			if (property === "projects" && !selected && !task.projects?.includes(value)) return task.projects;
 			const previous = task[property] ?? [];
 			return selected
 				? [...new Set([...previous, value])]
 				: previous.filter((entry) => entry !== value);
 		});
+	/** Project assignments on any selected task must be removable in one action. */
+	const isAssigned = (value: string): boolean =>
+		property === "projects"
+			? tasks.some((task) => task.projects?.includes(value))
+			: tasks.every((task) => task[property]?.includes(value));
 	return openListPicker({
 		anchor,
 		app: plugin.app,
@@ -694,14 +703,16 @@ export async function openTaskPropertyChoices(
 		placeholder: label,
 		emptyText: clear,
 		multiple: true,
+		removeSelectedLabel: property === "projects"
+			? uiText(msg({ message: "Remove project", context: "modals.task.projectsRemoveTooltip" }))
+			: undefined,
 		onClose,
 		items: [...values].sort((left, right) =>
-			Number(tasks.every((task) => task[property]?.includes(right))) -
-			Number(tasks.every((task) => task[property]?.includes(left))) || left.localeCompare(right)
+			Number(isAssigned(right)) - Number(isAssigned(left)) || left.localeCompare(right)
 		).map((value) => ({
 			id: value,
 			label: value,
-			selected: tasks.every((task) => task[property]?.includes(value)),
+			selected: isAssigned(value),
 		})),
 		onChoose: (item) => toggle(item.id, !!item.selected),
 		createLabel: (query) => query,

@@ -26,6 +26,8 @@ export interface ListPickerOptions
 	showUnfilteredEmptyText?: boolean;
 	/** Multi-select pickers stay open and toggle. */
 	multiple?: boolean;
+	/** Show selected items above the results with individual removal buttons. */
+	removeSelectedLabel?: string;
 	revealSelected?: boolean;
 	/** Offered as the last row when nothing matches exactly, for free-text values. */
 	createLabel?: (query: string) => string;
@@ -61,7 +63,14 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	});
 	const validation = options.validationMessage ? el.createDiv({ cls: "tn-picker__error", attr: { id: `${listId}-error`, role: "alert", hidden: "" } }) : undefined;
 	if (validation) input.setAttribute("aria-describedby", validation.id);
-	const list = el.createDiv({ cls: "tn-picker__list", attr: { role: "listbox", id: listId, "aria-label": options.placeholder } });
+	const removeLabel = options.multiple ? options.removeSelectedLabel : undefined;
+	// Keep real buttons outside the combobox's listbox so they get their own tab stops.
+	const scrollBody = removeLabel ? el.createDiv({ cls: "tn-picker__list" }) : el;
+	const assigned = removeLabel ? scrollBody.createDiv({ cls: "tn-picker__assigned" }) : undefined;
+	const list = scrollBody.createDiv({
+		cls: removeLabel ? undefined : "tn-picker__list",
+		attr: { role: "listbox", id: listId, "aria-label": options.placeholder },
+	});
 	if (options.multiple) list.setAttribute("aria-multiselectable", "true");
 	const footer = el.createDiv({ cls: "tn-picker__footer" });
 	const selectHint = footer.createSpan({ cls: "tn-picker__select-hint" });
@@ -141,6 +150,25 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 			else input.removeAttribute("aria-invalid");
 		}
 		visible = items.filter((item) => matchesPickerQuery(item, query));
+		if (assigned && removeLabel) {
+			assigned.empty();
+			for (const item of visible.filter((candidate) => candidate.selected)) {
+				const row = assigned.createDiv({ cls: "tn-picker__assigned-row" });
+				row.createSpan({ cls: "tn-picker__label", text: item.label });
+				row.createSpan({ cls: "tn-picker__detail tn-picker__remove-label", text: removeLabel });
+				const remove = row.createEl("button", {
+					cls: "clickable-icon tn-picker__remove",
+					attr: { type: "button", title: removeLabel, "aria-label": `${removeLabel}: ${item.label}` },
+				});
+				setIcon(remove, "circle-x");
+				remove.addEventListener("click", () => {
+					choose(item);
+					input.focus();
+				});
+			}
+			assigned.hidden = !assigned.childElementCount;
+			visible = visible.filter((item) => !item.selected);
+		}
 		if (options.multiple) visible.sort((left, right) => Number(!!right.selected) - Number(!!left.selected));
 		createRow = null;
 		const unfilteredNotice = !query && options.showUnfilteredEmptyText;
@@ -182,7 +210,7 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 
 		const rowCount = visible.length + (createRow ? 1 : 0);
 		selectHint.hidden = rowCount === 0 || (visible.length === 0 && options.canCreate?.(trimmed) === false);
-		if (rowCount === 0 && !unfilteredNotice) list.createDiv({ cls: "tn-picker__empty", text: query ? options.emptyText : options.unfilteredEmptyText ?? options.emptyText });
+		if (rowCount === 0 && !unfilteredNotice && !assigned?.childElementCount) list.createDiv({ cls: "tn-picker__empty", text: query ? options.emptyText : options.unfilteredEmptyText ?? options.emptyText });
 		activeIndex = Math.min(activeIndex, Math.max(0, rowCount - 1));
 		paintActive();
 		popover.reposition();

@@ -598,6 +598,51 @@ body.is-mobile .tasknotes-plugin.tn-modal .tn-key-hint {
     scroll-padding-block: var(--tn-menu-padding);
 }
 
+.tn-picker__assigned {
+    border-bottom: 1px solid var(--tn-hairline);
+}
+
+.tn-picker__assigned-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tn-space-2);
+    padding: var(--tn-space-1) var(--tn-space-2);
+}
+
+.tn-picker .tn-picker__remove {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: var(--tn-radius-full);
+    background: transparent;
+    box-shadow: none;
+    color: var(--tn-danger);
+}
+
+.tn-picker .tn-picker__remove:hover {
+    background: color-mix(in srgb, var(--tn-danger) 18%, transparent);
+    color: var(--tn-danger);
+}
+
+.tn-picker .tn-picker__remove:focus-visible {
+    outline: 2px solid var(--tn-danger);
+}
+
+.tn-picker .tn-picker__remove svg {
+    width: var(--tn-glyph-sm);
+    height: var(--tn-glyph-sm);
+}
+
+.tn-picker__assigned-row .tn-picker__remove-label {
+    flex: none;
+    text-align: end;
+}
+
 .tn-picker__group {
     padding: var(--tn-space-3) var(--tn-space-2) var(--tn-space-1);
     color: var(--tn-text-muted);

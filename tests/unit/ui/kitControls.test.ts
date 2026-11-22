@@ -57,6 +57,27 @@ it('tracks one active descendant without scrolling for pointer movement, includi
 	expect(input.getAttribute('aria-activedescendant')).toBe(create.id);
 });
 
+it('shows an actual remove button for each assignment and returns removed values to the choices', () => {
+	const anchor = document.body.createEl('button');
+	const onChoose = jest.fn();
+	const popover = openListPicker({
+		anchor, placeholder: 'Projects', emptyText: 'No projects', multiple: true,
+		removeSelectedLabel: 'Remove project',
+		items: [{ id: 'assigned', label: 'Assigned', selected: true }, { id: 'available', label: 'Available' }],
+		onChoose,
+	});
+	const remove = popover.el.querySelector<HTMLButtonElement>('button[aria-label="Remove project: Assigned"]')!;
+	expect(remove).toBeInstanceOf(HTMLButtonElement);
+	expect(remove.closest('[role=listbox]')).toBeNull();
+	expect(remove.closest('.tn-picker__list')).toBe(popover.el.querySelector('[role=listbox]')?.parentElement);
+	remove.focus();
+	remove.click();
+	expect(onChoose).toHaveBeenCalledWith(expect.objectContaining({ id: 'assigned', selected: false }));
+	expect(popover.el.querySelector('button[aria-label="Remove project: Assigned"]')).toBeNull();
+	expect(popover.el.querySelector('[role=option][data-picker-id=assigned]')).not.toBeNull();
+	expect(document.activeElement).toBe(popover.el.querySelector('input'));
+});
+
 it('skips disabled segments and follows RTL arrow direction', () => {
 	const onChange = jest.fn();
 	const host = document.body.createDiv();

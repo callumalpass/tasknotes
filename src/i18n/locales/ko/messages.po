@@ -9691,6 +9691,7 @@ msgid "Remove calendar event when the corresponding task is deleted."
 msgstr "해당 작업이 삭제되면 캘린더 이벤트를 삭제합니다."
 
 #: src/modals/taskModalProjects.ts
+#: src/ui/taskPropertyPickers.ts
 msgctxt "modals.task.projectsRemoveTooltip"
 msgid "Remove project"
 msgstr "프로젝트 제거"

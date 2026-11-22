@@ -42,4 +42,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Fixed Task List's `x` selection shortcut targeting the last clicked task after the mouse hovered another task, including after a selection rerender. The selection count now overlays the list without moving task cards.
 - Restored task view shortcuts for projects, contexts, tags, and deleting tasks, along with other fork actions that were disconnected from the Bases keyboard handler.
+- Restored a remove button for each assigned project in the project picker, including when only some selected tasks have the project.
 - Fixed Task List selection checkboxes appearing below the status indicator, removed the fork's indicator outlines, and restored opening or editing a task when its row is clicked while batch selection is active. The checkbox remains the plain-click selection control.
