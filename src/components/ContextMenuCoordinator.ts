@@ -54,16 +54,11 @@ const TRIGGER_SELECTOR = '[data-tn-action], [data-type], [role="button"], button
 
 let activeMenu: CoordinatedMenu | null = null;
 let activeTrigger: Element | null = null;
-let lastMenuHideTime = -Infinity;
-let lastMenuHideWallTime = -Infinity;
+let menuHiddenThisTurn = false;
 
-/** Return whether a coordinated menu owned this key event before it was hidden. */
-export function wasContextMenuOpenForKeyEvent(event: KeyboardEvent): boolean {
-	if (activeMenu) return true;
-	// Obsidian can hide a menu in an earlier listener during the same keydown.
-	// Its hide time then follows this event's creation time on the same clock.
-	const hideTime = event.timeStamp > 1e12 ? lastMenuHideWallTime : lastMenuHideTime;
-	return event.timeStamp <= hideTime && hideTime - event.timeStamp < 1000;
+/** Return whether a coordinated menu is open or closed during this event turn. */
+export function isContextMenuHandlingKeyEvent(): boolean {
+	return activeMenu !== null || menuHiddenThisTurn;
 }
 
 /**
@@ -102,8 +97,10 @@ function showWithTrigger(
 	activeTrigger = trigger;
 	menu.onHide(() => {
 		if (activeMenu === menu) {
-			lastMenuHideTime = performance.now();
-			lastMenuHideWallTime = Date.now();
+			// Obsidian may dismiss the menu before view key handlers run. Keep the
+			// close visible to those handlers until this event turn completes.
+			menuHiddenThisTurn = true;
+			queueMicrotask(() => { menuHiddenThisTurn = false; });
 			activeMenu = null;
 			activeTrigger = null;
 		}

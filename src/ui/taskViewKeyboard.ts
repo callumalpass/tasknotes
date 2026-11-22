@@ -5,7 +5,8 @@ import type { TaskInfo } from "../types";
 import { uiText } from "../i18n/runtime";
 import { TaskActionPaletteModal, type TaskAction } from "../modals/TaskActionPaletteModal";
 import { openPopover } from "./kit/popover";
-import { wasContextMenuOpenForKeyEvent } from "../components/ContextMenuCoordinator";
+import { isContextMenuHandlingKeyEvent } from "../components/ContextMenuCoordinator";
+import { resolveTaskListKeyboardAction } from "../bases/taskListKeyboardActions";
 import { renderKeyHint } from "./kit/keyHint";
 import {
 	archiveTasksWithUndo,
@@ -318,6 +319,12 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		const target = event.target as HTMLElement;
 		const runTaskAction = options.resolveTaskShortcut?.(event);
 		if (runTaskAction) return { kind: "task-action" as const, run: runTaskAction };
+		// These actions belong to this view's focus and selection state, and
+		// can run before any particular task has focus.
+		const action = resolveTaskListKeyboardAction(event, plugin.settings?.taskListShortcuts);
+		if (action === "jump-first" || action === "jump-last" || action === "clear-focus-and-selection") {
+			return { kind: "focus-action" as const, action };
+		}
 		if (event.altKey) return;
 		const key = event.key.toLowerCase();
 		const mod = event.metaKey || event.ctrlKey;
@@ -363,7 +370,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 	const handle = async (event: KeyboardEvent) => {
 		const target = event.target as HTMLElement | null;
 		if (!target?.closest || !root.contains(target) || event.defaultPrevented ||
-			(event.key === "Escape" && wasContextMenuOpenForKeyEvent(event)) ||
+			((event.key === "Escape" || event.key === "Backspace") && isContextMenuHandlingKeyEvent()) ||
 			event.isComposing || root.ownerDocument.querySelector(".modal-container, .menu")) return;
 		const isSelectionCheckbox = target.matches("input.task-card__selection-checkbox[type=checkbox]");
 		if (!isSelectionCheckbox && target.closest(
@@ -371,7 +378,12 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 		)) return;
 		reconcileFocus(target);
 		const shortcut = resolveShortcut(event);
-		if (!shortcut || (isSelectionCheckbox && shortcut.kind !== "task-action")) return;
+		if (!shortcut || (isSelectionCheckbox && shortcut.kind !== "task-action" && shortcut.kind !== "focus-action")) return;
+
+		const clearsSelection = shortcut.kind === "focus-action"
+			? shortcut.action === "clear-focus-and-selection"
+			: shortcut.kind === "built-in" && shortcut.key === "escape";
+		if (clearsSelection && isContextMenuHandlingKeyEvent()) return;
 
 		const paths = options.paths();
 		// A configured action needs an explicit target, especially for deletion.
@@ -408,7 +420,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			options.search();
 			return;
 		}
-		if (key === "escape") {
+		if (clearsSelection) {
 			if (selection.getSelectionCount()) {
 				selection.clearSelection();
 				selection.exitSelectionMode();
@@ -418,6 +430,18 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			}
 			rangeAnchor = null;
 			paint();
+			return;
+		}
+		if (shortcut.kind === "focus-action") {
+			const next = paths[shortcut.action === "jump-first" ? 0 : paths.length - 1];
+			if (next) {
+				clearMouse();
+				focusedPath = next;
+				keyboardFocus = true;
+				rangeAnchor = null;
+				reveal(next);
+				paint();
+			}
 			return;
 		}
 		if (mod && key === "a") {

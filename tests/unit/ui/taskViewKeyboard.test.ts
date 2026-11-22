@@ -27,6 +27,7 @@ function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOp
 	}
 	const toggleSelection = jest.fn();
 	const clearSelection = jest.fn();
+	const reveal = jest.fn();
 	const plugin = {
 		app: { scope: {}, keymap: { pushScope: jest.fn(), popScope: jest.fn() } },
 		taskSelectionService: { getSelectedPaths: () => [], getSelectionCount: () => selectedCount, toggleSelection, clearSelection, exitSelectionMode: jest.fn() },
@@ -37,13 +38,30 @@ function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOp
 		selectOnHover,
 		resolveTaskShortcut,
 		taskForPath: async path => ({ path, title: path, status: "open", priority: "normal" }) as TaskInfo,
-		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
+		reveal, create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
 	});
 	const first = root.querySelector<HTMLElement>('[data-task-path="first.md"]')!;
-	return { root, first, dispose, toggleSelection, clearSelection, keymap: plugin.app.keymap };
+	return { root, first, dispose, toggleSelection, clearSelection, reveal, keymap: plugin.app.keymap };
 }
 
 afterEach(() => { document.body.replaceChildren(); jest.clearAllMocks(); });
+
+it("moves task focus with End and Home and clears selection with Backspace in the installed view", () => {
+	const state = harness(false, undefined, 2);
+	const second = state.root.querySelector('[data-task-path="second.md"]')!;
+	try {
+		state.root.focus();
+		for (const [key, card, path] of [["End", second, "second.md"], ["Home", state.first, "first.md"]] as const) {
+			const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
+			state.root.dispatchEvent(event);
+			expect(event.defaultPrevented).toBe(true);
+			expect(state.reveal).toHaveBeenLastCalledWith(path);
+			expect(state.root.querySelector(".tn-task-focused")).toBe(card);
+		}
+		state.root.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true, cancelable: true }));
+		expect(state.clearSelection).toHaveBeenCalledTimes(1);
+	} finally { state.dispose(); }
+});
 
 it.each([
 	["+", { shiftKey: true }, "add-project"],
@@ -203,7 +221,7 @@ it.each(["ArrowDown", "p", "Escape"])("defers %s to an open native menu while it
 	}
 });
 
-it("preserves selection when Obsidian hides a task menu before the view handles Escape", () => {
+it("preserves selection when Obsidian hides a task menu before the view handles Escape", async () => {
 	const state = harness(false, undefined, 2);
 	const control = state.first.querySelector<HTMLElement>("button")!;
 	const callbacks: Array<() => void> = [];
@@ -224,8 +242,8 @@ it("preserves selection when Obsidian hides a task menu before the view handles 
 		control.dispatchEvent(event);
 		expect(state.clearSelection).not.toHaveBeenCalled();
 		expect(event.defaultPrevented).toBe(false);
+		await Promise.resolve();
 		const nextEscape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
-		Object.defineProperty(nextEscape, "timeStamp", { value: event.timeStamp + 1001 });
 		control.dispatchEvent(nextEscape);
 		expect(state.clearSelection).toHaveBeenCalledTimes(1);
 	} finally {

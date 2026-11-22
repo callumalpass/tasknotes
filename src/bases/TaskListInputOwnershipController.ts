@@ -1,5 +1,5 @@
 import type { TaskListFocusController } from "./TaskListFocusController";
-import { wasContextMenuOpenForKeyEvent } from "../components/ContextMenuCoordinator";
+import { isContextMenuHandlingKeyEvent } from "../components/ContextMenuCoordinator";
 
 const OVERLAY_SELECTOR = ".menu, .modal-container:not(.modals-hidden)";
 const EDITABLE_SELECTOR =
@@ -25,7 +25,7 @@ export class TaskListInputOwnershipController {
 
 	canHandleListKeyDown(event: KeyboardEvent, allowDocumentBody = false): boolean {
 		if (event.isComposing || event.key === "Process") return false;
-		if (event.key === "Escape" && wasContextMenuOpenForKeyEvent(event)) return false;
+		if (event.key === "Escape" && isContextMenuHandlingKeyEvent()) return false;
 		if (this.suspendedForOverlay) return false;
 
 		return this.canOwnKeyboardTarget(event.target, allowDocumentBody);
