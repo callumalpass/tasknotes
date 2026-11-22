@@ -43,6 +43,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2665) Fixed mdbase validation errors on project and occurrence template links by removing an unintended target type restriction from TaskNotes-generated types. Existing generated types are corrected when TaskNotes loads the vault.
+  - Thanks to @engarthurcardoso for reporting
 - (#2655) Calendar dates that only open a daily note are now plain text when no daily-note provider is enabled. Dates that switch views or select a day in the month panel still work.
   - Thanks to @martin-forge for reporting
 - (#2645) TaskNotes retries temporary settings read errors instead of treating an unreadable file as missing. If the file remains unreadable, TaskNotes stops without overwriting it and logs what failed.
