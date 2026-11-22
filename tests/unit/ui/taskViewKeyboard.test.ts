@@ -15,7 +15,7 @@ beforeEach(() => {
 	HTMLElement.prototype.scrollIntoView = jest.fn();
 });
 
-function harness(selectOnHover = false, resolveAdditionalShortcut?: TaskViewKeyboardOptions["resolveAdditionalShortcut"]) {
+function harness(selectOnHover = false, resolveTaskShortcut?: TaskViewKeyboardOptions["resolveTaskShortcut"]) {
 	const root = document.body.createDiv();
 	root.tabIndex = 0;
 	for (const path of ["first.md", "second.md"]) {
@@ -33,7 +33,7 @@ function harness(selectOnHover = false, resolveAdditionalShortcut?: TaskViewKeyb
 	const dispose = installTaskViewKeyboard({
 		plugin, root, paths: () => ["first.md", "second.md"],
 		selectOnHover,
-		resolveAdditionalShortcut,
+		resolveTaskShortcut,
 		taskForPath: async path => ({ path, title: path, status: "open", priority: "normal" }) as TaskInfo,
 		reveal: jest.fn(), create: jest.fn(), search: jest.fn(), refreshSelection: jest.fn(),
 	});
@@ -54,6 +54,8 @@ it.each([
 		const action = resolveTaskListKeyboardAction(event);
 		return action ? (path) => dispatch(action, path) : undefined;
 	});
+	const reachedView = jest.fn();
+	state.root.addEventListener("keydown", reachedView, { capture: true });
 	try {
 		const control = key === "Delete"
 			? state.first.createEl("input", { cls: "task-card__selection-checkbox", type: "checkbox" })
@@ -61,6 +63,7 @@ it.each([
 		control.focus();
 		const event = new KeyboardEvent("keydown", { key, ...modifiers, bubbles: true, cancelable: true });
 		control.dispatchEvent(event);
+		expect(reachedView).toHaveBeenCalledWith(event);
 		expect(event.defaultPrevented).toBe(true);
 		expect(dispatch).toHaveBeenCalledTimes(1);
 		expect(dispatch).toHaveBeenCalledWith(expectedAction, "first.md");

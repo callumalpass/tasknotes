@@ -1082,7 +1082,7 @@ export abstract class BasesViewBase extends Component {
 					plugin: this.plugin,
 					root: this.rootElement,
 					selectOnHover: this.type === "tasknotesTaskList",
-					resolveAdditionalShortcut: (event) => this.resolveAdditionalTaskViewShortcut(event),
+					resolveTaskShortcut: (event) => this.resolveAdditionalTaskViewShortcut(event),
 					paths: () => this.getVisibleTaskPaths(),
 					reveal: (path) => this.revealKeyboardTask(path),
 					groupForPath: (path) => this.getKeyboardTaskGroup(path),
