@@ -24,6 +24,7 @@ interface Binding {
 export class SettingsContext {
 	private bindings = new Map<string, Binding>();
 	private pending = new Set<Promise<void>>();
+	private textSaveTimer: number | undefined;
 	private saveError: Error | undefined;
 	private readonly aliases: Record<string, string[]> = {
 		tasksFolder: ["location", "directory", "where tasks are saved"],
@@ -41,6 +42,8 @@ export class SettingsContext {
 		this.plugin.i18n.translate(key, params);
 
 	readonly save = (): void => {
+		window.clearTimeout(this.textSaveTimer);
+		this.textSaveTimer = undefined;
 		const pending = this.plugin
 			.saveSettings()
 			.then(() => {
@@ -58,7 +61,13 @@ export class SettingsContext {
 		this.pending.add(pending);
 	};
 
+	readonly saveText = (): void => {
+		window.clearTimeout(this.textSaveTimer);
+		this.textSaveTimer = window.setTimeout(this.save, 200);
+	};
+
 	async flush(): Promise<void> {
+		if (this.textSaveTimer !== undefined) this.save();
 		await Promise.all(this.pending);
 		if (this.saveError) throw this.saveError;
 	}
@@ -221,13 +230,14 @@ export class SettingsContext {
 		property: K,
 		key: string,
 		name: string,
-		config: { desc?: string; onChange?: () => void } = {}
+		config: { desc?: string; onChange?: () => void; deferSave?: boolean } = {}
 	): SettingDefinition {
 		const read = () => String(object[property] ?? "");
 		const write = (value: string) => {
 			object[property] = iconSettingName(value.trim()) as T[K];
 			config.onChange?.();
-			this.save();
+			if (config.deferSave) this.saveText();
+			else this.save();
 		};
 		const definition = this.text(key, {
 			name,
@@ -278,6 +288,7 @@ export class SettingsContext {
 			validate?: (value: string) => string | void;
 			disabled?: () => boolean;
 			onChange?: () => void;
+			deferSave?: boolean;
 		} = {}
 	): SettingDefinition {
 		const type =
@@ -290,7 +301,8 @@ export class SettingsContext {
 		const set = (value: string | number | boolean) => {
 			object[property] = value as T[K];
 			config.onChange?.();
-			this.save();
+			if (config.deferSave) this.saveText();
+			else this.save();
 		};
 		if (type === "toggle")
 			return this.toggle(

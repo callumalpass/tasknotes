@@ -7,6 +7,7 @@ import YAML from "yaml";
 
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import {
+	applyAppSettingsToPluginSettings,
 	applyCanonicalTaskTypeToSettings,
 	buildTaskNotesModelConfig,
 	mergeCanonicalTaskTypeDocument,
@@ -16,6 +17,33 @@ import {
 } from "../../../src/services/mdbaseCanonicalConfig";
 
 describe("canonical mdbase TaskNotes configuration", () => {
+	it("reconciles entries by ID, taking canonical ordering and removing omitted values", () => {
+		const settings = clone(DEFAULT_SETTINGS);
+		const status = settings.customStatuses.find((entry) => entry.id === "open")!;
+		const priority = settings.customPriorities.find((entry) => entry.id === "normal")!;
+		status.icon = "circle";
+		priority.icon = "arrow-up";
+		const config = buildTaskNotesModelConfig(settings);
+		config.statuses = [
+			{ ...status, icon: "circle-help", order: 0, label: "Ready" },
+			{ ...config.statuses.find((entry) => entry.id === "done")!, order: 1 },
+		];
+		config.priorities = [{ ...priority, icon: "arrow-down", label: "Medium" }];
+		const resources = buildTaskNotesMdbaseResources({ modelConfig: config });
+		applyCanonicalTaskTypeToSettings(settings, resources.type);
+
+		expect(settings.customStatuses.map(({ id }) => id)).toEqual(["open", "done"]);
+		expect(settings.customStatuses[0]).toBe(status);
+		expect(settings.customPriorities[0]).toBe(priority);
+		expect(status).toMatchObject({ label: "Ready", icon: "circle-help", order: 0 });
+		expect(priority).toMatchObject({ label: "Medium", icon: "arrow-down" });
+
+		status.nextStatus = "done";
+		applyAppSettingsToPluginSettings(settings, resources.appSettings);
+		expect(settings.customStatuses[0]).toBe(status);
+		expect(status).not.toHaveProperty("nextStatus");
+	});
+
 	it("applies the portable task contract to effective TaskNotes settings", () => {
 		const settings = clone(DEFAULT_SETTINGS);
 		const resources = buildTaskNotesMdbaseResources({
@@ -304,6 +332,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		settings.taskFilenameFormat = "zettel";
 		// v4 saved keys with surrounding whitespace; the type stores them trimmed.
 		settings.userFields = [{ id: "effort-id", displayName: "Effort level", key: " effort ", type: "number" }];
+		const field = settings.userFields[0];
 		const modelConfig = buildTaskNotesModelConfig(settings);
 		modelConfig.userFields = modelConfig.userFields.map((field) => ({ ...field, key: field.key.trim() }));
 		const resources = buildTaskNotesMdbaseResources({
@@ -315,6 +344,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		applyCanonicalTaskTypeToSettings(settings, resources.type);
 
 		expect(settings.taskFilenameFormat).toBe("zettel");
+		expect(settings.userFields[0]).toBe(field);
 		expect(settings.userFields).toEqual([
 			expect.objectContaining({ id: "effort-id", displayName: "Effort level", key: "effort" }),
 		]);

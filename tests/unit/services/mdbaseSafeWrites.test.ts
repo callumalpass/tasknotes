@@ -70,6 +70,44 @@ function unchangedRecords(before: Record<string, string>, files: Map<string, str
 }
 
 describe("safe migration writes and recovery", () => {
+	it("saves status and priority edits without creating another migration backup", async () => {
+		const h = safetyHarness({});
+		await h.service.initialize();
+		const backups = () => [...h.files.keys()].filter((name) => name.startsWith(".tasknotes/migrations/mdbase-v0.3-"));
+		expect(backups()).toEqual([]);
+		const status = h.plugin.settings.customStatuses.find((entry: { id: string }) => entry.id === "open");
+		const priority = h.plugin.settings.customPriorities.find((entry: { id: string }) => entry.id === "normal");
+		status.icon = "circle-";
+		await h.service.onSettingsChanged();
+		status.icon = "circle-help";
+		status.autoArchive = true;
+		priority.icon = "arrow-up";
+		await h.service.onSettingsChanged();
+		expect(h.files.get("_mdbase/types/task.md")).toContain("icon: circle-help");
+		expect(h.files.get("_mdbase/types/task.md")).toContain("icon: arrow-up");
+		expect(h.files.get("_mdbase/settings/dev.tasknotes.md")).toContain("auto_archive: true");
+		expect(backups()).toEqual([]);
+		expect([...h.files.keys()].some((name) => name.includes("/mdbase-settings-"))).toBe(false);
+	});
+
+	it("does not apply an older staged type over a newer settings edit", async () => {
+		const h = safetyHarness({});
+		await h.service.initialize();
+		const status = h.plugin.settings.customStatuses.find((entry: { id: string }) => entry.id === "open");
+		status.icon = "circle-";
+		const service = h.service as unknown as { writeCanonicalType: (...args: never[]) => Promise<boolean> };
+		const writeType = service.writeCanonicalType.bind(service);
+		jest.spyOn(service, "writeCanonicalType").mockImplementationOnce(async (...args) => {
+			status.icon = "circle-help";
+			return writeType(...args);
+		});
+		await h.service.onSettingsChanged();
+		expect(h.files.get("_mdbase/types/task.md")).toContain("icon: circle-\n");
+		expect(status.icon).toBe("circle-help");
+		await h.service.onSettingsChanged();
+		expect(h.files.get("_mdbase/types/task.md")).toContain("icon: circle-help");
+	});
+
 	it("uses the real bootstrap order, migrating beta metadata before FieldMapper construction", async () => {
 		const h = safetyHarness(fixture("beta0-custom"));
 		delete h.plugin.emitter;
@@ -376,4 +414,19 @@ it.each([false, true])("recovers an interrupted new-layout setup, enforcing READ
 		for (const write of intendedWrites) expect(h.files.has(write.path)).toBe(false);
 		expect(h.files.has(METADATA_PENDING)).toBe(false);
 	}
+});
+
+it("rolls back an interrupted settings save using its transient manifest", async () => {
+	const config = "spec_version: 0.3.0\nsettings:\n  types_folder: _mdbase/types\n";
+	const typePath = "_mdbase/types/task.md";
+	const settingsManifest = ".tasknotes/migrations/mdbase-settings-2026-11-23T00-00-00-000Z.json";
+	const snapshots = [{ path: typePath, content: "original type" }, { path: "mdbase.yaml", content: config }];
+	const intendedWrites = [{ path: typePath, content: "changed type" }, snapshots[1]];
+	const journal = JSON.stringify({ settingsManifest, snapshots, intendedWrites }, null, 2);
+	const h = safetyHarness({ [METADATA_PENDING]: journal, [settingsManifest]: journal, [typePath]: "changed type", "mdbase.yaml": config });
+	const transaction = new MetadataTransaction(new SafeMetadata(h.adapter), h.adapter.mkdir, h.adapter.remove);
+	await transaction.recover();
+	expect(h.files.get(typePath)).toBe("original type");
+	expect(h.files.has(METADATA_PENDING)).toBe(false);
+	expect(h.files.has(settingsManifest)).toBe(false);
 });
