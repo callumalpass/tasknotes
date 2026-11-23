@@ -40,6 +40,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2615) Added **Hide top-level subtasks** to the Calendar view's list (Agenda) layout and the month view's selected day panel, as in Task List and Kanban. When on, a subtask whose parent task is listed on the same day shows only under the parent's expanded subtasks instead of also as its own row. A subtask whose parent isn't listed that day keeps its own row. See [Agenda View](https://tasknotes.dev/views/agenda-view/#customization).
   - Thanks to @tistieom for the request
+- (#2574) The task ID property can now be remapped like other task properties, under **Settings → TaskNotes → Properties → Metadata & integration properties → Task ID**. It defaults to `id`, so existing vaults are unchanged. When a collection's task type maps the ID to another property, TaskNotes uses that property. See [Task Properties](https://tasknotes.dev/settings/task-properties/#metadata-properties).
+  - Thanks to @minchinweb for the request
 
 ## Changed
 

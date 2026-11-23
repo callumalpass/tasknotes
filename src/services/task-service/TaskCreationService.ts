@@ -354,7 +354,7 @@ export class TaskCreationService {
 			}
 			// Identity is assigned by the creation boundary. Templates and ordinary
 			// custom frontmatter must never copy or replace another task's ID.
-			finalFrontmatter.id = id;
+			finalFrontmatter[runtime.fieldMapper.toUserField("id")] = id;
 			tagsArray = getFrontmatterTags(finalFrontmatter.tags);
 
 			const yamlHeader = stringifyYaml(finalFrontmatter);

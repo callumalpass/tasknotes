@@ -364,9 +364,10 @@ export function applyTaskUpdateFrontmatterChange({
 		applyConfiguredPropertyTaskIdentifier(frontmatter, taskIdentification);
 	}
 
+	const idField = fieldMapper.toUserField("id");
 	if (updates.customFrontmatter) {
 		Object.entries(updates.customFrontmatter).forEach(([key, value]) => {
-			if (key === "id") return;
+			if (key === idField) return;
 			if (value === null) {
 				delete frontmatter[key];
 			} else {
@@ -375,11 +376,11 @@ export function applyTaskUpdateFrontmatterChange({
 		});
 	}
 
-	// The shared mapper deliberately leaves the fixed identity field alone.
+	// The shared mapper deliberately leaves the mapped identity field alone.
 	// Reassert an existing ID so converting a note persists its newly assigned
 	// identity and ordinary edits cannot replace it through a patch/template.
 	if (originalTask.id) {
-		frontmatter.id = originalTask.id;
+		frontmatter[idField] = originalTask.id;
 	}
 
 	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);
