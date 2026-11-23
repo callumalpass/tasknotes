@@ -37,7 +37,7 @@ The Calendar View provides multiple view modes (month, week, day, year, list, an
 
 ### Selecting and Rescheduling Multiple Tasks
 
-Use **Ctrl/Cmd-click** to select individual task markers, or **Shift-click** to select a range. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
+Use **Shift-click** to start a selection or select a range, then click or **Ctrl/Cmd-click** markers to add or remove them. You can also turn on **Select tasks** in the calendar toolbar, then click or tap tasks. While no selection is active, Ctrl/Cmd-click or middle-click opens a task's note in a new tab. Selected tasks have an outline, and the selection badge shows the number of distinct tasks. Escape or the badge clears the selection. Navigating to another date range clears it too. Selection is shared across Task List, Kanban, and Calendar panes, so clearing it in one clears it in all of them.
 
 Open **Task options** in the toolbar, or right-click a selected marker, to change the selected tasks together. **Scheduled date** and **Due date** open the date picker, with quick dates, +/- day and week options and **Pick date & time…** for any date with an optional time. A date assigns the same value to every selected task, and the +/- options move each task's own date; choosing a date without a time makes that property date-only. Dismissing the picker leaves the tasks unchanged.
 
@@ -62,6 +62,7 @@ Busy timed columns collapse overlapping appointments into a labelled stack when 
 - **Day**: Single day view with hourly breakdown
 - **Year**: Annual overview showing event distribution across months
 - **List**: Chronological list of events. TaskNotes also includes a dedicated Agenda command that opens this mode via its own `.base` file for quick reviews.
+  Task cards in the list leave out the scheduled or due date their row already sits under. Click the calendar or flag icon before a task (which also shows the time of timed tasks) to change that date. Recurring tasks show their occurrence date on the card instead.
 - **Custom Days**: Configurable multi-day view (2-10 days)
 View modes can be switched within a single `.base` file based on planning horizon (day, week, month, year, or custom range).
 
@@ -126,10 +127,13 @@ The calendar provides different behaviors depending on which type of recurring e
 
 **Dragging Pattern Instances (Dashed Border)**:
 
-- Updates the DTSTART time in the recurrence rule
-- Changes when all future pattern instances appear
-- Does not affect the independently scheduled next occurrence
-- Notice: "Updated recurring pattern time. All future instances now appear at this time."
+What a drop changes depends on where the instance lands:
+
+- **Same day, another time**: updates the time in the recurrence rule's `DTSTART`, so every later pattern instance appears at the new time. The independently scheduled next occurrence keeps its own time. Notice: "Series time changed to 14:00. Later occurrences now appear at this time; the next occurrence keeps its own time."
+- **Another day, or between the all-day row and a time slot**: moves only that instance. TaskNotes creates an [occurrence note](../features/recurring-tasks.md#materialized-occurrence-notes) for the instance's date, scheduled where you dropped it, and leaves the recurrence rule unchanged. Notice: "Moved the Nov 29, 2026 occurrence to Nov 30, 2026 09:00. Other occurrences are unchanged." Undo deletes the new occurrence note.
+- **Same day and time**: nothing changes.
+
+Resizing a pattern instance changes the task's time estimate, which every instance uses.
 
 #### Flexible Scheduling
 

@@ -8,6 +8,12 @@ Location: **Settings → TaskNotes → Appearance & interaction → Task cards**
 
 Use **Default visible properties** to decide what metadata appears on task cards without opening each task. This is the primary control for card density.
 
+**Show all properties on task cards** is on by default when no choice has been saved. Properties wrap onto extra lines when a card is too narrow, so every property stays visible and cards get taller. Turn it off to keep properties on one line and hide the rest behind a count such as **+3**; select the count to see the hidden properties. Previously saved choices are preserved. This applies to task cards in Bases views (task list, Kanban and calendar agenda). Task links in notes have their own setting, **Show all properties on inline task cards**, under Inline tasks on this page. It is off by default; see [Inline tasks](../features/inline-tasks.md).
+
+In Bases views that show the **priority** property, a task with a priority gets a bar in the priority's colour along the left edge of its card, as well as the priority mark. Tasks with no priority, or a priority of weight 0 such as *None*, have no bar. Remove **priority** from the view's properties to hide both.
+
+A task with attachments shows a paperclip and a count on its card. To see the file names instead, add **attachments** to the view's properties (or to **Default visible properties**). Each attachment then appears as a link named by its file, such as *Quarterly report.pdf*, and the count is no longer shown.
+
 Use **Group complete and skip actions in a submenu** to control how the completion actions are laid out in the task context menu. When on (the default), the *Completed today / on schedule / on due date / on (pick date)* actions — and *Skip instance* for recurring tasks — are nested under a single **Mark complete or skip** entry. Turn it off to show them directly in the menu, set off by dividers.
 
 Checklist progress is available as a visible property in task cards. In Bases view `order` arrays, the corresponding source property is `file.tasks` (shown as `tasks` in Bases property pickers once present in the view `order` list).

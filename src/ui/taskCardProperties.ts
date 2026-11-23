@@ -37,13 +37,14 @@ import {
 } from "./taskCardHelpers";
 import {
 	appendInternalLink,
+	renderAttachmentLinks,
 	renderProjectLinks,
 	renderTextWithLinks,
 	type LinkServices,
 } from "./renderers/linkRenderer";
 import { renderContextsValue, renderTagsValue, type TagServices } from "./renderers/tagRenderer";
 import { normalizeDependencyEntry, resolveDependencyEntry } from "../utils/dependencyUtils";
-import { relativeDay } from "./kit/dateLabel";
+import { relativeDay, relativeDayLabels } from "./kit/dateLabel";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Ui/TaskCardProperties" });
@@ -144,7 +145,7 @@ function getDependencyDisplayLink(
 	return null;
 }
 
-function attachDateClickHandler(
+export function attachDateClickHandler(
 	span: HTMLElement,
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
@@ -266,6 +267,14 @@ const PROPERTY_RENDERERS: Record<string, PropertyRenderer> = {
 			};
 			renderProjectLinks(element, value as string[], linkServices);
 		}
+	},
+	attachments: (element, _value, task, plugin) => {
+		renderAttachmentLinks(element, task.attachments ?? [], {
+			translate: plugin.i18n.translate.bind(plugin.i18n),
+			metadataCache: plugin.app.metadataCache,
+			workspace: plugin.app.workspace,
+			sourcePath: task.path,
+		});
 	},
 	contexts: (element, value, task, plugin) => {
 		if (Array.isArray(value)) {
@@ -855,6 +864,7 @@ function getRelativeCardDay(dateString: string, plugin: TaskNotesPlugin): string
 	}
 	if (Number.isNaN(target.getTime())) return null;
 	const days = Math.round((target.getTime() - getTodayLocal().getTime()) / DAY_MS);
+	if (days === 0) return plugin.i18n.translate(relativeDayLabels.today);
 	if (days === -1) return plugin.i18n.translate(msg({ message: "Yesterday", context: "ui.taskCard.relativeYesterday" }));
 	if (days === 1) return plugin.i18n.translate(msg({ message: "Tomorrow", context: "ui.taskCard.relativeTomorrow" }));
 	if (days < -1 && days > -7) return plugin.i18n.translate(msg({ message: "{count, plural, one {# day ago} other {# days ago}}", context: "ui.taskCard.relativeDaysAgo" }), { count: -days });

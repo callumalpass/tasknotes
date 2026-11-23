@@ -395,6 +395,16 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__main-row 
     gap: 0;
 }
 
+/* No status or priority shown: drop the empty lead column so the title starts at the edge. */
+body.is-mobile .tasknotes-plugin .task-card--layout-inline.task-card--no-lead .task-card__main-row {
+    grid-template-columns: 0 minmax(0, 1fr) var(--tn-touch-target);
+}
+
+/* On a checkbox line the checkbox and convert button share the card's line. */
+body.is-mobile .tasknotes-inline-widget-host--task-item > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
+    width: calc(100% - 2em);
+}
+
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__content {
     grid-column: 2;
     grid-row: 1;
@@ -520,13 +530,21 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
     container-type: inline-size;
 }
 
-.markdown-preview-view .tasknotes-inline-widget-host {
+/* The host (a reading-mode task list item or a live-preview line) is the size
+   container, so the widget can stay inline beside CodeMirror's widget buffers
+   instead of opening blank line boxes above and below the card. */
+.tasknotes-inline-widget-host {
     container-type: inline-size;
 }
 
-.markdown-preview-view .tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
+.tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence),
+.callout-title-inner .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
     display: inline;
     container-type: normal;
+}
+
+.callout-title-inner .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
+    max-width: 100%;
 }
 
 @container (max-width: 480px) {
@@ -544,6 +562,19 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
         grid-template-rows: auto var(--tn-touch-target);
         gap: 0;
         width: 100%;
+    }
+
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--no-lead .task-card__main-row {
+        grid-template-columns: 0 minmax(0, 1fr) repeat(2, var(--tn-touch-target));
+    }
+
+    .tasknotes-inline-widget-host--task-item > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
+        width: calc(100% - 2em);
+    }
+
+    /* A one-row card centres on the line, level with a bullet or checkbox. */
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty {
+        vertical-align: middle;
     }
 
     .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline .task-card__content {
@@ -607,15 +638,15 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
         min-height: var(--tn-touch-target);
     }
 
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty .task-card__main-row {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty > .task-card__main-row {
         grid-template-rows: var(--tn-touch-target);
     }
 
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty .task-card__title {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty > :where(.task-card__main-row) .task-card__title {
         grid-column: 2;
     }
 
-    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty :is(.task-card__priority-dot, .task-card__context-menu, .task-card__content, .task-card__status-dot) {
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty > :where(.task-card__main-row) :is(.task-card__priority-dot, .task-card__context-menu, .task-card__content, .task-card__status-dot) {
         grid-row: 1;
     }
 
@@ -629,5 +660,71 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
         grid-column: 4;
         grid-row: 2;
         opacity: 1;
+    }
+}
+
+/* Tags, contexts, projects and attachments sit in a row with a gap, as on Bases cards. The
+   inline property rule above makes each property `display: inline`, which stacked tags one per
+   line and ran contexts together. */
+.tasknotes-plugin .task-card--layout-inline .task-card__metadata-property.task-card__metadata-chips {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--tn-space-1);
+}
+
+/* Show all properties on inline task cards (#2595). A task link on its own line puts its
+   properties on their own lines under the title, indented to it, instead of collapsing them into
+   +N. Links inside a sentence still hide their properties. */
+body .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap {
+    white-space: normal;
+}
+
+body .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap .task-card__metadata {
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow: visible;
+    white-space: normal;
+}
+
+body .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap .task-card__metadata-values {
+    flex-wrap: wrap;
+    overflow: visible;
+}
+
+/* Wide notes: status, priority, title and menu on the first row, the properties under the title. */
+@container (min-width: 481px) {
+    body:not(.is-mobile) .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap > .task-card__main-row {
+        display: grid;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        gap: 0 var(--tn-space-1);
+        align-items: center;
+        width: 100%;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap > .task-card__main-row > .task-card__status-dot {
+        grid-area: 1 / 1;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap > .task-card__main-row > .task-card__priority-dot {
+        grid-area: 1 / 2;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap > .task-card__main-row > .task-card__content {
+        grid-area: 1 / 3;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap > .task-card__main-row > .task-card__context-menu {
+        grid-area: 1 / 4;
+    }
+
+    body:not(.is-mobile) .tasknotes-plugin .task-card--layout-inline.task-card--metadata-wrap > .task-card__main-row > .task-card__metadata {
+        grid-area: 2 / 3 / 3 / 5;
+    }
+}
+
+/* Narrow notes keep their stacked grid; the properties row grows with its lines. */
+@container (max-width: 480px) {
+    body .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-wrap .task-card__main-row {
+        grid-template-rows: auto minmax(var(--tn-touch-target), auto);
     }
 }

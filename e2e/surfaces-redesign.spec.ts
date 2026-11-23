@@ -22,6 +22,8 @@ test.beforeAll(async () => {
     app.workspace.iterateAllLeaves((leaf: any) => leaves.push(leaf));
     leaves.forEach(leaf => leaf.detach());
     const original = JSON.parse(JSON.stringify(plugin.settings));
+    // Keep explicit compact-layout coverage; default wrapping has separate native scenarios.
+    plugin.settings.wrapTaskCardProperties = false;
     plugin.settings.customStatuses = [
       { id: 'open', value: 'open', label: 'Waiting for a very long external review', color: 'var(--color-blue)', order: 0, isCompleted: false },
       { id: 'review', value: 'review', label: 'Review', color: 'var(--color-orange)', order: 1, isCompleted: false },

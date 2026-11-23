@@ -2,6 +2,7 @@ import { Page, chromium, Browser, expect, type Locator } from '@playwright/test'
 import * as path from 'path';
 import * as fs from 'fs';
 import { spawn, ChildProcess } from 'child_process';
+import { stopOwnedProcess } from './process-lifecycle';
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const UNPACKED_DIR = path.resolve(process.env.TASKNOTES_E2E_RUNTIME_DIR ?? path.join(PROJECT_ROOT, '.obsidian-unpacked'));
@@ -315,19 +316,6 @@ async function waitForCdpUrl(
   });
 }
 
-async function stopOwnedProcess(child?: ChildProcess): Promise<void> {
-  if (!child?.pid) return;
-  for (const signal of ['SIGTERM', 'SIGKILL'] as const) {
-    try {
-      process.kill(-child.pid, signal);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ESRCH') return;
-      throw error;
-    }
-    if (signal === 'SIGTERM') await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-}
-
 export async function launchObsidian(): Promise<ObsidianApp> {
   // Check that setup has been run
   const obsidianBinary = path.join(UNPACKED_DIR, 'obsidian');
@@ -397,6 +385,8 @@ export async function launchObsidian(): Promise<ObsidianApp> {
         ...(launchWithoutDisplay ? ['--ozone-platform=x11', '--disable-gpu'] : []),
         `--remote-debugging-port=${remoteDebuggingPort}`,
         `--user-data-dir=${userDataDir}`,
+        // Extra Chromium flags, e.g. --force-device-scale-factor=2 for README screenshots.
+        ...(process.env.TASKNOTES_E2E_ELECTRON_ARGS?.split(/\s+/).filter(Boolean) ?? []),
         E2E_VAULT_DIR,
       ];
       const spawnCommand = launchWithoutDisplay ? 'xvfb-run' : obsidianBinary;

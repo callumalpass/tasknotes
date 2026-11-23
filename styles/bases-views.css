@@ -49,11 +49,29 @@
 }
 
 /* Notes in side panes inherit Obsidian's readable-line padding. Let TaskNotes Base
-   embeds reclaim that padding so the cards line up with directly opened Bases views. */
-.mod-left-split .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active {
+   embeds reclaim that padding so the cards line up with directly opened Bases views
+   (#765, #2587). */
+:is(.mod-left-split, .mod-right-split) .markdown-preview-view .internal-embed.bases-embed.tasknotes-view-active {
 	margin-inline: calc(-1 * var(--file-margins, var(--size-4-5)));
 	max-width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
 	width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+}
+
+/* Live Preview forces `margin: 0 !important` on editor blocks, so shift the embed instead. */
+:is(.mod-left-split, .mod-right-split) .markdown-source-view.mod-cm6.is-live-preview .cm-content > .internal-embed.bases-embed.tasknotes-view-active {
+	position: relative;
+	inset-inline-start: calc(-1 * var(--file-margins, var(--size-4-5)));
+	max-width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+	width: calc(100% + var(--file-margins, var(--size-4-5)) + var(--file-margins, var(--size-4-5)));
+}
+
+/* A TaskNotes view embedded in a table cell (#2590). Table columns size to their content and a
+   Base embed has no width of its own, so the cell shrank until each card was only its status
+   and priority icons. Give the embed a readable minimum width, and undo the cell's text
+   alignment so titles stay left-aligned in centred columns. */
+:is(td, th) .internal-embed.bases-embed.tasknotes-view-active {
+	min-width: min(18rem, 80vw);
+	text-align: start;
 }
 
 /* Bases TaskNotes List View Container */
@@ -116,6 +134,12 @@
     flex-wrap: wrap;
     height: auto;
     min-width: 0;
+}
+
+/* Obsidian fixes the header at --bases-header-height. Let it grow with the
+   wrapping toolbar, or embeds clip the tops of the first row of controls. */
+.tasknotes-view-active .bases-header {
+    height: auto;
 }
 
 .tasknotes-view-active {
@@ -332,6 +356,8 @@
    viewport-height space inside the note. */
 .mod-left-split .internal-embed .tn-tasknotesTaskList,
 .mod-left-split .markdown-embed .tn-tasknotesTaskList,
+.mod-right-split .internal-embed .tn-tasknotesTaskList,
+.mod-right-split .markdown-embed .tn-tasknotesTaskList,
 body.is-popout-window .internal-embed .tn-tasknotesTaskList,
 body.is-popout-window .markdown-embed .tn-tasknotesTaskList {
     height: auto;
@@ -339,6 +365,8 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList {
 
 .mod-left-split .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
 .mod-left-split .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container,
+.mod-right-split .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
+.mod-right-split .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container,
 body.is-popout-window .internal-embed .tn-tasknotesTaskList .tn-bases-items-container,
 body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-container {
     flex: 0 1 auto;
@@ -348,8 +376,8 @@ body.is-popout-window .markdown-embed .tn-tasknotesTaskList .tn-bases-items-cont
 
 /* Let the note be the sticky/virtual scroll root, rather than an unbounded
    Bases wrapper that never actually scrolls. */
-:is(.mod-left-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed,
-:is(.mod-left-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed .bases-view {
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed,
+:is(.mod-left-split, .mod-right-split, body.is-popout-window) .markdown-preview-view .tasknotes-list-embed .bases-view {
     overflow: visible;
 }
 

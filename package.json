@@ -1,6 +1,6 @@
 {
 	"name": "tasknotes",
-	"version": "5.0.0",
+	"version": "5.0.1",
 	"description": "Note-based task management with calendar, pomodoro and time-tracking integration.",
 	"main": "main.js",
 	"scripts": {
@@ -14,6 +14,7 @@
 		"e2e": "playwright test",
 		"e2e:docs": "playwright test e2e/docs-screenshots.spec.ts",
 		"e2e:release-gifs": "playwright test e2e/release-gifs.spec.ts",
+		"e2e:readme": "TASKNOTES_E2E_VAULT_DIR=test-results/readme-vault TASKNOTES_E2E_USER_DATA_DIR=test-results/readme-profile TASKNOTES_E2E_ELECTRON_ARGS=--force-device-scale-factor=2 playwright test e2e/readme-screenshots.spec.ts",
 		"e2e:docs:copy": "mkdir -p media/docs && cp test-results/docs/*.png media/docs/",
 		"e2e:setup": "bash e2e-setup.sh",
 		"e2e:launch": "bash e2e-launch.sh",
@@ -116,7 +117,7 @@
 		"@codemirror/view": "^6.38.6",
 		"@modelcontextprotocol/sdk": "1.32.1",
 		"@tasknotes/calendar": "0.1.12",
-		"@tasknotes/calendar-service-client": "0.1.1",
+		"@tasknotes/calendar-service-client": "0.1.2",
 		"@tasknotes/model": "0.3.1",
 		"ajv": "8.20.0",
 		"ajv-formats": "3.0.1",

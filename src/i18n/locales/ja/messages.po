@@ -944,10 +944,10 @@ msgstr "+1週"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] デフォルトの `.base` ファイルについて\n"
 "> デフォルトで生成される `.base` テンプレートの変更で、既存の `.base` ファイルが上書きされることはありません。カスタマイズはそのまま保持されます。\n"
-"> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 一般 → ビューとbaseファイル → ファイルを更新** からベースファイルを再生成してください。"
+"> 最新のテンプレート改善を反映したい場合は、**設定 → TaskNotes → 外観と操作 → ビューと Bases ファイル → ファイルを更新** からベースファイルを再生成するか、**TaskNotes: 既定の Base ファイルを更新** コマンドを実行してください。"
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -1701,6 +1701,11 @@ msgstr "添付ファイル"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsLabel"
+msgid "Attachments"
+msgstr "添付ファイル"
+
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
 msgid "Attachments"
 msgstr "添付ファイル"
 
@@ -6322,6 +6327,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "ファイルエクスプローラーで mdbase フォルダーを非表示にする"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -7372,6 +7378,11 @@ msgstr "上へ移動"
 msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, other {# 件のタスク}}を {destination} に移動しました"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "{from} の回を {to} に移動しました。ほかの回は変更されていません。"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
@@ -8428,6 +8439,11 @@ msgstr "ノートを開く"
 msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "ノートを開く"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "contextMenus.task.openNoteInNewTab"
+msgid "Open note in new tab"
+msgstr "ノートを新しいタブで開く"
 
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
@@ -10066,6 +10082,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "値をカンマで区切ります。"
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "シリーズのステータス"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "シリーズのステータス"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "シリーズのステータス：{value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "シリーズの時刻を {time} に変更しました。以降の回はこの時刻に表示されます。次の回は独自の時刻のままです。"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10129,6 +10166,11 @@ msgstr "リマインダーを設定"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "予定日を設定"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "シリーズのステータスを設定"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -10225,6 +10267,16 @@ msgstr "アジェンダの日付バーを表示"
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "すべて表示"
+
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "インラインタスクカードにすべてのプロパティを表示"
+
+#: src/settings/native/appearance.ts
+msgctxt "settings.appearance.taskCards.wrapProperties.name"
+msgid "Show all properties on task cards"
+msgstr "タスクカードにすべてのプロパティを表示"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
@@ -11530,6 +11582,11 @@ msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes はこのデバイス用の新しい API トークンを作成しました。設定 → TaskNotes → 連携から、API および MCP クライアントにコピーしてください。"
 
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "設定ファイルを読み込めなかったため、TaskNotes は起動しませんでした。設定は変更されていません。Obsidian を再起動して、もう一度お試しください。TaskNotes を再インストールすると設定が削除されます。"
+
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
 msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
@@ -12051,6 +12108,12 @@ msgstr "このノートはすでにタスクです"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "これによりノートとのデータの永続性が向上します"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "この繰り返しタスクには、その日付に更新できる回がありません"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
@@ -13559,6 +13622,16 @@ msgstr "すべての端末で、TaskNotes のGoogleカレンダーへのアク�
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "作業時間"
+
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "タスクリンクのプロパティを +3 のような件数の後ろに隠さず、複数行に折り返して表示します。文中のタスクリンクは引き続きタイトルのみを表示します。"
+
+#: src/settings/native/appearance.ts
+msgctxt "settings.appearance.taskCards.wrapProperties.description"
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "カードの幅が狭いとき、プロパティを +3 のような件数の後ろに隠さず、複数行に折り返して表示します。ノート内のタスクリンクには「インラインタスク」に専用の設定があります。"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

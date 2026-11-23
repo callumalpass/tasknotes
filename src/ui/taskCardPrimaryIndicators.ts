@@ -249,12 +249,32 @@ export function configurePriorityIndicator(
 	);
 }
 
+/**
+ * Cards in a view that shows priority get a bar in the priority's colour along their left edge,
+ * so priority reads at a glance as it did with 4.x's larger dot. Tasks with no priority, or a
+ * priority of weight zero such as "None", get no bar.
+ */
+export function syncTaskCardPriorityBar(
+	card: HTMLElement,
+	task: TaskInfo,
+	plugin: TaskNotesPlugin,
+	priorityShown: boolean
+): void {
+	const ranked =
+		priorityShown &&
+		priorityGlyphState(task.priority, plugin.priorityManager.getAllPriorities()).kind === "dot";
+	card.classList.toggle("task-card--has-priority-bar", ranked);
+}
+
 export function createPriorityIndicator(config: PriorityIndicatorConfig): HTMLElement | null {
 	const { mainRow, task, plugin, visibleProperties, onClick } = config;
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
 
+	const shown = shouldShowPriorityIndicator(visibleProperties, plugin);
+	const card = mainRow?.closest<HTMLElement>(".task-card");
+	if (card) syncTaskCardPriorityBar(card, task, plugin, shown);
 	if (
-		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
+		!shown ||
 		!mainRow ||
 		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
 	) {
@@ -280,9 +300,11 @@ export function updatePriorityIndicator(config: PriorityIndicatorConfig): HTMLEl
 	}
 	const existingPriorityDot = card.querySelector<HTMLElement>(".task-card__priority-dot");
 	const priorityConfig = plugin.priorityManager.getPriorityConfig(task.priority);
+	const shown = shouldShowPriorityIndicator(visibleProperties, plugin);
+	syncTaskCardPriorityBar(card, task, plugin, shown);
 
 	if (
-		!shouldShowPriorityIndicator(visibleProperties, plugin) ||
+		!shown ||
 		!hasVisiblePriority(task.priority, plugin.priorityManager.getAllPriorities())
 	) {
 		existingPriorityDot?.remove();

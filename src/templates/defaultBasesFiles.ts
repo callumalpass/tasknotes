@@ -38,6 +38,46 @@ function formatNotePropertyReference(propertyName: string): string {
 	return `note["${escapeBasesStringLiteral(propertyName)}"]`;
 }
 
+// Names that already mean something in a Bases expression; a frontmatter
+// property with one of these names must be read through note["..."].
+const RESERVED_BASES_NAMES = new Set(["note", "file", "formula", "this", "true", "false", "null"]);
+
+/** True when a property name can be written bare in a Bases expression. */
+function isBasesIdentifier(name: string): boolean {
+	return /^[A-Za-z_][A-Za-z0-9_]*$/.test(name) && !RESERVED_BASES_NAMES.has(name);
+}
+
+/**
+ * Format a Bases property id (e.g. "due date", "note.due", "file.ctime") for use
+ * inside an expression. Note properties that are not plain identifiers are
+ * quoted as note["..."] (#2592); file.* and formula.* ids are left unchanged.
+ */
+function formatPropertyExpression(basesProperty: string): string {
+	if (/^(file|formula)\./.test(basesProperty)) {
+		return basesProperty;
+	}
+	const name = basesProperty.replace(/^note\./, "");
+	return isBasesIdentifier(name) ? name : formatNotePropertyReference(name);
+}
+
+/** Access a property on an object expression, quoting names that are not identifiers. */
+function formatPropertyAccess(objectExpression: string, propertyName: string): string {
+	return isBasesIdentifier(propertyName)
+		? `${objectExpression}.${propertyName}`
+		: `${objectExpression}["${escapeBasesStringLiteral(propertyName)}"]`;
+}
+
+/**
+ * Format a property id as a YAML scalar for order/sort/groupBy/dateProperty
+ * entries. These take the property id, not an expression, so a name with a
+ * space stays plain; only names YAML would misread are quoted.
+ */
+function formatYamlPropertyId(propertyId: string): string {
+	return /^[A-Za-z0-9_][A-Za-z0-9_ .-]*$/.test(propertyId) && !propertyId.endsWith(" ")
+		? propertyId
+		: JSON.stringify(propertyId);
+}
+
 function formatDependencyEntryFileExpression(entryExpression: string): string {
 	return `file(if(${entryExpression}.isType("object"), ${entryExpression}.uid, ${entryExpression}))`;
 }
@@ -239,7 +279,7 @@ function generateOrderArray(plugin: TaskNotesPlugin): string[] {
  * Format the order array as YAML
  */
 function formatOrderArray(orderArray: string[]): string {
-	return orderArray.map((prop) => `      - ${prop}`).join("\n");
+	return orderArray.map((prop) => `      - ${formatYamlPropertyId(prop)}`).join("\n");
 }
 
 function insertOrderPropertyAfterOrAppend(
@@ -271,7 +311,7 @@ function insertOrderPropertyAfterOrAppend(
  */
 function generatePriorityWeightFormula(plugin: TaskNotesPlugin): string {
 	const settings = plugin.settings;
-	const priorityProperty = getPropertyName(mapPropertyToBasesProperty("priority", plugin));
+	const priorityProperty = formatPropertyExpression(mapPropertyToBasesProperty("priority", plugin));
 
 	// Sort priorities by weight (ascending - higher weight = higher priority)
 	const sortedPriorities = [...settings.customPriorities].sort((a, b) => a.weight - b.weight);
@@ -303,7 +343,7 @@ function generatePriorityWeightFormula(plugin: TaskNotesPlugin): string {
  * Maps priority values to their display labels for grouping.
  */
 function generatePriorityCategoryFormula(plugin: TaskNotesPlugin): string {
-	const priorityProperty = getPropertyName(mapPropertyToBasesProperty("priority", plugin));
+	const priorityProperty = formatPropertyExpression(mapPropertyToBasesProperty("priority", plugin));
 	const priorities = plugin.settings.customPriorities;
 
 	if (priorities.length === 0) {
@@ -325,14 +365,12 @@ function generatePriorityCategoryFormula(plugin: TaskNotesPlugin): string {
  * These formulas provide calculated values that can be used in views, filters, and sorting.
  */
 function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
-	const dueProperty = getPropertyName(mapPropertyToBasesProperty("due", plugin));
-	const statusProperty = getPropertyName(mapPropertyToBasesProperty("status", plugin));
-	const timeEstimateProperty = getPropertyName(
-		mapPropertyToBasesProperty("timeEstimate", plugin)
-	);
-	const timeEntriesProperty = getPropertyName(mapPropertyToBasesProperty("timeEntries", plugin));
-	const projectsProperty = getPropertyName(mapPropertyToBasesProperty("projects", plugin));
-	const contextsProperty = getPropertyName(mapPropertyToBasesProperty("contexts", plugin));
+	const dueProperty = formatPropertyExpression(mapPropertyToBasesProperty("due", plugin));
+	const statusProperty = formatPropertyExpression(mapPropertyToBasesProperty("status", plugin));
+	const timeEstimateProperty = formatPropertyExpression(mapPropertyToBasesProperty("timeEstimate", plugin));
+	const timeEntriesProperty = formatPropertyExpression(mapPropertyToBasesProperty("timeEntries", plugin));
+	const projectsProperty = formatPropertyExpression(mapPropertyToBasesProperty("projects", plugin));
+	const contextsProperty = formatPropertyExpression(mapPropertyToBasesProperty("contexts", plugin));
 
 	// Get all completed status values for isOverdue check
 	const completedStatuses = plugin.settings.customStatuses
@@ -342,8 +380,8 @@ function generateAllFormulas(plugin: TaskNotesPlugin): Record<string, string> {
 		.map((status) => `${statusProperty} != "${escapeBasesStringLiteral(status)}"`)
 		.join(" && ");
 
-	const scheduledProperty = getPropertyName(mapPropertyToBasesProperty("scheduled", plugin));
-	const recurrenceProperty = getPropertyName(mapPropertyToBasesProperty("recurrence", plugin));
+	const scheduledProperty = formatPropertyExpression(mapPropertyToBasesProperty("scheduled", plugin));
+	const recurrenceProperty = formatPropertyExpression(mapPropertyToBasesProperty("recurrence", plugin));
 	const dueIsEmpty = `${dueProperty}.isEmpty()`;
 	const scheduledIsEmpty = `${scheduledProperty}.isEmpty()`;
 	const dueHasValue = `(${dueIsEmpty} == false)`;
@@ -664,8 +702,10 @@ export function generateBasesFileTemplate(commandId: string, plugin: TaskNotesPl
 
 	switch (commandId) {
 		case "open-calendar-view": {
-			const dueProperty = mapPropertyToBasesProperty("due", plugin);
-			const scheduledProperty = mapPropertyToBasesProperty("scheduled", plugin);
+			const dueProperty = formatYamlPropertyId(mapPropertyToBasesProperty("due", plugin));
+			const scheduledProperty = formatYamlPropertyId(
+				mapPropertyToBasesProperty("scheduled", plugin)
+			);
 			return `# Mini Calendar
 # Generated with your TaskNotes settings
 
@@ -695,8 +735,10 @@ ${orderYaml}
 `;
 		}
 		case "open-kanban-view": {
-			const statusProperty = mapPropertyToBasesProperty("status", plugin);
-			const sortOrderProperty = mapPropertyToBasesProperty("sortOrder", plugin);
+			const statusProperty = formatYamlPropertyId(mapPropertyToBasesProperty("status", plugin));
+			const sortOrderProperty = formatYamlPropertyId(
+				mapPropertyToBasesProperty("sortOrder", plugin)
+			);
 			return `# Kanban Board
 
 ${formatFilterAsYAML(activeTaskFilterConditions)}
@@ -720,16 +762,31 @@ ${orderYaml}
 		}
 
 		case "open-tasks-view": {
-			const statusProperty = mapPropertyToBasesProperty("status", plugin);
-			const dueProperty = mapPropertyToBasesProperty("due", plugin);
-			const scheduledProperty = mapPropertyToBasesProperty("scheduled", plugin);
-			const recurrenceProperty = mapPropertyToBasesProperty("recurrence", plugin);
-			const completeInstancesProperty = mapPropertyToBasesProperty(
-				"completeInstances",
-				plugin
+			// Property ids for sort/groupBy entries.
+			const statusColumn = formatYamlPropertyId(mapPropertyToBasesProperty("status", plugin));
+			const dueColumn = formatYamlPropertyId(mapPropertyToBasesProperty("due", plugin));
+			const sortOrderColumn = formatYamlPropertyId(
+				mapPropertyToBasesProperty("sortOrder", plugin)
 			);
-			const blockedByProperty = mapPropertyToBasesProperty("blockedBy", plugin);
-			const sortOrderProperty = mapPropertyToBasesProperty("sortOrder", plugin);
+			// Expressions for filters.
+			const statusPropertyName = mapPropertyToBasesProperty("status", plugin);
+			const statusProperty = formatPropertyExpression(statusPropertyName);
+			const dueProperty = formatPropertyExpression(mapPropertyToBasesProperty("due", plugin));
+			const scheduledProperty = formatPropertyExpression(
+				mapPropertyToBasesProperty("scheduled", plugin)
+			);
+			const recurrenceProperty = formatPropertyExpression(
+				mapPropertyToBasesProperty("recurrence", plugin)
+			);
+			const completeInstancesProperty = formatPropertyExpression(
+				mapPropertyToBasesProperty("completeInstances", plugin)
+			);
+			const blockedByProperty = formatPropertyExpression(
+				mapPropertyToBasesProperty("blockedBy", plugin)
+			);
+			const projectsProperty = formatPropertyExpression(
+				mapPropertyToBasesProperty("projects", plugin)
+			);
 			const dueHasValue = `${dueProperty}.isEmpty() == false`;
 			const scheduledHasValue = `${scheduledProperty}.isEmpty() == false`;
 			const todayDay = getBasesTodayDayExpression();
@@ -757,7 +814,7 @@ ${orderYaml}
 			const blockingTaskIncompleteCondition = completedStatuses
 				.map(
 					(status) =>
-						`${formatDependencyEntryFileExpression("value")}.properties.${getPropertyName(statusProperty)} != "${escapeBasesStringLiteral(status)}"`
+						`${formatPropertyAccess(`${formatDependencyEntryFileExpression("value")}.properties`, getPropertyName(statusPropertyName))} != "${escapeBasesStringLiteral(status)}"`
 				)
 				.join(" && ");
 
@@ -797,7 +854,7 @@ ${orderYaml}
     filters:
       and:
         - ${activeFilter}
-        - ${mapPropertyToBasesProperty('projects', plugin)}.isEmpty()
+        - ${projectsProperty}.isEmpty()
         - ${dueProperty}.isEmpty()
         - ${scheduledProperty}.isEmpty()
         - or:
@@ -810,7 +867,7 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: ${sortOrderProperty}
+      - column: ${sortOrderColumn}
         direction: DESC
   - type: tasknotesTaskList
     name: "Archived"
@@ -827,17 +884,17 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: ${sortOrderProperty}
+      - column: ${sortOrderColumn}
         direction: DESC
     groupBy:
-      property: ${statusProperty}
+      property: ${statusColumn}
       direction: ASC
   - type: tasknotesTaskList
     name: ${JSON.stringify(uiText(msg({ message: "All Tasks", context: "generated Bases view name" })))}
     order:
 ${orderYaml}
     sort:
-      - column: due
+      - column: ${dueColumn}
         direction: ASC
   - type: tasknotesTaskList
     name: ${JSON.stringify(uiText(msg({ message: "Not Blocked", context: "generated Bases view name" })))}
@@ -944,7 +1001,7 @@ ${orderYaml}
     order:
 ${orderYaml}
     sort:
-      - column: ${statusProperty}
+      - column: ${statusColumn}
         direction: ASC
 `;
 		}
@@ -1022,8 +1079,10 @@ ${agendaOrderYaml}
 				const recurrenceParentProperty = getPropertyName(mapPropertyToBasesProperty('recurrenceParent', plugin));
 				const occurrenceDateProperty = mapPropertyToBasesProperty('occurrenceDate', plugin);
 				const scheduledProperty = mapPropertyToBasesProperty('scheduled', plugin);
-				const statusProperty = mapPropertyToBasesProperty('status', plugin);
-				const sortOrderProperty = mapPropertyToBasesProperty('sortOrder', plugin);
+				const statusProperty = formatYamlPropertyId(mapPropertyToBasesProperty('status', plugin));
+				const sortOrderProperty = formatYamlPropertyId(
+					mapPropertyToBasesProperty('sortOrder', plugin)
+				);
 				const occurrenceOrderYaml = formatOrderArray(
 					insertOrderPropertyAfterOrAppend(orderArray, occurrenceDateProperty, scheduledProperty)
 				);
@@ -1053,7 +1112,7 @@ views:
     filters:
       and:
 ${taskRelationshipFilterYaml}
-        - file.hasLink(this.file) && list(note.${projectsProperty}).map(${formatProjectEntryLinkExpression("value")}).contains(this.file.asLink())
+        - file.hasLink(this.file) && list(${formatPropertyAccess("note", projectsProperty)}).map(${formatProjectEntryLinkExpression("value")}).contains(this.file.asLink())
     order:
 ${orderYaml}
     sort:
@@ -1068,17 +1127,17 @@ ${orderYaml}
     filters:
       and:
 ${taskRelationshipFilterYaml}
-        - file.hasLink(this.file) && note.${recurrenceParentProperty} && ${formatProjectEntryLinkExpression(`note.${recurrenceParentProperty}`)} == this.file.asLink()
+        - file.hasLink(this.file) && ${formatPropertyAccess("note", recurrenceParentProperty)} && ${formatProjectEntryLinkExpression(formatPropertyAccess("note", recurrenceParentProperty))} == this.file.asLink()
     order:
 ${occurrenceOrderYaml}
     sort:
-      - column: ${occurrenceDateProperty}
+      - column: ${formatYamlPropertyId(occurrenceDateProperty)}
         direction: ASC
   - type: tasknotesTaskList
     name: ${JSON.stringify(uiText(msg({ message: "Projects", context: "generated Bases view name" })))}
     filters:
       and:
-${projectRelationshipFilterPrefix}        - list(this.${projectsProperty}).map(${formatProjectEntryLinkExpression("value")}).contains(file.asLink())
+${projectRelationshipFilterPrefix}        - list(${formatPropertyAccess("this", projectsProperty)}).map(${formatProjectEntryLinkExpression("value")}).contains(file.asLink())
     order:
 ${orderYaml}
   - type: tasknotesTaskList
@@ -1086,7 +1145,7 @@ ${orderYaml}
     filters:
       and:
 ${taskRelationshipFilterYaml}
-        - list(this.note.${blockedByProperty}).map(${formatDependencyEntryLinkExpression("value")}).contains(file.asLink())
+        - list(${formatPropertyAccess("this.note", blockedByProperty)}).map(${formatDependencyEntryLinkExpression("value")}).contains(file.asLink())
     order:
 ${orderYaml}
     sort:
@@ -1097,7 +1156,7 @@ ${orderYaml}
     filters:
       and:
 ${taskRelationshipFilterYaml}
-        - list(note.${blockedByProperty}).map(${formatDependencyEntryLinkExpression("value")}).contains(this.file.asLink())
+        - list(${formatPropertyAccess("note", blockedByProperty)}).map(${formatDependencyEntryLinkExpression("value")}).contains(this.file.asLink())
     order:
 ${orderYaml}
     sort:

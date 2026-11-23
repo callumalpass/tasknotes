@@ -169,8 +169,12 @@ test("clicking a non-recurring Bases task's status moves it to the next status",
 		.poll(async () => (await frontmatter(oneOffPath)).status, { timeout: 5000 })
 		.toBe("in-progress");
 
-	// The next click reads the task TaskNotes cached from that update.
-	await statusDot(oneOffPath).dispatchEvent("click");
+	// A disk write can finish before the status action clears its pending guard.
+	// Wait for the visible control to be ready, rather than dispatching a disabled click.
+	await expect(statusDot(oneOffPath)).not.toHaveAttribute("aria-busy", "true");
+	await expect(statusDot(oneOffPath)).not.toHaveAttribute("aria-disabled", "true");
+	await expect(statusDot(oneOffPath)).toHaveAttribute("aria-label", "in-progress");
+	await statusDot(oneOffPath).click();
 	await expect
 		.poll(async () => (await frontmatter(oneOffPath)).status, { timeout: 5000 })
 		.toBe("resolved");

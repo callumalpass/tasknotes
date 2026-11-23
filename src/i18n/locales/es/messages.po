@@ -945,10 +945,10 @@ msgstr "+1 semana"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] Acerca de los archivos `.base` predeterminados\n"
 "> Los cambios en las plantillas `.base` generadas por defecto no sobrescriben tus archivos `.base` existentes, por lo que tus personalizaciones se mantienen.\n"
-"> Si quieres las mejoras más recientes de las plantillas, regenera los archivos base en **Ajustes → TaskNotes → General → Vistas y archivos base → Actualizar archivos**."
+"> Si quieres las mejoras más recientes de las plantillas, regenera los archivos base en **Ajustes → TaskNotes → Apariencia e interacción → Vistas y archivos base → Actualizar archivos**, o ejecuta el comando **TaskNotes: Actualizar archivos Base predeterminados**."
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -1702,6 +1702,11 @@ msgstr "Adjuntos"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsLabel"
+msgid "Attachments"
+msgstr "Adjuntos"
+
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
 msgid "Attachments"
 msgstr "Adjuntos"
 
@@ -6323,6 +6328,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Ocultar las carpetas de mdbase en el explorador de archivos"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -7373,6 +7379,11 @@ msgstr "Subir"
 msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, one {# tarea movida} other {# tareas movidas}} a {destination}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "La repetición del {from} se movió al {to}. Las demás repeticiones no cambian."
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
@@ -8429,6 +8440,11 @@ msgstr "Abrir nota"
 msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "Abrir nota"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "contextMenus.task.openNoteInNewTab"
+msgid "Open note in new tab"
+msgstr "Abrir nota en una nueva pestaña"
 
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
@@ -10067,6 +10083,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Separe los valores con comas."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "Estado de la serie"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "Estado de la serie"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "Estado de la serie: {value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "La hora de la serie cambió a las {time}. Las repeticiones posteriores aparecen ahora a esta hora; la próxima repetición conserva su propia hora."
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10130,6 +10167,11 @@ msgstr "Establecer recordatorios"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Establecer fecha programada"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "Establecer estado de la serie"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -10226,6 +10268,16 @@ msgstr "Mostrar la franja de fechas de la agenda"
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "Mostrar todos"
+
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "Mostrar todas las propiedades en las tarjetas de tareas en línea"
+
+#: src/settings/native/appearance.ts
+msgctxt "settings.appearance.taskCards.wrapProperties.name"
+msgid "Show all properties on task cards"
+msgstr "Mostrar todas las propiedades en las tarjetas de tareas"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
@@ -11531,6 +11583,11 @@ msgctxt "integration.TaskNotescreatedanewAPItokenforthisdeviceCopy"
 msgid "TaskNotes created a new API token for this device. Copy it from Settings → TaskNotes → Integrations into your API and MCP clients."
 msgstr "TaskNotes creó un nuevo token de API para este dispositivo. Cópialo desde Ajustes → TaskNotes → Integraciones a tus clientes de API y MCP."
 
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "TaskNotes no se ha iniciado porque no se pudo leer su archivo de configuración. Tu configuración no se ha modificado. Reinicia Obsidian para volver a intentarlo. Reinstalar TaskNotes elimina su configuración."
+
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
 msgid "TaskNotes found metadata in {path} without mdbase.yaml and did not create another collection. Finish syncing or restore the matching configuration from a backup; migration will retry when metadata arrives."
@@ -12052,6 +12109,12 @@ msgstr "Esta nota ya es una tarea"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "Esto proporciona mejor longevidad de datos con tus notas"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "Esta tarea recurrente no tiene ninguna repetición que actualizar en esa fecha"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
@@ -13560,6 +13623,16 @@ msgstr "Retira el acceso de TaskNotes al Calendario de Google en todos los dispo
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "Duración del trabajo"
+
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "Pasa las propiedades de un enlace a tarea a líneas adicionales en lugar de ocultarlas tras un recuento como +3. Los enlaces a tareas dentro de una frase siguen mostrando solo el título."
+
+#: src/settings/native/appearance.ts
+msgctxt "settings.appearance.taskCards.wrapProperties.description"
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "Pasa las propiedades a líneas adicionales cuando una tarjeta es demasiado estrecha, en lugar de ocultarlas tras un recuento como +3. Los enlaces a tareas en las notas tienen su propio ajuste en «Tareas en línea»."
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"

@@ -314,7 +314,7 @@ export function extractTaskInfo(
 			const taskInfo: TaskInfo = {
 				title: taskInfoTitle(mappedTask.title),
 				status: mappedTask.status || defaultStatus || "open",
-				priority: mappedTask.priority || "normal",
+				priority: mappedTask.priority || "",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
 				path,
@@ -342,7 +342,7 @@ export function extractTaskInfo(
 			return {
 				title: taskInfoTitle(mappedTask.title),
 				status: mappedTask.status || defaultStatus || "open",
-				priority: mappedTask.priority || "normal",
+				priority: mappedTask.priority || "",
 				due: mappedTask.due,
 				scheduled: mappedTask.scheduled,
 				path,
@@ -368,7 +368,7 @@ export function extractTaskInfo(
 	return {
 		title: filename,
 		status: defaultStatus || "open",
-		priority: "normal",
+		priority: "",
 		path,
 		archived: false,
 		reminders: [],

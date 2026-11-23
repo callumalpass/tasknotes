@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { runLinguiReview } from "./helpers/lingui-review";
 import { setupI18n } from "@lingui/core";
+import { generateMessageId } from "@lingui/message-utils/generateMessageId";
 import { createServer, type Server } from "node:http";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -10,6 +11,7 @@ import {
 	closeObsidian,
 	openTaskNotesSettings,
 	closeObsidianSettings,
+	nativeSettingRow,
 	type ObsidianApp,
 } from "./obsidian";
 import type { LanguagePackManifest } from "../src/i18n/languagePackTypes";
@@ -35,6 +37,7 @@ const singletonContracts = JSON.parse(fs.readFileSync(path.join(root, "docs/deve
 const cores = new Map<string, ReturnType<typeof setupI18n>>();
 const expectedText = (locale: string, concept: string, values?: Record<string, number | string>) => cores.get(locale)!._(keyMap[concept].id, values);
 let frenchCreateTaskName: string;
+let frenchPomodoroStatsName: string;
 let frenchRibbonNames: string[];
 let releaseFrench: (() => void) | undefined;
 let delayFrench = true;
@@ -65,6 +68,9 @@ test.beforeAll(async () => {
 		cores.set(locale, setupI18n({ locale, messages: { [locale]: JSON.parse(text).messages } }));
 	}
 	frenchCreateTaskName = expectedText("fr", "commands.createNewTask");
+	frenchPomodoroStatsName = cores.get("fr")!._(
+		generateMessageId("Open Pomodoro statistics", "commands.openPomodoroStats")
+	);
 	frenchRibbonNames = [
 		"openCalendarView",
 		"openAdvancedCalendarView",
@@ -72,7 +78,6 @@ test.beforeAll(async () => {
 		"openAgendaView",
 		"openKanbanView",
 		"openPomodoroView",
-		"openPomodoroStats",
 		"createNewTask",
 	].map((key) => expectedText("fr", `commands.${key}`));
 	const prefix = `${endpoint.pathname.replace(/\/$/, "")}/${manifest.catalogueVersion}/`;
@@ -148,6 +153,11 @@ test("downloads through the native picker, survives an offline reload, and retri
 	releaseFrench = undefined;
 	await expect.poll(currentLocale).toBe("fr");
 	await expect.poll(ribbonLabels).toEqual(expect.arrayContaining(frenchRibbonNames));
+	// V5 retains the statistics command, but no longer creates a statistics ribbon.
+	await expect.poll(ribbonLabels).not.toContain(frenchPomodoroStatsName);
+	await expect.poll(() => page.evaluate(() =>
+		(window as any).app.commands.commands["tasknotes:open-pomodoro-stats"]?.name
+	)).toContain(frenchPomodoroStatsName);
 	await expect
 		.poll(() =>
 			page.evaluate(() => {
@@ -202,12 +212,7 @@ test("downloads through the native picker, survives an offline reload, and retri
 	settingsPage = await openTaskNotesSettings(page);
 	await languagePicker().selectOption("de");
 	await expect.poll(() => requests.filter((file) => file === "de.json").length).toBe(1);
-	await expect(
-		settingsPage.getByRole("button", {
-			name: "Réessayer le téléchargement de la langue",
-			exact: true,
-		})
-	).toBeVisible();
+	await expect(nativeSettingRow(settingsPage, "Réessayer le téléchargement de la langue")).toBeVisible();
 	await expect
 		.poll(async () => {
 			const workspaceNotices = await page
@@ -226,9 +231,8 @@ test("downloads through the native picker, survives an offline reload, and retri
 		.toBeGreaterThan(0);
 	await expect.poll(currentLocale).toBe("fr");
 	mode = "ok";
-	await settingsPage
-		.getByRole("button", { name: "Réessayer le téléchargement de la langue", exact: true })
-		.click();
+	await nativeSettingRow(settingsPage, "Réessayer le téléchargement de la langue")
+		.locator(".setting-item-name").click();
 	await expect.poll(currentLocale).toBe("de");
 	expect(requests.filter((file) => file === "de.json")).toHaveLength(2);
 	await closeObsidianSettings(page, settingsPage);
@@ -307,7 +311,8 @@ test("native en/ja/de/ru labels, plurals and existing Bases files survive locale
 	await expect.poll(currentLocale).toBe("en");
 	mode = "ok";
 	const retryPage = await openTaskNotesSettings(page);
-	await retryPage.getByRole("button", { name: expectedText("en", "settings.features.uiLanguage.retryDownload"), exact: true }).click();
+	await nativeSettingRow(retryPage, expectedText("en", "settings.features.uiLanguage.retryDownload"))
+		.locator(".setting-item-name").click();
 	await expect.poll(currentLocale).toBe("ru");
 	await closeObsidianSettings(page, retryPage);
 	expect(fs.readFileSync(cache)).toEqual(validCache);

@@ -13,6 +13,8 @@ export class TaskLinkWidget extends WidgetType {
 	private displayText?: string;
 	private targetDate: Date;
 	private targetDateKey: string;
+	/** Inline display settings this widget was drawn with, so a settings change redraws it. */
+	private displaySettingsKey: string;
 
 	constructor(
 		taskInfo: TaskInfo,
@@ -30,6 +32,10 @@ export class TaskLinkWidget extends WidgetType {
 		this.displayText = displayText;
 		this.targetDate = targetDate;
 		this.targetDateKey = formatDateForStorage(targetDate);
+		this.displaySettingsKey = JSON.stringify([
+			plugin.settings?.inlineVisibleProperties,
+			plugin.settings?.wrapInlineTaskProperties,
+		]);
 	}
 
 	toDOM(view: EditorView): HTMLElement {
@@ -147,6 +153,7 @@ export class TaskLinkWidget extends WidgetType {
 			this.subpath === other.subpath &&
 			this.originalText === other.originalText &&
 			this.targetDateKey === other.targetDateKey &&
+			this.displaySettingsKey === other.displaySettingsKey &&
 			JSON.stringify(this.taskInfo.complete_instances) ===
 				JSON.stringify(other.taskInfo.complete_instances) &&
 			JSON.stringify(this.taskInfo.skipped_instances) ===

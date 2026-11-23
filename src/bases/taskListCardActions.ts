@@ -3,7 +3,8 @@ import { displayError } from "../i18n/runtime";
 import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
 import { createStatusCycleHandler } from "../ui/taskCardActions";
 import { msg } from "@lingui/core/macro";
-import { Notice, TFile, type App } from "obsidian";
+import { Notice, type App } from "obsidian";
+import { getModifierPaneType, openTaskNote, type NotePaneType } from "../utils/clickHandlers";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { showTaskContextMenu } from "../ui/TaskCard";
@@ -176,6 +177,13 @@ export class TaskListCardActions {
 			return;
 		}
 
+		// Ctrl/Cmd+click opens the note in a new tab at once, whatever the click settings.
+		const paneType = getModifierPaneType(event);
+		if (paneType) {
+			this.openTaskNote(task, paneType);
+			return;
+		}
+
 		if (this.context.plugin.settings.doubleClickAction === "none") {
 			await this.executeSingleClickAction(task, event);
 			return;
@@ -199,31 +207,26 @@ export class TaskListCardActions {
 		}
 	}
 
-	private async executeSingleClickAction(task: TaskInfo, event: MouseEvent): Promise<void> {
-		if (event.ctrlKey || event.metaKey) {
-			this.openTaskNote(task, true);
-			return;
-		}
-
+	private async executeSingleClickAction(task: TaskInfo, _event: MouseEvent): Promise<void> {
 		switch (this.context.plugin.settings.singleClickAction) {
 			case "edit":
 				await this.editTask(task);
 				break;
 			case "openNote":
-				this.openTaskNote(task, false);
+				this.openTaskNote(task);
 				break;
 			default:
 				break;
 		}
 	}
 
-	private async executeDoubleClickAction(task: TaskInfo, event: MouseEvent): Promise<void> {
+	private async executeDoubleClickAction(task: TaskInfo, _event: MouseEvent): Promise<void> {
 		switch (this.context.plugin.settings.doubleClickAction) {
 			case "edit":
 				await this.editTask(task);
 				break;
 			case "openNote":
-				this.openTaskNote(task, false);
+				this.openTaskNote(task);
 				break;
 			default:
 				break;
@@ -234,16 +237,8 @@ export class TaskListCardActions {
 		await this.context.plugin.openTaskEditModal(task);
 	}
 
-	private openTaskNote(task: TaskInfo, newTab: boolean): void {
-		const app = this.context.getApp() || this.context.plugin.app;
-		const file = app.vault.getAbstractFileByPath(task.path);
-		if (file instanceof TFile) {
-			if (newTab) {
-				void app.workspace.openLinkText(task.path, "", true);
-			} else {
-				void app.workspace.getLeaf(false).openFile(file);
-			}
-		}
+	private openTaskNote(task: TaskInfo, paneType: NotePaneType | false = false): void {
+		openTaskNote(this.context.getApp() || this.context.plugin.app, task.path, paneType);
 	}
 
 	private async toggleSubtasks(task: TaskInfo, target: HTMLElement): Promise<void> {

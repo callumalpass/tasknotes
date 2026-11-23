@@ -162,12 +162,10 @@ export function handleBasesSelectionClick({
 }: SelectionClickOptions): boolean {
 	if (!selectionService) return false;
 
-	if (
-		!selectionService.isSelectionModeActive() &&
-		!event.shiftKey &&
-		!event.ctrlKey &&
-		!event.metaKey
-	) {
+	// Outside a selection, Ctrl/Cmd+click keeps Obsidian's meaning (open in a
+	// new tab); Shift+click starts a selection. Inside one, Ctrl/Cmd+click and
+	// a plain click toggle cards.
+	if (!selectionService.isSelectionModeActive() && !event.shiftKey) {
 		return false;
 	}
 

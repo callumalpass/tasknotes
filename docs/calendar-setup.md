@@ -11,7 +11,7 @@ Signing in with Google needs no Google Cloud project.
 3. Sign in. The browser then shows an eight-character code.
 4. Enter the code in Obsidian. Your browser opens once more, this time to ask for access to Google Calendar.
 
-TaskNotes then shows your primary calendar and the calendars that are ticked in Google Calendar, up to five at a time. Choose which are shown under **Calendars shown**.
+TaskNotes then shows your primary calendar and the calendars that are ticked in Google Calendar, up to ten at a time. Choose which are shown under **Calendars shown**. Once ten are shown, turn one off before turning on another.
 
 - Events are read through the TaskNotes Calendar service, from about two months back to four months ahead. They are held in memory while Obsidian is open. They are not saved in your vault, and the service does not store them. See the [privacy policy](privacy.md#tasknotes-calendar-hosted-service).
 - Events refresh every 30 minutes while Obsidian is on screen, when you return to Obsidian after that long, and when you select **Refresh calendar events**.

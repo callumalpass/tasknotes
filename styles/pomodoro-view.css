@@ -830,21 +830,6 @@
     font-size: var(--tn-type-xs);
 }
 
-body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__main-row {
-    flex-wrap: wrap;
-}
-
-body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__content {
-    flex: 1 0 100%;
-    order: -1;
-    padding-right: 0;
-}
-
-body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card__title {
-    display: block;
-    width: 100%;
-}
-
 body:not(.is-mobile) .tasknotes-plugin:is(.pomodoro-view--very-narrow, .pomodoro-view--narrow) .task-card .task-card__title-text {
     display: -webkit-box;
     -webkit-box-orient: vertical;

@@ -94,6 +94,13 @@ export function normalizeCalendarHeightMode(value: unknown): CalendarHeightMode 
 	return typeof value === "string" && value.trim().toLowerCase() === "auto" ? "auto" : "fill";
 }
 
+/**
+ * A Base shown inside a note: a `![[file.base]]` embed or a ```base code block.
+ * The note gives it no fixed height, so "fill" has nothing to fill. An agenda in
+ * fill mode would then keep loading days, because its end is always in view (#2594).
+ */
+const EMBEDDED_BASE_SELECTOR = ".internal-embed, .markdown-embed, .block-language-base, .bases-embed";
+
 export function resolveEffectiveCalendarHeightMode(
 	heightMode: CalendarHeightMode,
 	calendarView: string,
@@ -103,6 +110,6 @@ export function resolveEffectiveCalendarHeightMode(
 		return "auto";
 	}
 
-	const isEmbedded = !!containerEl?.closest(".internal-embed, .markdown-embed");
+	const isEmbedded = !!containerEl?.closest(EMBEDDED_BASE_SELECTOR);
 	return isEmbedded ? "auto" : "fill";
 }

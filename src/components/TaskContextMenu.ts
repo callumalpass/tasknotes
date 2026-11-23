@@ -22,6 +22,7 @@ import { buildTimeblockPrefillForTask } from "../utils/timeblockPrefillUtils";
 import { TimeblockCreationModal } from "../modals/TimeblockCreationModal";
 import { downloadTaskICSFile, openCalendarURL } from "../ui/calendarExportActions";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { getModifierPaneType, openTaskNote } from "../utils/clickHandlers";
 
 export type { TaskContextMenuOptions } from "./task-context-menu/types";
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
@@ -77,12 +78,23 @@ export class TaskContextMenu {
 				this.t(msg({ message: "Open note", context: "contextMenus.task.openNote" }))
 			);
 			item.setIcon("file-text");
-			item.onClick(() => {
-				const file = plugin.app.vault.getAbstractFileByPath(task.path);
-				if (file instanceof TFile) {
-					void plugin.app.workspace.getLeaf(false).openFile(file);
-				}
-			});
+			// Ctrl/Cmd+click on the item opens a new tab, as on an Obsidian link.
+			item.onClick((event) =>
+				openTaskNote(plugin.app, task.path, getModifierPaneType(event))
+			);
+		});
+
+		this.menu.addItem((item) => {
+			item.setTitle(
+				this.t(
+					msg({
+						message: "Open note in new tab",
+						context: "contextMenus.task.openNoteInNewTab",
+					})
+				)
+			);
+			item.setIcon("external-link");
+			item.onClick(() => openTaskNote(plugin.app, task.path, "tab"));
 		});
 
 		this.menu.addSeparator();
@@ -110,7 +122,7 @@ export class TaskContextMenu {
 		const propertyPicker = (property: TaskPickerProperty) => (anchor: { x: number; y: number }) =>
 			void openTaskPropertyPicker(plugin, property, [task], anchor, this.options.onUpdate);
 
-		pickerItem("status", this.t(msg({ message: "Status", context: "contextMenus.task.status" })), "circle", propertyPicker("status"));
+		pickerItem("status", this.statusTitle(task), "circle", propertyPicker("status"));
 		pickerItem("priority", this.t(msg({ message: "Priority", context: "contextMenus.task.priority" })), null, propertyPicker("priority"));
 		pickerItem("tags", this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })), "tags", propertyPicker("tags"));
 		pickerItem("due", this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" })), "calendar", propertyPicker("due"));
@@ -443,6 +455,7 @@ export class TaskContextMenu {
 			if (file instanceof TFile) {
 				addNoteFileActions(submenu, file, plugin, {
 					task,
+					includeOpenInNewTab: false,
 					source: "tasknotes-context-menu",
 					onUpdate: this.options.onUpdate,
 				});
@@ -511,12 +524,19 @@ export class TaskContextMenu {
 		});
 	}
 
+	/** On a recurring task, Status sets the series' own status (#2632). */
+	private statusTitle(task: TaskInfo): string {
+		return task.recurrence
+			? this.t(msg({ message: "Series status", context: "contextMenus.task.seriesStatus" }))
+			: this.t(msg({ message: "Status", context: "contextMenus.task.status" }));
+	}
+
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const menuEl = this.targetDoc.querySelector(".menu");
 		if (!menuEl) return;
 
 		const menuItems = menuEl.querySelectorAll(".menu-item");
-		const statusTitle = this.t(msg({ message: "Status", context: "contextMenus.task.status" }));
+		const statusTitle = this.statusTitle(task);
 		const priorityTitle = this.t(
 			msg({ message: "Priority", context: "contextMenus.task.priority" })
 		);

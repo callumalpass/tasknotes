@@ -59,3 +59,34 @@ it("keeps the chosen view while config.set synchronously notifies its readers", 
 		jest.useRealTimers();
 	}
 });
+
+it.each([true, false])("keeps the correct toolbar selection after an all-day layout rebuild (narrow Week: %s)", narrowWeek => {
+	const calendarEl = document.createElement("div");
+	calendarEl.innerHTML = '<select class="tnc-toolbar-view-select"><option value="week">Week</option><option value="days">3 days</option></select><button class="tnc-btn-view tnc-btn-view-week"></button><button class="tnc-btn-view tnc-btn-view-days"></button>';
+	let options = { slotEventOverlap: true, dayMaxEventRows: 3, navLinks: false };
+	const calendar = {
+		view: { type: "days" },
+		getOptions: () => options,
+		scrollToTime: jest.fn(),
+		setOptions: jest.fn(update => {
+			options = { ...options, ...update };
+			// The engine rebuilds the toolbar without onRangeChange when the range is unchanged.
+			calendarEl.querySelector("select")!.value = "days";
+			calendarEl.querySelector(".tnc-btn-view-week")!.setAttribute("aria-pressed", "false");
+			calendarEl.querySelector(".tnc-btn-view-days")!.setAttribute("aria-pressed", "true");
+		}),
+	};
+	const view = Object.assign(Object.create(CalendarView.prototype), {
+		calendarEl, calendar, narrowWeek,
+		viewOptions: { calendarView: narrowWeek ? "timeGridWeek" : "timeGridCustom", slotEventOverlap: true },
+		syncSelectionModeAfterCalendarRender: jest.fn(),
+		applyLayoutClasses: () => view.syncCalendarToolbar(),
+		syncDayPanel: jest.fn(),
+		getAllDayRowLimit: () => 4,
+	});
+	view.handleViewChange(calendar.view);
+	expect(calendar.setOptions).toHaveBeenCalledWith({ dayMaxEventRows: 4 });
+	expect(calendarEl.querySelector("select")!.value).toBe(narrowWeek ? "week" : "days");
+	expect(calendarEl.querySelector(".tnc-btn-view-week")!.getAttribute("aria-pressed")).toBe(String(narrowWeek));
+	expect(calendarEl.querySelector(".tnc-btn-view-days")!.getAttribute("aria-pressed")).toBe(String(!narrowWeek));
+});
