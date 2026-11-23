@@ -944,10 +944,10 @@ msgstr "+1주"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] 기본 `.base` 파일 안내\n"
 "> 기본으로 생성되는 `.base` 템플릿이 변경되어도 기존 `.base` 파일은 덮어쓰지 않으므로 사용자 설정이 유지됩니다.\n"
-"> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 통합 → 뷰 및 베이스 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하세요."
+"> 최신 템플릿 개선 사항을 적용하려면 **설정 → TaskNotes → 모양 및 상호작용 → 뷰 및 베이스 파일 → 파일 업데이트**에서 베이스 파일을 다시 생성하거나 **TaskNotes: 기본 베이스 파일 업데이트** 명령을 실행하세요."
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -6327,6 +6327,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "파일 탐색기에서 mdbase 폴더 숨기기"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -10076,6 +10077,22 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "값을 쉼표로 구분하세요."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "시리즈 상태"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "시리즈 상태"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "시리즈 상태: {value}"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10139,6 +10156,11 @@ msgstr "리마인더 설정"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "예정일 설정"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "시리즈 상태 설정"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

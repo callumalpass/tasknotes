@@ -37,6 +37,7 @@ function createFieldMapper(): TaskUpdateFieldMapper {
 			completedDate: "completedDate",
 			dateModified: "dateModified",
 			recurrence: "recurrence",
+			skippedInstances: "skipHistory",
 			blockedBy: "blockedBy",
 		};
 		return fields[field] ?? field;
@@ -232,6 +233,44 @@ describe("taskUpdatePlanning", () => {
 		}
 	);
 
+	it.each([
+		["2026-04-13", undefined],
+		["2026-04-20", "2026-04-14"],
+	])("distinguishes a reopened schedule of %s from a manual move", (scheduled, movedOriginal) => {
+		const result = buildTaskUpdateRecurrenceUpdates({
+			originalTask: createTask({
+				recurrence: "DTSTART:20260413;FREQ=DAILY",
+				scheduled: "2026-04-14",
+				skipped_instances: ["2026-04-13"],
+				googleCalendarEventId: "master-event-id",
+			}),
+			updates: { scheduled, skipped_instances: [] },
+			maintainDueDateOffsetInRecurring: false,
+		});
+
+		expect(result.googleCalendarExceptionOriginalScheduled).toBe(movedOriginal);
+	});
+
+	it("preserves a pending moved occurrence when reopening a different date", () => {
+		const result = buildTaskUpdateRecurrenceUpdates({
+			originalTask: createTask({
+				recurrence: "DTSTART:20260413;FREQ=DAILY",
+				scheduled: "2026-04-15",
+				due: "2026-04-16",
+				recurrence_original_date: "2026-04-14",
+				skipped_instances: ["2026-04-13"],
+			}),
+			updates: { scheduled: "2026-04-13", due: "2026-04-14", skipped_instances: [] },
+			maintainDueDateOffsetInRecurring: true,
+		});
+
+		expect(result).toMatchObject({
+			scheduled: "2026-04-15",
+			due: "2026-04-16",
+			recurrence_original_date: "2026-04-14",
+		});
+	});
+
 	it("adds DTSTART when a scheduled recurring task moves and the rule lacks DTSTART", () => {
 		const addDTSTARTToRecurrenceRuleFn = jest.fn(() => "DTSTART:20260519;FREQ=DAILY");
 
@@ -381,6 +420,28 @@ describe("taskUpdatePlanning", () => {
 
 		expect(frontmatter).not.toHaveProperty("contexts");
 		expect(frontmatter).not.toHaveProperty("blockedBy");
+	});
+
+	it("writes an explicit empty skip history to its configured frontmatter field", () => {
+		const frontmatter = { skipHistory: ["2026-04-13"] };
+		applyTaskUpdateFrontmatterChange({
+			frontmatter,
+			originalTask: createTask({ skipped_instances: ["2026-04-13"] }),
+			updates: { skipped_instances: [] },
+			recurrenceUpdates: {},
+			dateModified: "2026-04-13T12:00:00.000Z",
+			fieldMapper: createFieldMapper(),
+			taskIdentification: {
+				method: "tag",
+				tag: "task",
+				propertyName: "",
+				propertyValue: "",
+			},
+			storeTitleInFilename: false,
+			updateCompletedDateInFrontmatter: jest.fn(),
+		});
+
+		expect(frontmatter.skipHistory).toEqual([]);
 	});
 
 	it("leaves contexts and blockedBy alone when the update omits them or keeps values", () => {
