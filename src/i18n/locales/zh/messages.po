@@ -9549,6 +9549,16 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "重排笔记"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderPriorities"
+msgid "Reorder priorities"
+msgstr "调整优先级顺序"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderStatuses"
+msgid "Reorder statuses"
+msgstr "调整状态顺序"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"

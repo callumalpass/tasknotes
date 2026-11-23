@@ -9551,6 +9551,16 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "노트 재정렬"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderPriorities"
+msgid "Reorder priorities"
+msgstr "우선순위 재정렬"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderStatuses"
+msgid "Reorder statuses"
+msgstr "상태 재정렬"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
