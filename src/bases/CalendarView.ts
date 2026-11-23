@@ -12,6 +12,7 @@ import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import { installCalendarKeyboard } from "./calendarKeyboard";
 import { format } from "date-fns";
+import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import { formatTime } from "../utils/dateUtils";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
@@ -43,7 +44,7 @@ import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR, openTaskNote } from "../utils/clic
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
-import type { EventRef } from "obsidian";
+import type { EventRef, Events } from "obsidian";
 import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
@@ -377,6 +378,12 @@ export class CalendarView extends BasesViewBase {
 				void this.refetchEvents();
 			}
 		}));
+		const { internalPlugins, plugins } = this.plugin.app as unknown as {
+			internalPlugins?: Events;
+			plugins?: Events;
+		};
+		if (internalPlugins) this.registerEvent(internalPlugins.on("change", () => this.syncDateLinks()));
+		if (plugins) this.registerEvent(plugins.on("changed", () => this.syncDateLinks()));
 		if (this.rootElement) {
 			this.register(installCalendarTooltipGuard(this.rootElement));
 			this.register(installCalendarSwipe(this.rootElement, direction => {
@@ -1160,6 +1167,7 @@ export class CalendarView extends BasesViewBase {
 			if (!this.calendar) {
 				await this.initializeCalendar(filteredTasks);
 			} else {
+				this.syncDateLinks();
 				if (this._navigateToInitialDate) {
 					this._navigateToInitialDate = false;
 					const initialDate = this.determineInitialDate(filteredTasks);
@@ -1331,6 +1339,7 @@ export class CalendarView extends BasesViewBase {
 				const locale = options.locale || this.plugin.settings.uiLanguage || navigator.language || "en";
 				const heading = createElementInDocument(this.containerEl.ownerDocument, "span");
 				heading.className = "tn-calendar-day-heading";
+				heading.dataset.tncNoDrag = "";
 				heading.setAttribute("aria-label", new Intl.DateTimeFormat(locale, { dateStyle: "full" }).format(arg.date));
 				heading.createSpan({ cls: "tn-calendar-day-number", text: new Intl.DateTimeFormat(locale, { day: "numeric" }).format(arg.date) });
 				const label = heading.createSpan({ cls: "tn-calendar-day-label" });
@@ -1344,7 +1353,7 @@ export class CalendarView extends BasesViewBase {
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
 			selectable: true,
-			navLinks: true,
+			navLinks: this.dateLinksEnabled(layout.view),
 			longPressDelay: Platform.isMobile ? 350 : 500,
 			eventOrder: getTaskNotesCalendarEventOrder(this.dataAdapter.getSortConfig()),
 			toolbar: {
@@ -1503,6 +1512,7 @@ export class CalendarView extends BasesViewBase {
 		}
 		if (view.type !== "days") this.narrowWeek = false;
 		this.batchPreview?.clear();
+		this.syncDateLinks();
 		this.syncMainCalendarItems(view.type);
 		this.syncSelectionModeAfterCalendarRender();
 		const viewType = this.narrowWeek ? "timeGridWeek" : viewToBases(view.type);
@@ -1546,11 +1556,14 @@ export class CalendarView extends BasesViewBase {
 
 	private syncMonthChipControls(): void {
 		if (!this.calendar || this.viewOptions.showMonthDayPanel) return;
+		const { navLinks } = this.calendar.getOptions();
 		for (const cell of this.calendarEl?.querySelectorAll<HTMLElement>(".tnc-dg--chips .tnc-dg-day") ?? []) {
 			const day = parseDay(cell.dataset.date ?? "");
 			if (day === null) continue;
 			const number = cell.querySelector<HTMLElement>(".tnc-dg-top > span.tnc-dg-num");
-			if (number) number.replaceWith(this.calendar.navLink(day, number.textContent ?? "", "tnc-dg-num"));
+			if (number && navLinks) {
+				number.replaceWith(this.calendar.navLink(day, number.textContent ?? "", "tnc-dg-num"));
+			}
 			const more = cell.querySelector<HTMLElement>(".tnc-dg-dots-more");
 			if (more) {
 				more.parentElement?.removeAttribute("aria-hidden");
@@ -1599,6 +1612,7 @@ export class CalendarView extends BasesViewBase {
 		this.dayPanel = new Calendar<CalendarEventProps>(this.dayPanelEl, {
 			...this.buildCalendarOptions(),
 			view: "list", date: this.selectedMonthDay, listDayCount: 1,
+			navLinks: this.dateLinksEnabled("list"),
 			listAgenda: false, toolbar: false, height: "auto",
 			listItemContent: arg => this.renderListItem(arg, true),
 			onRangeChange: undefined, onViewChange: undefined,
@@ -1659,7 +1673,33 @@ export class CalendarView extends BasesViewBase {
 		});
 	}
 
+	private dateLinksEnabled(view: CalendarOptions<CalendarEventProps>["view"] | undefined): boolean {
+		return view === "year" || (view === "month" && this.viewOptions.showMonthDayPanel) ||
+			Boolean(appHasDailyNotesPluginLoaded());
+	}
+
+	private syncDateLinks(): void {
+		let changed = false;
+		for (const calendar of [this.calendar, this.dayPanel]) {
+			if (!calendar) continue;
+			const { view, navLinks } = calendar.getOptions();
+			const enabled = this.dateLinksEnabled(view);
+			if (enabled === navLinks) continue;
+			calendar.setOptions({ navLinks: enabled });
+			calendar.rerender();
+			changed = true;
+		}
+		if (changed) {
+			this.syncDayPanel();
+			this.syncSelectionModeAfterCalendarRender();
+		}
+	}
+
 	private openDailyNoteFromDateLink(date: Date): void {
+		if (!appHasDailyNotesPluginLoaded()) {
+			this.syncDateLinks();
+			return;
+		}
 		void handleDateTitleClick(date, this.plugin, {
 			createIfMissing: this.viewOptions.createDailyNotesFromDateLinks,
 		});

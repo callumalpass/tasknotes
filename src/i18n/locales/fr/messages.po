@@ -10083,6 +10083,22 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Séparez les valeurs par des virgules."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "Statut de la série"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "Statut de la série"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "Statut de la série : {value}"
+
 #: src/bases/calendarMutations.ts
 msgctxt "calendar recurring pattern drop feedback"
 msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
@@ -10151,6 +10167,11 @@ msgstr "Définir les rappels"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Définir la date planifiée"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "Définir le statut de la série"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

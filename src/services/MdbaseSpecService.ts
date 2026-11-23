@@ -15,7 +15,7 @@ import {
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
-import { upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
+import { removeGeneratedAnyLinkTargets, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
 import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
 import { MetadataTransaction } from "./mdbase/MetadataTransaction";
 import { findExplicitTypeReference } from "./mdbase/ExplicitTypeReferences";
@@ -943,7 +943,10 @@ export class MdbaseSpecService {
 		if (state) {
 			const savedExclusions = (state.type["x-tasknotes-generator"] as Record<string, unknown> | undefined)?.excluded_folders;
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
-			const adjusted = this.lastKnownTypeContent === null ? applyTaskExclusions(state.content, this.plugin.settings.excludedFolders || "") : state.content;
+			const corrected = removeGeneratedAnyLinkTargets(state.content, state.type);
+			const adjusted = this.lastKnownTypeContent === null
+				? applyTaskExclusions(corrected, this.plugin.settings.excludedFolders || "")
+				: corrected;
 			if (adjusted !== state.content) {
 				await this.writeFileIfUnchanged({ path: state.path, content: state.content }, adjusted);
 				state = { ...state, content: adjusted, type: withCurrentTaskNotesContract(parseMdbaseTaskTypeDocument(adjusted).type).type };
@@ -2227,7 +2230,8 @@ export class MdbaseSpecService {
 		});
 		const config = YAML.parseDocument(resources.configDocument);
 		config.setIn(["settings", "explicit_type_keys"], ["mdbase_type"]);
-		resources.typeDocument = applyTaskExclusions(resources.typeDocument, settings.excludedFolders || "");
+		const corrected = removeGeneratedAnyLinkTargets(resources.typeDocument, resources.type);
+		resources.typeDocument = applyTaskExclusions(corrected, settings.excludedFolders || "");
 		resources.type = parseMdbaseTaskTypeDocument(resources.typeDocument).type;
 		const document = (source: string): string => {
 			const resource = canonicalTaskNotesResources.find((entry) => entry.source === source);

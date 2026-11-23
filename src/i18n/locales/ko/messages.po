@@ -10082,6 +10082,22 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "값을 쉼표로 구분하세요."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "시리즈 상태"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "시리즈 상태"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "시리즈 상태: {value}"
+
 #: src/bases/calendarMutations.ts
 msgctxt "calendar recurring pattern drop feedback"
 msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
@@ -10150,6 +10166,11 @@ msgstr "리마인더 설정"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "예정일 설정"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "시리즈 상태 설정"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
