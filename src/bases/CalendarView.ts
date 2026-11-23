@@ -12,6 +12,7 @@ import type { BasesEntry, BasesView, BasesViewFactory } from "obsidian";
 import { BasesViewBase } from "./BasesViewBase";
 import { installCalendarKeyboard } from "./calendarKeyboard";
 import { format } from "date-fns";
+import { appHasDailyNotesPluginLoaded } from "obsidian-daily-notes-interface";
 import { formatTime } from "../utils/dateUtils";
 import { EVENT_TASK_UPDATED, EVENT_TASK_DELETED, type TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
@@ -40,10 +41,11 @@ import { buildCalendarBatchPreview, isCalendarBatchTarget, isCalendarSelectionTa
 import { installCalendarSwipe } from "./calendarSwipe";
 import { CalendarBatchPreview } from "./calendarBatchPreview";
 import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR, openTaskNote } from "../utils/clickHandlers";
+import { attachDateClickHandler } from "../ui/taskCardProperties";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
-import type { EventRef } from "obsidian";
+import type { EventRef, Events } from "obsidian";
 import {
 	CalendarRecreateNavigationState,
 	shouldPreserveVisibleDateOnCalendarRecreate,
@@ -63,6 +65,7 @@ import {
 	getCalendarConfigValue as getCalendarConfigValueFromSnapshot,
 } from "./calendarConfigSnapshot";
 import { buildCalendarPropertyEvent } from "./calendarPropertyEvents";
+import { filterListTopLevelSubtasks } from "./calendarListSubtasks";
 import { buildExternalCalendarEvents, buildLinkedGoogleEventPredicate, setProviderCalendarToggle } from "./calendarExternalEvents";
 import { acceptsExternalTaskDrop, getExternalTaskDropPath } from "./calendarExternalTaskDrop";
 import {
@@ -215,6 +218,7 @@ export class CalendarView extends BasesViewBase {
 		listDayCount: number;
 		showAgendaStrip: boolean;
 		showMonthDayPanel: boolean;
+		hideTopLevelSubtasks: boolean;
 		slotMinTime: string;
 		slotMaxTime: string;
 		slotDuration: string;
@@ -287,6 +291,7 @@ export class CalendarView extends BasesViewBase {
 			listDayCount: 7,
 			showAgendaStrip: true,
 			showMonthDayPanel: false,
+			hideTopLevelSubtasks: false,
 			slotMinTime: this.validateTimeValue(calendarSettings.slotMinTime, "00:00:00"),
 			slotMaxTime: this.validateTimeValue(
 				calendarSettings.slotMaxTime,
@@ -374,6 +379,12 @@ export class CalendarView extends BasesViewBase {
 				void this.refetchEvents();
 			}
 		}));
+		const { internalPlugins, plugins } = this.plugin.app as unknown as {
+			internalPlugins?: Events;
+			plugins?: Events;
+		};
+		if (internalPlugins) this.registerEvent(internalPlugins.on("change", () => this.syncDateLinks()));
+		if (plugins) this.registerEvent(plugins.on("changed", () => this.syncDateLinks()));
 		if (this.rootElement) {
 			this.register(installCalendarTooltipGuard(this.rootElement));
 			this.register(installCalendarSwipe(this.rootElement, direction => {
@@ -932,6 +943,7 @@ export class CalendarView extends BasesViewBase {
 			);
 			this.viewOptions.showAgendaStrip = this.getConfigOption("showAgendaStrip", true);
 			this.viewOptions.showMonthDayPanel = this.getConfigOption("showMonthDayPanel", false);
+			this.viewOptions.hideTopLevelSubtasks = this.getConfigOption<unknown>("hideTopLevelSubtasks", false) === true;
 
 			// Validate time values to prevent crashes from invalid input
 			this.viewOptions.slotMinTime = this.validateTimeValue(
@@ -1115,6 +1127,7 @@ export class CalendarView extends BasesViewBase {
 					} finally {
 						this.automaticViewChange = false;
 					}
+					this.syncMainCalendarItems();
 					this.syncSelectionModeAfterCalendarRender();
 					this.destroyDayPanel();
 					this.syncDayPanel();
@@ -1155,6 +1168,7 @@ export class CalendarView extends BasesViewBase {
 			if (!this.calendar) {
 				await this.initializeCalendar(filteredTasks);
 			} else {
+				this.syncDateLinks();
 				if (this._navigateToInitialDate) {
 					this._navigateToInitialDate = false;
 					const initialDate = this.determineInitialDate(filteredTasks);
@@ -1182,13 +1196,40 @@ export class CalendarView extends BasesViewBase {
 	}
 
 	private calendarItems: CalendarEventItem[] = [];
+	/** Items last handed to the main calendar: list views may get fewer (hidden subtasks). */
+	private mainCalendarItems: CalendarEventItem[] = [];
+	private listItemsCache: { source: CalendarEventItem[]; items: CalendarEventItem[] } | null = null;
+
+	/** Items for list rows (agenda, month day panel), without subtasks shown under their parent that day. */
+	private getListItems(): CalendarEventItem[] {
+		if (!this.viewOptions.hideTopLevelSubtasks) return this.calendarItems;
+		if (this.listItemsCache?.source !== this.calendarItems) {
+			this.listItemsCache = {
+				source: this.calendarItems,
+				items: filterListTopLevelSubtasks(this.calendarItems, (linkPath, sourcePath) =>
+					this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, sourcePath)),
+			};
+		}
+		return this.listItemsCache.items;
+	}
+
+	private getMainCalendarItems(viewType: string | undefined = this.calendar?.getView().type): CalendarEventItem[] {
+		return viewType === "list" ? this.getListItems() : this.calendarItems;
+	}
+
+	private syncMainCalendarItems(viewType?: string): void {
+		const items = this.getMainCalendarItems(viewType);
+		if (items === this.mainCalendarItems) return;
+		this.mainCalendarItems = items;
+		this.calendar?.setItems(items);
+	}
 	private batchMoveInProgress = false;
 	private batchPreview: CalendarBatchPreview | null = null;
 
 	private getBatchCalendarItems(): CalendarEventItem[] {
 		const view = this.calendar?.getView();
 		const timeGrid = view && isTimeGridCalendarView(viewToBases(view.type) ?? view.type);
-		return (this.calendarItems ?? []).filter(item => !timeGrid ||
+		return this.getMainCalendarItems(view?.type).filter(item => !timeGrid ||
 			(item.allDay ? this.viewOptions.showAllDaySlot : this.viewOptions.showTimeGrid));
 	}
 
@@ -1240,8 +1281,9 @@ export class CalendarView extends BasesViewBase {
 	private setCalendarItems(items: CalendarEventItem[]): void {
 		this.batchPreview?.clear(false);
 		this.calendarItems = items.map(item => item.data?.eventType === "due" ? { ...item, timeDisplay: "start" } : item);
-		this.calendar?.setItems(this.calendarItems);
-		this.dayPanel?.setItems(this.calendarItems);
+		this.mainCalendarItems = this.getMainCalendarItems();
+		this.calendar?.setItems(this.mainCalendarItems);
+		this.dayPanel?.setItems(this.getListItems());
 		this.updateSelectionModeUI(Boolean(this.plugin.taskSelectionService?.isSelectionModeActive()));
 		this.updateSelectionVisuals();
 	}
@@ -1298,6 +1340,7 @@ export class CalendarView extends BasesViewBase {
 				const locale = options.locale || this.plugin.settings.uiLanguage || navigator.language || "en";
 				const heading = createElementInDocument(this.containerEl.ownerDocument, "span");
 				heading.className = "tn-calendar-day-heading";
+				heading.dataset.tncNoDrag = "";
 				heading.setAttribute("aria-label", new Intl.DateTimeFormat(locale, { dateStyle: "full" }).format(arg.date));
 				heading.createSpan({ cls: "tn-calendar-day-number", text: new Intl.DateTimeFormat(locale, { day: "numeric" }).format(arg.date) });
 				const label = heading.createSpan({ cls: "tn-calendar-day-label" });
@@ -1311,7 +1354,7 @@ export class CalendarView extends BasesViewBase {
 			locale: options.locale || this.plugin.settings.uiLanguage || navigator.language || "en",
 			editable: true,
 			selectable: true,
-			navLinks: true,
+			navLinks: this.dateLinksEnabled(layout.view),
 			longPressDelay: Platform.isMobile ? 350 : 500,
 			eventOrder: getTaskNotesCalendarEventOrder(this.dataAdapter.getSortConfig()),
 			toolbar: {
@@ -1470,6 +1513,8 @@ export class CalendarView extends BasesViewBase {
 		}
 		if (view.type !== "days") this.narrowWeek = false;
 		this.batchPreview?.clear();
+		this.syncDateLinks();
+		this.syncMainCalendarItems(view.type);
 		this.syncSelectionModeAfterCalendarRender();
 		const viewType = this.narrowWeek ? "timeGridWeek" : viewToBases(view.type);
 		if (!this.automaticViewChange && viewType && viewType !== this.viewOptions.calendarView) {
@@ -1512,11 +1557,14 @@ export class CalendarView extends BasesViewBase {
 
 	private syncMonthChipControls(): void {
 		if (!this.calendar || this.viewOptions.showMonthDayPanel) return;
+		const { navLinks } = this.calendar.getOptions();
 		for (const cell of this.calendarEl?.querySelectorAll<HTMLElement>(".tnc-dg--chips .tnc-dg-day") ?? []) {
 			const day = parseDay(cell.dataset.date ?? "");
 			if (day === null) continue;
 			const number = cell.querySelector<HTMLElement>(".tnc-dg-top > span.tnc-dg-num");
-			if (number) number.replaceWith(this.calendar.navLink(day, number.textContent ?? "", "tnc-dg-num"));
+			if (number && navLinks) {
+				number.replaceWith(this.calendar.navLink(day, number.textContent ?? "", "tnc-dg-num"));
+			}
 			const more = cell.querySelector<HTMLElement>(".tnc-dg-dots-more");
 			if (more) {
 				more.parentElement?.removeAttribute("aria-hidden");
@@ -1556,7 +1604,7 @@ export class CalendarView extends BasesViewBase {
 			if (format(this.dayPanel.getDate(), "yyyy-MM-dd") !== this.selectedMonthDay) {
 				this.dayPanel.gotoDate(this.selectedMonthDay);
 			}
-			this.dayPanel.setItems(this.calendarItems);
+			this.dayPanel.setItems(this.getListItems());
 			this.updateDayPanelCount();
 			this.dayPanel.updateSize();
 			return;
@@ -1565,13 +1613,14 @@ export class CalendarView extends BasesViewBase {
 		this.dayPanel = new Calendar<CalendarEventProps>(this.dayPanelEl, {
 			...this.buildCalendarOptions(),
 			view: "list", date: this.selectedMonthDay, listDayCount: 1,
+			navLinks: this.dateLinksEnabled("list"),
 			listAgenda: false, toolbar: false, height: "auto",
 			listItemContent: arg => this.renderListItem(arg, true),
 			onRangeChange: undefined, onViewChange: undefined,
 			onNavLink: arg => this.openDailyNoteFromDateLink(arg.date),
 			listEmptyContent: undefined,
 		});
-		this.dayPanel.setItems(this.calendarItems);
+		this.dayPanel.setItems(this.getListItems());
 		this.updateDayPanelCount();
 		const add = this.dayPanelEl.createEl("button", {
 			cls: "tn-calendar-day-panel-add",
@@ -1591,7 +1640,7 @@ export class CalendarView extends BasesViewBase {
 		const start = new Date(`${this.selectedMonthDay}T00:00:00`);
 		const end = new Date(start);
 		end.setDate(end.getDate() + 1);
-		const paths = new Set(this.calendarItems.filter(item => {
+		const paths = new Set(this.getListItems().filter(item => {
 			const event = eventApiFromItem(item);
 			return event.start && event.start < end && (event.end ? event.end > start : event.start >= start);
 		}).map(item => item.data?.taskInfo?.path || item.id));
@@ -1625,7 +1674,33 @@ export class CalendarView extends BasesViewBase {
 		});
 	}
 
+	private dateLinksEnabled(view: CalendarOptions<CalendarEventProps>["view"] | undefined): boolean {
+		return view === "year" || (view === "month" && this.viewOptions.showMonthDayPanel) ||
+			Boolean(appHasDailyNotesPluginLoaded());
+	}
+
+	private syncDateLinks(): void {
+		let changed = false;
+		for (const calendar of [this.calendar, this.dayPanel]) {
+			if (!calendar) continue;
+			const { view, navLinks } = calendar.getOptions();
+			const enabled = this.dateLinksEnabled(view);
+			if (enabled === navLinks) continue;
+			calendar.setOptions({ navLinks: enabled });
+			calendar.rerender();
+			changed = true;
+		}
+		if (changed) {
+			this.syncDayPanel();
+			this.syncSelectionModeAfterCalendarRender();
+		}
+	}
+
 	private openDailyNoteFromDateLink(date: Date): void {
+		if (!appHasDailyNotesPluginLoaded()) {
+			this.syncDateLinks();
+			return;
+		}
 		void handleDateTitleClick(date, this.plugin, {
 			createIfMissing: this.viewOptions.createDailyNotesFromDateLinks,
 		});
@@ -2361,11 +2436,13 @@ export class CalendarView extends BasesViewBase {
 			const stamp = entry.createDiv({ cls: "tn-calendar-list-stamp" });
 			const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
 			stamp.dataset.eventType = arg.item.data?.eventType ?? "";
-			if (arg.item.data?.eventType === "scheduled" && arg.timeText) {
+			const eventType = arg.item.data?.eventType;
+			if (eventType === "scheduled") {
 				const marker = stamp.createSpan({ cls: "tn-calendar-list-scheduled" });
 				marker.setAttribute("aria-hidden", "true");
 				setIcon(marker, "calendar");
-				stamp.setAttribute("aria-label", `${this.plugin.i18n.translate(messageForKey("ui.taskCard.labels.scheduled"))}: ${arg.timeText}`);
+				const scheduled = this.plugin.i18n.translate(messageForKey("ui.taskCard.labels.scheduled"));
+				stamp.setAttribute("aria-label", arg.timeText ? `${scheduled}: ${arg.timeText}` : scheduled);
 			}
 			if (arg.item.data?.eventType === "due") {
 				const deadline = this.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }));
@@ -2380,12 +2457,18 @@ export class CalendarView extends BasesViewBase {
 					const duration = (new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000;
 					tracked.createSpan({ text: uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: this.plugin.formatTime(duration) }) });
 					metadata.hidden = false;
+					metadata.style.removeProperty("display");
 					card.classList.remove("task-card--metadata-empty");
 				}
 			}
 			if (arg.timeText) {
 				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });
 				time.textContent = arg.timeText;
+			}
+			// The card leaves out the date this row stands for (#2612), so the stamp edits it instead.
+			// Recurring tasks keep the occurrence date on the card.
+			if (!task.recurrence && (eventType === "scheduled" || eventType === "due")) {
+				attachDateClickHandler(stamp, task, this.plugin, eventType);
 			}
 			const priority = card.querySelector<HTMLElement>(".task-card__priority-dot");
 			const badges = card.querySelector<HTMLElement>(".task-card__badges");
@@ -2395,6 +2478,7 @@ export class CalendarView extends BasesViewBase {
 				if (badges) metadata.append(badges);
 				if (priority || badges?.childElementCount || stamp.childElementCount) {
 					metadata.hidden = false;
+					metadata.style.removeProperty("display");
 					card.classList.remove("task-card--metadata-empty");
 				}
 			}

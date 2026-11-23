@@ -15,6 +15,7 @@ import {
 	endOfMonth,
 	startOfYear,
 	endOfYear,
+	type Day,
 	// subDays, subWeeks, subMonths, subYears - removed unused imports
 } from "date-fns";
 import { createTaskNotesLogger } from "./tasknotesLogger";
@@ -606,6 +607,15 @@ export function getStartOfWeekString(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1
 		});
 		throw error;
 	}
+}
+
+/** Find the first local calendar day of the following week. */
+export function getFirstDayOfNextWeek(date: Date, weekStartsOn: Day = 1): Date {
+	const firstDay = Number.isInteger(weekStartsOn) && weekStartsOn >= 0 && weekStartsOn <= 6
+		? weekStartsOn
+		: 1;
+	const daysUntilNextWeek = (firstDay - date.getDay() + 7) % 7 || 7;
+	return addDaysFns(date, daysUntilNextWeek);
 }
 
 /**

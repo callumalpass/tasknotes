@@ -84,6 +84,7 @@ import {
 	buildRecurringTaskSkippedPlan,
 	getRecurringTaskActionDate,
 	type RecurringSeriesEndStatuses,
+	resolveRecurringInstanceDate,
 } from "./task-service/taskRecurringPlanning";
 import {
 	applyGoogleCalendarRecurringExceptionCleanup,
@@ -1094,6 +1095,10 @@ export class TaskService {
 			return onRecurringParentUpdated
 				? this.toggleStatus(existingOccurrence, onRecurringParentUpdated)
 				: this.toggleStatus(existingOccurrence);
+		}
+
+		if (!this.hasRecurringInstanceAt(freshTask, targetDate)) {
+			return freshTask;
 		}
 
 		const completeInstances = Array.isArray(freshTask.complete_instances)
@@ -2137,6 +2142,27 @@ export class TaskService {
 	}
 
 	/**
+	 * Completing or skipping records a date in the series. When the rule has no
+	 * occurrence for the requested date (for example after the series has ended),
+	 * tell the user instead of recording a date outside the rule.
+	 */
+	private hasRecurringInstanceAt(task: TaskInfo, targetDate: Date): boolean {
+		if (resolveRecurringInstanceDate(task, targetDate) !== null) {
+			return true;
+		}
+		publishUserNotice(
+			this.plugin.emitter,
+			this.translate(
+				msg({
+					message: "This recurring task has no occurrence to update on that date",
+					context: "services.task.notices.noRecurringOccurrence",
+				})
+			)
+		);
+		return false;
+	}
+
+	/**
 	 * Reset checkboxes against the latest serialized file contents, preserving
 	 * frontmatter changes and body edits made while the operation was queued.
 	 */
@@ -2213,9 +2239,14 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
+		const actionDate = this.getRecurringTaskActionDate(freshTask, date);
+		if (!this.hasRecurringInstanceAt(freshTask, actionDate)) {
+			return freshTask;
+		}
+
 		const recurringPlan = buildRecurringTaskCompletePlan({
 			freshTask,
-			targetDate: this.getRecurringTaskActionDate(freshTask, date),
+			targetDate: actionDate,
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
@@ -2366,9 +2397,14 @@ export class TaskService {
 			throw new Error("Task is not recurring");
 		}
 
+		const actionDate = this.getRecurringTaskActionDate(freshTask, date);
+		if (!this.hasRecurringInstanceAt(freshTask, actionDate)) {
+			return freshTask;
+		}
+
 		const recurringPlan = buildRecurringTaskSkippedPlan({
 			freshTask,
-			targetDate: this.getRecurringTaskActionDate(freshTask, date),
+			targetDate: actionDate,
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),

@@ -97,7 +97,7 @@ export class ReleaseNotesView extends ItemView {
 		);
 		const transformedNotes = this.transformIssueLinks(notes.replace(/^# .+(?:\r?\n|$)/, ""));
 		const releaseContent = versionData.isCurrent
-			? `${transformedNotes}\n\n${this.plugin.i18n.translate(msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**.", context: "views.releaseNotes.baseFilesNotice" }))}`
+			? `${transformedNotes}\n\n${this.plugin.i18n.translate(msg({ message: "> [!info] About default `.base` files\n> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command.", context: "views.releaseNotes.baseFilesNotice" }))}`
 			: transformedNotes;
 		await MarkdownRenderer.render(this.plugin.app, releaseContent, content, "", this);
 	}

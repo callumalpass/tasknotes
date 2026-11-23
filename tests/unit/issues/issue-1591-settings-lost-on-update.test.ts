@@ -62,7 +62,7 @@ describe("issue #1591 settings reset on update", () => {
 				"[TaskNotes][Main][internal][load-settings-data] Settings data could not be read safely"
 			),
 			expect.objectContaining({
-				reason: expect.stringContaining("Settings data file exists"),
+				reason: "no-settings-data",
 				settingsSavesBlocked: true,
 			})
 		);

@@ -302,6 +302,18 @@ function buildCalendarViewModeOptions(
 			shouldHide: () => getCalendarView(config, defaultView) !== "dayGridMonth",
 		},
 		{
+			// Same option as Task List and Kanban; applies to list rows only.
+			type: "toggle",
+			key: "hideTopLevelSubtasks",
+			displayName: uiText(msg({ message: "Hide top-level subtasks", context: "bases/registration: registerBasesTaskList.attemptRegistration.options displayName" })),
+			default: false,
+			shouldHide: () => {
+				const viewType = getCalendarView(config, defaultView);
+				return viewType !== "listWeek" &&
+					!(viewType === "dayGridMonth" && config.get("showMonthDayPanel") === true);
+			},
+		},
+		{
 			type: "dropdown",
 			key: "heightMode",
 			displayName: t("layout.heightMode"),

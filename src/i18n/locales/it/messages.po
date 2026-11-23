@@ -945,10 +945,10 @@ msgstr "+1 settimana"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] Informazioni sui file `.base` predefiniti\n"
 "> Gli aggiornamenti dei modelli `.base` generati non sovrascrivono i file `.base` esistenti, quindi le tue personalizzazioni rimangono intatte.\n"
-"> Per usare gli ultimi miglioramenti dei modelli, rigenera i file Base in **Impostazioni → TaskNotes → Generale → Viste e file Base → Aggiorna file**."
+"> Per usare gli ultimi miglioramenti dei modelli, rigenera i file Base in **Impostazioni → TaskNotes → Aspetto e interazione → Viste e file Base → Aggiorna file** oppure esegui il comando **TaskNotes: Aggiorna file Base predefiniti**."
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -6328,6 +6328,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Nascondi cartelle mdbase nell’esplora file"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -7378,6 +7379,11 @@ msgstr "Sposta in alto"
 msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, one {# attività spostata} other {# attività spostate}} in {destination}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "Occorrenza del {from} spostata al {to}. Le altre occorrenze non cambiano."
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
@@ -10077,6 +10083,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Separa i valori con virgole."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "Stato della serie"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "Stato della serie"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "Stato della serie: {value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Orario della serie cambiato in {time}. Le occorrenze successive ora compaiono a quest'ora; la prossima occorrenza mantiene il proprio orario."
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10140,6 +10167,11 @@ msgstr "Imposta promemoria"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Imposta data pianificata"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "Imposta stato della serie"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -12072,6 +12104,12 @@ msgstr "Questa nota è già un’attività"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "Questo migliora la conservazione nel tempo dei dati nelle note"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "Questa attività ricorrente non ha alcuna occorrenza da aggiornare in quella data"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
