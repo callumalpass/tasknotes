@@ -70,6 +70,16 @@ describe("task card relative dates", () => {
 		);
 	});
 
+	it("names today and keeps the time", () => {
+		expect(renderText("due", createTask({ due: "2026-09-24" }))).toBe("Today");
+		expect(renderText("due", createTask({ due: "2026-09-24T17:00" }))).toBe(
+			"Today at 17:00"
+		);
+		expect(renderText("scheduled", createTask({ scheduled: "2026-09-24" }))).toBe(
+			"Today"
+		);
+	});
+
 	it("names upcoming days within the week and keeps the time", () => {
 		expect(renderText("due", createTask({ due: "2026-09-25T17:00" }))).toBe(
 			"Tomorrow at 17:00"
@@ -88,6 +98,9 @@ describe("task card relative dates", () => {
 	it("keeps absolute dates when ISO display is selected", () => {
 		expect(renderText("due", createTask({ due: "2026-09-25" }), createPlugin("iso"))).toBe(
 			"2026-09-25"
+		);
+		expect(renderText("due", createTask({ due: "2026-09-24" }), createPlugin("iso"))).toBe(
+			"2026-09-24"
 		);
 	});
 });
