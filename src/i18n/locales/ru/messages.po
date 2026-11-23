@@ -947,10 +947,10 @@ msgstr "+1 неделя"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] О файлах `.base` по умолчанию\n"
 "> Изменения в шаблонах `.base`, которые генерируются по умолчанию, не перезаписывают ваши существующие файлы `.base`, поэтому ваши настройки сохраняются.\n"
-"> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Общие → Представления и файлы base → Обновить файлы**."
+"> Чтобы получить улучшения новых шаблонов, пересоздайте базовые файлы в **Настройки → TaskNotes → Внешний вид и взаимодействие → Представления и файлы Base → Обновить файлы** или выполните команду **TaskNotes: Обновить файлы Base по умолчанию**."
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -6328,6 +6328,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Скрывать папки mdbase в проводнике файлов"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -7378,6 +7379,11 @@ msgstr "Переместить вверх"
 msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, one {# задача перемещена} few {# задачи перемещены} many {# задач перемещены} other {# задачи перемещены}} в {destination}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "Повторение от {from} перенесено на {to}. Остальные повторения не изменились."
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
@@ -10077,6 +10083,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Разделяйте значения запятыми."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "Статус серии"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "Статус серии"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "Статус серии: {value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Время серии изменено на {time}. Последующие повторения теперь отображаются в это время; следующее повторение сохраняет своё время."
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10140,6 +10167,11 @@ msgstr "Установить напоминания"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Установить запланированную дату"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "Установить статус серии"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

@@ -104,7 +104,7 @@ Good uses include:
 - A maintenance task where each visit needs photos, links, or a checklist
 - A recurring meeting where every occurrence should have its own time entries and completion state
 
-To create one manually, right-click a recurring task card or calendar occurrence and choose **Open or create occurrence note**. The Task Action Palette also exposes **Open or create occurrence note** for recurring tasks. If a matching note already exists for the same parent and date, TaskNotes opens it instead of creating a duplicate.
+To create one manually, right-click a recurring task card or calendar occurrence and choose **Open or create occurrence note**. Dragging a pattern instance to another day in the calendar also creates its occurrence note. The Task Action Palette also exposes **Open or create occurrence note** for recurring tasks. If a matching note already exists for the same parent and date, TaskNotes opens it instead of creating a duplicate.
 
 An occurrence note is an ordinary TaskNotes task. It appears in views, can be edited like any other task, and shows an occurrence pill that links back to the recurring parent. On the calendar, a materialized occurrence replaces the matching virtual parent occurrence for the same parent/date pair, so you do not see both the generated instance and the note-backed instance at the same time.
 
@@ -147,7 +147,7 @@ Leaving the global template empty preserves the existing filename behavior. Task
 
 Right-click a recurring parent and open **Occurrence notes** to choose its policy:
 
-- **Create manually**: occurrence notes are only created by explicit action.
+- **Create manually**: occurrence notes are only created by explicit action, such as the menu command or dragging a pattern instance to another day.
 - **Create next after completion**: after you complete a materialized occurrence note, TaskNotes creates the next occurrence note.
 - **Rolling window**: defined by the TaskNotes spec, but not automated in the plugin yet.
 
@@ -213,12 +213,12 @@ TaskNotes captures this identity when rescheduling through its controls or task 
 
 ## Calendar Drag and Drop
 
-Calendar interactions follow the same model distinction: drag the concrete next item to reschedule execution, or drag a pattern instance to redefine the recurrence anchor.
+Calendar interactions follow the same model distinction: drag the concrete next item to reschedule execution, or drag a pattern instance to change the series' time or move that one instance.
 
 Recurring tasks can show:
 
 - **Next occurrence** (solid border): dragging updates only `scheduled`
-- **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
+- **Pattern instances** (dashed border): dragging to another time on the same day updates the time in `DTSTART`, which moves every later pattern instance. Dragging to another day, or between the all-day row and a time slot, creates an occurrence note for that instance at the drop position and leaves the rule unchanged. See [Calendar Views](../views/calendar-views.md#drag-and-drop-behavior).
 - **Materialized occurrence notes**: dragging updates the occurrence note's own `scheduled` or `due` date like a normal task, without changing the parent's recurrence rule
 
 In list mode and the Agenda, the card for a pattern instance shows that instance's scheduled date as read-only text and leaves out the task's due date. To give one instance its own dates, create an occurrence note for it.
