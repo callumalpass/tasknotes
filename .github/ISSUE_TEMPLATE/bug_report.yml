@@ -35,11 +35,13 @@ body:
     - type: textarea
       id: debug-info
       attributes:
-          label: TaskNotes Debug Info
-          description: Run Obsidian's "Show debug info" command from the command palette and paste the TaskNotes/Obsidian/system output here.
+          label: Obsidian Debug Info
+          description: >-
+              Open Obsidian's command palette and run the built-in "Show debug info" command.
+              If the command is unavailable, list your Obsidian version, TaskNotes version, and platform.
           render: text
           placeholder: |
-              Paste the output of "Show debug info" here.
+              Paste the output of "Show debug info" or list the versions and platform here.
       validations:
           required: false
 

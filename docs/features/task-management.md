@@ -243,6 +243,8 @@ You can record a task's completion — and choose the date it is recorded agains
 
 An action is disabled when the date it needs is not set — for example *Completed on schedule* on a task with no scheduled date — rather than silently falling back to another date. Recurring tasks also get a **Skip instance** action alongside these.
 
+On a recurring task, the status control is labelled **Series status**: in the context menu, the status picker, the edit modal and the notice that follows. It sets the status of the whole series and records no occurrence, so choosing a completed status there does not complete today's occurrence. To complete or skip one occurrence, use **Mark complete or skip**. A [materialized occurrence note](recurring-tasks.md#materialized-occurrence-notes) has no rule of its own, so its control stays **Status** and completes that occurrence.
+
 By default the actions are grouped under a single **Mark complete or skip** entry (**Mark complete** for non-recurring tasks). To show them directly in the menu instead — set off by dividers — turn off **Settings → TaskNotes → Appearance & interaction → Task cards → Group complete and skip actions in a submenu**.
 
 ![Completion actions grouped under a submenu (default)](../assets/feature-completion-date-actions.png)

@@ -1,7 +1,7 @@
 import { displayError } from "../../i18n/runtime";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Menu, Notice, setTooltip } from "obsidian";
+import { Menu, MenuItem, Notice, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../../main";
 import { TaskInfo } from "../../types";
 import { formatDateForStorage, getDatePart, parseDateToUTC } from "../../utils/dateUtils";
@@ -10,7 +10,10 @@ import {
 	type CompletionDateContext,
 	type CompletionMode,
 } from "../../ui/completionDateResolver";
-import { getRecurringTaskActionDate } from "../../services/task-service/taskRecurringPlanning";
+import {
+	getRecurringTaskActionDate,
+	resolveRecurringInstanceDate,
+} from "../../services/task-service/taskRecurringPlanning";
 import { DateTimePickerModal } from "../../modals/DateTimePickerModal";
 import {
 	openMaterializedOccurrenceParent,
@@ -30,6 +33,30 @@ export class TaskCompletionMenu {
 	private t(key: MessageDescriptor, params?: Record<string, string | number>): string {
 		return this.options.plugin.i18n.translate(key, params);
 	}
+	/**
+	 * Recurring actions record a date in the series. Offer them disabled, with
+	 * the reason, when the rule has no occurrence for that date.
+	 */
+	private disableWithoutOccurrence(task: TaskInfo, date: Date, item: MenuItem): boolean {
+		if (!task.recurrence || resolveRecurringInstanceDate(task, date) !== null) {
+			return false;
+		}
+		item.setDisabled(true);
+		const el = getMenuItemElement(item);
+		if (el) {
+			setTooltip(
+				el,
+				this.t(
+					msg({
+						message: "This recurring task has no occurrence to update on that date",
+						context: "services.task.notices.noRecurringOccurrence",
+					})
+				)
+			);
+		}
+		return true;
+	}
+
 	addCompleteOrSkipSection(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const isRecurring = !!task.recurrence;
 
@@ -160,6 +187,9 @@ export class TaskCompletionMenu {
 					: this.t(baseLabelKey)
 			);
 			item.setIcon(alreadyComplete ? "x" : "check");
+			if (this.disableWithoutOccurrence(task, resolvedDate, item)) {
+				return;
+			}
 			item.onClick(async () => {
 				await this.dispatchCompletion(task, plugin, resolvedDate);
 			});
@@ -312,6 +342,9 @@ export class TaskCompletionMenu {
 						)
 			);
 			item.setIcon(isSkippedForDate ? "undo" : "x-circle");
+			if (this.disableWithoutOccurrence(task, skipLabelDate, item)) {
+				return;
+			}
 			item.onClick(async () => {
 				try {
 					await plugin.taskService.toggleRecurringTaskSkipped(task, skipOccurrenceDate);

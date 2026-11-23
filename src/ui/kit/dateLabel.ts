@@ -28,7 +28,7 @@ export function relativeDay(dateValue: string, now: Date = new Date()): Relative
 	return null;
 }
 
-const labels = {
+export const relativeDayLabels = {
 	today: msg({ message: "Today", context: "ui.taskCard.relativeDay" }),
 	tomorrow: msg({ message: "Tomorrow", context: "ui.taskCard.relativeDay" }),
 	yesterday: msg({ message: "Yesterday", context: "ui.taskCard.relativeDay" }),
@@ -41,7 +41,7 @@ export function taskDateLabel(
 ): string {
 	const relative = relativeDay(dateValue, now);
 	const day = relative
-		? uiText(labels[relative])
+		? uiText(relativeDayLabels[relative])
 		: formatDateTimeForDisplay(dateValue, {
 				dateFormat:
 					Number(dateValue.slice(0, 4)) === now.getFullYear() ? "MMM d" : "MMM d, yyyy",
