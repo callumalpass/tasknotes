@@ -1,6 +1,7 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import * as http from "node:http";
 import type { AddressInfo } from "node:net";
+import { MAX_SELECTED_CALENDARS } from "@tasknotes/calendar-service-client";
 import {
 	launchObsidian,
 	closeObsidian,
@@ -22,6 +23,8 @@ const HOLIDAYS = "33333333-3333-4333-8333-333333333333";
 const CONNECTION = "44444444-4444-4444-8444-444444444444";
 const CREDENTIAL = "bearer-e2e-credential";
 const CODE = "ABCD2345";
+// Work, Team and Holidays are shown first; the projects fill the rest and one more.
+const PROJECTS = Array.from({ length: MAX_SELECTED_CALENDARS - 2 }, (_, index) => index + 1);
 
 function event(calendarId: string, name: string) {
 	const start = new Date(Date.now() + 86_400_000);
@@ -106,6 +109,13 @@ function fakeCalendarService() {
 						{ id: WORK, name: "Work", can_write: true, is_primary: true, color: "#0b8043" },
 						{ id: TEAM, name: "Team", can_write: false, is_primary: false, is_selected: true },
 						{ id: HOLIDAYS, name: "Holidays", can_write: false, is_primary: false },
+						// More calendars than can be shown at once.
+						...PROJECTS.map((n) => ({
+							id: `55555555-5555-4555-8555-${String(n).padStart(12, "0")}`,
+							name: `Project ${n}`,
+							can_write: false,
+							is_primary: false,
+						})),
 					],
 				});
 			if (pathname === "/v1/devices/session-1" && method === "DELETE") {
@@ -288,6 +298,19 @@ test("signs in with Google from settings, shows the person's events, and signs o
 	await settings.screenshot({ path: "test-results/calendar-service/signed-in.png" });
 	await shown("Holidays").click();
 	await expect.poll(titles).toEqual(["Holiday", "Review", "Standup"]);
+
+	// At five, the limit is stated and the rest can't be turned on until one is off.
+	await expect(
+		nativeSettingRow(settings, `You can show up to ${MAX_SELECTED_CALENDARS} calendars at a time.`)
+	).toBeVisible();
+	const last = `Project ${PROJECTS.length}`;
+	const beforeLast = `Project ${PROJECTS.length - 1}`;
+	for (const n of PROJECTS.slice(0, -1)) await shown(`Project ${n}`).click();
+	await expect(shown(beforeLast)).toHaveClass(/is-enabled/);
+	await expect(shown(last)).toHaveClass(/is-disabled/);
+	await settings.screenshot({ path: "test-results/calendar-service/limit.png" });
+	await shown(beforeLast).click();
+	await expect(shown(last)).not.toHaveClass(/is-disabled/);
 
 	// The session credential is in secret storage, and in nothing that syncs.
 	expect(await plugin("plugin.app.secretStorage.getSecret('tasknotes-calendar-service-session')")).toBe(CREDENTIAL);

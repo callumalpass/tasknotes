@@ -132,6 +132,13 @@ export function calendarServiceItems(
 
 	const calendars = hosted.getAllCalendars();
 	const shown = () => hosted.client.getSnapshot().selected;
+	const limitMessage = ctx.t(
+		msg({ message: "{count, plural, one {You can show # calendar at a time.} other {You can show up to # calendars at a time.}}", context: "settings.calendarService.calendars.limit" }),
+		{ count: MAX_SELECTED_CALENDARS }
+	);
+	// Off and over the limit: the toggle can't turn on, so it shows that up front.
+	const atLimit = (calendarId: string) =>
+		!shown().includes(calendarId) && shown().length >= MAX_SELECTED_CALENDARS;
 	return [
 		status,
 		{
@@ -149,23 +156,30 @@ export function calendarServiceItems(
 					{
 						type: "group" as const,
 						heading: ctx.t(msg({ message: "Calendars shown", context: "settings.calendarService.calendars.heading" })),
-						items: calendars.map((calendar) =>
-							ctx.toggle(`calendarService.calendar.${calendar.id}`, {
-								name: calendar.name,
-								...(calendar.can_write
-									? {}
-									: { desc: ctx.t(msg({ message: "Read only", context: "settings.calendarService.calendars.readOnly" })) }),
-								getValue: () => shown().includes(calendar.id),
-								setValue: async (show) => {
-									const others = shown().filter((id) => id !== calendar.id);
-									if (show && others.length >= MAX_SELECTED_CALENDARS)
-										throw new Error(
-											ctx.t(msg({ message: "{count, plural, one {You can show # calendar at a time.} other {You can show up to # calendars at a time.}}", context: "settings.calendarService.calendars.limit" }), { count: MAX_SELECTED_CALENDARS })
-										);
-									await hosted.setShownCalendars(show ? [...others, calendar.id] : others);
-								},
-							})
-						),
+						items: [
+							// Only worth saying when there are more calendars than fit.
+							...(calendars.length > MAX_SELECTED_CALENDARS
+								? [{ name: limitMessage, searchable: false }]
+								: []),
+							...calendars.map((calendar) =>
+								ctx.toggle(
+									`calendarService.calendar.${calendar.id}`,
+									{
+										name: calendar.name,
+										...(calendar.can_write
+											? {}
+											: { desc: ctx.t(msg({ message: "Read only", context: "settings.calendarService.calendars.readOnly" })) }),
+										getValue: () => shown().includes(calendar.id),
+										setValue: async (show) => {
+											const others = shown().filter((id) => id !== calendar.id);
+											if (show && others.length >= MAX_SELECTED_CALENDARS) throw new Error(limitMessage);
+											await hosted.setShownCalendars(show ? [...others, calendar.id] : others);
+										},
+									},
+									() => atLimit(calendar.id)
+								)
+							),
+						],
 					},
 				]
 			: []),

@@ -7377,6 +7377,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "已将{count, plural, other { # 个任务}}移至 {destination}"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "已将 {from} 的这次重复移至 {to}。其他重复未更改。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -10075,6 +10080,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "用逗号分隔值。"
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "系列状态"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "系列状态"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "系列状态：{value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "系列时间已改为 {time}。之后的重复现在显示在此时间；下一次重复保留其自身的时间。"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10138,6 +10164,11 @@ msgstr "设置提醒"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "设置计划日期"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "设置系列状态"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -12070,6 +12101,12 @@ msgstr "此笔记已是任务"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "这提供了与你的笔记更好的数据持久性"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "此重复任务在该日期没有可更新的实例"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"

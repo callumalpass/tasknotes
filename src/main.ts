@@ -718,12 +718,12 @@ export default class TaskNotesPlugin extends Plugin {
 	async loadPluginDataForSafeWrite(operation: string): Promise<Record<string, unknown> | null> {
 		const loadedData = (await this.loadData()) as Record<string, unknown> | null | undefined;
 		if (
-			(loadedData === null || loadedData === undefined) &&
-			(await this.pluginDataFileExists())
+			loadedData === undefined ||
+			(loadedData === null && (await this.pluginDataFileExists()))
 		) {
 			this.settingsLoadCompromised = true;
 			tasknotesLogger.warn(
-				"[TaskNotes] Skipping plugin data save because data.json exists but could not be read.",
+				"[TaskNotes] Skipping plugin data save because data.json could not be read.",
 				{
 					category: "configuration",
 					operation: "load-plugin-data-for-safe-write",
@@ -736,7 +736,7 @@ export default class TaskNotesPlugin extends Plugin {
 			return null;
 		}
 
-		if (loadedData === null || loadedData === undefined) {
+		if (loadedData === null) {
 			return {};
 		}
 
@@ -768,12 +768,10 @@ export default class TaskNotesPlugin extends Plugin {
 				category: "internal",
 				operation: "load-settings-data",
 				details: {
-					reason: "Settings data file exists, but Obsidian returned no settings data.",
+					...result.failure,
 					settingsSavesBlocked: true,
 				},
 			});
-		}
-		if (result.compromised) {
 			this.showUnreadableSettingsNotice();
 			throw new Error(
 				"TaskNotes settings are unreadable; restore settings before loading the plugin."
