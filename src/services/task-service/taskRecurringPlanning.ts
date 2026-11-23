@@ -166,6 +166,35 @@ function getOwningRecurrenceDate(task: TaskInfo, targetDate: Date): Date | null 
 	return findOwningRecurrenceDate(task, targetDate);
 }
 
+/**
+ * Resolve the series date that completing or skipping at `targetDate` records,
+ * or null when the rule has no occurrence for it (for example after a COUNT or
+ * UNTIL series has ended). Completion-anchored series and Google Calendar
+ * exceptions record the action date itself. A date already recorded resolves to
+ * itself, so entries written before this check existed can still be cleared.
+ */
+export function resolveRecurringInstanceDate(task: TaskInfo, targetDate: Date): string | null {
+	if (!task.recurrence) return null;
+
+	const owningRecurrenceDate = getOwningRecurrenceDate(task, targetDate);
+	if (owningRecurrenceDate) {
+		return formatDateForStorage(owningRecurrenceDate);
+	}
+
+	const dateStr = formatDateForStorage(targetDate);
+	if (
+		(task.recurrence_anchor || "scheduled") === "completion" ||
+		task.googleCalendarExceptionOriginalScheduled
+	) {
+		return dateStr;
+	}
+
+	const recorded =
+		getStringArray(task.complete_instances).includes(dateStr) ||
+		getStringArray(task.skipped_instances).includes(dateStr);
+	return recorded ? dateStr : null;
+}
+
 function moveScheduledDateToOccurrence(
 	scheduled: string | undefined,
 	occurrenceDate: Date
