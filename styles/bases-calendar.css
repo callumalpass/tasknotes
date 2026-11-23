@@ -929,7 +929,14 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     background: none;
 }
 
+/* List rows have square corners and no shadow, unlike task blocks on the grids (.fc-task-event). */
 .tasknotes-plugin .tnc .tnc-item--list {
+    box-shadow: none;
+    border-radius: var(--tn-radius-none);
+}
+
+/* An event row with a linked note shows the note icon, not the grid's ring, which outranks the rule above. */
+.tasknotes-plugin .tnc .tnc-item--list.has-related-note {
     box-shadow: none;
 }
 
@@ -1063,7 +1070,8 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 }
 
 .tasknotes-plugin .tn-calendar-agenda-strip .tnc-strip-head,
-.tasknotes-plugin .tnc-list-day-link {
+.tasknotes-plugin .tnc-list-day-link,
+.tasknotes-plugin .tnc-list-day > .tn-calendar-day-heading {
     min-height: var(--tn-touch-target);
 }
 
@@ -1574,6 +1582,12 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
 }
 
 .tasknotes-plugin #bases-calendar:not(.tn-calendar-composition) .tnc-dg--chips .tnc-dg-dots-more {
+    pointer-events: auto;
+    cursor: var(--cursor-link, pointer);
+}
+
+/* Without the day panel, chips are the tasks themselves: click, drag and right-click them (#2641). */
+.tasknotes-plugin #bases-calendar:not(.tn-calendar-composition) .tnc-dg--chips .tnc-dg-dots > .tnc-item--indicator {
     pointer-events: auto;
     cursor: var(--cursor-link, pointer);
 }

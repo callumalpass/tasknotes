@@ -6327,6 +6327,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "파일 탐색기에서 mdbase 폴더 숨기기"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -10076,6 +10077,22 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "값을 쉼표로 구분하세요."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "시리즈 상태"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "시리즈 상태"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "시리즈 상태: {value}"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10139,6 +10156,11 @@ msgstr "리마인더 설정"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "예정일 설정"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "시리즈 상태 설정"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

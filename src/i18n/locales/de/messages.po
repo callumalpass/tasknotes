@@ -6326,6 +6326,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "mdbase-Ordner im Datei-Explorer ausblenden"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -10075,6 +10076,22 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Werte durch Kommas trennen."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "Serienstatus"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "Serienstatus"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "Serienstatus: {value}"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10138,6 +10155,11 @@ msgstr "Erinnerungen setzen"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Planungsdatum setzen"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "Serienstatus setzen"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
