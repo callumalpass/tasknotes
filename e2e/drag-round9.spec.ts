@@ -125,7 +125,7 @@ test('native board lift and all delayed refreshes keep geometry and source order
       const sample = () => {
         const board = document.querySelector('.workspace-leaf.mod-active .kanban-view__board') as HTMLElement;
         state.r9Frames.push({ ms: performance.now() - state.r9DropTime, scroll: board.scrollLeft, widths: [...board.querySelectorAll('.kanban-view__column')].map(column => column.getBoundingClientRect().width) });
-        if (performance.now() - state.r9DropTime < 5000) requestAnimationFrame(sample);
+        if (state.r9Frames.at(-1).ms <= 5000) requestAnimationFrame(sample);
       };
       requestAnimationFrame(sample);
     }, { once: true, capture: true });
