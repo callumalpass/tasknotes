@@ -45,7 +45,7 @@ export function createTaskModalMarkdownEditor(
 		const { onEnter } = options;
 		return new EmbeddableMarkdownEditor(app, container, {
 			...options,
-			onEnter: onEnter ? (_editor, _mod, shift) => onEnter(shift) : undefined,
+			onEnter: (_editor, _mod, shift) => onEnter?.(shift) ?? false,
 			onSubmit: (_editor, shift) => options.onSubmit(shift),
 			onTab: (_editor, shift) => options.onTab(shift),
 		});
