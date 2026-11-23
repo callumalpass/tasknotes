@@ -89,13 +89,22 @@ describe("Native property editors", () => {
 		});
 		tab.getSettingDefinitions();
 		const key = `${kind}.${id}.icon`;
-		await tab.setControlValue(key, "circle-");
-		await tab.setControlValue(key, "circle-help");
-		expect(tab.getControlValue(key)).toBe("circle-help");
-		expect(plugin.settings[listKey].find((entry) => entry.id === id)?.icon).toBe("circle-help");
+		jest.useFakeTimers();
+		try {
+			await tab.setControlValue(key, "circle-");
+			await jest.runOnlyPendingTimersAsync();
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
+			await tab.setControlValue(key, "circle-help");
+			await jest.runOnlyPendingTimersAsync();
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
+			expect(tab.getControlValue(key)).toBe("circle-help");
+			expect(plugin.settings[listKey].find((entry) => entry.id === id)?.icon).toBe("circle-help");
+		} finally {
+			jest.useRealTimers();
+		}
 	});
 
-	test("coalesces typing and flushes pending text saves when closing", async () => {
+	test("coalesces typing and supports an explicit flush", async () => {
 		const { plugin, ctx } = settingsFixture();
 		jest.useFakeTimers();
 		try {

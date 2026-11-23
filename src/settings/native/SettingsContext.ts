@@ -83,7 +83,7 @@ export class SettingsContext {
 		const binding = this.bindings.get(key);
 		if (!binding) throw new Error(`Unknown setting: ${key}`);
 		await binding.write(value);
-		await this.flush();
+		if (this.textSaveTimer === undefined) await this.flush();
 		this.refresh();
 	}
 

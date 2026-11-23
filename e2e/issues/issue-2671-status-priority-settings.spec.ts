@@ -62,11 +62,12 @@ test('status and priority editors keep saving after the canonical type is writte
     expect(migrationBackups()).toEqual(originalBackups);
   } finally {
     try {
-      await workspace.evaluate(async settings => {
+      await workspace.evaluate(settings => {
         const plugin = (window as any).app.plugins.plugins.tasknotes;
         plugin.settings = settings;
-        await plugin.saveSettings();
+        void plugin.saveSettings();
       }, original);
+      await workspace.waitForFunction(() => !(window as any).app.plugins.plugins.tasknotes.settingsLifecycleService.saveSettingsPromise, undefined, { timeout: 5000 });
     } finally {
       await closeObsidian(instance);
     }
