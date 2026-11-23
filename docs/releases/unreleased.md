@@ -43,6 +43,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2667) Pressing Enter in task details now continues checklists, numbered lists, and bullet lists when creating or editing a task.
+  - Thanks to @Xylemflo for reporting
 - (#2649) The **Next week** shortcut in date menus, Quick Actions, and the date and time picker now follows the **First day of week** setting. If today is that weekday, the shortcut selects the same weekday seven days later.
   - Thanks to @erezbm for reporting
 - (#2651) Unskipping an occurrence in the task editor's **Completions** calendar now stays saved, even when it was the last skipped occurrence. Reopening a skipped or completed occurrence also recalculates the dates without marking the task as manually rescheduled.
