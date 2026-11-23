@@ -5915,11 +5915,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "填满容器"
 
-#: src/bases/BasesViewBase.ts
-msgctxt "views.stats.sections.filters"
-msgid "Filters"
-msgstr "筛选器"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
@@ -7919,9 +7914,9 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "没有匹配“{searchTerm}”的任务"
 
 #: src/bases/BasesViewBase.ts
-msgctxt "empty task view recovery"
-msgid "No tasks match this view. Review its filters."
-msgstr "没有符合此视图的任务。请检查筛选条件。"
+msgctxt "empty task view"
+msgid "No tasks match this view."
+msgstr "没有符合此视图的任务。"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"

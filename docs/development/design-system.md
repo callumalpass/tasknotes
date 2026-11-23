@@ -83,7 +83,7 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 | Popover | `popover.ts` | Anchored overlay on the anchor window body or modal container, focus return, Esc, outside click, viewport clamp and flip |
 | List picker | `listPicker.ts` | Typeahead list on popover: arrows, Enter, shared footer, checked current value, applied-first multi-select |
 | Toast | `toast.ts` | Bottom-right, one result with a changed-task count and Undo; does not cover the central title column |
-| Empty state | `emptyState.ts` | One sentence, one action, key hint |
+| Empty state | `emptyState.ts` | One sentence, one action, key hint. `compact`: one line, no actions, for an expected empty result such as a filtered view |
 
 ## Task row anatomy
 

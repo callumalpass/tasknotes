@@ -868,6 +868,10 @@ body.is-mobile .tasknotes-plugin .tn-chip--property {
     text-align: center;
 }
 
+.tasknotes-plugin .tn-empty--compact {
+    padding: var(--tn-space-3) var(--tn-space-4);
+}
+
 .tasknotes-plugin .tn-select {
     appearance: auto;
     min-height: var(--tn-control-md);
