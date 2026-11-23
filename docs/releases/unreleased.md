@@ -50,6 +50,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2628) Fixed the scheduled date, due date, priority and other property pickers on phones and tablets opening the keyboard straight away, and running behind the keyboard so the lower options couldn't be reached. On mobile, these pickers now open as a bottom sheet again, and the keyboard opens only when you tap the search field. The sheet stays above the keyboard, and its list scrolls to every option.
+  - Thanks to @prepare4robots for reporting
 - (#2667) Pressing Enter in task details now continues checklists, numbered lists, and bullet lists when creating or editing a task.
   - Thanks to @Xylemflo for reporting
 - (#2649) The **Next week** shortcut in date menus, Quick Actions, and the date and time picker now follows the **First day of week** setting. If today is that weekday, the shortcut selects the same weekday seven days later.
