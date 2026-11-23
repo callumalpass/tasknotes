@@ -282,11 +282,4 @@ export class TaskNotesSettingTab extends PluginSettingTab {
 	async setControlValue(key: string, value: unknown): Promise<void> {
 		await this.context.write(key, value);
 	}
-
-	hide(): void {
-		super.hide();
-		void this.context.flush().catch(() => {
-			/* The save failure has already been reported. */
-		});
-	}
 }

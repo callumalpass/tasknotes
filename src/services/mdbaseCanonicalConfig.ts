@@ -218,6 +218,18 @@ export type CanonicalAppSettingsSources = {
 	legacyBinding?: UnknownRecord;
 };
 
+function reconcileEntries<T extends { id: string }>(current: T[], resolved: T[]): T[] {
+	const byId = new Map(current.map((entry) => [entry.id, entry]));
+	return resolved.map((entry) => {
+		const existing = byId.get(entry.id);
+		if (!existing) return { ...entry };
+		for (const key of Object.keys(existing) as Array<keyof T>) {
+			if (!Object.prototype.hasOwnProperty.call(entry, key)) delete existing[key];
+		}
+		return Object.assign(existing, entry);
+	});
+}
+
 /**
  * Apply a canonical type, and the app settings from the settings record, to the
  * plugin settings. With a `record` (empty when there is no record), each app
@@ -250,9 +262,9 @@ export function applyCanonicalTaskTypeToSettings(
 	if (Array.isArray(excludedFolders) && excludedFolders.every((folder) => typeof folder === "string")) {
 		settings.excludedFolders = excludedFolders.join(", ");
 	}
-	settings.fieldMapping = { ...modelConfig.fieldMapping };
-	settings.customStatuses = modelConfig.statuses.map((status) => ({ ...status }));
-	settings.customPriorities = modelConfig.priorities.map((priority) => ({ ...priority }));
+	Object.assign(settings.fieldMapping, modelConfig.fieldMapping);
+	settings.customStatuses = reconcileEntries(settings.customStatuses, modelConfig.statuses);
+	settings.customPriorities = reconcileEntries(settings.customPriorities, modelConfig.priorities);
 	settings.defaultTaskStatus = modelConfig.defaults.status;
 	settings.defaultTaskPriority = modelConfig.defaults.priority;
 	settings.taskIdentificationMethod = modelConfig.taskIdentification.method;
@@ -260,10 +272,10 @@ export function applyCanonicalTaskTypeToSettings(
 	settings.taskPropertyName = modelConfig.taskIdentification.propertyName;
 	settings.taskPropertyValue = modelConfig.taskIdentification.propertyValue;
 	settings.storeTitleInFilename = modelConfig.storeTitleInFilename;
-	settings.userFields = mergeResolvedUserFields(
-		settings.userFields ?? [],
-		modelConfig.userFields,
-		recordAt(type, ["schema", "value", "properties"]) ?? {}
+	const existingFields = settings.userFields ?? [];
+	settings.userFields = reconcileEntries(
+		existingFields,
+		mergeResolvedUserFields(existingFields, modelConfig.userFields, recordAt(type, ["schema", "value", "properties"]) ?? {})
 	);
 	settings.maintainDueDateOffsetInRecurring = modelConfig.recurrence.maintainDueDateOffset;
 
@@ -307,18 +319,14 @@ export function applyAppSettingsToPluginSettings(
 	settings: TaskNotesSettings,
 	values: TaskNotesAppSettingsValues
 ): void {
-	settings.customStatuses = settings.customStatuses.map((status) => {
+	for (const status of settings.customStatuses) {
 		const behavior = taskNotesStatusBehavior(values, status);
-		const next = {
-			...status,
-			excludeFromCycle: behavior.exclude_from_cycle,
-			autoArchive: behavior.auto_archive,
-			autoArchiveDelay: behavior.auto_archive_delay_minutes,
-		};
-		if (behavior.next_status) next.nextStatus = behavior.next_status;
-		else delete next.nextStatus;
-		return next;
-	});
+		status.excludeFromCycle = behavior.exclude_from_cycle;
+		status.autoArchive = behavior.auto_archive;
+		status.autoArchiveDelay = behavior.auto_archive_delay_minutes;
+		if (behavior.next_status) status.nextStatus = behavior.next_status;
+		else delete status.nextStatus;
+	}
 	settings.resetCheckboxesOnRecurrence = values.reset_body_checkboxes_on_recurrence;
 	settings.autoStopTimeTrackingOnComplete = values.auto_stop_time_tracking_on_complete;
 	if (values.nlp_triggers) {
@@ -335,13 +343,12 @@ export function applyAppSettingsToPluginSettings(
 	settings.moveArchivedTasks = values.move_on_archive;
 	// An empty folder means the client's default.
 	settings.archiveFolder = values.archive_folder || DEFAULT_SETTINGS.archiveFolder;
-	settings.taskCreationDefaults = {
-		...settings.taskCreationDefaults,
+	Object.assign(settings.taskCreationDefaults, {
 		useBodyTemplate: values.template_enabled,
 		bodyTemplate: values.template_path,
 		useOccurrenceBodyTemplate: values.occurrence_template_enabled,
 		occurrenceBodyTemplate: values.occurrence_template_path,
-	};
+	});
 }
 
 /** Fingerprint of the settings kept in the TaskNotes settings record. */
