@@ -10077,6 +10077,22 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "値をカンマで区切ります。"
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "シリーズのステータス"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "シリーズのステータス"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "シリーズのステータス：{value}"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10140,6 +10156,11 @@ msgstr "リマインダーを設定"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "予定日を設定"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "シリーズのステータスを設定"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

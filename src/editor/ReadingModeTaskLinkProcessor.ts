@@ -192,6 +192,22 @@ function isSameNoteFragmentLink(linkEl: HTMLAnchorElement): boolean {
 	return target.startsWith("#");
 }
 
+/**
+ * Containers that lay out their own items, such as Note Toolbar's callout toolbars
+ * (`> [!note-toolbar]`), whose list items are flex rows. A full task card there is
+ * a size container with no width of its own and collapses into a narrow two-row
+ * card, so links in these containers get the compact in-sentence widget.
+ */
+const COMPACT_TASK_LINK_CONTAINER_SELECTOR = [
+	'.callout[data-callout="note-toolbar"]',
+	".cg-note-toolbar-callout",
+	".cg-note-toolbar-container",
+].join(", ");
+
+export function isInCompactTaskLinkContainer(linkEl: Element): boolean {
+	return linkEl.closest(COMPACT_TASK_LINK_CONTAINER_SELECTOR) !== null;
+}
+
 function getMarkdownSectionText(
 	ctx: Parameters<MarkdownPostProcessor>[1],
 	el: HTMLElement
@@ -600,7 +616,9 @@ export class ReadingModeTaskLinkProcessor {
 			}
 
 			const textContainer = linkEl.closest("p, li, h1, h2, h3, h4, h5, h6, td, th") ?? linkEl.parentElement;
-			const inSentence = (textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? "");
+			const inSentence =
+				isInCompactTaskLinkContainer(linkEl) ||
+				(textContainer?.textContent?.trim() ?? "") !== (linkEl.textContent?.trim() ?? "");
 			if (!inSentence && linkEl.closest("li.task-list-item")) {
 				linkEl.parentElement?.classList.add("tasknotes-inline-widget-host");
 			}
