@@ -1648,6 +1648,11 @@ msgctxt "settings.native.oAuthCredentials"
 msgid "Application credentials"
 msgstr "OAuth 認証情報"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.apply"
+msgid "Apply"
+msgstr "適用"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateDesc"
 msgid "Apply a template when creating the content"
@@ -1713,6 +1718,11 @@ msgstr "「{title}」を削除しますか？この操作は元に戻せませ�
 msgctxt "bases.taskCardActions.deleteManyMessage"
 msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
 msgstr "{count} 件のタスクを削除しますか？この操作は元に戻せません。"
+
+#: src/modals/ProjectSelectModal.ts
+msgctxt "projectSelector.assignedProjects"
+msgid "Assigned projects"
+msgstr "割り当て済みのプロジェクト"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2307,6 +2317,7 @@ msgstr "表示するカレンダー"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/modals/UserFieldEditModal.ts
 #: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
@@ -3634,6 +3645,11 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "現在のタスクは完了していません"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.currentValues"
+msgid "Current values"
+msgstr "現在の値"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "Currently tracking:\n"
@@ -4690,6 +4706,11 @@ msgstr "タイムラインビューで表示される最早時刻（HH:MM形式�
 msgctxt "settings/components/CardComponent: createEditHeaderButton tooltip"
 msgid "Edit"
 msgstr "編集"
+
+#: src/settings/native/keyboardShortcutsTab.ts
+msgctxt "keyboardEdit.editField"
+msgid "Edit {name}"
+msgstr "{name}を編集"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.editCurrentTask"
@@ -8973,6 +8994,11 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "{field}の日付を選択"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.pickDate"
+msgid "Pick date"
+msgstr "日付を選択"
+
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/ui/taskPropertyPickers.ts
@@ -9420,6 +9446,11 @@ msgctxt "views.pomodoro.recent.heading"
 msgid "Recent sessions"
 msgstr "最近のセッション"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.recentValues"
+msgid "Recent values"
+msgstr "最近使った値"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
@@ -9655,6 +9686,12 @@ msgstr "リモートの購読に URL がありません"
 msgctxt "settings.integrations.subscriptionsList.typeOptions.remote"
 msgid "Remote URL"
 msgstr "リモートURL"
+
+#: src/modals/ProjectSelectModal.ts
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.removeValue"
+msgid "Remove {name}"
+msgstr "{name}を削除"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.removeAriaLabel"
@@ -13462,6 +13499,11 @@ msgstr "ユーザー名："
 msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
 msgid "UUID v4"
 msgstr "UUID v4 形式"
+
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.value"
+msgid "Value"
+msgstr "値"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.value"

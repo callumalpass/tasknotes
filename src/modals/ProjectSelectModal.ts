@@ -1,5 +1,6 @@
 import { applyModalShell } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
 import {
 	App,
 	FuzzySuggestModal,
@@ -79,7 +80,7 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 		const assignedEl = createDiv({ cls: "task-project-selector-assigned" });
 		assignedEl.createDiv({
 			cls: "task-project-selector-assigned__title",
-			text: "Assigned projects",
+			text: uiText(msg({ message: "Assigned projects", context: "projectSelector.assignedProjects" })),
 		});
 		const listEl = assignedEl.createDiv({ cls: "task-projects-list" });
 		for (const file of selectedProjects) {
@@ -89,12 +90,13 @@ export class ProjectSelectModal extends FuzzySuggestModal<TAbstractFile> {
 			if (file.parent?.path) {
 				infoEl.createDiv({ cls: "task-project-path", text: file.path });
 			}
+			const removeLabel = uiText(msg({ message: "Remove {name}", context: "keyboardEdit.removeValue" }), { name: file.basename });
 			const removeButton = itemEl.createEl("button", {
 				cls: "task-project-remove clickable-icon",
-				attr: { "aria-label": `Remove ${file.basename}` },
+				attr: { "aria-label": removeLabel },
 			});
 			setIcon(removeButton, "x");
-			setTooltip(removeButton, `Remove ${file.basename}`);
+			setTooltip(removeButton, removeLabel);
 			removeButton.addEventListener("click", (event) => {
 				event.preventDefault();
 				event.stopPropagation();

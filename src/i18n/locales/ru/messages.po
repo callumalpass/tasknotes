@@ -1651,6 +1651,11 @@ msgctxt "settings.native.oAuthCredentials"
 msgid "Application credentials"
 msgstr "Учётные данные OAuth"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.apply"
+msgid "Apply"
+msgstr "Применить"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateDesc"
 msgid "Apply a template when creating the content"
@@ -1716,6 +1721,11 @@ msgstr "Удалить «{title}»? Это действие нельзя отм�
 msgctxt "bases.taskCardActions.deleteManyMessage"
 msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
 msgstr "Удалить {count} задач? Это действие нельзя отменить."
+
+#: src/modals/ProjectSelectModal.ts
+msgctxt "projectSelector.assignedProjects"
+msgid "Assigned projects"
+msgstr "Назначенные проекты"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2310,6 +2320,7 @@ msgstr "Показываемые календари"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/modals/UserFieldEditModal.ts
 #: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
@@ -3637,6 +3648,11 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "Текущая задача не завершена"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.currentValues"
+msgid "Current values"
+msgstr "Текущие значения"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "Currently tracking:\n"
@@ -4693,6 +4709,11 @@ msgstr "Самое раннее время, показываемое в пред
 msgctxt "settings/components/CardComponent: createEditHeaderButton tooltip"
 msgid "Edit"
 msgstr "Изменить"
+
+#: src/settings/native/keyboardShortcutsTab.ts
+msgctxt "keyboardEdit.editField"
+msgid "Edit {name}"
+msgstr "Изменить {name}"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.editCurrentTask"
@@ -8974,6 +8995,11 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "Выбрать дату {field}"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.pickDate"
+msgid "Pick date"
+msgstr "Выбрать дату"
+
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/ui/taskPropertyPickers.ts
@@ -9421,6 +9447,11 @@ msgctxt "views.pomodoro.recent.heading"
 msgid "Recent sessions"
 msgstr "Последние сессии"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.recentValues"
+msgid "Recent values"
+msgstr "Недавние значения"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
@@ -9656,6 +9687,12 @@ msgstr "В удалённой подписке не указан URL"
 msgctxt "settings.integrations.subscriptionsList.typeOptions.remote"
 msgid "Remote URL"
 msgstr "Удаленный URL"
+
+#: src/modals/ProjectSelectModal.ts
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.removeValue"
+msgid "Remove {name}"
+msgstr "Удалить {name}"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.removeAriaLabel"
@@ -13463,6 +13500,11 @@ msgstr "Имя пользователя:"
 msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
 msgid "UUID v4"
 msgstr "UUID v4"
+
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.value"
+msgid "Value"
+msgstr "Значение"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.value"
