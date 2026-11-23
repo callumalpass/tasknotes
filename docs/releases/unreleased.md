@@ -41,6 +41,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - (#2615) Added **Hide top-level subtasks** to the Calendar view's list (Agenda) layout and the month view's selected day panel, as in Task List and Kanban. When on, a subtask whose parent task is listed on the same day shows only under the parent's expanded subtasks instead of also as its own row. A subtask whose parent isn't listed that day keeps its own row. See [Agenda View](https://tasknotes.dev/views/agenda-view/#customization).
   - Thanks to @tistieom for the request
 
+## Changed
+
+- (#2632) Recurring tasks now label their status control **Series status** in the task context menu, the status picker (including the **S** shortcut and the action palette), the edit modal's status button and the notice after a change. It sets the status of the whole series and records no occurrence; to complete one occurrence, use **Mark complete or skip**. Materialized occurrence notes keep **Status**. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).
+  - Thanks to @martin-forge for the suggestion
+
 ## Fixed
 
 - (#2667) Pressing Enter in task details now continues checklists, numbered lists, and bullet lists when creating or editing a task.

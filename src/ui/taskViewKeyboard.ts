@@ -480,7 +480,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 						const property = value as TaskPickerProperty;
 						return {
 							id: `picker-${property}`,
-							title: taskPropertyLabel(property),
+							title: taskPropertyLabel(property, [task]),
 							description: "",
 							icon: "list",
 							category: "other",
