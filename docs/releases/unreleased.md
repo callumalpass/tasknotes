@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2670) Fixed Kanban card dragging stuttering with high-polling-rate mice, especially below the last card in a large column. Thanks to @Oneiran for reporting and investigating.
