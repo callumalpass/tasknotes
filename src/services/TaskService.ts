@@ -42,6 +42,7 @@ import {
 } from "../utils/dateUtils";
 import {
 	addDTSTARTToRecurrenceRule,
+	getFiniteRecurringInstanceCount,
 	getNextUncompletedOccurrence,
 	updateToNextScheduledOccurrence,
 } from "../core/recurrence";
@@ -82,6 +83,7 @@ import {
 	buildRecurringTaskCompletePlan,
 	buildRecurringTaskSkippedPlan,
 	getRecurringTaskActionDate,
+	type RecurringSeriesEndStatuses,
 	resolveRecurringInstanceDate,
 } from "./task-service/taskRecurringPlanning";
 import {
@@ -2100,6 +2102,41 @@ export class TaskService {
 			: statusManager.getConfiguredStatusAfterCompletion();
 	}
 
+	/** Only a COUNT or UNTIL series can end. */
+	private getSeriesEndStatuses(task: TaskInfo): RecurringSeriesEndStatuses | undefined {
+		if (getFiniteRecurringInstanceCount(task) === null) return undefined;
+		const { statusManager, settings } = this.plugin;
+		const completedStatus = statusManager.getCompletedStatuses()[0];
+		if (!completedStatus) return undefined;
+		return {
+			completedStatus,
+			reopenedStatus:
+				statusManager.getConfiguredStatusAfterCompletion() ??
+				settings.defaultTaskStatus ??
+				"open",
+			isCompletedStatus: (status) => statusManager.isCompletedStatus(status ?? ""),
+		};
+	}
+
+	/** A bounded series that ends or reopens changes status; apply that status's auto-archive. */
+	private async applySeriesEndAutoArchive(original: TaskInfo, updated: TaskInfo): Promise<void> {
+		if (!this.autoArchiveService || updated.status === original.status) return;
+		try {
+			const statusConfig = this.plugin.statusManager.getStatusConfig(updated.status ?? "");
+			if (statusConfig?.autoArchive) {
+				await this.autoArchiveService.scheduleAutoArchive(updated, statusConfig);
+			} else {
+				await this.autoArchiveService.cancelAutoArchive(updated.path);
+			}
+		} catch (error) {
+			tasknotesLogger.warn("Failed to handle auto-archive for ended recurring series:", {
+				category: "validation",
+				operation: "handle-auto-archive-ended-recurring-series",
+				error: error,
+			});
+		}
+	}
+
 	private getRecurringTaskActionDate(task: TaskInfo, date?: Date): Date {
 		return getRecurringTaskActionDate(task, date);
 	}
@@ -2213,6 +2250,7 @@ export class TaskService {
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
+			seriesEndStatuses: this.getSeriesEndStatuses(freshTask),
 		});
 		const { updatedTask, dateStr, newComplete, targetDate } = recurringPlan;
 
@@ -2293,6 +2331,8 @@ export class TaskService {
 			updatedTask: updatedTask,
 		});
 
+		await this.applySeriesEndAutoArchive(freshTask, updatedTask);
+
 		// Step 5: Trigger webhook for recurring task completion
 		if (newComplete && this.webhookNotifier) {
 			try {
@@ -2368,6 +2408,7 @@ export class TaskService {
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
 			statusAfterOccurrence: this.getStatusAfterOccurrence(freshTask),
+			seriesEndStatuses: this.getSeriesEndStatuses(freshTask),
 		});
 		const { updatedTask, dateStr, newSkipped, targetDate } = recurringPlan;
 
@@ -2420,6 +2461,8 @@ export class TaskService {
 			originalTask: freshTask,
 			updatedTask: updatedTask,
 		});
+
+		await this.applySeriesEndAutoArchive(freshTask, updatedTask);
 
 		// Step 6: Trigger webhook for skipped instance
 		if (newSkipped && this.webhookNotifier) {

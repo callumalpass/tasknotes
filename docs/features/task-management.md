@@ -230,6 +230,8 @@ TaskNotes can automatically archive tasks when they transition into a status tha
 
 Configure auto-archiving per status from **Settings → TaskNotes → Properties → Status**. Each status card includes an **Auto-archive** toggle and a **Delay (minutes)** input (1–1440). When you turn the toggle on for a status, any task moved into that status is queued for archiving once the delay elapses. Moving the task to a different status before the timer expires cancels the pending archive automatically.
 
+Recurring tasks are not auto-archived while their series is running, even in an auto-archive status. A series with a `COUNT` or `UNTIL` limit that has ended is archived like a regular task (see [When a series ends](recurring-tasks.md#when-a-series-ends)).
+
 The auto-archive queue runs in the background and persists across plugin restarts. If TaskNotes was closed while an archive was pending, the task will be archived shortly after the plugin loads again as long as it still matches the configured status.
 
 This automation is intended to keep active views focused without manual cleanup, while still preserving archived task history in your vault.

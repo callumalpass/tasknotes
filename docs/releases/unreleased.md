@@ -49,6 +49,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @Alireza-RS for the request
 - (#2612) In Agenda views, the icon before each scheduled or due task (a calendar or flag, with the time for timed tasks) now opens a date picker for that date. Cards in Agenda leave out the date their row already sits under, so this restores one-click date changes. Recurring tasks still show their occurrence date on the card. See [Calendar views](https://tasknotes.dev/views/calendar-views/).
   - Thanks to @djagoo for the suggestion
+- (#2608) A recurring task whose `COUNT` or `UNTIL` series has ended now counts as completed. Completing or skipping its last occurrence sets the task to your first completed status, and auto-archive applies to it as it does to other tasks in that status; reopening an occurrence reopens the task. Series without a limit are unchanged and still never auto-archived. An existing ended series is archived once you set it to an auto-archive status. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#when-a-series-ends).
+  - Thanks to @14790897 for the suggestion
 
 ## Fixed
 
