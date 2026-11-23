@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
 import { App, Modal, Setting, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
@@ -98,9 +100,9 @@ export class UserFieldEditModal extends Modal {
 
 		const footer = this.contentEl.createDiv({ cls: "tasknotes-user-field-edit-footer" });
 		new Setting(footer)
-			.addButton((button) => button.setButtonText("Cancel").onClick(() => this.close()))
+			.addButton((button) => button.setButtonText(uiText(msg({ message: "Cancel", context: "common.cancel" }))).onClick(() => this.close()))
 			.addButton((button) =>
-				button.setCta().setButtonText("Apply").onClick(() => void this.apply())
+				button.setCta().setButtonText(uiText(msg({ message: "Apply", context: "keyboardEdit.apply" }))).onClick(() => void this.apply())
 			);
 	}
 
@@ -111,7 +113,7 @@ export class UserFieldEditModal extends Modal {
 			{ label: "False", value: false },
 			{ label: "Clear", value: undefined },
 		];
-		const setting = new Setting(this.contentEl).setName("Value");
+		const setting = new Setting(this.contentEl).setName(uiText(msg({ message: "Value", context: "keyboardEdit.value" })));
 		for (const option of values) {
 			setting.addButton((button) =>
 				button
@@ -127,7 +129,7 @@ export class UserFieldEditModal extends Modal {
 
 	/** Renders text-like input and the existing date picker for scalar fields. */
 	private renderInput(current: unknown): void {
-		const setting = new Setting(this.contentEl).setName("Value");
+		const setting = new Setting(this.contentEl).setName(uiText(msg({ message: "Value", context: "keyboardEdit.value" })));
 		setting.addText((text) => {
 			this.input = text.inputEl;
 			text.setValue(this.toInputValue(current));
@@ -154,7 +156,7 @@ export class UserFieldEditModal extends Modal {
 		});
 		if (this.options.field.type === "date") {
 			setting.addButton((button) =>
-				button.setButtonText("Pick date").onClick(() => {
+				button.setButtonText(uiText(msg({ message: "Pick date", context: "keyboardEdit.pickDate" }))).onClick(() => {
 					new DateTimePickerModal(this.app, {
 						currentDate: typeof this.value === "string" ? this.value : null,
 						title: this.options.field.displayName,
@@ -174,7 +176,7 @@ export class UserFieldEditModal extends Modal {
 	private renderMru(): void {
 		const values = this.getMruValues();
 		if (values.length === 0) return;
-		this.contentEl.createDiv({ text: "Recent values", cls: "setting-item-name" });
+		this.contentEl.createDiv({ text: uiText(msg({ message: "Recent values", context: "keyboardEdit.recentValues" })), cls: "setting-item-name" });
 		const row = this.contentEl.createDiv({ cls: "tasknotes-user-field-mru" });
 		for (const [index, value] of values.slice(0, 5).entries()) {
 			const button = row.createEl("button", { text: this.toDisplayValue(value) });
@@ -239,14 +241,14 @@ export class UserFieldEditModal extends Modal {
 	private renderExistingListValues(current: unknown): void {
 		const values = this.listValues;
 		if (values.length === 0) return;
-		this.contentEl.createDiv({ text: "Current values", cls: "setting-item-name" });
+		this.contentEl.createDiv({ text: uiText(msg({ message: "Current values", context: "keyboardEdit.currentValues" })), cls: "setting-item-name" });
 		const row = this.contentEl.createDiv({ cls: "tasknotes-user-field-values" });
 		for (const value of values) {
 			const chip = row.createDiv({ cls: "tasknotes-user-field-value" });
 			chip.createSpan({ text: value });
 			const remove = chip.createEl("button", {
 				cls: "tasknotes-user-field-value-remove",
-				attr: { "aria-label": `Remove ${value}` },
+				attr: { "aria-label": uiText(msg({ message: "Remove {name}", context: "keyboardEdit.removeValue" }), { name: value }) },
 			});
 			remove.type = "button";
 			setIcon(remove, "circle-x");

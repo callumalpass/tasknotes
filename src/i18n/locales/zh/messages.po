@@ -1648,6 +1648,11 @@ msgctxt "settings.native.oAuthCredentials"
 msgid "Application credentials"
 msgstr "OAuth 凭据"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.apply"
+msgid "Apply"
+msgstr "应用"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateDesc"
 msgid "Apply a template when creating the content"
@@ -1713,6 +1718,11 @@ msgstr "确定要删除“{title}”吗？此操作无法撤销。"
 msgctxt "bases.taskCardActions.deleteManyMessage"
 msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
 msgstr "确定要删除 {count} 个任务吗？此操作无法撤销。"
+
+#: src/modals/ProjectSelectModal.ts
+msgctxt "projectSelector.assignedProjects"
+msgid "Assigned projects"
+msgstr "已分配的项目"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2307,6 +2317,7 @@ msgstr "显示的日历"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/modals/UserFieldEditModal.ts
 #: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
@@ -3634,6 +3645,11 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "当前任务尚未完成"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.currentValues"
+msgid "Current values"
+msgstr "当前值"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "Currently tracking:\n"
@@ -4690,6 +4706,11 @@ msgstr "时间线视图中显示的最早时间（HH:MM格式）"
 msgctxt "settings/components/CardComponent: createEditHeaderButton tooltip"
 msgid "Edit"
 msgstr "编辑"
+
+#: src/settings/native/keyboardShortcutsTab.ts
+msgctxt "keyboardEdit.editField"
+msgid "Edit {name}"
+msgstr "编辑{name}"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.editCurrentTask"
@@ -8970,6 +8991,11 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "选择{field}日期"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.pickDate"
+msgid "Pick date"
+msgstr "选择日期"
+
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/ui/taskPropertyPickers.ts
@@ -9417,6 +9443,11 @@ msgctxt "views.pomodoro.recent.heading"
 msgid "Recent sessions"
 msgstr "最近的会话"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.recentValues"
+msgid "Recent values"
+msgstr "最近使用的值"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
@@ -9652,6 +9683,12 @@ msgstr "远程订阅缺少 URL"
 msgctxt "settings.integrations.subscriptionsList.typeOptions.remote"
 msgid "Remote URL"
 msgstr "远程URL"
+
+#: src/modals/ProjectSelectModal.ts
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.removeValue"
+msgid "Remove {name}"
+msgstr "移除{name}"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.removeAriaLabel"
@@ -13459,6 +13496,11 @@ msgstr "用户名："
 msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
 msgid "UUID v4"
 msgstr "UUID v4"
+
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.value"
+msgid "Value"
+msgstr "值"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.value"

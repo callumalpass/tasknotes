@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../../i18n/runtime";
 import { App, FuzzySuggestModal, Platform, Scope, Setting, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../../main";
 import {
@@ -317,7 +319,7 @@ export function renderKeyboardShortcutsTab(
 				if (!fieldShortcuts) continue;
 				group.addSetting((setting) => {
 					setting.setName(field.displayName);
-					setting.setDesc(`Edit ${field.key}`);
+					setting.setDesc(uiText(msg({ message: "Edit {name}", context: "keyboardEdit.editField" }), { name: field.key }));
 					for (const shortcut of fieldShortcuts) {
 						const shortcutButton = setting.controlEl.createEl("button", {
 							cls: "tasknotes-settings__shortcut-binding setting-hotkey",

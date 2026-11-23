@@ -1649,6 +1649,11 @@ msgctxt "settings.native.oAuthCredentials"
 msgid "Application credentials"
 msgstr "OAuth-Zugangsdaten"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.apply"
+msgid "Apply"
+msgstr "Übernehmen"
+
 #: src/modals/ICSNoteCreationModal.ts
 msgctxt "modals.icsNoteCreation.useTemplateDesc"
 msgid "Apply a template when creating the content"
@@ -1714,6 +1719,11 @@ msgstr "Soll „{title}“ wirklich gelöscht werden? Diese Aktion kann nicht r�
 msgctxt "bases.taskCardActions.deleteManyMessage"
 msgid "Are you sure you want to delete {count} tasks? This action cannot be undone."
 msgstr "Sollen {count} Aufgaben wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden."
+
+#: src/modals/ProjectSelectModal.ts
+msgctxt "projectSelector.assignedProjects"
+msgid "Assigned projects"
+msgstr "Zugewiesene Projekte"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.at"
@@ -2308,6 +2318,7 @@ msgstr "Angezeigte Kalender"
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 #: src/modals/TimeEntryEditorModal.ts
+#: src/modals/UserFieldEditModal.ts
 #: src/settings/native/keyboardShortcutMessages.ts
 msgctxt "common.cancel"
 msgid "Cancel"
@@ -3635,6 +3646,11 @@ msgctxt "notices.commands.repeatNotCompleted"
 msgid "Current task is not completed"
 msgstr "Die aktuelle Aufgabe ist nicht abgeschlossen"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.currentValues"
+msgid "Current values"
+msgstr "Aktuelle Werte"
+
 #: src/ui/StatusBarService.ts
 msgctxt "ui/StatusBarService: StatusBarService.renderStatusBar display"
 msgid "Currently tracking:\n"
@@ -4691,6 +4707,11 @@ msgstr "Früheste Zeit in Timeline-Ansichten (HH:MM Format)"
 msgctxt "settings/components/CardComponent: createEditHeaderButton tooltip"
 msgid "Edit"
 msgstr "Bearbeiten"
+
+#: src/settings/native/keyboardShortcutsTab.ts
+msgctxt "keyboardEdit.editField"
+msgid "Edit {name}"
+msgstr "{name} bearbeiten"
 
 #: src/commands/taskNotesCommands.ts
 msgctxt "commands.editCurrentTask"
@@ -8971,6 +8992,11 @@ msgctxt "modals.task.userFields.pickDate"
 msgid "Pick {field} date"
 msgstr "{field}-Datum wählen"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.pickDate"
+msgid "Pick date"
+msgstr "Datum auswählen"
+
 #: src/components/DateContextMenu.ts
 #: src/components/task-context-menu/properties.ts
 #: src/ui/taskPropertyPickers.ts
@@ -9418,6 +9444,11 @@ msgctxt "views.pomodoro.recent.heading"
 msgid "Recent sessions"
 msgstr "Aktuelle Sitzungen"
 
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.recentValues"
+msgid "Recent values"
+msgstr "Zuletzt verwendete Werte"
+
 #: src/components/CustomRecurrenceModal.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.recurFrom"
 msgid "Recur from"
@@ -9653,6 +9684,12 @@ msgstr "URL für Remote-Abonnement fehlt"
 msgctxt "settings.integrations.subscriptionsList.typeOptions.remote"
 msgid "Remote URL"
 msgstr "Remote-URL"
+
+#: src/modals/ProjectSelectModal.ts
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.removeValue"
+msgid "Remove {name}"
+msgstr "{name} entfernen"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.removeAriaLabel"
@@ -13460,6 +13497,11 @@ msgstr "Benutzername:"
 msgctxt "settings.appearance.taskFilenames.filenameFormat.options.uuid"
 msgid "UUID v4"
 msgstr "UUID v4"
+
+#: src/modals/UserFieldEditModal.ts
+msgctxt "keyboardEdit.value"
+msgid "Value"
+msgstr "Wert"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.taskPriorities.fields.value"

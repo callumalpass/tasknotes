@@ -1,4 +1,5 @@
 import type { Modifier } from "obsidian";
+import { uiData } from "../i18n/dataText";
 
 /**
  * Canonical vocabulary and parsing helpers for Task List shortcuts.
@@ -274,18 +275,19 @@ export function taskListShortcutToScopeBinding(
 export const resolveDefaultTaskListKeyboardAction = resolveTaskListKeyboardAction;
 
 export function formatTaskListShortcut(shortcut: string, isMacOS: boolean): string {
+	// Preserve keycap identifiers as part of the configured chord notation.
 	const symbols: Record<string, string> = isMacOS
 		? { mod: "⌘", ctrl: "⌃", meta: "⌘", alt: "⌥", shift: "⇧" }
-		: { mod: "Ctrl", ctrl: "Ctrl", meta: "Meta", alt: "Alt", shift: "Shift" };
+		: { mod: uiData("Ctrl", "Physical shortcut keycap identifier"), ctrl: uiData("Ctrl", "Physical shortcut keycap identifier"), meta: uiData("Meta", "Physical shortcut keycap identifier"), alt: uiData("Alt", "Physical shortcut keycap identifier"), shift: uiData("Shift", "Physical shortcut keycap identifier") };
 	const keyLabels: Record<string, string> = {
 		slash: "/",
 		plus: "+",
-		space: "Space",
-		enter: "Enter",
-		delete: "Delete",
-		escape: "Esc",
-		home: "Home",
-		end: "End",
+		space: uiData("Space", "Physical shortcut keycap identifier"),
+		enter: uiData("Enter", "Physical shortcut keycap identifier"),
+		delete: uiData("Delete", "Physical shortcut keycap identifier"),
+		escape: uiData("Esc", "Physical shortcut keycap identifier"),
+		home: uiData("Home", "Physical shortcut keycap identifier"),
+		end: uiData("End", "Physical shortcut keycap identifier"),
 		arrowdown: "↓",
 		arrowup: "↑",
 	};
