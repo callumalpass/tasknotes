@@ -35,5 +35,3 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - (#2677) Restored drag-and-drop reordering for task statuses and priorities in Properties settings. Thanks to @hikatamika for reporting.
-- (#2671) Status and priority settings keep the full text you enter when mdbase is enabled. Ordinary settings saves no longer create migration backup folders. Thanks to @Oneiran for reporting and tracing the issue.
-- (#2670) Fixed Kanban card dragging stuttering with high-polling-rate mice, especially below the last card in a large column. Thanks to @Oneiran for reporting and investigating.
