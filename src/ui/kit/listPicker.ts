@@ -2,7 +2,7 @@ import { setIcon } from "obsidian";
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../../i18n/runtime";
 import { renderKeyHint } from "./keyHint";
-import { openPopover, type PopoverHandle, type PopoverOptions } from "./popover";
+import { isMobileLayout, openPopover, type PopoverHandle, type PopoverOptions } from "./popover";
 
 export interface PickerItem {
 	id: string;
@@ -44,12 +44,16 @@ export function matchesPickerQuery(item: PickerItem, query: string): boolean {
 let pickerSequence = 0;
 
 export function openListPicker(options: ListPickerOptions): PopoverHandle {
+	const anchorDocument = "getBoundingClientRect" in options.anchor ? options.anchor.ownerDocument : activeDocument;
+	// On touch layouts the keyboard opens only when the search field is tapped.
+	const mobile = isMobileLayout(anchorDocument);
 	const popover = openPopover({
 		...options,
+		sheet: mobile,
 		className: `tn-picker ${options.className ?? ""}`.trim(),
 	});
 	const { el } = popover;
-	el.dataset.inputMode = "keyboard";
+	el.dataset.inputMode = mobile ? "pointer" : "keyboard";
 	const listId = `tn-picker-list-${++pickerSequence}`;
 	if (options.title) el.createDiv({ cls: "tn-popover__title", text: options.title });
 	const input = el.createEl("input", {
@@ -189,10 +193,11 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 	}
 
 	input.addEventListener("input", () => {
+		el.dataset.inputMode = "keyboard";
 		activeIndex = 0;
 		render();
 	});
-	input.addEventListener("keydown", (event) => {
+	el.addEventListener("keydown", (event) => {
 		const rowCount = rows().length;
 		if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
 			event.preventDefault();
@@ -214,6 +219,9 @@ export function openListPicker(options: ListPickerOptions): PopoverHandle {
 		activeIndex = firstSelected;
 		paintActive(true);
 	}
-	input.focus();
+	if (mobile) {
+		el.tabIndex = -1;
+		el.focus({ preventScroll: true });
+	} else input.focus();
 	return popover;
 }

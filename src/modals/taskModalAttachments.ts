@@ -34,14 +34,21 @@ export interface MaterializedTaskModalAttachments {
 	rollback: () => Promise<void>;
 }
 
+/**
+ * `resolveLink` finds the file a reference points to the way Obsidian does. TaskNotes stores
+ * attachment links by full vault path, but when a file or folder is renamed Obsidian rewrites them
+ * in its own link format, such as `[[report.pdf]]`, which the stored-format parser reads from the
+ * vault root. Task cards already resolve links through Obsidian, so the modal does the same.
+ */
 export function createLinkedAttachmentEntries(
 	references: readonly string[] | undefined,
-	sourcePath: string
+	sourcePath: string,
+	resolveLink?: (reference: string, sourcePath: string) => string | undefined
 ): TaskModalAttachmentEntry[] {
 	return (references ?? []).map((reference) => ({
 		kind: "linked",
 		reference,
-		path: attachmentPathFromReference(reference, sourcePath),
+		path: resolveLink?.(reference, sourcePath) ?? attachmentPathFromReference(reference, sourcePath),
 	}));
 }
 

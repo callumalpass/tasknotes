@@ -435,6 +435,9 @@ export function mergeCanonicalTaskTypeDocument(
 		throw new Error("The existing mdbase type frontmatter must be an object.");
 	}
 
+	const previousIdField = asRecord(
+		existingImplementationsFor(existingValue).find((entry) => entry.contract === "tasknotes.task")?.fields
+	)?.id;
 	const desired = preserveUnownedCanonicalSettings(existingValue, generated.type);
 	const existingImplementations = Array.isArray(existingValue.implements)
 		? existingValue.implements.filter(isRecord)
@@ -450,6 +453,10 @@ export function mergeCanonicalTaskTypeDocument(
 	document.setIn(["implements"], mergedImplementations);
 
 	deleteStaleManagedFields(document, existingValue, desired);
+	// A renamed ID property keeps one generator: the one preserved under the new name.
+	if (typeof previousIdField === "string" && previousIdField !== asRecord(desiredImplementation.fields)?.id) {
+		document.deleteIn(["lifecycle", "on_create", "set", previousIdField]);
+	}
 	for (const path of MANAGED_OPTIONAL_PATHS) {
 		if (!hasPath(desired, path)) {
 			document.deleteIn(path);
@@ -520,6 +527,10 @@ function validateUniqueStrings(values: string[], label: string, issues: string[]
 	if (new Set(values).size !== values.length) {
 		issues.push(`${label} values must be unique`);
 	}
+}
+
+function existingImplementationsFor(type: UnknownRecord): UnknownRecord[] {
+	return Array.isArray(type.implements) ? type.implements.filter(isRecord) : [];
 }
 
 function deleteStaleManagedFields(

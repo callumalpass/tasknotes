@@ -16,8 +16,6 @@ Example:
 ```
 ## Fixed
 
-- (#2602) Fixed the time range shown while dragging to create a timeblock, task or time entry in the calendar being hidden behind existing events. The selection now draws above existing events, so its time range can be read while dragging over them.
-  - Thanks to @RumiaKitinari for reporting
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
@@ -34,20 +32,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
-## Added
-
-- (#2615) Added **Hide top-level subtasks** to the Calendar view's list (Agenda) layout and the month view's selected day panel, as in Task List and Kanban. When on, a subtask whose parent task is listed on the same day shows only under the parent's expanded subtasks instead of also as its own row. A subtask whose parent isn't listed that day keeps its own row. See [Agenda View](https://tasknotes.dev/views/agenda-view/#customization).
-  - Thanks to @tistieom for the request
-
 ## Fixed
 
-- (#2606) Fixed Ctrl/Cmd-click on a task in Task List, Kanban, Calendar and Agenda views selecting the task instead of opening its note in a new tab. Ctrl/Cmd-click and middle-click now open the note in a new tab on every task card, calendar event and task link in a note, as links do in Obsidian; Ctrl/Cmd+Alt-click opens it to the side. To select several tasks, Shift-click a task first; while a selection is active, Ctrl/Cmd-click adds or removes tasks as before. The task menu again has **Open note in new tab** next to **Open note**, instead of only under **Note actions**. See [Task List view](https://tasknotes.dev/views/task-list/#task-actions).
-  - Thanks to @minchinweb for reporting
-- (#2618) Fixed the "About default `.base` files" note at the end of the release notes pointing to a General settings page that no longer exists. It now points to **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files** and mentions the **TaskNotes: Update default base files** command.
-  - Thanks to @Alireza-RS for reporting
-- (#2579) Fixed task links in notes taking extra space on phones in Live Preview. A task link on a checkbox line (`- [ ] [[Task]]`) took three lines (checkbox, task, then the convert button) and now stays on one row, level with the checkbox. When no status or priority is shown, the title no longer starts after an empty gap.
-  - Thanks to @BrucePlumb for reporting
-- (#2624) Fixed the tops of the Sort, Group, Filter, Properties and Search labels being cut off in the Relationships widget toolbar when the toolbar wrapped onto two lines. The toolbar's header now grows to fit it, in the Relationships widget and in other TaskNotes Bases views.
-  - Thanks to @prepare4robots for reporting
 - Fixed moving a recurring task in the Calendar view clearing its completed and skipped occurrences without asking. Dragging the next occurrence to another day, or dropping the task onto the calendar from elsewhere, such as a task link in a note, removed every completed or skipped occurrence on or after the new date. The calendar now asks first and lists those dates, as changing the scheduled date from the date picker does; **Cancel** leaves the task where it was, with its history. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-clears-later-instances).
   - Thanks to @martin-forge for the fix

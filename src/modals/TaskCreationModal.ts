@@ -437,7 +437,8 @@ export class TaskCreationModal extends TaskModal {
 
 		this.attachmentEntries = createLinkedAttachmentEntries(
 			this.options.prePopulatedValues?.attachments,
-			""
+			"",
+			this.resolveAttachmentLink
 		);
 
 		this.form.values.details = this.normalizeDetails(this.form.values.details);

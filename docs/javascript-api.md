@@ -203,7 +203,7 @@ const operators = api.catalog.filterOperators();
 ## Tasks
 
 All paths are vault-relative Markdown file paths. New tasks created or converted by TaskNotes v5
-receive a UUID in the standard `id` frontmatter field. That ID remains unchanged when a task file
+receive a UUID in the `id` frontmatter field (or the property key configured for **Task ID**). That ID remains unchanged when a task file
 moves or is renamed, while `path` continues to identify the task's current location. Existing tasks
 without an ID remain valid and are not migrated automatically.
 

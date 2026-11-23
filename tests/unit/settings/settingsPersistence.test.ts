@@ -89,6 +89,7 @@ describe("settings persistence helpers", () => {
 		await expect(loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })).resolves.toEqual({
 			data: null,
 			compromised: true,
+			failure: { reason: "no-settings-data" },
 		});
 		// The first read plus 20 retries, about two seconds at the default delay.
 		expect(host.loadData).toHaveBeenCalledTimes(21);
@@ -108,11 +109,11 @@ describe("settings persistence helpers", () => {
 		expect(host.loadData).toHaveBeenCalledTimes(1);
 	});
 
-	it("retries when Obsidian transiently returns undefined for existing plugin data", async () => {
+	it("retries an undefined read without relying on the existence probe", async () => {
 		const recoveredData = { tasksFolder: "Projects/Tasks" };
 		const host = createHost({
 			dir: ".obsidian/plugins/tasknotes",
-			dataFileExists: true,
+			dataFileExists: false,
 			loadResults: [undefined, recoveredData],
 		});
 
@@ -121,6 +122,44 @@ describe("settings persistence helpers", () => {
 			compromised: false,
 		});
 		expect(host.loadData).toHaveBeenCalledTimes(2);
+		expect(host.app.vault.adapter.exists).not.toHaveBeenCalled();
+	});
+
+	it("keeps startup blocked if an undefined read is followed by a null read", async () => {
+		const host = createHost({ dir: ".obsidian/plugins/tasknotes", loadResults: [undefined, null] });
+
+		await expect(loadPluginSettingsDataWithRetry(host, { retryCount: 1, retryDelayMs: 0 })).resolves.toEqual({
+			data: null,
+			compromised: true,
+			failure: { reason: "no-settings-data" },
+		});
+		expect(host.app.vault.adapter.exists).not.toHaveBeenCalled();
+	});
+
+	it.each([0, 1])("retries a rejection after %i null reads", async (nullReads) => {
+		const recoveredData = { tasksFolder: "Projects/Tasks" };
+		const host = createHost({ dir: ".obsidian/plugins/tasknotes", dataFileExists: true, loadResults: [recoveredData] });
+		if (nullReads) host.loadData.mockResolvedValueOnce(null);
+		host.loadData.mockRejectedValueOnce(Object.assign(new Error("Timed out"), { code: "ETIMEDOUT" }));
+
+		await expect(loadPluginSettingsDataWithRetry(host, { retryDelayMs: 0 })).resolves.toEqual({
+			data: recoveredData,
+			compromised: false,
+		});
+		expect(host.loadData).toHaveBeenCalledTimes(nullReads + 2);
+	});
+
+	it("blocks startup after rejected reads and reports the error code without the message", async () => {
+		const host = createHost({ dir: ".obsidian/plugins/tasknotes" });
+		host.loadData.mockRejectedValue(Object.assign(new Error("Private path"), { code: "ETIMEDOUT" }));
+
+		await expect(loadPluginSettingsDataWithRetry(host, { retryCount: 2, retryDelayMs: 0 })).resolves.toEqual({
+			data: null,
+			compromised: true,
+			failure: { reason: "settings-read-error", errorCode: "ETIMEDOUT" },
+		});
+		expect(host.loadData).toHaveBeenCalledTimes(3);
+		expect(host.app.vault.adapter.exists).not.toHaveBeenCalled();
 	});
 
 	it("does not interpret an existence probe error as an absent settings file", async () => {
@@ -144,7 +183,24 @@ describe("settings persistence helpers", () => {
 		const host = createHost({ dir: ".obsidian/plugins/tasknotes", loadResults: [null] });
 		host.app.vault.adapter.exists.mockRejectedValueOnce(new Error("I/O error"));
 		jest.spyOn(console, "warn").mockImplementation(() => undefined);
-		await expect(loadPluginSettingsDataWithRetry(host)).resolves.toEqual({ data: null, compromised: true });
+		await expect(loadPluginSettingsDataWithRetry(host, { retryCount: 1, retryDelayMs: 0 })).resolves.toEqual({
+			data: null,
+			compromised: true,
+			failure: { reason: "settings-existence-check-error" },
+		});
+		expect(host.loadData).toHaveBeenCalledTimes(2);
+	});
+
+	it("loads settings that become readable after the existence probe fails", async () => {
+		const recoveredData = { tasksFolder: "Projects/Tasks" };
+		const host = createHost({ dir: ".obsidian/plugins/tasknotes", loadResults: [null, recoveredData] });
+		host.app.vault.adapter.exists.mockRejectedValueOnce(new Error("Timed out"));
+		jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+		await expect(loadPluginSettingsDataWithRetry(host, { retryCount: 1, retryDelayMs: 0 })).resolves.toEqual({
+			data: recoveredData,
+			compromised: false,
+		});
 	});
 
 	it("migrates a legacy custom property before indexing without dropping colliding names", () => {

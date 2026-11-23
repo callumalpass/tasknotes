@@ -1,4 +1,4 @@
-import { Scope, type App } from "obsidian";
+import { Platform, Scope, type App } from "obsidian";
 
 export interface PopoverPoint {
 	x: number;
@@ -10,6 +10,8 @@ export interface PopoverOptions {
 	resolveAnchor?: () => HTMLElement | null;
 	app?: App;
 	className?: string;
+	/** Bottom sheet above the on-screen keyboard instead of anchored to `anchor`. */
+	sheet?: boolean;
 	onClose?: () => void;
 }
 
@@ -21,6 +23,11 @@ export interface PopoverHandle {
 
 const VIEWPORT_MARGIN = 8;
 const ANCHOR_GAP = 4;
+
+/** Phone and tablet layouts, including Obsidian's mobile emulation. */
+export function isMobileLayout(doc: Document = activeDocument): boolean {
+	return Platform.isMobile || doc.body.classList.contains("is-mobile");
+}
 
 function isElementAnchor(anchor: HTMLElement | PopoverPoint): anchor is HTMLElement {
 	return "getBoundingClientRect" in anchor;
@@ -69,8 +76,9 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 
 	const host = modal ?? doc.body;
 	const el = host.createDiv({
-		cls: ["tasknotes-plugin", "tn-popover", options.className ?? ""].filter(Boolean),
+		cls: ["tasknotes-plugin", "tn-popover", options.sheet ? "tn-popover--sheet" : "", options.className ?? ""].filter(Boolean),
 	});
+	const visualViewport = options.sheet ? win.visualViewport : null;
 
 	const reposition = () => {
 		if (options.resolveAnchor) {
@@ -80,6 +88,17 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 				return;
 			}
 			anchor = nextAnchor;
+		}
+		if (options.sheet) {
+			// The keyboard either shrinks the visual viewport or is reported by Obsidian as --keyboard-height.
+			const covered = visualViewport
+				? Math.max(0, win.innerHeight - visualViewport.offsetTop - visualViewport.height)
+				: 0;
+			el.setCssProps({
+				"--tn-sheet-viewport-height": `${win.innerHeight}px`,
+				"--tn-sheet-covered": `${covered}px`,
+			});
+			return;
 		}
 		el.setCssProps({ "--tn-popover-height": `${Math.max(0, win.innerHeight - VIEWPORT_MARGIN * 2)}px` });
 		const rect = isElementAnchor(anchor)
@@ -145,6 +164,8 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 			win.removeEventListener("keydown", onKeyDown, true);
 			win.removeEventListener("blur", handle.close);
 			win.removeEventListener("resize", reposition);
+			visualViewport?.removeEventListener("resize", reposition);
+			visualViewport?.removeEventListener("scroll", reposition);
 			doc.removeEventListener("scroll", reposition, true);
 			el.remove();
 			if (current === handle) current = null;
@@ -185,6 +206,8 @@ export function openPopover(options: PopoverOptions): PopoverHandle {
 	win.addEventListener("keydown", onKeyDown, true);
 	win.addEventListener("blur", handle.close);
 	win.addEventListener("resize", reposition);
+	visualViewport?.addEventListener("resize", reposition);
+	visualViewport?.addEventListener("scroll", reposition);
 	doc.addEventListener("scroll", reposition, true);
 	current = handle;
 	return handle;

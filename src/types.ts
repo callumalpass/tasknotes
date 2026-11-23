@@ -695,6 +695,7 @@ export type FieldMappingKey = keyof FieldMapping;
 export type TaskCardPropertyId = string;
 
 export interface FieldMapping {
+	id?: string; // Stable task identity. Optional so settings saved before this field existed keep working; defaults to id
 	title: string;
 	status: string;
 	priority: string;

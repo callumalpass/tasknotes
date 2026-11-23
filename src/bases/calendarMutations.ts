@@ -3,7 +3,10 @@ import type { TaskInfo } from "../types";
 import type { CalendarEventChange } from "./calendarEngine";
 import { format } from "date-fns";
 import { formatUIDate } from "../i18n/formatters";
-import { formatTime } from "../utils/dateUtils";
+import { formatTime, parseDateToLocal } from "../utils/dateUtils";
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
+import { planCalendarPatternGesture } from "./calendarPatternGesture";
 import { TFile } from "obsidian";
 import {
 	handleTimeblockDrop,
@@ -276,6 +279,46 @@ async function applyTaskCalendarGesture(
 		const start = info.event.start.toISOString();
 		const current = await context.plugin.cacheManager.getTaskInfo(taskInfo.path);
 		if (!current) throw new Error(`Missing task: ${taskInfo.path}`);
+		const change = { kind, start, end: info.event.end?.toISOString(), allDay: info.event.allDay };
+		const timeFormat = (context.options.timeFormat ?? context.plugin.settings.calendarViewSettings?.timeFormat) === "12" ? "12" : "24";
+		const when = (value: string) => {
+			const date = parseDateToLocal(value);
+			return `${formatUIDate(date, "PP")}${value.includes("T") ? ` ${formatTime(date, timeFormat)}` : ""}`;
+		};
+		// A projected occurrence follows the series' rule, so the drop position is not
+		// what changes: either this occurrence becomes a note, or the series time moves.
+		const pattern = planCalendarPatternGesture(current, modelEntry, change, context.timezone);
+		if (pattern?.kind === "unchanged") {
+			info.revert();
+			return;
+		}
+		if (pattern?.kind === "occurrence") {
+			info.revert();
+			const occurrence = await context.plugin.taskService.materializeOccurrence(
+				current,
+				pattern.occurrenceDate,
+				pattern.overrides
+			);
+			await context.refreshTask(current);
+			const moved = uiText(
+				msg({
+					message: "Moved the {from} occurrence to {to}. Other occurrences are unchanged.",
+					context: "calendar recurring occurrence drop feedback",
+				}),
+				{
+					from: formatUIDate(parseDateToLocal(pattern.occurrenceDate), "PP"),
+					to: when(occurrence.scheduled ?? pattern.overrides.scheduled ?? pattern.occurrenceDate),
+				}
+			);
+			showTaskUndo(
+				[() => context.plugin.taskService.deleteTask(occurrence)],
+				false,
+				1,
+				context.plugin.app.vault,
+				`${current.title} · ${moved}`
+			);
+			return;
+		}
 		const result = await captureTaskUndo(context.plugin, current, () => context.plugin.taskService.applyCalendarEdit(
 			current,
 			modelEntry,
@@ -293,7 +336,15 @@ async function applyTaskCalendarGesture(
 			await context.refreshTask(result.task);
 			const feedback = kind === "resize" && info.event.end
 				? calendarResizeFeedback(result.task.title, info.event.start, info.event.end)
-				: `${result.task.title} · ${formatUIDate(info.event.start, "PP")}${info.event.allDay ? "" : ` ${formatTime(info.event.start, (context.options.timeFormat ?? context.plugin.settings.calendarViewSettings?.timeFormat) === "12" ? "12" : "24")}`}`;
+				: pattern?.kind === "series-time"
+					? `${result.task.title} · ${uiText(
+						msg({
+							message: "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time.",
+							context: "calendar recurring pattern drop feedback",
+						}),
+						{ time: formatTime(info.event.start, timeFormat) }
+					)}`
+					: `${result.task.title} · ${formatUIDate(info.event.start, "PP")}${info.event.allDay ? "" : ` ${formatTime(info.event.start, timeFormat)}`}`;
 			showTaskUndo(result.undo ? [result.undo] : [], false, 1, context.plugin.app.vault, feedback);
 		}
 		else info.revert();

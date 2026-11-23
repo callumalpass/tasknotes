@@ -5916,11 +5916,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Container füllen"
 
-#: src/bases/BasesViewBase.ts
-msgctxt "views.stats.sections.filters"
-msgid "Filters"
-msgstr "Filter"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
@@ -7378,6 +7373,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, one {# Aufgabe} other {# Aufgaben}} nach {destination} verschoben"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "Vorkommen vom {from} nach {to} verschoben. Andere Vorkommen bleiben unverändert."
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -7915,9 +7915,9 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "Keine Aufgaben entsprechen „{searchTerm}“"
 
 #: src/bases/BasesViewBase.ts
-msgctxt "empty task view recovery"
-msgid "No tasks match this view. Review its filters."
-msgstr "Keine Aufgaben entsprechen dieser Ansicht. Prüfe ihre Filter."
+msgctxt "empty task view"
+msgid "No tasks match this view."
+msgstr "Keine Aufgaben entsprechen dieser Ansicht."
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
@@ -10076,6 +10076,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "Werte durch Kommas trennen."
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "Serienstatus"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "Serienstatus"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "Serienstatus: {value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "Serienuhrzeit auf {time} geändert. Spätere Vorkommen erscheinen jetzt zu dieser Uhrzeit; das nächste Vorkommen behält seine eigene Uhrzeit."
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10139,6 +10160,11 @@ msgstr "Erinnerungen setzen"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "Planungsdatum setzen"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "Serienstatus setzen"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -11276,6 +11302,11 @@ msgctxt "settings.integrations.googleCalendarExport.notices.noDateToSync"
 msgid "Task has no scheduled or due date to sync"
 msgstr "Die Aufgabe hat weder ein Planungs- noch ein Fälligkeitsdatum für die Synchronisierung"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.properties.id.name"
+msgid "Task ID"
+msgstr "Aufgaben-ID"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.header"
 msgid "Task identification"
@@ -12071,6 +12102,12 @@ msgstr "Diese Notiz ist bereits eine Aufgabe"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "Dies bietet bessere Datenbeständigkeit mit Ihren Notizen"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "Diese wiederkehrende Aufgabe hat an diesem Datum kein Vorkommen, das aktualisiert werden kann"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"

@@ -609,6 +609,10 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		recurrence: ctx.t(msg({ message: "Recurrence", context: "settings.taskProperties.properties.recurrence.name" })),
 		reminders: ctx.t(msg({ message: "Reminders", context: "settings.taskProperties.properties.reminders.name" })),
 	};
+	// Named here rather than in `labels`, which lists the core properties.
+	const names: Partial<Record<keyof FieldMapping, string>> = {
+		id: ctx.t(msg({ message: "Task ID", context: "settings.taskProperties.properties.id.name" })),
+	};
 	const triggers: Record<string, string> = {
 		status: "status:",
 		priority: "!",
@@ -674,6 +678,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			type: "page",
 			name:
 				labels[property] ??
+				names[property] ??
 				property.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase()),
 			displayValue: () => mapping[property] ?? "",
 			items,

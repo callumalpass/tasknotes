@@ -2,6 +2,7 @@ import {
 	addDTSTARTToRecurrenceRule,
 	generateRecurringInstances,
 	getNextUncompletedOccurrence,
+	hasRecurringSeriesEnded,
 	updateDTSTARTInRecurrenceRule,
 	updateToNextScheduledOccurrence,
 } from "../../core/recurrence";
@@ -24,12 +25,20 @@ import {
 	resolveRecurringMoveDate,
 } from "./recurringMoveIdentity";
 
+/** Statuses a bounded series moves to when it ends, and back to when it reopens. */
+export interface RecurringSeriesEndStatuses {
+	completedStatus: string;
+	reopenedStatus: string;
+	isCompletedStatus: (status: string | undefined) => boolean;
+}
+
 export interface BuildRecurringTaskCompletePlanInput {
 	freshTask: TaskInfo;
 	targetDate: Date;
 	currentTimestamp: string;
 	maintainDueDateOffsetInRecurring: boolean;
 	statusAfterOccurrence?: string;
+	seriesEndStatuses?: RecurringSeriesEndStatuses;
 }
 
 export interface BuildRecurringTaskSkippedPlanInput {
@@ -38,6 +47,7 @@ export interface BuildRecurringTaskSkippedPlanInput {
 	currentTimestamp: string;
 	maintainDueDateOffsetInRecurring: boolean;
 	statusAfterOccurrence?: string;
+	seriesEndStatuses?: RecurringSeriesEndStatuses;
 }
 
 export interface RecurringTaskCompletePlan {
@@ -99,6 +109,26 @@ function applyStatusAfterOccurrence(
 ): void {
 	if (statusAfterOccurrence && updatedTask.scheduled !== freshTask.scheduled) {
 		updatedTask.status = statusAfterOccurrence;
+	}
+}
+
+/**
+ * Completing or skipping the last open occurrence of a COUNT or UNTIL series
+ * finishes the task, so it takes a completed status (and with it the status's
+ * auto-archive). Reopening an occurrence of an ended series reopens the task.
+ */
+function applySeriesEndStatus(
+	updatedTask: TaskInfo,
+	freshTask: TaskInfo,
+	statuses: RecurringSeriesEndStatuses | undefined
+): void {
+	if (!statuses) return;
+	const wasEnded = hasRecurringSeriesEnded(freshTask);
+	const isEnded = hasRecurringSeriesEnded(updatedTask);
+	if (isEnded && !wasEnded && !statuses.isCompletedStatus(updatedTask.status)) {
+		updatedTask.status = statuses.completedStatus;
+	} else if (wasEnded && !isEnded && statuses.isCompletedStatus(updatedTask.status)) {
+		updatedTask.status = statuses.reopenedStatus;
 	}
 }
 
@@ -164,6 +194,35 @@ function getOwningRecurrenceDate(task: TaskInfo, targetDate: Date): Date | null 
 	}
 
 	return findOwningRecurrenceDate(task, targetDate);
+}
+
+/**
+ * Resolve the series date that completing or skipping at `targetDate` records,
+ * or null when the rule has no occurrence for it (for example after a COUNT or
+ * UNTIL series has ended). Completion-anchored series and Google Calendar
+ * exceptions record the action date itself. A date already recorded resolves to
+ * itself, so entries written before this check existed can still be cleared.
+ */
+export function resolveRecurringInstanceDate(task: TaskInfo, targetDate: Date): string | null {
+	if (!task.recurrence) return null;
+
+	const owningRecurrenceDate = getOwningRecurrenceDate(task, targetDate);
+	if (owningRecurrenceDate) {
+		return formatDateForStorage(owningRecurrenceDate);
+	}
+
+	const dateStr = formatDateForStorage(targetDate);
+	if (
+		(task.recurrence_anchor || "scheduled") === "completion" ||
+		task.googleCalendarExceptionOriginalScheduled
+	) {
+		return dateStr;
+	}
+
+	const recorded =
+		getStringArray(task.complete_instances).includes(dateStr) ||
+		getStringArray(task.skipped_instances).includes(dateStr);
+	return recorded ? dateStr : null;
 }
 
 function moveScheduledDateToOccurrence(
@@ -243,6 +302,7 @@ export function buildRecurringTaskCompletePlan({
 	currentTimestamp,
 	maintainDueDateOffsetInRecurring,
 	statusAfterOccurrence,
+	seriesEndStatuses,
 }: BuildRecurringTaskCompletePlanInput): RecurringTaskCompletePlan {
 	if (!freshTask.recurrence) {
 		throw new Error("Task is not recurring");
@@ -352,6 +412,7 @@ export function buildRecurringTaskCompletePlan({
 	if (newComplete) {
 		applyStatusAfterOccurrence(updatedTask, freshTask, statusAfterOccurrence);
 	}
+	applySeriesEndStatus(updatedTask, freshTask, seriesEndStatuses);
 
 	return {
 		updatedTask,
@@ -438,6 +499,7 @@ export function buildRecurringTaskSkippedPlan({
 	currentTimestamp,
 	maintainDueDateOffsetInRecurring,
 	statusAfterOccurrence,
+	seriesEndStatuses,
 }: BuildRecurringTaskSkippedPlanInput): RecurringTaskSkippedPlan {
 	if (!freshTask.recurrence) {
 		throw new Error("Task is not recurring");
@@ -509,6 +571,7 @@ export function buildRecurringTaskSkippedPlan({
 	if (newSkipped) {
 		applyStatusAfterOccurrence(updatedTask, freshTask, statusAfterOccurrence);
 	}
+	applySeriesEndStatus(updatedTask, freshTask, seriesEndStatuses);
 
 	return {
 		updatedTask,
