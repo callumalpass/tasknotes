@@ -32,7 +32,7 @@ import { createVaultBinaryFile } from "../services/VaultMutationService";
 import type { TaskDependency, TaskInfo } from "../types";
 import { DEFAULT_DEPENDENCY_RELTYPE, formatDependencyLink } from "../utils/dependencyUtils";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
-import { generateLink } from "../utils/linkUtils";
+import { generateLink, parseLinkToPath } from "../utils/linkUtils";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import {
 	createTaskModalBlockedByField,
@@ -175,6 +175,13 @@ export abstract class TaskModal extends Modal {
 	private readonly fieldErrorEls = new Map<TaskFormErrorField, HTMLElement>();
 
 	// Dependency item definition
+	/** The vault path an attachment link points to, resolved as Obsidian resolves links. */
+	protected resolveAttachmentLink = (reference: string, sourcePath: string): string | undefined => {
+		const linkpath = parseLinkToPath(reference);
+		if (!linkpath) return undefined;
+		return this.app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath)?.path;
+	};
+
 	protected createDependencyItemFromFile(
 		file: TFile,
 		options: { sourcePath?: string } = {}

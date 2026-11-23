@@ -1581,6 +1581,8 @@ body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__dat
 
 body .tasknotes-plugin .task-card:not(.task-card--layout-inline) .task-card__metadata-date {
     flex-direction: row;
+    /* Keep the date icon beside its text; a long relative date wraps within the text instead. */
+    flex-wrap: nowrap;
     gap: var(--tn-space-1);
     padding: 0;
     max-width: 100%;

@@ -5915,11 +5915,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "コンテナを埋める"
 
-#: src/bases/BasesViewBase.ts
-msgctxt "views.stats.sections.filters"
-msgid "Filters"
-msgstr "フィルター"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
@@ -7379,6 +7374,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "{count, plural, other {# 件のタスク}}を {destination} に移動しました"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "{from} の回を {to} に移動しました。ほかの回は変更されていません。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -7916,9 +7916,9 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "「{searchTerm}」に一致するタスクはありません"
 
 #: src/bases/BasesViewBase.ts
-msgctxt "empty task view recovery"
-msgid "No tasks match this view. Review its filters."
-msgstr "このビューに一致するタスクはありません。フィルターを確認してください。"
+msgctxt "empty task view"
+msgid "No tasks match this view."
+msgstr "このビューに一致するタスクはありません。"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
@@ -10077,6 +10077,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "値をカンマで区切ります。"
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "シリーズのステータス"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "シリーズのステータス"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "シリーズのステータス：{value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "シリーズの時刻を {time} に変更しました。以降の回はこの時刻に表示されます。次の回は独自の時刻のままです。"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10140,6 +10161,11 @@ msgstr "リマインダーを設定"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "予定日を設定"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "シリーズのステータスを設定"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -11277,6 +11303,11 @@ msgctxt "settings.integrations.googleCalendarExport.notices.noDateToSync"
 msgid "Task has no scheduled or due date to sync"
 msgstr "タスクに同期する予定日または期限がありません"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.properties.id.name"
+msgid "Task ID"
+msgstr "タスクID"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.header"
 msgid "Task identification"
@@ -12072,6 +12103,12 @@ msgstr "このノートはすでにタスクです"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "これによりノートとのデータの永続性が向上します"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "この繰り返しタスクには、その日付に更新できる回がありません"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"

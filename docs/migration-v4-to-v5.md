@@ -76,7 +76,7 @@ Values saved for these settings stay in `data.json`, so devices still on 4.x kee
 
 ## Stable task IDs
 
-New and converted tasks receive a UUID in the `id` frontmatter property. The ID stays the same when a task file is renamed or moved, so integrations can refer to a task without depending on its path.
+New and converted tasks receive a UUID in the `id` frontmatter property. The property key can be changed under **Settings → TaskNotes → Properties → Metadata & integration properties → Task ID**. The ID stays the same when a task file is renamed or moved, so integrations can refer to a task without depending on its path.
 
 Existing tasks without an `id` remain valid and are not changed. Path-based integrations continue to work. The JavaScript API adds `getByPath()` and `getById()`; see [JavaScript API](javascript-api.md).
 

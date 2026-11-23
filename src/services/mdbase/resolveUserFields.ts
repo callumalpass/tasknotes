@@ -35,7 +35,8 @@ export function resolveRetainedUserFields(
 	const properties = object(object(object(type.schema).value).properties);
 	const generator = object(type["x-tasknotes-generator"]);
 	const managed = new Set(Array.isArray(generator.managed_fields) ? generator.managed_fields : []);
-	const reserved = new Set([...reservedFields, "id", "tags"]);
+	// reservedFields includes the mapped ID property, so a plain `id` is a user field once ID is remapped.
+	const reserved = new Set([...reservedFields, "tags"]);
 	const fields = new Map(resolved.map((field) => [field.key, field]));
 	for (const [key, schema] of Object.entries(properties)) {
 		if (reserved.has(key) || fields.has(key)) continue;

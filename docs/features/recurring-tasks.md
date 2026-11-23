@@ -104,7 +104,7 @@ Good uses include:
 - A maintenance task where each visit needs photos, links, or a checklist
 - A recurring meeting where every occurrence should have its own time entries and completion state
 
-To create one manually, right-click a recurring task card or calendar occurrence and choose **Open or create occurrence note**. The Task Action Palette also exposes **Open or create occurrence note** for recurring tasks. If a matching note already exists for the same parent and date, TaskNotes opens it instead of creating a duplicate.
+To create one manually, right-click a recurring task card or calendar occurrence and choose **Open or create occurrence note**. Dragging a pattern instance to another day in the calendar also creates its occurrence note. The Task Action Palette also exposes **Open or create occurrence note** for recurring tasks. If a matching note already exists for the same parent and date, TaskNotes opens it instead of creating a duplicate.
 
 An occurrence note is an ordinary TaskNotes task. It appears in views, can be edited like any other task, and shows an occurrence pill that links back to the recurring parent. On the calendar, a materialized occurrence replaces the matching virtual parent occurrence for the same parent/date pair, so you do not see both the generated instance and the note-backed instance at the same time.
 
@@ -147,7 +147,7 @@ Leaving the global template empty preserves the existing filename behavior. Task
 
 Right-click a recurring parent and open **Occurrence notes** to choose its policy:
 
-- **Create manually**: occurrence notes are only created by explicit action.
+- **Create manually**: occurrence notes are only created by explicit action, such as the menu command or dragging a pattern instance to another day.
 - **Create next after completion**: after you complete a materialized occurrence note, TaskNotes creates the next occurrence note.
 - **Rolling window**: defined by the TaskNotes spec, but not automated in the plugin yet.
 
@@ -213,12 +213,12 @@ TaskNotes captures this identity when rescheduling through its controls or task 
 
 ## Calendar Drag and Drop
 
-Calendar interactions follow the same model distinction: drag the concrete next item to reschedule execution, or drag a pattern instance to redefine the recurrence anchor.
+Calendar interactions follow the same model distinction: drag the concrete next item to reschedule execution, or drag a pattern instance to change the series' time or move that one instance.
 
 Recurring tasks can show:
 
 - **Next occurrence** (solid border): dragging updates only `scheduled`
-- **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
+- **Pattern instances** (dashed border): dragging to another time on the same day updates the time in `DTSTART`, which moves every later pattern instance. Dragging to another day, or between the all-day row and a time slot, creates an occurrence note for that instance at the drop position and leaves the rule unchanged. See [Calendar Views](../views/calendar-views.md#drag-and-drop-behavior).
 - **Materialized occurrence notes**: dragging updates the occurrence note's own `scheduled` or `due` date like a normal task, without changing the parent's recurrence rule
 
 In list mode and the Agenda, the card for a pattern instance shows that instance's scheduled date as read-only text and leaves out the task's due date. To give one instance its own dates, create an occurrence note for it.
@@ -237,9 +237,15 @@ Dropping a recurring task on a status marked **Completed** in a Kanban or Task L
 
 When you complete an occurrence from the context menu, you can choose which date it is recorded against — today, the occurrence's scheduled date, its due date, or a date you pick (see [Completing Tasks](task-management.md#completing-tasks)). Completion-anchored recurrences resolve *on schedule* to the newly scheduled date, an explicit re-anchor.
 
+Completions and skips are recorded against an occurrence of the rule. For a scheduled-anchored series, a date that is not an occurrence is recorded against the series' open occurrence. When the series has none, such as after a `COUNT` or `UNTIL` series has ended, the context menu offers **Completed today** and the other actions disabled, and the edit modal's completion calendar only lets you click the series' own dates. Dates already recorded can still be cleared. Completion-anchored series can record any date.
+
 With **Reset status after each occurrence** turned on under [Settings → Time & reminders → Recurring tasks](../settings/features.md#recurring-tasks), completing or skipping an occurrence moves the series to the **Next status** of the first status marked **Completed** under [Settings → Task Properties](../settings/task-properties.md), so a status reached during one occurrence does not carry into the next. The setting is on in new setups, where TaskNotes' built-in Done status moves on to Open, and off in setups saved before it existed. **Undo** restores the previous status. With the setting off, or without a Next status on that completed status, the series keeps its status, and a task already in a completed status keeps it.
 
 With the reset on and a Next status set, clicking a recurring task's status indicator follows the status cycle, as it does for other tasks: it moves the series to the next status, and when that status is marked **Completed** it completes the occurrence shown on the card instead. Otherwise, the click completes the occurrence directly and keeps the series' status. On a completed occurrence, the click reopens it.
+
+### When a series ends
+
+A series with a `COUNT` or `UNTIL` limit ends once every occurrence its rule generates is completed or skipped. Completing or skipping that last occurrence sets the task to the first status marked **Completed**, so it is treated like any other completed task: it drops out of views that hide completed tasks, and if that status has **Auto-archive** turned on, the task is archived after the status's delay (see [Auto-Archiving](task-management.md#auto-archiving)). Reopening one of its occurrences sets the task back to the **Next status** of that completed status, or the default status. Dates recorded outside the rule do not count towards the end of a series. Series without a limit never end, and are never auto-archived.
 
 Completed instances are stored in:
 

@@ -148,6 +148,17 @@ function getNewlyRecordedInstanceDate(
 	return latest;
 }
 
+function hasReopenedInstance(originalTask: TaskInfo, updatedTask: TaskInfo): boolean {
+	const stillProcessed = new Set([
+		...getStringArray(updatedTask.complete_instances),
+		...getStringArray(updatedTask.skipped_instances),
+	]);
+	return (
+		getStringArray(originalTask.complete_instances).some((date) => !stillProcessed.has(date)) ||
+		getStringArray(originalTask.skipped_instances).some((date) => !stillProcessed.has(date))
+	);
+}
+
 export function normalizeTaskUpdateDetails(updates: TaskUpdateInput): string | null {
 	if (!Object.prototype.hasOwnProperty.call(updates, "details")) {
 		return null;
@@ -227,23 +238,30 @@ export function buildTaskUpdateRecurrenceUpdates({
 	if (Object.prototype.hasOwnProperty.call(updates, "scheduled")) {
 		const nextTask: TaskInfo = { ...originalTask, ...updates, ...recurrenceUpdates };
 		const completionActionDate = getNewlyRecordedInstanceDate(originalTask, updates);
+		const taskWithUpdatedHistory: TaskInfo = {
+			...originalTask,
+			complete_instances: updates.complete_instances ?? originalTask.complete_instances,
+			skipped_instances: updates.skipped_instances ?? originalTask.skipped_instances,
+		};
+		const reopenedInstance =
+			(updates.complete_instances !== undefined || updates.skipped_instances !== undefined) &&
+			hasReopenedInstance(originalTask, taskWithUpdatedHistory);
 
-		// History edits alone do not prove this is automatic advancement: API/modal
-		// patches can also include an intentional reschedule. Compare against the
-		// next occurrence from the original cursor, using only the updated history.
-		const expectedAdvance = completionActionDate
-			? updateToNextScheduledOccurrenceFn({
-				...originalTask,
-				complete_instances: updates.complete_instances ?? originalTask.complete_instances,
-				skipped_instances: updates.skipped_instances ?? originalTask.skipped_instances,
-			}, maintainDueDateOffsetInRecurring)
-			: undefined;
-		const isAutomaticAdvance =
-			completionActionDate &&
-			updates.scheduled === expectedAdvance?.scheduled &&
+		// Completing, skipping, or reopening can all recalculate the series cursor.
+		// Verify the date against the updated history to distinguish a manual move.
+		const expectedDates =
+			completionActionDate || reopenedInstance
+				? updateToNextScheduledOccurrenceFn(
+						taskWithUpdatedHistory,
+						maintainDueDateOffsetInRecurring
+					)
+				: undefined;
+		const isAutomaticScheduleChange =
+			expectedDates &&
+			updates.scheduled === expectedDates.scheduled &&
 			(updates.recurrence === undefined || updates.recurrence === originalTask.recurrence);
 
-		if (isAutomaticAdvance) {
+		if (isAutomaticScheduleChange) {
 			const pendingOriginal = getRecurringMoveOriginalDate(originalTask);
 			const processed =
 				pendingOriginal &&
@@ -257,11 +275,13 @@ export function buildTaskUpdateRecurrenceUpdates({
 			} else {
 				resolveRecurringMoveAfterAction(originalTask, nextTask, true);
 			}
-			resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
-				originalTask,
-				completionActionDate,
-				nextTask
-			);
+			if (completionActionDate) {
+				resolveGoogleCalendarRecurringExceptionAfterCurrentInstanceAction(
+					originalTask,
+					completionActionDate,
+					nextTask
+				);
+			}
 		} else {
 			applyRecurringMoveForScheduledChange(originalTask, nextTask);
 			applyGoogleCalendarRecurringExceptionForScheduledChange(
@@ -331,6 +351,11 @@ export function applyTaskUpdateFrontmatterChange({
 		}
 	});
 
+	// The shared mapper omits empty skip history. An explicit patch must clear it.
+	if (updates.skipped_instances?.length === 0) {
+		frontmatter[fieldMapper.toUserField("skippedInstances")] = [];
+	}
+
 	if (updates.status !== undefined) {
 		updateCompletedDateInFrontmatter(frontmatter, updates.status, !!originalTask.recurrence);
 	}
@@ -339,9 +364,10 @@ export function applyTaskUpdateFrontmatterChange({
 		applyConfiguredPropertyTaskIdentifier(frontmatter, taskIdentification);
 	}
 
+	const idField = fieldMapper.toUserField("id");
 	if (updates.customFrontmatter) {
 		Object.entries(updates.customFrontmatter).forEach(([key, value]) => {
-			if (key === "id") return;
+			if (key === idField) return;
 			if (value === null) {
 				delete frontmatter[key];
 			} else {
@@ -350,11 +376,11 @@ export function applyTaskUpdateFrontmatterChange({
 		});
 	}
 
-	// The shared mapper deliberately leaves the fixed identity field alone.
+	// The shared mapper deliberately leaves the mapped identity field alone.
 	// Reassert an existing ID so converting a note persists its newly assigned
 	// identity and ordinary edits cannot replace it through a patch/template.
 	if (originalTask.id) {
-		frontmatter.id = originalTask.id;
+		frontmatter[idField] = originalTask.id;
 	}
 
 	removeUnsetMappedFields(frontmatter, { ...updates, ...recurrenceUpdates }, fieldMapper);

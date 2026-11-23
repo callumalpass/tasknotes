@@ -7,7 +7,7 @@ import { NaturalLanguageParser, type ParsedTaskData } from "../services/NaturalL
 import { attachDateInputBehavior } from "../ui/dateInputBehavior";
 import { renderMonthCalendar } from "../ui/kit/monthCalendar";
 import { uiNumber } from "../i18n/formatters";
-import { formatDateForStorage } from "../utils/dateUtils";
+import { formatDateForStorage, getFirstDayOfNextWeek } from "../utils/dateUtils";
 
 export interface DateTimePickerOptions {
 	currentDate?: string | null;
@@ -75,13 +75,6 @@ export function parseNaturalLanguageDateTime(
 function addDays(date: Date, days: number): Date {
 	const result = new Date(date);
 	result.setDate(result.getDate() + days);
-	return result;
-}
-
-function nextMonday(from: Date): Date {
-	const result = new Date(from);
-	const daysUntilMonday = (1 - result.getDay() + 7) % 7 || 7;
-	result.setDate(result.getDate() + daysUntilMonday);
 	return result;
 }
 
@@ -180,7 +173,7 @@ export class DateTimePickerModal extends Modal {
 				label: this.translate(
 					msg({ message: "Next week", context: "settings.defaults.options.nextWeek" })
 				),
-				date: nextMonday(today),
+				date: getFirstDayOfNextWeek(today, this.options.plugin?.settings.calendarViewSettings?.firstDay),
 			},
 		];
 

@@ -76,3 +76,20 @@ it("restores a view root rather than a disconnected or inert row button", () => 
 	picker.close();
 	expect(document.activeElement).toBe(root);
 });
+
+it("opens as a bottom sheet on mobile without raising the keyboard, still navigable by key", () => {
+	Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: jest.fn() });
+	document.body.classList.add("is-mobile");
+	const anchor = document.body.createEl("button");
+	const onChoose = jest.fn();
+	const picker = openListPicker({ anchor, placeholder: "Due date", emptyText: "No matches", items: [
+		{ id: "today", label: "Today" },
+		{ id: "tomorrow", label: "Tomorrow" },
+	], onChoose });
+	expect(picker.el.classList.contains("tn-popover--sheet")).toBe(true);
+	expect(document.activeElement).toBe(picker.el);
+	expect(picker.el.style.getPropertyValue("--tn-popover-top")).toBe("");
+	picker.el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+	picker.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+	expect(onChoose).toHaveBeenCalledWith(expect.objectContaining({ id: "tomorrow" }));
+});

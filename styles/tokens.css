@@ -47,6 +47,7 @@
     --tn-radius-full: 999px;
     --tn-menu-radius: var(--menu-radius, var(--tn-radius-lg));
     --tn-menu-shadow: var(--shadow-s);
+    --tn-sheet-shadow: var(--tn-menu-shadow), 0 0 0 100vmax var(--background-modifier-cover);
     --tn-menu-padding: var(--size-2-3, var(--tn-space-1));
     --tn-picker-width: 320px;
 
