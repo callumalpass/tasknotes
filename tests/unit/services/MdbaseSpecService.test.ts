@@ -1163,8 +1163,8 @@ describe("MdbaseSpecService", () => {
 			expect(collection.links).toEqual({
 				"assignees[]": { validate_exists: false },
 				"attachments[]": { validate_exists: false },
-				"projects[]": { target_type: "any", validate_exists: false },
-				occurrence_template: { target_type: "any", validate_exists: false },
+				"projects[]": { validate_exists: false },
+				occurrence_template: { validate_exists: false },
 				recurrence_parent: { target_type: "task", validate_exists: false },
 				"blockedBy[].uid": { target_type: "task", validate_exists: false },
 			});
@@ -1221,10 +1221,7 @@ describe("MdbaseSpecService", () => {
 
 			expect(asObject(schema.properties)).toHaveProperty("summary");
 			expect(collection.display).toEqual({ name_field: "summary" });
-			expect(links["related_projects[]"]).toEqual({
-				target_type: "any",
-				validate_exists: false,
-			});
+			expect(links["related_projects[]"]).toEqual({ validate_exists: false });
 			expect(asObject(taskImplementation.fields)).toMatchObject({
 				title: "summary",
 				status: "task_status",
@@ -1877,16 +1874,18 @@ describe("MdbaseSpecService", () => {
 			"resolves concurrent canonical changes using the chosen %s source",
 			async (choice, expectedTasksFolder) => {
 				const plugin = createMockPlugin({ tasksFolder: "Initial/Tasks" });
-				const initial = buildTaskNotesMdbaseResources({ tasksFolder: "Initial/Tasks" });
-				const external = buildTaskNotesMdbaseResources({ tasksFolder: "External/Tasks" });
+				const service = new MdbaseSpecService(plugin);
+				const initial = service.buildTaskTypeDef();
+				const external = new MdbaseSpecService(
+					createMockPlugin({ tasksFolder: "External/Tasks" })
+				).buildTaskTypeDef();
 				const files = installMemoryVault(plugin, {
 					"mdbase.yaml": 'spec_version: "0.3.0"\nsettings:\n  types_folder: _types\n',
-					"_types/task.md": initial.typeDocument,
+					"_types/task.md": initial,
 				});
-				const service = new MdbaseSpecService(plugin);
 				await service.initialize();
 				plugin.app.vault.adapter.write.mockClear();
-				files.set("_types/task.md", external.typeDocument);
+				files.set("_types/task.md", external);
 				plugin.settings.tasksFolder = "Local/Tasks";
 				jest.spyOn(service as any, "askConflict").mockResolvedValue(choice);
 
@@ -1898,7 +1897,7 @@ describe("MdbaseSpecService", () => {
 						"_types/task.md",
 						expect.any(String)
 					);
-					expect(files.get("_types/task.md")).toBe(external.typeDocument);
+					expect(files.get("_types/task.md")).toBe(external);
 				} else {
 					expect(files.get("_types/task.md")).toContain("folder: Local/Tasks");
 				}
@@ -1988,16 +1987,16 @@ describe("MdbaseSpecService", () => {
 
 		it("adopts an existing canonical type before creating missing collection metadata", async () => {
 			const plugin = createMockPlugin();
-			const resources = buildTaskNotesMdbaseResources({
-				tasksFolder: "Existing/Tasks",
-			});
-			const files = installMemoryVault(plugin, { "_mdbase/types/task.md": resources.typeDocument });
+			const existing = new MdbaseSpecService(
+				createMockPlugin({ tasksFolder: "Existing/Tasks" })
+			).buildTaskTypeDef();
+			const files = installMemoryVault(plugin, { "_mdbase/types/task.md": existing });
 			const service = new MdbaseSpecService(plugin);
 
 			await service.initialize();
 
 			expect(plugin.settings.tasksFolder).toBe("Existing/Tasks");
-			expect(files.get("_mdbase/types/task.md")).toBe(resources.typeDocument);
+			expect(files.get("_mdbase/types/task.md")).toBe(existing);
 			expect(files.get("mdbase.yaml")).toContain("spec_version: 0.3.0");
 			expect(plugin.app.vault.create).not.toHaveBeenCalledWith(
 				"_mdbase/types/task.md",

@@ -47,6 +47,16 @@ describe("issue #2213 runtime plugin-data save guard", () => {
 		);
 	});
 
+	it("blocks writes when Obsidian returns undefined even if data.json appears absent", async () => {
+		jest.spyOn(console, "warn").mockImplementation(() => undefined);
+		const plugin = createPlugin({ dataFileExists: false });
+		plugin.loadData = jest.fn().mockResolvedValue(undefined);
+
+		await expect(plugin.loadPluginDataForSafeWrite("save-pomodoro-state")).resolves.toBeNull();
+		expect(plugin.app.vault.adapter.exists).not.toHaveBeenCalled();
+		expect((plugin as any).settingsLoadCompromised).toBe(true);
+	});
+
 	it("still allows first writes for a new install with no data.json yet", async () => {
 		const plugin = createPlugin({ dataFileExists: false });
 		plugin.loadData = jest.fn().mockResolvedValue(null);

@@ -956,10 +956,10 @@ msgstr "+1 semana"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] Sobre os arquivos `.base` padrão\n"
 "> Alterações nos modelos `.base` gerados por padrão não substituem seus arquivos `.base` existentes, para manter suas personalizações.\n"
-"> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Geral → Visualizações e arquivos base → Atualizar arquivos**."
+"> Se quiser as melhorias mais recentes dos modelos, regenere os arquivos base em **Configurações → TaskNotes → Aparência e interação → Visualizações e arquivos base → Atualizar arquivos** ou execute o comando **TaskNotes: Atualizar arquivos Base padrão**."
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -6496,6 +6496,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Ocultar pastas do mdbase no explorador de arquivos"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"

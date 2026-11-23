@@ -41,10 +41,14 @@ export type SettingsDataHost = {
 	loadData(): Promise<LoadedSettingsData | null | undefined>;
 };
 
-export type SettingsDataReadResult = {
-	data: LoadedSettingsData | null;
-	compromised: boolean;
+type SettingsDataReadFailure = {
+	reason: "no-settings-data" | "settings-read-error" | "settings-existence-check-error";
+	errorCode?: string;
 };
+
+export type SettingsDataReadResult =
+	| { data: LoadedSettingsData | null; compromised: false }
+	| { data: null; compromised: true; failure: SettingsDataReadFailure };
 
 export type SettingsBuildResult = {
 	settings: TaskNotesSettings;
@@ -87,6 +91,14 @@ export async function pluginDataFileExists(host: SettingsDataHost): Promise<bool
 	}
 }
 
+function getReadErrorCode(error: unknown): string | undefined {
+	if (typeof error !== "object" || error === null || !("code" in error)) {
+		return undefined;
+	}
+	const { code } = error;
+	return typeof code === "string" && /^[A-Z][A-Z0-9_]{1,39}$/.test(code) ? code : undefined;
+}
+
 export async function loadPluginSettingsDataWithRetry(
 	host: SettingsDataHost,
 	options: { retryCount?: number; retryDelayMs?: number } = {}
@@ -96,31 +108,37 @@ export async function loadPluginSettingsDataWithRetry(
 	// seconds for that write to finish before treating the file as unreadable.
 	const retryCount = options.retryCount ?? 20;
 	const retryDelayMs = options.retryDelayMs ?? 100;
+	let failure: SettingsDataReadFailure = { reason: "no-settings-data" };
 
-	const loadedData = (await host.loadData()) ?? null;
-	if (loadedData !== null) {
-		return { data: loadedData, compromised: false };
-	}
-
-	try {
-		if (!(await pluginDataFileExists(host))) {
-			return { data: null, compromised: false };
+	for (let attempt = 0; attempt <= retryCount; attempt++) {
+		if (attempt > 0) {
+			await delay(retryDelayMs);
 		}
-	} catch {
-		// Unknown is not absent. Abort startup rather than saving defaults over
-		// possibly existing settings after an I/O or Sync existence-probe error.
-		return { data: null, compromised: true };
-	}
 
-	for (let attempt = 0; attempt < retryCount; attempt++) {
-		await delay(retryDelayMs);
-		const retryData = (await host.loadData()) ?? null;
-		if (retryData !== null) {
-			return { data: retryData, compromised: false };
+		let loadedData: LoadedSettingsData | null | undefined;
+		try {
+			loadedData = await host.loadData();
+		} catch (error) {
+			failure = { reason: "settings-read-error", errorCode: getReadErrorCode(error) };
+			continue;
+		}
+
+		if (loadedData !== null && loadedData !== undefined) {
+			return { data: loadedData, compromised: false };
+		}
+
+		if (attempt === 0 && loadedData === null) {
+			try {
+				if (!(await pluginDataFileExists(host))) {
+					return { data: null, compromised: false };
+				}
+			} catch (error) {
+				failure = { reason: "settings-existence-check-error", errorCode: getReadErrorCode(error) };
+			}
 		}
 	}
 
-	return { data: null, compromised: true };
+	return { data: null, compromised: true, failure };
 }
 
 function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSettingsData | null {
