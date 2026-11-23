@@ -977,6 +977,25 @@ body.is-mobile.tn-calendar-has-selection .tn-toast {
     overflow-wrap: normal;
 }
 
+.tasknotes-plugin .tn-calendar-list-stamp[role="button"] {
+    margin-inline: calc(-1 * var(--tn-space-half));
+    padding-inline: var(--tn-space-half);
+    border-radius: var(--tn-radius-sm);
+    cursor: var(--cursor);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body:not(.is-mobile) .tasknotes-plugin .tn-calendar-list-stamp[role="button"]:hover {
+        background: var(--tn-hover);
+        color: var(--tn-text-normal);
+    }
+}
+
+.tasknotes-plugin .tn-calendar-list-stamp[role="button"]:focus-visible {
+    outline: 2px solid var(--tn-focus-ring);
+    outline-offset: -2px;
+}
+
 .tasknotes-plugin :is(.tn-calendar-list-scheduled, .tn-calendar-list-deadline) svg {
     width: var(--tn-glyph-size);
     height: var(--tn-glyph-size);

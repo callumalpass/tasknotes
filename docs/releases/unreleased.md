@@ -47,9 +47,12 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
   - Thanks to @martin-forge for the suggestion
 - (#2619) With Sign in with Google, up to ten calendars can now be shown at a time, up from five. **Calendars shown** states the limit when an account has more calendars than that, and the remaining toggles are disabled once the limit is reached, instead of turning on and switching back off. See [Calendar setup](https://tasknotes.dev/calendar-setup/).
   - Thanks to @Alireza-RS for the request
+- (#2612) In Agenda views, the icon before each scheduled or due task (a calendar or flag, with the time for timed tasks) now opens a date picker for that date. Cards in Agenda leave out the date their row already sits under, so this restores one-click date changes. Recurring tasks still show their occurrence date on the card. See [Calendar views](https://tasknotes.dev/views/calendar-views/).
+  - Thanks to @djagoo for the suggestion
 
 ## Fixed
 
+- (#2612) Fixed timed tasks in Agenda views with no other properties on the card not showing their time.
 - (#2628) Fixed the scheduled date, due date, priority and other property pickers on phones and tablets opening the keyboard straight away, and running behind the keyboard so the lower options couldn't be reached. On mobile, these pickers now open as a bottom sheet again, and the keyboard opens only when you tap the search field. The sheet stays above the keyboard, and its list scrolls to every option.
   - Thanks to @prepare4robots for reporting
 - (#2667) Pressing Enter in task details now continues checklists, numbered lists, and bullet lists when creating or editing a task.

@@ -41,6 +41,7 @@ import { buildCalendarBatchPreview, isCalendarBatchTarget, isCalendarSelectionTa
 import { installCalendarSwipe } from "./calendarSwipe";
 import { CalendarBatchPreview } from "./calendarBatchPreview";
 import { DEFAULT_TASK_CLICK_EXCLUDE_SELECTOR, openTaskNote } from "../utils/clickHandlers";
+import { attachDateClickHandler } from "../ui/taskCardProperties";
 import { CalendarTaskProjection, calendarEntryToEvent, calendarMaterializedOccurrences } from "./calendarModelEvents";
 import { handleCalendarEventClick, handleCalendarEventContextMenu, toMouseEvent, type CalendarMenuContext } from "./calendarMenus";
 import { Notice, Platform, TFile, setIcon, setTooltip } from "obsidian";
@@ -2435,11 +2436,13 @@ export class CalendarView extends BasesViewBase {
 			const stamp = entry.createDiv({ cls: "tn-calendar-list-stamp" });
 			const metadata = card.querySelector<HTMLElement>(".task-card__metadata");
 			stamp.dataset.eventType = arg.item.data?.eventType ?? "";
-			if (arg.item.data?.eventType === "scheduled" && arg.timeText) {
+			const eventType = arg.item.data?.eventType;
+			if (eventType === "scheduled") {
 				const marker = stamp.createSpan({ cls: "tn-calendar-list-scheduled" });
 				marker.setAttribute("aria-hidden", "true");
 				setIcon(marker, "calendar");
-				stamp.setAttribute("aria-label", `${this.plugin.i18n.translate(messageForKey("ui.taskCard.labels.scheduled"))}: ${arg.timeText}`);
+				const scheduled = this.plugin.i18n.translate(messageForKey("ui.taskCard.labels.scheduled"));
+				stamp.setAttribute("aria-label", arg.timeText ? `${scheduled}: ${arg.timeText}` : scheduled);
 			}
 			if (arg.item.data?.eventType === "due") {
 				const deadline = this.plugin.i18n.translate(msg({ message: "Deadline", context: "calendar event marker" }));
@@ -2454,12 +2457,18 @@ export class CalendarView extends BasesViewBase {
 					const duration = (new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000;
 					tracked.createSpan({ text: uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), { value1: this.plugin.formatTime(duration) }) });
 					metadata.hidden = false;
+					metadata.style.removeProperty("display");
 					card.classList.remove("task-card--metadata-empty");
 				}
 			}
 			if (arg.timeText) {
 				const time = stamp.createSpan({ cls: "tn-calendar-list-time" });
 				time.textContent = arg.timeText;
+			}
+			// The card leaves out the date this row stands for (#2612), so the stamp edits it instead.
+			// Recurring tasks keep the occurrence date on the card.
+			if (!task.recurrence && (eventType === "scheduled" || eventType === "due")) {
+				attachDateClickHandler(stamp, task, this.plugin, eventType);
 			}
 			const priority = card.querySelector<HTMLElement>(".task-card__priority-dot");
 			const badges = card.querySelector<HTMLElement>(".task-card__badges");
@@ -2469,6 +2478,7 @@ export class CalendarView extends BasesViewBase {
 				if (badges) metadata.append(badges);
 				if (priority || badges?.childElementCount || stamp.childElementCount) {
 					metadata.hidden = false;
+					metadata.style.removeProperty("display");
 					card.classList.remove("task-card--metadata-empty");
 				}
 			}

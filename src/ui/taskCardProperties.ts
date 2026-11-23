@@ -145,7 +145,7 @@ function getDependencyDisplayLink(
 	return null;
 }
 
-function attachDateClickHandler(
+export function attachDateClickHandler(
 	span: HTMLElement,
 	task: TaskInfo,
 	plugin: TaskNotesPlugin,
