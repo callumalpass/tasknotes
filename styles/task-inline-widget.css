@@ -395,6 +395,16 @@ body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__main-row 
     gap: 0;
 }
 
+/* No status or priority shown: drop the empty lead column so the title starts at the edge. */
+body.is-mobile .tasknotes-plugin .task-card--layout-inline.task-card--no-lead .task-card__main-row {
+    grid-template-columns: 0 minmax(0, 1fr) var(--tn-touch-target);
+}
+
+/* On a checkbox line the checkbox and convert button share the card's line. */
+body.is-mobile .tasknotes-inline-widget-host--task-item > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
+    width: calc(100% - 2em);
+}
+
 body.is-mobile .tasknotes-plugin .task-card--layout-inline .task-card__content {
     grid-column: 2;
     grid-row: 1;
@@ -527,9 +537,14 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
     container-type: inline-size;
 }
 
-.tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
+.tasknotes-inline-widget-host > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence),
+.callout-title-inner .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) {
     display: inline;
     container-type: normal;
+}
+
+.callout-title-inner .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
+    max-width: 100%;
 }
 
 @container (max-width: 480px) {
@@ -547,6 +562,19 @@ body.is-mobile .tasknotes-plugin.tasknotes-inline-widget--sentence .task-card__i
         grid-template-rows: auto var(--tn-touch-target);
         gap: 0;
         width: 100%;
+    }
+
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--no-lead .task-card__main-row {
+        grid-template-columns: 0 minmax(0, 1fr) repeat(2, var(--tn-touch-target));
+    }
+
+    .tasknotes-inline-widget-host--task-item > .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline {
+        width: calc(100% - 2em);
+    }
+
+    /* A one-row card centres on the line, level with a bullet or checkbox. */
+    .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline.task-card--metadata-empty {
+        vertical-align: middle;
     }
 
     .tasknotes-plugin.tasknotes-inline-widget:not(.tasknotes-inline-widget--sentence) .task-card--layout-inline .task-card__content {

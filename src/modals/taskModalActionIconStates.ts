@@ -164,13 +164,16 @@ function updateStatusIcon(
 	renderConfiguredGlyph(icon, statusConfig?.icon, statusGlyph, (host) =>
 		renderStatusGlyph(host, statusGlyph)
 	);
+	// With a rule, Status sets the series' own status (#2632).
+	const series = Boolean(state.recurrenceRule);
 	updateConfiguredValueIcon(icon, context, {
 		isActive: Boolean(state.status && state.status !== state.defaultStatus),
-		activeTooltipKey: msg({
-			message: "Status: {value}",
-			context: "modals.task.tooltips.statusValue",
-		}),
-		defaultTooltipKey: msg({ message: "Set status", context: "modals.task.actions.status" }),
+		activeTooltipKey: series
+			? msg({ message: "Series status: {value}", context: "modals.task.tooltips.seriesStatusValue" })
+			: msg({ message: "Status: {value}", context: "modals.task.tooltips.statusValue" }),
+		defaultTooltipKey: series
+			? msg({ message: "Set series status", context: "modals.task.actions.seriesStatus" })
+			: msg({ message: "Set status", context: "modals.task.actions.status" }),
 		label: statusLabel,
 		color: statusConfig?.color,
 	});

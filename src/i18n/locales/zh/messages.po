@@ -944,10 +944,10 @@ msgstr "+1周"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] 关于默认 `.base` 文件\n"
 "> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n"
-"> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 视图与 base 文件 → 更新文件** 中重新生成 base 文件。"
+"> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 外观与交互 → 视图与 Base 文件 → 更新文件** 中重新生成 base 文件，或运行 **TaskNotes: 更新默认 Base 文件** 命令。"
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -6325,6 +6325,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "在文件列表中隐藏 mdbase 文件夹"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -7375,6 +7376,11 @@ msgstr "上移"
 msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "已将{count, plural, other { # 个任务}}移至 {destination}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "已将 {from} 的这次重复移至 {to}。其他重复未更改。"
 
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
@@ -10074,6 +10080,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "用逗号分隔值。"
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "系列状态"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "系列状态"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "系列状态：{value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "系列时间已改为 {time}。之后的重复现在显示在此时间；下一次重复保留其自身的时间。"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10137,6 +10164,11 @@ msgstr "设置提醒"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "设置计划日期"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "设置系列状态"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts

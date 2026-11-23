@@ -117,7 +117,7 @@
 		"@codemirror/view": "^6.38.6",
 		"@modelcontextprotocol/sdk": "1.32.1",
 		"@tasknotes/calendar": "0.1.12",
-		"@tasknotes/calendar-service-client": "0.1.1",
+		"@tasknotes/calendar-service-client": "0.1.2",
 		"@tasknotes/model": "0.3.0-rc.22",
 		"ajv": "8.20.0",
 		"ajv-formats": "3.0.1",

@@ -490,6 +490,18 @@
 .tnc-more-layer > * {
 	pointer-events: auto;
 }
+/*
+ * Host: a time-grid selection paints above timed items (inline z-index = overlap
+ * column + 1, 20 on hover) and "+N" stacks (30), and its labelled mirror is
+ * opaque, so the time label stays readable over existing events (#2602).
+ * Dragged items and drag mirrors (40) stay above it.
+ */
+.tnc-col > .tnc-sel-layer {
+	z-index: 35;
+}
+.tnc-col > .tnc-sel-layer > .tnc-sel--mirror {
+	background: linear-gradient(var(--tnc-accent-soft), var(--tnc-accent-soft)), var(--tnc-surface);
+}
 .tnc-sel {
 	position: absolute;
 	left: 0;

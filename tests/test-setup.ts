@@ -6,6 +6,11 @@ import { TextDecoder, TextEncoder } from "util";
 
 jest.unmock("obsidian");
 
+jest.mock("obsidian-daily-notes-interface", () => ({
+	...jest.requireActual("obsidian-daily-notes-interface"),
+	appHasDailyNotesPluginLoaded: () => false,
+}));
+
 // Mock global objects and APIs that would normally be provided by Obsidian
 (global as any).window = global.window || {};
 (global as any).document = global.document || {};
