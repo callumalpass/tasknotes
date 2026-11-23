@@ -40,7 +40,9 @@ export function showTaskModalPropertyPicker(
 	anchor: HTMLElement
 ): Promise<PopoverHandle | undefined> {
 	const draft = () => createTaskModalReminderDraft(context.getState());
-	return openTaskPropertyChoices(context.plugin, property, [draft()], anchor, (choice) => {
+	// A rule makes Status the series' own status, so the picker says so (#2632).
+	const recurrence = context.getState().recurrenceRule || undefined;
+	return openTaskPropertyChoices(context.plugin, property, [{ ...draft(), recurrence }], anchor, (choice) => {
 		const value = typeof choice === "function" ? choice(draft()) : choice;
 		if (typeof value !== "string" && value !== undefined) return;
 		if (property === "status") context.setStatus(value ?? "");

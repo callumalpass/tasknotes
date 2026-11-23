@@ -140,9 +140,9 @@ describe("taskCardMetadata", () => {
 			const values = metadataLine.createSpan();
 			const chip = values.createSpan({ text: "Studio" });
 			let measurements = 0;
-			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
-			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
-			chip.getBoundingClientRect = () => ({ right: measurements++ === 0 ? 300 : 100 }) as DOMRect;
+			metadataLine.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect;
+			chip.getBoundingClientRect = () => ({ left: 0, right: measurements++ === 0 ? 300 : 100 }) as DOMRect;
 			fitTaskCardMetadata(values, metadataLine);
 			resize();
 			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
@@ -169,12 +169,12 @@ describe("taskCardMetadata", () => {
 			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
 			const values = metadataLine.createSpan();
 			const chip = values.createSpan({ text: "Long metadata" });
-			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
-			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			metadataLine.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect;
 			chip.getBoundingClientRect = () => {
 				const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow");
 				if (overflow?.hidden && document.activeElement === overflow) overflow.blur();
-				return { right: 300 } as DOMRect;
+				return { left: 0, right: 300 } as DOMRect;
 			};
 			fitTaskCardMetadata(values, metadataLine);
 			resize();
@@ -215,9 +215,9 @@ describe("taskCardMetadata", () => {
 			scheduled.createSpan({ attr: { "aria-label": "Scheduled: tomorrow" } });
 			const due = metadataLine.createSpan({ cls: "task-card__date-slot" });
 			due.createSpan({ text: "Today" });
-			metadataLine.getBoundingClientRect = () => ({ right: 100 }) as DOMRect;
-			scheduled.getBoundingClientRect = () => ({ right: 80 }) as DOMRect;
-			due.getBoundingClientRect = () => ({ right: scheduled.hidden ? 80 : 140 }) as DOMRect;
+			metadataLine.getBoundingClientRect = () => ({ left: 0, right: 100 }) as DOMRect;
+			scheduled.getBoundingClientRect = () => ({ left: 0, right: 80 }) as DOMRect;
+			due.getBoundingClientRect = () => ({ left: 0, right: scheduled.hidden ? 80 : 140 }) as DOMRect;
 			fitTaskCardMetadata(values, metadataLine);
 			resize();
 			expect(scheduled.hidden).toBe(true);
@@ -247,11 +247,11 @@ describe("taskCardMetadata", () => {
 			const chip = values.createSpan({ cls: "task-card__metadata-property", text: "Long project" });
 			const scheduled = metadataLine.createSpan({ cls: "task-card__date-slot", text: "Today 10:00" });
 			const due = metadataLine.createSpan({ cls: "task-card__date-slot", text: "Today 14:00" });
-			metadataLine.getBoundingClientRect = () => ({ right: 250 }) as DOMRect;
-			values.getBoundingClientRect = () => ({ right: 50 }) as DOMRect;
-			chip.getBoundingClientRect = () => ({ right: 400 }) as DOMRect;
-			scheduled.getBoundingClientRect = () => ({ right: 100 }) as DOMRect;
-			due.getBoundingClientRect = () => ({ right: values.hidden ? 200 : 260 }) as DOMRect;
+			metadataLine.getBoundingClientRect = () => ({ left: 0, right: 250 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ left: 0, right: 50 }) as DOMRect;
+			chip.getBoundingClientRect = () => ({ left: 0, right: 400 }) as DOMRect;
+			scheduled.getBoundingClientRect = () => ({ left: 0, right: 100 }) as DOMRect;
+			due.getBoundingClientRect = () => ({ left: 0, right: values.hidden ? 200 : 260 }) as DOMRect;
 			fitTaskCardMetadata(values, metadataLine);
 			resize();
 			expect(chip.hidden).toBe(true);
@@ -260,6 +260,53 @@ describe("taskCardMetadata", () => {
 			expect(observe).toHaveBeenCalledWith(metadataLine);
 			expect(scheduled.hidden).toBe(false);
 			expect(due.hidden).toBe(false);
+		} finally {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		}
+	});
+
+	it("hides a date pushed off the start of an end-aligned line and refits when the row resizes (#2630)", () => {
+		const original = window.ResizeObserver;
+		let resize = () => {};
+		const observe = jest.fn();
+		window.ResizeObserver = class {
+			constructor(callback: () => void) { resize = callback; }
+			observe = observe;
+			unobserve() {}
+			disconnect() {}
+		} as unknown as typeof ResizeObserver;
+		try {
+			const { card, metadataLine } = createMetadataHost();
+			const row = document.createElement("div");
+			row.className = "task-card__main-row";
+			card.appendChild(row);
+			row.appendChild(metadataLine);
+			Object.defineProperty(metadataLine, "clientWidth", { value: 100 });
+			const values = metadataLine.createSpan();
+			const scheduled = metadataLine.createSpan({ cls: "task-card__date-slot" });
+			scheduled.createSpan({ attr: { "aria-label": "Scheduled: tomorrow" } });
+			const due = metadataLine.createSpan({ cls: "task-card__date-slot" });
+			due.createSpan({ text: "Today" });
+			let lineLeft = 100;
+			metadataLine.getBoundingClientRect = () => ({ left: lineLeft, right: 200 }) as DOMRect;
+			// The right edges always fit; with both dates showing, scheduled starts before the line.
+			scheduled.getBoundingClientRect = () => ({ left: 60, right: 130 }) as DOMRect;
+			due.getBoundingClientRect = () => ({ left: 130, right: 200 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			expect(observe).toHaveBeenCalledWith(row);
+			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;
+			overflow.getBoundingClientRect = () => ({ left: 104, right: 128 }) as DOMRect;
+			resize();
+			expect(scheduled.hidden).toBe(true);
+			expect(overflow.hidden).toBe(false);
+			expect(metadataLine.dataset.dates).toBe("1");
+			// The row widened, so the line has room for both dates again.
+			lineLeft = 40;
+			resize();
+			expect(scheduled.hidden).toBe(false);
+			expect(overflow.hidden).toBe(true);
+			expect(metadataLine.dataset.dates).toBe("2");
 		} finally {
 			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
 			window.ResizeObserver = original;
@@ -278,16 +325,16 @@ describe("taskCardMetadata", () => {
 		try {
 			const { metadataLine } = createMetadataHost();
 			Object.defineProperty(metadataLine, "clientWidth", { value: 200 });
-			metadataLine.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			metadataLine.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect;
 			const values = metadataLine.createSpan();
-			values.getBoundingClientRect = () => ({ right: 200 }) as DOMRect;
+			values.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect;
 			const project = values.createSpan({ text: "+Product refresh" });
 			let width = 27;
 			Object.defineProperties(project, {
 				clientWidth: { get: () => width },
 				scrollWidth: { value: 94 },
 			});
-			project.getBoundingClientRect = () => ({ right: width }) as DOMRect;
+			project.getBoundingClientRect = () => ({ left: 0, right: width }) as DOMRect;
 			fitTaskCardMetadata(values, metadataLine);
 			resize();
 			const overflow = metadataLine.querySelector<HTMLElement>(".task-card__metadata-overflow")!;

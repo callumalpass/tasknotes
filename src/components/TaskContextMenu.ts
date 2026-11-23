@@ -122,7 +122,7 @@ export class TaskContextMenu {
 		const propertyPicker = (property: TaskPickerProperty) => (anchor: { x: number; y: number }) =>
 			void openTaskPropertyPicker(plugin, property, [task], anchor, this.options.onUpdate);
 
-		pickerItem("status", this.t(msg({ message: "Status", context: "contextMenus.task.status" })), "circle", propertyPicker("status"));
+		pickerItem("status", this.statusTitle(task), "circle", propertyPicker("status"));
 		pickerItem("priority", this.t(msg({ message: "Priority", context: "contextMenus.task.priority" })), null, propertyPicker("priority"));
 		pickerItem("tags", this.t(msg({ message: "Tags", context: "contextMenus.task.tags" })), "tags", propertyPicker("tags"));
 		pickerItem("due", this.t(msg({ message: "Due date", context: "contextMenus.task.dueDate" })), "calendar", propertyPicker("due"));
@@ -524,12 +524,19 @@ export class TaskContextMenu {
 		});
 	}
 
+	/** On a recurring task, Status sets the series' own status (#2632). */
+	private statusTitle(task: TaskInfo): string {
+		return task.recurrence
+			? this.t(msg({ message: "Series status", context: "contextMenus.task.seriesStatus" }))
+			: this.t(msg({ message: "Status", context: "contextMenus.task.status" }));
+	}
+
 	private updateMainMenuIconColors(task: TaskInfo, plugin: TaskNotesPlugin): void {
 		const menuEl = this.targetDoc.querySelector(".menu");
 		if (!menuEl) return;
 
 		const menuItems = menuEl.querySelectorAll(".menu-item");
-		const statusTitle = this.t(msg({ message: "Status", context: "contextMenus.task.status" }));
+		const statusTitle = this.statusTitle(task);
 		const priorityTitle = this.t(
 			msg({ message: "Priority", context: "contextMenus.task.priority" })
 		);

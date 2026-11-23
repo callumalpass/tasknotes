@@ -10,6 +10,34 @@ const normalized = (value: unknown): unknown => Array.isArray(value) ? value.map
 const implementation = (type: ObjectValue): ObjectValue | undefined =>
 	Array.isArray(type.implements) ? type.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
 
+/** Remove the legacy placeholder from the two link rules emitted by TaskNotes. */
+export function removeGeneratedAnyLinkTargets(markdown: string, type: ObjectValue): string {
+	const fields = object(implementation(type)?.fields);
+	const generator = object(type["x-tasknotes-generator"]);
+	if (!Array.isArray(generator.managed_fields)) return markdown;
+
+	const links = object(object(type.collection).links);
+	const selectors = [];
+	if (typeof fields.projects === "string" && generator.managed_fields.includes(fields.projects)) {
+		selectors.push(`${fields.projects}[]`);
+	}
+	if (typeof fields.occurrenceTemplate === "string" && generator.managed_fields.includes(fields.occurrenceTemplate)) {
+		selectors.push(fields.occurrenceTemplate);
+	}
+	const affected = selectors.filter((selector) => {
+		const rule = object(links[selector]);
+		return rule.target_type === "any" && rule.validate_exists === false;
+	});
+	if (!affected.length) return markdown;
+
+	const { frontmatter, body, prefix } = requireFrontmatter(markdown);
+	const document = YAML.parseDocument(frontmatter);
+	for (const selector of affected) {
+		document.deleteIn(["collection", "links", selector, "target_type"]);
+	}
+	return `${prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${body}`;
+}
+
 /** Structural contract lift: no settings round-trip and no rewriting existing policies other than removing those rc.6 moved. */
 export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesMdbaseResources): string {
 	const parts = requireFrontmatter(markdown);

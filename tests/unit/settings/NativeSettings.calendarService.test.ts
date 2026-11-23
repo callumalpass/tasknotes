@@ -1,6 +1,7 @@
 import type { SettingDefinition, SettingDefinitionItem } from "obsidian";
 import { flattenSettings, page, settingsFixture, settle } from "../../helpers/native-settings";
 import { calendarDefinitions } from "../../../src/settings/native/integrations";
+import { MAX_SELECTED_CALENDARS } from "@tasknotes/calendar-service-client";
 
 jest.mock("../../../src/modals/ConfirmationModal", () => ({
 	showConfirmationModal: jest.fn().mockResolvedValue(true),
@@ -103,33 +104,31 @@ describe("Google Calendar sign-in settings", () => {
 	});
 
 	test("lets a signed-in person choose which calendars are shown, up to the limit", async () => {
-		const { definitions, hosted, ctx } = fixture({ signedIn: true, calendars: 7 });
+		const { definitions, hosted, ctx } = fixture({ signedIn: true, calendars: MAX_SELECTED_CALENDARS + 2 });
 		const google = page(definitions(), "Google Calendar");
+		const others = Array.from({ length: MAX_SELECTED_CALENDARS - 1 }, (_, index) => `calendar-${index + 1}`);
+		const next = `calendar-${MAX_SELECTED_CALENDARS}`;
+		const limit = `You can show up to ${MAX_SELECTED_CALENDARS} calendars at a time.`;
 
 		expect(named([google], "Sign in with Google")).toBeUndefined();
 		expect(ctx.read(`calendarService.calendar.${WORK}`)).toBe(true);
 		expect(ctx.read("calendarService.calendar.calendar-1")).toBe(false);
 
-		for (const index of [1, 2, 3, 4])
-			await ctx.write(`calendarService.calendar.calendar-${index}`, true);
-		expect(hosted.setShownCalendars).toHaveBeenLastCalledWith([
-			WORK,
-			"calendar-1",
-			"calendar-2",
-			"calendar-3",
-			"calendar-4",
-		]);
-		await expect(ctx.write("calendarService.calendar.calendar-5", true)).rejects.toThrow(
-			"You can show up to 5 calendars at a time."
-		);
+		for (const id of others) await ctx.write(`calendarService.calendar.${id}`, true);
+		expect(hosted.setShownCalendars).toHaveBeenLastCalledWith([WORK, ...others]);
+		await expect(ctx.write(`calendarService.calendar.${next}`, true)).rejects.toThrow(limit);
+		// The limit is stated, and calendars that can't turn on say so before a click.
+		const disabled = (name: string) => {
+			const control = named([google], name)?.control as { disabled?: () => boolean } | undefined;
+			return control?.disabled?.() ?? false;
+		};
+		expect(named([google], limit)).toBeDefined();
+		expect(disabled(`Calendar ${MAX_SELECTED_CALENDARS}`)).toBe(true);
+		expect(disabled("Calendar 1")).toBe(false);
 
 		await ctx.write(`calendarService.calendar.${WORK}`, false);
-		expect(hosted.setShownCalendars).toHaveBeenLastCalledWith([
-			"calendar-1",
-			"calendar-2",
-			"calendar-3",
-			"calendar-4",
-		]);
+		expect(hosted.setShownCalendars).toHaveBeenLastCalledWith(others);
+		expect(disabled(`Calendar ${MAX_SELECTED_CALENDARS}`)).toBe(false);
 	});
 
 	test("signs out, disconnects and deletes the account only when asked", async () => {

@@ -4,6 +4,7 @@ import { configLabel } from "../i18n/configLabels";
 import { uiText } from "../i18n/runtime";
 import { messageForKey } from "../i18n/messages";
 import { msg } from "@lingui/core/macro";
+import { format } from "date-fns";
 import {
 	App,
 	setIcon,
@@ -13,7 +14,7 @@ import {
 } from "obsidian";
 import { TaskInfo } from "../types";
 import TaskNotesPlugin from "../main";
-import { getDatePart, parseDateToUTC } from "../utils/dateUtils";
+import { getDatePart, getFirstDayOfNextWeek, parseDateToUTC } from "../utils/dateUtils";
 import { getRecurringMoveOriginalDate } from "../services/task-service/recurringMoveIdentity";
 import {
 	openMaterializedOccurrenceParent,
@@ -53,6 +54,7 @@ interface QuickDatePreset {
 
 type MomentLike = {
 	format(format: string): string;
+	toDate(): Date;
 	clone(): MomentLike;
 	add(amount: number, unit: string): MomentLike;
 	day(day: number): MomentLike;
@@ -459,6 +461,10 @@ export class TaskActionPaletteModal {
 		if (nextSaturday.isBefore(today) || nextSaturday.isSame(today, "day")) {
 			nextSaturday.add(1, "week");
 		}
+		const nextWeek = getFirstDayOfNextWeek(
+			today.toDate(),
+			this.plugin.settings?.calendarViewSettings?.firstDay
+		);
 
 		return [
 			{
@@ -485,9 +491,9 @@ export class TaskActionPaletteModal {
 			{
 				id: "next-week",
 				label: this.plugin.i18n.translate(msg({ message: "Next week", context: "modals.actionPalette.presets.nextWeek" })),
-				value: today.clone().day(1).add(1, "week").format("YYYY-MM-DD"),
+				value: format(nextWeek, "yyyy-MM-dd"),
 				icon: "calendar-plus",
-				keywords: ["next", "week", "monday"],
+				keywords: ["next", "week", format(nextWeek, "EEEE").toLowerCase()],
 			},
 			{
 				id: "next-month",
@@ -570,7 +576,9 @@ export class TaskActionPaletteModal {
 	private getCategoryLabel(category: TaskAction["category"]): string {
 		const key =
 			category === "status"
-				? msg({ message: "Status", context: "contextMenus.task.status" })
+				? this.task.recurrence
+					? msg({ message: "Series status", context: "contextMenus.task.seriesStatus" })
+					: msg({ message: "Status", context: "contextMenus.task.status" })
 				: category === "priority"
 					? msg({ message: "Priority", context: "contextMenus.task.priority" })
 					: messageForKey(`modals.actionPalette.categories.${category}`);
