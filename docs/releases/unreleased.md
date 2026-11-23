@@ -45,6 +45,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2632) Recurring tasks now label their status control **Series status** in the task context menu, the status picker (including the **S** shortcut and the action palette), the edit modal's status button and the notice after a change. It sets the status of the whole series and records no occurrence; to complete one occurrence, use **Mark complete or skip**. Materialized occurrence notes keep **Status**. See [Completing Tasks](https://tasknotes.dev/features/task-management/#completing-tasks).
   - Thanks to @martin-forge for the suggestion
+- (#2619) With Sign in with Google, up to ten calendars can now be shown at a time, up from five. **Calendars shown** states the limit when an account has more calendars than that, and the remaining toggles are disabled once the limit is reached, instead of turning on and switching back off. See [Calendar setup](https://tasknotes.dev/calendar-setup/).
+  - Thanks to @Alireza-RS for the request
 
 ## Fixed
 
