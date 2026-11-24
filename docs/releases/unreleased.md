@@ -32,13 +32,6 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
-## Added
-
-- (#2537) Press Backspace immediately after highlighted natural language input to keep that word or phrase in the task title. See [Highlighting in Natural Language Input](https://tasknotes.dev/features/task-management/#highlighting-in-natural-language-input). Thanks to @ac8318740 for the proposal.
-
 ## Fixed
 
 - (#2106) Open calendars that use the global first-day-of-week setting now update as soon as it changes. Thanks to @atos2212-blip and @leon-adsk for reporting.
-- (#2685) Reduced the pause when starting to drag a Kanban card, especially on large boards. Thanks to @Oneiran for reporting it.
-- (#2688) Restored blue highlighting for past scheduled dates on task cards. Thanks to @saket-pareek for reporting.
-- (#2679) Fixed short calendar timeblocks ending at midnight spilling into the next day. Thanks to @RumiaKitinari for reporting.
