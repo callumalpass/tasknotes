@@ -34,4 +34,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2688) Restored blue highlighting for past scheduled dates on task cards. Thanks to @saket-pareek for reporting.
 - (#2685) Reduced the pause when starting to drag a Kanban card, especially on large boards. Thanks to @Oneiran for reporting it.
