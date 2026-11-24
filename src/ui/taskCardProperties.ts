@@ -1029,7 +1029,6 @@ function renderScheduledDateProperty(
 						time: timeDisplay,
 					});
 	} else {
-		// Past scheduled dates are shown muted; only overdue due dates carry a warning.
 		const { display, fullDisplay } = formatCardDate(scheduled, plugin);
 		scheduledDateText = tTaskCard(plugin, "scheduledLabel", { label: scheduledLabel, display });
 		if (fullDisplay) {

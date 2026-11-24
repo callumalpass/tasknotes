@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2688) Restored blue highlighting for past scheduled dates on task cards. Thanks to @saket-pareek for reporting.
