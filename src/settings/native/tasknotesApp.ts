@@ -7,6 +7,7 @@ import {
 	type SettingDefinitionPage,
 } from "obsidian";
 import { uiData } from "../../i18n/dataText";
+import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import { APP_STORE_QR, GOOGLE_PLAY_QR, type StoreQrCode } from "./storeQrCodes";
 import type { SettingsContext } from "./SettingsContext";
 
@@ -59,8 +60,215 @@ export function tasknotesAppDefinitions(ctx: SettingsContext): SettingDefinition
 	const s = plugin.settings;
 	const t = ctx.t;
 	const folder = vaultFolderPath(ctx);
+	const pendingRecovery = () => plugin.mdbaseSpecService?.getPendingV02MigrationRecovery() ?? null;
+	const keepCurrentLabel = t(msg({ message: "Keep current files and resume", context: "settings.tasknotesApp.migrationRecovery.keepCurrent.name" }));
+	const restoreBackupLabel = t(msg({ message: "Restore v0.2 backup", context: "settings.tasknotesApp.migrationRecovery.restoreBackup.name" }));
 
 	const items: SettingDefinitionItem[] = [
+		{
+			type: "group",
+			heading: t(msg({ message: "Metadata upgrade recovery", context: "settings.tasknotesApp.migrationRecovery.heading" })),
+			visible: () => pendingRecovery() !== null,
+			items: [
+				{
+					name: t(msg({ message: "Metadata updates are paused", context: "settings.tasknotesApp.migrationRecovery.status.name" })),
+					searchable: false,
+					render: (setting) => {
+						const recovery = pendingRecovery();
+						if (!recovery) return;
+						setting.descEl.empty();
+						setting.descEl.addClass("tn-migration-recovery-details");
+
+						const summary =
+							recovery.blockedPaths.length > 0
+								? t(
+										msg({
+											message:
+												"An earlier mdbase v0.2 to v0.3 metadata upgrade was interrupted. TaskNotes paused automatic rollback so it would not overwrite changes to {files}. Your task files were not changed.",
+											context: "settings.tasknotesApp.migrationRecovery.status.blockedFiles",
+										}),
+										{ files: recovery.blockedPaths.join(", ") }
+									)
+								: recovery.reason === "backup-mismatch"
+									? t(
+											msg({
+												message:
+													"An earlier mdbase v0.2 to v0.3 metadata upgrade left a pending recovery record, and its backup files no longer match. TaskNotes left your current files untouched. Your task files were not changed.",
+												context: "settings.tasknotesApp.migrationRecovery.status.backupMismatch",
+											})
+										)
+									: t(
+											msg({
+												message:
+													"An earlier mdbase v0.2 to v0.3 metadata upgrade left a pending recovery record that could not be rolled back automatically. TaskNotes left your current files untouched. Your task files were not changed.",
+												context: "settings.tasknotesApp.migrationRecovery.status.generic",
+											})
+										);
+						setting.descEl.createDiv({ text: summary, cls: "mod-warning" });
+
+						if (recovery.blockedPaths.length > 0) {
+							const blockedRow = setting.descEl.createDiv({ cls: "tn-migration-recovery-path" });
+							blockedRow.createSpan({
+								text: t(
+									msg({
+										message: "{count, plural, =1 {Blocked file:} other {Blocked files:}}",
+										context: "settings.tasknotesApp.migrationRecovery.status.blockedFilesLabel",
+									}),
+									{ count: recovery.blockedPaths.length }
+								),
+							});
+							blockedRow.createEl("code", {
+								text: uiData(recovery.blockedPaths.join(", "), "Vault-relative metadata path, not UI prose"),
+							});
+						}
+
+						if (recovery.backupFolder) {
+							const backupRow = setting.descEl.createDiv({ cls: "tn-migration-recovery-path" });
+							backupRow.createSpan({
+								text: t(
+									msg({
+										message: "Backup folder:",
+										context: "settings.tasknotesApp.migrationRecovery.status.backupFolderLabel",
+									})
+								),
+							});
+							backupRow.createEl("code", {
+								text: uiData(recovery.backupFolder, "Vault-relative backup folder path, not UI prose"),
+							});
+						}
+
+						setting.descEl.createDiv({
+							text: t(
+								msg({
+									message: "Your backup folder is kept intact whichever option you choose.",
+									context: "settings.tasknotesApp.migrationRecovery.status.backupKept",
+								})
+							),
+						});
+					},
+				},
+				ctx.button("mdbase.migrationRecovery.keepCurrent", {
+					name: keepCurrentLabel,
+					desc: t(
+						msg({
+							message:
+								"Clears the pending upgrade record without modifying your metadata files or backup folder. If mdbase.yaml is valid v0.3, TaskNotes resumes metadata sync.",
+							context: "settings.tasknotesApp.migrationRecovery.keepCurrent.description",
+						})
+					),
+					buttonText: keepCurrentLabel,
+					onClick: async () => {
+						const recovery = pendingRecovery();
+						if (!recovery || !plugin.mdbaseSpecService) return;
+						const confirmed = await showConfirmationModal(plugin.app, {
+							title: t(
+								msg({
+									message: "Keep current files and resume?",
+									context: "settings.tasknotesApp.migrationRecovery.keepCurrent.confirmTitle",
+								})
+							),
+							message: recovery.backupFolder
+								? t(
+										msg({
+											message:
+												"TaskNotes will clear the pending upgrade record, keep your current files and the backup in {backupFolder}, and resume metadata sync if mdbase.yaml is valid v0.3.",
+											context: "settings.tasknotesApp.migrationRecovery.keepCurrent.confirmMessageWithBackup",
+										}),
+										{ backupFolder: recovery.backupFolder }
+									)
+								: t(
+										msg({
+											message:
+												"TaskNotes will clear the pending upgrade record, keep your current files, and resume metadata sync if mdbase.yaml is valid v0.3.",
+											context: "settings.tasknotesApp.migrationRecovery.keepCurrent.confirmMessage",
+										})
+									),
+							confirmText: keepCurrentLabel,
+							isDestructive: false,
+						});
+						if (!confirmed) return;
+						const result = await plugin.mdbaseSpecService.keepCurrentFilesAndResumeV02Migration();
+						ctx.rebuild();
+						new Notice(
+							result.synced
+								? t(
+										msg({
+											message: "Pending upgrade record cleared. TaskNotes resumed mdbase v0.3 metadata sync.",
+											context: "settings.tasknotesApp.migrationRecovery.keepCurrent.resumedNotice",
+										})
+									)
+								: t(
+										msg({
+											message: "Pending upgrade record cleared. Your current files and backup folder were kept.",
+											context: "settings.tasknotesApp.migrationRecovery.keepCurrent.clearedNotice",
+										})
+									)
+						);
+					},
+				}),
+				{
+					...ctx.button("mdbase.migrationRecovery.restoreBackup", {
+						name: restoreBackupLabel,
+						desc: t(
+							msg({
+								message:
+									"Replaces the changed metadata files with the verified v0.2 backup copies and clears the pending upgrade record. The backup folder is kept.",
+								context: "settings.tasknotesApp.migrationRecovery.restoreBackup.description",
+							})
+						),
+						buttonText: restoreBackupLabel,
+						onClick: async () => {
+							const recovery = pendingRecovery();
+							if (!recovery || !recovery.canRestoreBackup || !recovery.backupFolder || !plugin.mdbaseSpecService) {
+								return;
+							}
+							const confirmed = await showConfirmationModal(plugin.app, {
+								title: t(
+									msg({
+										message: "Restore v0.2 backup?",
+										context: "settings.tasknotesApp.migrationRecovery.restoreBackup.confirmTitle",
+									})
+								),
+								message: t(
+									msg({
+										message:
+											"This will overwrite {files} with the v0.2 backup from {backupFolder}. The backup folder itself will be kept intact.",
+										context: "settings.tasknotesApp.migrationRecovery.restoreBackup.confirmMessage",
+									}),
+									{
+										files: recovery.blockedPaths.join(", "),
+										backupFolder: recovery.backupFolder,
+									}
+								),
+								confirmText: restoreBackupLabel,
+								isDestructive: true,
+								defaultToConfirm: false,
+							});
+							if (!confirmed) return;
+							const result = await plugin.mdbaseSpecService.restoreV02MigrationBackup();
+							ctx.rebuild();
+							new Notice(
+								result.backupFolder
+									? t(
+											msg({
+												message: "Restored v0.2 metadata files. Recovery copies remain in {backupFolder}.",
+												context: "settings.tasknotesApp.migrationRecovery.restoreBackup.restoredNotice",
+											}),
+											{ backupFolder: result.backupFolder }
+										)
+									: t(
+											msg({
+												message: "Restored v0.2 metadata files.",
+												context: "settings.tasknotesApp.migrationRecovery.restoreBackup.restoredNoticeNoFolder",
+											})
+										)
+							);
+						},
+					}),
+					visible: () => pendingRecovery()?.canRestoreBackup === true,
+				},
+			],
+		},
 		{
 			type: "group",
 			items: [
@@ -224,7 +432,10 @@ export function tasknotesAppDefinitions(ctx: SettingsContext): SettingDefinition
 	return {
 		type: "page",
 		name: t(msg({ message: "TaskNotes App", context: "settings.tasknotesApp.page.name" })),
-		desc: t(msg({ message: "Use your tasks on the web, iPhone and Android.", context: "settings.tasknotesApp.page.description" })),
+		desc:
+			pendingRecovery() !== null
+				? t(msg({ message: "Metadata upgrade recovery needed.", context: "settings.tasknotesApp.page.recoveryNeeded" }))
+				: t(msg({ message: "Use your tasks on the web, iPhone and Android.", context: "settings.tasknotesApp.page.description" })),
 		items,
 	};
 }
