@@ -10,8 +10,29 @@ function makeView() {
 	} as any) as any;
 }
 
+function startNativeDrag(view: ReturnType<typeof makeView>) {
+	jest.useFakeTimers();
+	const board = document.createElement("div");
+	view.boardEl = board;
+	view.draggedTaskPath = "tasks/source.md";
+	const autoScroll = jest.spyOn(view, "handleAutoScroll").mockImplementation(() => {});
+	view.registerBoardListeners();
+	return { board, autoScroll };
+}
+
+function dispatchDrag(target: HTMLElement, type: string, clientY = 120) {
+	const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: 100, clientY });
+	const dataTransfer = { dropEffect: "copy" };
+	Object.defineProperty(event, "dataTransfer", { value: dataTransfer });
+	target.dispatchEvent(event);
+	return { event, dataTransfer };
+}
+
 describe("Kanban drag feedback", () => {
-	afterEach(() => jest.restoreAllMocks());
+	afterEach(() => {
+		jest.restoreAllMocks();
+		jest.useRealTimers();
+	});
 	it("restores both board axes synchronously without snapping the column navigator", () => {
 		const view = makeView();
 		view.rootElement = document.body.createDiv();
@@ -38,66 +59,100 @@ describe("Kanban drag feedback", () => {
 
 	it("rejects formula targets before accepting a native drop", () => {
 		const view = makeView();
-		view.boardEl = document.createElement("div");
+		const { board, autoScroll } = startNativeDrag(view);
+		const column = board.createDiv("kanban-view__column");
 		jest.spyOn(view, "getGroupByPropertyId").mockReturnValue("formula.status");
 		const preview = jest.spyOn(view.dragPreview, "setInvalid");
-		const event = { dataTransfer: { dropEffect: "move" }, preventDefault: jest.fn(), stopImmediatePropagation: jest.fn() };
-		view.updateNativeDropFeedback(event);
-		expect(event.dataTransfer.dropEffect).toBe("none");
-		expect(event.stopImmediatePropagation).toHaveBeenCalled();
-		expect(view.boardEl.classList.contains("kanban-view__board--invalid-drop")).toBe(true);
+		const onDragOver = jest.fn();
+		const onDrop = jest.fn();
+		column.addEventListener("dragover", onDragOver);
+		column.addEventListener("drop", onDrop);
+		const { event, dataTransfer } = dispatchDrag(column, "dragover");
+		expect(event.defaultPrevented).toBe(true);
+		expect(dataTransfer.dropEffect).toBe("none");
+		expect(onDragOver).not.toHaveBeenCalled();
+		expect(autoScroll).not.toHaveBeenCalled();
+		expect(preview).not.toHaveBeenCalled();
+
+		jest.advanceTimersByTime(16);
+		expect(board.classList.contains("kanban-view__board--invalid-drop")).toBe(true);
 		expect(preview).toHaveBeenCalledWith(expect.stringContaining("Formula values are computed"));
+
+		dispatchDrag(column, "dragover");
+		expect(dispatchDrag(column, "drop").event.defaultPrevented).toBe(true);
+		expect(onDrop).not.toHaveBeenCalled();
+		jest.advanceTimersByTime(16);
+		expect(autoScroll).toHaveBeenCalledTimes(1);
+		view.unload();
 	});
 
 	it("clears stale target and insertion feedback on leaving a cell", () => {
 		const view = makeView();
+		const { board } = startNativeDrag(view);
 		const preview = jest.spyOn(view.dragPreview, "setInvalid");
-		view.boardEl = document.createElement("div");
-		const column = document.createElement("div");
-		column.className = "kanban-view__column kanban-view__column--dragover";
-		const cards = document.createElement("div");
-		cards.className = "kanban-view__cards kanban-view__cards--drop-marker-end";
-		column.appendChild(cards);
-		view.boardEl.appendChild(column);
-		view.dragContainer = cards;
+		const column = board.createDiv("kanban-view__column");
+		const cards = column.createDiv("kanban-view__cards");
 		jest.spyOn(view, "getGroupByPropertyId").mockReturnValue("note.status");
-		view.updateNativeDropFeedback({ target: view.boardEl });
+		jest.spyOn(view.dataAdapter, "getSortConfig").mockReturnValue([{ property: "manual_order" }]);
+		dispatchDrag(column, "dragenter");
+		jest.advanceTimersByTime(16);
+		expect(column.classList.contains("kanban-view__column--dragover")).toBe(true);
+		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(true);
+
+		const { event, dataTransfer } = dispatchDrag(board, "dragover");
+		expect(event.defaultPrevented).toBe(false);
+		expect(dataTransfer.dropEffect).toBe("none");
+		jest.advanceTimersByTime(16);
 		expect(column.classList.contains("kanban-view__column--dragover")).toBe(false);
 		expect(cards.classList.contains("kanban-view__cards--drop-marker-end")).toBe(false);
 		expect(view.dragContainer).toBeNull();
-		expect(view.boardEl.classList.contains("kanban-view__board--invalid-drop")).toBe(true);
+		expect(board.classList.contains("kanban-view__board--invalid-drop")).toBe(true);
 		expect(preview).toHaveBeenCalledWith("Drop on a task row or group destination.");
+		view.unload();
 	});
 
 	it.each(["kanban-view__column", "kanban-view__swimlane-column"])("updates %s feedback on nested dragenter without waiting for dragover", columnClass => {
 		const view = makeView();
-		view.boardEl = document.createElement("div");
-		view.draggedTaskPath = "tasks/source.md";
-		const previous = document.createElement("div");
-		previous.className = `${columnClass} ${columnClass}--dragover`;
-		const destination = document.createElement("div");
-		destination.className = columnClass;
-		const card = document.createElement("div");
-		card.className = "kanban-view__card-wrapper";
-		const content = document.createElement("div");
-		content.className = "task-card__main-row";
-		card.appendChild(content);
-		destination.appendChild(card);
-		view.boardEl.append(previous, destination);
-		jest.spyOn(view, "handleAutoScroll").mockImplementation(() => {});
+		const { board } = startNativeDrag(view);
+		const previous = board.createDiv(columnClass);
+		const destination = board.createDiv(columnClass);
+		const card = destination.createDiv("kanban-view__card-wrapper");
+		const content = card.createDiv("task-card__main-row");
 		jest.spyOn(view, "getGroupByPropertyId").mockReturnValue("note.status");
 		card.addEventListener("dragenter", event => event.stopPropagation());
-		view.registerBoardListeners();
+		dispatchDrag(previous, "dragenter");
+		jest.advanceTimersByTime(16);
+		expect(previous.classList.contains(`${columnClass}--dragover`)).toBe(true);
 
-		const event = new MouseEvent("dragenter", { bubbles: true, cancelable: true, clientX: 100, clientY: 120 });
-		const dataTransfer = { dropEffect: "none" };
-		Object.defineProperty(event, "dataTransfer", { value: dataTransfer });
-		content.dispatchEvent(event);
-
+		const { event, dataTransfer } = dispatchDrag(content, "dragenter");
 		expect(event.defaultPrevented).toBe(true);
 		expect(dataTransfer.dropEffect).toBe("move");
+		expect(destination.classList.contains(`${columnClass}--dragover`)).toBe(false);
+		jest.advanceTimersByTime(16);
 		expect(previous.classList.contains(`${columnClass}--dragover`)).toBe(false);
 		expect(destination.classList.contains(`${columnClass}--dragover`)).toBe(true);
+		view.unload();
+	});
+
+	it("uses only the last dragover in a frame while accepting every valid event immediately", () => {
+		const view = makeView();
+		const { board, autoScroll } = startNativeDrag(view);
+		jest.spyOn(view, "getGroupByPropertyId").mockReturnValue("note.status");
+		const firstColumn = board.createDiv("kanban-view__column");
+		const lastColumn = board.createDiv("kanban-view__column");
+		for (let index = 0; index < 100; index++) {
+			const { event, dataTransfer } = dispatchDrag(firstColumn, "dragover", index);
+			expect(event.defaultPrevented).toBe(true);
+			expect(dataTransfer.dropEffect).toBe("move");
+		}
+		expect(dispatchDrag(lastColumn, "dragover", 200).event.defaultPrevented).toBe(true);
+		expect(autoScroll).not.toHaveBeenCalled();
+
+		jest.advanceTimersByTime(16);
+		expect(autoScroll).toHaveBeenCalledTimes(1);
+		expect(autoScroll).toHaveBeenCalledWith(100, 200);
+		expect(firstColumn.classList.contains("kanban-view__column--dragover")).toBe(false);
+		expect(lastColumn.classList.contains("kanban-view__column--dragover")).toBe(true);
 		view.unload();
 	});
 

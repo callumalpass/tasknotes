@@ -1103,8 +1103,8 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__metadata-date:hover {
     background: var(--tn-hover);
 }
 
-/* Overdue and due-today dates keep their colour on hover. */
-body:not(.is-mobile) .tasknotes-plugin .task-card__metadata-date:not(.task-card__metadata-date--overdue, .task-card__metadata-date--today.task-card__metadata-date--due):hover {
+/* Date warnings and past scheduled dates keep their colour on hover. */
+body:not(.is-mobile) .tasknotes-plugin .task-card__metadata-date:not(.task-card__metadata-date--overdue, .task-card__metadata-date--past, .task-card__metadata-date--today.task-card__metadata-date--due):hover {
     color: var(--tn-text-normal);
 }
 }
@@ -1122,8 +1122,13 @@ body:not(.is-mobile) .tasknotes-plugin .task-card__metadata-date:not(.task-card_
     color: var(--tn-danger-text);
 }
 
+.tasknotes-plugin .task-card__metadata-date--past {
+    color: var(--tn-info-text);
+}
+
 .tasknotes-plugin .task-card__metadata-date--today.task-card__metadata-date--due .task-card__date-icon,
-.tasknotes-plugin .task-card__metadata-date--overdue .task-card__date-icon {
+.tasknotes-plugin .task-card__metadata-date--overdue .task-card__date-icon,
+.tasknotes-plugin .task-card__metadata-date--past .task-card__date-icon {
     color: inherit;
 }
 

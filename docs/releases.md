@@ -6,6 +6,7 @@ Welcome to the TaskNotes release notes. Here you can find detailed information a
 
 ### Version 5.x (Current)
 
+- [5.0.3](releases/5.0.3.md)
 - [5.0.2](releases/5.0.2.md)
 - [5.0.1](releases/5.0.1.md)
 - [5.0.0](releases/5.0.0.md)

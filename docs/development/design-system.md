@@ -58,7 +58,7 @@ Status and priority colours stay user-configurable. They colour glyphs, never ta
 
 Calendar chips use theme text on a quiet surface, with a small hue mark derived from the configured colour. Clamp the mark's OKLCH lightness and chroma separately for light and dark themes before tinting the surface. Completed chips keep opaque text and a quieter mark. Selection adds an opaque accent outline, a theme-surface separator and a checkmark, rather than relying on the fill hue.
 
-Only overdue dates are red. A date due today is `--tn-warning`. All other dates are muted. Scheduled dates are never blue.
+Overdue due dates are red, dates due today are orange, and past scheduled dates are blue. Other dates are muted.
 
 ### Space, radius, depth, motion
 
@@ -180,7 +180,7 @@ Undo history belongs to the vault, with one keyboard handler per workspace windo
 
 ## Theming contract
 
-Small semantic date text uses `--tn-warning-text` and `--tn-danger-text`, rather than the decorative semantic colors. Their defaults mix the theme's semantic colors with `--tn-text-normal` for readable contrast on primary and secondary surfaces; themes can override either text token directly.
+Small semantic date text uses `--tn-warning-text`, `--tn-danger-text` and `--tn-info-text`. Their defaults mix the theme's semantic colours with `--tn-text-normal` for contrast on primary and secondary surfaces. Themes can override each text token directly.
 
 ### Secondary composers and reports
 

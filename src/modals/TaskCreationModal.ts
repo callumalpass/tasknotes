@@ -1,6 +1,7 @@
 import { showToast } from "../ui/kit/toast";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
+import type { EditorState } from "@codemirror/state";
 import { App, Notice, TAbstractFile, TFile } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { TaskModal, type TaskSubmitOptions } from "./TaskModal";
@@ -17,7 +18,7 @@ import type {
 	MarkdownEditorProps,
 } from "../editor/EmbeddableMarkdownEditor";
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
-import { createNLPHighlight } from "../editor/NLPHighlight";
+import { createNLPHighlight, getReleasedNLPSpans } from "../editor/NLPHighlight";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
 import {
 	buildTaskCreationFormState,
@@ -188,12 +189,12 @@ export class TaskCreationModal extends TaskModal {
 				cls: "nlp-editor",
 				extensions: [
 					...nlpAutocomplete,
-					createNLPHighlight((text) => this.nlParser.parseInputWithSpans(text).spans),
+					createNLPHighlight(
+						(text, released) => this.nlParser.getSpansForModal(text, released),
+						(state) => this.syncNaturalLanguageInput(state)
+					),
 				],
 				enterVimInsertMode: true, // Auto-enter insert mode when vim is enabled (#1410)
-				onChange: () => {
-					this.syncNaturalLanguageInput();
-				},
 				onSubmit: (_editor, shift) => {
 					// Ctrl+Enter - save the task
 					void this.handleSubmitShortcut(shift);
@@ -301,10 +302,16 @@ export class TaskCreationModal extends TaskModal {
 		return this.nlMarkdownEditor?.value ?? "";
 	}
 
-	/** Keep the form in step with the text: each change replaces what the last parse set. */
-	private syncNaturalLanguageInput(): void {
-		const input = this.getNLPInputValue().trim();
-		const parsed = input ? this.nlParser.parseInputForModal(input) : null;
+	/** Each text edit or token release replaces what the previous parse set. */
+	private syncNaturalLanguageInput(
+		state: EditorState | undefined = this.nlMarkdownEditor?.editor?.cm.state
+	): void {
+		const input = state?.doc.toString() ?? "";
+		const trimmed = input.trim();
+		const released = state ? getReleasedNLPSpans(state) : [];
+		const parsed = trimmed
+			? this.nlParser.parseInputForModal(released.length > 0 ? input : trimmed, released)
+			: null;
 		this.syncNaturalLanguageProjects(parsed?.projects ?? []);
 		this.form.applyNaturalLanguage(parsed ? this.buildNaturalLanguageLayer(parsed) : {});
 	}

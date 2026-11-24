@@ -1,5 +1,10 @@
 import { App, Constructor, Scope, TFile, type Editor, type EventRef } from "obsidian";
-import { EditorSelection as CMEditorSelection, Extension, Prec } from "@codemirror/state";
+import {
+	EditorSelection as CMEditorSelection,
+	type EditorState,
+	Extension,
+	Prec,
+} from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { acceptCompletion, selectedCompletion } from "@codemirror/autocomplete";
 import { around } from "monkey-around";
@@ -33,11 +38,7 @@ type MarkdownEditorInternal = {
 		focus(): void;
 		scrollDOM: HTMLElement;
 		dispatch(spec: unknown): void;
-		state: {
-			doc: {
-				toString(): string;
-			};
-		};
+		state: EditorState;
 	};
 };
 

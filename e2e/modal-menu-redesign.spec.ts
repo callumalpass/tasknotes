@@ -318,7 +318,7 @@ test('native task menu groups every action and keeps keyboard hints aligned', as
   await expect(menu.locator('.menu-item-title').filter({ hasText: /^Note actions$/ })).toBeVisible();
   await expect(menu.locator('.menu-item-shortcut').filter({ hasText: /^E$/ })).toBeVisible();
   await page.screenshot({ path: 'test-results/modal-menu/task-menu.png' });
-  await menu.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Status$/ }) }).click();
+  await menu.locator('.menu-item').filter({ has: page.locator('.menu-item-title', { hasText: /^Series status$/ }) }).click();
   const statuses = page.locator('.tn-picker').last();
   await expect(statuses.locator('.tn-picker__row')).toHaveCount(18);
   await expect(statuses.getByText('Awaiting cross-functional accessibility and localization review', { exact: true })).toBeVisible();

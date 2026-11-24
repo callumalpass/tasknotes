@@ -1,6 +1,8 @@
+import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
 import { settingsFixture, control, list, settle } from "../../helpers/native-settings";
 import { showConfirmationModal } from "../../../src/modals/ConfirmationModal";
 import { reorder } from "../../../src/settings/native/properties";
+import { applyCanonicalTaskTypeToSettings, buildTaskNotesModelConfig } from "../../../src/services/mdbaseCanonicalConfig";
 
 jest.mock("../../../src/modals/ConfirmationModal", () => ({ showConfirmationModal: jest.fn().mockResolvedValue(true) }));
 
@@ -74,6 +76,52 @@ describe("Native property editors", () => {
 		tab.getSettingDefinitions(); await tab.setControlValue(`status.${status.id}.value`, "renamed");
 		expect(plugin.settings.defaultTaskStatus).toBe("renamed"); expect(next.nextStatus).toBe("renamed");
 		await expect(tab.setControlValue(`status.${status.id}.value`, next.value)).rejects.toThrow();
+	});
+
+	test.each([
+		["status", "open", "customStatuses"],
+		["priority", "normal", "customPriorities"],
+	] as const)("keeps the open %s icon binding live across canonical saves", async (kind, id, listKey) => {
+		const { plugin, tab } = settingsFixture();
+		jest.mocked(plugin.saveSettings).mockImplementation(async () => {
+			const { type } = buildTaskNotesMdbaseResources({ modelConfig: buildTaskNotesModelConfig(plugin.settings) });
+			applyCanonicalTaskTypeToSettings(plugin.settings, type);
+		});
+		tab.getSettingDefinitions();
+		const key = `${kind}.${id}.icon`;
+		jest.useFakeTimers();
+		try {
+			await tab.setControlValue(key, "circle-");
+			await jest.runOnlyPendingTimersAsync();
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
+			await tab.setControlValue(key, "circle-help");
+			await jest.runOnlyPendingTimersAsync();
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
+			expect(tab.getControlValue(key)).toBe("circle-help");
+			expect(plugin.settings[listKey].find((entry) => entry.id === id)?.icon).toBe("circle-help");
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
+	test("coalesces typing and supports an explicit flush", async () => {
+		const { plugin, ctx } = settingsFixture();
+		jest.useFakeTimers();
+		try {
+			ctx.saveText();
+			jest.advanceTimersByTime(150);
+			ctx.saveText();
+			jest.advanceTimersByTime(150);
+			expect(plugin.saveSettings).not.toHaveBeenCalled();
+			jest.advanceTimersByTime(50);
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(1);
+			ctx.saveText();
+			await ctx.flush();
+			jest.runOnlyPendingTimers();
+			expect(plugin.saveSettings).toHaveBeenCalledTimes(2);
+		} finally {
+			jest.useRealTimers();
+		}
 	});
 
 	test("reorders immutably in both directions and ignores invalid indices", () => {

@@ -1,9 +1,10 @@
 import type { TaskInfo } from "../types";
 import type { SortOrderPlan } from "./sortOrderUtils";
 
-export function captureTaskViewScroll(root: HTMLElement): () => void {
-	const elements = new Set<HTMLElement>([root, ...Array.from(root.querySelectorAll<HTMLElement>("*"))
-		.filter((element) => element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth)]);
+export function captureTaskViewScroll(root: HTMLElement, scrollHosts?: Iterable<HTMLElement>): () => void {
+	const descendants = scrollHosts ?? Array.from(root.querySelectorAll<HTMLElement>("*"))
+		.filter((element) => element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth);
+	const elements = new Set<HTMLElement>([root, ...descendants]);
 	let ancestor = root.parentElement;
 	while (ancestor) {
 		elements.add(ancestor);

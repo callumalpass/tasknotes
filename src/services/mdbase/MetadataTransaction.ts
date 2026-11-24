@@ -4,25 +4,31 @@ import { SafeMetadata, type MetadataSnapshot } from "./SafeMetadata";
 import { isAppSettingsRecordPath, isAppSettingsMetadataPath } from "./appSettingsResources";
 
 export const METADATA_PENDING = ".tasknotes/migrations/mdbase-v0.3-pending.json";
-type Journal = { backupFolder: string; snapshots: MetadataSnapshot[]; intendedWrites: MetadataSnapshot[] };
+const SETTINGS_MANIFEST_PREFIX = ".tasknotes/migrations/mdbase-settings-";
+type Journal = { snapshots: MetadataSnapshot[]; intendedWrites: MetadataSnapshot[] } & (
+	{ backupFolder: string; settingsManifest?: never } | { settingsManifest: string; backupFolder?: never }
+);
 
 /** Stages the whole upgrade before committing; startup rolls back interrupted commits. */
 export class MetadataTransaction {
 	private staged: Map<string, MetadataSnapshot> | null = null;
 	private compared = new Map<string, MetadataSnapshot>();
+	private settingsEdits = new Set<string>();
 	constructor(
 		private readonly io: SafeMetadata,
 		private readonly mkdir: (path: string) => Promise<void>,
 		private readonly remove: (path: string) => Promise<void>,
 	) {}
 
-	stage(snapshot: MetadataSnapshot, content: string): boolean {
+	stage(snapshot: MetadataSnapshot, content: string, settingsEdit = false): boolean {
 		if (!this.staged) return false;
 		const previous = this.compared.get(snapshot.path);
 		if (previous && previous.content !== snapshot.content && this.staged.get(snapshot.path)?.content !== snapshot.content) {
 			throw new Error(`Conflicting metadata snapshots: ${snapshot.path}`);
 		}
 		if (!this.compared.has(snapshot.path)) this.compared.set(snapshot.path, snapshot);
+		if (settingsEdit) this.settingsEdits.add(snapshot.path);
+		else this.settingsEdits.delete(snapshot.path);
 		this.staged.set(snapshot.path, { path: snapshot.path, content });
 		return true;
 	}
@@ -31,6 +37,7 @@ export class MetadataTransaction {
 		if (await this.io.read(METADATA_PENDING) !== null) throw new Error(`Pending metadata recovery: ${METADATA_PENDING}`);
 		this.staged = new Map();
 		this.compared = new Map();
+		this.settingsEdits = new Set();
 		let writes: MetadataSnapshot[];
 		try {
 			await work();
@@ -51,21 +58,33 @@ export class MetadataTransaction {
 		// A stage must not mask a change between its comparison and commit.
 		const changed = writes.filter((write, i) => write.content !== snapshots[i].content);
 		if (!changed.length) return;
-		const base = `.tasknotes/migrations/mdbase-v0.3-${new Date().toISOString().replace(/[:.]/g, "-")}`;
-		let backupFolder = base;
+		const keepBackup = snapshots.some(({ path, content }, index) =>
+			content !== null && writes[index].content !== content && !this.settingsEdits.has(path)
+		);
+		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const base = `${keepBackup ? ".tasknotes/migrations/mdbase-v0.3-" : SETTINGS_MANIFEST_PREFIX}${timestamp}`;
+		const extension = keepBackup ? "" : ".json";
+		let recoveryPath = `${base}${extension}`;
 		let suffix = 2;
-		while (await this.io.exists(backupFolder)) backupFolder = `${base}-${suffix++}`;
-		await this.mkdir(backupFolder);
-		const journal: Journal = { backupFolder, snapshots, intendedWrites: writes };
-		for (const snapshot of snapshots) {
-			if (snapshot.content === null) continue;
-			const path = `${backupFolder}/${snapshot.path}.bak`;
-			await this.mkdir(path.split("/").slice(0, -1).join("/"));
-			await this.io.replace({ path, content: null }, snapshot.content);
+		while (await this.io.exists(recoveryPath)) recoveryPath = `${base}-${suffix++}${extension}`;
+		const journal: Journal = keepBackup
+			? { backupFolder: recoveryPath, snapshots, intendedWrites: writes }
+			: { settingsManifest: recoveryPath, snapshots, intendedWrites: writes };
+		const manifestPath = journal.settingsManifest ?? `${journal.backupFolder}/manifest.json`;
+		const manifest = JSON.stringify(journal, null, 2);
+		const recoveryLabel = keepBackup ? "backups" : "recovery manifest";
+		await this.mkdir(manifestPath.split("/").slice(0, -1).join("/"));
+		if (journal.backupFolder) {
+			for (const snapshot of snapshots) {
+				if (snapshot.content === null) continue;
+				const path = `${journal.backupFolder}/${snapshot.path}.bak`;
+				await this.mkdir(path.split("/").slice(0, -1).join("/"));
+				await this.io.replace({ path, content: null }, snapshot.content);
+			}
 		}
-		await this.io.replace({ path: `${backupFolder}/manifest.json`, content: null }, JSON.stringify(journal, null, 2));
+		await this.io.replace({ path: manifestPath, content: null }, manifest);
 		try {
-			await this.io.replace({ path: METADATA_PENDING, content: null }, JSON.stringify(journal, null, 2));
+			await this.io.replace({ path: METADATA_PENDING, content: null }, manifest);
 			// Type before contract activation, collection configuration last.
 			const ordered = [...changed].sort((a, b) => this.rank(a.path) - this.rank(b.path));
 			const progress = snapshots.map((snapshot) => ({ ...snapshot }));
@@ -82,9 +101,17 @@ export class MetadataTransaction {
 			await this.remove(METADATA_PENDING);
 		} catch (error) {
 			try { await this.restore(journal); await this.remove(METADATA_PENDING); }
-			catch (recovery) { throw new Error(`Recovery blocked. Pending record: ${METADATA_PENDING}; backups: ${backupFolder}; ${String(error)}; ${String(recovery)}`); }
-			throw new Error(`Metadata upgrade rolled back. Backups: ${backupFolder}; ${String(error)}`);
+			catch (recovery) { throw new Error(`Recovery blocked. Pending record: ${METADATA_PENDING}; ${recoveryLabel}: ${recoveryPath}; ${String(error)}; ${String(recovery)}`); }
+			await this.clearSettingsManifest(journal, manifest);
+			throw new Error(keepBackup
+				? `Metadata upgrade rolled back. Backups: ${recoveryPath}; ${String(error)}`
+				: `Metadata update rolled back. ${String(error)}`);
 		}
+		await this.clearSettingsManifest(journal, manifest);
+	}
+
+	private async clearSettingsManifest(journal: Journal, manifest: string): Promise<void> {
+		if (journal.settingsManifest) await this.io.removeIfUnchanged(journal.settingsManifest, manifest).catch(() => false);
 	}
 
 	private async assertUnchanged(snapshots: MetadataSnapshot[]): Promise<void> {
@@ -106,15 +133,22 @@ export class MetadataTransaction {
 		await this.io.recoverSwaps();
 		const raw = await this.io.read(METADATA_PENDING);
 		if (raw === null) return;
-		let backupFolder = "unknown";
+		let recoveryPath = "unknown";
+		let recoveryLabel = "backups";
 		try {
 			const journal = JSON.parse(raw) as Journal;
-			backupFolder = journal.backupFolder;
-			if (typeof backupFolder !== "string" || !backupFolder.startsWith(".tasknotes/migrations/mdbase-v0.3-")) throw new Error("Invalid backup folder");
-			await this.io.assertPhysical(backupFolder);
+			recoveryPath = journal.settingsManifest ?? journal.backupFolder;
+			if (journal.settingsManifest !== undefined) {
+				recoveryLabel = "recovery manifest";
+				if (journal.backupFolder !== undefined || typeof recoveryPath !== "string" || !recoveryPath.startsWith(SETTINGS_MANIFEST_PREFIX) ||
+					!/^\d{4}-[\dTZ-]+\.json$/.test(recoveryPath.slice(SETTINGS_MANIFEST_PREFIX.length))) throw new Error("Invalid settings manifest");
+			} else if (typeof recoveryPath !== "string" || !recoveryPath.startsWith(".tasknotes/migrations/mdbase-v0.3-")) {
+				throw new Error("Invalid backup folder");
+			}
+			await this.io.assertPhysical(recoveryPath);
 			if (!Array.isArray(journal.snapshots) || !Array.isArray(journal.intendedWrites)) throw new Error("Invalid journal entries");
 			// The immutable manifest verifies the journal, including paths and intentions.
-			const manifest = await this.io.read(`${backupFolder}/manifest.json`);
+			const manifest = await this.io.read(journal.settingsManifest ?? `${recoveryPath}/manifest.json`);
 			if (manifest !== JSON.stringify(journal, null, 2)) throw new Error("Journal does not match backup manifest");
 			const configEntry = journal.snapshots.find((entry) => entry.path === "mdbase.yaml");
 			const config = YAML.parse(configEntry?.content ?? journal.intendedWrites.find((entry) => entry.path === "mdbase.yaml")?.content ?? "settings: {}") as { settings?: { types_folder?: string; contracts_folder?: string } };
@@ -135,13 +169,16 @@ export class MetadataTransaction {
 						(entry.path.startsWith(taskSchemas) && /^tasknotes-task(-binding)?\.schema\.json$/.test(entry.path.slice(taskSchemas.length)))) &&
 					!(entry.path.startsWith(`${types}/`) && entry.path.endsWith(".md"))) throw new Error(`Unsafe recovery target: ${entry.path}`);
 			}
-			for (const snapshot of journal.snapshots) {
-				if (snapshot.content !== null && await this.io.read(`${backupFolder}/${snapshot.path}.bak`) !== snapshot.content) throw new Error(`Backup mismatch: ${snapshot.path}`);
+			if (journal.backupFolder) {
+				for (const snapshot of journal.snapshots) {
+					if (snapshot.content !== null && await this.io.read(`${recoveryPath}/${snapshot.path}.bak`) !== snapshot.content) throw new Error(`Backup mismatch: ${snapshot.path}`);
+				}
 			}
 			await this.restore(journal);
 			await this.remove(METADATA_PENDING);
+			await this.clearSettingsManifest(journal, manifest);
 		} catch (error) {
-			throw new Error(`Pending record: ${METADATA_PENDING}; backups: ${backupFolder}; blocked file: ${String(error)}. Review the backup manifest before restoring metadata; do not replace changed files blindly.`);
+			throw new Error(`Pending record: ${METADATA_PENDING}; ${recoveryLabel}: ${recoveryPath}; blocked file: ${String(error)}. Review the recovery manifest before restoring metadata; do not replace changed files blindly.`);
 		}
 	}
 

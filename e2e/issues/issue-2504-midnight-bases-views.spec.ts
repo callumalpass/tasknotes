@@ -151,10 +151,10 @@ test("open Bases views follow the date across midnight without redrawing while h
 	await crossMidnight();
 
 	// List and Kanban relabel their cards.
-	await expect(dueLabel("List")).toHaveAttribute("aria-label", /Today at (17:25|5:25)/);
+	await expect(dueLabel("List")).toHaveText(/Today at (17:25|5:25)/);
 	await expect(dueLabel("List")).toHaveClass(/task-card__metadata-date--today/);
 	await expect(dueLabel("List")).not.toHaveClass(/--future/);
-	await expect(dueLabel("Board")).toHaveAttribute("aria-label", /Today at (17:25|5:25)/);
+	await expect(dueLabel("Board")).toHaveText(/Today at (17:25|5:25)/);
 	await expect(dueLabel("Board")).toHaveClass(/task-card__metadata-date--today/);
 
 	// A calendar on the old day moves, carrying yesterday's now-overdue task to the new day.
@@ -180,7 +180,7 @@ test("open Bases views follow the date across midnight without redrawing while h
 			.find((candidate: any) => candidate.view.file?.basename === "Hidden");
 		app.workspace.setActiveLeaf(leaf, { focus: true });
 	});
-	await expect(dueLabel("Hidden")).toHaveAttribute("aria-label", /Today at (17:25|5:25)/);
+	await expect(dueLabel("Hidden")).toHaveText(/Today at (17:25|5:25)/);
 
 	// Closing the views removes their listeners.
 	await page.evaluate(() => {
