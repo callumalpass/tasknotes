@@ -33,6 +33,8 @@ Italian relative days `oggi`, `domani`, and `dopodomani` use the local calendar 
 
 As you type, the parts of the input that set a value are highlighted in the natural language field: dates (blue), recurrence (purple), time estimates (orange), priority (red), status (green), and tags, contexts, projects and custom fields (accent color). Text that is not highlighted becomes the title. A highlighted phrase can still stay in the title, as in "weekly review" or "Monday's meeting", where the phrase both names the task and sets the value.
 
+To keep any highlighted word or phrase as title text, place the cursor immediately after it and press **Backspace**. The highlight disappears, and TaskNotes keeps the text in the title as you type. Press **Backspace** again to delete a character as usual. Editing the released text lets TaskNotes recognize it again. For example, release `May 1` in `Plan the May 1 launch` to keep the date in the title.
+
 To change the colors, target the `tn-nlp-highlight` class, or one kind such as `tn-nlp-highlight--due`, in a CSS snippet.
 
 ### Auto-Suggestions in Natural Language Input

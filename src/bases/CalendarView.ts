@@ -612,7 +612,7 @@ export class CalendarView extends BasesViewBase {
 	 * Used to detect user-initiated config changes.
 	 */
 	private getConfigSnapshot(): string {
-		return JSON.stringify([this.plugin.settings.dateDisplayFormat, buildCalendarConfigSnapshot({
+		return JSON.stringify([this.plugin.settings.dateDisplayFormat, this.resolveFirstDay(), buildCalendarConfigSnapshot({
 			config: this.config,
 			icsCalendarIds:
 				this.plugin.icsSubscriptionService?.getSubscriptions().map((sub) => sub.id) ?? [],
@@ -775,6 +775,10 @@ export class CalendarView extends BasesViewBase {
 
 	private getConfigOption<T>(key: string, fallback: T): T {
 		return getCalendarConfigValueFromSnapshot(this.config, key, fallback);
+	}
+
+	private resolveFirstDay(): number {
+		return Number(this.getConfigOption("firstDay", this.plugin.settings.calendarViewSettings.firstDay));
 	}
 
 	/** Keeps a slot height inside the range the calendar and the settings UI support. */
@@ -976,9 +980,7 @@ export class CalendarView extends BasesViewBase {
 				this.viewOptions.scrollTime
 			);
 
-			this.viewOptions.firstDay = Number(
-				this.getConfigOption("firstDay", this.viewOptions.firstDay)
-			);
+			this.viewOptions.firstDay = this.resolveFirstDay();
 			this.viewOptions.weekNumbers = this.getConfigOption(
 				"weekNumbers",
 				this.viewOptions.weekNumbers
@@ -1122,7 +1124,16 @@ export class CalendarView extends BasesViewBase {
 					);
 					this.automaticViewChange = true;
 					try {
-						this.calendar.setOptions(this.buildCalendarOptions());
+						const options = this.buildCalendarOptions();
+						const firstDayChanged = this.calendar.getOptions().firstDay !== options.firstDay;
+						this.calendar.setOptions(options);
+						const strip = this.calendar.strip;
+						if (firstDayChanged && strip && !strip.expanded) {
+							// The engine keeps the collapsed strip's start date when options
+							// change. Recompute it from the focused day without moving the list.
+							strip.setExpanded(true);
+							strip.setExpanded(false);
+						}
 						applyCalendarDateDisplay(this.calendar, this.plugin.settings.dateDisplayFormat);
 					} finally {
 						this.automaticViewChange = false;

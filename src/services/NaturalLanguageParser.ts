@@ -6,10 +6,82 @@ import { shieldMarkdownLiterals } from "../utils/markdownLiterals";
 import {
 	NaturalLanguageParserCore,
 	type NaturalLanguageParserOptions,
+	type ParsedSpan,
 	type ParsedTaskData,
 } from "tasknotes-nlp-core";
 
 export type { ParsedTaskData };
+export type NLPTextRange = Pick<ParsedSpan, "start" | "end">;
+
+/**
+ * Give both parsers opaque text in place of released tokens, then recover the
+ * exact title text and translate highlight offsets back to the original input.
+ */
+function maskReleasedNLPSpans(input: string, released: readonly NLPTextRange[]) {
+	// Use private-use characters outside the core's title marker range. Keep
+	// digits, punctuation and configurable trigger syntax out of the masks.
+	let prefix = "\uE010\uE011";
+	while (input.includes(prefix)) prefix += "\uE011";
+
+	const literals = new Map<string, string>();
+	const masks: Array<NLPTextRange & { source: NLPTextRange }> = [];
+	let text = "";
+	let previousEnd = 0;
+	for (const { start, end } of released) {
+		if (start < previousEnd || end <= start || end > input.length) continue;
+		const id = String(masks.length).replace(/\d/g, (digit) =>
+			String.fromCharCode(0xe020 + Number(digit))
+		);
+		const marker = prefix + id + "\uE012";
+		text += input.slice(previousEnd, start);
+		masks.push({
+			start: text.length,
+			end: text.length + marker.length,
+			source: { start, end },
+		});
+		literals.set(marker, input.slice(start, end));
+		text += marker;
+		previousEnd = end;
+	}
+	text += input.slice(previousEnd);
+
+	const toSourcePosition = (position: number, boundary: keyof NLPTextRange): number => {
+		let offset = 0;
+		for (const mask of masks) {
+			if (position <= mask.start) break;
+			if (position < mask.end) return mask.source[boundary];
+			offset = mask.source.end - mask.end;
+		}
+		return position + offset;
+	};
+
+	return {
+		text,
+		masks,
+		restoreText: (value: string) =>
+			value.replace(
+				new RegExp(`${prefix}[\uE020-\uE029]+\uE012`, "gu"),
+				(marker) => literals.get(marker) ?? marker
+			),
+		restoreRange: ({ start, end }: NLPTextRange): NLPTextRange => ({
+			start: toSourcePosition(start, "start"),
+			end: toSourcePosition(end, "end"),
+		}),
+	};
+}
+
+function mergeOverlappingNLPRanges(ranges: readonly NLPTextRange[]): NLPTextRange[] {
+	const merged: NLPTextRange[] = [];
+	for (const range of [...ranges].sort((a, b) => a.start - b.start)) {
+		const last = merged[merged.length - 1];
+		if (last && range.start < last.end) {
+			last.end = Math.max(last.end, range.end);
+		} else {
+			merged.push({ ...range });
+		}
+	}
+	return merged;
+}
 
 // A non-enumerable identity: API JSON remains exactly the pre-port payload.
 const EMPTY_NLP_TITLE = Symbol("empty-nlp-title");
@@ -132,9 +204,47 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 	}
 
 	/** Interactive entry rejects missing titles; programmatic paths keep legacy behaviour. */
-	parseInputForModal(input: string): ParsedTaskData {
-		const parsed = this.parseInput(input);
+	parseInputForModal(input: string, released: readonly NLPTextRange[] = []): ParsedTaskData {
+		const masked = released.length > 0 ? this.parseWithReleasedSpans(input, released) : null;
+		const parsed = this.parseInput(masked?.text.trim() ?? input);
+		if (masked) {
+			parsed.title = masked.restoreText(parsed.title);
+			if (parsed.details) parsed.details = masked.restoreText(parsed.details);
+		}
 		return hasMissingNlpTitle(parsed) ? { ...parsed, title: "" } : parsed;
+	}
+
+	getSpansForModal(input: string, released: readonly NLPTextRange[]): ParsedSpan[] {
+		if (released.length === 0) return this.parseInputWithSpans(input).spans;
+		return this.parseWithReleasedSpans(input, released).spans;
+	}
+
+	private parseWithReleasedSpans(input: string, released: readonly NLPTextRange[]) {
+		// A release may move into the details when a line break is inserted.
+		const titleEnd = input.indexOf("\n", input.length - input.trimStart().length);
+		let ranges = mergeOverlappingNLPRanges(
+			titleEnd === -1 ? released : released.filter(({ end }) => end <= titleEnd)
+		);
+		while (true) {
+			const masked = maskReleasedNLPSpans(input, ranges);
+			const spans: ParsedSpan[] = [];
+			const enclosingRanges: NLPTextRange[] = [];
+			for (const span of this.parseInputWithSpans(masked.text).spans) {
+				const overlap = masked.masks.find(
+					(mask) => mask.start < span.end && span.start < mask.end
+				);
+				const { start, end } = masked.restoreRange(span);
+				if (!overlap) {
+					spans.push({ ...span, start, end, text: input.slice(start, end) });
+				} else if (start < overlap.source.start || end > overlap.source.end) {
+					enclosingRanges.push({ start, end });
+				}
+			}
+			if (enclosingRanges.length === 0) return { ...masked, spans };
+			// Text added around a released range can make a larger token, such as
+			// a quoted custom field. Keep the whole expression literal in this parse.
+			ranges = mergeOverlappingNLPRanges([...ranges, ...enclosingRanges]);
+		}
 	}
 
 	private applyTriggeredStatusMatch(input: string, parsed: ParsedTaskData): ParsedTaskData {

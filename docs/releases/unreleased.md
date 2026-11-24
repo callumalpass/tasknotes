@@ -35,3 +35,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - (#2677) Restored drag-and-drop reordering for task statuses and priorities in Properties settings. Thanks to @hikatamika for reporting.
+- (#2106) Open calendars that use the global first-day-of-week setting now update as soon as it changes. Thanks to @atos2212-blip and @leon-adsk for reporting.
+- Improved recovery when an interrupted mdbase v0.2 to v0.3 metadata upgrade leaves a pending recovery record and rollback is blocked by a changed metadata file. TaskNotes now shows a calm startup notice and adds persistent recovery controls under **Settings → TaskNotes → TaskNotes App** to either keep current files and resume sync or restore the verified v0.2 backup while keeping backup folders intact.

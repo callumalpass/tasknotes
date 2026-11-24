@@ -3341,7 +3341,10 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
 			e.stopPropagation();
-			this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
+			const board = this.boardEl;
+			this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl, board
+				? [board, ...Array.from(board.querySelectorAll<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container"))]
+				: []);
 			const dragSource = dragSourceOverride ?? {
 				taskPath: task.path,
 				sourceElement: cardWrapper,
@@ -3356,8 +3359,11 @@ export class KanbanView extends BasesViewBase {
 				isNestedSource: draggedTaskPath !== task.path,
 			});
 			this.taskDropAccepted = false;
-			this.boardEl?.classList.add("kanban-view__board--task-dragging");
-			setElementDragImage(e, dragImageSource, "kanban-view__drag-image");
+			if (e.dataTransfer && typeof e.dataTransfer.setDragImage === "function") {
+				const image = createElementInDocument(dragImageSource.ownerDocument, "canvas");
+				image.width = image.height = 1;
+				e.dataTransfer.setDragImage(image, 0, 0);
+			}
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
 			if (
@@ -3375,7 +3381,6 @@ export class KanbanView extends BasesViewBase {
 				for (const path of this.draggedTaskPaths) {
 					const wrapper = this.currentTaskElements.get(path);
 					if (wrapper) {
-						wrapper.classList.add("kanban-view__card--dragging");
 						// Capture source column for each task
 						const col = wrapper.closest("[data-group]") as HTMLElement;
 						const swimCol = wrapper.closest("[data-column]") as HTMLElement;
@@ -3396,13 +3401,10 @@ export class KanbanView extends BasesViewBase {
 					e.dataTransfer.setData("text/plain", this.draggedTaskPaths.join(","));
 					e.dataTransfer.setData("text/x-batch-drag", "true");
 				}
-				dragImageSource.classList.add("kanban-view__card--dragging");
 			} else {
 				// Single card drag
 				this.draggedTaskPath = draggedTaskPath;
 				this.draggedTaskPaths = [draggedTaskPath];
-				dragImageSource.classList.add("kanban-view__card--dragging");
-
 				if (e.dataTransfer) {
 					// copyMove: Calendar views accept the task path as a copy-style drop
 					e.dataTransfer.effectAllowed = "copyMove";
@@ -3412,8 +3414,15 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			this.activeDragSourceElement = dragImageSource;
-			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys(this.draggedTaskPaths);
 			this.showFloatingDragPreview(dragImageSource, e);
+			if (this.draggedTaskPaths.length > 1) {
+				for (const path of this.draggedTaskPaths) {
+					this.currentTaskElements.get(path)?.classList.add("kanban-view__card--dragging");
+				}
+			}
+			dragImageSource.classList.add("kanban-view__card--dragging");
+			board?.classList.add("kanban-view__board--task-dragging");
+			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys(this.draggedTaskPaths);
 
 			// Capture the source column and swimlane for list property handling (single drag fallback)
 			const column = cardWrapper.closest("[data-group]") as HTMLElement;
@@ -3426,15 +3435,8 @@ export class KanbanView extends BasesViewBase {
 			// Add body-level class to suppress hover lift on siblings
 			this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
 
-			// Measure card height before collapse (for gap/slot sizing)
-			const draggedHeight = dragImageSource.getBoundingClientRect().height;
-			const container = cardWrapper.parentElement;
-
-			if (container) {
-				container.style.setProperty("--tn-drag-gap", `${draggedHeight}px`);
-				this.dragContainer = container;
-				this.currentInsertionIndex = -1;
-			}
+			this.dragContainer = cardWrapper.parentElement;
+			this.currentInsertionIndex = -1;
 		});
 
 		cardWrapper.addEventListener("dragend", (e: DragEvent) => {
@@ -3556,7 +3558,6 @@ export class KanbanView extends BasesViewBase {
 	private cleanupDragShift(): void {
 		// Clean current container
 		if (this.dragContainer) {
-			this.dragContainer.style.removeProperty("--tn-drag-gap");
 			this.dragContainer.classList.remove(
 				"tn-static-margin-top-12px-91e0f558",
 				"tn-static-overflow-y-auto-03df744e",

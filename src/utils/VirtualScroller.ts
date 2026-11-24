@@ -672,8 +672,10 @@ export class VirtualScroller<T> {
 
 	setPinnedItemKeys(keys: readonly string[]): void {
 		if (keys.length === 0 && this.pinnedItemKeys.size === 0) return;
-		this.pinnedItemKeys = new Set(keys);
-		this.forceVisibleRangeUpdate();
+		const nextKeys = new Set(keys);
+		const unpinnedItem = [...this.pinnedItemKeys].some((key) => !nextKeys.has(key));
+		this.pinnedItemKeys = nextKeys;
+		if (unpinnedItem) this.forceVisibleRangeUpdate();
 	}
 
 	private restorePinnedItemStyle(key: string, element: HTMLElement): void {
