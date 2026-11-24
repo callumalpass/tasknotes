@@ -733,13 +733,7 @@ export function timeblockToCalendarEvent(
 	// Create datetime strings that FullCalendar interprets consistently
 	// Using date-only format ensures the timeblock appears on the correct day
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
-	const startMinutes = parseTimeBlockMinutes(timeblock.startTime);
-	const endsAtNextMidnight =
-		timeblock.endTime === "24:00" ||
-		(timeblock.endTime === "00:00" && startMinutes !== null && startMinutes > 0);
-	const endDateTime = endsAtNextMidnight
-		? `${getNextDateString(date)}T00:00:00`
-		: `${date}T${timeblock.endTime}:00`;
+	const endDateTime = getTimeblockEndDateTime(timeblock, date);
 	const eventColor = normalizeThemeColor(timeblock.color || defaultColor, "#6366f1");
 
 	return {
@@ -761,6 +755,17 @@ export function timeblockToCalendarEvent(
 			attachments: timeblock.attachments || [],
 		},
 	};
+}
+
+/** Resolves end-of-day times to the following local midnight. */
+export function getTimeblockEndDateTime(timeblock: TimeBlock, date: string): string {
+	const startMinutes = parseTimeBlockMinutes(timeblock.startTime);
+	const endsAtNextMidnight =
+		timeblock.endTime === "24:00" ||
+		(timeblock.endTime === "00:00" && startMinutes !== null && startMinutes > 0);
+	return endsAtNextMidnight
+		? `${getNextDateString(date)}T00:00:00`
+		: `${date}T${timeblock.endTime}:00`;
 }
 
 /**

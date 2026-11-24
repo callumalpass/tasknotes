@@ -35,3 +35,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - (#2688) Restored blue highlighting for past scheduled dates on task cards. Thanks to @saket-pareek for reporting.
+- (#2679) Fixed short calendar timeblocks ending at midnight spilling into the next day. Thanks to @RumiaKitinari for reporting.
