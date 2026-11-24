@@ -32,6 +32,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2537) Press Backspace immediately after highlighted natural language input to keep that word or phrase in the task title. See [Highlighting in Natural Language Input](https://tasknotes.dev/features/task-management/#highlighting-in-natural-language-input). Thanks to @ac8318740 for the proposal.
+
 ## Fixed
 
 - (#2685) Reduced the pause when starting to drag a Kanban card, especially on large boards. Thanks to @Oneiran for reporting it.
