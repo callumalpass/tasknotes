@@ -57,6 +57,16 @@ function renderedKeys(container: HTMLElement): string[] {
 }
 
 describe("VirtualScroller", () => {
+	it("does not update the visible range when adding pins", () => {
+		const { container, scroller } = createTestScroller([{ id: "source", label: "Source" }]);
+		const observer = new MutationObserver(() => {});
+		observer.observe(container, { attributes: true, subtree: true });
+		scroller.setPinnedItemKeys(["source"]);
+		expect(observer.takeRecords()).toHaveLength(0);
+		observer.disconnect();
+		scroller.destroy();
+	});
+
 	it("defers a pinned item's invalidation until the interaction ends", () => {
 		const { container, scroller } = createTestScroller([{ id: "a", label: "A" }]);
 		const source = container.querySelector('[data-key="a"]');

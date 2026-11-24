@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2685) Reduced the pause when starting to drag a Kanban card, especially on large boards. Thanks to @Oneiran for reporting it.
