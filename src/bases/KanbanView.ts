@@ -159,6 +159,12 @@ type KanbanDropExecutionOptions = {
 	draggedPaths?: readonly string[];
 };
 
+type NativeKanbanDragOver = {
+	target: HTMLElement | null;
+	restriction: string | null;
+	pointer: { x: number; y: number } | null;
+};
+
 type SuccessfulKanbanDropLocalPatchInput = {
 	path: string;
 	dropPlan: KanbanTaskDropUpdatePlan;
@@ -259,7 +265,10 @@ export class KanbanView extends BasesViewBase {
 	private dropTargetPath: string | null = null; // Card-level drop position tracking
 	private pendingRender = false; // Deferred render while dragging
 	private dropAbove = true; // Whether drop is above or below target card
-	private dragOverRafId = 0; // rAF handle for throttled dragover
+	private nativeDragOverFrame: number | null = null;
+	private pendingNativeDragOver: NativeKanbanDragOver | null = null;
+	private nativeDragoverColumn: HTMLElement | null = null;
+	private nativeDropMarkerAnchor: HTMLElement | null = null;
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
 	private currentInsertionIndex = -1; // Current gap/slot position
 	private taskDropAccepted = false;
@@ -2668,14 +2677,16 @@ export class KanbanView extends BasesViewBase {
 			// Only handle task drags (not column drags)
 			if (e.dataTransfer?.types.includes("text/x-kanban-column")) return;
 			if (isSwimLaneDrag(e)) return;
-			e.preventDefault();
 			e.stopPropagation();
+			if (this.draggedTaskPath) return;
+			e.preventDefault();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 			column.classList.add("kanban-view__column--dragover");
 		});
 
 		// Drag leave handler
 		column.addEventListener("dragleave", (e: DragEvent) => {
+			if (this.draggedTaskPath) return;
 			// Only remove if we're actually leaving the column (not just moving to a child)
 			const rect = column.getBoundingClientRect();
 			const x = e.clientX;
@@ -2791,14 +2802,16 @@ export class KanbanView extends BasesViewBase {
 		// Drag over handler
 		cell.addEventListener("dragover", (e: DragEvent) => {
 			if (isSwimLaneDrag(e)) return;
-			e.preventDefault();
 			e.stopPropagation();
+			if (this.draggedTaskPath) return;
+			e.preventDefault();
 			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 			cell.classList.add("kanban-view__swimlane-column--dragover");
 		});
 
 		// Drag leave handler
 		cell.addEventListener("dragleave", (e: DragEvent) => {
+			if (this.draggedTaskPath) return;
 			// Only remove if we're actually leaving the cell (not just moving to a child)
 			const rect = cell.getBoundingClientRect();
 			const x = e.clientX;
@@ -3053,6 +3066,7 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private clearDragoverFeedback(): void {
+		this.nativeDragoverColumn = null;
 		this.boardEl?.querySelectorAll(".kanban-view__column--dragover").forEach((el) => {
 			el.classList.remove("kanban-view__column--dragover");
 		});
@@ -3122,6 +3136,7 @@ export class KanbanView extends BasesViewBase {
 	}
 
 	private clearTouchDragState(): void {
+		this.cancelNativeDragOver();
 		const restoreScroll = !this.taskDropAccepted ? this.restoreDragScroll : null;
 		this.restoreDragScroll = null;
 		for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys([]);
@@ -3264,70 +3279,6 @@ export class KanbanView extends BasesViewBase {
 			});
 		});
 
-		cardWrapper.addEventListener("dragover", (e: DragEvent) => {
-			if (!this.draggedTaskPath) return;
-			// Skip if dragging over self
-			if (this.draggedTaskPath === task.path) return;
-			if (isSwimLaneDrag(e)) return;
-			// Must call preventDefault synchronously to keep the drop zone active
-			e.preventDefault();
-			e.stopPropagation();
-			if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-
-			// Throttle the visual update via rAF
-			const clientY = e.clientY;
-			if (!this.dragOverRafId) {
-				this.dragOverRafId = window.requestAnimationFrame(() => {
-					this.dragOverRafId = 0;
-
-					const rect = cardWrapper.getBoundingClientRect();
-					const isAbove = clientY < rect.top + rect.height / 2;
-
-					this.dropTargetPath = task.path;
-					this.dropAbove = isAbove;
-
-					// Determine the container for this card
-					const container = cardWrapper.parentElement;
-					if (!container) return;
-					if (!isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
-						this.cleanupDragShift();
-						this.dropTargetPath = null;
-						return;
-					}
-
-					// If the drag moved to a different container (cross-column),
-					// clean up old container and set up the new one
-					if (container !== this.dragContainer) {
-						this.cleanupDragShift();
-						this.dragContainer = container;
-					}
-
-					// Compute insertion index among non-dragged siblings
-					const siblings = Array.from(
-						container.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper")
-					).filter((sib) => !this.draggedTaskPaths.includes(sib.dataset.taskPath || ""));
-
-					let insertionIndex = siblings.length; // default: end
-					for (let i = 0; i < siblings.length; i++) {
-						if (siblings[i].dataset.taskPath === task.path) {
-							insertionIndex = isAbove ? i : i + 1;
-							break;
-						}
-					}
-
-					if (insertionIndex !== this.currentInsertionIndex) {
-						this.currentInsertionIndex = insertionIndex;
-						updateKanbanDropMarker(container, siblings, insertionIndex);
-					}
-				});
-			}
-		});
-
-		// dragleave: don't clear shifts — dragover on the container keeps them current
-		cardWrapper.addEventListener("dragleave", () => {
-			// No-op: shift state is managed by dragover
-		});
-
 		// Drop handler on card — handles drop at card level so it doesn't
 		// depend on event bubbling to the column (which can fail if the column
 		// is re-rendered during the drag)
@@ -3390,7 +3341,10 @@ export class KanbanView extends BasesViewBase {
 
 		cardWrapper.addEventListener("dragstart", (e: DragEvent) => {
 			e.stopPropagation();
-			this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl);
+			const board = this.boardEl;
+			this.restoreDragScroll = captureTaskViewScroll(this.rootElement ?? this.containerEl, board
+				? [board, ...Array.from(board.querySelectorAll<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container"))]
+				: []);
 			const dragSource = dragSourceOverride ?? {
 				taskPath: task.path,
 				sourceElement: cardWrapper,
@@ -3405,8 +3359,11 @@ export class KanbanView extends BasesViewBase {
 				isNestedSource: draggedTaskPath !== task.path,
 			});
 			this.taskDropAccepted = false;
-			this.boardEl?.classList.add("kanban-view__board--task-dragging");
-			setElementDragImage(e, dragImageSource, "kanban-view__drag-image");
+			if (e.dataTransfer && typeof e.dataTransfer.setDragImage === "function") {
+				const image = createElementInDocument(dragImageSource.ownerDocument, "canvas");
+				image.width = image.height = 1;
+				e.dataTransfer.setDragImage(image, 0, 0);
+			}
 			// Check if we're dragging selected tasks (batch drag)
 			const selectionService = this.plugin.taskSelectionService;
 			if (
@@ -3424,7 +3381,6 @@ export class KanbanView extends BasesViewBase {
 				for (const path of this.draggedTaskPaths) {
 					const wrapper = this.currentTaskElements.get(path);
 					if (wrapper) {
-						wrapper.classList.add("kanban-view__card--dragging");
 						// Capture source column for each task
 						const col = wrapper.closest("[data-group]") as HTMLElement;
 						const swimCol = wrapper.closest("[data-column]") as HTMLElement;
@@ -3445,13 +3401,10 @@ export class KanbanView extends BasesViewBase {
 					e.dataTransfer.setData("text/plain", this.draggedTaskPaths.join(","));
 					e.dataTransfer.setData("text/x-batch-drag", "true");
 				}
-				dragImageSource.classList.add("kanban-view__card--dragging");
 			} else {
 				// Single card drag
 				this.draggedTaskPath = draggedTaskPath;
 				this.draggedTaskPaths = [draggedTaskPath];
-				dragImageSource.classList.add("kanban-view__card--dragging");
-
 				if (e.dataTransfer) {
 					// copyMove: Calendar views accept the task path as a copy-style drop
 					e.dataTransfer.effectAllowed = "copyMove";
@@ -3461,8 +3414,15 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			this.activeDragSourceElement = dragImageSource;
-			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys(this.draggedTaskPaths);
 			this.showFloatingDragPreview(dragImageSource, e);
+			if (this.draggedTaskPaths.length > 1) {
+				for (const path of this.draggedTaskPaths) {
+					this.currentTaskElements.get(path)?.classList.add("kanban-view__card--dragging");
+				}
+			}
+			dragImageSource.classList.add("kanban-view__card--dragging");
+			board?.classList.add("kanban-view__board--task-dragging");
+			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys(this.draggedTaskPaths);
 
 			// Capture the source column and swimlane for list property handling (single drag fallback)
 			const column = cardWrapper.closest("[data-group]") as HTMLElement;
@@ -3475,19 +3435,13 @@ export class KanbanView extends BasesViewBase {
 			// Add body-level class to suppress hover lift on siblings
 			this.containerEl.ownerDocument.body.classList.add("tn-drag-active");
 
-			// Measure card height before collapse (for gap/slot sizing)
-			const draggedHeight = dragImageSource.getBoundingClientRect().height;
-			const container = cardWrapper.parentElement;
-
-			if (container) {
-				container.style.setProperty("--tn-drag-gap", `${draggedHeight}px`);
-				this.dragContainer = container;
-				this.currentInsertionIndex = -1;
-			}
+			this.dragContainer = cardWrapper.parentElement;
+			this.currentInsertionIndex = -1;
 		});
 
 		cardWrapper.addEventListener("dragend", (e: DragEvent) => {
 			e.stopPropagation();
+			this.cancelNativeDragOver();
 			for (const scroller of this.columnScrollers.values()) scroller.setPinnedItemKeys([]);
 			this.boardEl?.classList.remove("kanban-view__board--task-dragging");
 			this.debugLog("DRAGEND-FIRED", {
@@ -3550,12 +3504,6 @@ export class KanbanView extends BasesViewBase {
 
 			this.dropTargetPath = null;
 
-			// Cancel any pending rAF
-			if (this.dragOverRafId) {
-				window.cancelAnimationFrame(this.dragOverRafId);
-				this.dragOverRafId = 0;
-			}
-
 			// Flush any render that was deferred while dragging.
 			// Use a short delay so the async drop handler can finish first.
 			if (this.pendingRender) {
@@ -3610,7 +3558,6 @@ export class KanbanView extends BasesViewBase {
 	private cleanupDragShift(): void {
 		// Clean current container
 		if (this.dragContainer) {
-			this.dragContainer.style.removeProperty("--tn-drag-gap");
 			this.dragContainer.classList.remove(
 				"tn-static-margin-top-12px-91e0f558",
 				"tn-static-overflow-y-auto-03df744e",
@@ -3657,6 +3604,7 @@ export class KanbanView extends BasesViewBase {
 			});
 
 		this.currentInsertionIndex = -1;
+		this.nativeDropMarkerAnchor = null;
 	}
 
 	private showFloatingDragPreview(sourceElement: HTMLElement, event: DragEvent): void {
@@ -4881,13 +4829,8 @@ export class KanbanView extends BasesViewBase {
 		if (!this.boardEl) return;
 		for (const eventName of ["dragenter", "dragover"] as const) {
 			this.registerDomEvent(this.boardEl.ownerDocument, eventName, event => {
-				if (!this.draggedTaskPath || this.boardEl?.contains(event.target as Node)) return;
-				this.boardEl?.classList.add("kanban-view__board--invalid-drop");
-				this.boardEl?.ownerDocument.body.classList.add("tn-drag-invalid");
-				this.dragPreview.setInvalid(uiText(msg({ message: "Drop on a task row or group destination.", context: "task list drop restriction" })));
-				this.clearDragoverFeedback();
-				this.cleanupDragShift();
-				this.stopAutoScroll();
+				if (!this.draggedTaskPath || this.touchDragActive || this.boardEl?.contains(event.target as Node)) return;
+				this.queueNativeDragOver({ target: null, restriction: null, pointer: null });
 			}, { capture: true });
 		}
 		this.registerDomEvent(this.boardEl, "pointerdown", () => {
@@ -4899,19 +4842,29 @@ export class KanbanView extends BasesViewBase {
 					this.handleAutoScroll(event.clientX, event.clientY);
 					return;
 				}
-				if (!this.draggedTaskPath) return;
-				this.handleAutoScroll(event.clientX, event.clientY);
-				this.updateNativeDropFeedback(event);
+				if (!this.draggedTaskPath || this.touchDragActive) return;
+				const restriction = this.getDropRestriction();
+				const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(
+					".kanban-view__column, .kanban-view__swimlane-column"
+				) ?? null;
+				if (event.dataTransfer) event.dataTransfer.dropEffect = target && !restriction ? "move" : "none";
+				if (target || restriction) event.preventDefault();
+				if (restriction) event.stopImmediatePropagation();
+				this.queueNativeDragOver({ target, restriction, pointer: { x: event.clientX, y: event.clientY } });
 			}, { capture: true });
 		}
 		this.registerDomEvent(this.boardEl, "drop", event => {
-			if (this.draggedTaskPath && this.getDropRestriction()) {
+			if (!this.draggedTaskPath) return;
+			this.cancelNativeDragOver();
+			this.stopAutoScroll();
+			if (this.getDropRestriction()) {
 				event.preventDefault();
 				event.stopImmediatePropagation();
 			}
 		}, { capture: true });
 		this.registerDomEvent(this.boardEl, "dragleave", event => {
 			if (!this.boardEl?.contains(event.relatedTarget as Node | null)) {
+				this.cancelNativeDragOver();
 				this.stopAutoScroll();
 				this.clearDragoverFeedback();
 				this.cleanupDragShift();
@@ -4942,47 +4895,79 @@ export class KanbanView extends BasesViewBase {
 		return null;
 	}
 
-	private updateNativeDropFeedback(event: DragEvent): void {
-		const restriction = this.getDropRestriction();
-		const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(".kanban-view__column, .kanban-view__swimlane-column");
-		this.boardEl?.classList.toggle("kanban-view__board--invalid-drop", restriction !== null || !target);
-		this.boardEl?.ownerDocument.body.classList.toggle("tn-drag-invalid", restriction !== null || !target);
-		this.dragPreview.setInvalid(restriction ?? (target ? null : uiText(msg({ message: "Drop on a task row or group destination.", context: "task list drop restriction" }))));
-		this.clearDragoverFeedback();
-		if (restriction) {
-			if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
-			event.preventDefault();
-			event.stopImmediatePropagation();
-			this.cleanupDragShift();
-			return;
+	private queueNativeDragOver(over: NativeKanbanDragOver): void {
+		const ownerWindow = this.boardEl?.ownerDocument.defaultView;
+		if (!ownerWindow) return;
+		this.pendingNativeDragOver = over;
+		if (this.nativeDragOverFrame !== null) return;
+		this.nativeDragOverFrame = ownerWindow.requestAnimationFrame(() => {
+			this.nativeDragOverFrame = null;
+			const pending = this.pendingNativeDragOver;
+			this.pendingNativeDragOver = null;
+			if (!pending || !this.draggedTaskPath || this.touchDragActive) return;
+			const { target, restriction, pointer } = pending;
+			if (pointer) this.handleAutoScroll(pointer.x, pointer.y);
+			else this.stopAutoScroll();
+			this.updateNativeDropFeedback(target, restriction, pointer?.y ?? 0);
+		});
+	}
+
+	private cancelNativeDragOver(): void {
+		if (this.nativeDragOverFrame !== null) {
+			this.boardEl?.ownerDocument.defaultView?.cancelAnimationFrame(this.nativeDragOverFrame);
+			this.nativeDragOverFrame = null;
 		}
-		if (!target) {
-			if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
-			this.cleanupDragShift();
-			return;
+		this.pendingNativeDragOver = null;
+	}
+
+	private updateNativeDropFeedback(target: HTMLElement | null, restriction: string | null, clientY: number): void {
+		const board = this.boardEl;
+		if (!board) return;
+		const column = !restriction && board.contains(target) ? target : null;
+		board.classList.toggle("kanban-view__board--invalid-drop", !column);
+		board.ownerDocument.body.classList.toggle("tn-drag-invalid", !column);
+		this.dragPreview.setInvalid(restriction ?? (column ? null : uiText(msg({ message: "Drop on a task row or group destination.", context: "task list drop restriction" }))));
+		if (column !== this.nativeDragoverColumn) {
+			this.nativeDragoverColumn?.classList.remove("kanban-view__column--dragover", "kanban-view__swimlane-column--dragover");
+			column?.classList.add(column.matches(".kanban-view__column") ? "kanban-view__column--dragover" : "kanban-view__swimlane-column--dragover");
+			this.nativeDragoverColumn = column;
 		}
-		event.preventDefault();
-		if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-		target.classList.add(target.matches(".kanban-view__column") ? "kanban-view__column--dragover" : "kanban-view__swimlane-column--dragover");
-		const container = target.querySelector<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
-		if (!container || !isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) return;
-		if (this.dragOverRafId) {
-			window.cancelAnimationFrame(this.dragOverRafId);
-			this.dragOverRafId = 0;
+		const container = column?.querySelector<HTMLElement>(".kanban-view__cards, .kanban-view__tasks-container");
+		if (!container || !isSortOrderInSortConfig(this.dataAdapter, this.plugin.settings.fieldMapping.sortOrder)) {
+			if (this.dragContainer) this.cleanupDragShift();
+			this.dropTargetPath = null;
+			return;
 		}
 		if (container !== this.dragContainer) {
 			this.cleanupDragShift();
 			this.dragContainer = container;
 		}
 		const siblings = Array.from(container.querySelectorAll<HTMLElement>(".kanban-view__card-wrapper"))
-			.filter(card => !this.draggedTaskPaths.includes(card.dataset.taskPath || ""));
-		const insertionIndex = siblings.findIndex(card => event.clientY < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2);
-		this.currentInsertionIndex = insertionIndex < 0 ? siblings.length : insertionIndex;
-		const next = siblings[this.currentInsertionIndex];
+			.filter(card => !!card.dataset.taskPath && !this.draggedTaskPaths.includes(card.dataset.taskPath));
 		const last = siblings[siblings.length - 1];
-		this.dropTargetPath = next?.dataset.taskPath ?? last?.dataset.taskPath ?? null;
+		const isAboveMidpoint = (card: HTMLElement) => {
+			const rect = card.getBoundingClientRect();
+			return clientY < rect.top + rect.height / 2;
+		};
+		let insertionIndex = siblings.length;
+		if (last && isAboveMidpoint(last)) {
+			let lower = 0;
+			let upper = siblings.length - 1;
+			while (lower < upper) {
+				const middle = Math.floor((lower + upper) / 2);
+				if (isAboveMidpoint(siblings[middle])) upper = middle;
+				else lower = middle + 1;
+			}
+			insertionIndex = lower;
+		}
+		const next = siblings[insertionIndex];
+		const anchor = next ?? last ?? null;
+		if (insertionIndex === this.currentInsertionIndex && anchor === this.nativeDropMarkerAnchor) return;
+		this.currentInsertionIndex = insertionIndex;
+		this.nativeDropMarkerAnchor = anchor;
+		this.dropTargetPath = anchor?.dataset.taskPath ?? null;
 		this.dropAbove = !!next;
-		updateKanbanDropMarker(container, siblings, this.currentInsertionIndex);
+		updateKanbanDropMarker(container, siblings, insertionIndex);
 	}
 
 	private unregisterBoardListeners(): void {

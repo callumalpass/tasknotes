@@ -131,6 +131,7 @@
     --tn-warning-text: color-mix(in srgb, var(--tn-warning) 60%, var(--tn-text-normal));
     --tn-success: var(--color-green, var(--text-success));
     --tn-info: var(--color-blue, var(--text-accent));
+    --tn-info-text: color-mix(in srgb, var(--tn-info) 75%, var(--tn-text-normal));
 
     --tn-color-success: var(--tn-success);
     --tn-color-warning: var(--tn-warning);
