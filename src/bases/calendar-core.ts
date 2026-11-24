@@ -23,6 +23,7 @@ import {
 	updateTimeblockInDailyNote,
 	copyTimeblockToDailyNote,
 	extractTimeblocksFromNote,
+	getTimeblockEndDateTime,
 } from "../utils/helpers";
 import { Notice, TFile } from "obsidian";
 import {
@@ -485,16 +486,14 @@ function formatExternalTimedEventEnd(date: Date, originalEnd: string): string {
 	return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSS");
 }
 
-/**
- * Get recurring time from task recurrence rule
- */
+/** Builds a calendar event from a timeblock stored in a daily note. */
 export function createTimeblockEvent(
 	timeblock: TimeBlock,
 	date: string,
 	defaultColor = "#6366f1"
 ): CalendarEvent {
 	const startDateTime = `${date}T${timeblock.startTime}:00`;
-	const endDateTime = `${date}T${timeblock.endTime}:00`;
+	const endDateTime = getTimeblockEndDateTime(timeblock, date);
 
 	const backgroundColor = normalizeThemeColor(timeblock.color || defaultColor, "#6366f1");
 	const borderColor = backgroundColor;
