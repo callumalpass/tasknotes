@@ -978,6 +978,7 @@ export abstract class TaskModal extends Modal {
 					})
 				),
 				file: this.getModalEditorFile(),
+				trackDraftAttachmentRenames: !this.getCurrentTaskPath(),
 				tabMovesFocus: this.plugin.settings.taskModalTabMovesFocus,
 				onChange: (value) => {
 					// Syncing the editor from the form is not an edit.

@@ -1,4 +1,4 @@
-import type { App, TFile } from "obsidian";
+import { type App, TFile } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
 
@@ -11,6 +11,7 @@ export interface TaskModalDetailsEditorOptions {
 	value: string;
 	placeholder: string;
 	file?: Nullable<TFile>;
+	trackDraftAttachmentRenames?: boolean;
 	tabMovesFocus: boolean;
 	onChange: (value: string) => void;
 	onSubmit: (shift: boolean) => void;
@@ -53,7 +54,35 @@ export function createTaskModalDetailsEditor(
 	});
 	// Referenced rather than set with aria-label, which Obsidian shows as a hover tooltip.
 	editor?.editor.cm.contentDOM.setAttribute("aria-labelledby", labelEl.id);
+	if (editor && options.trackDraftAttachmentRenames) {
+		watchDraftAttachmentRenames(options.app, editor);
+	}
 	return editor;
+}
+
+function watchDraftAttachmentRenames(app: App, editor: EmbeddableMarkdownEditor): void {
+	const embeds = new WeakMap<TFile, string>();
+	// Obsidian's embedded paste handler generates links without a source note.
+	const getEmbed = (file: TFile) => "!" + app.fileManager.generateMarkdownLink(file, "");
+
+	editor.registerEvent(
+		app.vault.on("create", (file) => {
+			if (file instanceof TFile && file.extension !== "md") {
+				embeds.set(file, getEmbed(file));
+			}
+		})
+	);
+	editor.registerEvent(
+		app.vault.on("rename", (file) => {
+			if (!(file instanceof TFile)) return;
+			const previous = embeds.get(file);
+			if (!previous) return;
+
+			const replacement = getEmbed(file);
+			embeds.set(file, replacement);
+			editor.updateAttachmentEmbeds(previous, replacement);
+		})
+	);
 }
 
 export function setTaskModalDetailsEditorValue(
