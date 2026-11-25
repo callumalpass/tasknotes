@@ -760,7 +760,7 @@ export abstract class TaskModal extends Modal {
 			chip: true,
 			onClick: (icon) => {
 				this.toggleDetailedForm();
-				const glyph = icon.querySelector<HTMLElement>(".icon");
+				const glyph = icon.querySelector<HTMLElement>(".tn-task-modal__action-glyph");
 				if (glyph) setIcon(glyph, this.isExpanded ? "chevron-up" : "chevron-down");
 				icon.setAttribute("aria-expanded", String(this.isExpanded));
 			},

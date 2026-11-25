@@ -510,7 +510,7 @@
         background: var(--background-modifier-hover);
     }
 }
-.tasknotes-plugin .action-icon:not(.tn-chip--property) .icon {
+.tasknotes-plugin .action-icon:not(.tn-chip--property) .tn-task-modal__action-glyph {
     width: 16px;
     height: 16px;
     color: var(--text-muted);
@@ -518,7 +518,7 @@
 }
 
 @media (hover: hover) {
-    .tasknotes-plugin .action-icon:hover:not(:disabled):not([aria-disabled="true"]) .icon {
+    .tasknotes-plugin .action-icon:hover:not(:disabled):not([aria-disabled="true"]) .tn-task-modal__action-glyph {
         color: var(--text-normal);
     }
 }

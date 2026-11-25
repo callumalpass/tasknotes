@@ -192,8 +192,8 @@ for (const theme of ['theme-light', 'theme-dark']) {
     await expect(modal.locator('.tn-task-modal__action-bar')).toBeVisible();
     const positions = await modal.evaluate(element => ['.tn-task-modal__markdown-editor--nlp', '.tn-task-modal__action-bar'].map(selector => element.querySelector(selector)!.getBoundingClientRect().top));
     expect(positions[0]).toBeLessThan(positions[1]);
-    expect(await modal.locator('[data-type="status"] .icon svg').getAttribute('class')).toContain('orbit');
-    expect(await modal.locator('[data-type="priority"] .icon svg').getAttribute('class')).toContain('flame');
+    expect(await modal.locator('[data-type="status"] .tn-task-modal__action-glyph svg').getAttribute('class')).toContain('orbit');
+    expect(await modal.locator('[data-type="priority"] .tn-task-modal__action-glyph svg').getAttribute('class')).toContain('flame');
     await page.screenshot({ path: `test-results/modal-menu/create-${theme}.png` });
     await page.keyboard.press('Escape');
     await page.evaluate(async taskPath => {
