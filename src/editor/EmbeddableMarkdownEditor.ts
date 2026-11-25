@@ -1,9 +1,18 @@
-import { App, Constructor, Scope, TFile, type Editor, type EventRef } from "obsidian";
+import {
+	App,
+	Constructor,
+	Scope,
+	TFile,
+	type Editor,
+	type EditorPosition,
+	type EventRef,
+} from "obsidian";
 import {
 	EditorSelection as CMEditorSelection,
 	type EditorState,
 	Extension,
 	Prec,
+	Transaction,
 } from "@codemirror/state";
 import { EditorView, keymap, placeholder, ViewUpdate, tooltips } from "@codemirror/view";
 import { acceptCompletion, selectedCompletion } from "@codemirror/autocomplete";
@@ -29,9 +38,11 @@ interface ScrollableMarkdownEditor {
 	buildLocalExtensions(): Extension[];
 	destroy(): void;
 	unload(): void;
+	registerEvent(ref: EventRef): void;
 }
 
 type MarkdownEditorInternal = {
+	getClickableTokenAt?(pos: EditorPosition): { type: string } | null;
 	cm: {
 		cm?: unknown;
 		contentDOM: HTMLElement;
@@ -109,6 +120,7 @@ function getEditorBase(): Constructor<ScrollableMarkdownEditor> {
 			}
 			destroy(): void {}
 			unload(): void {}
+			registerEvent(_ref: EventRef): void {}
 			constructor(app: App, container: HTMLElement, options: unknown) {
 				this.app = app;
 				this.containerEl = container;
@@ -323,6 +335,32 @@ export class EmbeddableMarkdownEditor extends getEditorBase() {
 	 */
 	setValue(value: string): void {
 		this.set(value);
+	}
+
+	/** Replace native attachment embeds while preserving the rest of the draft and its selection. */
+	updateAttachmentEmbeds(previous: string, replacement: string): void {
+		if (previous === replacement) return;
+
+		const { doc } = this.editor.cm.state;
+		const value = doc.toString();
+		const changes: { from: number; to: number; insert: string }[] = [];
+		// Check inside the destination with Obsidian's editor so examples in code stay intact.
+		const destinationOffset = previous.startsWith("![[") ? 4 : 5;
+		for (
+			let from = value.indexOf(previous);
+			from !== -1;
+			from = value.indexOf(previous, from + previous.length)
+		) {
+			const offset = from + destinationOffset;
+			const line = doc.lineAt(offset);
+			const position = { line: line.number - 1, ch: offset - line.from };
+			if (this.editor.getClickableTokenAt?.(position)?.type === "internal-link") {
+				changes.push({ from, to: from + previous.length, insert: replacement });
+			}
+		}
+		if (changes.length > 0) {
+			this.editor.cm.dispatch({ changes, annotations: Transaction.addToHistory.of(false) });
+		}
 	}
 
 	/**
