@@ -145,7 +145,7 @@ export function filterPage(
 function configuredValues(
 	ctx: SettingsContext,
 	kind: "status" | "priority"
-): SettingDefinitionList {
+): [SettingDefinitionPage, SettingDefinitionList] {
 	const { plugin, save } = ctx;
 	const t = ctx.t;
 	const isStatus = kind === "status";
@@ -157,9 +157,44 @@ function configuredValues(
 		ctx.rebuild();
 	};
 
-	return {
+	const heading = isStatus
+		? t(msg({ message: "Statuses", context: "settings.native.statuses" }))
+		: t(msg({ message: "Priorities", context: "settings.native.priorities" }));
+	// Obsidian only renders list drag handles for setting rows, not page links.
+	const reorderPage: SettingDefinitionPage = {
+		type: "page",
+		name: isStatus
+			? t(msg({ message: "Reorder statuses", context: "settings.native.reorderStatuses" }))
+			: t(msg({ message: "Reorder priorities", context: "settings.native.reorderPriorities" })),
+		visible: values.length > 1,
+		items: [
+			{
+				type: "list",
+				onReorder: (from, to) => {
+					if (isStatus) {
+						plugin.settings.customStatuses = reorder(values as StatusConfig[], from, to)
+							.map((item, order) => ({ ...item, order }));
+					} else {
+						plugin.settings.customPriorities = reorder(values as PriorityConfig[], from, to)
+							.map((item, index) => ({ ...item, weight: values.length - index }));
+					}
+					commit();
+				},
+				items: values.map((item) => ({
+					// The native renderer keys ordinary rows by name. Labels can repeat.
+					name: `${kind}.${item.id}`,
+					desc: item.value,
+					searchable: false,
+					render: (setting) => {
+						setting.setName(configLabel(item) || item.value);
+					},
+				})),
+			},
+		],
+	};
+	const editList: SettingDefinitionList = {
 		type: "list",
-		heading: isStatus ? ctx.t(msg({ message: "Statuses", context: "settings.native.statuses" })) : ctx.t(msg({ message: "Priorities", context: "settings.native.priorities" })),
+		heading,
 		emptyState: ctx.t(msg({ message: "No values configured.", context: "settings.native.noValuesConfigured" })),
 		addItem: {
 			name: isStatus
@@ -195,19 +230,6 @@ function configuredValues(
 					});
 				commit();
 			},
-		},
-		onReorder: (from, to) => {
-			if (isStatus)
-				plugin.settings.customStatuses = reorder(values as StatusConfig[], from, to).map(
-					(item, order) => ({ ...item, order })
-				);
-			else
-				plugin.settings.customPriorities = reorder(
-					values as PriorityConfig[],
-					from,
-					to
-				).map((item, index) => ({ ...item, weight: values.length - index }));
-			commit();
 		},
 		onDelete: (index) => {
 			void (async () => {
@@ -389,6 +411,7 @@ function configuredValues(
 			};
 		}),
 	};
+	return [reorderPage, editList];
 }
 
 export function customProperties(ctx: SettingsContext): SettingDefinitionList {
@@ -641,7 +664,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		];
 		if (property in triggers) items.push(triggerGroup(ctx, property, triggers[property]));
 		if (property === "status" || property === "priority")
-			items.push(configuredValues(ctx, property));
+		items.push(...configuredValues(ctx, property));
 		if (property === "projects") {
 			const get = () => plugin.settings.projectAutosuggest;
 			items.push(

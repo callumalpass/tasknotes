@@ -9613,6 +9613,16 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "Reordenar notas"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderPriorities"
+msgid "Reorder priorities"
+msgstr "Reordenar prioridades"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderStatuses"
+msgid "Reorder statuses"
+msgstr "Reordenar estados"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
