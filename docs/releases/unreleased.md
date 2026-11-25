@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Changed
+
+- (#2705) Reduced startup work for vaults with mdbase type definitions enabled by reusing validation when a type file is unchanged between checks. Thanks to @minchinweb for reporting.
