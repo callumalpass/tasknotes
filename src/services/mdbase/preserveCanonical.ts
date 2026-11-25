@@ -1,5 +1,6 @@
-import YAML from "yaml";
+import YAML, { isAlias, isSeq, visit } from "yaml";
 import type { TaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
+import { localTaskDateSchema } from "../canonicalTaskNotesPack";
 import { applyTaskExclusions } from "./collectionConfig";
 import { requireFrontmatter } from "./frontmatter";
 
@@ -9,6 +10,67 @@ const object = (value: unknown): ObjectValue => value !== null && typeof value =
 const normalized = (value: unknown): unknown => Array.isArray(value) ? value.map(normalized) : value !== null && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, normalized(child)])) : value;
 const implementation = (type: ObjectValue): ObjectValue | undefined =>
 	Array.isArray(type.implements) ? type.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
+
+const originalTaskDate = {
+	anyOf: [
+		{ type: "string", format: "date" },
+		{ type: "string", format: "date-time" },
+	],
+};
+const originalLegacyTaskDate = {
+	anyOf: [{
+		anyOf: [
+			{ type: "string", format: "date" },
+			{
+				type: "string",
+				pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})?$",
+			},
+		],
+	}, { type: "null" }],
+};
+
+/** Add wall-clock dates to the two original generated field schemas. */
+export function allowGeneratedLocalTaskDates(markdown: string, type: ObjectValue): string {
+	const fields = object(implementation(type)?.fields);
+	const managed = object(type["x-tasknotes-generator"]).managed_fields;
+	if (!Array.isArray(managed)) return markdown;
+
+	const basePath = ["schema", "value", "properties"];
+	const properties = object(object(object(type.schema).value).properties);
+	const affected = [...new Set([fields.due, fields.scheduled])].flatMap((field) => {
+		if (typeof field !== "string" || !managed.includes(field)) return [];
+		const schema = JSON.stringify(normalized(properties[field]));
+		if (schema === JSON.stringify(normalized(originalTaskDate))) {
+			return [{ field, nullable: false }];
+		}
+		if (schema === JSON.stringify(normalized(originalLegacyTaskDate))) {
+			return [{ field, nullable: true }];
+		}
+		return [];
+	});
+	if (!affected.length) return markdown;
+
+	const { frontmatter, body, prefix } = requireFrontmatter(markdown);
+	const document = YAML.parseDocument(frontmatter);
+	const originals = affected.map(({ field }) => document.getIn([...basePath, field], true));
+	visit(document, {
+		Alias(_key, alias) {
+			const target = alias.resolve(document);
+			const index = originals.indexOf(target);
+			if (index !== -1) return document.createNode(properties[affected[index].field]);
+		},
+	});
+	for (const { field, nullable } of affected) {
+		const path = [...basePath, field];
+		const node = document.getIn(path, true);
+		// A YAML alias can point to a property outside the managed fields.
+		// Give the affected property its own schema before adding a branch.
+		if (isAlias(node)) document.setIn(path, copy(properties[field]));
+		const alternatives = document.getIn(nullable ? [...path, "anyOf", 0, "anyOf"] : [...path, "anyOf"], true);
+		if (isSeq(alternatives)) alternatives.add(document.createNode(localTaskDateSchema));
+	}
+	return `${prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${body}`;
+}
 
 /** Remove the legacy placeholder from the two link rules emitted by TaskNotes. */
 export function removeGeneratedAnyLinkTargets(markdown: string, type: ObjectValue): string {

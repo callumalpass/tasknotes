@@ -35,3 +35,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Changed
 
 - (#2705) Reduced startup work for vaults with mdbase type definitions enabled by reusing validation when a type file is unchanged between checks. Thanks to @minchinweb for reporting.
+
+## Fixed
+
+- (#2706) Fixed mdbase validation of scheduled and due times written by TaskNotes. Existing generated type definitions are updated when TaskNotes loads the vault.
+  - Thanks to @iantierney for reporting
