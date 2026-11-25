@@ -38,6 +38,8 @@ export interface TaskSelectorWithCreateOptions {
 	creationDefaults?: Partial<TaskCreationData>;
 	/** Date used for recurring task instance status in the selector */
 	targetDate?: Date;
+	/** Use the stored status when selecting a task note representing the series. */
+	showSeriesStatus?: boolean;
 }
 
 function searchableValueIncludes(value: unknown, lowerQuery: string): boolean {
@@ -628,6 +630,14 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		return this.getFilteredTasks(query);
 	}
 
+	private isSuggestionCompleted(task: TaskInfo): boolean {
+		const { statusManager, settings } = this.plugin;
+		if (this.options.showSeriesStatus) {
+			return statusManager.isCompletedStatus(task.status);
+		}
+		return isTaskInstanceCompleted(task, this.targetDate, statusManager, settings.defaultTaskStatus);
+	}
+
 	private getFilteredTasks(query: string): TaskInfo[] {
 		const lowerQuery = query.trim().toLowerCase();
 		const hasQuery = lowerQuery.length > 0;
@@ -647,18 +657,8 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 				}
 
 				// Sort by completion status first (incomplete tasks come first)
-				const aCompleted = isTaskInstanceCompleted(
-					a,
-					this.targetDate,
-					this.plugin.statusManager,
-					this.plugin.settings.defaultTaskStatus
-				);
-				const bCompleted = isTaskInstanceCompleted(
-					b,
-					this.targetDate,
-					this.plugin.statusManager,
-					this.plugin.settings.defaultTaskStatus
-				);
+				const aCompleted = this.isSuggestionCompleted(a);
+				const bCompleted = this.isSuggestionCompleted(b);
 				if (aCompleted !== bCompleted) {
 					return aCompleted ? 1 : -1;
 				}
@@ -689,15 +689,18 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 
 	renderSuggestion(task: TaskInfo, el: HTMLElement): void {
 		// Use TaskCard component with default layout for full styling
-		const displayTask = getTaskWithInstanceStatus(
-			task,
-			this.targetDate,
-			this.plugin.statusManager,
-			this.plugin.settings.defaultTaskStatus
-		);
+		const displayTask = this.options.showSeriesStatus
+			? task
+			: getTaskWithInstanceStatus(
+					task,
+					this.targetDate,
+					this.plugin.statusManager,
+					this.plugin.settings.defaultTaskStatus
+				);
 		const taskCard = createTaskCard(displayTask, this.plugin, undefined, {
 			layout: "default",
 			targetDate: this.targetDate,
+			showSeriesStatus: this.options.showSeriesStatus,
 		});
 
 		// Add modal-specific class for any additional styling
@@ -782,6 +785,7 @@ export function openTaskSelector(
 		placeholder: options?.placeholder,
 		title: options?.title,
 		targetDate: options?.targetDate,
+		showSeriesStatus: options?.showSeriesStatus,
 		creationDefaults: options?.creationDefaults,
 		onResult: (result) => {
 			if (result.type === "selected" || result.type === "created") {

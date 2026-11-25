@@ -32,7 +32,7 @@ export class TaskActionCoordinator {
 		const { openTaskSelectorWithCreate } = await import(
 			"../modals/TaskSelectorWithCreateModal"
 		);
-		const result = await openTaskSelectorWithCreate(this.plugin);
+		const result = await openTaskSelectorWithCreate(this.plugin, { showSeriesStatus: true });
 
 		if (result.type === "selected" || result.type === "created") {
 			await this.openTaskFile(result.task);

@@ -6,7 +6,10 @@ import { filterEmptyProjects, getEffectiveTaskStatus, sanitizeForCssClass } from
 
 export interface TaskCardStateOptions {
 	targetDate?: Date;
+	/** List and board cards use the pending occurrence's identity. */
 	usePendingOccurrenceIdentity?: boolean;
+	/** Show the task note's stored status and completion state. */
+	showSeriesStatus?: boolean;
 	layout?: "default" | "compact" | "inline";
 }
 
@@ -134,14 +137,15 @@ export function buildTaskCardRenderState(
 		task.recurrence_anchor !== "completion" && task.scheduled
 		? getDefaultTaskCardTargetDate(task)
 		: options.targetDate || getDefaultTaskCardTargetDate(task);
-	const effectiveStatus = task.recurrence
+	const showOccurrenceStatus = task.recurrence && !options.showSeriesStatus;
+	const effectiveStatus = showOccurrenceStatus
 		? getEffectiveTaskStatus(task, targetDate, plugin.statusManager.getCompletedStatuses()[0])
 		: task.status;
 	const layout = options.layout || "default";
-	const isCompleted = task.recurrence
+	const isCompleted = showOccurrenceStatus
 		? task.complete_instances?.includes(formatDateForStorage(targetDate)) || false
 		: plugin.statusManager.isCompletedStatus(effectiveStatus);
-	const isSkipped = task.recurrence
+	const isSkipped = showOccurrenceStatus
 		? task.skipped_instances?.includes(formatDateForStorage(targetDate)) || false
 		: false;
 	const stateWithoutClasses = {
