@@ -36,7 +36,7 @@ describe("taskModalActionBar", () => {
 		expect(icon.getAttribute("role")).toBe("button");
 		expect(icon.getAttribute("tabindex")).toBe("0");
 		expect(mockSetTooltip).toHaveBeenCalledWith(icon, "Priority", { placement: "top" });
-		expect(mockSetIcon).toHaveBeenCalledWith(icon.querySelector(".icon"), "star");
+		expect(mockSetIcon).toHaveBeenCalledWith(icon.querySelector(".tn-task-modal__action-glyph"), "star");
 
 		const event = new MouseEvent("click", { bubbles: true, cancelable: true });
 		const preventDefault = jest.spyOn(event, "preventDefault");

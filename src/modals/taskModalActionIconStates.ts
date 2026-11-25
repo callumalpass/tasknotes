@@ -185,7 +185,7 @@ function renderConfiguredGlyph(
 	state: unknown,
 	render: (host: HTMLElement) => void
 ): void {
-	const iconElement = icon.querySelector<HTMLElement>(".icon");
+	const iconElement = icon.querySelector<HTMLElement>(".tn-task-modal__action-glyph");
 	const signature = customIcon ?? JSON.stringify(state);
 	if (!iconElement || iconElement.dataset.glyphSignature === signature) return;
 	iconElement.empty();
@@ -208,7 +208,7 @@ function updatePriorityIcon(
 	renderConfiguredGlyph(icon, priorityConfig?.icon, priorityGlyph, (host) =>
 		renderPriorityGlyph(host, priorityGlyph)
 	);
-	const glyphElement = icon.querySelector<HTMLElement>(".icon");
+	const glyphElement = icon.querySelector<HTMLElement>(".tn-task-modal__action-glyph");
 	if (glyphElement)
 		glyphElement.hidden = !hasVisiblePriority(state.priority, state.priorityConfigs);
 	updateConfiguredValueIcon(icon, context, {
@@ -252,7 +252,7 @@ function updateConfiguredValueIcon(
 		setTooltip(icon, label, { placement: "top" });
 	}
 
-	const iconElement = icon.querySelector<HTMLElement>(".icon");
+	const iconElement = icon.querySelector<HTMLElement>(".tn-task-modal__action-glyph");
 	if (!iconElement) return;
 
 	if (options.color) {
