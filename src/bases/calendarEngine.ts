@@ -12,7 +12,10 @@ export type CalendarEventProps = CalendarEvent["extendedProps"] & {
 	isBatchPreview?: boolean;
 };
 
-export type CalendarEventItem = CalendarItem<CalendarEventProps>;
+export interface CalendarEventItem extends CalendarItem<CalendarEventProps> {
+	/** Planned duration to pass to the calendar engine for an all-day to timed move. */
+	timedDropDurationMinutes?: number;
+}
 
 /**
  * The event shape the mutation and menu helpers read: start/end as Dates in
@@ -95,6 +98,14 @@ export function toCalendarItems(events: readonly CalendarEventInput[]): Calendar
 			} : {}),
 			data: props,
 		};
+		const estimate = props.taskInfo?.timeEstimate;
+		if (
+			event.allDay &&
+			(props.eventType === "scheduled" || props.eventType === "recurring") &&
+			estimate !== undefined && Number.isFinite(estimate) && estimate > 0
+		) {
+			item.timedDropDurationMinutes = estimate;
+		}
 		if (props.eventType === "timeEntry") item.lane = "actual";
 		if (props.isCompleted) item.completed = true;
 		return item;

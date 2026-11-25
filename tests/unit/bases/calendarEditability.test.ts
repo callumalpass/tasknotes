@@ -44,3 +44,19 @@ describe("Calendar editability policy", () => {
 		expect(new Set(items.map((item) => item.id)).size).toBe(2);
 	});
 });
+
+describe("Calendar drag duration", () => {
+	it.each([
+		["scheduled", true, 30, 30],
+		["recurring", true, 45, 45],
+		["scheduled", true, 0, undefined],
+		["scheduled", true, undefined, undefined],
+		["scheduled", false, 30, undefined],
+		["due", true, 30, undefined],
+		["scheduledToDueSpan", true, 30, undefined],
+	] as const)("maps %s (all-day %s) with estimate %s to %s", (eventType, allDay, timeEstimate, duration) => {
+		const event = createEvent(eventType, { taskInfo: { ...task, timeEstimate } });
+		const [item] = toCalendarItems([{ ...event, allDay }]);
+		expect(item.timedDropDurationMinutes).toBe(duration);
+	});
+});
