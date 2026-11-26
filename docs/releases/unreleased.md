@@ -16,6 +16,7 @@ Example:
 ```
 ## Fixed
 
+- (#2712) Made the Task Edit modal and the task card inside a note follow the sort configured in the Relationships Base’s Subtasks view. Thanks to @Glint-Eye for reporting.
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar

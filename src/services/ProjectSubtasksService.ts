@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Project graph construction validates parent links before dereferencing. */
 import { EventRef, TFile } from "obsidian";
+import { sortSubtaskFilesByRelationshipsView } from "../bases/relationshipSubtaskSort";
 import TaskNotesPlugin from "../main";
 import { TaskInfo } from "../types";
 import { parseLinkToPath } from "../utils/linkUtils";
@@ -283,9 +284,35 @@ export class ProjectSubtasksService {
 		};
 	}
 
-	/**
-	 * Sort tasks by priority and status
-	 */
+	async sortTasksByRelationshipsView(parent: TFile, tasks: TaskInfo[]): Promise<TaskInfo[]> {
+		const fallback = this.sortTasks([...tasks]);
+		if (fallback.length < 2) return fallback;
+
+		const path = this.plugin.settings?.commandFileMapping?.relationships;
+		if (!path) return fallback;
+		const base = this.plugin.app.vault.getFileByPath(path);
+		if (base?.extension !== "base") return fallback;
+
+		const tasksByPath = new Map(fallback.map((task) => [task.path, task]));
+		const files = fallback.map((task) => this.plugin.app.vault.getFileByPath(task.path));
+		if (!files.every((file): file is TFile => file instanceof TFile)) return fallback;
+
+		try {
+			const paths = await sortSubtaskFilesByRelationshipsView(
+				this.plugin.app,
+				base,
+				parent,
+				files
+			);
+			const sorted = paths?.map((path) => tasksByPath.get(path));
+			return sorted?.every((task): task is TaskInfo => task !== undefined) ? sorted : fallback;
+		} catch {
+			// The configured Base may be invalid or the host's embed API unavailable.
+			return fallback;
+		}
+	}
+
+	/** Sort by completion, priority, due date and title. */
 	sortTasks(tasks: TaskInfo[]): TaskInfo[] {
 		return tasks.sort((a, b) => {
 			// First sort by completion status (incomplete first)

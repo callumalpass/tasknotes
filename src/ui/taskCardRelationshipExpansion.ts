@@ -183,21 +183,20 @@ export async function toggleSubtasksExpansion(
 				relationshipOptions
 			);
 
-			loadingEl.remove();
-
 			if (subtasks.length === 0) {
-				container.createDiv({
-					cls: "task-card__subtasks-loading",
-					text: plugin.i18n.translate(msg({ message: "No subtasks found", context: "contextMenus.task.subtasks.noSubtasks" })),
-				});
+				loadingEl.textContent = plugin.i18n.translate(msg({ message: "No subtasks found", context: "contextMenus.task.subtasks.noSubtasks" }));
 				return;
 			}
 
-			const sortedSubtasks = sortExpandedRelationshipTasks(
-				subtasks,
-				relationshipOptions,
-				(tasks) => plugin.projectSubtasksService.sortTasks(tasks)
-			);
+			const sortedSubtasks = relationshipOptions.useRelationshipsSubtaskSort
+				? await plugin.projectSubtasksService.sortTasksByRelationshipsView(file, subtasks)
+				: sortExpandedRelationshipTasks(
+					subtasks,
+					relationshipOptions,
+					(tasks) => plugin.projectSubtasksService.sortTasks(tasks)
+				);
+			if (loadingEl.parentElement !== container || container.parentElement !== card) return;
+			loadingEl.remove();
 			const parentChain = buildParentTaskChain(card);
 
 			for (const subtask of sortedSubtasks) {
