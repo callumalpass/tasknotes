@@ -35,3 +35,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Changed
 
 - (#2705) Reduced startup work for vaults with mdbase type definitions enabled by reusing validation when a type file is unchanged between checks. Thanks to @minchinweb for reporting.
+
+## Fixed
+
+- (#2683) Scrolling up in Agenda and Calendar List now loads earlier days without shifting the visible tasks. Thanks to @Oneiran for reporting.
+- (#2698) Dragging an all-day task into the calendar’s timed grid now previews the task’s time estimate. Thanks to @Oneiran for reporting.
