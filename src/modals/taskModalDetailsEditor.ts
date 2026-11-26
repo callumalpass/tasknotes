@@ -1,6 +1,7 @@
 import { type App, TFile } from "obsidian";
 import type { EmbeddableMarkdownEditor } from "../editor/EmbeddableMarkdownEditor";
 import { createTaskModalMarkdownEditor } from "./taskModalEditorAdapter";
+import { captureDraftImagePastes } from "./taskDraftImageRenaming";
 
 type Nullable<T> = T | null;
 
@@ -62,6 +63,7 @@ export function createTaskModalDetailsEditor(
 
 function watchDraftAttachmentRenames(app: App, editor: EmbeddableMarkdownEditor): void {
 	const embeds = new WeakMap<TFile, string>();
+	const captureImage = captureDraftImagePastes(app, editor);
 	// Obsidian's embedded paste handler generates links without a source note.
 	const getEmbed = (file: TFile) => "!" + app.fileManager.generateMarkdownLink(file, "");
 
@@ -69,6 +71,7 @@ function watchDraftAttachmentRenames(app: App, editor: EmbeddableMarkdownEditor)
 		app.vault.on("create", (file) => {
 			if (file instanceof TFile && file.extension !== "md") {
 				embeds.set(file, getEmbed(file));
+				captureImage?.(file);
 			}
 		})
 	);

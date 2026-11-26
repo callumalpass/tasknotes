@@ -20,6 +20,7 @@ import type {
 import { createNLPAutocomplete } from "../editor/NLPCodeMirrorAutocomplete";
 import { createNLPHighlight, getReleasedNLPSpans } from "../editor/NLPHighlight";
 import { buildCreationBlockingUpdates, buildTaskCreationData } from "./taskCreationData";
+import { renameSavedDraftImages } from "./taskDraftImageRenaming";
 import {
 	buildTaskCreationFormState,
 	type TaskCreationPrepopulatedValues,
@@ -529,6 +530,10 @@ export class TaskCreationModal extends TaskModal {
 		};
 
 		const outcome = await runTaskSaveFollowUps([
+			{
+				run: () => renameSavedDraftImages(this.app, result.file, this.detailsMarkdownEditor),
+				onError: reportFollowUpFailure,
+			},
 			{
 				// Disk files are copied only now that the task exists, next to its note.
 				run: async () => {
