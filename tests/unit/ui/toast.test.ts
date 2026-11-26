@@ -275,3 +275,186 @@ it("handles inline task controls inside an editor without intercepting typing Un
 	expect(restore).toHaveBeenCalledTimes(1);
 	dispose();
 });
+
+it("leaves Ctrl/Cmd+Z untouched in non-TaskNotes views such as Excalidraw or native Bases tables", async () => {
+	const scope = {};
+	const restore = jest.fn();
+	const dispose = registerUndoKeyboard(document.body, scope);
+	showToast({ message: "Rescheduled", undoScope: scope, action: { label: "Undo", run: restore } });
+
+	// Inactive TaskNotes Calendar pane alongside an active Excalidraw pane.
+	const calendarLeaf = document.body.createDiv({ cls: "workspace-leaf" });
+	const calendarContent = calendarLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "bases" } });
+	calendarContent.createDiv({ cls: "view-content" }).createDiv({ cls: "bases-view", attr: { "data-tn-view": "tasknotesCalendar" } });
+
+	const excalidrawLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	const excalidrawContent = excalidrawLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "excalidraw" } });
+	const canvas = excalidrawContent.createDiv({ cls: "excalidraw" }).createEl("canvas");
+	let canvasReceived = false;
+	canvas.addEventListener("keydown", (event) => {
+		if (!event.defaultPrevented) canvasReceived = true;
+	});
+
+	const canvasUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	canvas.dispatchEvent(canvasUndo);
+	await Promise.resolve();
+	expect(canvasUndo.defaultPrevented).toBe(false);
+	expect(canvasReceived).toBe(true);
+	expect(restore).not.toHaveBeenCalled();
+
+	// Also untouched when focus falls back to document.body while Excalidraw is active.
+	const bodyUndo = new KeyboardEvent("keydown", { key: "z", metaKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(bodyUndo);
+	await Promise.resolve();
+	expect(bodyUndo.defaultPrevented).toBe(false);
+	expect(restore).not.toHaveBeenCalled();
+
+	// Also untouched in a native Bases table leaf (data-type="bases" without a TaskNotes view).
+	excalidrawLeaf.removeClass("mod-active");
+	const tableLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	const tableContent = tableLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "bases" } });
+	const tableCell = tableContent.createDiv({ cls: "view-content" }).createDiv({ cls: "bases-view" }).createDiv({ cls: "bases-table" });
+	const tableUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	tableCell.dispatchEvent(tableUndo);
+	await Promise.resolve();
+	expect(tableUndo.defaultPrevented).toBe(false);
+	expect(restore).not.toHaveBeenCalled();
+
+	// Focusing the undo toast itself still triggers TaskNotes undo even when another leaf is active.
+	const toastButton = document.querySelector<HTMLButtonElement>(".tn-toast__action")!;
+	const toastUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	toastButton.dispatchEvent(toastUndo);
+	await Promise.resolve();
+	await Promise.resolve();
+	expect(toastUndo.defaultPrevented).toBe(true);
+	expect(restore).toHaveBeenCalledTimes(1);
+	dispose();
+});
+
+it("handles Ctrl/Cmd+Z when a TaskNotes view is active or focused, but backs off for modals and markdown embeds", async () => {
+	const scope = {};
+	const restore = jest.fn();
+	const dispose = registerUndoKeyboard(document.body, scope);
+	for (let i = 0; i < 4; i++) {
+		showToast({ message: `Change ${i}`, undoScope: scope, action: { label: "Undo", run: restore } });
+	}
+
+	// Active TaskNotes Calendar leaf with focus on document.body (e.g. after mouse drag).
+	const calendarLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	const calendarContent = calendarLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "bases" } });
+	calendarContent.createDiv({ cls: "view-content" }).createDiv({ cls: "bases-view", attr: { "data-tn-view": "tasknotesCalendar" } });
+
+	const dragUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(dragUndo);
+	await Promise.resolve();
+	await Promise.resolve();
+	expect(dragUndo.defaultPrevented).toBe(true);
+	expect(restore).toHaveBeenCalledTimes(1);
+
+	// Modal open over active TaskNotes leaf must not trigger TaskNotes undo.
+	const modal = document.body.createDiv({ cls: "modal-container" });
+	const modalButton = modal.createEl("button");
+	const modalUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	modalButton.dispatchEvent(modalUndo);
+	await Promise.resolve();
+	expect(modalUndo.defaultPrevented).toBe(false);
+	expect(restore).toHaveBeenCalledTimes(1);
+	modal.remove();
+
+	// Active Pomodoro view leaf triggers TaskNotes undo.
+	calendarLeaf.removeClass("mod-active");
+	const pomodoroLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	pomodoroLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "tasknotes-pomodoro-view" } })
+		.createDiv({ cls: "view-content" })
+		.createDiv({ cls: "tasknotes-plugin pomodoro-view" });
+	const pomodoroUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(pomodoroUndo);
+	await Promise.resolve();
+	await Promise.resolve();
+	expect(pomodoroUndo.defaultPrevented).toBe(true);
+	expect(restore).toHaveBeenCalledTimes(2);
+
+	// Markdown leaf containing an embedded TaskNotes relationships widget:
+	// reading-view focus outside the widget is left alone; focus inside the widget triggers undo.
+	pomodoroLeaf.removeClass("mod-active");
+	const mdLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	const mdView = mdLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "markdown" } }).createDiv({ cls: "view-content" });
+	const readingText = mdView.createDiv({ cls: "markdown-preview-view" });
+	const widget = mdView.createDiv({ cls: "tasknotes-plugin tasknotes-relationships-widget" });
+	const widgetCard = widget.createDiv({ cls: "task-card" });
+
+	const mdUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	readingText.dispatchEvent(mdUndo);
+	await Promise.resolve();
+	expect(mdUndo.defaultPrevented).toBe(false);
+	expect(restore).toHaveBeenCalledTimes(2);
+
+	const widgetUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	widgetCard.dispatchEvent(widgetUndo);
+	await Promise.resolve();
+	await Promise.resolve();
+	expect(widgetUndo.defaultPrevented).toBe(true);
+	expect(restore).toHaveBeenCalledTimes(3);
+
+	dispose();
+});
+
+it("allows body-level Ctrl+Z immediately after an inline card change only while its toast stays on that leaf", async () => {
+	const scope = {};
+	const restore = jest.fn();
+	const dispose = registerUndoKeyboard(document.body, scope);
+
+	const mdLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	const mdView = mdLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "markdown" } }).createDiv({ cls: "view-content" });
+	mdView.createDiv({ cls: "task-card--layout-inline" });
+
+	const otherLeaf = document.body.createDiv({ cls: "workspace-leaf" });
+	otherLeaf.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "excalidraw" } });
+
+	showToast({ message: "Status changed", undoScope: scope, action: { label: "Undo", run: restore } });
+
+	// Switching away to Excalidraw while toast is still visible must leave Ctrl+Z untouched.
+	mdLeaf.removeClass("mod-active");
+	otherLeaf.addClass("mod-active");
+	const otherUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(otherUndo);
+	await Promise.resolve();
+	expect(otherUndo.defaultPrevented).toBe(false);
+	expect(restore).not.toHaveBeenCalled();
+
+	// Returning to the origin markdown leaf while toast is still visible allows body-level Ctrl+Z.
+	otherLeaf.removeClass("mod-active");
+	mdLeaf.addClass("mod-active");
+	const inlineUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(inlineUndo);
+	await Promise.resolve();
+	await Promise.resolve();
+	expect(inlineUndo.defaultPrevented).toBe(true);
+	expect(restore).toHaveBeenCalledTimes(1);
+
+	// After the toast dismisses, body-level Ctrl+Z in the markdown leaf is left untouched.
+	const secondToast = showToast({ message: "Status changed again", undoScope: scope, action: { label: "Undo", run: restore } });
+	secondToast.dismiss();
+	const lateUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(lateUndo);
+	await Promise.resolve();
+	expect(lateUndo.defaultPrevented).toBe(false);
+	expect(restore).toHaveBeenCalledTimes(1);
+
+	// Switching a Bases leaf from a TaskNotes view to a native table while toast is visible must NOT fire.
+	mdLeaf.removeClass("mod-active");
+	const basesLeaf = document.body.createDiv({ cls: "workspace-leaf mod-active" });
+	const basesView = basesLeaf
+		.createDiv({ cls: "workspace-leaf-content", attr: { "data-type": "bases" } })
+		.createDiv({ cls: "view-content" })
+		.createDiv({ cls: "bases-view", attr: { "data-tn-view": "tasknotesTaskList" } });
+	showToast({ message: "Moved", undoScope: scope, action: { label: "Undo", run: restore } });
+	basesView.removeAttribute("data-tn-view");
+	const switchedBasesUndo = new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+	document.body.dispatchEvent(switchedBasesUndo);
+	await Promise.resolve();
+	expect(switchedBasesUndo.defaultPrevented).toBe(false);
+	expect(restore).toHaveBeenCalledTimes(1);
+
+	dispose();
+});
