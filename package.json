@@ -116,7 +116,7 @@
 		"@callumalpass/mdbase-interop": "0.1.0-rc.2",
 		"@codemirror/view": "^6.38.6",
 		"@modelcontextprotocol/sdk": "1.32.1",
-		"@tasknotes/calendar": "0.1.12",
+		"@tasknotes/calendar": "0.1.13",
 		"@tasknotes/calendar-service-client": "0.1.2",
 		"@tasknotes/model": "0.3.1",
 		"ajv": "8.20.0",

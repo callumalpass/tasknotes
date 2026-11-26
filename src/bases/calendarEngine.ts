@@ -12,10 +12,7 @@ export type CalendarEventProps = CalendarEvent["extendedProps"] & {
 	isBatchPreview?: boolean;
 };
 
-export interface CalendarEventItem extends CalendarItem<CalendarEventProps> {
-	/** Planned duration to pass to the calendar engine for an all-day to timed move. */
-	timedDropDurationMinutes?: number;
-}
+export type CalendarEventItem = CalendarItem<CalendarEventProps>;
 
 /**
  * The event shape the mutation and menu helpers read: start/end as Dates in
