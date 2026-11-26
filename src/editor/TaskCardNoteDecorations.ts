@@ -122,7 +122,9 @@ function createTaskCardWidget(plugin: TaskNotesPlugin, task: TaskInfo): HTMLElem
 		: undefined;
 
 	// Create the task card
-	const taskCard = createTaskCard(task, plugin, visibleProperties);
+	const taskCard = createTaskCard(task, plugin, visibleProperties, {
+		useRelationshipsSubtaskSort: true,
+	});
 
 	// Add specific styling for the note widget
 	taskCard.classList.add("task-card-note-widget__card");

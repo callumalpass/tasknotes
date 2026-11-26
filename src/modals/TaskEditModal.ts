@@ -633,7 +633,10 @@ export class TaskEditModal extends TaskModal {
 
 			const subtasks =
 				await this.plugin.projectSubtasksService.getTasksLinkedToProject(taskFile);
-			const sortedSubtasks = this.plugin.projectSubtasksService.sortTasks([...subtasks]);
+			const sortedSubtasks = await this.plugin.projectSubtasksService.sortTasksByRelationshipsView(
+				taskFile,
+				subtasks
+			);
 			this.selectedSubtaskFiles = [];
 			this.initialSubtaskFiles = [];
 

@@ -6,6 +6,7 @@ import { stringifyUnknown } from "../utils/stringUtils";
 export type ExpandedRelationshipFilterMode = "inherit" | "show-all";
 
 export interface TaskCardRelationshipOptions {
+	useRelationshipsSubtaskSort?: boolean;
 	expandedRelationshipFilterMode?: ExpandedRelationshipFilterMode;
 	resolveExpandedRelationshipFilterMode?: () => ExpandedRelationshipFilterMode;
 	expandedRelationshipTaskPaths?: ReadonlySet<string>;

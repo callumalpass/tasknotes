@@ -95,6 +95,14 @@ export function toCalendarItems(events: readonly CalendarEventInput[]): Calendar
 			} : {}),
 			data: props,
 		};
+		const estimate = props.taskInfo?.timeEstimate;
+		if (
+			event.allDay &&
+			(props.eventType === "scheduled" || props.eventType === "recurring") &&
+			estimate !== undefined && Number.isFinite(estimate) && estimate > 0
+		) {
+			item.timedDropDurationMinutes = estimate;
+		}
 		if (props.eventType === "timeEntry") item.lane = "actual";
 		if (props.isCompleted) item.completed = true;
 		return item;

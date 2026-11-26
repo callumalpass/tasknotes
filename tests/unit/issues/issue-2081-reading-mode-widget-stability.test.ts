@@ -247,7 +247,8 @@ describe("Issue #2081: reading mode note widgets stay mounted", () => {
 			expect(createTaskCard).toHaveBeenCalledWith(
 				expect.objectContaining({ title: "Updated task", status: "done" }),
 				pluginMock.plugin,
-				expect.any(Array)
+				expect.any(Array),
+				{ useRelationshipsSubtaskSort: true }
 			);
 		} finally {
 			cleanup();
