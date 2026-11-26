@@ -25,6 +25,10 @@ import {
 	isPropertyPresenceTaskIdentification,
 } from "../utils/taskIdentification";
 
+export function getSubtasksViewName(): string {
+	return uiText(msg({ message: "Subtasks", context: "generated Bases view name" }));
+}
+
 function escapeBasesStringLiteral(value: string): string {
 	return value
 		.replace(/\\/g, "\\\\")
@@ -1108,7 +1112,7 @@ ${formulasSection}
 
 views:
   - type: tasknotesKanban
-    name: ${JSON.stringify(uiText(msg({ message: "Subtasks", context: "generated Bases view name" })))}
+    name: ${JSON.stringify(getSubtasksViewName())}
     filters:
       and:
 ${taskRelationshipFilterYaml}

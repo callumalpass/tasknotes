@@ -58,6 +58,8 @@ export interface TaskCardOptions {
 	navigationSubpath?: string;
 	/** How expanded subtasks/dependencies should interact with the current view filter. */
 	expandedRelationshipFilterMode?: "inherit" | "show-all";
+	/** Use the configured Relationships Subtasks view order for standalone note cards. */
+	useRelationshipsSubtaskSort?: boolean;
 	/** Optional live resolver for the current expanded relationship filter mode. */
 	resolveExpandedRelationshipFilterMode?: () => "inherit" | "show-all";
 	/** Paths visible in the current view after Bases/search filtering. */
