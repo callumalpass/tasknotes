@@ -15,7 +15,7 @@ import {
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
-import { removeGeneratedAnyLinkTargets, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
+import { allowGeneratedLocalTaskDates, removeGeneratedAnyLinkTargets, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
 import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
 import { MetadataTransaction } from "./mdbase/MetadataTransaction";
 import { findExplicitTypeReference } from "./mdbase/ExplicitTypeReferences";
@@ -1252,7 +1252,9 @@ export class MdbaseSpecService {
 		if (state) {
 			const savedExclusions = (state.type["x-tasknotes-generator"] as Record<string, unknown> | undefined)?.excluded_folders;
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
-			const corrected = removeGeneratedAnyLinkTargets(state.content, state.type);
+			const corrected = allowGeneratedLocalTaskDates(
+				removeGeneratedAnyLinkTargets(state.content, state.type), state.type
+			);
 			const adjusted = this.lastKnownTypeContent === null
 				? applyTaskExclusions(corrected, this.plugin.settings.excludedFolders || "")
 				: corrected;
@@ -2556,7 +2558,9 @@ export class MdbaseSpecService {
 		});
 		const config = YAML.parseDocument(resources.configDocument);
 		config.setIn(["settings", "explicit_type_keys"], ["mdbase_type"]);
-		const corrected = removeGeneratedAnyLinkTargets(resources.typeDocument, resources.type);
+		const corrected = allowGeneratedLocalTaskDates(
+			removeGeneratedAnyLinkTargets(resources.typeDocument, resources.type), resources.type
+		);
 		resources.typeDocument = applyTaskExclusions(corrected, settings.excludedFolders || "");
 		resources.type = parseMdbaseTaskTypeDocument(resources.typeDocument).type;
 		const document = (source: string): string => {

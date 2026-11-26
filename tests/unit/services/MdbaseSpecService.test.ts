@@ -16,6 +16,7 @@ import YAML from "yaml";
 import { observeTranslation } from "../../helpers/real-i18n";
 
 import { MDBASE_README } from "../../../src/services/mdbase/folders";
+import { compileRecordSchema } from "../../../src/services/mdbase/contractValidation";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
 import { canonicalTaskNotesResources } from "../../../src/services/canonicalTaskNotesPack";
@@ -27,6 +28,7 @@ import {
 	DEFAULT_STATUSES,
 } from "../../../src/settings/defaults";
 import { FieldMapping } from "../../../src/types";
+import { combineDateAndTime } from "../../../src/utils/dateUtils";
 
 /** Extract the YAML frontmatter string (between --- delimiters) from markdown */
 function extractFrontmatter(markdown: string): string {
@@ -1093,6 +1095,19 @@ describe("MdbaseSpecService", () => {
 	});
 
 	describe("buildTaskTypeDef - v0.3", () => {
+		it.each([false, true])("validates TaskNotes-written times (legacy layout: %s)", (legacyCompatibility) => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const type = parseFrontmatter(service.buildTaskTypeDef("0.3.0", { legacyCompatibility }));
+			const validate = compileRecordSchema(asObject(type.schema).value);
+			const base = { status: "open", dateCreated: "2026-11-20T10:00:00Z" };
+			const timed = combineDateAndTime("2026-11-30", "16:00");
+			expect(timed).toBe("2026-11-30T16:00");
+			expect(validate({ ...base, scheduled: timed, due: timed })).toBe(true);
+			expect(validate({ ...base, scheduled: "2026-11-30", due: "2026-11-30T16:00:00+11:00" })).toBe(true);
+			expect(validate({ ...base, scheduled: "2026-11-30T16:00:00", due: "2026-11-30T16:00:59" })).toBe(true);
+			expect(validate({ ...base, scheduled: "2026-11-30T25:00" })).toBe(false);
+		});
+
 		it("emits a JSON Schema type wrapper by default", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
@@ -1483,6 +1498,33 @@ describe("MdbaseSpecService", () => {
 	});
 
 	describe("generate", () => {
+		it("repairs a mapped date while preserving custom constraints and YAML aliases", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources({
+				modelConfig: { fieldMapping: { due: "deadline", scheduled: "planned" } },
+			});
+			const type = parseFrontmatter(resources.typeDocument);
+			const properties = asObject(asObject(asObject(type.schema).value).properties);
+			const originalDue = properties.deadline;
+			properties.custom_date = originalDue;
+			properties.planned = { ...asObject(properties.planned), description: "Collection's own rule" };
+			const markdown = `---\n${YAML.stringify(type)}---\nCustom body\n`;
+			const path = "_mdbase/types/task.md";
+			const files = installMemoryVault(plugin, { "mdbase.yaml": resources.configDocument, [path]: markdown });
+			await new MdbaseSpecService(plugin).initialize();
+
+			const migrated = files.get(path)!;
+			const current = parseFrontmatter(migrated);
+			const adjusted = asObject(asObject(asObject(current.schema).value).properties);
+			expect(compileRecordSchema(adjusted.deadline)("2026-11-30T16:00")).toBe(true);
+			expect(adjusted.planned).toEqual(properties.planned);
+			expect(adjusted.custom_date).toEqual(originalDue);
+			expect(current.version).toBe(type.version);
+			expect(extractBody(migrated)).toBe("Custom body\n");
+			await new MdbaseSpecService(plugin).initialize();
+			expect(files.get(path)).toBe(migrated);
+		});
+
 		it("sets up a v4 vault with no config in the new layout using canonical support bytes", async () => {
 			const plugin = createMockPlugin();
 			const files = installMemoryVault(plugin, {});
@@ -1491,7 +1533,7 @@ describe("MdbaseSpecService", () => {
 				types_folder: "_mdbase/types", contracts_folder: "_mdbase/contracts",
 			});
 			expect(files.get("_mdbase/README.md")).toBe(MDBASE_README);
-			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.21.json"), "utf8"));
+			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.22.json"), "utf8"));
 			let compared = 0;
 			for (const resource of pack.resources) {
 				const entry = pack.manifest.resources.find((entry: { source: string }) => entry.source === resource.source);

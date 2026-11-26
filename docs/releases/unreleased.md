@@ -40,7 +40,11 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ## Fixed
 
 - (#2691) Moving the next occurrence of a scheduled-anchored recurring task no longer clears completed or skipped history on other dates. Moves without a `recurrence_original_date` (such as Google-synced or legacy off-pattern notes) clear only the landing day when it is already recorded, still behind confirmation; completion-anchored recurring tasks keep clearing recorded instances on or after the new date. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-and-recorded-instances). Thanks to @martin-forge for reporting.
+- (#2706) Fixed mdbase validation of scheduled and due times written by TaskNotes. Existing generated type definitions are updated when TaskNotes loads the vault.
+  - Thanks to @iantierney for reporting
 - Protect task notes from being emptied by a failed save, including during workflow loops. If TaskNotes cannot restore an empty note, it keeps a recovery copy and includes its location in the error. Thanks to @chrabia for reporting ([Workflows issue 27](https://github.com/callumalpass/tasknotes-workflows/issues/27)).
+- (#2703) Apply Paste image rename’s automatic naming when saving a new task with a pasted screenshot, and keep the saved embed linked to that file. Thanks to @ubidev for reporting.
 - (#2683) Scrolling up in Agenda and Calendar List now loads earlier days without shifting the visible tasks. Thanks to @Oneiran for reporting.
 - (#2698) Dragging an all-day task into the calendar’s timed grid now previews the task’s time estimate. Thanks to @Oneiran for reporting.
 - (#2720) Scoped the Ctrl/Cmd+Z undo shortcut to TaskNotes views and the undo toast so it no longer intercepts undo in other Obsidian views. Thanks to @LucDesautels for reporting.
+- (#2716) Fixed Agenda and Calendar List views freezing Obsidian for several seconds on every redraw when they show notes placed by a date property. These cards now follow **Show all properties on task cards** like task cards do, fitting properties behind a "+N" count is much faster, and scrolling back to days already loaded no longer reloads the view. Thanks to @Lorite for reporting, measuring the cause and the workaround.

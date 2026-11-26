@@ -108,6 +108,47 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		popover.reposition();
 		popover.el.focus();
 	});
+	const atomSet = new Set<HTMLElement>(atoms);
+	const syncGroups = () => {
+		for (const group of groups)
+			group.property.hidden = group.chips.every((chip) => chip.hidden);
+	};
+	// Each fits() reads layout after a change, which makes the browser lay out again. In a long
+	// list that is the costly part (#2716), so fit() keeps the number of fits() calls small.
+	const fits = () => {
+		values.hidden = !atoms.some((atom) => !atom.hidden);
+		markVisibleDates();
+		const valuesBox = values.getBoundingClientRect();
+		const lineBox = metadataLine.getBoundingClientRect();
+		return [...atoms, ...dateSlots, summary].every((element) => {
+			if (element.hidden) return true;
+			const bounds = element.getBoundingClientRect();
+			const box = atomSet.has(element) ? valuesBox : lineBox;
+			// The line is end-aligned in wide lists, so an item can also overflow at its start.
+			return bounds.left >= box.left - 0.5 && bounds.right <= box.right + 0.5 && element.scrollWidth <= element.clientWidth + 1;
+		});
+	};
+	const hiddenLabelsNow = () =>
+		[...atoms, ...dateSlots]
+			.filter((atom) => atom.hidden)
+			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
+	const showSummary = (hidden: string[]) => {
+		summary.textContent = hidden.length ? `+${hidden.length}` : "";
+		summary.hidden = hidden.length === 0;
+	};
+	// The observer reports the sizes a fit leaves behind; those are not a reason to fit again.
+	const observed = [values, metadataLine];
+	const row = metadataLine.closest<HTMLElement>(".task-card__main-row");
+	if (row) observed.push(row);
+	let settledSizes: Map<Element, { width: number; height: number }> | null = null;
+	const recordSettledSizes = () => {
+		settledSizes = new Map(
+			observed.map((element) => {
+				const bounds = element.getBoundingClientRect();
+				return [element, { width: bounds.width, height: bounds.height }];
+			})
+		);
+	};
 	const fit = () => {
 		if (!values.isConnected) {
 			cleanupTaskCardMetadata(metadataLine);
@@ -121,18 +162,10 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 		for (const slot of dateSlots) slot.hidden = false;
 		summary.hidden = true;
 		hiddenLabels = [];
-		const fits = () => {
-			values.hidden = !atoms.some((atom) => !atom.hidden);
-			markVisibleDates();
-			return [...atoms, ...dateSlots, summary].every((element) => {
-				if (element.hidden) return true;
-				const bounds = element.getBoundingClientRect();
-				const box = (atoms.includes(element) ? values : metadataLine).getBoundingClientRect();
-				// The line is end-aligned in wide lists, so an item can also overflow at its start.
-				return bounds.left >= box.left - 0.5 && bounds.right <= box.right + 0.5 && element.scrollWidth <= element.clientWidth + 1;
-			});
-		};
-		if (fits()) return;
+		if (fits()) {
+			recordSettledSizes();
+			return;
+		}
 		summary.hidden = false;
 		summary.textContent = `+${atoms.length + dateSlots.length}`;
 		for (const atom of atoms) atom.hidden = true;
@@ -141,38 +174,97 @@ export function fitTaskCardMetadata(values: HTMLElement, metadataLine: HTMLEleme
 			if (fits()) break;
 			slot.hidden = true;
 		}
-		for (const atom of atoms) {
-			atom.hidden = false;
-			for (const group of groups)
-				group.property.hidden = group.chips.every((chip) => chip.hidden);
-			if (!fits()) atom.hidden = true;
+		// With the dates settled, show every atom and measure once. Atoms are laid out from the
+		// start of the values lane and hiding later ones does not move earlier ones, so the
+		// longest run that fits now still fits on its own.
+		let verified = false;
+		if (atoms.length) {
+			for (const atom of atoms) atom.hidden = false;
+			for (const group of groups) group.property.hidden = false;
+			values.hidden = false;
+			const lane = values.getBoundingClientRect();
+			const bounds = atoms.map((atom) => atom.getBoundingClientRect());
+			const clipped = atoms.map((atom) => atom.scrollWidth > atom.clientWidth + 1);
+			let fitting = 0;
+			while (
+				fitting < atoms.length &&
+				!clipped[fitting] &&
+				bounds[fitting].left >= lane.left - 0.5 &&
+				bounds[fitting].right <= lane.right + 0.5
+			)
+				fitting++;
+			for (const atom of atoms.slice(fitting)) atom.hidden = true;
+			syncGroups();
+			// A later, shorter atom may still fit after the first one that did not. Only atoms
+			// no wider than the space left are tried, each with a real measurement.
+			let end = fitting > 0 ? bounds[fitting - 1].right : lane.left;
+			let laneRight = lane.right;
+			for (let index = fitting + 1; index < atoms.length; index++) {
+				const width = bounds[index].right - bounds[index].left;
+				if (width > laneRight - end + 0.5) continue;
+				const atom = atoms[index];
+				const wasVerified: boolean = verified;
+				atom.hidden = false;
+				syncGroups();
+				if (fits()) {
+					verified = true;
+					end = atom.getBoundingClientRect().right;
+					laneRight = values.getBoundingClientRect().right;
+				} else {
+					atom.hidden = true;
+					syncGroups();
+					verified = wasVerified;
+				}
+			}
 		}
-		for (const group of groups)
-			group.property.hidden = group.chips.every((chip) => chip.hidden);
-		values.hidden = !atoms.some((atom) => !atom.hidden);
-		markVisibleDates();
-		const hidden = [...atoms, ...dateSlots]
-			.filter((atom) => atom.hidden)
-			.map((atom) => atom.getAttribute("aria-label") || atom.firstElementChild?.getAttribute("aria-label") || atom.textContent || "");
-		summary.textContent = hidden.length ? `+${hidden.length}` : "";
-		summary.hidden = hidden.length === 0;
+		let hidden = hiddenLabelsNow();
+		showSummary(hidden);
+		if (!verified && !fits()) {
+			// The run measured with every atom showing did not hold up; add atoms back one at a time.
+			summary.hidden = false;
+			summary.textContent = `+${atoms.length + dateSlots.length}`;
+			for (const atom of atoms) atom.hidden = true;
+			for (const atom of atoms) {
+				atom.hidden = false;
+				syncGroups();
+				if (!fits()) atom.hidden = true;
+			}
+			syncGroups();
+			values.hidden = !atoms.some((atom) => !atom.hidden);
+			markVisibleDates();
+			hidden = hiddenLabelsNow();
+			showSummary(hidden);
+		} else if (verified) {
+			// The last accepted atom was measured with the summary still showing its first count.
+			values.hidden = !atoms.some((atom) => !atom.hidden);
+			markVisibleDates();
+		}
 		const label = hidden.join(" · ");
 		hiddenLabels = hidden;
 		summary.setAttribute("aria-label", label);
 		setTooltip(summary, label, { placement: "top" });
+		recordSettledSizes();
 		if (overflowFocused && !summary.hidden && metadataLine.ownerDocument.activeElement === metadataLine.ownerDocument.body) {
 			summary.focus({ preventScroll: true });
 		}
 	};
 	const Observer = metadataLine.ownerDocument.defaultView?.ResizeObserver;
 	if (Observer) {
-		const observer = new Observer(fit);
-		observer.observe(values);
-		observer.observe(metadataLine);
+		const observer = new Observer((entries?: ResizeObserverEntry[]) => {
+			const sizes = settledSizes;
+			const unchanged =
+				!!sizes &&
+				!!entries?.length &&
+				entries.every((entry) => {
+					const settled = sizes.get(entry.target);
+					const box = entry.borderBoxSize?.[0];
+					return !!settled && !!box && Math.abs(box.inlineSize - settled.width) <= 0.5 && Math.abs(box.blockSize - settled.height) <= 0.5;
+				});
+			if (!unchanged) fit();
+		});
 		// The line can be sized to what it shows, so it does not grow when the list widens. The
 		// row does, so it is watched too and hidden properties come back when there is room.
-		const row = metadataLine.closest<HTMLElement>(".task-card__main-row");
-		if (row) observer.observe(row);
+		for (const element of observed) observer.observe(element);
 		metadataObservers.set(metadataLine, observer);
 	}
 }
