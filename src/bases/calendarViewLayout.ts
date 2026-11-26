@@ -113,3 +113,39 @@ export function resolveEffectiveCalendarHeightMode(
 	const isEmbedded = !!containerEl?.closest(EMBEDDED_BASE_SELECTOR);
 	return isEmbedded ? "auto" : "fill";
 }
+
+/** The days whose calendar items were last loaded, and the view type they were built for. */
+export interface LoadedCalendarRange {
+	type: string;
+	startDay: number;
+	endDay: number;
+}
+
+interface CalendarRangeView {
+	type: string;
+	range: { startDay: number; endDay: number };
+	dataRange?: { startDay: number; endDay: number };
+}
+
+export function loadedCalendarRange(view: CalendarRangeView): LoadedCalendarRange {
+	const range = view.dataRange ?? view.range;
+	return { type: view.type, startDay: range.startDay, endDay: range.endDay };
+}
+
+/**
+ * Whether the items already loaded cover every day a view needs. Scrolling an agenda moves its
+ * week strip, and moving back into days already loaded needs no new fetch and redraw (#2716).
+ */
+export function calendarRangeIsLoaded(
+	loaded: LoadedCalendarRange | null | undefined,
+	view: CalendarRangeView
+): boolean {
+	if (!loaded || loaded.type !== view.type) return false;
+	const needed = loadedCalendarRange(view);
+	return (
+		needed.startDay >= loaded.startDay &&
+		needed.endDay <= loaded.endDay &&
+		view.range.startDay >= loaded.startDay &&
+		view.range.endDay <= loaded.endDay
+	);
+}
