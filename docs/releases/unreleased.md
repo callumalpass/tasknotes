@@ -41,3 +41,4 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2683) Scrolling up in Agenda and Calendar List now loads earlier days without shifting the visible tasks. Thanks to @Oneiran for reporting.
 - (#2698) Dragging an all-day task into the calendar’s timed grid now previews the task’s time estimate. Thanks to @Oneiran for reporting.
+- (#2720) Scoped the Ctrl/Cmd+Z undo shortcut to TaskNotes views and the undo toast so it no longer intercepts undo in other Obsidian views. Thanks to @LucDesautels for reporting.
