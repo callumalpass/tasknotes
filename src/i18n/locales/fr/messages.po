@@ -1414,6 +1414,16 @@ msgctxt "settings.integrations.webhooks.addWebhook.name"
 msgid "Add webhook"
 msgstr "Ajouter un webhook"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskPrioritiesSummary.desc"
+msgid "Add, edit, reorder, or remove the priorities available for tasks."
+msgstr "Ajoutez, modifiez, réorganisez ou supprimez les priorités disponibles pour les tâches."
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskStatusesSummary.desc"
+msgid "Add, edit, reorder, or remove the statuses available for tasks."
+msgstr "Ajoutez, modifiez, réorganisez ou supprimez les statuts disponibles pour les tâches."
+
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockAttachmentAdded"
@@ -9622,6 +9632,11 @@ msgctxt "settings.native.reorderStatuses"
 msgid "Reorder statuses"
 msgstr "Réorganiser les statuts"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction reorder feedback"
+msgid "Reordered in {destination}"
+msgstr "Réorganisé dans {destination}"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
@@ -11515,6 +11530,11 @@ msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "Options de tâche"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskPrioritiesSummary.name"
+msgid "Task priorities"
+msgstr "Priorités des tâches"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskProperty.name"
 msgid "Task property name"
@@ -11545,6 +11565,11 @@ msgstr "Tâche enregistrée, mais sa première occurrence n'a pas pu être cré�
 msgctxt "picker recovery action"
 msgid "Task settings"
 msgstr "Paramètres des tâches"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskStatusesSummary.name"
+msgid "Task statuses"
+msgstr "Statuts des tâches"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.header"

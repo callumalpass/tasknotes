@@ -292,7 +292,7 @@ test('first Kanban reorder and cross-column position restore every rewritten not
   await drop('open', 'Task 0');
   await expect.poll(() => Array.from({ length: 5 }, (_, index) => disk(`Task ${index}`).properties[sortField]).filter(Boolean).length).toBe(1);
   expect(Array.from({ length: 4 }, (_, index) => disk(`Task ${index}`))).toEqual(snapshots.slice(0, 4));
-  await expect(page.locator('.tn-toast__message')).toHaveText('Moved 1 task to Open');
+  await expect(page.locator('.tn-toast__message')).toHaveText('Reordered in Open');
   const rank = disk('Task 4').properties[sortField];
   await page.evaluate(async ({ path, sortField, rank }) => {
     const app = (window as any).app;

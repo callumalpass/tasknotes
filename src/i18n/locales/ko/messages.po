@@ -1413,6 +1413,16 @@ msgctxt "settings.integrations.webhooks.addWebhook.name"
 msgid "Add webhook"
 msgstr "웹훅 추가"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskPrioritiesSummary.desc"
+msgid "Add, edit, reorder, or remove the priorities available for tasks."
+msgstr "작업에서 사용할 수 있는 우선순위를 추가, 편집, 재정렬 또는 제거합니다."
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskStatusesSummary.desc"
+msgid "Add, edit, reorder, or remove the statuses available for tasks."
+msgstr "작업에서 사용할 수 있는 상태를 추가, 편집, 재정렬 또는 제거합니다."
+
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockAttachmentAdded"
@@ -9621,6 +9631,11 @@ msgctxt "settings.native.reorderStatuses"
 msgid "Reorder statuses"
 msgstr "상태 재정렬"
 
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction reorder feedback"
+msgid "Reordered in {destination}"
+msgstr "{destination}에서 순서를 변경했습니다"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
@@ -11514,6 +11529,11 @@ msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "작업 옵션"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskPrioritiesSummary.name"
+msgid "Task priorities"
+msgstr "작업 우선순위"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskProperty.name"
 msgid "Task property name"
@@ -11544,6 +11564,11 @@ msgstr "작업은 저장되었지만 첫 회차를 만들지 못했습니다. �
 msgctxt "picker recovery action"
 msgid "Task settings"
 msgstr "작업 설정"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskStatusesSummary.name"
+msgid "Task statuses"
+msgstr "작업 상태"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.header"
