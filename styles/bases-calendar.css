@@ -192,6 +192,14 @@
     font-weight: inherit;
 }
 
+/* In fill mode the list's scroller takes the height left in the view, so its content height is
+   never used. Size containment stops each layout of a card (fitting its metadata behind +N, for
+   one) from laying out the whole list again to find that height (#2716). Auto-height lists, such
+   as embeds and the month day panel, size to their content and are left alone. */
+.tasknotes-plugin .tnc--height-fill > .tnc-view > .tnc-list > .tnc-list-scroll {
+    contain: size;
+}
+
 .tasknotes-plugin .tnc-list-day {
     padding: var(--tn-space-3) var(--tn-space-3) var(--tn-space-2);
     background: var(--tn-bg-primary);

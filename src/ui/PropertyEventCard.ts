@@ -122,7 +122,7 @@ export function createPropertyEventCard(
 			// Fallback: show file path if no properties
 			values.createSpan({ text: file.path });
 		}
-		fitTaskCardMetadata(values, metadata);
+		fitTaskCardMetadata(values, metadata, plugin, "", plugin.settings.wrapTaskCardProperties === true);
 	}
 
 	// Click handler to open file
