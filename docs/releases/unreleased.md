@@ -39,6 +39,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2691) Moving the next occurrence of a scheduled-anchored recurring task no longer clears completed or skipped history on other dates. Moves without a `recurrence_original_date` (such as Google-synced or legacy off-pattern notes) clear only the landing day when it is already recorded, still behind confirmation; completion-anchored recurring tasks keep clearing recorded instances on or after the new date. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-and-recorded-instances). Thanks to @martin-forge for reporting.
 - Protect task notes from being emptied by a failed save, including during workflow loops. If TaskNotes cannot restore an empty note, it keeps a recovery copy and includes its location in the error. Thanks to @chrabia for reporting ([Workflows issue 27](https://github.com/callumalpass/tasknotes-workflows/issues/27)).
 - (#2683) Scrolling up in Agenda and Calendar List now loads earlier days without shifting the visible tasks. Thanks to @Oneiran for reporting.
 - (#2698) Dragging an all-day task into the calendar’s timed grid now previews the task’s time estimate. Thanks to @Oneiran for reporting.

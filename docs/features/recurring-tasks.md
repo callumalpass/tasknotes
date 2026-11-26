@@ -263,9 +263,13 @@ When completion changes, `scheduled` updates to the next uncompleted instance. I
 
 This means completion history and next-action planning stay synchronized automatically, without manually advancing recurring tasks.
 
-### Rescheduling clears later instances
+### Rescheduling and recorded instances
 
-When you change a recurring task's scheduled date (from the context menu or the scheduled-date field), TaskNotes restarts the timeline from the new date: it clears every completed and skipped instance dated **on or after** that date, while keeping older instances as history. This reactivates occurrences you had completed or skipped off-schedule so they can be acted on again. Because clearing is destructive, TaskNotes asks you to confirm first — listing the dates that will be cleared — and cancelling leaves both the schedule and the recorded instances untouched.
+For **scheduled-anchored** recurring tasks, moving the next occurrence keeps its original rule date in `recurrence_original_date` and leaves other occurrences' completed and skipped history untouched — even when you move it earlier than a skipped date or onto a previously completed day. When a moved occurrence has no `recurrence_original_date` (such as a Google Calendar-synced task or an older off-pattern note without a marker), moving it onto a day that is already completed or skipped clears only that landing day so the rescheduled occurrence is active there.
+
+For **completion-anchored** recurring tasks, changing the scheduled date re-anchors the timeline and clears every completed and skipped instance dated **on or after** the new date, while keeping older instances as history.
+
+Whenever a reschedule would clear recorded instances from the context menu or the scheduled-date field, TaskNotes asks you to confirm first — listing the dates that will be cleared — and cancelling leaves both the schedule and the recorded instances untouched.
 
 ## Flexible Scheduling
 

@@ -703,8 +703,12 @@ export class TaskService {
 				clearRecurringMoveAfterSeriesChange(freshTask, updatePlan.updatedTask);
 			}
 
-			// Reschedule reactivates the timeline: drop instances on/after the new date
-			// (kept as YYYY-MM-DD, so a lexicographic compare is chronological).
+			// Completion-anchored moves re-anchor the timeline and clear recorded instances
+			// on or after the new date (YYYY-MM-DD lexicographic order is chronological).
+			// Scheduled-anchored moves preserve other occurrences' history when the moved
+			// occurrence keeps its rule identity in `recurrence_original_date`; only an
+			// unmarked occurrence (such as a Google-synced or legacy off-pattern note)
+			// clears a recorded landing day.
 			let rescheduleClearedOccurrence = false;
 			if (
 				property === "scheduled" &&
@@ -716,32 +720,42 @@ export class TaskService {
 				const previousScheduledDateStr = getDatePart(freshTask.scheduled);
 				const scheduledDateStr = getDatePart(updatePlan.normalizedValue);
 				const scheduledDateChanged = previousScheduledDateStr !== scheduledDateStr;
-				const completeInstances = freshTask.complete_instances ?? [];
-				const skippedInstances = freshTask.skipped_instances ?? [];
-				const removedComplete = completeInstances.filter((d) => d >= scheduledDateStr);
-				const removedSkipped = skippedInstances.filter((d) => d >= scheduledDateStr);
-				if (
-					scheduledDateChanged &&
-					(removedComplete.length > 0 || removedSkipped.length > 0)
-				) {
-					// Give the caller a chance to confirm the destructive clear before
-					// anything is written; a false result aborts the whole reschedule.
-					if (options.confirmClearInstances) {
-						const proceed = await options.confirmClearInstances({
-							complete: removedComplete,
-							skipped: removedSkipped,
-						});
-						if (!proceed) {
-							return freshTask;
+				const isCompletionAnchored =
+					(freshTask.recurrence_anchor || "scheduled") === "completion";
+				const hasMoveIdentity = Boolean(
+					updatePlan.updatedTask.recurrence_original_date ||
+						getRecurringMoveOriginalDate(freshTask) === scheduledDateStr
+				);
+				const shouldClear = isCompletionAnchored
+					? (d: string) => d >= scheduledDateStr
+					: !hasMoveIdentity
+						? (d: string) => d === scheduledDateStr
+						: null;
+				if (scheduledDateChanged && shouldClear) {
+					const completeInstances = freshTask.complete_instances ?? [];
+					const skippedInstances = freshTask.skipped_instances ?? [];
+					const removedComplete = completeInstances.filter(shouldClear);
+					const removedSkipped = skippedInstances.filter(shouldClear);
+					if (removedComplete.length > 0 || removedSkipped.length > 0) {
+						// Give the caller a chance to confirm the destructive clear before
+						// anything is written; a false result aborts the whole reschedule.
+						if (options.confirmClearInstances) {
+							const proceed = await options.confirmClearInstances({
+								complete: removedComplete,
+								skipped: removedSkipped,
+							});
+							if (!proceed) {
+								return freshTask;
+							}
 						}
+						rescheduleClearedOccurrence = true;
+						updatePlan.updatedTask.complete_instances = completeInstances.filter(
+							(d) => !shouldClear(d)
+						);
+						updatePlan.updatedTask.skipped_instances = skippedInstances.filter(
+							(d) => !shouldClear(d)
+						);
 					}
-					rescheduleClearedOccurrence = true;
-					updatePlan.updatedTask.complete_instances = completeInstances.filter(
-						(d) => d < scheduledDateStr
-					);
-					updatePlan.updatedTask.skipped_instances = skippedInstances.filter(
-						(d) => d < scheduledDateStr
-					);
 				}
 			}
 
