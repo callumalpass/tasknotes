@@ -66,3 +66,30 @@ describe("ICS export of tasks with only a due date", () => {
 		expect(ics).not.toContain("DTSTART:20261102");
 	});
 });
+
+describe("calendar links for tasks with only a due date", () => {
+	const link = (type: "google" | "outlook" | "yahoo", due: string) =>
+		new URL(CalendarExportService.generateCalendarURL({ type, task: dueOnly(due) }))
+			.searchParams;
+
+	it("puts a date-only due on that day as an all-day event", () => {
+		expect(link("google", "2026-11-20").get("dates")).toBe("20261120/20261121");
+		const outlook = link("outlook", "2026-11-20");
+		expect([outlook.get("startdt"), outlook.get("enddt"), outlook.get("allday")]).toEqual([
+			"2026-11-20",
+			"2026-11-21",
+			"true",
+		]);
+		const yahoo = link("yahoo", "2026-11-20");
+		expect([yahoo.get("st"), yahoo.get("dur")]).toEqual(["20261120", "allday"]);
+	});
+
+	it("starts a timed due at the due time", () => {
+		expect(link("google", "2026-11-20T14:30:00Z").get("dates")).toBe(
+			"20261120T143000Z/20261120T153000Z"
+		);
+		const outlook = link("outlook", "2026-11-20T14:30:00Z");
+		expect(outlook.get("startdt")).toBe("2026-11-20T14:30:00.000Z");
+		expect(outlook.get("enddt")).toBe("2026-11-20T15:30:00.000Z");
+	});
+});

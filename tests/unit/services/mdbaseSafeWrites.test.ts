@@ -339,6 +339,30 @@ describe("safe migration writes and recovery", () => {
 		expect(h.notices[0]).toContain("reload");
 	});
 
+	it("checks a task type changed after the duplicate scan before applying it", async () => {
+		const seeded = safetyHarness({});
+		await seeded.service.initialize();
+		const h = safetyHarness(Object.fromEntries(seeded.files));
+		const typePath = "_mdbase/types/task.md";
+		const invalidType = type(h.files.get(typePath)!);
+		invalidType.kind = "invalid";
+		const changed = `---\n${YAML.stringify(invalidType)}---\n`;
+		const service = h.service as unknown as {
+			setAsideSupersededBetaTypes: (...args: never[]) => Promise<boolean>;
+		};
+		const scan = service.setAsideSupersededBetaTypes.bind(service);
+		jest.spyOn(service, "setAsideSupersededBetaTypes").mockImplementationOnce(async (...args) => {
+			const result = await scan(...args);
+			h.files.set(typePath, changed);
+			return result;
+		});
+
+		await h.service.initialize();
+
+		expect(h.files.get(typePath)).toBe(changed);
+		expect(h.notices[0]).toContain(`${typePath} is inconsistent`);
+	});
+
 	it("refuses symlinked metadata directories before modifying external targets", async () => {
 		const scratch = await fs.mkdtemp(path.join(tmpdir(), "safewrite-symlink-"));
 		const previousRequire = window.require;

@@ -98,12 +98,19 @@ export class CalendarExportService {
 		params.append("subject", task.title);
 
 		// Handle dates
-		const { startISO, endISO } = this.getTaskDateRange(task, useScheduledAsDue);
-		if (startISO) {
-			params.append("startdt", startISO);
+		const { allDay, start, end } = this.getLinkDates(task, useScheduledAsDue);
+		const toOutlook = (value: string) =>
+			allDay
+				? `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
+				: this.parseICSDate(value).toISOString();
+		if (start) {
+			params.append("startdt", toOutlook(start));
 		}
-		if (endISO) {
-			params.append("enddt", endISO);
+		if (end) {
+			params.append("enddt", toOutlook(end));
+		}
+		if (allDay) {
+			params.append("allday", "true");
 		}
 
 		// Add description
@@ -134,13 +141,17 @@ export class CalendarExportService {
 		params.append("v", "60"); // Required parameter
 		params.append("title", task.title);
 
-		// Handle dates (Yahoo uses YYYYMMDDTHHmmss format)
-		const { startYahoo, endYahoo } = this.getYahooDateFormat(task, useScheduledAsDue);
-		if (startYahoo) {
-			params.append("st", startYahoo);
+		// Handle dates (Yahoo uses YYYYMMDDTHHmmss format, or YYYYMMDD with dur=allday)
+		const { allDay, start, end } = this.getLinkDates(task, useScheduledAsDue);
+		const toYahoo = (value: string) =>
+			allDay ? value : format(this.parseICSDate(value), "yyyyMMdd'T'HHmmss");
+		if (start) {
+			params.append("st", toYahoo(start));
 		}
-		if (endYahoo) {
-			params.append("et", endYahoo);
+		if (allDay) {
+			params.append("dur", "allday");
+		} else if (end) {
+			params.append("et", toYahoo(end));
 		}
 
 		// Add description
@@ -302,7 +313,7 @@ export class CalendarExportService {
 	 * Format dates for Google Calendar (YYYYMMDDTHHmmssZ/YYYYMMDDTHHmmssZ)
 	 */
 	private static formatGoogleDates(task: TaskInfo, useScheduledAsDue: boolean): string | null {
-		const { startICS, endICS } = this.getICSDateFormat(task, useScheduledAsDue);
+		const { start: startICS, end: endICS } = this.getLinkDates(task, useScheduledAsDue);
 
 		if (!startICS) return null;
 
@@ -317,6 +328,23 @@ export class CalendarExportService {
 		const endFormatted = this.formatDateToICS(end);
 
 		return `${startICS}/${endFormatted}`;
+	}
+
+	/**
+	 * Event dates for the calendar links, from the same rules as the ICS export:
+	 * all-day values are YYYYMMDD (end exclusive), timed values YYYYMMDDTHHMMSSZ.
+	 */
+	private static getLinkDates(
+		task: TaskInfo,
+		useScheduledAsDue: boolean
+	): { allDay: boolean; start: string | null; end: string | null } {
+		const { startLine, endLine } = this.getICSDateProperties(task, useScheduledAsDue);
+		const value = (line: string | null) => (line ? line.slice(line.indexOf(":") + 1) : null);
+		return {
+			allDay: startLine?.includes("VALUE=DATE") ?? false,
+			start: value(startLine),
+			end: value(endLine),
+		};
 	}
 
 	/**
@@ -374,26 +402,6 @@ export class CalendarExportService {
 		}
 
 		return { startISO, endISO };
-	}
-
-	/**
-	 * Format dates for Yahoo Calendar (YYYYMMDDTHHMMSS)
-	 */
-	private static getYahooDateFormat(
-		task: TaskInfo,
-		useScheduledAsDue: boolean
-	): { startYahoo: string | null; endYahoo: string | null } {
-		const { startISO, endISO } = this.getTaskDateRange(task, useScheduledAsDue);
-
-		const formatYahoo = (isoString: string): string => {
-			const date = new Date(isoString);
-			return format(date, "yyyyMMdd'T'HHmmss");
-		};
-
-		return {
-			startYahoo: startISO ? formatYahoo(startISO) : null,
-			endYahoo: endISO ? formatYahoo(endISO) : null,
-		};
 	}
 
 	/**

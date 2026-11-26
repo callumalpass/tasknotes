@@ -1235,9 +1235,11 @@ export class MdbaseSpecService {
 			}
 		}
 		await this.ensureFolderPath(typesFolder);
-		if (!(await this.setAsideSupersededBetaTypes(typesFolder, existingCollection))) return;
+		// Both passes read the vault again. Reuse validation only for identical bytes.
+		const validatedTypes = new Map<string, CanonicalTypeState>();
+		if (!(await this.setAsideSupersededBetaTypes(typesFolder, existingCollection, validatedTypes))) return;
 
-		let state = await this.readCanonicalType(existingCollection);
+		let state = await this.readCanonicalType(existingCollection, true, validatedTypes);
 		if (this.canonicalReadBlocked) return;
 		const legacyPath = `${typesFolder}/task.md`;
 		if (await this.plugin.app.vault.adapter.exists(legacyPath)) {
@@ -1399,14 +1401,15 @@ export class MdbaseSpecService {
 
 	private async readCanonicalType(
 		existingCollection: ExistingCollection,
-		reportErrors = true
+		reportErrors = true,
+		validatedTypes?: ReadonlyMap<string, CanonicalTypeState>
 	): Promise<CanonicalTypeState | null> {
 		this.canonicalReadBlocked = false;
 		const typesFolder = this.resolveTypesFolder(existingCollection);
 		this.canonicalTypesFolder = typesFolder;
 		this.canonicalContractsFolder = this.resolveContractsFolder(existingCollection);
 		const defaultPath = `${typesFolder}/task.md`;
-		const defaultState = await this.readCanonicalTypeAtPath(defaultPath, reportErrors);
+		const defaultState = await this.readCanonicalTypeAtPath(defaultPath, reportErrors, validatedTypes);
 		const adapter = this.plugin.app.vault.adapter;
 		if (typeof adapter.list !== "function" || !(await adapter.exists(typesFolder))) {
 			return defaultState;
@@ -1416,7 +1419,7 @@ export class MdbaseSpecService {
 		const candidates: CanonicalTypeState[] = defaultState ? [defaultState] : [];
 		for (const path of paths) {
 			if (path === defaultPath) continue;
-			const state = await this.readCanonicalTypeAtPath(path, false);
+			const state = await this.readCanonicalTypeAtPath(path, false, validatedTypes);
 			if (state) candidates.push(state);
 		}
 
@@ -1436,7 +1439,8 @@ export class MdbaseSpecService {
 
 	private async readCanonicalTypeAtPath(
 		path: string,
-		reportErrors: boolean
+		reportErrors: boolean,
+		validatedTypes?: ReadonlyMap<string, CanonicalTypeState>
 	): Promise<CanonicalTypeState | null> {
 		const adapter = this.plugin.app.vault.adapter;
 		if (!(await adapter.exists(path))) return null;
@@ -1450,6 +1454,9 @@ export class MdbaseSpecService {
 			}
 			return null;
 		}
+
+		const validated = validatedTypes?.get(path);
+		if (validated?.content === content) return validated;
 
 		try {
 			const parsed = parseMdbaseTaskTypeDocument(content);
@@ -1776,14 +1783,18 @@ export class MdbaseSpecService {
 	 * and move the superseded ones to the migration backup folder. Anything else
 	 * with more than one TaskNotes type is left for the user.
 	 */
-	private async setAsideSupersededBetaTypes(typesFolder: string, collection: ExistingCollection): Promise<boolean> {
+	private async setAsideSupersededBetaTypes(
+		typesFolder: string,
+		collection: ExistingCollection,
+		validatedTypes: Map<string, CanonicalTypeState>
+	): Promise<boolean> {
 		const adapter = this.plugin.app.vault.adapter;
 		if (typeof adapter.list !== "function" || !(await adapter.exists(typesFolder))) return true;
-		const states: CanonicalTypeState[] = [];
 		for (const path of await this.listMarkdownFilesRecursively(typesFolder)) {
 			const state = await this.readCanonicalTypeAtPath(path, false);
-			if (state) states.push(state);
+			if (state) validatedTypes.set(path, state);
 		}
+		const states = [...validatedTypes.values()];
 		// A type on the release before this one (rc.5) is current: this load upgrades it.
 		const latestPrevious = PREVIOUS_TASKNOTES_CONTRACT_VERSIONS[0];
 		const isCurrent = (state: CanonicalTypeState) => !state.outdated || state.previousVersion === latestPrevious;
