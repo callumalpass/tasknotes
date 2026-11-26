@@ -13,6 +13,9 @@ export const stringify = jest.fn((obj: any) => {
 });
 
 export const parseDocument = actualYaml.parseDocument;
+export const isAlias = actualYaml.isAlias;
+export const isSeq = actualYaml.isSeq;
+export const visit = actualYaml.visit;
 
 export default {
 	...actualYaml,
