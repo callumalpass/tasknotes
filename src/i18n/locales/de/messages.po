@@ -4329,7 +4329,7 @@ msgctxt "bases/MiniCalendarView: NoteSelectionModal purpose"
 msgid "Dismiss"
 msgstr "Schließen"
 
-#: src/services/MdbaseSpecService.ts
+#: src/ui/collectionTimezoneNotice.ts
 msgctxt "mdbaseTimezone.dismiss"
 msgid "Dismiss"
 msgstr "Schließen"
@@ -10228,7 +10228,7 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "Dienst nicht initialisiert - bitte starten Sie Obsidian neu"
 
-#: src/services/MdbaseSpecService.ts
+#: src/ui/collectionTimezoneNotice.ts
 msgctxt "mdbaseTimezone.offer"
 msgid "Set a time zone for this mdbase collection. Times without an offset will be read in that zone."
 msgstr "Lege eine Zeitzone für diese mdbase-Sammlung fest. Uhrzeiten ohne UTC-Offset werden in dieser Zeitzone interpretiert."
@@ -13259,7 +13259,7 @@ msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "Verwendung: Ziehe im Kalender, um Ereignisse zu erstellen. Wähle ''Zeitblock'' aus dem Kontextmenü (nur sichtbar, wenn Zeitblockierung aktiviert ist). Ziehe, um bestehende Zeitblöcke zu verschieben. Ränder anpassen, um Dauer zu ändern."
 
-#: src/services/MdbaseSpecService.ts
+#: src/ui/collectionTimezoneNotice.ts
 msgctxt "mdbaseTimezone.use"
 msgid "Use {zone}"
 msgstr "{zone} verwenden"

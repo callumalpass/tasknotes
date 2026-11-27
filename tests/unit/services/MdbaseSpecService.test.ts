@@ -14,7 +14,8 @@ import { observeTranslation } from "../../helpers/real-i18n";
 import { MDBASE_README } from "../../../src/services/mdbase/folders";
 import { compileRecordSchema, validateTaskRecord } from "../../../src/services/mdbase/contractValidation";
 import { FieldMapper } from "../../../src/services/FieldMapper";
-import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
+import { MdbaseSpecService, type CollectionTimezoneOffer } from "../../../src/services/MdbaseSpecService";
+import { showCollectionTimezoneNotice } from "../../../src/ui/collectionTimezoneNotice";
 import { canonicalTaskNotesResources, TASKNOTES_MDBASE_TYPE_VERSION, TASKNOTES_TASK_CONTRACT_VERSION } from "../../../src/services/canonicalTaskNotesPack";
 import { appSettingsFromPluginSettings } from "../../../src/services/mdbaseCanonicalConfig";
 import {
@@ -1543,7 +1544,8 @@ describe("MdbaseSpecService", () => {
 				if (message) containerEl.append(message);
 				return { hide, containerEl } as unknown as Notice;
 			});
-			const service = new MdbaseSpecService(plugin);
+			const offerTimezone = (offer: CollectionTimezoneOffer) => showCollectionTimezoneNotice(plugin.i18n, offer);
+			const service = new MdbaseSpecService(plugin, offerTimezone);
 
 			await service.initialize();
 			await service.onSettingsChanged();
@@ -1564,7 +1566,7 @@ describe("MdbaseSpecService", () => {
 			else expect(YAML.parse(after).settings.timezone).toBe(action === "use" ? zone : "Pacific/Auckland");
 			expect(after).toContain("  # Keep this setting and comment");
 			expect(after).toContain("x-other: preserve");
-			await new MdbaseSpecService(plugin).initialize();
+			await new MdbaseSpecService(plugin, offerTimezone).initialize();
 			expect(notice).toHaveBeenCalledTimes(1);
 		});
 
@@ -1573,7 +1575,7 @@ describe("MdbaseSpecService", () => {
 			const original = config.replace("  record_extensions", "  timezone: Asia/Tokyo\n  record_extensions");
 			const files = installMemoryVault(plugin, { "mdbase.yaml": original });
 			jest.mocked(Notice).mockClear();
-			await new MdbaseSpecService(plugin).initialize();
+			await new MdbaseSpecService(plugin, (offer) => showCollectionTimezoneNotice(plugin.i18n, offer)).initialize();
 			expect(Notice).not.toHaveBeenCalled();
 			expect(files.get("mdbase.yaml")).toBe(original);
 		});

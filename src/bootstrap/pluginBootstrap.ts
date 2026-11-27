@@ -56,6 +56,7 @@ import { isCalendarIntegrationDisabledOnMobile } from "../utils/calendarIntegrat
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS } from "../api/runtime-api";
 import { showNotice } from "../ui/notifications";
+import { showCollectionTimezoneNotice } from "../ui/collectionTimezoneNotice";
 import { EVENT_USER_NOTICE, type UserNoticePayload } from "../core/userNotices";
 import { applyNewInstallRibbonDefaults, type RibbonConfiguration } from "./ribbonDefaults";
 
@@ -123,7 +124,7 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 		plugin.settings.customPriorities
 	);
 	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
-	plugin.mdbaseSpecService = new MdbaseSpecService(plugin);
+	plugin.mdbaseSpecService = new MdbaseSpecService(plugin, (offer) => showCollectionTimezoneNotice(plugin.i18n, offer));
 	await plugin.mdbaseSpecService.initialize();
 
 	plugin.fieldMapper = new FieldMapper(

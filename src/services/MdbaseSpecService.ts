@@ -2,7 +2,7 @@ import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { uiData } from "../i18n/dataText";
-import { Modal, Notice, normalizePath, type TAbstractFile } from "obsidian";
+import { Modal, normalizePath, type TAbstractFile } from "obsidian";
 import YAML from "yaml";
 import { canonicalTaskNotesResources, TASKNOTES_TASK_CONTRACT_VERSION as TASKNOTES_CONTRACT_VERSION } from "./canonicalTaskNotesPack";
 import { FieldMapper } from "./FieldMapper";
@@ -100,6 +100,13 @@ type TypeGenerationOptions = {
 type ExistingCollection = {
 	exists: boolean;
 	config: MdbaseYamlConfig | null;
+};
+
+export type CollectionTimezoneOffer = {
+	zone: string;
+	use: () => Promise<void>;
+	dismiss: () => void;
+	reportError: (error: unknown) => void;
 };
 
 type CanonicalTypeState = {
@@ -271,7 +278,10 @@ export class MdbaseSpecService {
 	private pendingV02MigrationRecovery: PendingV02MigrationRecovery | null = null;
 	private lastPendingV02RecoveryNoticeKey: string | null = null;
 
-	constructor(plugin: TaskNotesPlugin) {
+	constructor(
+		plugin: TaskNotesPlugin,
+		private readonly offerTimezone?: (offer: CollectionTimezoneOffer) => () => void
+	) {
 		this.plugin = plugin;
 		this.metadataIO = new SafeMetadata(plugin.app.vault.adapter, (path) => this.ensureFolderPath(path));
 		this.metadataTransaction = new MetadataTransaction(
@@ -2081,7 +2091,7 @@ export class MdbaseSpecService {
 	}
 
 	private offerCollectionTimezone(collection: ExistingCollection): void {
-		if (!this.plugin.settings.enableMdbaseSpec || this.timezoneOffered ||
+		if (!this.offerTimezone || !this.plugin.settings.enableMdbaseSpec || this.timezoneOffered ||
 			getSpecFamily(collection.config?.spec_version) !== "v0.3") return;
 		const settings = collection.config?.settings;
 		if (settings !== undefined && (!isRecord(settings) || Object.prototype.hasOwnProperty.call(settings, "timezone"))) return;
@@ -2090,57 +2100,34 @@ export class MdbaseSpecService {
 		const zone = detectedCollectionTimezone();
 		if (!zone) return;
 
-		const fragment = createFragment();
-		const i18n = this.plugin.i18n ?? createI18nService();
-		const message = fragment.createEl("p");
-		message.textContent = i18n.translate(msg({
-			message: "Set a time zone for this mdbase collection. Times without an offset will be read in that zone.",
-			context: "mdbaseTimezone.offer",
-		}));
-		const useZone = fragment.createEl("button");
-		useZone.textContent = i18n.translate(msg({ message: "Use {zone}", context: "mdbaseTimezone.use" }), { zone });
-		useZone.type = "button";
-		fragment.appendText(" ");
-		const dismiss = fragment.createEl("button");
-		dismiss.textContent = i18n.translate(msg({ message: "Dismiss", context: "mdbaseTimezone.dismiss" }));
-		dismiss.type = "button";
-
-		const notice = new Notice(fragment, 0);
-		this.timezoneOffered = true;
-		this.plugin.register?.(() => notice.hide());
-		const finish = () => {
-			app.saveLocalStorage?.(TIMEZONE_OFFER_KEY, true);
-			notice.hide();
-		};
-		dismiss.addEventListener("click", (event) => {
-			event.stopPropagation();
-			finish();
+		const hide = this.offerTimezone({
+			zone,
+			use: () => this.setCollectionTimezone(zone),
+			dismiss: () => app.saveLocalStorage?.(TIMEZONE_OFFER_KEY, true),
+			reportError: (error) => this.publishNotice(this.safetyNotice(String(error))),
 		});
-		notice.containerEl?.addEventListener("click", finish);
-		useZone.addEventListener("click", (event) => {
-			event.stopPropagation();
-			useZone.disabled = true;
-			void this.metadataQueue.run(async () => {
-				const path = "mdbase.yaml";
-				const before = await this.metadataIO.read(path);
-				if (!this.plugin.settings.enableMdbaseSpec) return;
-				const config = before === null ? null : YAML.parse(before) as MdbaseYamlConfig;
-				if (before === null || getSpecFamily(config?.spec_version) !== "v0.3") {
-					throw new Error("The collection configuration changed before its time zone could be saved.");
-				}
-				const after = addCollectionTimezone(before, zone);
-				if (after === before) return;
-				const previousWriteState = this.writeInProgress;
-				this.writeInProgress = true;
-				try {
-					await this.writeFileIfUnchanged({ path, content: before }, after);
-				} finally {
-					this.writeInProgress = previousWriteState;
-				}
-			}).then(finish, (error: unknown) => {
-				useZone.disabled = false;
-				this.publishNotice(this.safetyNotice(String(error)));
-			});
+		this.timezoneOffered = true;
+		this.plugin.register?.(hide);
+	}
+
+	private setCollectionTimezone(zone: string): Promise<void> {
+		return this.metadataQueue.run(async () => {
+			if (!this.plugin.settings.enableMdbaseSpec) return;
+			const path = "mdbase.yaml";
+			const before = await this.metadataIO.read(path);
+			const config = before === null ? null : YAML.parse(before) as MdbaseYamlConfig;
+			if (before === null || getSpecFamily(config?.spec_version) !== "v0.3") {
+				throw new Error("The collection configuration changed before its time zone could be saved.");
+			}
+			const after = addCollectionTimezone(before, zone);
+			if (after === before) return;
+			const previousWriteState = this.writeInProgress;
+			this.writeInProgress = true;
+			try {
+				await this.writeFileIfUnchanged({ path, content: before }, after);
+			} finally {
+				this.writeInProgress = previousWriteState;
+			}
 		});
 	}
 
