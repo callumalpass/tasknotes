@@ -24,7 +24,7 @@ export function createTaskModalActionIcon(
 
 	setTooltip(iconContainer, spec.tooltip, { placement: "top" });
 
-	const icon = iconContainer.createSpan("icon");
+	const icon = iconContainer.createSpan("tn-task-modal__action-glyph");
 	setIcon(icon, spec.iconName);
 
 	if (spec.chip) {

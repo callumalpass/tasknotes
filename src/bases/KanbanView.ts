@@ -1,4 +1,4 @@
-import { changeTaskProperty, showTaskUndo, taskMovementMessage, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
+import { changeTaskProperty, showTaskUndo, taskMovementMessage, taskReorderMessage, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
 import { openTaskPropertySettings } from "../settings/TaskNotesSettingTab";
 import { unconfiguredValueLabel } from "../ui/kit/glyphs";
 import { buildTaskMovementUndo, type TaskMovementUndoChange } from "./taskMovementUndo";
@@ -3773,6 +3773,7 @@ export class KanbanView extends BasesViewBase {
 		const feedback: TaskUndoFeedback = { undo: [], failed: false };
 		let reorderConfirmed = false;
 		let recurringMessage: string | undefined;
+		let changedGroupOrSwimlane = false;
 		const rewritten = new Set<string>();
 		const failedTitles: string[] = [];
 		try {
@@ -3925,7 +3926,10 @@ export class KanbanView extends BasesViewBase {
 							});
 						},
 					});
-					if (isSettled) continue;
+					if (isSettled) {
+						changedGroupOrSwimlane = true;
+						continue;
+					}
 					const taskUndo: TaskUndoFeedback = { undo: [], failed: false };
 					let registeredTaskUndo = false;
 					const finishTaskUndo = () => {
@@ -4013,6 +4017,7 @@ export class KanbanView extends BasesViewBase {
 							failedTitles.push(currentTask.title);
 							continue;
 						}
+						if (taskUndo.undo.length > 0) changedGroupOrSwimlane = true;
 						if (dropPlan.groupByTaskProp === "status") dropPlan.needsGroupUpdate = false;
 						if (dropPlan.swimlaneTaskProp === "status") dropPlan.needsSwimlaneUpdate = false;
 					}
@@ -4091,6 +4096,9 @@ export class KanbanView extends BasesViewBase {
 						).dateModified;
 					});
 					record(file, changes);
+					if (changes.some((change) => change.property !== sortOrderField)) {
+						changedGroupOrSwimlane = true;
+					}
 					finishTaskUndo();
 
 					this.debugLog("ATOMIC-WRITE-DONE", {
@@ -4214,7 +4222,14 @@ export class KanbanView extends BasesViewBase {
 				element.addEventListener("animationend", () => element.classList.remove("kanban-view__card--settled"), { once: true });
 			}
 			const destination = [this.getGroupDisplayTitle(newGroupValue, this.getGroupByPropertyId()), newSwimLaneValue === null ? "" : this.getGroupDisplayTitle(newSwimLaneValue, this.swimLanePropertyId)].filter(Boolean).join(" · ");
-			showTaskUndo(feedback.undo, feedback.failed, feedback.undo.length, this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : recurringMessage ?? taskMovementMessage(feedback.undo.length, destination), undefined, undefined,
+			const successMessage =
+				recurringMessage ??
+				(changedGroupOrSwimlane
+					? taskMovementMessage(feedback.undo.length, destination)
+					: destination
+						? taskReorderMessage(destination)
+						: undefined);
+			showTaskUndo(feedback.undo, feedback.failed, feedback.undo.length, this.plugin.app.vault, feedback.failed ? failedTitles.join(", ") || destination : successMessage, undefined, undefined,
 				feedback.failedPaths?.length ? {
 					label: uiText(msg({ message: "Open task", context: "interaction shortcut" })),
 					run: async () => { await this.app.workspace.openLinkText(feedback.failedPaths![0], "", false); },

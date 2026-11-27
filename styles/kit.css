@@ -204,13 +204,13 @@
     outline-offset: 2px;
 }
 
-.tasknotes-plugin .tn-chip--property .icon {
+.tasknotes-plugin .tn-chip--property .tn-task-modal__action-glyph {
     flex: 0 0 auto;
     width: var(--tn-icon-md);
     height: var(--tn-icon-md);
 }
 
-.tasknotes-plugin .tn-chip--property .icon svg {
+.tasknotes-plugin .tn-chip--property .tn-task-modal__action-glyph svg {
     width: var(--tn-icon-md);
     height: var(--tn-icon-md);
 }

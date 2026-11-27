@@ -2,6 +2,7 @@ import { msg } from "@lingui/core/macro";
 import { configLabel } from "../../i18n/configLabels";
 import {
 	Notice,
+	type SettingDefinitionEmpty,
 	type SettingDefinitionItem,
 	type SettingDefinitionList,
 	type SettingDefinitionGroup,
@@ -144,8 +145,9 @@ export function filterPage(
 
 function configuredValues(
 	ctx: SettingsContext,
-	kind: "status" | "priority"
-): SettingDefinitionList {
+	kind: "status" | "priority",
+	propertyLabel: string
+): [SettingDefinitionEmpty, SettingDefinitionPage, SettingDefinitionList] {
 	const { plugin, save } = ctx;
 	const t = ctx.t;
 	const isStatus = kind === "status";
@@ -157,14 +159,86 @@ function configuredValues(
 		ctx.rebuild();
 	};
 
-	return {
+	const heading = isStatus
+		? t(msg({ message: "Statuses", context: "settings.native.statuses" }))
+		: t(msg({ message: "Priorities", context: "settings.native.priorities" }));
+	const addItemName = isStatus
+		? ctx.t(msg({ message: "Add status", context: "settings.taskProperties.taskStatuses.addNew.buttonText" }))
+		: ctx.t(msg({ message: "Add priority", context: "settings.taskProperties.taskPriorities.addNew.buttonText" }));
+	// Obsidian settings search does not index list headings, page descriptions, or addItem labels.
+	const sectionSummary: SettingDefinitionEmpty = {
+		name: isStatus
+			? t(msg({ message: "Task statuses", context: "settings.native.taskStatusesSummary.name" }))
+			: t(msg({ message: "Task priorities", context: "settings.native.taskPrioritiesSummary.name" })),
+		desc: isStatus
+			? t(msg({ message: "Add, edit, reorder, or remove the statuses available for tasks.", context: "settings.native.taskStatusesSummary.desc" }))
+			: t(msg({ message: "Add, edit, reorder, or remove the priorities available for tasks.", context: "settings.native.taskPrioritiesSummary.desc" })),
+		aliases: [
+			...new Set(
+				isStatus
+					? [
+							heading,
+							addItemName,
+							propertyLabel,
+							"status",
+							"statuses",
+							"custom statuses",
+							"status list",
+							"task statuses",
+							"customStatuses",
+						]
+					: [
+							heading,
+							addItemName,
+							propertyLabel,
+							"priority",
+							"priorities",
+							"custom priorities",
+							"priority list",
+							"task priorities",
+							"customPriorities",
+						]
+			),
+		],
+	};
+	// Obsidian only renders list drag handles for setting rows, not page links.
+	const reorderPage: SettingDefinitionPage = {
+		type: "page",
+		name: isStatus
+			? t(msg({ message: "Reorder statuses", context: "settings.native.reorderStatuses" }))
+			: t(msg({ message: "Reorder priorities", context: "settings.native.reorderPriorities" })),
+		visible: values.length > 1,
+		items: [
+			{
+				type: "list",
+				onReorder: (from, to) => {
+					if (isStatus) {
+						plugin.settings.customStatuses = reorder(values as StatusConfig[], from, to)
+							.map((item, order) => ({ ...item, order }));
+					} else {
+						plugin.settings.customPriorities = reorder(values as PriorityConfig[], from, to)
+							.map((item, index) => ({ ...item, weight: values.length - index }));
+					}
+					commit();
+				},
+				items: values.map((item) => ({
+					// The native renderer keys ordinary rows by name. Labels can repeat.
+					name: `${kind}.${item.id}`,
+					desc: item.value,
+					searchable: false,
+					render: (setting) => {
+						setting.setName(configLabel(item) || item.value);
+					},
+				})),
+			},
+		],
+	};
+	const editList: SettingDefinitionList = {
 		type: "list",
-		heading: isStatus ? ctx.t(msg({ message: "Statuses", context: "settings.native.statuses" })) : ctx.t(msg({ message: "Priorities", context: "settings.native.priorities" })),
+		heading,
 		emptyState: ctx.t(msg({ message: "No values configured.", context: "settings.native.noValuesConfigured" })),
 		addItem: {
-			name: isStatus
-				? ctx.t(msg({ message: "Add status", context: "settings.taskProperties.taskStatuses.addNew.buttonText" }))
-				: ctx.t(msg({ message: "Add priority", context: "settings.taskProperties.taskPriorities.addNew.buttonText" })),
+			name: addItemName,
 			action: () => {
 				const id = crypto.randomUUID();
 				let value = isStatus ? "new-status" : "new-priority";
@@ -195,19 +269,6 @@ function configuredValues(
 					});
 				commit();
 			},
-		},
-		onReorder: (from, to) => {
-			if (isStatus)
-				plugin.settings.customStatuses = reorder(values as StatusConfig[], from, to).map(
-					(item, order) => ({ ...item, order })
-				);
-			else
-				plugin.settings.customPriorities = reorder(
-					values as PriorityConfig[],
-					from,
-					to
-				).map((item, index) => ({ ...item, weight: values.length - index }));
-			commit();
 		},
 		onDelete: (index) => {
 			void (async () => {
@@ -389,6 +450,7 @@ function configuredValues(
 			};
 		}),
 	};
+	return [sectionSummary, reorderPage, editList];
 }
 
 export function customProperties(ctx: SettingsContext): SettingDefinitionList {
@@ -641,7 +703,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		];
 		if (property in triggers) items.push(triggerGroup(ctx, property, triggers[property]));
 		if (property === "status" || property === "priority")
-			items.push(configuredValues(ctx, property));
+			items.push(...configuredValues(ctx, property, labels[property] ?? property));
 		if (property === "projects") {
 			const get = () => plugin.settings.projectAutosuggest;
 			items.push(

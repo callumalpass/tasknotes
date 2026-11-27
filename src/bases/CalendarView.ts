@@ -123,7 +123,7 @@ const CALENDAR_DATA_SIGNATURE_CHECK_INTERVAL_MS = 250;
 const CALENDAR_DATA_SIGNATURE_CHECK_MAX_MS = 2000;
 /** Device-local slot heights set by pinching, by the configured height they replace. */
 const PINCHED_SLOT_HEIGHTS_KEY = "tasknotes-calendar-pinched-slot-heights";
-import { applyBasesSortIndexesToCalendarEvents, filterAllDayEventsForCalendarView, getTaskNotesCalendarEventOrder, hasBasesCalendarSortConfig, isRecord, isTimeGridCalendarView, normalizeCalendarHeightMode, resolveEffectiveCalendarHeightMode, shouldHideCalendarTimeGrid, type CalendarHeightMode } from "./calendarViewLayout";
+import { applyBasesSortIndexesToCalendarEvents, calendarRangeIsLoaded, filterAllDayEventsForCalendarView, getTaskNotesCalendarEventOrder, hasBasesCalendarSortConfig, isRecord, isTimeGridCalendarView, normalizeCalendarHeightMode, resolveEffectiveCalendarHeightMode, shouldHideCalendarTimeGrid, loadedCalendarRange, type CalendarHeightMode, type LoadedCalendarRange } from "./calendarViewLayout";
 export { applyBasesSortIndexesToCalendarEvents, filterAllDayEventsForCalendarView, getTaskNotesCalendarEventOrder, hasBasesCalendarSortConfig, isTimeGridCalendarView, normalizeCalendarHeightMode, resolveEffectiveCalendarHeightMode, shouldFilterAllDayEventsForCalendarView, shouldHideCalendarTimeGrid, TASKNOTES_CALENDAR_SORT_INDEX, type CalendarHeightMode } from "./calendarViewLayout";
 
 function sameRange(a: ViewInfo, b: ViewInfo): boolean {
@@ -155,6 +155,8 @@ export class CalendarView extends BasesViewBase {
 	private automaticViewChange = false;
 	private narrowWeek = false;
 	private refetchSeq = 0;
+	/** What the newest finished fetch loaded, for which calendar and fetch. */
+	private loadedRange: (LoadedCalendarRange & { calendar: unknown; seq: number }) | null = null;
 	private currentTasks: TaskInfo[] = [];
 	private identityTasks: TaskInfo[] = [];
 	private nonTaskEvents: CalendarEventInput[] = [];
@@ -1471,6 +1473,10 @@ export class CalendarView extends BasesViewBase {
 					this.plugin.taskSelectionService?.exitSelectionMode();
 				}
 				this.visibleView = view;
+				// Back in days that are already loaded (scrolling an agenda moves its week strip):
+				// the calendar still has their items, so there is nothing to fetch or redraw (#2716).
+				const loaded = this.loadedRange;
+				if (loaded && loaded.calendar === this.calendar && loaded.seq === this.refetchSeq && calendarRangeIsLoaded(loaded, view)) return;
 				void this.refetchEvents();
 			},
 			onViewChange: (view) => this.handleViewChange(view),
@@ -1920,6 +1926,7 @@ export class CalendarView extends BasesViewBase {
 			const events = await this.buildAllEvents(view);
 			if (seq !== this.refetchSeq || this.calendar !== calendar) return;
 			this.setCalendarItems(toCalendarItems(events));
+			this.loadedRange = { ...loadedCalendarRange(view), calendar, seq };
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error fetching events:", {
 				category: "provider",

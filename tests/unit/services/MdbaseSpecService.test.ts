@@ -16,6 +16,7 @@ import YAML from "yaml";
 import { observeTranslation } from "../../helpers/real-i18n";
 
 import { MDBASE_README } from "../../../src/services/mdbase/folders";
+import { compileRecordSchema } from "../../../src/services/mdbase/contractValidation";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
 import { canonicalTaskNotesResources } from "../../../src/services/canonicalTaskNotesPack";
@@ -27,6 +28,7 @@ import {
 	DEFAULT_STATUSES,
 } from "../../../src/settings/defaults";
 import { FieldMapping } from "../../../src/types";
+import { combineDateAndTime } from "../../../src/utils/dateUtils";
 
 /** Extract the YAML frontmatter string (between --- delimiters) from markdown */
 function extractFrontmatter(markdown: string): string {
@@ -1093,6 +1095,19 @@ describe("MdbaseSpecService", () => {
 	});
 
 	describe("buildTaskTypeDef - v0.3", () => {
+		it.each([false, true])("validates TaskNotes-written times (legacy layout: %s)", (legacyCompatibility) => {
+			const service = new MdbaseSpecService(createMockPlugin());
+			const type = parseFrontmatter(service.buildTaskTypeDef("0.3.0", { legacyCompatibility }));
+			const validate = compileRecordSchema(asObject(type.schema).value);
+			const base = { status: "open", dateCreated: "2026-11-20T10:00:00Z" };
+			const timed = combineDateAndTime("2026-11-30", "16:00");
+			expect(timed).toBe("2026-11-30T16:00");
+			expect(validate({ ...base, scheduled: timed, due: timed })).toBe(true);
+			expect(validate({ ...base, scheduled: "2026-11-30", due: "2026-11-30T16:00:00+11:00" })).toBe(true);
+			expect(validate({ ...base, scheduled: "2026-11-30T16:00:00", due: "2026-11-30T16:00:59" })).toBe(true);
+			expect(validate({ ...base, scheduled: "2026-11-30T25:00" })).toBe(false);
+		});
+
 		it("emits a JSON Schema type wrapper by default", () => {
 			const service = new MdbaseSpecService(createMockPlugin());
 			const frontmatter = parseFrontmatter(service.buildTaskTypeDef());
@@ -1483,6 +1498,33 @@ describe("MdbaseSpecService", () => {
 	});
 
 	describe("generate", () => {
+		it("repairs a mapped date while preserving custom constraints and YAML aliases", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources({
+				modelConfig: { fieldMapping: { due: "deadline", scheduled: "planned" } },
+			});
+			const type = parseFrontmatter(resources.typeDocument);
+			const properties = asObject(asObject(asObject(type.schema).value).properties);
+			const originalDue = properties.deadline;
+			properties.custom_date = originalDue;
+			properties.planned = { ...asObject(properties.planned), description: "Collection's own rule" };
+			const markdown = `---\n${YAML.stringify(type)}---\nCustom body\n`;
+			const path = "_mdbase/types/task.md";
+			const files = installMemoryVault(plugin, { "mdbase.yaml": resources.configDocument, [path]: markdown });
+			await new MdbaseSpecService(plugin).initialize();
+
+			const migrated = files.get(path)!;
+			const current = parseFrontmatter(migrated);
+			const adjusted = asObject(asObject(asObject(current.schema).value).properties);
+			expect(compileRecordSchema(adjusted.deadline)("2026-11-30T16:00")).toBe(true);
+			expect(adjusted.planned).toEqual(properties.planned);
+			expect(adjusted.custom_date).toEqual(originalDue);
+			expect(current.version).toBe(type.version);
+			expect(extractBody(migrated)).toBe("Custom body\n");
+			await new MdbaseSpecService(plugin).initialize();
+			expect(files.get(path)).toBe(migrated);
+		});
+
 		it("sets up a v4 vault with no config in the new layout using canonical support bytes", async () => {
 			const plugin = createMockPlugin();
 			const files = installMemoryVault(plugin, {});
@@ -1491,7 +1533,7 @@ describe("MdbaseSpecService", () => {
 				types_folder: "_mdbase/types", contracts_folder: "_mdbase/contracts",
 			});
 			expect(files.get("_mdbase/README.md")).toBe(MDBASE_README);
-			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.21.json"), "utf8"));
+			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.22.json"), "utf8"));
 			let compared = 0;
 			for (const resource of pack.resources) {
 				const entry = pack.manifest.resources.find((entry: { source: string }) => entry.source === resource.source);
@@ -2518,6 +2560,273 @@ describe("MdbaseSpecService", () => {
 
 			expect(plugin.app.vault.adapter.write).not.toHaveBeenCalled();
 			expect(plugin.app.vault.create).not.toHaveBeenCalled();
+		});
+
+		it("exposes calm notice and structured recovery state when rollback is blocked by a concurrent edit", async () => {
+			const plugin = createMockPlugin();
+			const notices: string[] = [];
+			plugin.emitter = {
+				trigger: jest.fn((event: string, payload?: { message?: string }) => {
+					if (event === "user-notice" && payload?.message) notices.push(payload.message);
+				}),
+			};
+			const service = new MdbaseSpecService(plugin);
+			const oldType = service.buildTaskTypeDef("0.2.1");
+			const concurrentType = `${oldType}\n# Concurrent edit\n`;
+			let files: Map<string, string>;
+			files = installMemoryVault(
+				plugin,
+				{
+					"mdbase.yaml": v02Config(),
+					"_types/task.md": oldType,
+				},
+				{
+					failWrite: (path, content) => {
+						if (path === "mdbase.yaml" && content.includes("spec_version: 0.3.0")) {
+							files.set("_types/task.md", concurrentType);
+							return true;
+						}
+						return false;
+					},
+				}
+			);
+
+			await service.initialize();
+			const pendingPath = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			expect(files.has(pendingPath)).toBe(true);
+			const journal = JSON.parse(files.get(pendingPath) ?? "{}") as { backupFolder: string };
+
+			notices.length = 0;
+			const restarted = new MdbaseSpecService(plugin);
+			await restarted.initialize();
+
+			expect(files.get("_types/task.md")).toBe(concurrentType);
+			expect(files.has(`${journal.backupFolder}/manifest.json`)).toBe(true);
+			expect(restarted.getPendingV02MigrationRecovery()).toEqual(
+				expect.objectContaining({
+					pendingPath,
+					backupFolder: journal.backupFolder,
+					blockedPaths: ["_types/task.md"],
+					reason: "concurrent-change",
+					canRestoreBackup: true,
+				})
+			);
+			expect(notices).toHaveLength(1);
+			expect(notices[0]).toContain("_types/task.md");
+			expect(notices[0]).toContain("Settings → TaskNotes → TaskNotes App");
+			expect(notices[0]).not.toContain("Error:");
+			expect(notices[0]).not.toContain(pendingPath);
+
+			// Saving settings while blocked preserves the edited file and does not spam duplicate notices.
+			await restarted.onSettingsChanged();
+			expect(files.get("_types/task.md")).toBe(concurrentType);
+			expect(notices).toHaveLength(1);
+		});
+
+		it("keeps current valid v0.3 files, preserves backups, and resumes canonical sync when explicitly confirmed", async () => {
+			const plugin = createMockPlugin();
+			plugin.saveSettingsDataOnly = jest.fn().mockResolvedValue(undefined);
+			plugin.settingsLifecycleService = {
+				onCanonicalSettingsChanged: jest.fn().mockResolvedValue(undefined),
+			};
+			const service = new MdbaseSpecService(plugin);
+			const oldType = service.buildTaskTypeDef("0.2.1");
+			let files: Map<string, string>;
+			files = installMemoryVault(
+				plugin,
+				{
+					"mdbase.yaml": v02Config(),
+					"_types/task.md": oldType,
+				},
+				{
+					failWrite: (path, content) => {
+						if (path === "mdbase.yaml" && content.includes("spec_version: 0.3.0")) {
+							files.set("_types/task.md", `${oldType}\n# Temporary edit\n`);
+							return true;
+						}
+						return false;
+					},
+				}
+			);
+
+			await service.initialize();
+			const pendingPath = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			const journal = JSON.parse(files.get(pendingPath) ?? "{}") as {
+				backupFolder: string;
+				intendedWrites: Array<{ path: string; content: string | null }>;
+			};
+			const validV03Config = journal.intendedWrites.find((w) => w.path === "mdbase.yaml")?.content ?? "";
+			const validV03Type = `${journal.intendedWrites.find((w) => w.path === "_types/task.md")?.content ?? ""}\n# User v0.3 note\n`;
+			files.set("mdbase.yaml", validV03Config);
+			files.set("_types/task.md", validV03Type);
+
+			const restarted = new MdbaseSpecService(plugin);
+			await restarted.initialize();
+			expect(restarted.getPendingV02MigrationRecovery()?.blockedPaths).toEqual(["_types/task.md"]);
+
+			const result = await restarted.keepCurrentFilesAndResumeV02Migration();
+
+			expect(result).toEqual({
+				action: "keep-current",
+				synced: true,
+				backupFolder: journal.backupFolder,
+			});
+			expect(files.has(pendingPath)).toBe(false);
+			expect(files.has(`${journal.backupFolder}/manifest.json`)).toBe(true);
+			expect(files.has(`${journal.backupFolder}/task.md.bak`)).toBe(true);
+			expect(files.get("_types/task.md")).toBe(validV03Type);
+			expect(restarted.getPendingV02MigrationRecovery()).toBeNull();
+			expect(plugin.saveSettingsDataOnly).toHaveBeenCalled();
+			expect(plugin.settingsLifecycleService.onCanonicalSettingsChanged).toHaveBeenCalled();
+
+			// Subsequent restarts work normally without errors.
+			await new MdbaseSpecService(plugin).initialize();
+			expect(files.get("_types/task.md")).toBe(validV03Type);
+		});
+
+		it("keeps current files without overwriting when mdbase.yaml is still v0.2", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const oldType = service.buildTaskTypeDef("0.2.1");
+			const editedType = `${oldType}\n# Kept v0.2 edit\n`;
+			let files: Map<string, string>;
+			files = installMemoryVault(
+				plugin,
+				{
+					"mdbase.yaml": v02Config(),
+					"_types/task.md": oldType,
+				},
+				{
+					failWrite: (path, content) => {
+						if (path === "mdbase.yaml" && content.includes("spec_version: 0.3.0")) {
+							files.set("_types/task.md", editedType);
+							return true;
+						}
+						return false;
+					},
+				}
+			);
+
+			await service.initialize();
+			const pendingPath = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			const journal = JSON.parse(files.get(pendingPath) ?? "{}") as { backupFolder: string };
+
+			const restarted = new MdbaseSpecService(plugin);
+			await restarted.initialize();
+			const result = await restarted.keepCurrentFilesAndResumeV02Migration();
+
+			expect(result).toEqual({
+				action: "keep-current",
+				synced: false,
+				backupFolder: journal.backupFolder,
+			});
+			expect(files.has(pendingPath)).toBe(false);
+			expect(files.get("_types/task.md")).toBe(editedType);
+			expect(asObject(YAML.parse(files.get("mdbase.yaml") ?? "")).spec_version).toBe("0.2.1");
+			expect(files.has(`${journal.backupFolder}/manifest.json`)).toBe(true);
+			expect(restarted.getPendingV02MigrationRecovery()).toBeNull();
+		});
+
+		it("restores verified v0.2 backup files and keeps the backup folder when explicitly confirmed", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const oldConfig = v02Config();
+			const oldType = service.buildTaskTypeDef("0.2.1");
+			const concurrentType = `${oldType}\n# Concurrent edit to discard\n`;
+			let files: Map<string, string>;
+			files = installMemoryVault(
+				plugin,
+				{
+					"mdbase.yaml": oldConfig,
+					"_types/task.md": oldType,
+				},
+				{
+					failWrite: (path, content) => {
+						if (path === "mdbase.yaml" && content.includes("spec_version: 0.3.0")) {
+							files.set("_types/task.md", concurrentType);
+							return true;
+						}
+						return false;
+					},
+				}
+			);
+
+			await service.initialize();
+			const pendingPath = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			const journal = JSON.parse(files.get(pendingPath) ?? "{}") as { backupFolder: string };
+
+			const restarted = new MdbaseSpecService(plugin);
+			await restarted.initialize();
+			expect(restarted.getPendingV02MigrationRecovery()?.canRestoreBackup).toBe(true);
+
+			const result = await restarted.restoreV02MigrationBackup();
+
+			expect(result).toEqual({
+				action: "restore-backup",
+				synced: false,
+				backupFolder: journal.backupFolder,
+			});
+			expect(files.has(pendingPath)).toBe(false);
+			expect(files.get("mdbase.yaml")).toBe(oldConfig);
+			expect(files.get("_types/task.md")).toBe(oldType);
+			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(false);
+			expect(files.has(`${journal.backupFolder}/manifest.json`)).toBe(true);
+			expect(files.has(`${journal.backupFolder}/task.md.bak`)).toBe(true);
+			expect(restarted.getPendingV02MigrationRecovery()).toBeNull();
+		});
+
+		it("refuses backup restore when the pending journal is unsafe or backups mismatch", async () => {
+			const plugin = createMockPlugin();
+			const service = new MdbaseSpecService(plugin);
+			const oldType = service.buildTaskTypeDef("0.2.1");
+			let failCommit = true;
+			let failRollback = true;
+			const files = installMemoryVault(
+				plugin,
+				{
+					"mdbase.yaml": v02Config(),
+					"_types/task.md": oldType,
+				},
+				{
+					failWrite: (path, content) => {
+						if (failCommit && path === "mdbase.yaml" && content.includes("spec_version: 0.3.0")) {
+							failCommit = false;
+							return true;
+						}
+						return failRollback && path === "_types/task.md" && content === oldType;
+					},
+				}
+			);
+			await service.initialize();
+			failRollback = false;
+
+			const pendingPath = ".tasknotes/migrations/mdbase-v0.2-pending.json";
+			const journal = JSON.parse(files.get(pendingPath) ?? "{}") as {
+				backupFolder: string;
+				snapshots: Array<{ path: string; content: string | null }>;
+				intendedWrites: Array<{ path: string; content: string | null }>;
+			};
+			// Tamper backup copy so verification fails.
+			files.set(`${journal.backupFolder}/task.md.bak`, "corrupted backup");
+
+			const restarted = new MdbaseSpecService(plugin);
+			await restarted.initialize();
+
+			expect(restarted.getPendingV02MigrationRecovery()).toEqual(
+				expect.objectContaining({
+					backupFolder: journal.backupFolder,
+					reason: "backup-mismatch",
+					canRestoreBackup: false,
+				})
+			);
+			await expect(restarted.restoreV02MigrationBackup()).rejects.toThrow();
+			expect(files.has(pendingPath)).toBe(true);
+
+			// User can still clear the pending record without deleting the backup folder.
+			const cleared = await restarted.keepCurrentFilesAndResumeV02Migration();
+			expect(cleared.action).toBe("keep-current");
+			expect(files.has(pendingPath)).toBe(false);
+			expect(files.has(`${journal.backupFolder}/manifest.json`)).toBe(true);
 		});
 	});
 });

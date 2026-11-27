@@ -16,6 +16,7 @@ Example:
 ```
 ## Fixed
 
+- (#2712) Made the Task Edit modal and the task card inside a note follow the sort configured in the Relationships Base’s Subtasks view. Thanks to @Glint-Eye for reporting.
 - (#768) Fixed calendar view appearing empty in week and day views due to invalid time configuration values
   - Added time validation in settings UI with proper error messages and debouncing
   - Prevents "Cannot read properties of null (reading 'years')" error from FullCalendar
@@ -32,8 +33,22 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Changed
+
+- (#2705) Reduced startup work for vaults with mdbase type definitions enabled by reusing validation when a type file is unchanged between checks. Thanks to @minchinweb for reporting.
+- (#2722) Indexed the task status and priority settings sections in Obsidian settings search so searching for statuses or priorities opens them directly.
+- (#2723) Reordering Kanban cards within the same column now shows "Reordered in <column>" instead of a status-change move toast.
+
 ## Fixed
 
-- (#2106) Open calendars that use the global first-day-of-week setting now update as soon as it changes. Thanks to @atos2212-blip and @leon-adsk for reporting.
-- Fixed moving a recurring task in the Calendar view clearing its completed and skipped occurrences without asking. Dragging the next occurrence to another day, or dropping the task onto the calendar from elsewhere, such as a task link in a note, removed every completed or skipped occurrence on or after the new date. The calendar now asks first and lists those dates, as changing the scheduled date from the date picker does; **Cancel** leaves the task where it was, with its history. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-clears-later-instances).
-  - Thanks to @martin-forge for the fix
+- (#2691) Moving the next occurrence of a scheduled-anchored recurring task no longer clears completed or skipped history on other dates. Moves without a `recurrence_original_date` (such as Google-synced or legacy off-pattern notes) clear only the landing day when it is already recorded, still behind confirmation; completion-anchored recurring tasks keep clearing recorded instances on or after the new date. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-and-recorded-instances). Thanks to @martin-forge for reporting.
+- (#2633) Fixed the Calendar view clearing a recurring task's completed and skipped occurrences without asking. Dragging the next occurrence to another day, or dropping the task onto the calendar from elsewhere, such as a task link in a note, now asks first and lists the dates it would clear, as the date picker does; **Cancel** leaves the task where it was, with its history. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-and-recorded-instances).
+  - Thanks to @martin-forge for contributing
+- (#2706) Fixed mdbase validation of scheduled and due times written by TaskNotes. Existing generated type definitions are updated when TaskNotes loads the vault.
+  - Thanks to @iantierney for reporting
+- Protect task notes from being emptied by a failed save, including during workflow loops. If TaskNotes cannot restore an empty note, it keeps a recovery copy and includes its location in the error. Thanks to @chrabia for reporting ([Workflows issue 27](https://github.com/callumalpass/tasknotes-workflows/issues/27)).
+- (#2703) Apply Paste image rename’s automatic naming when saving a new task with a pasted screenshot, and keep the saved embed linked to that file. Thanks to @ubidev for reporting.
+- (#2683) Scrolling up in Agenda and Calendar List now loads earlier days without shifting the visible tasks. Thanks to @Oneiran for reporting.
+- (#2698) Dragging an all-day task into the calendar’s timed grid now previews the task’s time estimate. Thanks to @Oneiran for reporting.
+- (#2720) Scoped the Ctrl/Cmd+Z undo shortcut to TaskNotes views and the undo toast so it no longer intercepts undo in other Obsidian views. Thanks to @LucDesautels for reporting.
+- (#2716) Fixed Agenda and Calendar List views freezing Obsidian for several seconds on every redraw when they show notes placed by a date property. These cards now follow **Show all properties on task cards** like task cards do, fitting properties behind a "+N" count is much faster, and scrolling back to days already loaded no longer reloads the view. Thanks to @Lorite for reporting, measuring the cause and the workaround.

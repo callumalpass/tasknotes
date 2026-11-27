@@ -230,6 +230,11 @@ msgctxt "generated Bases projects count"
 msgid "{count, plural, =0 {No projects} =1 {Single project} other {Multiple projects}}"
 msgstr "{count, plural, =0 {无项目} =1 {单个项目} other {多个项目}}"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.blockedFilesLabel"
+msgid "{count, plural, =1 {Blocked file:} other {Blocked files:}}"
+msgstr "{count, plural, =1 {受阻文件：} other {受阻文件：}}"
+
 #: src/ui/taskCardHelpers.ts
 msgctxt "ui.taskCard.attachmentsTooltip"
 msgid "{count, plural, one {{count, number} attachment} other {{count, number} attachments}}"
@@ -1408,6 +1413,16 @@ msgctxt "settings.integrations.webhooks.addWebhook.name"
 msgid "Add webhook"
 msgstr "添加Webhook"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskPrioritiesSummary.desc"
+msgid "Add, edit, reorder, or remove the priorities available for tasks."
+msgstr "添加、编辑、调整顺序或移除可供任务使用的优先级。"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskStatusesSummary.desc"
+msgid "Add, edit, reorder, or remove the statuses available for tasks."
+msgstr "添加、编辑、调整顺序或移除可供任务使用的状态。"
+
 #: src/modals/TimeblockCreationModal.ts
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "notices.timeblockAttachmentAdded"
@@ -1542,6 +1557,21 @@ msgstr "Alt"
 msgctxt "settings.native.anIcsFileInThisVault"
 msgid "An .ics file in this vault."
 msgstr "此仓库中的 .ics 文件。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.generic"
+msgid "An earlier mdbase v0.2 to v0.3 metadata upgrade left a pending recovery record that could not be rolled back automatically. TaskNotes left your current files untouched. Your task files were not changed."
+msgstr "此前的 mdbase v0.2 至 v0.3 元数据升级遗留了一条待恢复记录，且无法自动回滚。TaskNotes 未改动您的当前文件。任务文件未被更改。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.backupMismatch"
+msgid "An earlier mdbase v0.2 to v0.3 metadata upgrade left a pending recovery record, and its backup files no longer match. TaskNotes left your current files untouched. Your task files were not changed."
+msgstr "此前的 mdbase v0.2 至 v0.3 元数据升级遗留了一条待恢复记录，但其备份文件已不再匹配。TaskNotes 未改动您的当前文件。任务文件未被更改。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.blockedFiles"
+msgid "An earlier mdbase v0.2 to v0.3 metadata upgrade was interrupted. TaskNotes paused automatic rollback so it would not overwrite changes to {files}. Your task files were not changed."
+msgstr "此前的 mdbase v0.2 至 v0.3 元数据升级被中断。为避免覆盖对 {files} 的更改，TaskNotes 已暂停自动回滚。任务文件未被更改。"
 
 #: src/utils/safeAsync.ts
 msgctxt "utils/safeAsync: SafeAsync.execute display"
@@ -1883,6 +1913,11 @@ msgstr "备份并修复"
 msgctxt "collectionCheck.fixAll"
 msgid "Back up and fix selected changes in all records"
 msgstr "备份并对所有记录应用所选更改"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.backupFolderLabel"
+msgid "Backup folder:"
+msgstr "备份文件夹："
 
 #: src/settings/native/general.ts
 msgctxt "settings.native.baseFile"
@@ -2651,6 +2686,11 @@ msgstr "清除选择"
 msgctxt "views.pomodoro.buttons.clearTask"
 msgid "Clear task"
 msgstr "清除任务"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.description"
+msgid "Clears the pending upgrade record without modifying your metadata files or backup folder. If mdbase.yaml is valid v0.3, TaskNotes resumes metadata sync."
+msgstr "仅清除待处理的升级记录，不修改您的元数据文件或备份文件夹。如果 mdbase.yaml 是有效的 v0.3 配置，TaskNotes 将恢复元数据同步。"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals/TimeblockInfoModal: TimeblockInfoModal.renderAttachmentsList display"
@@ -6687,6 +6727,16 @@ msgctxt "settings.features.instantConvert.preserveCheckbox.name"
 msgid "Keep checkbox when converting"
 msgstr "转换时保留复选框"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.name"
+msgid "Keep current files and resume"
+msgstr "保留当前文件并恢复同步"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.confirmTitle"
+msgid "Keep current files and resume?"
+msgstr "保留当前文件并恢复同步？"
+
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
@@ -7114,6 +7164,21 @@ msgstr "元数据"
 msgctxt "settings.native.metadataIntegrationProperties"
 msgid "Metadata & integration properties"
 msgstr "元数据与集成属性"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.name"
+msgid "Metadata updates are paused"
+msgstr "元数据更新已暂停"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.heading"
+msgid "Metadata upgrade recovery"
+msgstr "元数据升级恢复"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.page.recoveryNeeded"
+msgid "Metadata upgrade recovery needed."
+msgstr "需要恢复元数据升级。"
 
 #: src/services/MicrosoftCalendarService.ts
 msgctxt "services/MicrosoftCalendarService: MicrosoftCalendarService.formatSyncErrorSummary display"
@@ -8763,10 +8828,15 @@ msgctxt "views.pomodoro.status.paused"
 msgid "Paused"
 msgstr "已暂停"
 
-#: src/services/MdbaseSpecService.ts
-msgctxt "integration.Pendingrecordbackupsblockedfile"
-msgid "Pending record: {mdbaseMigrationPendingPath}; backups: {backupFolder}; blocked file: {value3}"
-msgstr "待处理记录：{mdbaseMigrationPendingPath}；备份：{backupFolder}；受阻文件：{value3}"
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.resumedNotice"
+msgid "Pending upgrade record cleared. TaskNotes resumed mdbase v0.3 metadata sync."
+msgstr "已清除待处理的升级记录。TaskNotes 已恢复 mdbase v0.3 元数据同步。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.clearedNotice"
+msgid "Pending upgrade record cleared. Your current files and backup folder were kept."
+msgstr "已清除待处理的升级记录。已保留您的当前文件和备份文件夹。"
 
 #: src/settings/native/features.ts
 msgctxt "settings.features.performance.header"
@@ -9549,6 +9619,21 @@ msgctxt "common.reorder.confirmButton"
 msgid "Reorder notes"
 msgstr "重排笔记"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderPriorities"
+msgid "Reorder priorities"
+msgstr "调整优先级顺序"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.reorderStatuses"
+msgid "Reorder statuses"
+msgstr "调整状态顺序"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction reorder feedback"
+msgid "Reordered in {destination}"
+msgstr "已在 {destination} 中调整顺序"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "integration.RepairfromTaskNotes"
 msgid "Repair from TaskNotes"
@@ -9559,6 +9644,11 @@ msgstr "从 TaskNotes 修复"
 msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "重复当前任务"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.restoreBackup.description"
+msgid "Replaces the changed metadata files with the verified v0.2 backup copies and clears the pending upgrade record. The backup folder is kept."
+msgstr "使用经校验的 v0.2 备份副本替换已更改的元数据文件，并清除待处理的升级记录。备份文件夹将被保留。"
 
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.autoExport.requireDueDate.name"
@@ -9636,10 +9726,30 @@ msgctxt "settings.features.recurring.resetStatusName"
 msgid "Reset status after each occurrence"
 msgstr "每次重复后重置状态"
 
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.restoreBackup.name"
+msgid "Restore v0.2 backup"
+msgstr "恢复 v0.2 备份"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.restoreBackup.confirmTitle"
+msgid "Restore v0.2 backup?"
+msgstr "恢复 v0.2 备份？"
+
 #: src/settings/native/creation.ts
 msgctxt "settings.native.restoreVisibilityGroupingAndOrderingCustomPropertiesAreKept"
 msgid "Restore visibility, grouping, and ordering. Custom properties are kept."
 msgstr "恢复可见性、分组和顺序。保留自定义属性。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.restoreBackup.restoredNoticeNoFolder"
+msgid "Restored v0.2 metadata files."
+msgstr "已恢复 v0.2 元数据文件。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.restoreBackup.restoredNotice"
+msgid "Restored v0.2 metadata files. Recovery copies remain in {backupFolder}."
+msgstr "已恢复 v0.2 元数据文件。恢复副本保留在 {backupFolder} 中。"
 
 #: src/views/PomodoroView.ts
 msgctxt "views.pomodoro.buttons.resume"
@@ -11417,6 +11527,11 @@ msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "任务选项"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskPrioritiesSummary.name"
+msgid "Task priorities"
+msgstr "任务优先级"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.taskProperty.name"
 msgid "Task property name"
@@ -11447,6 +11562,11 @@ msgstr "任务已保存，但无法创建首个重复实例。请使用“创建
 msgctxt "picker recovery action"
 msgid "Task settings"
 msgstr "任务设置"
+
+#: src/settings/native/properties.ts
+msgctxt "settings.native.taskStatusesSummary.name"
+msgid "Task statuses"
+msgstr "任务状态"
 
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskStorage.header"
@@ -11610,6 +11730,16 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Mini Calendar"
 msgstr "TaskNotes 迷你日历"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "mdbaseSafety.v02RecoveryBlockedFiles"
+msgid "TaskNotes paused mdbase metadata updates because {files} changed during an interrupted upgrade. Task files were not changed. Open Settings → TaskNotes → TaskNotes App to resume or restore the backup."
+msgstr "由于中断的升级期间 {files} 发生了更改，TaskNotes 已暂停 mdbase 元数据更新。任务文件未被更改。请打开设置 → TaskNotes → TaskNotes App 以恢复同步或还原备份。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "mdbaseSafety.v02RecoveryBlocked"
+msgid "TaskNotes paused mdbase metadata updates because an earlier upgrade did not finish cleanly. Task files were not changed. Open Settings → TaskNotes → TaskNotes App to review and resume."
+msgstr "由于先前的升级未能正常完成，TaskNotes 已暂停 mdbase 元数据更新。任务文件未被更改。请打开设置 → TaskNotes → TaskNotes App 查看并恢复同步。"
+
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.review"
 msgid "TaskNotes preserved {path}: legacy metadata is missing, edited, or includes other types. Finish syncing and restart; otherwise migrate a backed-up copy with mdbase and review the type before retrying."
@@ -11684,6 +11814,16 @@ msgstr "TaskNotes 已将 {path} 更新为 tasknotes.task {tasknotesContractVersi
 msgctxt "integration.TaskNotesupdateditsmdbasemetadatatovTaskfileswere"
 msgid "TaskNotes updated its mdbase metadata to v0.3. Task files were not changed. The previous metadata is backed up in {backupFolder}."
 msgstr "TaskNotes 已将 mdbase 元数据更新到 v0.3。任务文件未更改。先前的元数据已备份到 {backupFolder}。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.confirmMessageWithBackup"
+msgid "TaskNotes will clear the pending upgrade record, keep your current files and the backup in {backupFolder}, and resume metadata sync if mdbase.yaml is valid v0.3."
+msgstr "TaskNotes 将清除待处理的升级记录，保留您的当前文件以及 {backupFolder} 中的备份，并在 mdbase.yaml 为有效的 v0.3 时恢复元数据同步。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.keepCurrent.confirmMessage"
+msgid "TaskNotes will clear the pending upgrade record, keep your current files, and resume metadata sync if mdbase.yaml is valid v0.3."
+msgstr "TaskNotes 将清除待处理的升级记录，保留您的当前文件，并在 mdbase.yaml 为有效的 v0.3 时恢复元数据同步。"
 
 #: src/settings/native/googleCalendarService.ts
 msgctxt "settings.calendarService.disconnect.confirmMessage"
@@ -12189,6 +12329,11 @@ msgstr "本周末"
 msgctxt "modals.storageLocation.message.migrate"
 msgid "This will migrate your existing Pomodoro session data to daily notes frontmatter. The data will be grouped by date and stored in each daily note."
 msgstr "这将把现有的番茄钟会话数据迁移到每日笔记前置元数据。数据将按日期分组并存储在每个每日笔记中。"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.restoreBackup.confirmMessage"
+msgid "This will overwrite {files} with the v0.2 backup from {backupFolder}. The backup folder itself will be kept intact."
+msgstr "这将使用 {backupFolder} 中的 v0.2 备份覆盖 {files}。备份文件夹本身将保持完好。"
 
 #: src/commands/taskNotesCommands.ts
 #: src/settings/native/general.ts
@@ -13706,6 +13851,11 @@ msgstr "你可以随时在将来切换回插件存储。"
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "你有未保存的更改。是否要保存？"
+
+#: src/settings/native/tasknotesApp.ts
+msgctxt "settings.tasknotesApp.migrationRecovery.status.backupKept"
+msgid "Your backup folder is kept intact whichever option you choose."
+msgstr "无论选择哪一项，您的备份文件夹都会保持完好。"
 
 #: src/modals/DeviceCodeModal.ts
 msgctxt "modals.deviceCode.codeLabel"

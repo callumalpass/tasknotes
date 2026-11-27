@@ -106,6 +106,10 @@ export function taskMovementMessage(count: number, destination: string): string 
 	return uiText(msg({ message: "Moved {count, plural, one {# task} other {# tasks}} to {destination}", context: "interaction move feedback" }), { count, destination });
 }
 
+export function taskReorderMessage(destination: string): string {
+	return uiText(msg({ message: "Reordered in {destination}", context: "interaction reorder feedback" }), { destination });
+}
+
 export function tasksForPropertyAction(
 	plugin: TaskNotesPlugin,
 	task: TaskInfo

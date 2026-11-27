@@ -352,6 +352,85 @@ describe("taskCardMetadata", () => {
 		}
 	});
 
+	describe("layout reads (#2716)", () => {
+		const original = window.ResizeObserver;
+		let resize: (entries?: unknown[]) => void = () => {};
+		beforeEach(() => {
+			window.ResizeObserver = class {
+				constructor(callback: (entries?: unknown[]) => void) { resize = callback; }
+				observe() {}
+				unobserve() {}
+				disconnect() {}
+			} as unknown as typeof ResizeObserver;
+		});
+		afterEach(() => {
+			cleanupTaskCardMetadata(document.querySelector(".task-card__metadata") as HTMLElement);
+			window.ResizeObserver = original;
+		});
+
+		function createLane(width: number) {
+			const { metadataLine } = createMetadataHost();
+			Object.defineProperty(metadataLine, "clientWidth", { value: width });
+			const values = metadataLine.createSpan();
+			let reads = 0;
+			const box = { left: 0, right: width, width, height: 20 } as DOMRect;
+			metadataLine.getBoundingClientRect = () => box;
+			values.getBoundingClientRect = () => {
+				reads++;
+				return box;
+			};
+			return { metadataLine, values, reads: () => reads };
+		}
+
+		it("measures a long row a few times, not once per property", () => {
+			const { metadataLine, values, reads } = createLane(200);
+			const atoms = Array.from({ length: 20 }, (_, index) => {
+				const atom = values.createSpan({ text: `Property ${index}` });
+				atom.getBoundingClientRect = () => ({ left: index * 34, right: index * 34 + 30 }) as DOMRect;
+				return atom;
+			});
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			// Six properties end inside the 200px lane; the rest go behind the count.
+			expect(atoms.filter((atom) => !atom.hidden)).toHaveLength(6);
+			expect(metadataLine.querySelector(".task-card__metadata-overflow")?.textContent).toBe("+14");
+			// One read of the lane per layout: all showing, all measured, the result, the settled size.
+			expect(reads()).toBeLessThanOrEqual(4);
+		});
+
+		it("still places a shorter property after one that did not fit", () => {
+			const { metadataLine, values } = createLane(200);
+			const first = values.createSpan({ text: "First" });
+			const second = values.createSpan({ text: "Second" });
+			const long = values.createSpan({ text: "A long property" });
+			const short = values.createSpan({ text: "Short" });
+			first.getBoundingClientRect = () => ({ left: 0, right: 80 }) as DOMRect;
+			second.getBoundingClientRect = () => ({ left: 84, right: 164 }) as DOMRect;
+			long.getBoundingClientRect = () => ({ left: 168, right: 268 }) as DOMRect;
+			short.getBoundingClientRect = () => (long.hidden ? { left: 168, right: 188 } : { left: 272, right: 292 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			expect([first, second, long, short].map((atom) => atom.hidden)).toEqual([false, false, true, false]);
+			expect(metadataLine.querySelector(".task-card__metadata-overflow")?.getAttribute("aria-label")).toBe("A long property");
+		});
+
+		it("does not fit again when the observer reports the sizes the last fit left", () => {
+			const { metadataLine, values, reads } = createLane(200);
+			const atom = values.createSpan({ text: "Long metadata" });
+			atom.getBoundingClientRect = () => ({ left: 0, right: 300 }) as DOMRect;
+			fitTaskCardMetadata(values, metadataLine);
+			resize();
+			expect(atom.hidden).toBe(true);
+			const afterFit = reads();
+			const entry = (target: Element, inlineSize: number) => ({ target, borderBoxSize: [{ inlineSize, blockSize: 20 }] });
+			resize([entry(values, 200), entry(metadataLine, 200)]);
+			expect(reads()).toBe(afterFit);
+			// A real change in size fits again.
+			resize([entry(metadataLine, 260)]);
+			expect(reads()).toBeGreaterThan(afterFit);
+		});
+	});
+
 	it("disconnects overflow observers on rerender, removal and explicit cleanup", () => {
 		const original = window.ResizeObserver;
 		const callbacks: Array<() => void> = [];

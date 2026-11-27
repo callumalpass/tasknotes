@@ -924,25 +924,50 @@ describe('TaskService', () => {
       expect(result.completedDate).toBeUndefined();
     });
 
-    // #3: rescheduling a recurring task onto a recorded date reactivates that occurrence.
-    it('removes the rescheduled date from complete_instances for a recurring task', async () => {
+    // #2691: scheduled-anchored native moves keep their rule identity and leave recorded
+    // instances intact; unmarked scheduled-anchored moves (e.g. Google-synced) clear only
+    // the landing day; completion-anchored moves still clear instances on or after the new date.
+    it('preserves recorded instances when moving a native scheduled-anchored recurring task', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
         scheduled: '2026-06-09',
         complete_instances: ['2026-06-02', '2026-05-26'],
-        skipped_instances: [],
+        skipped_instances: ['2026-06-16'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => true);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-02', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(result.recurrence_original_date).toBe('2026-06-09');
+      expect(result.complete_instances).toEqual(['2026-06-02', '2026-05-26']);
+      expect(result.skipped_instances).toEqual(['2026-06-16']);
+      expect(confirm).not.toHaveBeenCalled();
+    });
+
+    it('removes the rescheduled landing day from complete_instances for an unmarked recurring task', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-09',
+        googleCalendarEventId: 'gcal-1',
+        complete_instances: ['2026-06-02', '2026-05-26'],
+        skipped_instances: ['2026-06-16'],
       });
       mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
 
       const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-02');
 
       expect(result.complete_instances).toEqual(['2026-05-26']);
+      expect(result.skipped_instances).toEqual(['2026-06-16']);
     });
 
-    it('removes the rescheduled date from skipped_instances for a recurring task', async () => {
+    it('removes the rescheduled landing day from skipped_instances for an unmarked recurring task', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
         scheduled: '2026-06-09',
+        googleCalendarEventId: 'gcal-1',
         complete_instances: [],
         skipped_instances: ['2026-06-02'],
       });
@@ -953,10 +978,11 @@ describe('TaskService', () => {
       expect(result.skipped_instances).toEqual([]);
     });
 
-    it('ignores the time component when matching the rescheduled date', async () => {
+    it('ignores the time component when matching the rescheduled landing day', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
         scheduled: '2026-06-09',
+        googleCalendarEventId: 'gcal-1',
         complete_instances: ['2026-06-02'],
         skipped_instances: [],
       });
@@ -1016,11 +1042,28 @@ describe('TaskService', () => {
       expect(confirm).not.toHaveBeenCalled();
     });
 
-    it('clears an off-schedule completion/skip recorded on or after the rescheduled date, keeping older history', async () => {
-      // Off-schedule completion (06-08) + later skip (06-19), reschedule back to 06-05:
-      // the ">= new date" rule clears both while keeping the older 05-29 history.
+    it('clears only the landing day for an unmarked scheduled-anchored task, keeping earlier and later history', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        googleCalendarEventId: 'gcal-1',
+        complete_instances: ['2026-05-29', '2026-06-05'],
+        skipped_instances: ['2026-06-19'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05');
+
+      expect(result.complete_instances).toEqual(['2026-05-29']);
+      expect(result.skipped_instances).toEqual(['2026-06-19']);
+    });
+
+    it('clears an off-schedule completion/skip recorded on or after the rescheduled date for completion-anchored tasks, keeping older history', async () => {
+      // Off-schedule completion (06-08) + later skip (06-19), reschedule back to 06-05:
+      // completion-anchored tasks keep the ">= new date" rule while preserving older 05-29 history.
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        recurrence_anchor: 'completion',
         scheduled: '2026-06-12',
         complete_instances: ['2026-05-29', '2026-06-08'],
         skipped_instances: ['2026-06-19'],
@@ -1060,9 +1103,10 @@ describe('TaskService', () => {
       ).resolves.toBeDefined();
     });
 
-    it('aborts the reschedule (no write, instances intact) when confirmClearInstances returns false', async () => {
+    it('aborts the reschedule (no write, instances intact) when confirmClearInstances returns false for completion-anchored tasks', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
+        recurrence_anchor: 'completion',
         scheduled: '2026-06-12',
         complete_instances: ['2026-06-08'],
         skipped_instances: ['2026-06-19'],
@@ -1080,9 +1124,10 @@ describe('TaskService', () => {
       expect(mockPlugin.app.fileManager.processFrontMatter).not.toHaveBeenCalled();
     });
 
-    it('proceeds and clears when confirmClearInstances returns true', async () => {
+    it('proceeds and clears when confirmClearInstances returns true for completion-anchored tasks', async () => {
       const recurringTask = TaskFactory.createTask({
         recurrence: 'FREQ=WEEKLY',
+        recurrence_anchor: 'completion',
         scheduled: '2026-06-12',
         complete_instances: ['2026-06-08'],
         skipped_instances: [],
@@ -1096,6 +1141,28 @@ describe('TaskService', () => {
 
       expect(confirm).toHaveBeenCalled();
       expect(result.complete_instances).toEqual([]);
+    });
+
+    it('aborts an unmarked scheduled-anchored landing-day clear when confirmClearInstances returns false', async () => {
+      const recurringTask = TaskFactory.createTask({
+        recurrence: 'FREQ=WEEKLY',
+        scheduled: '2026-06-12',
+        googleCalendarEventId: 'gcal-1',
+        complete_instances: ['2026-06-05'],
+        skipped_instances: ['2026-06-19'],
+      });
+      mockPlugin.cacheManager.getTaskInfo.mockResolvedValue(recurringTask);
+      const confirm = jest.fn(async () => false);
+
+      const result = await taskService.updateProperty(recurringTask, 'scheduled', '2026-06-05', {
+        confirmClearInstances: confirm,
+      });
+
+      expect(confirm).toHaveBeenCalledWith({ complete: ['2026-06-05'], skipped: [] });
+      expect(result.complete_instances).toEqual(['2026-06-05']);
+      expect(result.skipped_instances).toEqual(['2026-06-19']);
+      expect(result.scheduled).toBe('2026-06-12');
+      expect(mockPlugin.app.fileManager.processFrontMatter).not.toHaveBeenCalled();
     });
 
     it('does not call confirmClearInstances when nothing would be cleared', async () => {

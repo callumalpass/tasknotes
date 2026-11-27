@@ -9,10 +9,10 @@ import stylelint from "stylelint";
 test("host calendar stylesheet tracks the pinned upstream engine and license", () => {
   const packageRoot = new URL("../node_modules/@tasknotes/calendar/", import.meta.url);
   const version = JSON.parse(readFileSync(new URL("package.json", packageRoot), "utf8")).version;
-  assert.equal(version, "0.1.12");
+  assert.equal(version, "0.1.13");
   const upstreamHash = createHash("sha256")
     .update(readFileSync(new URL("dist/calendar.css", packageRoot))).digest("hex");
-  assert.equal(upstreamHash, "831186441ed7759c15b70967863f0fa46adbbef10c30397bd4099e48b0c1f77b");
+  assert.equal(upstreamHash, "a2f7e17719334df98bd436c4c4399cbe8e438461cdff0a10d8b34cc7444482e6");
   const host = readFileSync(new URL("../vendor/tasknotes-calendar/calendar.css", import.meta.url), "utf8");
   assert.ok(host.replace(/[\s*]+/g, "").includes(upstreamHash));
   assert.deepEqual(readFileSync(new URL("../vendor/tasknotes-calendar/LICENSE", import.meta.url)),

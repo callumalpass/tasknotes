@@ -25,6 +25,12 @@ export interface ToastOptions {
 const DEFAULT_DURATION_MS = 5000;
 const histories = new WeakMap<object, Array<ToastAction & { message: string; undoMessage?: string }>>();
 const running = new WeakMap<object, Promise<void>>();
+interface ActiveUndoToast {
+	el: HTMLElement;
+	originLeaf: Element | null;
+	originWasTaskNotesLeaf: boolean;
+}
+const activeUndoToasts = new WeakMap<Document, ActiveUndoToast>();
 let toastRevision = 0;
 
 export async function undoLatest(scope: object): Promise<void> {
@@ -61,19 +67,108 @@ export async function undoLatest(scope: object): Promise<void> {
 	if (running.get(scope) === pending) running.delete(scope);
 }
 
+const UNDO_SURFACE_SELECTOR = [
+	".tn-toast",
+	"[data-tn-view]",
+	".tn-bases-integration",
+	".tn-tasknotesTaskList",
+	".tn-tasknotesKanban",
+	".tn-tasknotesCalendar",
+	".tn-tasknotesMiniCalendar",
+	".advanced-calendar-view",
+	".pomodoro-view",
+	".tasknotes-task-card-note-widget",
+	".tasknotes-relationships-widget",
+].join(", ");
+
+const INLINE_TASK_CONTROL_SELECTOR =
+	".task-card--layout-inline [role=button], .task-card--layout-inline button";
+
+const TARGET_OVERLAY_SELECTOR =
+	".modal-container, .menu, .suggestion-container, .hover-popover, .tn-popover";
+
+const BLOCKING_OVERLAY_SELECTOR =
+	".modal-container, .menu, .suggestion-container, .tn-popover";
+
+function resolveEventElement(target: EventTarget | null): Element | null {
+	if (!target || typeof target !== "object") return null;
+	if ("closest" in target && typeof (target as Element).closest === "function") {
+		return target as Element;
+	}
+	if ("parentElement" in target) {
+		return (target as Node).parentElement;
+	}
+	return null;
+}
+
+function isEditableElement(target: Element): boolean {
+	if (target.closest("input, textarea, select")) return true;
+	const editable = target.closest("[contenteditable]");
+	return Boolean(editable && editable.getAttribute("contenteditable")?.toLowerCase() !== "false");
+}
+
+function isTaskNotesLeaf(leaf: Element): boolean {
+	const content = Array.from(leaf.children).find((child) =>
+		child.classList.contains("workspace-leaf-content")
+	);
+	if (!content) return false;
+	const viewType = content.getAttribute("data-type");
+	if (viewType === "bases") {
+		return Boolean(content.querySelector("[data-tn-view], .tn-bases-integration"));
+	}
+	return (
+		viewType === "tasknotes-pomodoro-view" ||
+		Boolean(content.querySelector(".view-content > .pomodoro-view"))
+	);
+}
+
+const EMBEDDED_TASKNOTES_SELECTOR =
+	".task-card--layout-inline, .tasknotes-task-card-note-widget, .tasknotes-relationships-widget, [data-tn-view], .tn-bases-integration";
+
+function isTaskNotesUndoContext(target: Element | null, root: HTMLElement): boolean {
+	if (target?.closest(".tn-toast")) return true;
+	if (target?.closest(INLINE_TASK_CONTROL_SELECTOR)) return true;
+	if (target && isEditableElement(target)) return false;
+
+	const directSurface = target?.closest(UNDO_SURFACE_SELECTOR) ?? null;
+	if (target?.closest(".cm-editor")) return Boolean(directSurface);
+	if (directSurface) return true;
+
+	if (target?.closest(TARGET_OVERLAY_SELECTOR)) return false;
+
+	const targetLeaf = target?.closest(".workspace-leaf");
+	if (targetLeaf) return isTaskNotesLeaf(targetLeaf);
+
+	const doc = target?.ownerDocument ?? root.ownerDocument;
+	if (doc.querySelector(BLOCKING_OVERLAY_SELECTOR)) return false;
+	const activeLeaf = doc.querySelector(".workspace-leaf.mod-active");
+	if (!activeLeaf) return false;
+	if (isTaskNotesLeaf(activeLeaf)) return true;
+
+	const toastState = activeUndoToasts.get(doc);
+	return Boolean(
+		toastState &&
+			toastState.el.isConnected &&
+			!toastState.originWasTaskNotesLeaf &&
+			toastState.originLeaf === activeLeaf &&
+			activeLeaf.querySelector(EMBEDDED_TASKNOTES_SELECTOR)
+	);
+}
+
 export function registerUndoKeyboard(root: HTMLElement, scope: object): () => void {
 	const listener = (event: KeyboardEvent) => {
 		if (
+			event.defaultPrevented ||
+			event.isComposing ||
 			!(event.ctrlKey || event.metaKey) ||
 			event.shiftKey ||
 			event.altKey ||
 			event.key.toLowerCase() !== "z"
 		)
 			return;
-		const target = event.target as HTMLElement | null;
-		const inlineControl = target?.closest(".task-card--layout-inline [role=button], .task-card--layout-inline button");
-		if (!inlineControl && target?.closest("input, textarea, [contenteditable=true], .cm-editor")) return;
 		if (!histories.get(scope)?.length) return;
+		const target = resolveEventElement(event.target);
+		if (!isTaskNotesUndoContext(target, root)) return;
 		event.preventDefault();
 		event.stopImmediatePropagation();
 		void undoLatest(scope);
@@ -115,6 +210,16 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 		cls: `tasknotes-plugin tn-toast${options.intent === "error" ? " is-error" : ""}`,
 		attr: { role: options.intent === "error" ? "alert" : "status", "aria-live": options.intent === "error" ? "assertive" : "polite" },
 	});
+	if (action && options.undoScope) {
+		const originLeaf = doc.querySelector(".workspace-leaf.mod-active");
+		activeUndoToasts.set(doc, {
+			el,
+			originLeaf,
+			originWasTaskNotesLeaf: originLeaf ? isTaskNotesLeaf(originLeaf) : false,
+		});
+	} else {
+		activeUndoToasts.delete(doc);
+	}
 	const updateClearance = () => {
 		const clearance = win.innerHeight - getContentBottomAboveMobileNavigation(doc, win.innerHeight);
 		el.style.setProperty("--tn-toast-clearance", `${clearance}px`);
@@ -126,6 +231,7 @@ export function showToast(options: ToastOptions): { dismiss: () => void } {
 	const dismiss = () => {
 		win.clearTimeout(timer);
 		win.removeEventListener("resize", updateClearance);
+		if (activeUndoToasts.get(doc)?.el === el) activeUndoToasts.delete(doc);
 		const hadFocus = el.contains(doc.activeElement);
 		el.remove();
 		if (hadFocus && returnFocus?.isConnected) returnFocus.focus();

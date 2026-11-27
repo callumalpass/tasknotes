@@ -27,7 +27,7 @@ function createActionBar(): HTMLElement {
 	]) {
 		const icon = actionBar.createDiv({ cls: "action-icon" });
 		icon.dataset.type = dataType;
-		icon.createSpan({ cls: "icon" });
+		icon.createSpan({ cls: "tn-task-modal__action-glyph" });
 		icon.createSpan({ cls: "action-icon__label" });
 	}
 	return actionBar;
@@ -98,7 +98,7 @@ describe("taskModalActionIconStates", () => {
 
 	it("shares workflow glyphs with task cards and preserves configured icons (#2401)", () => {
 		const actionBar = createActionBar();
-		const statusIconElement = actionBar.querySelector('[data-type="status"] .icon');
+		const statusIconElement = actionBar.querySelector('[data-type="status"] .tn-task-modal__action-glyph');
 		const base = createState();
 		const withIcon = base.statusConfigs.map((config) =>
 			config.value === "open" ? { ...config, icon: "clock" } : config
@@ -208,8 +208,8 @@ describe("taskModalActionIconStates", () => {
 
 		expect(statusIcon?.classList.contains("has-value")).toBe(true);
 		expect(priorityIcon?.classList.contains("has-value")).toBe(true);
-		expect(statusIcon?.querySelector<HTMLElement>(".icon")?.style.color).toBe("rgb(0, 170, 0)");
-		expect(priorityIcon?.querySelector<HTMLElement>(".icon")?.style.color).toBe(
+		expect(statusIcon?.querySelector<HTMLElement>(".tn-task-modal__action-glyph")?.style.color).toBe("rgb(0, 170, 0)");
+		expect(priorityIcon?.querySelector<HTMLElement>(".tn-task-modal__action-glyph")?.style.color).toBe(
 			"rgb(255, 0, 0)"
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
@@ -230,17 +230,17 @@ describe("taskModalActionIconStates", () => {
 		const priorityIcon = actionBar.querySelector<HTMLElement>('[data-type="priority"]')!;
 		statusIcon.classList.add("has-value");
 		priorityIcon.classList.add("has-value");
-		statusIcon.querySelector<HTMLElement>(".icon")!.style.color = "#00aa00";
-		priorityIcon.querySelector<HTMLElement>(".icon")!.style.color = "#ff0000";
+		statusIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")!.style.color = "#00aa00";
+		priorityIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")!.style.color = "#ff0000";
 
 		updateTaskModalActionIconStates(actionBar, { translate }, createState());
 
 		expect(statusIcon.classList.contains("has-value")).toBe(false);
 		expect(priorityIcon.classList.contains("has-value")).toBe(false);
-		expect(statusIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe(
+		expect(statusIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")?.style.color).toBe(
 			"rgb(153, 153, 153)"
 		);
-		expect(priorityIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe(
+		expect(priorityIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")?.style.color).toBe(
 			"rgb(153, 153, 153)"
 		);
 		expect(mockSetTooltip).toHaveBeenCalledWith(
@@ -259,8 +259,8 @@ describe("taskModalActionIconStates", () => {
 		const actionBar = createActionBar();
 		const statusIcon = actionBar.querySelector<HTMLElement>('[data-type="status"]')!;
 		const priorityIcon = actionBar.querySelector<HTMLElement>('[data-type="priority"]')!;
-		statusIcon.querySelector<HTMLElement>(".icon")!.style.color = "#00aa00";
-		priorityIcon.querySelector<HTMLElement>(".icon")!.style.color = "#ff0000";
+		statusIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")!.style.color = "#00aa00";
+		priorityIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")!.style.color = "#ff0000";
 
 		updateTaskModalActionIconStates(
 			actionBar,
@@ -271,8 +271,8 @@ describe("taskModalActionIconStates", () => {
 			})
 		);
 
-		expect(statusIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe("");
-		expect(priorityIcon.querySelector<HTMLElement>(".icon")?.style.color).toBe("");
+		expect(statusIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")?.style.color).toBe("");
+		expect(priorityIcon.querySelector<HTMLElement>(".tn-task-modal__action-glyph")?.style.color).toBe("");
 	});
 
 	it("updates recurrence and reminder active states", () => {
