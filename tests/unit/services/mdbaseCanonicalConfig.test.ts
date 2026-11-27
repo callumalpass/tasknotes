@@ -14,6 +14,7 @@ import {
 	parseMdbaseTaskTypeDocument,
 	portableSettingsFingerprint,
 	validateCanonicalTaskType,
+	withCurrentTaskNotesContract,
 } from "../../../src/services/mdbaseCanonicalConfig";
 
 describe("canonical mdbase TaskNotes configuration", () => {
@@ -156,7 +157,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		const before = [...(schema.value.properties.status.enum ?? [])];
 		schema.value.properties.status.enum = [...before, "blocked"];
 
-		expect(validateCanonicalTaskType(type)).toEqual({ valid: true });
+		expect(validateCanonicalTaskType(withCurrentTaskNotesContract(type).type)).toEqual({ valid: true });
 		applyCanonicalTaskTypeToSettings(settings, type);
 		expect(settings.customStatuses.map((status) => status.value)).toEqual([...before, "blocked"]);
 
@@ -180,7 +181,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		schema.value.properties.status.enum = ["open", "done"];
 		const settings = clone(DEFAULT_SETTINGS);
 
-		expect(validateCanonicalTaskType(type)).toEqual({ valid: true });
+		expect(validateCanonicalTaskType(withCurrentTaskNotesContract(type).type)).toEqual({ valid: true });
 		applyCanonicalTaskTypeToSettings(settings, type);
 		expect(settings.customStatuses.map((status) => status.value)).toEqual(before);
 	});
@@ -198,7 +199,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		binding.status.completed_values = [...binding.status.values];
 		binding.status.definitions.forEach((definition) => (definition.is_completed = true));
 
-		expect(validateCanonicalTaskType(type)).toEqual({
+		expect(validateCanonicalTaskType(withCurrentTaskNotesContract(type).type)).toEqual({
 			valid: false,
 			issues: expect.arrayContaining(["status.values contradicts schema enum for status"]),
 		});
@@ -210,7 +211,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		const taskImplementation = implementation(type);
 		delete (taskImplementation.binding as Record<string, unknown>).status;
 
-		expect(validateCanonicalTaskType(type)).toEqual({
+		expect(validateCanonicalTaskType(withCurrentTaskNotesContract(type).type)).toEqual({
 			valid: false,
 			issues: expect.arrayContaining([
 				"the TaskNotes implementation binding.status must be an object",
@@ -248,7 +249,7 @@ describe("canonical mdbase TaskNotes configuration", () => {
 				kind: { eq: "task" },
 			},
 		});
-		expect(validateCanonicalTaskType(parsed.type)).toEqual({ valid: true });
+		expect(validateCanonicalTaskType(withCurrentTaskNotesContract(parsed.type).type)).toEqual({ valid: true });
 	});
 
 	it("updates managed fields while preserving unknown extensions and user body text", () => {

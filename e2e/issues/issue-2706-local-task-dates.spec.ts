@@ -7,7 +7,7 @@ import { compileRecordSchema } from "../../src/services/mdbase/contractValidatio
 import { requireFrontmatter } from "../../src/services/mdbase/frontmatter";
 import type { ObsidianApp } from "../obsidian";
 
-test("TaskNotes-written local times validate against its generated task type", async () => {
+for (const existing of [false, true]) test(`TaskNotes validates local times and records the collection zone (existing: ${existing})`, async () => {
 	const root = mkdtempSync(join(tmpdir(), "tasknotes-2706-"));
 	const vault = join(root, "vault");
 	const config = join(vault, ".obsidian");
@@ -33,10 +33,32 @@ test("TaskNotes-written local times validate against its generated task type", a
 			showReleaseNotesOnUpdate: false,
 		}));
 
+		const configPath = join(vault, "mdbase.yaml");
+		if (existing) writeFileSync(configPath, [
+			"spec_version: 0.3.0",
+			"settings:",
+			"  types_folder: _mdbase/types",
+			"  contracts_folder: _mdbase/contracts",
+			"x-other: preserve",
+			"",
+		].join("\n"));
+
 		Object.assign(process.env, environment);
 		delete require.cache[require.resolve("../obsidian")];
 		obsidian = require("../obsidian");
 		app = await obsidian!.launchObsidian();
+
+		const zone = await app.page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+		const readConfig = () => existsSync(configPath) ? YAML.parse(readFileSync(configPath, "utf8")) : null;
+		if (existing) {
+			const action = app.page.getByRole("button", { name: `Use ${zone}`, exact: true });
+			await expect(action).toBeVisible();
+			expect(readConfig().settings.timezone).toBeUndefined();
+			await action.click();
+			await expect(action).toBeHidden();
+			expect(readConfig()["x-other"]).toBe("preserve");
+		}
+		await expect.poll(() => readConfig()?.settings.timezone).toBe(zone);
 
 		const scheduled = "2026-11-30T16:00";
 		const due = "2026-11-30T17:30";
@@ -49,6 +71,9 @@ test("TaskNotes-written local times validate against its generated task type", a
 		}, { scheduled, due });
 		const record = YAML.parse(requireFrontmatter(content).frontmatter);
 		expect(record).toMatchObject({ scheduled, due });
+		for (const timestamp of [record.dateCreated, record.dateModified]) {
+			expect(timestamp).toMatch(/T.*(?:Z|[+-][0-9]{2}:[0-9]{2})$/);
+		}
 
 		const typePath = join(vault, "_mdbase/types/task.md");
 		await expect.poll(() => existsSync(typePath)).toBe(true);

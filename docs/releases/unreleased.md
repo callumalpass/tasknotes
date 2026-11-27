@@ -35,6 +35,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- mdbase task types now accept times without an offset in scheduled, due, created and modified fields. New collections record the device’s time zone, and existing collections without a time zone offer to set one.
+
 - (#2705) Reduced startup work for vaults with mdbase type definitions enabled by reusing validation when a type file is unchanged between checks. Thanks to @minchinweb for reporting.
 - (#2722) Indexed the task status and priority settings sections in Obsidian settings search so searching for statuses or priorities opens them directly.
 - (#2723) Reordering Kanban cards within the same column now shows "Reordered in <column>" instead of a status-change move toast.

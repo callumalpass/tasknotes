@@ -3,7 +3,7 @@ import * as path from "path";
 import YAML from "yaml";
 import { appSettingsSupportResources } from "../../../src/services/mdbase/appSettingsResources";
 
-const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.22.json"), "utf8"));
+const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.23.json"), "utf8"));
 
 describe("canonical settings resources", () => {
 	it.each([

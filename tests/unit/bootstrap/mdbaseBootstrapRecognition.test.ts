@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import YAML from "yaml";
 import type TaskNotesPlugin from "../../../src/main";
+import { createI18nService } from "../../../src/i18n";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 import { initializeCoreServices } from "../../../src/bootstrap/pluginBootstrap";
 import { parseMdbaseTaskTypeDocument } from "../../../src/services/mdbaseCanonicalConfig";
@@ -42,13 +43,13 @@ it.each(["v4-custom", "beta0-custom"])("runs real bootstrap for %s without a pre
 		settings.taskFilenameFormat = "zettel";
 		settings.storeTitleInFilename = false;
 	}
-	const plugin = { settings, app: { vault: memory.vault }, registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
+	const plugin = { settings, app: { vault: memory.vault }, i18n: createI18nService(), registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
 	expect(plugin.fieldMapper).toBeUndefined();
 	await initializeCoreServices(plugin);
 	expect(YAML.parse(memory.files.get("mdbase.yaml")!).spec_version).toBe("0.3.0");
 	expect(plugin.fieldMapper.toUserField("due")).toBe("deadline");
 	expect(plugin.settings.fieldMapping.due).toBe("deadline");
-	expect(parseMdbaseTaskTypeDocument(memory.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ contract: "tasknotes.task", version: "0.3.0-rc.6" })]));
+	expect(parseMdbaseTaskTypeDocument(memory.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ contract: "tasknotes.task", version: "0.3.0-rc.7" })]));
 	expect(plugin.emitter.trigger).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ message: expect.stringContaining("could not initialize") }));
 	for (const file of ["TaskNotes/Tasks/open.md", "TaskNotes/Tasks/cancelled.md", "paper.md"]) {
 		expect(memory.files.get(file)).toBe(fixture.files[file]);
@@ -67,7 +68,7 @@ it("real bootstrap retains legacy-extension scope before constructing FieldMappe
 	walk(root);
 	const settings = JSON.parse(fs.readFileSync(path.join(root, "settings.json"), "utf8"));
 	const memory = recognitionVault(entries);
-	const plugin = { settings, app: { vault: memory.vault }, registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
+	const plugin = { settings, app: { vault: memory.vault }, i18n: createI18nService(), registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
 	expect(plugin.fieldMapper).toBeUndefined();
 	await initializeCoreServices(plugin);
 	expect(plugin.fieldMapper.toUserField("due")).toBe("deadline");
@@ -89,7 +90,7 @@ it("MATRIX-R03: real historical bootstrap retains all five user fields before re
 	const fields = settings.userFields.map(({ filterDisplay: _unsupported, ...field }: any) => field);
 	settings.enableMdbaseSpec = true;
 	const memory = recognitionVault(entries);
-	const plugin = { settings, app: { vault: memory.vault }, registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
+	const plugin = { settings, app: { vault: memory.vault }, i18n: createI18nService(), registerEvent: jest.fn() } as unknown as TaskNotesPlugin;
 	expect(plugin.fieldMapper).toBeUndefined();
 	await initializeCoreServices(plugin);
 	expect(plugin.settings.userFields).toEqual(fields);

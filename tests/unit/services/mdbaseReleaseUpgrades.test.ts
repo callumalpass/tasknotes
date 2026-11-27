@@ -19,12 +19,11 @@ import { TFile } from "obsidian";
 import * as fs from "fs";
 import * as path from "path";
 import YAML from "yaml";
-import { TASKNOTES_SPEC_VERSION } from "@tasknotes/model";
 import { taskNotesAppSettingsFromLegacyBinding } from "@tasknotes/model/settings";
 
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
-import { canonicalTaskNotesResources } from "../../../src/services/canonicalTaskNotesPack";
+import { canonicalTaskNotesResources, TASKNOTES_TASK_CONTRACT_VERSION } from "../../../src/services/canonicalTaskNotesPack";
 import { DEFAULT_SETTINGS } from "../../../src/settings/defaults";
 
 const FIXTURES = path.join(__dirname, "../../fixtures/mdbase-upgrades");
@@ -181,11 +180,17 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 		expect(taskTypes).toEqual(["_types/task.md"]);
 		const type = frontmatter(files.get("_types/task.md")!);
 		const implementation = type.implements.find((i: any) => i.contract === "tasknotes.task");
-		expect(implementation.version).toBe(TASKNOTES_SPEC_VERSION);
+		expect(implementation.version).toBe(TASKNOTES_TASK_CONTRACT_VERSION);
+		expect(type.version).toBe(6);
+		for (const role of ["due", "scheduled", "dateCreated", "dateModified"]) {
+			expect(type.schema.value.properties[implementation.fields[role]].anyOf)
+				.toContainEqual({ type: "string", format: "local-date-time" });
+		}
+		expect(config.settings.timezone).toBeUndefined();
 		expect(implementation.fields.assignees).toBe("assignees");
 		expect(type.collection.links["assignees[]"]).toBeDefined();
 
-		expect(files.get(`_contracts/tasknotes.task/${TASKNOTES_SPEC_VERSION}.md`)).toBe(canonical(`contracts/tasknotes.task/${TASKNOTES_SPEC_VERSION}.md`));
+		expect(files.get(`_contracts/tasknotes.task/${TASKNOTES_TASK_CONTRACT_VERSION}.md`)).toBe(canonical(`contracts/tasknotes.task/${TASKNOTES_TASK_CONTRACT_VERSION}.md`));
 		for (const binding of [implementation.binding]) {
 			expect(binding.templating).toBeUndefined();
 			expect(binding.time_tracking).toBeUndefined();
@@ -207,8 +212,8 @@ describe("upgrading collections written by shipped TaskNotes releases", () => {
 		// The schemas belong to the tasknotes.task type pack. TaskNotes never
 		// creates them; a copy an earlier release wrote becomes the pack's bytes.
 		for (const [schema, resource] of [
-			["_schemas/tasknotes/tasknotes-task.schema.json", `schemas/tasknotes.task/${TASKNOTES_SPEC_VERSION}.schema.json`],
-			["_schemas/tasknotes/tasknotes-task-binding.schema.json", `schemas/tasknotes.task.binding/${TASKNOTES_SPEC_VERSION}.schema.json`],
+			["_schemas/tasknotes/tasknotes-task.schema.json", `schemas/tasknotes.task/${TASKNOTES_TASK_CONTRACT_VERSION}.schema.json`],
+			["_schemas/tasknotes/tasknotes-task-binding.schema.json", `schemas/tasknotes.task.binding/${TASKNOTES_TASK_CONTRACT_VERSION}.schema.json`],
 		]) {
 			expect(files.get(schema)).toBe(schema in before ? canonical(resource) : undefined);
 		}

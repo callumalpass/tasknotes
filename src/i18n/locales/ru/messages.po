@@ -4331,6 +4331,11 @@ msgctxt "bases/MiniCalendarView: NoteSelectionModal purpose"
 msgid "Dismiss"
 msgstr "Закрыть"
 
+#: src/ui/collectionTimezoneNotice.ts
+msgctxt "mdbaseTimezone.dismiss"
+msgid "Dismiss"
+msgstr "Закрыть"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.display"
 msgid "Display"
@@ -10225,6 +10230,11 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "Служба не инициализирована - пожалуйста, перезапустите Obsidian"
 
+#: src/ui/collectionTimezoneNotice.ts
+msgctxt "mdbaseTimezone.offer"
+msgid "Set a time zone for this mdbase collection. Times without an offset will be read in that zone."
+msgstr "Укажите часовой пояс для этой коллекции mdbase. Время без смещения относительно UTC будет интерпретироваться в этом часовом поясе."
+
 #: src/components/DateContextMenu.ts
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
@@ -13250,6 +13260,11 @@ msgstr "URL"
 msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "Использование: Перетащите в календаре для создания событий. Выберите ''Timeblock'' из контекстного меню (видно только когда блокировка времени включена). Перетащите для перемещения существующих временных блоков. Измените размер краев для настройки длительности."
+
+#: src/ui/collectionTimezoneNotice.ts
+msgctxt "mdbaseTimezone.use"
+msgid "Use {zone}"
+msgstr "Использовать {zone}"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "Property value filter syntax help"

@@ -4,7 +4,7 @@ import { msg } from "@lingui/core/macro";
 import { uiData } from "../i18n/dataText";
 import { Modal, normalizePath, type TAbstractFile } from "obsidian";
 import YAML from "yaml";
-import { canonicalTaskNotesResources } from "./canonicalTaskNotesPack";
+import { canonicalTaskNotesResources, TASKNOTES_TASK_CONTRACT_VERSION as TASKNOTES_CONTRACT_VERSION } from "./canonicalTaskNotesPack";
 import { FieldMapper } from "./FieldMapper";
 import {
 	hasLegacyFieldsSchema,
@@ -14,8 +14,8 @@ import {
 } from "./mdbase/legacyRecognition";
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
-import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
-import { allowGeneratedLocalTaskDates, removeGeneratedAnyLinkTargets, removeStaleRequiredFields, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
+import { addAppCollectionConfig, addCollectionTimezone, detectedCollectionTimezone, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
+import { removeGeneratedAnyLinkTargets, removeStaleRequiredFields, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
 import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
 import { MetadataTransaction } from "./mdbase/MetadataTransaction";
 import { findExplicitTypeReference } from "./mdbase/ExplicitTypeReferences";
@@ -24,7 +24,6 @@ import {
 	buildTaskNotesMdbaseResources,
 	type TaskNotesMdbaseResources,
 } from "@tasknotes/model/mdbase";
-import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
 import {
 	absentTaskNotesSettingsPatch,
 	buildTaskNotesSettingsPatch,
@@ -58,7 +57,6 @@ import {
 	applyCanonicalTaskTypeToSettings,
 	buildTaskNotesModelConfig,
 	hasLegacyAppSettings,
-	PREVIOUS_TASKNOTES_CONTRACT_VERSIONS,
 	mergeCanonicalTaskTypeDocument,
 	parseMdbaseTaskTypeDocument,
 	portableSettingsFingerprint,
@@ -71,6 +69,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Services/MdbaseSpecService
 const DEFAULT_TYPES_FOLDER = uiData("_types", "Default vault-relative metadata folder, not UI prose");
 const DEFAULT_CONTRACTS_FOLDER = "_contracts";
 const MDBASE_V03_SPEC_VERSION = "0.3.0";
+const TIMEZONE_OFFER_KEY = "tasknotes-mdbase-timezone-offer-resolved";
 
 const writableMembershipKeys = effectiveMembershipKeys;
 
@@ -101,6 +100,13 @@ type TypeGenerationOptions = {
 type ExistingCollection = {
 	exists: boolean;
 	config: MdbaseYamlConfig | null;
+};
+
+export type CollectionTimezoneOffer = {
+	zone: string;
+	use: () => Promise<void>;
+	dismiss: () => void;
+	reportError: (error: unknown) => void;
 };
 
 type CanonicalTypeState = {
@@ -258,6 +264,7 @@ export class MdbaseSpecService {
 	private recordFieldsToMove: Partial<TaskNotesAppSettingsValues> | null = null;
 	private canonicalReadBlocked = false;
 	private watcherRegistered = false;
+	private timezoneOffered = false;
 	private canonicalWritePromise: Promise<boolean> = Promise.resolve(true);
 	private reconcileRequested = false;
 	private reconcilePromise: Promise<void> | null = null;
@@ -271,7 +278,10 @@ export class MdbaseSpecService {
 	private pendingV02MigrationRecovery: PendingV02MigrationRecovery | null = null;
 	private lastPendingV02RecoveryNoticeKey: string | null = null;
 
-	constructor(plugin: TaskNotesPlugin) {
+	constructor(
+		plugin: TaskNotesPlugin,
+		private readonly offerTimezone?: (offer: CollectionTimezoneOffer) => () => void
+	) {
 		this.plugin = plugin;
 		this.metadataIO = new SafeMetadata(plugin.app.vault.adapter, (path) => this.ensureFolderPath(path));
 		this.metadataTransaction = new MetadataTransaction(
@@ -425,7 +435,9 @@ export class MdbaseSpecService {
 				return false;
 			}
 			await this.metadataIO.assertPhysical(this.resolveTypesFolder(existingCollection));
-			return this.migrateGeneratedV02CollectionSnapshot(existingCollection);
+			const migrated = await this.migrateGeneratedV02CollectionSnapshot(existingCollection);
+			if (migrated) this.offerCollectionTimezone(await this.readExistingCollection());
+			return migrated;
 		});
 	}
 
@@ -1186,7 +1198,8 @@ export class MdbaseSpecService {
 		await this.metadataIO.assertPhysical(this.resolveTypesFolder(existingCollection));
 		if (existingCollection.exists && await this.readGeneratedV02TaskType(existingCollection, false)) {
 			// Already inside the shared queue: avoid a nested queue/transaction.
-			await this.migrateGeneratedV02CollectionSnapshot(existingCollection);
+			const migrated = await this.migrateGeneratedV02CollectionSnapshot(existingCollection);
+			if (migrated) this.offerCollectionTimezone(await this.readExistingCollection());
 			return;
 		}
 		const previous = this.writeInProgress;
@@ -1213,6 +1226,7 @@ export class MdbaseSpecService {
 			this.deferredMetadataNotices = null;
 			this.writeInProgress = previous;
 		}
+		this.offerCollectionTimezone(existingCollection);
 	}
 
 	private async syncSettingsToCanonicalTypeSnapshot(
@@ -1253,9 +1267,7 @@ export class MdbaseSpecService {
 			const savedExclusions = (state.type["x-tasknotes-generator"] as Record<string, unknown> | undefined)?.excluded_folders;
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
 			const corrected = removeStaleRequiredFields(
-				allowGeneratedLocalTaskDates(
-					removeGeneratedAnyLinkTargets(state.content, state.type), state.type
-				),
+				removeGeneratedAnyLinkTargets(state.content, state.type),
 				state.type
 			);
 			const adjusted = this.lastKnownTypeContent === null
@@ -1301,7 +1313,7 @@ export class MdbaseSpecService {
 				typeof state.type.name === "string" ? state.type.name : "task",
 				contractsFolder
 			);
-			const upgraded = upgradeCanonicalDocument(state.content, resources);
+			const upgraded = upgradeCanonicalDocument(state.content, TASKNOTES_CONTRACT_VERSION, state.legacyBinding ? resources : undefined);
 			await this.writeFileIfUnchanged({ path: state.path, content: state.content }, upgraded);
 			this.applyCanonicalState({ path: state.path, content: upgraded, type: parseMdbaseTaskTypeDocument(upgraded).type }, false);
 			if (upgraded !== state.content) {
@@ -1310,6 +1322,9 @@ export class MdbaseSpecService {
 						? uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion} and moved its app settings to {appSettingsRecordPath}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskandmoveditsappsettings" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated"), appSettingsRecordPath: uiData(this.currentRecordPath, "Stable contract version or vault path, never translated") })
 						: uiText(msg({ message: "TaskNotes updated {path} to tasknotes.task {tasknotesContractVersion}. Task files were not changed.", context: "integration.TaskNotesupdatedtotasknotestaskTaskfileswerenotchanged" }), { path: state.path, tasknotesContractVersion: uiData(TASKNOTES_CONTRACT_VERSION, "Stable contract version or vault path, never translated") })
 				);
+			}
+			if (!existingCollection.exists) {
+				await this.writeMissingCollectionConfig(typesFolder, legacyCompatibility, state);
 			}
 			return;
 		}
@@ -1800,9 +1815,10 @@ export class MdbaseSpecService {
 			if (state) validatedTypes.set(path, state);
 		}
 		const states = [...validatedTypes.values()];
-		// A type on the release before this one (rc.5) is current: this load upgrades it.
-		const latestPrevious = PREVIOUS_TASKNOTES_CONTRACT_VERSIONS[0];
-		const isCurrent = (state: CanonicalTypeState) => !state.outdated || state.previousVersion === latestPrevious;
+		// This cleanup recognizes the duplicate created by old betas beside rc.5
+		// and later types. Advancing the contract must not change that cutoff.
+		const isCurrent = (state: CanonicalTypeState) =>
+			!state.outdated || state.previousVersion === "0.3.0-rc.6" || state.previousVersion === "0.3.0-rc.5";
 		const current = states.filter(isCurrent);
 		const superseded = states.filter(
 			(state) =>
@@ -1938,6 +1954,7 @@ export class MdbaseSpecService {
 			return;
 		}
 		if (getSpecFamily(collection.config?.spec_version) !== "v0.3") return;
+		this.offerCollectionTimezone(collection);
 		await this.loadAppSettingsRecord();
 		const state = await this.readCanonicalType(collection);
 		if (!state) {
@@ -1958,7 +1975,7 @@ export class MdbaseSpecService {
 			}
 			return;
 		}
-		if (state.content === this.lastKnownTypeContent) {
+		if (!state.outdated && state.content === this.lastKnownTypeContent) {
 			this.canonicalTypePath = state.path;
 			if (this.currentRecordContent !== this.lastKnownRecordContent) {
 				// Only the settings record changed (or disappeared).
@@ -1985,7 +2002,8 @@ export class MdbaseSpecService {
 			}
 		}
 
-		this.applyCanonicalState(state);
+		if (state.outdated) await this.syncSettingsToCanonicalType(collection);
+		else this.applyCanonicalState(state);
 		await this.plugin.saveSettingsDataOnly();
 		await this.plugin.settingsLifecycleService?.onCanonicalSettingsChanged();
 	}
@@ -2072,6 +2090,47 @@ export class MdbaseSpecService {
 		await this.writeNewCollectionConfig(resources);
 	}
 
+	private offerCollectionTimezone(collection: ExistingCollection): void {
+		if (!this.offerTimezone || !this.plugin.settings.enableMdbaseSpec || this.timezoneOffered ||
+			getSpecFamily(collection.config?.spec_version) !== "v0.3") return;
+		const settings = collection.config?.settings;
+		if (settings !== undefined && (!isRecord(settings) || Object.prototype.hasOwnProperty.call(settings, "timezone"))) return;
+		const { app } = this.plugin;
+		if (app.loadLocalStorage?.(TIMEZONE_OFFER_KEY)) return;
+		const zone = detectedCollectionTimezone();
+		if (!zone) return;
+
+		const hide = this.offerTimezone({
+			zone,
+			use: () => this.setCollectionTimezone(zone),
+			dismiss: () => app.saveLocalStorage?.(TIMEZONE_OFFER_KEY, true),
+			reportError: (error) => this.publishNotice(this.safetyNotice(String(error))),
+		});
+		this.timezoneOffered = true;
+		this.plugin.register?.(hide);
+	}
+
+	private setCollectionTimezone(zone: string): Promise<void> {
+		return this.metadataQueue.run(async () => {
+			if (!this.plugin.settings.enableMdbaseSpec) return;
+			const path = "mdbase.yaml";
+			const before = await this.metadataIO.read(path);
+			const config = before === null ? null : YAML.parse(before) as MdbaseYamlConfig;
+			if (before === null || getSpecFamily(config?.spec_version) !== "v0.3") {
+				throw new Error("The collection configuration changed before its time zone could be saved.");
+			}
+			const after = addCollectionTimezone(before, zone);
+			if (after === before) return;
+			const previousWriteState = this.writeInProgress;
+			this.writeInProgress = true;
+			try {
+				await this.writeFileIfUnchanged({ path, content: before }, after);
+			} finally {
+				this.writeInProgress = previousWriteState;
+			}
+		});
+	}
+
 	private async writeNewCollectionConfig(resources: TaskNotesMdbaseResources): Promise<void> {
 		const config = YAML.parse(resources.configDocument) as MdbaseYamlConfig;
 		if (config.settings?.types_folder === NEW_TYPES_FOLDER &&
@@ -2079,7 +2138,7 @@ export class MdbaseSpecService {
 			await this.metadataIO.read(MDBASE_README_PATH) === null) {
 			await this.writeFileIfUnchanged({ path: MDBASE_README_PATH, content: null }, MDBASE_README);
 		}
-		await this.writeFile("mdbase.yaml", resources.configDocument);
+		await this.writeFileIfUnchanged({ path: "mdbase.yaml", content: null }, addCollectionTimezone(resources.configDocument));
 	}
 
 	private async readExistingCollection(): Promise<ExistingCollection> {
@@ -2157,13 +2216,6 @@ export class MdbaseSpecService {
 		const parent = snapshot.path.split("/").slice(0, -1).join("/");
 		if (parent) await this.ensureFolderPath(parent);
 		await this.metadataIO.replace(snapshot, content);
-	}
-
-	/**
-	 * Write a file, creating it if it doesn't exist or updating if it does.
-	 */
-	private async writeFile(path: string, content: string): Promise<void> {
-		await this.writeFileIfUnchanged({ path, content: await this.metadataIO.read(path) }, content);
 	}
 
 	private async writeCanonicalSupportResources(
@@ -2244,7 +2296,8 @@ export class MdbaseSpecService {
 	buildMdbaseYaml(typesFolder = NEW_TYPES_FOLDER): string {
 		const normalizedTypesFolder =
 			this.normalizeTypesFolder(typesFolder) ?? NEW_TYPES_FOLDER;
-		return this.buildCanonicalMdbaseResources(normalizedTypesFolder, false, "task", NEW_CONTRACTS_FOLDER).configDocument;
+		const { configDocument } = this.buildCanonicalMdbaseResources(normalizedTypesFolder, false, "task", NEW_CONTRACTS_FOLDER);
+		return addCollectionTimezone(configDocument);
 	}
 
 	/**
@@ -2561,11 +2614,12 @@ export class MdbaseSpecService {
 		});
 		const config = YAML.parseDocument(resources.configDocument);
 		config.setIn(["settings", "explicit_type_keys"], ["mdbase_type"]);
-		const corrected = allowGeneratedLocalTaskDates(
-			removeGeneratedAnyLinkTargets(resources.typeDocument, resources.type), resources.type
+		const corrected = removeGeneratedAnyLinkTargets(resources.typeDocument, resources.type);
+		const upgraded = upgradeCanonicalDocument(corrected, TASKNOTES_CONTRACT_VERSION);
+		const typeDocument = remapMdbaseTypeReferences(
+			applyTaskExclusions(upgraded, settings.excludedFolders || ""),
+			new Map([["task", typeName]]), [], true
 		);
-		resources.typeDocument = applyTaskExclusions(corrected, settings.excludedFolders || "");
-		resources.type = parseMdbaseTaskTypeDocument(resources.typeDocument).type;
 		const document = (source: string): string => {
 			const resource = canonicalTaskNotesResources.find((entry) => entry.source === source);
 			if (!resource) throw new Error(`Missing canonical TaskNotes resource: ${source}`);
@@ -2574,7 +2628,9 @@ export class MdbaseSpecService {
 		return {
 			...resources,
 			configDocument: addAppCollectionConfig(config.toString(), settings),
-			typeDocument: remapMdbaseTypeReferences(resources.typeDocument, new Map([["task", typeName]]), [], true),
+			paths: { ...resources.paths, contract: `${contractsFolder}/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.md` },
+			typeDocument,
+			type: parseMdbaseTaskTypeDocument(typeDocument).type,
 			contractDocument: document(`contracts/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.md`),
 			taskSchemaDocument: document(`schemas/tasknotes.task/${TASKNOTES_CONTRACT_VERSION}.schema.json`),
 			bindingSchemaDocument: document(`schemas/tasknotes.task.binding/${TASKNOTES_CONTRACT_VERSION}.schema.json`),
