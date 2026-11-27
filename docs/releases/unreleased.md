@@ -41,6 +41,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- Fixed renaming mapped core properties leaving stale names in `schema.value.required` in the generated mdbase task type, which caused collection and note validation to fail. Existing generated type definitions with stale entries are cleaned up automatically when TaskNotes next syncs the type, while keeping custom required properties. Thanks to the user who reported it.
 - (#2691) Moving the next occurrence of a scheduled-anchored recurring task no longer clears completed or skipped history on other dates. Moves without a `recurrence_original_date` (such as Google-synced or legacy off-pattern notes) clear only the landing day when it is already recorded, still behind confirmation; completion-anchored recurring tasks keep clearing recorded instances on or after the new date. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#rescheduling-and-recorded-instances). Thanks to @martin-forge for reporting.
 - (#2706) Fixed mdbase validation of scheduled and due times written by TaskNotes. Existing generated type definitions are updated when TaskNotes loads the vault.
   - Thanks to @iantierney for reporting

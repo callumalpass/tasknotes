@@ -380,6 +380,82 @@ describe("canonical mdbase TaskNotes configuration", () => {
 		expect(settings.userFields[0].displayName).toBe("Size");
 	});
 
+	it("drops old mapped core property names from schema.value.required across single and repeated renames", () => {
+		const settings = clone(DEFAULT_SETTINGS);
+		const generate = () =>
+			buildTaskNotesMdbaseResources({ modelConfig: buildTaskNotesModelConfig(settings) });
+
+		const initial = generate();
+		settings.fieldMapping.dateCreated = "created";
+		const afterFirstRename = mergeCanonicalTaskTypeDocument(initial.typeDocument, generate());
+		const firstSchema = (parseMdbaseTaskTypeDocument(afterFirstRename).type.schema as {
+			value: { required?: string[]; properties: Record<string, unknown> };
+		}).value;
+		expect(firstSchema.required).toEqual(["status", "created"]);
+		expect(firstSchema.properties).not.toHaveProperty("dateCreated");
+
+		settings.fieldMapping.dateCreated = "createdOn";
+		const afterSecondRename = mergeCanonicalTaskTypeDocument(afterFirstRename, generate());
+		const secondSchema = (parseMdbaseTaskTypeDocument(afterSecondRename).type.schema as {
+			value: { required?: string[]; properties: Record<string, unknown> };
+		}).value;
+		expect(secondSchema.required).toEqual(["status", "createdOn"]);
+		expect(secondSchema.properties).not.toHaveProperty("dateCreated");
+		expect(secondSchema.properties).not.toHaveProperty("created");
+
+		settings.fieldMapping.status = "task_status";
+		const afterStatusRename = mergeCanonicalTaskTypeDocument(afterSecondRename, generate());
+		const statusSchema = (parseMdbaseTaskTypeDocument(afterStatusRename).type.schema as {
+			value: { required?: string[]; properties: Record<string, unknown> };
+		}).value;
+		expect(statusSchema.required).toEqual(["task_status", "createdOn"]);
+		expect(statusSchema.properties).not.toHaveProperty("status");
+	});
+
+	it("keeps custom required properties while dropping stale managed and already-polluted entries", () => {
+		const settings = clone(DEFAULT_SETTINGS);
+		settings.fieldMapping.dateCreated = "createdOn";
+		settings.userFields = [{ id: "effort", displayName: "Effort", key: "effort", type: "number" }];
+		const base = buildTaskNotesMdbaseResources({
+			modelConfig: buildTaskNotesModelConfig(settings),
+		});
+		const polluted = clone(base.type);
+		const schema = polluted.schema as {
+			value: { required: string[]; properties: Record<string, unknown> };
+		};
+		schema.value.properties.owner = {
+			type: "object",
+			properties: { name: { type: "string" } },
+		};
+		schema.value.required = [
+			"dateCreated",
+			"status",
+			"created",
+			"createdOn",
+			"due",
+			"effort",
+			"owner",
+		];
+
+		// Remove the managed user field and rename due -> deadline; owner stays.
+		settings.fieldMapping.due = "deadline";
+		settings.userFields = [];
+		const merged = parseMdbaseTaskTypeDocument(
+			mergeCanonicalTaskTypeDocument(
+				`---\n${initialDocumentYaml(polluted)}---\n`,
+				buildTaskNotesMdbaseResources({ modelConfig: buildTaskNotesModelConfig(settings) })
+			)
+		).type;
+		const mergedSchema = (merged.schema as {
+			value: { required?: string[]; properties: Record<string, unknown> };
+		}).value;
+
+		expect(mergedSchema.required).toEqual(["status", "createdOn", "owner"]);
+		expect(mergedSchema.properties).toHaveProperty("owner");
+		expect(mergedSchema.properties).not.toHaveProperty("effort");
+		expect(mergedSchema.properties).not.toHaveProperty("due");
+	});
+
 });
 
 function initialDocumentYaml(value: Record<string, unknown>): string {

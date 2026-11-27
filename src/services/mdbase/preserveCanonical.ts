@@ -7,6 +7,8 @@ import { requireFrontmatter } from "./frontmatter";
 type ObjectValue = Record<string, unknown>;
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const object = (value: unknown): ObjectValue => value !== null && typeof value === "object" && !Array.isArray(value) ? value as ObjectValue : {};
+const hasOwn = (value: ObjectValue, key: string): boolean => Object.prototype.hasOwnProperty.call(value, key);
+const stringList = (value: unknown): string[] => Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
 const normalized = (value: unknown): unknown => Array.isArray(value) ? value.map(normalized) : value !== null && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, child]) => [key, normalized(child)])) : value;
 const implementation = (type: ObjectValue): ObjectValue | undefined =>
 	Array.isArray(type.implements) ? type.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
@@ -96,6 +98,40 @@ export function removeGeneratedAnyLinkTargets(markdown: string, type: ObjectValu
 	const document = YAML.parseDocument(frontmatter);
 	for (const selector of affected) {
 		document.deleteIn(["collection", "links", selector, "target_type"]);
+	}
+	return `${prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${body}`;
+}
+
+/** Drop undeclared entries left in schema.value.required after earlier property renames. */
+export function removeStaleRequiredFields(markdown: string, type: ObjectValue): string {
+	const managed = object(type["x-tasknotes-generator"]).managed_fields;
+	if (!Array.isArray(managed)) return markdown;
+
+	const schema = object(object(type.schema).value);
+	if (!Array.isArray(schema.required) || !schema.required.length) return markdown;
+	const properties = object(schema.properties);
+	const isStale = (entry: unknown): boolean => typeof entry === "string" && !hasOwn(properties, entry);
+	if (!schema.required.some(isStale)) return markdown;
+
+	const { frontmatter, body, prefix } = requireFrontmatter(markdown);
+	const document = YAML.parseDocument(frontmatter);
+	const path = ["schema", "value", "required"];
+	const requiredNode = document.getIn(path, true);
+	visit(document, {
+		Alias(_key, alias) {
+			if (alias.resolve(document) === requiredNode) return document.createNode(copy(schema.required));
+		},
+	});
+	const kept = schema.required.filter((entry) => !isStale(entry));
+	if (isSeq(requiredNode) && !isAlias(requiredNode) && requiredNode.items.length === schema.required.length) {
+		for (let index = schema.required.length - 1; index >= 0; index--) {
+			if (isStale(schema.required[index])) requiredNode.delete(index);
+		}
+		if (!requiredNode.items.length) document.deleteIn(path);
+	} else if (kept.length) {
+		document.setIn(path, document.createNode(kept));
+	} else {
+		document.deleteIn(path);
 	}
 	return `${prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${body}`;
 }
@@ -223,12 +259,31 @@ export function preserveUnownedCanonicalSettings(existing: ObjectValue, generate
 	}
 	const schema = object(object(desired.schema).value);
 	const previousSchema = object(object(existing.schema).value);
-	// Only the frontmatter-title requirement and generated completion rule are plugin-owned.
-	const previousTitle = object(previous.fields).title;
-	schema.required = [...new Set([...(schema.required as string[] ?? []), ...(previousSchema.required as string[] ?? []).filter((field) => field !== previousTitle)])];
+	const previousFields = object(previous.fields);
+	const nextFields = object(next.fields);
+	const previousManagedRaw = object(existing["x-tasknotes-generator"]).managed_fields;
+	const hasPreviousManaged = Array.isArray(previousManagedRaw);
+	const previousManaged = new Set(stringList(previousManagedRaw));
+	const nextManaged = new Set(stringList(object(desired["x-tasknotes-generator"]).managed_fields));
+	const previousRoleFields = new Set(Object.values(previousFields).filter((value): value is string => typeof value === "string"));
+	const nextRoleFields = new Set(Object.values(nextFields).filter((value): value is string => typeof value === "string"));
+	// Plugin-owned requirements (frontmatter title, status, dateCreated) follow their current mapped names.
+	const pluginOwnedRequired = new Set(
+		[previousFields.title, previousFields.status, previousFields.dateCreated]
+			.filter((value): value is string => typeof value === "string")
+	);
+	const retainedRequired = stringList(previousSchema.required).filter((field) => {
+		if (pluginOwnedRequired.has(field)) return false;
+		if (previousManaged.has(field) && !nextManaged.has(field)) return false;
+		if (previousRoleFields.has(field) && !nextRoleFields.has(field)) return false;
+		if (hasPreviousManaged && !hasOwn(previousProperties, field)) return false;
+		return true;
+	});
+	const nextRequired = [...new Set([...stringList(schema.required), ...retainedRequired])];
+	if (nextRequired.length) schema.required = nextRequired;
+	else delete schema.required;
 	const generatedRules = Array.isArray(schema.allOf) ? schema.allOf : [];
 	const customRules = (Array.isArray(previousSchema.allOf) ? previousSchema.allOf : []).filter((rule) => {
-		const previousFields = object(previous.fields);
 		const generatedCompletionRule = {
 			if: {
 				required: [previousFields.status],

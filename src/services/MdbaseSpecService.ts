@@ -15,7 +15,7 @@ import {
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
-import { allowGeneratedLocalTaskDates, removeGeneratedAnyLinkTargets, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
+import { allowGeneratedLocalTaskDates, removeGeneratedAnyLinkTargets, removeStaleRequiredFields, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
 import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
 import { MetadataTransaction } from "./mdbase/MetadataTransaction";
 import { findExplicitTypeReference } from "./mdbase/ExplicitTypeReferences";
@@ -1252,8 +1252,11 @@ export class MdbaseSpecService {
 		if (state) {
 			const savedExclusions = (state.type["x-tasknotes-generator"] as Record<string, unknown> | undefined)?.excluded_folders;
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
-			const corrected = allowGeneratedLocalTaskDates(
-				removeGeneratedAnyLinkTargets(state.content, state.type), state.type
+			const corrected = removeStaleRequiredFields(
+				allowGeneratedLocalTaskDates(
+					removeGeneratedAnyLinkTargets(state.content, state.type), state.type
+				),
+				state.type
 			);
 			const adjusted = this.lastKnownTypeContent === null
 				? applyTaskExclusions(corrected, this.plugin.settings.excludedFolders || "")
