@@ -246,6 +246,7 @@ export const DEFAULT_NLP_TRIGGERS: NLPTriggersConfig = {
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
+	vaultTimeZone: "",
 	dateDisplayFormat: "default",
 	tasksFolder: "TaskNotes/Tasks",
 	moveArchivedTasks: false,

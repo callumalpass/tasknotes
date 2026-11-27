@@ -4875,6 +4875,11 @@ msgctxt "settings.native.validDate"
 msgid "Enter a valid date in YYYY-MM-DD format."
 msgstr "请以 YYYY-MM-DD 格式输入有效日期。"
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.invalid"
+msgid "Enter a valid IANA time zone."
+msgstr "请输入有效的 IANA 时区。"
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterValue"
 msgid "Enter a value."
@@ -12356,6 +12361,11 @@ msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessag
 msgid "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?"
 msgstr "这将删除任务和日历事件之间的所有关联。日历事件将保留，但任务更改时不再更新。确定吗？"
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.collection"
+msgid "This zone comes from mdbase.yaml. Changing it there changes how TaskNotes reads times without an offset."
+msgstr "此时区来自 mdbase.yaml。在该文件中更改时区会改变 TaskNotes 对不带 UTC 偏移量的时间的解释方式。"
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.thu"
 msgid "Thu"
@@ -12517,6 +12527,11 @@ msgstr "时间跟踪停止通知"
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
 msgstr "已停止时间跟踪"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.description"
+msgid "Time zone for times without an offset, such as Australia/Melbourne. Leave blank to use the device time zone."
+msgstr "用于解释不带 UTC 偏移量的时间，例如 Australia/Melbourne。留空则使用设备时区。"
 
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
@@ -13412,6 +13427,11 @@ msgstr "值："
 msgctxt "modals.icsNoteCreation.vaultRoot"
 msgid "Vault root"
 msgstr "仓库根目录"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.name"
+msgid "Vault time zone"
+msgstr "资料库时区"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.view"

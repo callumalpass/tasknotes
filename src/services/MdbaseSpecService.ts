@@ -2125,6 +2125,7 @@ export class MdbaseSpecService {
 			this.writeInProgress = true;
 			try {
 				await this.writeFileIfUnchanged({ path, content: before }, after);
+				await this.plugin.vaultTimeZoneService?.refresh();
 			} finally {
 				this.writeInProgress = previousWriteState;
 			}
@@ -2139,6 +2140,7 @@ export class MdbaseSpecService {
 			await this.writeFileIfUnchanged({ path: MDBASE_README_PATH, content: null }, MDBASE_README);
 		}
 		await this.writeFileIfUnchanged({ path: "mdbase.yaml", content: null }, addCollectionTimezone(resources.configDocument));
+		await this.plugin.vaultTimeZoneService?.refresh();
 	}
 
 	private async readExistingCollection(): Promise<ExistingCollection> {

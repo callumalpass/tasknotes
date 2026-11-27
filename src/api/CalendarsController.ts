@@ -1,3 +1,4 @@
+import { parseVaultDateOption } from "../utils/vaultTime";
 import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import TaskNotesPlugin from "../main";
@@ -91,8 +92,8 @@ export class CalendarsController extends BaseController {
 
 			const start = params.get("start");
 			const end = params.get("end");
-			const startDate = start ? new Date(start) : null;
-			const endDate = end ? new Date(end) : null;
+			const startDate = start ? parseVaultDateOption(start) : null;
+			const endDate = end ? parseVaultDateOption(end) : null;
 
 			const result = collectCalendarEvents(
 				this.calendarProviderRegistry,

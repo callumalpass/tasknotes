@@ -1,3 +1,4 @@
+import { vaultDate } from "./vaultTime";
 import { TaskInfo } from "../types";
 import {
 	formatDateForStorage,
@@ -32,11 +33,11 @@ export function buildTimeblockPrefillForTask(
 	}
 
 	if (!startDate || isNaN(startDate.getTime())) {
-		startDate = new Date(targetDate);
+		startDate = vaultDate(targetDate);
 	}
 
 	if (isNaN(startDate.getTime())) {
-		startDate = new Date();
+		startDate = vaultDate();
 	}
 
 	if (!task.scheduled || !hasTimeComponent(task.scheduled)) {
@@ -44,7 +45,7 @@ export function buildTimeblockPrefillForTask(
 	}
 
 	const durationMinutes = task.timeEstimate && task.timeEstimate > 0 ? task.timeEstimate : 60;
-	const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+	const endDate = vaultDate(startDate.getTime() + durationMinutes * 60 * 1000);
 
 	return {
 		date: formatDateForStorage(startDate),

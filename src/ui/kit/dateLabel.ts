@@ -1,7 +1,8 @@
-import { differenceInCalendarDays, isValid, parseISO } from "date-fns";
+import { parseVaultISO, vaultDate } from "../../utils/vaultTime";
+import { differenceInCalendarDays, isValid } from "date-fns";
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../../i18n/runtime";
-import { formatDateTimeForDisplay } from "../../utils/dateUtils";
+import { formatDateTimeForDisplay, getDatePart } from "../../utils/dateUtils";
 import { isOverdueTimeAware, isTodayTimeAware } from "../../utils/dateUtils";
 
 export function taskDueUrgency(
@@ -17,11 +18,11 @@ export function taskDueUrgency(
 export type RelativeDay = "today" | "tomorrow" | "yesterday" | null;
 
 /** Near dates read as words. Everything else keeps its calendar format. */
-export function relativeDay(dateValue: string, now: Date = new Date()): RelativeDay {
-	const date = parseISO(dateValue.slice(0, 10));
+export function relativeDay(dateValue: string, now: Date = vaultDate()): RelativeDay {
+	const date = parseVaultISO(getDatePart(dateValue));
 	if (!isValid(date)) return null;
 
-	const offset = differenceInCalendarDays(date, now);
+	const offset = differenceInCalendarDays(date, vaultDate(now));
 	if (offset === 0) return "today";
 	if (offset === 1) return "tomorrow";
 	if (offset === -1) return "yesterday";
@@ -37,14 +38,14 @@ export const relativeDayLabels = {
 export function taskDateLabel(
 	dateValue: string,
 	timeFormat?: "12" | "24",
-	now = new Date()
+	now = vaultDate()
 ): string {
 	const relative = relativeDay(dateValue, now);
 	const day = relative
 		? uiText(relativeDayLabels[relative])
 		: formatDateTimeForDisplay(dateValue, {
 				dateFormat:
-					Number(dateValue.slice(0, 4)) === now.getFullYear() ? "MMM d" : "MMM d, yyyy",
+					Number(getDatePart(dateValue).slice(0, 4)) === vaultDate(now).getFullYear() ? "MMM d" : "MMM d, yyyy",
 				showTime: false,
 			});
 	const time = formatDateTimeForDisplay(dateValue, {

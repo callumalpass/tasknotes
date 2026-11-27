@@ -1,3 +1,4 @@
+import { vaultDate } from "../../utils/vaultTime";
 import { msg } from "@lingui/core/macro";
 import { format, parseISO } from "date-fns";
 import { MessageDescriptor } from "../../i18n";
@@ -133,7 +134,7 @@ export function getDueDateGroupForFilterTask(
 	context: FilterTaskGroupingContext,
 	targetDate?: Date
 ): string {
-	const referenceDate = targetDate || new Date();
+	const referenceDate = targetDate || vaultDate();
 	referenceDate.setHours(0, 0, 0, 0);
 
 	const isCompleted = context.isCompletedStatus(task.status);
@@ -343,14 +344,14 @@ function getDueDateGroupFromDateString(
 	if (isSameDateSafe(datePart, todayStr)) return getDueGroupLabel("today", context);
 
 	try {
-		const tomorrow = new Date();
+		const tomorrow = vaultDate();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 		const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
 		if (isSameDateSafe(datePart, tomorrowStr)) {
 			return getDueGroupLabel("tomorrow", context);
 		}
 
-		const thisWeek = new Date();
+		const thisWeek = vaultDate();
 		thisWeek.setDate(thisWeek.getDate() + 7);
 		const thisWeekStr = format(thisWeek, "yyyy-MM-dd");
 		if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) {
@@ -384,14 +385,14 @@ function getScheduledDateGroupFromDateString(
 	if (isSameDateSafe(datePart, todayStr)) return getScheduledGroupLabel("today", context);
 
 	try {
-		const tomorrow = new Date();
+		const tomorrow = vaultDate();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 		const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
 		if (isSameDateSafe(datePart, tomorrowStr)) {
 			return getScheduledGroupLabel("tomorrow", context);
 		}
 
-		const thisWeek = new Date();
+		const thisWeek = vaultDate();
 		thisWeek.setDate(thisWeek.getDate() + 7);
 		const thisWeekStr = format(thisWeek, "yyyy-MM-dd");
 		if (isBeforeDateSafe(datePart, thisWeekStr) || isSameDateSafe(datePart, thisWeekStr)) {

@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { uiDuration } from "../i18n/formatters";
@@ -181,7 +182,7 @@ export class TaskSelectorWithCreateModal extends SuggestModal<TaskInfo> {
 		this.plugin = plugin;
 		this.tasks = tasks;
 		this.options = options;
-		this.targetDate = options.targetDate || new Date();
+		this.targetDate = options.targetDate || vaultDate();
 		this.translate = plugin.i18n.translate.bind(plugin.i18n);
 		this.nlParser = NaturalLanguageParser.fromPlugin(plugin);
 

@@ -1,9 +1,10 @@
+import { presentProviderCalendarEvent } from "../utils/calendarUtils";
 import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import { requestUrl } from "obsidian";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { OAuthService } from "./OAuthService";
 import { ICSEvent } from "../types";
@@ -611,8 +612,8 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			const startDate = parseISO(startIso);
 			const endDate = parseISO(endIso);
 
-			start = format(startDate, "yyyy-MM-dd'T'HH:mm:ss");
-			end = format(endDate, "yyyy-MM-dd'T'HH:mm:ss");
+			start = startDate.toISOString();
+			end = endDate.toISOString();
 		}
 
 		// Microsoft doesn't provide event-level colors in the same way as Google
@@ -669,7 +670,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			const calendarErrors: MicrosoftCalendarSyncError[] = [];
 
 			// Get current cached events
-			let cachedEvents = this.getAllEvents();
+			let cachedEvents = this.getEnabledCachedEvents();
 
 			// Fetch events from each enabled calendar
 			for (const calendarId of enabledCalendarIds) {
@@ -799,6 +800,10 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 * Gets all cached events
 	 */
 	getAllEvents(): ICSEvent[] {
+		return this.getEnabledCachedEvents().map(presentProviderCalendarEvent);
+	}
+
+	private getEnabledCachedEvents(): ICSEvent[] {
 		const events = this.cache.get("all") || [];
 		const enabled = new Set(this.getEnabledCalendarIds().map((id) => `microsoft-${id}`));
 		return events.filter((event) => enabled.has(event.subscriptionId));
@@ -826,7 +831,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			}
 
 			try {
-				results.push(this.convertToICSEvent(event, calendarId));
+				results.push(presentProviderCalendarEvent(this.convertToICSEvent(event, calendarId)));
 			} catch (conversionError) {
 				tasknotesLogger.warn(
 					"[MicrosoftCalendar] Skipping event due to conversion failure",
@@ -1015,7 +1020,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			// Refresh events after update
 			await this.refreshAllCalendars();
 
-			return icsEvent;
+			return presentProviderCalendarEvent(icsEvent);
 		} catch (error) {
 			tasknotesLogger.error("Failed to update Microsoft Calendar event:", {
 				category: "provider",
@@ -1138,7 +1143,7 @@ export class MicrosoftCalendarService extends CalendarProvider {
 			// Refresh events after creation
 			await this.refreshAllCalendars();
 
-			return icsEvent;
+			return presentProviderCalendarEvent(icsEvent);
 		} catch (error) {
 			tasknotesLogger.error("Failed to create Microsoft Calendar event:", {
 				category: "provider",

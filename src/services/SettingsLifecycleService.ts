@@ -94,6 +94,7 @@ export class SettingsLifecycleService {
 					);
 				}
 				await this.plugin.saveSettingsDataOnly();
+				this.plugin.vaultTimeZoneService?.applySettings();
 				reportSettingsMetadataResult(this.plugin, mdbaseSyncError);
 
 				if (this.saveSettingsRequested) {
@@ -149,6 +150,7 @@ export class SettingsLifecycleService {
 
 	async onExternalSettingsChange(): Promise<void> {
 		await this.plugin.loadSettings(true);
+		this.plugin.vaultTimeZoneService?.applySettings();
 		await this.plugin.mdbaseSpecService?.reloadCanonicalSettingsFromDisk();
 		this.applyEffectiveSettings();
 	}

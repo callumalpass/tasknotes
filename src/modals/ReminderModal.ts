@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, parseVaultISO, parseVaultDateOption } from "../utils/vaultTime";
 import { applyModalShell, fieldLabel, renderModalSubmitHint } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
@@ -20,7 +21,7 @@ export function splitAbsoluteReminderTime(value: string | undefined): {
 	if (!value) return { date: "", time: "" };
 	const local = /^(\d{4}-\d{2}-\d{2})(?:T(\d{2}:\d{2}))?(?::\d{2}(?:\.\d+)?)?$/.exec(value);
 	if (local) return { date: local[1], time: local[2] ?? "" };
-	const parsed = new Date(value);
+	const parsed = parseVaultDateOption(value);
 	if (Number.isNaN(parsed.getTime())) return { date: "", time: "" };
 	const pad = (n: number) => String(n).padStart(2, "0");
 	return {
@@ -401,7 +402,7 @@ export class ReminderModal extends Modal {
 				return this.plugin.i18n.translate(
 					msg({ message: "Absolute", context: "modals.reminder.absolute" })
 				);
-			const date = new Date(reminder.absoluteTime);
+			const date = parseVaultDateOption(reminder.absoluteTime);
 			return this.plugin.i18n.translate(msg({ message: "At {date}", context: "modals.reminder.at" }), {
 				date: Number.isNaN(date.getTime())
 					? reminder.absoluteTime
@@ -927,7 +928,14 @@ export class ReminderModal extends Modal {
 				return null;
 			}
 
-			const absoluteTime = `${date}T${time}:00`;
+			const floating = `${date}T${time}:00`;
+			const existing = this.reminders.find((reminder) => reminder.id === id)?.absoluteTime;
+			const existingFields = splitAbsoluteReminderTime(existing);
+			const instant = parseVaultISO(floating);
+			if (!Number.isFinite(instant.getTime())) return null;
+			const absoluteTime = existing && existingFields.date === date && existingFields.time === time
+				? existing
+				: getConfiguredVaultTimeZone() ? instant.toISOString() : floating;
 
 			return {
 				id,

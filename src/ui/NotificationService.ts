@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, vaultDay } from "../utils/vaultTime";
 import { uiData } from "../i18n/dataText";
 import type { MessageSuffix } from "../i18n/concepts";
 import { uiLocale } from "../i18n/runtime";
@@ -224,6 +225,13 @@ export class NotificationService {
 			this.checkNotificationQueue();
 			this.lastQuickCheckTime = now;
 		}, this.QUICK_CHECK_INTERVAL);
+	}
+
+	/** Discard old-zone deadlines before rebuilding them from the current clock. */
+	refreshForTimeZoneChange(): void {
+		if (this.quickCheckInterval === undefined) return;
+		this.notificationQueue = [];
+		void this.scanTasksAndBuildQueue();
 	}
 
 	private async scanTasksAndBuildQueue(): Promise<void> {
@@ -719,10 +727,10 @@ export class NotificationService {
 	private formatDateParts(timestamp: number): { day: string | null; time: string } {
 		const date = new Date(timestamp);
 		return {
-			day: date.toDateString() === new Date().toDateString()
+			day: vaultDay(date) === vaultDay()
 				? null
-				: date.toLocaleDateString(uiLocale(), { month: "short", day: "numeric" }),
-			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit", hour12: this.plugin.settings.calendarViewSettings?.timeFormat === "12" }),
+				: date.toLocaleDateString(uiLocale(), { month: "short", day: "numeric", timeZone: getConfiguredVaultTimeZone() }),
+			time: date.toLocaleTimeString(uiLocale(), { hour: "numeric", minute: "2-digit", timeZone: getConfiguredVaultTimeZone(), hour12: this.plugin.settings.calendarViewSettings?.timeFormat === "12" }),
 		};
 	}
 

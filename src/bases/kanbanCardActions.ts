@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { App } from "obsidian";
 import { openTaskPropertyPicker, tasksForPropertyAction } from "../ui/taskPropertyPickers";
 import { createStatusCycleHandler } from "../ui/taskCardActions";
@@ -111,7 +112,7 @@ export function getKanbanTaskActionDate(task: TaskInfo): Date {
 		return parseDateToUTC(dateStr);
 	}
 
-	return createUTCDateFromLocalCalendarDate(new Date());
+	return createUTCDateFromLocalCalendarDate(vaultDate());
 }
 
 function showReminderModal(

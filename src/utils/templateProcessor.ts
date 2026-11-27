@@ -1,3 +1,4 @@
+import { vaultDate } from "./vaultTime";
 import { formatStableDate } from "../i18n/formatters";
 import { format } from "date-fns";
 import YAML from "yaml";
@@ -159,7 +160,7 @@ function processTemplateVariablesForYaml(
 	taskData: TemplateData | ICSTemplateData
 ): string {
 	let result = template;
-	const now = new Date();
+	const now = vaultDate();
 
 	// {{title}} - Task title (quote if contains special characters)
 	const title = taskData.title || "";
@@ -241,7 +242,7 @@ function processTemplateVariablesForYaml(
 
 	// Date-based identifiers (consistent with filename templates)
 	const datePart = format(now, "yyMMdd");
-	const midnight = new Date(now);
+	const midnight = vaultDate(now);
 	midnight.setHours(0, 0, 0, 0);
 	const secondsSinceMidnight = Math.floor((now.getTime() - midnight.getTime()) / 1000);
 	const zettelId = `${datePart}${secondsSinceMidnight.toString(36)}`;
@@ -396,7 +397,7 @@ export function processTemplateVariables(
 	taskData: TemplateData | ICSTemplateData
 ): string {
 	let result = template;
-	const now = new Date();
+	const now = vaultDate();
 
 	// {{title}} - Task title
 	result = result.replace(/\{\{title\}\}/g, taskData.title || "");
@@ -476,7 +477,7 @@ export function processTemplateVariables(
 
 	// Date-based identifiers (consistent with filename templates)
 	const datePartBody = format(now, "yyMMdd");
-	const midnightBody = new Date(now);
+	const midnightBody = vaultDate(now);
 	midnightBody.setHours(0, 0, 0, 0);
 	const secondsSinceMidnightBody = Math.floor((now.getTime() - midnightBody.getTime()) / 1000);
 	const zettelIdBody = `${datePartBody}${secondsSinceMidnightBody.toString(36)}`;

@@ -1,3 +1,5 @@
+import { format } from "date-fns/format";
+import { getConfiguredVaultTimeZone, parseVaultDateOption } from "./vaultTime";
 import { ICSEvent } from "../types";
 
 export interface CollectedCalendarEvents {
@@ -14,6 +16,15 @@ interface ICSCalendarEventSource {
 	getAllEvents(): ICSEvent[];
 }
 
+export function presentProviderCalendarEvent(event: ICSEvent): ICSEvent {
+	if (event.allDay || getConfiguredVaultTimeZone()) return event;
+	const local = (value: string) => {
+		const date = new Date(value);
+		return Number.isFinite(date.getTime()) ? format(date, "yyyy-MM-dd'T'HH:mm:ss") : value;
+	};
+	return { ...event, start: local(event.start), end: event.end ? local(event.end) : undefined };
+}
+
 export function isEventInRange(
 	event: ICSEvent,
 	startDate: Date | null,
@@ -23,8 +34,8 @@ export function isEventInRange(
 		return true;
 	}
 
-	const eventStart = new Date(event.start);
-	const eventEnd = event.end ? new Date(event.end) : eventStart;
+	const eventStart = parseVaultDateOption(event.start);
+	const eventEnd = event.end ? parseVaultDateOption(event.end) : eventStart;
 
 	if (startDate && eventEnd < startDate) {
 		return false;
@@ -79,7 +90,7 @@ export function collectCalendarEvents(
 	}
 
 	// Sort events by start time
-	allEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+	allEvents.sort((a, b) => parseVaultDateOption(a.start).getTime() - parseVaultDateOption(b.start).getTime());
 
 	return {
 		events: allEvents,

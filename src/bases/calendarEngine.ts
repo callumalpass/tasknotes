@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, parseVaultISO, vaultDate } from "../utils/vaultTime";
 import type { CalendarItem, DateInput, ItemChangeArg } from "@tasknotes/calendar";
 import type { CalendarEvent } from "./calendar-core";
 import type { CalendarPropertyEvent } from "./calendarPropertyEvents";
@@ -42,8 +43,11 @@ const FLOATING = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
 /** Parses calendar date input the way the calendar does: date-only and floating values are local. */
 export function calendarInputToDate(value: DateInput | null | undefined): Date | null {
 	if (value === null || value === undefined || value === "") return null;
-	if (value instanceof Date) return new Date(value.getTime());
-	if (typeof value === "number") return new Date(value);
+	if (value instanceof Date || typeof value === "number") return vaultDate(value);
+	if (getConfiguredVaultTimeZone()) {
+		const date = parseVaultISO(value);
+		return Number.isFinite(date.getTime()) ? date : null;
+	}
 	const day = DATE_ONLY.exec(value);
 	if (day) return new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3]));
 	const floating = FLOATING.exec(value);
@@ -69,6 +73,13 @@ export function resolveCalendarEventEditable(event: CalendarEventInput): boolean
 	return event.editable;
 }
 
+// Resolve timed event input here so overlap/gap disambiguation is shared with task cards and reminders.
+function calendarItemDate(value: string): string {
+	if (!getConfiguredVaultTimeZone() || DATE_ONLY.test(value)) return value;
+	const parsed = parseVaultISO(value);
+	return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : value;
+}
+
 /** Converts built events to calendar items. Ids are made unique, as the calendar keys items by id. */
 export function toCalendarItems(events: readonly CalendarEventInput[]): CalendarEventItem[] {
 	const seen = new Map<string, number>();
@@ -80,8 +91,8 @@ export function toCalendarItems(events: readonly CalendarEventInput[]): Calendar
 		const item: CalendarEventItem = {
 			id: count === 0 ? event.id : `${event.id}#${count}`,
 			title: event.title,
-			start: event.start,
-			end: event.end ?? null,
+			start: calendarItemDate(event.start),
+			end: event.end ? calendarItemDate(event.end) : null,
 			allDay: event.allDay,
 			kind: props.eventType,
 			backgroundColor: event.backgroundColor,
@@ -136,8 +147,8 @@ export function eventChangeFromArg(
 	return {
 		event: {
 			...oldEvent,
-			start: arg.start,
-			end: keepsOpenEnd ? null : arg.end,
+			start: vaultDate(arg.start),
+			end: keepsOpenEnd || !arg.end ? null : vaultDate(arg.end),
 			allDay: arg.allDay,
 		},
 		oldEvent,

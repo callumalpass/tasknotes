@@ -1,3 +1,4 @@
+import { parseVaultDateOption } from "../utils/vaultTime";
 import { msg } from "@lingui/core/macro";
 import { setIcon, setTooltip } from "obsidian";
 import TaskNotesPlugin from "../main";
@@ -70,14 +71,14 @@ function getEventSourceName(
 function formatTimeRange(icsEvent: ICSEvent, plugin: TaskNotesPlugin): string {
 	try {
 		if (!icsEvent.start) return "";
-		const start = new Date(icsEvent.start);
+		const start = parseVaultDateOption(icsEvent.start);
 		if (icsEvent.allDay) {
 			return plugin.i18n.translate(msg({ message: "All day", context: "ui.icsCard.allDay" }));
 		}
 		const timeFormat = plugin.settings.calendarViewSettings.timeFormat;
 		const startText = formatTime(start, timeFormat);
 		if (icsEvent.end) {
-			const end = new Date(icsEvent.end);
+			const end = parseVaultDateOption(icsEvent.end);
 			const endText = formatTime(end, timeFormat);
 			return `${startText} – ${endText}`;
 		}

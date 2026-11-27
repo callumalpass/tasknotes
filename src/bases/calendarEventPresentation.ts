@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { Platform, setIcon, setTooltip } from "obsidian";
 import { msg } from "@lingui/core/macro";
 import { uiText } from "../i18n/runtime";
@@ -97,7 +98,7 @@ export function decorateCalendarEvent(context: CalendarPresentationContext, arg:
 		const tracked = eventType === "timeEntry" && taskInfo && arg.item.end
 			? `${taskInfo.title}\n${uiText(msg({ message: "{value1} tracked", context: "ui/taskCardProperties: totalTrackedTime display" }), {
 				value1: context.plugin.formatTime((new Date(arg.item.end).getTime() - new Date(arg.item.start).getTime()) / 60000),
-			})}\n${formatTime(new Date(arg.item.start), context.timeFormat ?? context.plugin.settings.calendarViewSettings.timeFormat)} – ${formatTime(new Date(arg.item.end), context.timeFormat ?? context.plugin.settings.calendarViewSettings.timeFormat)}`
+			})}\n${formatTime(vaultDate(new Date(arg.item.start)), context.timeFormat ?? context.plugin.settings.calendarViewSettings.timeFormat)} – ${formatTime(vaultDate(new Date(arg.item.end)), context.timeFormat ?? context.plugin.settings.calendarViewSettings.timeFormat)}`
 			: null;
 		if (tracked) el.setAttribute("aria-label", tracked);
 

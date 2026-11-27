@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, parseVaultISO, vaultDay } from "./vaultTime";
 import { PomodoroHistoryStats, PomodoroSessionHistory } from "../types";
 import { formatDateForStorage } from "./dateUtils";
 import { getSessionDuration } from "./pomodoroUtils";
@@ -11,6 +12,10 @@ export function sortPomodoroSessions(
 }
 
 export function getPomodoroTimestampDateKey(timestamp: string): string {
+	if (getConfiguredVaultTimeZone()) {
+		const date = parseVaultISO(timestamp);
+		return Number.isFinite(date.getTime()) ? vaultDay(date) : "";
+	}
 	const storedCalendarDate = timestamp.match(/^(\d{4}-\d{2}-\d{2})(?:[T\s]|$)/)?.[1];
 	if (storedCalendarDate) {
 		return storedCalendarDate;

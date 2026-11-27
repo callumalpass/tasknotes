@@ -1,3 +1,4 @@
+import { parseVaultISO, vaultDate } from "../utils/vaultTime";
 import { displayError, uiText } from "../i18n/runtime";
 import { uiDuration } from "../i18n/formatters";
 import { configLabel } from "../i18n/configLabels";
@@ -448,8 +449,8 @@ function normalizeExternalTimedEventRange(
 		return { start, end };
 	}
 
-	const startDate = new Date(start);
-	const endDate = new Date(end);
+	const startDate = parseVaultISO(start);
+	const endDate = parseVaultISO(end);
 
 	if (
 		Number.isNaN(startDate.getTime()) ||
@@ -483,7 +484,7 @@ function formatExternalTimedEventEnd(date: Date, originalEnd: string): string {
 		return `${datePart}T${timePart}${sign}${hours}:${minutes}`;
 	}
 
-	return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSS");
+	return format(vaultDate(date), "yyyy-MM-dd'T'HH:mm:ss.SSS");
 }
 
 /** Builds a calendar event from a timeblock stored in a daily note. */
@@ -573,7 +574,7 @@ export async function generateTimeblockEvents(
 			currentUTC.setUTCDate(currentUTC.getUTCDate() + 1)
 		) {
 			const dateString = formatDateForStorage(currentUTC);
-			const currentDate = new Date(`${dateString}T12:00:00`);
+			const currentDate = parseVaultISO(`${dateString}T12:00:00`);
 			const dailyNote = getDailyNote(getWindowMoment(currentDate), allDailyNotes);
 
 			if (dailyNote) {

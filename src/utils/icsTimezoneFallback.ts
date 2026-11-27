@@ -20,6 +20,7 @@
  */
 
 import ICAL from "ical.js";
+import { resolveWallTime } from "./vaultTime";
 
 // CLDR `windowsZones` — Windows TZID to default IANA name.
 // Source: https://github.com/unicode-org/cldr/blob/main/common/supplemental/windowsZones.xml
@@ -208,103 +209,10 @@ export function resolveTzidToIANA(rawTzid: string | undefined | null): string | 
 	return null;
 }
 
-interface WallClock {
-	year: number;
-	month: number; // 1-12
-	day: number;
-	hour: number;
-	minute: number;
-	second: number;
-}
-
-const INTL_FORMATTER_CACHE = new Map<string, Intl.DateTimeFormat>();
-
-function getFormatter(timeZone: string): Intl.DateTimeFormat {
-	let fmt = INTL_FORMATTER_CACHE.get(timeZone);
-	if (!fmt) {
-		fmt = new Intl.DateTimeFormat("en-US", {
-			timeZone,
-			year: "numeric",
-			month: "2-digit",
-			day: "2-digit",
-			hour: "2-digit",
-			minute: "2-digit",
-			second: "2-digit",
-			hour12: false,
-		});
-		INTL_FORMATTER_CACHE.set(timeZone, fmt);
-	}
-	return fmt;
-}
-
-function formatWallInZone(utcMs: number, timeZone: string): WallClock {
-	const parts = getFormatter(timeZone).formatToParts(new Date(utcMs));
-	const dict: Record<string, string> = {};
-	for (const p of parts) dict[p.type] = p.value;
-	// Intl returns "24" for midnight under hour12:false in some engines; normalize.
-	const hour = parseInt(dict.hour, 10) % 24;
-	return {
-		year: parseInt(dict.year, 10),
-		month: parseInt(dict.month, 10),
-		day: parseInt(dict.day, 10),
-		hour,
-		minute: parseInt(dict.minute, 10),
-		second: parseInt(dict.second, 10),
-	};
-}
-
-/**
- * Convert a wall-clock time tagged with an IANA zone to the corresponding UTC
- * instant, returning an ISO 8601 string ending in `Z`.
- *
- * Algorithm: pretend the wall clock is UTC to get a starting guess, then look
- * up what that instant's wall clock looks like in `timeZone`. The delta is the
- * correction. We re-check after applying the correction to handle DST gaps
- * (where a wall time may not exist) and overlaps (where it occurs twice — by
- * convention we resolve to the first occurrence, matching ical.js's behavior
- * for normal VTIMEZONE-resolved times).
- */
+/** Resolve an ICS wall time whose source supplies an IANA zone. */
 export function wallTimeInZoneToUtcIso(time: ICAL.Time, timeZone: string): string {
-	const target: WallClock = {
-		year: time.year,
-		month: time.month, // ICAL.Time month is 1-based.
-		day: time.day,
-		hour: time.hour,
-		minute: time.minute,
-		second: time.second,
-	};
-
-	let utcMs = Date.UTC(
-		target.year,
-		target.month - 1,
-		target.day,
-		target.hour,
-		target.minute,
-		target.second
-	);
-
-	for (let i = 0; i < 3; i++) {
-		const observed = formatWallInZone(utcMs, timeZone);
-		const observedAsUtc = Date.UTC(
-			observed.year,
-			observed.month - 1,
-			observed.day,
-			observed.hour,
-			observed.minute,
-			observed.second
-		);
-		const targetAsUtc = Date.UTC(
-			target.year,
-			target.month - 1,
-			target.day,
-			target.hour,
-			target.minute,
-			target.second
-		);
-		const drift = observedAsUtc - targetAsUtc;
-		if (drift === 0) break;
-		utcMs -= drift;
-	}
-
-	return new Date(utcMs).toISOString();
+	const wall = new Date(0);
+	wall.setUTCFullYear(time.year, time.month - 1, time.day);
+	wall.setUTCHours(time.hour, time.minute, time.second, 0);
+	return resolveWallTime(wall, timeZone).toISOString();
 }

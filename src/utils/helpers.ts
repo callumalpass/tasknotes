@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, vaultDate } from "./vaultTime";
 import { taskInfoTitle } from "../i18n/taskInfoTitle";
 import { uiDuration } from "../i18n/formatters";
 import { uiData } from "../i18n/dataText";
@@ -238,7 +239,7 @@ export function calculateDefaultDate(
 		return "";
 	}
 
-	const today = new Date();
+	const today = vaultDate();
 	let targetDate: Date;
 
 	switch (defaultOption) {
@@ -246,12 +247,12 @@ export function calculateDefaultDate(
 			targetDate = today;
 			break;
 		case "tomorrow":
-			targetDate = new Date(today);
+			targetDate = vaultDate(today);
 			// Use local date methods for consistent date arithmetic
 			targetDate.setDate(today.getDate() + 1);
 			break;
 		case "next-week":
-			targetDate = new Date(today);
+			targetDate = vaultDate(today);
 			// Use local date methods for consistent date arithmetic
 			targetDate.setDate(today.getDate() + 7);
 			break;
@@ -568,7 +569,8 @@ export function extractNoteInfo(
 
 	// If no creation date in frontmatter, use file creation time
 	if (!createdDate && file) {
-		createdDate = format(new Date(file.stat.ctime), "yyyy-MM-dd'T'HH:mm:ss");
+		const created = new Date(file.stat.ctime);
+		createdDate = getConfiguredVaultTimeZone() ? created.toISOString() : format(created, "yyyy-MM-dd'T'HH:mm:ss");
 	}
 
 	// Normalize date format for consistent comparison

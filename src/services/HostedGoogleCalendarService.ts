@@ -1,3 +1,5 @@
+import { presentProviderCalendarEvent } from "../utils/calendarUtils";
+import { parseVaultISO } from "../utils/vaultTime";
 import { msg } from "@lingui/core/macro";
 import {
 	CalendarServiceError,
@@ -81,20 +83,14 @@ function icsEventId(calendarId: string, eventId: string): string {
 	return `google-${calendarId}-${eventId}`;
 }
 
-/** A start or end as the views want it: a date, or local wall time without an offset. */
+/** Keep provider instants independent of the view's time zone. */
 function icsBoundary(boundary: EventBoundary): string {
-	if (boundary.kind === "date") return boundary.date;
-	const at = new Date(boundary.date_time);
-	const pad = (value: number) => String(value).padStart(2, "0");
-	return (
-		`${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}` +
-		`T${pad(at.getHours())}:${pad(at.getMinutes())}:${pad(at.getSeconds())}`
-	);
+	return boundary.kind === "date" ? boundary.date : new Date(boundary.date_time).toISOString();
 }
 
 /**
  * A start or end as the service takes it. Callers give a date, or a wall time
- * with the zone it is in; a wall time without an offset is this device's.
+ * with the zone it is in; an unqualified wall time uses the vault clock.
  */
 function serviceBoundary(value: EventDateTime | string | undefined): EventBoundary | undefined {
 	if (value === undefined) return undefined;
@@ -102,7 +98,7 @@ function serviceBoundary(value: EventDateTime | string | undefined): EventBounda
 		typeof value === "string" ? (value.includes("T") ? { dateTime: value } : { date: value }) : value;
 	if (boundary.date) return { kind: "date", date: boundary.date };
 	if (!boundary.dateTime) return undefined;
-	const instant = new Date(boundary.dateTime);
+	const instant = parseVaultISO(boundary.dateTime);
 	if (Number.isNaN(instant.getTime())) return undefined;
 	return {
 		kind: "date_time",
@@ -321,7 +317,7 @@ export class HostedGoogleCalendarService extends GoogleCalendarSource {
 	}
 
 	getAllEvents(): ICSEvent[] {
-		return this.shown;
+		return this.shown.map(presentProviderCalendarEvent);
 	}
 
 	private toICSEvent(event: GoogleEvent, colors: ReadonlyMap<string, string>): ICSEvent {
@@ -430,7 +426,7 @@ export class HostedGoogleCalendarService extends GoogleCalendarSource {
 		const byId = new Map(this.byId);
 		byId.set(icsEventId(event.calendar_id, event.id), event);
 		this.show(byId);
-		return this.shown.find(({ id }) => id === icsEventId(event.calendar_id, event.id)) as ICSEvent;
+		return presentProviderCalendarEvent(this.shown.find(({ id }) => id === icsEventId(event.calendar_id, event.id)) as ICSEvent);
 	}
 
 	/** A write that lost to a change in Google needs the newer event before another try. */

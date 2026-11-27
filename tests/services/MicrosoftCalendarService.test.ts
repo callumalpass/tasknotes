@@ -1,4 +1,5 @@
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns/format';
+import { parseISO } from 'date-fns';
 import { MicrosoftCalendarService } from '../../src/services/MicrosoftCalendarService';
 import { OAuthService } from '../../src/services/OAuthService';
 import { requestUrl, Notice } from 'obsidian';

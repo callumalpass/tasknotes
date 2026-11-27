@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, parseVaultDateOption } from "../utils/vaultTime";
 import { applyModalShell } from "../ui/kit/modal";
 import { uiLocale } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -128,7 +129,7 @@ export class TimeEntryEditorModal extends Modal {
 		// Entry header with delete button
 		const headerEl = entryEl.createDiv({ cls: "time-entry-editor-modal__entry-header" });
 
-		const dateStr = new Date(entry.startTime).toLocaleDateString(uiLocale());
+		const dateStr = new Date(entry.startTime).toLocaleDateString(uiLocale(), { timeZone: getConfiguredVaultTimeZone() });
 		headerEl.createSpan({
 			cls: "time-entry-editor-modal__entry-date",
 			text: dateStr,
@@ -153,9 +154,9 @@ export class TimeEntryEditorModal extends Modal {
 			type: "datetime-local",
 			cls: "time-entry-editor-modal__datetime-input",
 		});
-		startInput.value = this.formatDateTimeForInput(new Date(entry.startTime));
+		startInput.value = this.formatDateTimeForInput(parseVaultDateOption(entry.startTime));
 		startInput.addEventListener("change", () => {
-			const newDate = new Date(startInput.value);
+			const newDate = parseVaultDateOption(startInput.value);
 			if (!isNaN(newDate.getTime())) {
 				entry.startTime = newDate.toISOString();
 				this.updateTotalDisplay();
@@ -172,11 +173,11 @@ export class TimeEntryEditorModal extends Modal {
 			cls: "time-entry-editor-modal__datetime-input",
 		});
 		if (entry.endTime) {
-			endInput.value = this.formatDateTimeForInput(new Date(entry.endTime));
+			endInput.value = this.formatDateTimeForInput(parseVaultDateOption(entry.endTime));
 		}
 		endInput.addEventListener("change", () => {
 			if (endInput.value) {
-				const newDate = new Date(endInput.value);
+				const newDate = parseVaultDateOption(endInput.value);
 				if (!isNaN(newDate.getTime())) {
 					entry.endTime = newDate.toISOString();
 					this.updateTotalDisplay();

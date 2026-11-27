@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { msg } from "@lingui/core/macro";
 import {
 	FilterQuery,
@@ -578,7 +579,7 @@ export class FilterService extends EventEmitter {
 	static shouldIncludeOverdueForRange(dates: Date[], showOverdue: boolean): boolean {
 		if (!showOverdue) return false;
 
-		const today = new Date();
+		const today = vaultDate();
 		const todayStr = format(today, "yyyy-MM-dd");
 		return dates.some((date) => format(date, "yyyy-MM-dd") === todayStr);
 	}

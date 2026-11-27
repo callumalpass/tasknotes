@@ -121,7 +121,8 @@ import {
 	loadPluginSettingsDataWithRetry,
 	pluginDataFileExists,
 } from "./settings/settingsPersistence";
-import { startDateChangeDetection } from "./bootstrap/dateChangeDetection";
+import { startDateChangeDetection, type DateChangeDetectionControls } from "./bootstrap/dateChangeDetection";
+import { VaultTimeZoneService } from "./services/VaultTimeZoneService";
 import { createTaskNotesLogger } from "./utils/tasknotesLogger";
 import { sanitizeLinkAliasText } from "./utils/linkAliasUtils";
 import { generateLink } from "./utils/linkUtils";
@@ -249,6 +250,9 @@ export default class TaskNotesPlugin extends Plugin {
 	taskCalendarSyncService: TaskCalendarSyncService;
 	taskFileLifecycleReconciliationService?: import("./services/TaskFileLifecycleReconciliationService").TaskFileLifecycleReconciliationService;
 
+	vaultTimeZoneService: VaultTimeZoneService;
+	private dateChangeDetection?: DateChangeDetectionControls;
+
 	// mdbase-spec generation service
 	mdbaseSpecService: import("./services/MdbaseSpecService").MdbaseSpecService;
 
@@ -347,6 +351,16 @@ export default class TaskNotesPlugin extends Plugin {
 		});
 
 		await this.loadSettings();
+		this.vaultTimeZoneService = new VaultTimeZoneService(this.app.vault, () => this.settings.vaultTimeZone, () => {
+			if (this.dateChangeDetection && !this.dateChangeDetection.checkDateChange()) {
+				this.emitter.trigger(EVENT_DATE_CHANGED);
+			}
+			this.dateChangeDetection?.scheduleNextMidnightCheck();
+			this.notificationService?.refreshForTimeZoneChange();
+			void this.icsSubscriptionService?.refreshAllSubscriptions();
+			if (this.cacheManager) this.notifyDataChanged();
+		});
+		await this.vaultTimeZoneService.initialize((ref) => this.registerEvent(ref));
 		this.performanceProfiler = createTaskNotesPerformanceProfiler({
 			isEnabled: () => this.settings?.enableDebugLogging === true,
 			logger: createTaskNotesLogger({
@@ -696,13 +710,14 @@ export default class TaskNotesPlugin extends Plugin {
 	 * Set up date change detection to refresh task states when the date rolls over
 	 */
 	setupDateChangeDetection(): void {
-		startDateChangeDetection({
+		this.dateChangeDetection = startDateChangeDetection({
 			registerTimer: (timerId) => this.registerInterval(timerId),
 			emitDateChanged: () => this.emitter.trigger(EVENT_DATE_CHANGED),
 		});
 	}
 
 	onunload() {
+		this.vaultTimeZoneService?.dispose();
 		this.languagePackController?.dispose();
 		this.emitter?.trigger(TASKNOTES_RUNTIME_LIFECYCLE_RAW_EVENTS.unloading, {
 			timestamp: new Date().toISOString(),

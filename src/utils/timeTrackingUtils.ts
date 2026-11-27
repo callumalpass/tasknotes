@@ -1,3 +1,4 @@
+import { vaultDate } from "./vaultTime";
 import { TaskInfo, TimeEntry } from "../types";
 
 export interface ActiveSessionInfo {
@@ -135,20 +136,20 @@ export function computeActiveTimeSessions(
 
 function computeDateRange(options: TimeSummaryOptions): { startDate: Date; endDate: Date } {
 	let startDate: Date;
-	let endDate: Date = new Date();
+	let endDate: Date = vaultDate();
 
 	switch (options.period) {
 		case "today":
-			startDate = new Date();
+			startDate = vaultDate();
 			startDate.setHours(0, 0, 0, 0);
 			break;
 		case "week":
-			startDate = new Date();
+			startDate = vaultDate();
 			startDate.setDate(startDate.getDate() - startDate.getDay());
 			startDate.setHours(0, 0, 0, 0);
 			break;
 		case "month":
-			startDate = new Date();
+			startDate = vaultDate();
 			startDate.setDate(1);
 			startDate.setHours(0, 0, 0, 0);
 			break;
@@ -160,7 +161,7 @@ function computeDateRange(options: TimeSummaryOptions): { startDate: Date; endDa
 				startDate = options.fromDate;
 				if (options.toDate) endDate = options.toDate;
 			} else {
-				startDate = new Date();
+				startDate = vaultDate();
 				startDate.setHours(0, 0, 0, 0);
 			}
 	}

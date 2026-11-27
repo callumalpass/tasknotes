@@ -1,3 +1,4 @@
+import { parseVaultISO } from "../utils/vaultTime";
 import { formatUIDate, formatStableDate } from "../i18n/formatters";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -301,7 +302,7 @@ export class ICSNoteService {
 				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
-			const start = new Date(startDateStr);
+			const start = parseVaultISO(startDateStr);
 			if (icsEvent.allDay) {
 				return formatDateForStorage(start);
 			}
@@ -337,7 +338,7 @@ export class ICSNoteService {
 				const startDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
-				const startDate = new Date(startDateStr);
+				const startDate = parseVaultISO(startDateStr);
 				return formatDateForStorage(startDate);
 			}
 
@@ -345,7 +346,7 @@ export class ICSNoteService {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
 				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
-			const endDate = new Date(endDateStr);
+			const endDate = parseVaultISO(endDateStr);
 			return format(endDate, "yyyy-MM-dd'T'HH:mm");
 		} catch (error) {
 			tasknotesLogger.warn("Failed to compute due from ICS event end:", {
@@ -377,7 +378,7 @@ export class ICSNoteService {
 				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
-			const eventStartDate = new Date(startDateStr);
+			const eventStartDate = parseVaultISO(startDateStr);
 
 			// Determine note title
 			const noteTitle =
@@ -663,7 +664,7 @@ export class ICSNoteService {
 				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
-			const startDate = new Date(startDateStr);
+			const startDate = parseVaultISO(startDateStr);
 			details.push(uiText(msg({ message: "**Start:** {value1}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { value1: formatUIDate(startDate, "PPPp") }));
 		}
 
@@ -671,7 +672,7 @@ export class ICSNoteService {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
 				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
-			const endDate = new Date(endDateStr);
+			const endDate = parseVaultISO(endDateStr);
 			details.push(uiText(msg({ message: "**End:** {value1}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { value1: formatUIDate(endDate, "PPPp") }));
 		}
 
@@ -736,8 +737,8 @@ export class ICSNoteService {
 					? icsEvent.end + "T00:00:00"
 					: icsEvent.end;
 
-			const startTime = new Date(startDateStr).getTime();
-			const endTime = new Date(endDateStr).getTime();
+			const startTime = parseVaultISO(startDateStr).getTime();
+			const endTime = parseVaultISO(endDateStr).getTime();
 
 			if (isNaN(startTime) || isNaN(endTime)) {
 				return undefined;

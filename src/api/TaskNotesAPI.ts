@@ -1,3 +1,5 @@
+import { addDaysToDateString, addMonthsToDateString, getDatePart, isOverdueTimeAware } from "../utils/dateUtils";
+import { getConfiguredVaultTimeZone, parseVaultDateOption, vaultDate, vaultDay } from "../utils/vaultTime";
 import { normalizePath, TFile, type EventRef, type Menu } from "obsidian";
 import {
 	TASKNOTES_SPEC_VERSION,
@@ -1779,7 +1781,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		TaskContextMenu.addToMenu(menu, {
 			task,
 			plugin: this.plugin,
-			targetDate: options.targetDate ?? new Date(),
+			targetDate: options.targetDate ?? vaultDate(),
 			promoteOccurrenceControls: options.promoteOccurrenceControls,
 			onUpdate: options.onUpdate ?? this.defaultTaskMenuUpdateHandler(),
 		});
@@ -1792,7 +1794,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		return new TaskContextMenu({
 			task,
 			plugin: this.plugin,
-			targetDate: options.targetDate ?? new Date(),
+			targetDate: options.targetDate ?? vaultDate(),
 			promoteOccurrenceControls: options.promoteOccurrenceControls,
 			onUpdate: options.onUpdate ?? this.defaultTaskMenuUpdateHandler(),
 		});
@@ -1841,7 +1843,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 			if (isCompleted) completed++;
 			if (task.archived) archived++;
 			if (!isCompleted && !task.archived) active++;
-			if (task.due && task.due < today && !isCompleted && !task.archived) overdue++;
+			if (task.due && (getConfiguredVaultTimeZone() ? isOverdueTimeAware(task.due) : task.due < today) && !isCompleted && !task.archived) overdue++;
 			if (task.timeEntries?.length) {
 				withTimeEntries++;
 				totalTrackedMinutes += task.totalTrackedTime ?? 0;
@@ -2539,7 +2541,7 @@ export class TaskNotesAPI implements TaskNotesRuntimeApiV1 {
 		if (options?.date) {
 			sessions = sessions.filter(
 				(session) =>
-					new Date(session.startTime).toISOString().split("T")[0] === options.date
+					(getConfiguredVaultTimeZone() ? vaultDay(new Date(session.startTime)) : new Date(session.startTime).toISOString().slice(0, 10)) === options.date
 			);
 		}
 		if (options?.limit && options.limit > 0) {
@@ -3309,6 +3311,13 @@ function dateAddRuntimeValue(value: {
 	unit: "day" | "week" | "month";
 }): string {
 	const baseValue = toFilterConditionValue(value.value);
+	if (getConfiguredVaultTimeZone()) {
+		const day = typeof baseValue === "string" && baseValue !== "today"
+			? getDatePart(baseValue)
+			: vaultDay();
+		if (value.unit === "month") return addMonthsToDateString(day, value.amount);
+		return addDaysToDateString(day, value.amount * (value.unit === "week" ? 7 : 1));
+	}
 	const base =
 		baseValue === "today"
 			? new Date()
@@ -3441,7 +3450,7 @@ function userFieldTypeToRuntimeValueType(
 
 function coerceDateOption(value: string | Date | null | undefined): Date | null {
 	if (!value) return null;
-	return value instanceof Date ? value : new Date(value);
+	return value instanceof Date ? value : parseVaultDateOption(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

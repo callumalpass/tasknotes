@@ -1,9 +1,10 @@
+import { presentProviderCalendarEvent } from "../utils/calendarUtils";
+import { getVaultTimeZone } from "../utils/vaultTime";
 import { uiData } from "../i18n/dataText";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Calendar sync validates credentials before accessing token fields. */
 import { requestUrl } from "obsidian";
-import { format } from "date-fns";
 import TaskNotesPlugin from "../main";
 import { OAuthService } from "./OAuthService";
 import { GoogleCalendarEvent, ICSEvent } from "../types";
@@ -559,16 +560,14 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 			end = googleEvent.end?.date;
 			allDay = true;
 		} else {
-			// Timed event - parse and convert to local time without timezone offset
-			// FullCalendar expects YYYY-MM-DDTHH:mm:ss format (no timezone) for timed events
+			// Preserve provider instants across changes to the vault clock.
 			const startDate = new Date(googleEvent.start.dateTime!);
 			const endDate = googleEvent.end?.dateTime
 				? new Date(googleEvent.end.dateTime)
 				: undefined;
 
-			// Format as YYYY-MM-DDTHH:mm:ss (local time, no timezone offset)
-			start = format(startDate, "yyyy-MM-dd'T'HH:mm:ss");
-			end = endDate ? format(endDate, "yyyy-MM-dd'T'HH:mm:ss") : undefined;
+			start = startDate.toISOString();
+			end = endDate?.toISOString();
 			allDay = false;
 		}
 
@@ -628,7 +627,7 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 			const enabledCalendarIds = this.getEnabledCalendarIds(refreshedCalendars);
 
 			// Get current cached events
-			let cachedEvents = this.getAllEvents();
+			let cachedEvents = this.getEnabledCachedEvents();
 			const cachedCalendarIds = new Set(this.cachedCalendarIds);
 			const calendarErrors: { calendarId: string; message: string }[] = [];
 
@@ -740,6 +739,10 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 	 * Gets all cached events
 	 */
 	getAllEvents(): ICSEvent[] {
+		return this.getEnabledCachedEvents().map(presentProviderCalendarEvent);
+	}
+
+	private getEnabledCachedEvents(): ICSEvent[] {
 		this.clearMemoryCachesForChangedConnection();
 		const events = this.cache.get("all") || [];
 		const enabled = new Set(this.getEnabledCalendarIds().map((id) => `google-${id}`));
@@ -762,7 +765,7 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 		// Convert to ICS events
 		return events
 			.filter((event) => event.status !== "cancelled")
-			.map((event) => this.convertToICSEvent(event, calendarId));
+			.map((event) => presentProviderCalendarEvent(this.convertToICSEvent(event, calendarId)));
 	}
 
 	/**
@@ -949,7 +952,7 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 			// Refresh events after update
 			await this.refreshAllCalendars();
 
-			return icsEvent;
+			return presentProviderCalendarEvent(icsEvent);
 		} catch (error) {
 			tasknotesLogger.error("Failed to update Google Calendar event:", {
 				category: "provider",
@@ -1075,7 +1078,7 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 			// Refresh events after creation
 			await this.refreshAllCalendars();
 
-			return icsEvent;
+			return presentProviderCalendarEvent(icsEvent);
 		} catch (error) {
 			tasknotesLogger.error("Failed to create Google Calendar event:", {
 				category: "provider",
@@ -1167,7 +1170,7 @@ export class GoogleCalendarService extends GoogleCalendarSource {
 					body: JSON.stringify({
 						summary,
 						description,
-						timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+						timeZone: getVaultTimeZone(),
 					}),
 				});
 			}, "Create calendar");

@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { displayError } from "../i18n/runtime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -281,7 +282,7 @@ export class TaskService {
 	private processFolderTemplate(
 		folderTemplate: string,
 		taskData?: TaskCreationData,
-		date: Date = new Date(),
+		date: Date = vaultDate(),
 		currentNote?: FolderTemplateOptions["currentNote"]
 	): string {
 		// Convert TaskCreationData to TaskTemplateData

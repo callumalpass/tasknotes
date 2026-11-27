@@ -2,6 +2,7 @@ import { configLabel } from "../i18n/configLabels";
 import type TaskNotesPlugin from "../main";
 import { StatusConfig, PriorityConfig } from "../types";
 import { NLPTriggersConfig, UserMappedField } from "../types/settings";
+import { getConfiguredVaultTimeZone, vaultDate } from "../utils/vaultTime";
 import { shieldMarkdownLiterals } from "../utils/markdownLiterals";
 import {
 	NaturalLanguageParserCore,
@@ -103,6 +104,15 @@ function getDateLocaleFromPlugin(plugin: TaskNotesPlugin): string {
 	return getBrowserLocale() || plugin.settings.nlpLanguage || "en";
 }
 
+// The shared parser copies reference dates into native Dates. Supply its
+// wall-clock reference in the system zone so relative dates use the vault day.
+function getParserReferenceDate(): Date {
+	const now = vaultDate();
+	if (!getConfiguredVaultTimeZone()) return now;
+	return new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+		now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+}
+
 /** The part of the parser that long-lived services use. */
 export type TaskTextParser = Pick<NaturalLanguageParser, "parseInput">;
 
@@ -134,7 +144,7 @@ export class NaturalLanguageParser extends NaturalLanguageParserCore {
 			s.nlpLanguage,
 			s.nlpTriggers,
 			s.userFields,
-			{ dateLocale: getDateLocaleFromPlugin(plugin) }
+			{ dateLocale: getDateLocaleFromPlugin(plugin), referenceDate: getParserReferenceDate }
 		);
 	}
 

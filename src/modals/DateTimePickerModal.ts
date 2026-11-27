@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { applyModalShell, renderModalSubmitHint } from "../ui/kit/modal";
 import { msg } from "@lingui/core/macro";
 import { App, Modal, setIcon } from "obsidian";
@@ -157,7 +158,7 @@ export class DateTimePickerModal extends Modal {
 	}
 
 	private renderQuickActions(container: HTMLElement): void {
-		const today = new Date();
+		const today = vaultDate();
 		const quickActions = [
 			{
 				label: this.translate(msg({ message: "Today", context: "views.agenda.today" })),
@@ -340,7 +341,7 @@ export class DateTimePickerModal extends Modal {
 		if (!this.monthCalendarEl) return;
 		const selectedValue = this.selectedDate ? new Date(`${this.selectedDate}T00:00:00Z`) : null;
 		const selected = selectedValue && Number.isFinite(selectedValue.getTime()) ? selectedValue : null;
-		const today = new Date();
+		const today = vaultDate();
 		const todayKey = formatCalendarDate(today.getFullYear(), today.getMonth(), today.getDate());
 		const displayed = month ?? selected ?? new Date(`${todayKey}T00:00:00Z`);
 		const focusValue = focusDate ?? (selected && selected.getUTCFullYear() === displayed.getUTCFullYear() && selected.getUTCMonth() === displayed.getUTCMonth()

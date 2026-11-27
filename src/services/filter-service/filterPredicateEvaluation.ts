@@ -1,3 +1,4 @@
+import { vaultDate } from "../../utils/vaultTime";
 import type { App } from "obsidian";
 import type {
 	FilterCondition,
@@ -103,7 +104,7 @@ export function evaluateFilterCondition(
 	if (property === "status.isCompleted") {
 		const effectiveStatus = getEffectiveTaskStatus(
 			task,
-			targetDate || new Date(),
+			targetDate || vaultDate(),
 			context.getCompletedStatuses()[0]
 		);
 		taskValue = context.isCompletedStatus(effectiveStatus);

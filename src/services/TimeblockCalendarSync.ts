@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, getVaultTimeZone, parseVaultISO } from "../utils/vaultTime";
 import { type CachedMetadata, TAbstractFile, TFile } from "obsidian";
 import { appHasDailyNotesPluginLoaded, getAllDailyNotes } from "obsidian-daily-notes-interface";
 import { format } from "date-fns";
@@ -1123,17 +1124,20 @@ export class TimeblockCalendarSync {
 		date: string,
 		timeblock: TimeBlock
 	): TimeblockEventPayload {
-		const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+		const timeZone = getVaultTimeZone();
 		const startsAfterMidnight = timeblock.startTime !== "00:00";
 		const endsAtNextMidnight =
 			timeblock.endTime === "24:00" || (timeblock.endTime === "00:00" && startsAfterMidnight);
 		const endDate = endsAtNextMidnight ? this.getNextDate(date) : date;
 		const endTime = endsAtNextMidnight ? "00:00" : timeblock.endTime;
 
+		const eventTime = (wall: string) => getConfiguredVaultTimeZone()
+			? format(parseVaultISO(wall), "yyyy-MM-dd'T'HH:mm:ssxxx")
+			: wall;
 		const payload: TimeblockEventPayload = {
 			summary: this.applyTitleTemplate(timeblock, date),
-			start: { dateTime: `${date}T${timeblock.startTime}:00`, timeZone },
-			end: { dateTime: `${endDate}T${endTime}:00`, timeZone },
+			start: { dateTime: eventTime(`${date}T${timeblock.startTime}:00`), timeZone },
+			end: { dateTime: eventTime(`${endDate}T${endTime}:00`), timeZone },
 		};
 
 		const description = this.buildEventDescription(notePath, timeblock);

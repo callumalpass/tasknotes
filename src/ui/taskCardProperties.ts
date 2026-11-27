@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { uiData } from "../i18n/dataText";
 import { openTaskPropertyPicker, tasksForPropertyAction } from "./taskPropertyPickers";
 import type { MessageSuffix } from "../i18n/concepts";
@@ -900,7 +901,7 @@ function formatCardDate(
 
 function getTaskCardDateFormat(dateString: string): string {
 	const year = Number(getDatePart(dateString).slice(0, 4));
-	return Number.isInteger(year) && year !== new Date().getFullYear() ? "MMM d, yyyy" : "MMM d";
+	return Number.isInteger(year) && year !== vaultDate().getFullYear() ? "MMM d, yyyy" : "MMM d";
 }
 
 /** Short value in the row. The full sentence moves to the tooltip. */

@@ -1,3 +1,4 @@
+import { createVaultDate, getConfiguredVaultTimeZone, getVaultTimeZone, parseVaultISO, vaultDate, vaultDay } from "../utils/vaultTime";
 import { captureTaskUndo } from "../ui/taskMutationUndo";
 import { showTaskUndo } from "../ui/taskPropertyPickers";
 import { displayError } from "../i18n/runtime";
@@ -160,7 +161,7 @@ export class CalendarView extends BasesViewBase {
 	private currentTasks: TaskInfo[] = [];
 	private identityTasks: TaskInfo[] = [];
 	private nonTaskEvents: CalendarEventInput[] = [];
-	private readonly calendarTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+	private calendarTimezone = getVaultTimeZone();
 	private readonly taskProjection = new CalendarTaskProjection({
 		timezone: this.calendarTimezone, now: new Date().toISOString(),
 	}, (task, error) => tasknotesLogger.warn("Invalid calendar task", {
@@ -351,7 +352,7 @@ export class CalendarView extends BasesViewBase {
 				root: this.rootElement,
 				calendar: () => this.calendar,
 				create: (date) => { void this.createFileForView(undefined, (frontmatter) => {
-					frontmatter[this.plugin.fieldMapper.toUserField("scheduled")] = format(date, "yyyy-MM-dd");
+					frontmatter[this.plugin.fieldMapper.toUserField("scheduled")] = vaultDay(date);
 				}); },
 				search: () => {
 					this.enableSearch = true;
@@ -586,9 +587,16 @@ export class CalendarView extends BasesViewBase {
 		const calendar = this.calendar;
 		if (!calendar) return;
 
+		if (this.calendarTimezone !== undefined && this.calendarTimezone !== getVaultTimeZone()) {
+			this.calendarTimezone = getVaultTimeZone();
+			this._configChangedNeedsRecreate = true;
+			this.renderPreservingEphemeralState();
+			return;
+		}
+
 		const rangeBefore = this.visibleView;
 		const hasConfiguredDate = this.viewOptions.initialDate || this.viewOptions.initialDateProperty;
-		if (!hasConfiguredDate && calendar.getDate().toDateString() === previousDay) {
+		if (!hasConfiguredDate && (getConfiguredVaultTimeZone() ? vaultDay(calendar.getDate()) : calendar.getDate().toDateString()) === previousDay) {
 			const scroll = calendar.getScroll();
 			calendar.gotoDate(new Date());
 			calendar.setScroll(scroll);
@@ -614,7 +622,7 @@ export class CalendarView extends BasesViewBase {
 	 * Used to detect user-initiated config changes.
 	 */
 	private getConfigSnapshot(): string {
-		return JSON.stringify([this.plugin.settings.dateDisplayFormat, this.resolveFirstDay(), buildCalendarConfigSnapshot({
+		return JSON.stringify([this.calendarTimezone, this.plugin.settings.dateDisplayFormat, this.resolveFirstDay(), buildCalendarConfigSnapshot({
 			config: this.config,
 			icsCalendarIds:
 				this.plugin.icsSubscriptionService?.getSubscriptions().map((sub) => sub.id) ?? [],
@@ -1354,11 +1362,11 @@ export class CalendarView extends BasesViewBase {
 				const heading = createElementInDocument(this.containerEl.ownerDocument, "span");
 				heading.className = "tn-calendar-day-heading";
 				heading.dataset.tncNoDrag = "";
-				heading.setAttribute("aria-label", new Intl.DateTimeFormat(locale, { dateStyle: "full" }).format(arg.date));
-				heading.createSpan({ cls: "tn-calendar-day-number", text: new Intl.DateTimeFormat(locale, { day: "numeric" }).format(arg.date) });
+				heading.setAttribute("aria-label", new Intl.DateTimeFormat(locale, { dateStyle: "full", timeZone: this.calendarTimezone }).format(arg.date));
+				heading.createSpan({ cls: "tn-calendar-day-number", text: new Intl.DateTimeFormat(locale, { day: "numeric", timeZone: this.calendarTimezone }).format(arg.date) });
 				const label = heading.createSpan({ cls: "tn-calendar-day-label" });
-				label.createSpan({ cls: "tn-calendar-day-weekday", text: new Intl.DateTimeFormat(locale, { weekday: "long" }).format(arg.date) });
-				label.createSpan({ cls: "tn-calendar-day-month", text: new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" }).format(arg.date) });
+				label.createSpan({ cls: "tn-calendar-day-weekday", text: new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: this.calendarTimezone }).format(arg.date) });
+				label.createSpan({ cls: "tn-calendar-day-month", text: new Intl.DateTimeFormat(locale, { month: "short", year: "numeric", timeZone: this.calendarTimezone }).format(arg.date) });
 				return heading;
 			},
 			view: this.narrowWeek ? "days" : layout.view,
@@ -1602,9 +1610,9 @@ export class CalendarView extends BasesViewBase {
 			return;
 		}
 		if (!this.calendarEl || !this.calendar) return;
-		const month = format(this.calendar.getDate(), "yyyy-MM");
+		const month = format(vaultDate(this.calendar.getDate()), "yyyy-MM");
 		if (!this.selectedMonthDay?.startsWith(month)) {
-			const today = format(new Date(), "yyyy-MM-dd");
+			const today = vaultDay();
 			this.selectedMonthDay = today.startsWith(month) ? today : `${month}-01`;
 		}
 		for (const cell of this.calendarEl.querySelectorAll<HTMLElement>(".tnc-dg-day[data-date]")) {
@@ -1618,7 +1626,7 @@ export class CalendarView extends BasesViewBase {
 			this.destroyDayPanel();
 		}
 		if (this.dayPanel) {
-			if (format(this.dayPanel.getDate(), "yyyy-MM-dd") !== this.selectedMonthDay) {
+			if (vaultDay(this.dayPanel.getDate()) !== this.selectedMonthDay) {
 				this.dayPanel.gotoDate(this.selectedMonthDay);
 			}
 			this.dayPanel.setItems(this.getListItems());
@@ -1654,9 +1662,8 @@ export class CalendarView extends BasesViewBase {
 
 	private updateDayPanelCount(): void {
 		if (!this.dayPanelEl || !this.selectedMonthDay) return;
-		const start = new Date(`${this.selectedMonthDay}T00:00:00`);
-		const end = new Date(start);
-		end.setDate(end.getDate() + 1);
+		const start = parseVaultISO(this.selectedMonthDay);
+		const end = createVaultDate(start.getFullYear(), start.getMonth(), start.getDate() + 1);
 		const paths = new Set(this.getListItems().filter(item => {
 			const event = eventApiFromItem(item);
 			return event.start && event.start < end && (event.end ? event.end > start : event.start >= start);
