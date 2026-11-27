@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { msg } from "@lingui/core/macro";
 import { Scope, Notice, setIcon } from "obsidian";
 import type TaskNotesPlugin from "../main";
@@ -466,7 +467,7 @@ export function installTaskViewKeyboard(options: TaskViewKeyboardOptions): () =>
 			if (mod && key === "k") {
 				const targetDate = options.targetDate?.(actionPath) ?? (task.recurrence
 					? await plugin.taskService.resolveRecurringTaskActionDate(task)
-					: new Date());
+					: vaultDate());
 				new TaskActionPaletteModal(plugin.app, task, plugin, targetDate, (existing) => {
 					const properties: TaskAction[] = [
 						"status",

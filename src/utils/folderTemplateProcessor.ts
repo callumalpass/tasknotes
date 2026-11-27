@@ -1,3 +1,4 @@
+import { vaultDate } from "./vaultTime";
 import { formatStableDate } from "../i18n/formatters";
 import { format } from "date-fns";
 import { createTaskNotesLogger } from "./tasknotesLogger";
@@ -252,7 +253,7 @@ export function processFolderTemplate(
 	}
 
 	const {
-		date = new Date(),
+		date = vaultDate(),
 		taskData,
 		icsData,
 		extractProjectBasename,
@@ -488,7 +489,7 @@ export function processFolderTemplate(
 	// Date-based identifiers
 	const zettelId = (() => {
 		const datePart = format(date, "yyMMdd");
-		const midnight = new Date(date);
+		const midnight = vaultDate(date);
 		midnight.setHours(0, 0, 0, 0);
 		const secondsSinceMidnight = Math.floor((date.getTime() - midnight.getTime()) / 1000);
 		const randomPart = secondsSinceMidnight.toString(36);

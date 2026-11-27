@@ -1,3 +1,4 @@
+import { getVaultTimeZone, parseVaultISO, vaultDate } from "../utils/vaultTime";
 import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -2268,10 +2269,10 @@ export class TaskCalendarSyncService {
 			// Timed event - format with local timezone offset for Google Calendar.
 			// Using date-fns format with 'xxx' to produce an offset-aware RFC 3339 string
 			// (e.g. "2024-03-15T14:30:00+05:00") so the dateTime matches the timeZone.
-			const date = new Date(dateStr);
+			const date = parseVaultISO(dateStr);
 			return {
 				dateTime: format(date, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-				timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+				timeZone: getVaultTimeZone(),
 				isAllDay: false,
 			};
 		} else {
@@ -2305,7 +2306,7 @@ export class TaskCalendarSyncService {
 			if (!startInfo.dateTime) {
 				return {};
 			}
-			const startDate = new Date(startInfo.dateTime);
+			const startDate = parseVaultISO(startInfo.dateTime);
 			const endDate = new Date(startDate);
 			endDate.setDate(endDate.getDate() + 1);
 			return { date: format(endDate, "yyyy-MM-dd") };
@@ -2315,8 +2316,8 @@ export class TaskCalendarSyncService {
 			if (!startInfo.dateTime) {
 				return {};
 			}
-			const startDate = new Date(startInfo.dateTime);
-			const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+			const startDate = parseVaultISO(startInfo.dateTime);
+			const endDate = vaultDate(startDate.getTime() + duration * 60 * 1000);
 			return {
 				dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: startInfo.timeZone,
@@ -2380,10 +2381,10 @@ export class TaskCalendarSyncService {
 		try {
 			// Handle both ISO timestamps and date-only strings
 			if (eventStartTime.includes("T")) {
-				eventStartMs = new Date(eventStartTime).getTime();
+				eventStartMs = parseVaultISO(eventStartTime).getTime();
 			} else {
 				// Date-only string - assume start of day in local timezone
-				eventStartMs = new Date(eventStartTime + "T00:00:00").getTime();
+				eventStartMs = parseVaultISO(eventStartTime + "T00:00:00").getTime();
 			}
 
 			if (isNaN(eventStartMs)) {
@@ -2455,7 +2456,7 @@ export class TaskCalendarSyncService {
 				if (!reminder.absoluteTime) continue;
 
 				try {
-					const reminderTimeMs = new Date(reminder.absoluteTime).getTime();
+					const reminderTimeMs = parseVaultISO(reminder.absoluteTime).getTime();
 					if (isNaN(reminderTimeMs)) {
 						tasknotesLogger.warn("[TaskCalendarSync] Invalid absolute time:", {
 							category: "provider",
@@ -2552,7 +2553,7 @@ export class TaskCalendarSyncService {
 		if (settings.createAsAllDay && !startInfo.isAllDay) {
 			// Convert to all-day - use local date to handle timezone correctly
 			// e.g., "2024-01-15T23:00:00" in UTC+5 should become "2024-01-16" not "2024-01-15"
-			const localDate = new Date(eventDate);
+			const localDate = parseVaultISO(eventDate);
 			const dateOnly = format(localDate, "yyyy-MM-dd");
 			start = { date: dateOnly };
 		} else if (startInfo.isAllDay) {
@@ -2644,17 +2645,17 @@ export class TaskCalendarSyncService {
 						event.end = { date: format(endDate, "yyyy-MM-dd") };
 					} else if (recurrenceData.time) {
 						const dateTimeStr = `${recurrenceData.dtstart}T${recurrenceData.time}`;
-						const startDate = new Date(dateTimeStr);
+						const startDate = parseVaultISO(dateTimeStr);
 						event.start = {
 							dateTime: format(startDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+							timeZone: getVaultTimeZone(),
 						};
 						// Recalculate end based on duration
 						const duration = task.timeEstimate || settings.defaultEventDuration;
-						const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+						const endDate = vaultDate(startDate.getTime() + duration * 60 * 1000);
 						event.end = {
 							dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-							timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+							timeZone: getVaultTimeZone(),
 						};
 					}
 				}
@@ -2745,7 +2746,7 @@ export class TaskCalendarSyncService {
 
 		let start: { date?: string; dateTime?: string; timeZone?: string };
 		if (settings.createAsAllDay && !startInfo.isAllDay) {
-			const localDate = new Date(task.scheduled);
+			const localDate = parseVaultISO(task.scheduled);
 			start = { date: format(localDate, "yyyy-MM-dd") };
 		} else if (startInfo.isAllDay) {
 			start = { date: startInfo.date };

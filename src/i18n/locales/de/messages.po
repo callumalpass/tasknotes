@@ -4876,6 +4876,11 @@ msgctxt "settings.native.validDate"
 msgid "Enter a valid date in YYYY-MM-DD format."
 msgstr "Gib ein gültiges Datum im Format YYYY-MM-DD ein."
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.invalid"
+msgid "Enter a valid IANA time zone."
+msgstr "Gib eine gültige IANA-Zeitzone ein."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterValue"
 msgid "Enter a value."
@@ -12357,6 +12362,11 @@ msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessag
 msgid "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?"
 msgstr "Dadurch werden alle Verknüpfungen zwischen Aufgaben und Kalenderereignissen entfernt. Die Ereignisse bleiben erhalten, werden bei Änderungen an Aufgaben aber nicht mehr aktualisiert. Möchten Sie fortfahren?"
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.collection"
+msgid "This zone comes from mdbase.yaml. Changing it there changes how TaskNotes reads times without an offset."
+msgstr "Diese Zeitzone stammt aus mdbase.yaml. Änderungen dort bestimmen, wie TaskNotes Zeiten ohne UTC-Offset liest."
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.thu"
 msgid "Thu"
@@ -12518,6 +12528,11 @@ msgstr "Zeiterfassung-Stopp-Benachrichtigung"
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
 msgstr "Zeiterfassung gestoppt"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.description"
+msgid "Time zone for times without an offset, such as Australia/Melbourne. Leave blank to use the device time zone."
+msgstr "Zeitzone für Zeiten ohne UTC-Offset, zum Beispiel Australia/Melbourne. Leer lassen, um die Zeitzone des Geräts zu verwenden."
 
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
@@ -13413,6 +13428,11 @@ msgstr "Wert:"
 msgctxt "modals.icsNoteCreation.vaultRoot"
 msgid "Vault root"
 msgstr "Vault-Stammverzeichnis"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.name"
+msgid "Vault time zone"
+msgstr "Zeitzone des Tresors"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.view"

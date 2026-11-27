@@ -4875,6 +4875,11 @@ msgctxt "settings.native.validDate"
 msgid "Enter a valid date in YYYY-MM-DD format."
 msgstr "YYYY-MM-DD 형식으로 유효한 날짜를 입력하세요."
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.invalid"
+msgid "Enter a valid IANA time zone."
+msgstr "유효한 IANA 시간대를 입력하세요."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterValue"
 msgid "Enter a value."
@@ -12358,6 +12363,11 @@ msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessag
 msgid "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?"
 msgstr "작업과 캘린더 이벤트 간의 모든 링크가 제거됩니다. 캘린더 이벤트는 유지되지만 작업 변경 시 더 이상 업데이트되지 않습니다. 확실합니까?"
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.collection"
+msgid "This zone comes from mdbase.yaml. Changing it there changes how TaskNotes reads times without an offset."
+msgstr "이 시간대는 mdbase.yaml에 설정되어 있습니다. 해당 파일에서 변경하면 TaskNotes가 UTC 오프셋이 없는 시간을 해석하는 방식이 바뀝니다."
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.thu"
 msgid "Thu"
@@ -12519,6 +12529,11 @@ msgstr "시간 추적 중지 알림"
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
 msgstr "시간 추적이 중지되었습니다"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.description"
+msgid "Time zone for times without an offset, such as Australia/Melbourne. Leave blank to use the device time zone."
+msgstr "UTC 오프셋이 없는 시간에 적용할 시간대입니다. 예: Australia/Melbourne. 비워 두면 기기의 시간대를 사용합니다."
 
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
@@ -13414,6 +13429,11 @@ msgstr "값:"
 msgctxt "modals.icsNoteCreation.vaultRoot"
 msgid "Vault root"
 msgstr "보관함 루트"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.name"
+msgid "Vault time zone"
+msgstr "보관함 시간대"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.view"

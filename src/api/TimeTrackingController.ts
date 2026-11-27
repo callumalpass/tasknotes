@@ -1,3 +1,4 @@
+import { parseVaultDateOption } from "../utils/vaultTime";
 import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { TaskService } from "../services/TaskService";
@@ -154,8 +155,8 @@ export class TimeTrackingController extends BaseController {
 			const period = query.get("period") || "today";
 			const from = query.get("from");
 			const to = query.get("to");
-			const fromDate = from ? new Date(from) : null;
-			const toDate = to ? new Date(to) : null;
+			const fromDate = from ? parseVaultDateOption(from) : null;
+			const toDate = to ? parseVaultDateOption(to) : null;
 
 			const result = computeTimeSummary(
 				allTasks,

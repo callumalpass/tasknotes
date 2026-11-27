@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, vaultDate } from "../utils/vaultTime";
 import { format } from "date-fns";
 import {
 	formatDateForStorage,
@@ -59,7 +60,7 @@ export function normalizeDateValueForCalendar(value: unknown): CalendarDateValue
 		if (hasTimeComponent(trimmed)) {
 			const parsed = parseDateToLocal(trimmed);
 			if (Number.isNaN(parsed.getTime())) return null;
-			return { value: format(parsed, "yyyy-MM-dd'T'HH:mm"), isAllDay: false };
+			return { value: getConfiguredVaultTimeZone() ? parsed.toISOString() : format(parsed, "yyyy-MM-dd'T'HH:mm"), isAllDay: false };
 		}
 
 		try {
@@ -84,7 +85,7 @@ export function normalizeDateValueForCalendar(value: unknown): CalendarDateValue
 			value.getSeconds() !== 0 ||
 			value.getMilliseconds() !== 0;
 		if (hasTime) {
-			return { value: format(value, "yyyy-MM-dd'T'HH:mm"), isAllDay: false };
+			return { value: getConfiguredVaultTimeZone() ? vaultDate(value).toISOString() : format(value, "yyyy-MM-dd'T'HH:mm"), isAllDay: false };
 		}
 		return { value: formatDateForStorage(value), isAllDay: true };
 	}

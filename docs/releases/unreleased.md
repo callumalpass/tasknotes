@@ -33,6 +33,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 -->
 
+## Added
+
+- (#2491) Choose a vault time zone so TaskNotes uses the same clock and calendar day across devices. If `mdbase.yaml` has a collection time zone, TaskNotes uses it automatically. See [Vault time zone](https://tasknotes.dev/settings/general/#vault-time-zone). Thanks to @ac8318740 for reporting.
+
 ## Changed
 
 - mdbase task types now accept times without an offset in scheduled, due, created and modified fields. New collections record the device’s time zone, and existing collections without a time zone offer to set one.

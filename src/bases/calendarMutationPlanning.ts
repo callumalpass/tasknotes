@@ -1,3 +1,4 @@
+import { parseVaultDateOption, vaultDate } from "../utils/vaultTime";
 import { format } from "date-fns";
 import type { CalendarEventData } from "../services/CalendarProvider";
 import { stringifyUnknown } from "../utils/stringUtils";
@@ -64,12 +65,12 @@ function planShiftedPropertyDateValue(input: {
 		return null;
 	}
 
-	const oldDate = new Date(stringifyUnknown(input.value));
+	const oldDate = parseVaultDateOption(stringifyUnknown(input.value));
 	if (isInvalidDate(oldDate)) {
 		return null;
 	}
 
-	const shiftedDate = new Date(oldDate.getTime() + input.timeDiffMs);
+	const shiftedDate = vaultDate(oldDate.getTime() + input.timeDiffMs);
 	if (isInvalidDate(shiftedDate)) {
 		return null;
 	}
@@ -172,7 +173,7 @@ export function buildProviderEventDateUpdate(input: {
 			return { kind: "revert", reason: "missing-end" };
 		}
 
-		end = new Date(start);
+		end = vaultDate(start);
 		if (allDay) {
 			end.setDate(end.getDate() + 1);
 		} else {

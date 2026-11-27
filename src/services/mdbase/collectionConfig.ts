@@ -1,3 +1,5 @@
+import type { DataAdapter } from "obsidian";
+import { namedTimeZone } from "../../utils/vaultTime";
 import YAML from "yaml";
 import type { TaskNotesSettings } from "../../types/settings";
 import { requireFrontmatter } from "./frontmatter";
@@ -13,12 +15,16 @@ export function effectiveMembershipKeys(value: unknown): string[] {
 }
 
 export function detectedCollectionTimezone(): string | undefined {
+	return namedTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+}
+
+/** A missing, invalid or unreadable config leaves TaskNotes' fallback in effect. */
+export async function readCollectionTimeZone(adapter: Pick<DataAdapter, "exists" | "read">): Promise<string | undefined> {
 	try {
-		const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-		// Intl also accepts numeric offsets. The collection needs a named zone.
-		if (!zone || !/^[A-Za-z]/.test(zone) || zone.toLowerCase() === "local") return;
-		new Intl.DateTimeFormat("en", { timeZone: zone });
-		return zone;
+		if (!(await adapter.exists("mdbase.yaml"))) return;
+		const config = YAML.parseDocument(await adapter.read("mdbase.yaml"));
+		if (config.errors.length || typeof config.get("spec_version") !== "string") return;
+		return namedTimeZone(config.getIn(["settings", "timezone"]));
 	} catch {
 		return undefined;
 	}

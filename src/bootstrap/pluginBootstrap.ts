@@ -126,6 +126,7 @@ export async function initializeCoreServices(plugin: TaskNotesPlugin): Promise<v
 	const { MdbaseSpecService } = await import("../services/MdbaseSpecService");
 	plugin.mdbaseSpecService = new MdbaseSpecService(plugin, (offer) => showCollectionTimezoneNotice(plugin.i18n, offer));
 	await plugin.mdbaseSpecService.initialize();
+	await plugin.vaultTimeZoneService?.refresh();
 
 	plugin.fieldMapper = new FieldMapper(
 		plugin.settings.fieldMapping,

@@ -90,6 +90,7 @@ export interface ProjectAutosuggestSettings {
 }
 
 export interface TaskNotesSettings {
+	vaultTimeZone: string;
 	dateDisplayFormat: "default" | "iso";
 	tasksFolder: string; // Now just a default location for new tasks
 	moveArchivedTasks: boolean; // Whether to move tasks to archive folder when archived

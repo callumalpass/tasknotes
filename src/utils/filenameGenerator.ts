@@ -1,3 +1,4 @@
+import { vaultDate } from "./vaultTime";
 import { formatStableDate } from "../i18n/formatters";
 import { format } from "date-fns";
 import type { Vault } from "obsidian";
@@ -72,7 +73,7 @@ export function generateICSNoteFilename(
 		throw new Error("Title cannot be empty");
 	}
 
-	const now = context.date || new Date();
+	const now = context.date || vaultDate();
 
 	// Validate date
 	if (!(now instanceof Date) || isNaN(now.getTime())) {
@@ -158,7 +159,7 @@ export function generateTaskFilename(
 		throw new Error("Title cannot be empty");
 	}
 
-	const now = context.date || new Date();
+	const now = context.date || vaultDate();
 
 	// Validate date
 	if (!(now instanceof Date) || isNaN(now.getTime())) {
@@ -247,7 +248,7 @@ function generateZettelId(date: Date): string {
 	const datePart = format(date, "yyMMdd");
 
 	// Calculate seconds since midnight
-	const midnight = new Date(date);
+	const midnight = vaultDate(date);
 	midnight.setHours(0, 0, 0, 0);
 	const secondsSinceMidnight = Math.floor((date.getTime() - midnight.getTime()) / 1000);
 
@@ -665,7 +666,7 @@ export function generateOccurrenceFilename(
 		return generateCustomFilename(
 			context,
 			template,
-			context.date || new Date(),
+			context.date || vaultDate(),
 			occurrenceVariables
 		);
 	} catch (error) {

@@ -115,6 +115,7 @@
 	"dependencies": {
 		"@callumalpass/mdbase-interop": "0.1.0-rc.2",
 		"@codemirror/view": "^6.38.6",
+		"@date-fns/tz": "1.5.0",
 		"@modelcontextprotocol/sdk": "1.32.1",
 		"@tasknotes/calendar": "0.1.13",
 		"@tasknotes/calendar-service-client": "0.1.2",

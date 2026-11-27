@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { addDays, format, startOfDay } from "date-fns";
 import type { CalendarEventItem } from "./calendarEngine";
 import { eventApiFromItem } from "./calendarEngine";
@@ -12,7 +13,7 @@ function itemDays(item: CalendarEventItem): string[] {
 	const first = startOfDay(event.start);
 	let last = first;
 	if (event.end && event.end > event.start) {
-		last = startOfDay(event.allDay ? addDays(event.end, -1) : new Date(event.end.getTime() - 1));
+		last = startOfDay(event.allDay ? addDays(event.end, -1) : vaultDate(event.end.getTime() - 1));
 	}
 	const days: string[] = [];
 	for (let day = first; day <= last && days.length < MAX_SPAN_DAYS; day = addDays(day, 1)) {

@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
 import TaskNotesPlugin from "../main";
@@ -579,7 +580,7 @@ export async function renderTaskNotesInBasesView(
 			// Pass current date as targetDate for proper recurring task completion styling
 			const cardOptionsWithDate = {
 				...cardOptions,
-				targetDate: new Date(),
+				targetDate: vaultDate(),
 			};
 			const taskCard = createTaskCard(
 				taskInfo,

@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { captureTaskUndo } from "./taskMutationUndo";
 import { showTaskUndo, taskPropertyLabel } from "./taskPropertyPickers";
 import { showToast } from "./kit/toast";
@@ -43,7 +44,7 @@ export class TaskActionCoordinator {
 		const { openTaskSelectorWithCreate } = await import(
 			"../modals/TaskSelectorWithCreateModal"
 		);
-		const targetDate = new Date();
+		const targetDate = vaultDate();
 		const result = await openTaskSelectorWithCreate(this.plugin, { targetDate });
 
 		if (result.type === "selected" || result.type === "created") {
@@ -216,7 +217,7 @@ export class TaskActionCoordinator {
 
 	async openTaskSelectorForTimeTracking(): Promise<void> {
 		try {
-			const targetDate = new Date();
+			const targetDate = vaultDate();
 			const allTasks = await this.plugin.cacheManager.getAllTasks();
 			const availableTasks = allTasks
 				.filter((task) => !task.archived)

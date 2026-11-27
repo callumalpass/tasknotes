@@ -1,7 +1,6 @@
 import { formatUIDate } from "../i18n/formatters";
 import {
 	format,
-	parseISO,
 	isSameDay,
 	isBefore,
 	isValid,
@@ -18,6 +17,7 @@ import {
 	type Day,
 	// subDays, subWeeks, subMonths, subYears - removed unused imports
 } from "date-fns";
+import { createVaultDate, getConfiguredVaultTimeZone, parseVaultISO, vaultDate, vaultDay } from "./vaultTime";
 import { createTaskNotesLogger } from "./tasknotesLogger";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Utils/DateUtils" });
@@ -91,12 +91,12 @@ function parseDateToLocalInternal(dateString: string): Date {
 
 			// Calculate the date of the first day of the specified week
 			// ISO week starts on Monday
-			const jan4 = new Date(yearNum, 0, 4); // January 4th is always in week 1
+			const jan4 = createVaultDate(yearNum, 0, 4); // January 4th is always in week 1
 			const jan4Day = jan4.getDay(); // 0 = Sunday, 1 = Monday, etc.
-			const mondayOfWeek1 = new Date(jan4);
+			const mondayOfWeek1 = vaultDate(jan4);
 			mondayOfWeek1.setDate(jan4.getDate() - (jan4Day === 0 ? 6 : jan4Day - 1));
 
-			const targetWeekMonday = new Date(mondayOfWeek1);
+			const targetWeekMonday = vaultDate(mondayOfWeek1);
 			targetWeekMonday.setDate(mondayOfWeek1.getDate() + (weekNum - 1) * 7);
 
 			if (!isValid(targetWeekMonday)) {
@@ -125,7 +125,7 @@ function parseDateToLocalInternal(dateString: string): Date {
 		if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?/.test(trimmed)) {
 			// Convert space to 'T' to make it ISO format
 			const isoFormat = trimmed.replace(" ", "T");
-			const parsed = parseISO(isoFormat);
+			const parsed = parseVaultISO(isoFormat);
 
 			if (!isValid(parsed)) {
 				const error = new Error(`Invalid space-separated datetime: ${dateString}`);
@@ -145,7 +145,7 @@ function parseDateToLocalInternal(dateString: string): Date {
 		// Check if the string contains timezone information (original logic)
 		if (trimmed.includes("T") || trimmed.includes("Z") || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
 			// Has timezone info - parse as-is to preserve timezone
-			const parsed = parseISO(trimmed);
+			const parsed = parseVaultISO(trimmed);
 			if (!isValid(parsed)) {
 				const error = new Error(`Invalid timezone-aware date: ${dateString}`);
 				tasknotesLogger.warn("Date parsing error - timezone-aware format invalid:", {
@@ -177,7 +177,7 @@ function parseDateToLocalInternal(dateString: string): Date {
 			}
 
 			const [, year, month, day] = dateMatch;
-			const parsed = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+			const parsed = createVaultDate(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
 
 			if (
 				!isValid(parsed) ||
@@ -385,7 +385,7 @@ export function isBeforeDateSafe(date1: string, date2: string): boolean {
  * Get today in appropriate format for comparison
  */
 export function getTodayString(): string {
-	return format(new Date(), "yyyy-MM-dd");
+	return vaultDay();
 }
 
 /**
@@ -393,8 +393,8 @@ export function getTodayString(): string {
  * This represents "today" from the user's perspective.
  */
 export function getTodayLocal(): Date {
-	const now = new Date();
-	return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	const now = vaultDate();
+	return createVaultDate(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 /**
@@ -413,7 +413,7 @@ export function parseDateAsLocal(dateString: string): Date {
 	const dateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 	if (dateMatch) {
 		const [, year, month, day] = dateMatch;
-		const parsed = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+		const parsed = createVaultDate(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
 
 		if (
 			!isValid(parsed) ||
@@ -522,6 +522,8 @@ export function validateDateInput(dateValue: string): boolean {
 export function addDaysToDateString(dateString: string, days: number): string {
 	try {
 		const parsed = parseDateToLocalInternal(dateString);
+		const floatingTime = storedFloatingTime(dateString);
+		if (floatingTime) return `${addDaysToDateString(dateString.trim().slice(0, 10), days)}T${floatingTime}`;
 		const result = addDaysFns(parsed, days);
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
@@ -597,7 +599,7 @@ export function addYearsToDateString(dateString: string, years: number): string 
  */
 export function getStartOfWeekString(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1): string {
 	try {
-		const result = startOfWeek(new Date(), { weekStartsOn });
+		const result = startOfWeek(vaultDate(), { weekStartsOn });
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
 		tasknotesLogger.error("Error getting start of week:", {
@@ -623,7 +625,7 @@ export function getFirstDayOfNextWeek(date: Date, weekStartsOn: Day = 1): Date {
  */
 export function getEndOfWeekString(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1): string {
 	try {
-		const result = endOfWeek(new Date(), { weekStartsOn });
+		const result = endOfWeek(vaultDate(), { weekStartsOn });
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
 		tasknotesLogger.error("Error getting end of week:", {
@@ -640,7 +642,7 @@ export function getEndOfWeekString(weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1):
  */
 export function getStartOfMonthString(): string {
 	try {
-		const result = startOfMonth(new Date());
+		const result = startOfMonth(vaultDate());
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
 		tasknotesLogger.error("Error getting start of month:", {
@@ -657,7 +659,7 @@ export function getStartOfMonthString(): string {
  */
 export function getEndOfMonthString(): string {
 	try {
-		const result = endOfMonth(new Date());
+		const result = endOfMonth(vaultDate());
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
 		tasknotesLogger.error("Error getting end of month:", {
@@ -674,7 +676,7 @@ export function getEndOfMonthString(): string {
  */
 export function getStartOfYearString(): string {
 	try {
-		const result = startOfYear(new Date());
+		const result = startOfYear(vaultDate());
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
 		tasknotesLogger.error("Error getting start of year:", {
@@ -691,7 +693,7 @@ export function getStartOfYearString(): string {
  */
 export function getEndOfYearString(): string {
 	try {
-		const result = endOfYear(new Date());
+		const result = endOfYear(vaultDate());
 		return format(result, "yyyy-MM-dd");
 	} catch (error) {
 		tasknotesLogger.error("Error getting end of year:", {
@@ -824,13 +826,7 @@ export function getCurrentTimestamp(): string {
  * Get current date in YYYY-MM-DD format for completion dates
  */
 export function getCurrentDateString(): string {
-	// For user actions (task completion), use local date extraction
-	// This ensures completion is recorded as user's local calendar day
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = String(now.getMonth() + 1).padStart(2, "0");
-	const day = String(now.getDate()).padStart(2, "0");
-	return `${year}-${month}-${day}`;
+	return vaultDay();
 }
 
 /**
@@ -843,7 +839,7 @@ export function parseTimestamp(timestampString: string): Date {
 		}
 
 		// Always use parseISO for timestamps as they should be in ISO format
-		const parsed = parseISO(timestampString);
+		const parsed = parseVaultISO(timestampString);
 		if (!isValid(parsed)) {
 			throw new Error(`Invalid timestamp: ${timestampString}`);
 		}
@@ -905,7 +901,7 @@ export function formatTimestampForDisplay(
 export function hasTimeComponent(dateString: string): boolean {
 	if (!dateString) return false;
 	// Check for 'T' followed by time pattern (HH:mm or HH:mm:ss)
-	return /T\d{2}:\d{2}/.test(dateString);
+	return /[T ]\d{2}:\d{2}/.test(dateString);
 }
 
 /**
@@ -918,6 +914,10 @@ export function getDatePart(dateString: string): string {
 		// If it's already a date-only string (YYYY-MM-DD), return as-is
 		if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
 			return dateString;
+		}
+
+		if (getConfiguredVaultTimeZone() && /[T ]\d{2}:\d{2}/.test(dateString)) {
+			return vaultDay(parseDateToLocalInternal(dateString));
 		}
 
 		// For datetime strings, extract just the date part
@@ -940,6 +940,12 @@ export function getDatePart(dateString: string): string {
 	}
 }
 
+/** Preserve the chosen clock fields when editing or moving a floating date. */
+function storedFloatingTime(value: string): string | undefined {
+	if (!getConfiguredVaultTimeZone()) return;
+	return /^\d{4}-\d{2}-\d{2}[T ](\d{2}:\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(value.trim())?.[1];
+}
+
 /**
  * Extract just the time part from a datetime string, returns null if no time
  */
@@ -950,7 +956,7 @@ export function getTimePart(dateString: string): string | null {
 
 	try {
 		const parsed = parseDateToLocalInternal(dateString);
-		return format(parsed, "HH:mm");
+		return storedFloatingTime(dateString) ?? format(parsed, "HH:mm");
 	} catch (error) {
 		tasknotesLogger.error("Error extracting time part:", {
 			category: "validation",
@@ -1001,7 +1007,7 @@ export function formatDateTime(
 		return "";
 	}
 
-	return formatUIDate(date, `${getDateDisplayPattern(dateDisplayFormat)} ${timeFormat === "12" ? "h:mm a" : "HH:mm"}`);
+	return formatUIDate(vaultDate(date), `${getDateDisplayPattern(dateDisplayFormat)} ${timeFormat === "12" ? "h:mm a" : "HH:mm"}`);
 }
 
 /**
@@ -1179,6 +1185,14 @@ export function formatDateTimeForDisplay(
  */
 export function isBeforeDateTimeAware(date1: string, date2: string): boolean {
 	try {
+		if (getConfiguredVaultTimeZone()) {
+			const timed1 = hasTimeComponent(date1);
+			const timed2 = hasTimeComponent(date2);
+			const endOfDay = (date: string) => parseDateToLocalInternal(`${getDatePart(date)}T23:59:59.999`);
+			const first = !timed1 && timed2 ? endOfDay(date1) : parseDateToLocalInternal(date1);
+			const second = timed1 && !timed2 ? endOfDay(date2) : parseDateToLocalInternal(date2);
+			return first.getTime() < second.getTime();
+		}
 		// Step 1: Parse all dates to UTC anchors for consistency
 		const d1UTC = parseDateToUTC(date1);
 		const d2UTC = parseDateToUTC(date2);
@@ -1281,7 +1295,7 @@ export function isTodayTimeAware(dateString: string): boolean {
 		const taskDate = hasTimeComponent(dateString)
 			? parseDateToLocalInternal(dateString)
 			: parseDateAsLocal(dateString);
-		const now = new Date();
+		const now = vaultDate();
 
 		return isSameDay(taskDate, now);
 	} catch (error) {
@@ -1378,7 +1392,7 @@ export function validateCompleteInstances(instances: unknown[]): string[] {
  * Get current date+time in local timezone as YYYY-MM-DDTHH:mm format
  */
 export function getCurrentDateTimeString(): string {
-	const now = new Date();
+	const now = vaultDate();
 	return format(now, "yyyy-MM-dd'T'HH:mm");
 }
 
@@ -1387,6 +1401,17 @@ export function getCurrentDateTimeString(): string {
  */
 export function addDaysToDateTime(dateString: string, days: number): string {
 	try {
+		// Floating values are clock times: add calendar days and keep the clock time,
+		// even when the original or the result falls in a DST gap in the vault zone.
+		const floating = dateString
+			.trim()
+			.match(/^(\d{4})-(\d{2})-(\d{2})T((?:[01]\d|2[0-3]):[0-5]\d)(?::[0-5]\d(?:\.\d+)?)?$/);
+		if (floating) {
+			const [, year, month, day, clock] = floating;
+			const civil = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day) + days));
+			return `${civil.toISOString().slice(0, 10)}T${clock}`;
+		}
+
 		const parsed = parseDateToLocalInternal(dateString);
 		const result = addDaysFns(parsed, days);
 

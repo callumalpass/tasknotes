@@ -2,6 +2,14 @@
 
 These settings control the foundational aspects of the plugin, such as task identification, file storage, and click behavior. Most are on the **Task files** settings page; each section below names where to find it.
 
+## Vault time zone
+
+Set **Vault time zone** to a named IANA zone such as `Australia/Melbourne`. Leave it blank to use the device's time zone. When `mdbase.yaml` specifies a valid `settings.timezone`, the collection zone takes precedence.
+
+TaskNotes uses this zone for “today,” calendar days, and times without an offset. Changing the zone changes how those clock times are read. Dates without a time keep their calendar day. Timestamps with an offset, such as time entries, keep their instant and are displayed in the vault time zone.
+
+Obsidian's own Bases formulas, such as `today()`, use the device's time zone and can differ from TaskNotes near midnight.
+
 ## Task Storage
 
 Location: **Settings → TaskNotes → Task files → Task storage**

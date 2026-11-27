@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, vaultDay } from "../utils/vaultTime";
 import type { EventRef } from "obsidian";
 import { EVENT_DATE_CHANGED } from "../types";
 
@@ -22,7 +23,9 @@ export function registerBasesDateRollover({
 	getElement,
 	onDateRollover,
 }: BasesDateRolloverOptions): () => void {
-	let drawnDay = new Date().toDateString();
+	const dateKey = () => getConfiguredVaultTimeZone() ? vaultDay() : new Date().toDateString();
+	let drawnDay = dateKey();
+	let drawnZone = getConfiguredVaultTimeZone();
 	let showObserver: ResizeObserver | null = null;
 
 	const stopWaiting = (): void => {
@@ -32,8 +35,10 @@ export function registerBasesDateRollover({
 
 	const redraw = (): void => {
 		const previousDay = drawnDay;
-		drawnDay = new Date().toDateString();
-		if (drawnDay !== previousDay) onDateRollover(previousDay);
+		const previousZone = drawnZone;
+		drawnDay = dateKey();
+		drawnZone = getConfiguredVaultTimeZone();
+		if (drawnDay !== previousDay || drawnZone !== previousZone) onDateRollover(previousDay);
 	};
 
 	const ref = emitter.on(EVENT_DATE_CHANGED, () => {

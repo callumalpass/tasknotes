@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -823,7 +824,7 @@ export class PomodoroService {
 				}
 				const completedForToday = isTaskInstanceCompleted(
 					task,
-					new Date(),
+					vaultDate(),
 					this.plugin.statusManager,
 					this.plugin.settings.defaultTaskStatus
 				);

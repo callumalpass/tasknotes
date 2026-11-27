@@ -1,3 +1,4 @@
+import { parseVaultISO, vaultDate } from "../utils/vaultTime";
 import type { TaskInfo } from "../types";
 import { parseDateToUTC } from "../utils/dateUtils";
 import { normalizeDateValueForCalendar } from "./calendarPropertyEvents";
@@ -123,7 +124,7 @@ export function toCalendarInitialDateCandidate(
 
 	const compareDate = normalized.isAllDay
 		? parseDateToUTC(normalized.value as string)
-		: new Date(normalized.value);
+		: typeof normalized.value === "string" ? parseVaultISO(normalized.value) : vaultDate(normalized.value);
 	if (Number.isNaN(compareDate.getTime())) return null;
 
 	return { compare: compareDate, value: normalized.value };

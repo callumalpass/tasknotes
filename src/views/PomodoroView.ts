@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { formatUIDate, uiNumber, uiDuration } from "../i18n/formatters";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
@@ -686,7 +687,7 @@ export class PomodoroView extends ItemView {
 
 		try {
 			const unarchivedTasks = getCachedUnarchivedPomodoroTasks(this.plugin);
-			const targetDate = new Date();
+			const targetDate = vaultDate();
 
 			if (unarchivedTasks.length === 0) {
 				showNotice(this.t(msg({ message: "No unarchived tasks found. Create some tasks first.", context: "views.pomodoro.notices.noTasks" })));
@@ -777,7 +778,7 @@ export class PomodoroView extends ItemView {
 						this.plugin
 					)
 				: undefined;
-			const targetDate = new Date();
+			const targetDate = vaultDate();
 			const displayTask = getTaskWithInstanceStatus(
 				task,
 				targetDate,
@@ -815,7 +816,7 @@ export class PomodoroView extends ItemView {
 					task &&
 					!isTaskInstanceCompleted(
 						task,
-						new Date(),
+						vaultDate(),
 						this.plugin.statusManager,
 						this.plugin.settings.defaultTaskStatus
 					) &&
@@ -1035,7 +1036,7 @@ export class PomodoroView extends ItemView {
 		if (state.currentSession) {
 			if (state.isRunning) {
 				const projectedEndTime = formatTime(
-					new Date(getProjectedPomodoroEndTimeMs(state.timeRemaining, nowMs)),
+					vaultDate(getProjectedPomodoroEndTimeMs(state.timeRemaining, nowMs)),
 					this.plugin.settings.calendarViewSettings.timeFormat
 				);
 				text = this.t(msg({ message: "Ends at {endTime}", context: "views.pomodoro.meta.running" }), {
@@ -1233,7 +1234,7 @@ export class PomodoroView extends ItemView {
 			const row = container.createDiv({ cls: "pomodoro-view__recent-item" });
 			row.createSpan({
 				cls: "pomodoro-view__recent-when",
-				text: formatUIDate(new Date(session.startTime), timeFormat),
+				text: formatUIDate(vaultDate(Date.parse(session.startTime)), timeFormat),
 			});
 			row.createSpan({
 				cls: "pomodoro-view__recent-duration",

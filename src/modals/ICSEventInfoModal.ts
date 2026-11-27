@@ -1,3 +1,4 @@
+import { parseVaultISO } from "../utils/vaultTime";
 import { applyModalShell } from "../ui/kit/modal";
 import { uiText } from "../i18n/runtime";
 import { msg } from "@lingui/core/macro";
@@ -67,12 +68,12 @@ export class ICSEventInfoModal extends Modal {
 			this.icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.start)
 				? this.icsEvent.start + "T00:00:00"
 				: this.icsEvent.start;
-		const startDate = new Date(startDateStr);
+		const startDate = parseVaultISO(startDateStr);
 		const formatEventDate = (date: Date) => formatDateLabel(date, this.plugin.settings, "PPPP", !this.icsEvent.allDay);
 		let dateText = formatEventDate(startDate);
 		if (!this.icsEvent.allDay && this.icsEvent.end) {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(this.icsEvent.end) ? this.icsEvent.end + "T00:00:00" : this.icsEvent.end;
-			const endDate = new Date(endDateStr);
+			const endDate = parseVaultISO(endDateStr);
 			if (Number.isFinite(endDate.getTime()) && endDate >= startDate) dateText = `${dateText} – ${formatEventDate(endDate)}`;
 		}
 

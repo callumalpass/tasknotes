@@ -1,3 +1,4 @@
+import { getVaultTimeZone } from "../utils/vaultTime";
 import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { uiData } from "../i18n/dataText";
 import { displayError } from "../i18n/runtime";
@@ -256,7 +257,7 @@ export class ICSSubscriptionService extends EventEmitter {
 
 			const hasExplicitTzid = typeof rawTzid === "string" && rawTzid.trim().length > 0;
 			if (!hasExplicitTzid) {
-				const localTimeZone = this.getLocalTimeZoneForFloatingTime();
+				const localTimeZone = this.getTimeZoneForFloatingTime();
 				if (localTimeZone) {
 					return wallTimeInZoneToUtcIso(icalTime, localTimeZone);
 				}
@@ -270,9 +271,9 @@ export class ICSSubscriptionService extends EventEmitter {
 		return new Date(unixTime * 1000).toISOString();
 	}
 
-	private getLocalTimeZoneForFloatingTime(): string | null {
+	private getTimeZoneForFloatingTime(): string | null {
 		try {
-			return resolveTzidToIANA(Intl.DateTimeFormat().resolvedOptions().timeZone);
+			return resolveTzidToIANA(getVaultTimeZone());
 		} catch {
 			return null;
 		}

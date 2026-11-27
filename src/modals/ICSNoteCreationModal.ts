@@ -1,3 +1,4 @@
+import { parseVaultISO } from "../utils/vaultTime";
 import { applyModalShell } from "../ui/kit/modal";
 import { uiData } from "../i18n/dataText";
 import { formatStableDate } from "../i18n/formatters";
@@ -158,7 +159,7 @@ export class ICSNoteCreationModal extends Modal {
 				icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
-			const startDate = new Date(startDateStr);
+			const startDate = parseVaultISO(startDateStr);
 			const startDiv = details.createDiv();
 			startDiv.createEl("strong", {
 				text: this.translate(msg({ message: "Start: ", context: "modals.icsNoteCreation.startLabel" })),
@@ -170,7 +171,7 @@ export class ICSNoteCreationModal extends Modal {
 			const endDateStr = /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.end)
 				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
-			const endDate = new Date(endDateStr);
+			const endDate = parseVaultISO(endDateStr);
 			const endDiv = details.createDiv();
 			endDiv.createEl("strong", { text: this.translate(msg({ message: "End: ", context: "modals.icsNoteCreation.endLabel" })) });
 			endDiv.appendText(formatDateLabel(endDate, this.plugin.settings, "PPP", true));
@@ -308,7 +309,7 @@ export class ICSNoteCreationModal extends Modal {
 			icsEvent.allDay && /^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start)
 				? icsEvent.start + "T00:00:00"
 				: icsEvent.start;
-		const startDate = new Date(startDateStr);
+		const startDate = parseVaultISO(startDateStr);
 		return `${icsEvent.title} - ${formatStableDate(startDate, "PPP")}`;
 	}
 

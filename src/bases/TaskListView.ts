@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import {
 	collectTaskListStickyHeaderIndices,
 	updateTaskListStickyHeader,
@@ -197,7 +198,7 @@ export class TaskListView extends BasesViewBase {
 	private taskInfoCache = new Map<string, TaskInfo>();
 	private readonly cardActions: TaskListCardActions;
 	private clickTimeouts = new Map<string, number>();
-	private currentTargetDate = createUTCDateFromLocalCalendarDate(new Date());
+	private currentTargetDate = createUTCDateFromLocalCalendarDate(vaultDate());
 	private containerListenersRegistered = false;
 	private virtualScroller: VirtualScroller<TaskListVirtualItem> | null = null; // Can render TaskInfo or group headers
 	private useVirtualScrolling = false;
@@ -2939,7 +2940,7 @@ export class TaskListView extends BasesViewBase {
 		// Note: taskNotes are already sorted by Bases according to sort configuration
 		// No manual sorting needed - Bases provides pre-sorted data
 
-		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
+		const targetDate = createUTCDateFromLocalCalendarDate(vaultDate());
 		this.currentTargetDate = targetDate;
 
 		const cardOptions = this.getCardOptions(targetDate);
@@ -3136,7 +3137,7 @@ export class TaskListView extends BasesViewBase {
 			return;
 		}
 
-		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
+		const targetDate = createUTCDateFromLocalCalendarDate(vaultDate());
 		this.currentTargetDate = targetDate;
 		const cardOptions = this.getCardOptions(targetDate);
 
@@ -3233,7 +3234,7 @@ export class TaskListView extends BasesViewBase {
 			return;
 		}
 
-		const targetDate = createUTCDateFromLocalCalendarDate(new Date());
+		const targetDate = createUTCDateFromLocalCalendarDate(vaultDate());
 		this.currentTargetDate = targetDate;
 		const cardOptions = this.getCardOptions(targetDate);
 		this.applyGroupingSnapshot(this.createGroupedHierarchySnapshot(groups, renderTasks));

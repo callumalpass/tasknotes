@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import type TaskNotesPlugin from "../main";
 import type { TaskInfo } from "../types";
 import { formatDateForStorage, getDatePart } from "../utils/dateUtils";
@@ -34,7 +35,7 @@ function createUTCDateFromStorageDate(datePart: string): Date | null {
 }
 
 function getTodayTaskCardTargetDate(): Date {
-	const todayLocal = new Date();
+	const todayLocal = vaultDate();
 	return new Date(
 		Date.UTC(todayLocal.getFullYear(), todayLocal.getMonth(), todayLocal.getDate())
 	);

@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, vaultDay } from "../utils/vaultTime";
 import { parseRequestUrl, type HTTPRequestLike, type HTTPResponseLike } from "./httpTypes";
 import { BaseController } from "./BaseController";
 import { TaskManager } from "../utils/TaskManager";
@@ -193,7 +194,7 @@ export class PomodoroController extends BaseController {
 			if (dateParam) {
 				const targetDate = dateParam;
 				sessions = sessions.filter((session: PomodoroSessionHistory) => {
-					const sessionDate = new Date(session.startTime).toISOString().split("T")[0];
+					const sessionDate = (getConfiguredVaultTimeZone() ? vaultDay(new Date(session.startTime)) : new Date(session.startTime).toISOString().slice(0, 10));
 					return sessionDate === targetDate;
 				});
 			}

@@ -4878,6 +4878,11 @@ msgctxt "settings.native.validDate"
 msgid "Enter a valid date in YYYY-MM-DD format."
 msgstr "Введите допустимую дату в формате YYYY-MM-DD."
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.invalid"
+msgid "Enter a valid IANA time zone."
+msgstr "Введите действительный часовой пояс IANA."
+
 #: src/settings/native/properties.ts
 msgctxt "settings.native.enterValue"
 msgid "Enter a value."
@@ -12359,6 +12364,11 @@ msgctxt "settings.integrations.googleCalendarExport.unlinkAllTasks.confirmMessag
 msgid "This will remove all links between tasks and calendar events. The calendar events will remain but will no longer be updated when tasks change. Are you sure?"
 msgstr "Это удалит все связи между задачами и событиями календаря. События календаря останутся, но больше не будут обновляться при изменении задач. Вы уверены?"
 
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.collection"
+msgid "This zone comes from mdbase.yaml. Changing it there changes how TaskNotes reads times without an offset."
+msgstr "Этот часовой пояс задан в mdbase.yaml. Его изменение в этом файле меняет то, как TaskNotes интерпретирует время без смещения относительно UTC."
+
 #: src/i18n/messages.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekdaysShort.thu"
 msgid "Thu"
@@ -12520,6 +12530,11 @@ msgstr "Уведомление об остановке учёта времени
 msgctxt "modals.actionPalette.trackingStopped"
 msgid "Time tracking stopped"
 msgstr "Учёт времени остановлен"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.description"
+msgid "Time zone for times without an offset, such as Australia/Melbourne. Leave blank to use the device time zone."
+msgstr "Часовой пояс для времени без смещения относительно UTC, например Australia/Melbourne. Оставьте поле пустым, чтобы использовать часовой пояс устройства."
 
 #: src/modals/ReminderModal.ts
 #: src/settings/native/creation.ts
@@ -13415,6 +13430,11 @@ msgstr "Значение:"
 msgctxt "modals.icsNoteCreation.vaultRoot"
 msgid "Vault root"
 msgstr "Корень хранилища"
+
+#: src/settings/native/general.ts
+msgctxt "settings.general.vaultTimeZone.name"
+msgid "Vault time zone"
+msgstr "Часовой пояс хранилища"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.view"

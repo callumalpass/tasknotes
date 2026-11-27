@@ -1,6 +1,8 @@
+import { getConfiguredVaultTimeZone, parseVaultDateOption, vaultDate } from "../utils/vaultTime";
  
 import { TaskManager } from "../utils/TaskManager";
 import { TaskInfo } from "../types";
+import { isOverdueTimeAware } from "../utils/dateUtils";
 import { StatusManager } from "./StatusManager";
 
 export interface TaskStats {
@@ -46,7 +48,7 @@ export class TaskStatsService {
 
 			if (
 				task.due &&
-				task.due < today &&
+				(getConfiguredVaultTimeZone() ? isOverdueTimeAware(task.due) : task.due < today) &&
 				!isCompleted &&
 				!task.archived
 			) {
@@ -106,7 +108,7 @@ export class TaskStatsService {
 			return false;
 		}
 
-		const date = new Date(taskDate);
+		const date = parseVaultDateOption(taskDate);
 		return date >= start && date <= end;
 	}
 
@@ -117,9 +119,9 @@ export class TaskStatsService {
 			return range;
 		}
 
-		const now = new Date();
-		const start = new Date(now);
-		const end = new Date(now);
+		const now = vaultDate();
+		const start = vaultDate(now);
+		const end = vaultDate(now);
 
 		switch (range) {
 			case "daily":

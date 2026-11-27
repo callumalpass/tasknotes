@@ -1,3 +1,4 @@
+import { parseVaultDateOption } from "../utils/vaultTime";
 import type { HTTPRequestLike, HTTPResponseLike } from "../api/httpTypes";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -828,8 +829,8 @@ export class MCPService {
 				try {
 					const allTasks = await this.cacheManager.getAllTasks();
 					const period = periodArg || "today";
-					const fromDate = from ? new Date(from) : null;
-					const toDate = to ? new Date(to) : null;
+					const fromDate = from ? parseVaultDateOption(from) : null;
+					const toDate = to ? parseVaultDateOption(to) : null;
 
 					const result = computeTimeSummary(
 						allTasks,
@@ -1021,8 +1022,8 @@ export class MCPService {
 			},
 			async ({ start, end }: CalendarEventsArgs) => {
 				try {
-					const startDate = start ? new Date(start) : null;
-					const endDate = end ? new Date(end) : null;
+					const startDate = start ? parseVaultDateOption(start) : null;
+					const endDate = end ? parseVaultDateOption(end) : null;
 
 					const result = collectCalendarEvents(
 						this.plugin.calendarProviderRegistry,

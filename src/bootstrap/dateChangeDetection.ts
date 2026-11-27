@@ -1,3 +1,6 @@
+import { addDaysToDateString } from "../utils/dateUtils";
+import { getConfiguredVaultTimeZone, parseVaultISO, vaultDay } from "../utils/vaultTime";
+
 interface DateChangeTimer {
 	setInterval(callback: () => void, timeout: number): number;
 	setTimeout(callback: () => void, timeout: number): number;
@@ -24,7 +27,7 @@ export function startDateChangeDetection({
 	timer = window,
 	registerTimer,
 	emitDateChanged,
-	getDateKey = () => new Date().toDateString(),
+	getDateKey = () => getConfiguredVaultTimeZone() ? vaultDay() : new Date().toDateString(),
 	getNow = () => new Date(),
 	intervalMs = 60000,
 }: DateChangeDetectionOptions): DateChangeDetectionControls {
@@ -43,7 +46,7 @@ export function startDateChangeDetection({
 	};
 
 	const scheduleNextMidnightCheck = (): number => {
-		const msUntilMidnight = getMillisecondsUntilNextLocalMidnight(getNow());
+		const msUntilMidnight = getMillisecondsUntilNextVaultMidnight(getNow());
 
 		if (midnightTimeout !== null) {
 			timer.clearTimeout(midnightTimeout);
@@ -74,4 +77,10 @@ export function getMillisecondsUntilNextLocalMidnight(now: Date): number {
 	const midnight = new Date(now);
 	midnight.setHours(24, 0, 0, 0);
 	return midnight.getTime() - now.getTime();
+}
+
+function getMillisecondsUntilNextVaultMidnight(now: Date): number {
+	if (!getConfiguredVaultTimeZone()) return getMillisecondsUntilNextLocalMidnight(now);
+	const tomorrow = addDaysToDateString(vaultDay(now), 1);
+	return parseVaultISO(tomorrow).getTime() - now.getTime();
 }

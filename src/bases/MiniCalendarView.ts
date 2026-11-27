@@ -1,3 +1,4 @@
+import { getConfiguredVaultTimeZone, parseVaultDateOption, vaultDate } from "../utils/vaultTime";
 import { applyModalShell } from "../ui/kit/modal";
 import { displayError } from "../i18n/runtime";
 import { uiNumber, formatUIDate } from "../i18n/formatters";
@@ -617,7 +618,7 @@ export class MiniCalendarView extends BasesViewBase {
 			}
 
 			if (typeof value === "number") {
-				return this.toAnchoredDateString(new Date(value));
+				return this.toAnchoredDateString(vaultDate(value));
 			}
 
 			if (value instanceof Date) {
@@ -668,7 +669,7 @@ export class MiniCalendarView extends BasesViewBase {
 				trimmed.includes(" ") && !trimmed.includes("T")
 					? trimmed.replace(" ", "T")
 					: trimmed;
-			const parsed = new Date(sanitized);
+			const parsed = parseVaultDateOption(sanitized);
 			if (!isNaN(parsed.getTime())) {
 				return this.toAnchoredDateString(parsed);
 			}
@@ -695,7 +696,7 @@ export class MiniCalendarView extends BasesViewBase {
 			return null;
 		}
 
-		const anchored = createUTCDateFromLocalCalendarDate(date);
+		const anchored = createUTCDateFromLocalCalendarDate(getConfiguredVaultTimeZone() ? vaultDate(date) : date);
 		return formatDateForStorage(anchored);
 	}
 
@@ -1777,7 +1778,7 @@ function calendarEntryMinute(entry: NoteEntry): number {
 
 function calendarMinute(value: unknown): number {
 	if (!(value instanceof Date) && typeof value !== "number" && !(typeof value === "string" && /[T ]\d\d:\d\d/.test(value))) return -1;
-	const date = value instanceof Date ? value : new Date(value);
+	const date = typeof value === "string" ? parseVaultDateOption(value) : vaultDate(value);
 	return Number.isNaN(date.getTime()) ? -1 : date.getHours() * 60 + date.getMinutes();
 }
 

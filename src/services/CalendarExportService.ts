@@ -1,3 +1,4 @@
+import { parseVaultISO } from "../utils/vaultTime";
 import { uiData } from "../i18n/dataText";
 import { TaskInfo } from "../types";
 import { format, parseISO } from "date-fns";
@@ -506,10 +507,10 @@ export class CalendarExportService {
 		// Handle different date formats
 		if (this.hasTimeComponent(normalizedDate)) {
 			// ISO format or local datetime
-			return parseISO(normalizedDate);
+			return parseVaultISO(normalizedDate);
 		} else {
 			// Date only - assume start of day
-			return parseISO(`${normalizedDate}T00:00:00`);
+			return parseVaultISO(`${normalizedDate}T00:00:00`);
 		}
 	}
 
@@ -624,7 +625,8 @@ export class CalendarExportService {
 				let fallbackDate: Date;
 				if (task.dateCreated) {
 					// Use task creation date if available
-					fallbackDate = new Date(task.dateCreated);
+					const created = parseVaultISO(task.dateCreated);
+					fallbackDate = Number.isFinite(created.getTime()) ? created : new Date();
 				} else {
 					// Fallback to current date
 					fallbackDate = new Date();

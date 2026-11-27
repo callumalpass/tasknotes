@@ -1,3 +1,4 @@
+import { vaultDate } from "../utils/vaultTime";
 import { changeTaskProperty, showTaskUndo, taskMovementMessage, taskReorderMessage, type TaskUndoFeedback } from "../ui/taskPropertyPickers";
 import { openTaskPropertySettings } from "../settings/TaskNotesSettingTab";
 import { unconfiguredValueLabel } from "../ui/kit/glyphs";
@@ -4703,7 +4704,7 @@ export class KanbanView extends BasesViewBase {
 	 */
 	private getCardOptions(): TaskCardOptions {
 		// Use UTC-anchored "today" for correct recurring task completion status
-		const now = new Date();
+		const now = vaultDate();
 		const targetDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 
 		// Hide status indicators on cards when consolidation is enabled and grouped by status

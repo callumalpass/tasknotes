@@ -3,6 +3,7 @@ import { languagePackConfig } from "../../i18n/languagePackConfig";
 import { MessageDescriptor } from "../../i18n";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
 import type { HideIdentifyingTagsMode } from "../../types/settings";
+import { namedTimeZone } from "../../utils/vaultTime";
 import { hasUsablePropertyTaskIdentification } from "../../utils/taskIdentification";
 import { SettingsContext } from "../native/SettingsContext";
 import type { SettingDefinitionGroup } from "obsidian";
@@ -64,6 +65,23 @@ export function generalDefinitions(ctx: SettingsContext): SettingDefinitionGroup
 			type: "group",
 			heading: translate(msg({ message: "Task storage", context: "settings.general.taskStorage.header" })),
 			items: [
+				ctx.text("vaultTimeZone", {
+					name: translate(msg({ message: "Vault time zone", context: "settings.general.vaultTimeZone.name" })),
+					desc: plugin.vaultTimeZoneService?.collectionTimeZone
+						? translate(msg({ message: "This zone comes from mdbase.yaml. Changing it there changes how TaskNotes reads times without an offset.", context: "settings.general.vaultTimeZone.collection" }))
+						: translate(msg({ message: "Time zone for times without an offset, such as Australia/Melbourne. Leave blank to use the device time zone.", context: "settings.general.vaultTimeZone.description" })),
+					getValue: () => plugin.vaultTimeZoneService?.collectionTimeZone ?? plugin.settings.vaultTimeZone,
+					setValue: (value) => {
+						if (plugin.vaultTimeZoneService?.collectionTimeZone) return;
+						plugin.settings.vaultTimeZone = value.trim();
+						ctx.saveText();
+					},
+					validate: (value) => {
+						if (value.trim() && !namedTimeZone(value.trim())) {
+							return translate(msg({ message: "Enter a valid IANA time zone.", context: "settings.general.vaultTimeZone.invalid" }));
+						}
+					},
+				}, () => Boolean(plugin.vaultTimeZoneService?.collectionTimeZone)),
 				ctx.text("tasksFolder", {
 					name: translate(msg({ message: "Default tasks folder", context: "settings.general.taskStorage.defaultFolder.name" })),
 					desc: translate(msg({ message: "Default location for new tasks. Supports folder template variables like '{{currentNotePath}}', '{{currentNoteTitle}}', and '{{projectFilePath}}', plus Daily Notes-style date tokens like YYYY/MM/DD.", context: "settings.general.taskStorage.defaultFolder.description" })),
