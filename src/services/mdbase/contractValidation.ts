@@ -1,18 +1,36 @@
 import Ajv2020, { type ValidateFunction } from "ajv/dist/2020";
 import addFormats from "ajv-formats";
-import { canonicalTaskNotesResources } from "../canonicalTaskNotesPack";
+import { canonicalTaskNotesResources, TASKNOTES_TASK_CONTRACT_VERSION } from "../canonicalTaskNotesPack";
 
 type Schema = Record<string, unknown>;
-const schema = (prefix: string): Schema => {
-	const resource = canonicalTaskNotesResources.find((entry) => entry.source.startsWith(prefix));
-	if (!resource) throw new Error(`Missing canonical schema: ${prefix}`);
+const schema = (name: string): Schema => {
+	const path = `schemas/${name}/${TASKNOTES_TASK_CONTRACT_VERSION}.schema.json`;
+	const resource = canonicalTaskNotesResources.find((entry) => entry.source === path);
+	if (!resource) throw new Error(`Missing canonical schema: ${path}`);
 	return JSON.parse(resource.document) as Schema;
 };
-export const taskRecordSchema = schema("schemas/tasknotes.task/");
-const ajv = new Ajv2020({ allErrors: true, strict: false });
-addFormats(ajv);
+function isLocalDateTime(value: string): boolean {
+	const match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\.[0-9]+)?)?$/.exec(value);
+	if (!match || match[0] !== value) return false;
+	const year = Number(match[1]);
+	const month = Number(match[2]);
+	const day = Number(match[3]);
+	const date = new Date(0);
+	date.setUTCFullYear(year, month - 1, day);
+	return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function createCompiler(): Ajv2020 {
+	const compiler = new Ajv2020({ allErrors: true, strict: false });
+	addFormats(compiler);
+	compiler.addFormat("local-date-time", isLocalDateTime);
+	return compiler;
+}
+
+export const taskRecordSchema = schema("tasknotes.task");
+const ajv = createCompiler();
 export const validateTaskRecord = ajv.compile(taskRecordSchema);
-export const validateTaskBinding = ajv.compile(schema("schemas/tasknotes.task.binding/"));
+export const validateTaskBinding = ajv.compile(schema("tasknotes.task.binding"));
 
 export function validationIssues(validator: ValidateFunction): string[] {
 	return (validator.errors ?? []).map((error) =>
@@ -42,7 +60,5 @@ export function validateContractMapping(
 
 export function compileRecordSchema(value: unknown): ValidateFunction {
 	// Isolated compiler avoids collisions between user schema $ids and canonical $ids.
-	const compiler = new Ajv2020({ allErrors: true, strict: false });
-	addFormats(compiler);
-	return compiler.compile(value as Schema);
+	return createCompiler().compile(value as Schema);
 }

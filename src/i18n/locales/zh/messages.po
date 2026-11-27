@@ -4328,6 +4328,11 @@ msgctxt "bases/MiniCalendarView: NoteSelectionModal purpose"
 msgid "Dismiss"
 msgstr "关闭"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "mdbaseTimezone.dismiss"
+msgid "Dismiss"
+msgstr "关闭"
+
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.groups.display"
 msgid "Display"
@@ -10222,6 +10227,11 @@ msgctxt "settings.integrations.autoExport.status.serviceNotInitialized"
 msgid "Service not initialized - please restart Obsidian"
 msgstr "服务未初始化 - 请重启 Obsidian"
 
+#: src/services/MdbaseSpecService.ts
+msgctxt "mdbaseTimezone.offer"
+msgid "Set a time zone for this mdbase collection. Times without an offset will be read in that zone."
+msgstr "为此 mdbase 集合设置时区。没有 UTC 偏移量的时间将按该时区解读。"
+
 #: src/components/DateContextMenu.ts
 #: src/modals/DateTimePickerModal.ts
 msgctxt "contextMenus.date.modal.title"
@@ -13247,6 +13257,11 @@ msgstr "网址"
 msgctxt "settings.features.timeblocking.usage"
 msgid "Usage: Drag on the calendar to create events. Select ''Timeblock'' from the context menu (only visible when timeblocking is enabled). Drag to move existing timeblocks. Resize edges to adjust duration."
 msgstr "用法：在日历上拖动以创建事件。从上下文菜单中选择''时间块''（仅在启用时间块时可见）。拖动以移动现有时间块。调整边缘以修改持续时间。"
+
+#: src/services/MdbaseSpecService.ts
+msgctxt "mdbaseTimezone.use"
+msgid "Use {zone}"
+msgstr "使用 {zone}"
 
 #: src/settings/components/FilterSettingsComponent.ts
 msgctxt "Property value filter syntax help"

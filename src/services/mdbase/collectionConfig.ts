@@ -12,6 +12,32 @@ export function effectiveMembershipKeys(value: unknown): string[] {
 	return value as string[];
 }
 
+export function detectedCollectionTimezone(): string | undefined {
+	try {
+		const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+		// Intl also accepts numeric offsets. The collection needs a named zone.
+		if (!zone || !/^[A-Za-z]/.test(zone) || zone.toLowerCase() === "local") return;
+		new Intl.DateTimeFormat("en", { timeZone: zone });
+		return zone;
+	} catch {
+		return undefined;
+	}
+}
+
+/** Set a missing zone without changing existing settings or replacing a configured zone. */
+export function addCollectionTimezone(markdown: string, zone = detectedCollectionTimezone()): string {
+	if (!zone) return markdown;
+	const document = YAML.parseDocument(markdown);
+	if (document.errors.length || !YAML.isMap(document.contents) ||
+		(document.has("settings") && !YAML.isMap(document.get("settings", true)))) {
+		throw new Error("Cannot set a time zone in an invalid collection configuration.");
+	}
+	const path = ["settings", "timezone"];
+	if (document.hasIn(path)) return markdown;
+	document.setIn(path, zone);
+	return document.toString();
+}
+
 /** Only add required values. Keep user extensions, ordering, comments and membership semantics. */
 export function addAppCollectionConfig(markdown: string, settings: TaskNotesSettings): string {
 	const document = YAML.parseDocument(markdown);

@@ -35,7 +35,7 @@ export function appSettingsSchemasFolder(contractsFolder: string): string {
 
 /**
  * The settings contracts, their schemas and the tasknotes-settings type, laid
- * out as the tasknotes.task 0.3.0-rc.22 pack installs them.
+ * out as the tasknotes.task 0.3.0-rc.23 pack installs them.
  */
 export function appSettingsSupportResources(
 	contractsFolder: string,

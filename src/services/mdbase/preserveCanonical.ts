@@ -1,6 +1,6 @@
-import YAML, { isAlias, isSeq, visit } from "yaml";
+import YAML, { isSeq, visit } from "yaml";
 import type { TaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
-import { localTaskDateSchema } from "../canonicalTaskNotesPack";
+import { TASKNOTES_MDBASE_TYPE_VERSION, taskDateSchemas } from "../canonicalTaskNotesPack";
 import { applyTaskExclusions } from "./collectionConfig";
 import { requireFrontmatter } from "./frontmatter";
 
@@ -13,65 +13,72 @@ const normalized = (value: unknown): unknown => Array.isArray(value) ? value.map
 const implementation = (type: ObjectValue): ObjectValue | undefined =>
 	Array.isArray(type.implements) ? type.implements.map(object).find((value) => value.contract === "tasknotes.task") : undefined;
 
-const originalTaskDate = {
-	anyOf: [
-		{ type: "string", format: "date" },
-		{ type: "string", format: "date-time" },
-	],
+const dateTime = { type: "string", format: "date-time" };
+const legacyDateTime = {
+	type: "string",
+	pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})?$",
 };
-const originalLegacyTaskDate = {
-	anyOf: [{
-		anyOf: [
-			{ type: "string", format: "date" },
-			{
-				type: "string",
-				pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})?$",
-			},
-		],
-	}, { type: "null" }],
+const intermediateLocalDateTime = {
+	type: "string",
+	pattern: "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$",
 };
+const legacyTaskDateBranches = [{ type: "string", format: "date" }, legacyDateTime];
+const nullable = (schema: ObjectValue): ObjectValue => ({ anyOf: [schema, { type: "null" }] });
+const sameSchema = (left: unknown, right: unknown): boolean =>
+	JSON.stringify(normalized(left)) === JSON.stringify(normalized(right));
 
-/** Add wall-clock dates to the two original generated field schemas. */
-export function allowGeneratedLocalTaskDates(markdown: string, type: ObjectValue): string {
+/** Upgrade the field schemas emitted by earlier generators, keeping custom rules and legacy nulls. */
+function upgradeGeneratedTaskDates(document: YAML.Document, type: ObjectValue): void {
 	const fields = object(implementation(type)?.fields);
 	const managed = object(type["x-tasknotes-generator"]).managed_fields;
-	if (!Array.isArray(managed)) return markdown;
+	if (!Array.isArray(managed)) return;
 
 	const basePath = ["schema", "value", "properties"];
 	const properties = object(object(object(type.schema).value).properties);
-	const affected = [...new Set([fields.due, fields.scheduled])].flatMap((field) => {
-		if (typeof field !== "string" || !managed.includes(field)) return [];
-		const schema = JSON.stringify(normalized(properties[field]));
-		if (schema === JSON.stringify(normalized(originalTaskDate))) {
-			return [{ field, nullable: false }];
-		}
-		if (schema === JSON.stringify(normalized(originalLegacyTaskDate))) {
-			return [{ field, nullable: true }];
-		}
-		return [];
-	});
-	if (!affected.length) return markdown;
+	const replacements = new Map<string, ObjectValue>();
+	for (const [role, schema] of Object.entries(taskDateSchemas)) {
+		const field = fields[role];
+		if (typeof field !== "string" || !managed.includes(field)) continue;
 
-	const { frontmatter, body, prefix } = requireFrontmatter(markdown);
-	const document = YAML.parseDocument(frontmatter);
-	const originals = affected.map(({ field }) => document.getIn([...basePath, field], true));
+		const isTaskDate = role === "due" || role === "scheduled";
+		const original = isTaskDate ? { anyOf: schema.anyOf.slice(0, 2) } : dateTime;
+		const legacy = isTaskDate ? { anyOf: legacyTaskDateBranches } : legacyDateTime;
+		const intermediate = { anyOf: [...schema.anyOf.slice(0, 2), intermediateLocalDateTime] };
+		const prior = properties[field];
+		if (sameSchema(prior, original) || (isTaskDate && sameSchema(prior, intermediate)) ||
+			(role === "dateCreated" && sameSchema(prior, legacy))) {
+			replacements.set(field, schema);
+		} else if (sameSchema(prior, nullable(legacy)) ||
+			(isTaskDate && sameSchema(prior, nullable({ anyOf: [...legacyTaskDateBranches, intermediateLocalDateTime] })))) {
+			replacements.set(field, { anyOf: [...schema.anyOf, { type: "null" }] });
+		}
+	}
+	if (!replacements.size) return;
+
+	// References outside a replaced schema keep their previous value, including
+	// references to anchors inside its branches.
+	const replacedNodes = new Set<unknown>();
+	for (const field of replacements.keys()) {
+		const node = document.getIn([...basePath, field], true);
+		if (YAML.isNode(node)) visit(node, { Node(_key, child) { replacedNodes.add(child); } });
+	}
 	visit(document, {
 		Alias(_key, alias) {
 			const target = alias.resolve(document);
-			const index = originals.indexOf(target);
-			if (index !== -1) return document.createNode(properties[affected[index].field]);
+			if (target && replacedNodes.has(target)) return document.createNode(target.toJS(document));
 		},
 	});
-	for (const { field, nullable } of affected) {
+	for (const [field, schema] of replacements) {
 		const path = [...basePath, field];
-		const node = document.getIn(path, true);
-		// A YAML alias can point to a property outside the managed fields.
-		// Give the affected property its own schema before adding a branch.
-		if (isAlias(node)) document.setIn(path, copy(properties[field]));
-		const alternatives = document.getIn(nullable ? [...path, "anyOf", 0, "anyOf"] : [...path, "anyOf"], true);
-		if (isSeq(alternatives)) alternatives.add(document.createNode(localTaskDateSchema));
+		const previous = document.getIn(path, true);
+		const node = document.createNode(schema);
+		if (YAML.isNode(previous)) {
+			node.comment = previous.comment;
+			node.commentBefore = previous.commentBefore;
+			node.spaceBefore = previous.spaceBefore;
+		}
+		document.setIn(path, node);
 	}
-	return `${prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${body}`;
 }
 
 /** Remove the legacy placeholder from the two link rules emitted by TaskNotes. */
@@ -123,7 +130,7 @@ export function removeStaleRequiredFields(markdown: string, type: ObjectValue): 
 		},
 	});
 	const kept = schema.required.filter((entry) => !isStale(entry));
-	if (isSeq(requiredNode) && !isAlias(requiredNode) && requiredNode.items.length === schema.required.length) {
+	if (isSeq(requiredNode) && requiredNode.items.length === schema.required.length) {
 		for (let index = schema.required.length - 1; index >= 0; index--) {
 			if (isStale(schema.required[index])) requiredNode.delete(index);
 		}
@@ -136,23 +143,42 @@ export function removeStaleRequiredFields(markdown: string, type: ObjectValue): 
 	return `${prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${body}`;
 }
 
-/** Structural contract lift: no settings round-trip and no rewriting existing policies other than removing those rc.6 moved. */
-export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesMdbaseResources): string {
+/** Upgrade the generated schema and contract in place, without a settings round-trip. */
+export function upgradeCanonicalDocument(
+	markdown: string,
+	contractVersion: string,
+	legacyResources?: TaskNotesMdbaseResources
+): string {
 	const parts = requireFrontmatter(markdown);
 	const document = YAML.parseDocument(parts.frontmatter);
 	if (document.errors.length) throw new Error("Invalid type frontmatter");
-	const implementations = document.toJS().implements as ObjectValue[];
+	const type = document.toJS() as ObjectValue;
+	const implementations = type.implements as ObjectValue[];
 	const index = implementations.findIndex((value) => value.contract === "tasknotes.task");
-	const desired = implementation(resources.type);
-	if (!desired) throw new Error("Generated type has no TaskNotes implementation");
-	document.setIn(["implements", index, "version"], desired.version);
+	if (index < 0) throw new Error("Type has no TaskNotes implementation");
+	document.setIn(["implements", index, "version"], contractVersion);
+	upgradeGeneratedTaskDates(document, type);
+	if (Array.isArray(object(type["x-tasknotes-generator"]).managed_fields) &&
+		(typeof type.version !== "number" || type.version < TASKNOTES_MDBASE_TYPE_VERSION)) {
+		document.set("version", TASKNOTES_MDBASE_TYPE_VERSION);
+	}
+	if (legacyResources) upgradeLegacyBinding(document, implementations[index], index, legacyResources);
+	return `${parts.prefix}---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${parts.body}`;
+}
+
+function upgradeLegacyBinding(
+	document: YAML.Document,
+	previous: ObjectValue,
+	index: number,
+	resources: TaskNotesMdbaseResources
+): void {
 	// tasknotes.task rc.6 keeps app behaviour in the settings record, which the
 	// same metadata transaction writes; remove it from the binding in place.
 	const binding = ["implements", index, "binding"];
 	for (const path of [["nlp"], ["templating"], ["time_tracking"], ["archive", "move_on_archive"], ["archive", "folder"], ["recurrence", "reset_body_checkboxes"], ["links", "write_format"]]) {
 		document.deleteIn([...binding, ...path]);
 	}
-	const definitions = object(object(object(implementations[index].binding).status)).definitions;
+	const definitions = object(object(object(previous.binding).status)).definitions;
 	if (Array.isArray(definitions)) {
 		definitions.forEach((_definition, position) => {
 			for (const key of ["next_status", "exclude_from_cycle", "auto_archive", "auto_archive_delay_minutes"]) {
@@ -160,12 +186,11 @@ export function upgradeCanonicalDocument(markdown: string, resources: TaskNotesM
 			}
 		});
 	}
-	if (!object(implementations[index].fields).assignees && !document.hasIn(["schema", "value", "properties", "assignees"])) {
+	if (!object(previous.fields).assignees && !document.hasIn(["schema", "value", "properties", "assignees"])) {
 		document.setIn(["implements", index, "fields", "assignees"], "assignees");
 		document.setIn(["schema", "value", "properties", "assignees"], copy(object(object(object(resources.type.schema).value).properties).assignees));
 		document.setIn(["collection", "links", "assignees[]"], copy(object(object(resources.type.collection).links)["assignees[]"]));
 	}
-	return `---\n${document.toString({ lineWidth: 0 }).trimEnd()}\n---\n${parts.body}`;
 }
 
 /** Restrict generated settings updates to options actually exposed by the plugin. */

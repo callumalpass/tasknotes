@@ -166,9 +166,9 @@ describe("historical generated type recognition", () => {
 			if (edited) {
 				// rc.6 adds a versioned contract and leaves the earlier one as it is.
 				expect(h.files.get(resource)).toBe(original.replace(/\n/g, "\r\n") + "\nCustom commentary\n");
-				expect(h.files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);
+				expect(h.files.has("_contracts/tasknotes.task/0.3.0-rc.7.md")).toBe(true);
 			} else {
-				expect(parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ version: "0.3.0-rc.6" })]));
+				expect(parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type.implements).toEqual(expect.arrayContaining([expect.objectContaining({ version: "0.3.0-rc.7" })]));
 				expect(h.notices.join(" ")).not.toContain("could not initialize");
 			}
 		}

@@ -12,7 +12,8 @@ import {
 	taskNotesStatusBehavior,
 	type TaskNotesAppSettingsValues,
 } from "@tasknotes/model/settings";
-import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
+import { TASKNOTES_SPEC_VERSION as MODEL_CONTRACT_VERSION } from "@tasknotes/model";
+import { TASKNOTES_TASK_CONTRACT_VERSION } from "./canonicalTaskNotesPack";
 import YAML, { isSeq } from "yaml";
 import { validateContractMapping, validateTaskBinding, validationIssues, compileRecordSchema } from "./mdbase/contractValidation";
 import { preserveUnownedCanonicalSettings } from "./mdbase/preserveCanonical";
@@ -53,47 +54,58 @@ export function parseMdbaseTaskTypeDocument(markdown: string): ParsedMdbaseTaskT
 	return { type: value, body: parts.body };
 }
 
-/**
- * tasknotes.task versions written by earlier TaskNotes releases. rc.6 moved
- * app behaviour (templates, archive moves, time tracking, checkbox resets, the
- * link format, NLP triggers and per-status automation) from the binding to the
- * TaskNotes settings record; nothing else changed since rc.3 but the optional
- * assignees. Such a type is read as the current version, with those settings
- * taken from its binding where the record lacks them, and then rewritten.
- */
-export const PREVIOUS_TASKNOTES_CONTRACT_VERSIONS: readonly string[] = ["0.3.0-rc.5", "0.3.0-rc.3"];
+const PREVIOUS_TASKNOTES_CONTRACT_VERSIONS: readonly string[] = [
+	MODEL_CONTRACT_VERSION, "0.3.0-rc.5", "0.3.0-rc.4", "0.3.0-rc.3",
+];
 
-/**
- * Returns the type with an earlier TaskNotes implementation lifted to the
- * current contract version, whether it needed lifting, and the earlier binding
- * (which still holds the settings rc.6 moved to the settings record). A type
- * that already implements the current version, or no TaskNotes version, is
- * returned as is.
- */
+function withContractVersion(type: UnknownRecord, from: string, to: string): UnknownRecord {
+	if (!Array.isArray(type.implements)) return type;
+	return {
+		...type,
+		implements: type.implements.map((entry: unknown) =>
+			isRecord(entry) && entry.contract === "tasknotes.task" && entry.version === from
+				? { ...entry, version: to }
+				: entry
+		),
+	};
+}
+
+/** The pinned model can still interpret the rc.7 binding, whose shape is unchanged from rc.6. */
+function forModel(type: UnknownRecord): UnknownRecord {
+	return withContractVersion(type, TASKNOTES_TASK_CONTRACT_VERSION, MODEL_CONTRACT_VERSION);
+}
+
+/** Lift a known earlier type for reading. Persisting the lift is a separate metadata transaction. */
 export function withCurrentTaskNotesContract(type: UnknownRecord): {
 	type: UnknownRecord;
 	outdated: boolean;
 	legacyBinding?: UnknownRecord;
-	/** The tasknotes.task version the file implemented before the upgrade. */
 	previousVersion?: string;
 } {
 	if (!Array.isArray(type.implements) || taskNotesImplementation(type)) {
 		return { type, outdated: false };
 	}
 	const previous = type.implements.find(
-		(value): value is UnknownRecord =>
+		(value): value is UnknownRecord & { version: string } =>
 			isRecord(value) &&
 			value.contract === "tasknotes.task" &&
 			typeof value.version === "string" &&
 			PREVIOUS_TASKNOTES_CONTRACT_VERSIONS.includes(value.version)
 	);
 	if (!previous) return { type, outdated: false };
-	const legacyBinding = asRecord(cloneValue(previous.binding)) ?? undefined;
-	const upgraded = upgradeTaskNotesMdbaseTypeContract(type).type;
+	const previousVersion = previous.version;
+	const legacyBinding = previousVersion === MODEL_CONTRACT_VERSION
+		? undefined
+		: asRecord(cloneValue(previous.binding)) ?? undefined;
+	// The catalog also retains rc.4. Its binding follows the same legacy settings layout as rc.5.
+	const modelInput = withContractVersion(type, "0.3.0-rc.4", "0.3.0-rc.5");
+	const upgraded = previousVersion === MODEL_CONTRACT_VERSION
+		? type
+		: upgradeTaskNotesMdbaseTypeContract(modelInput).type;
 	return {
-		type: upgraded,
+		type: withContractVersion(upgraded, MODEL_CONTRACT_VERSION, TASKNOTES_TASK_CONTRACT_VERSION),
 		outdated: true,
-		previousVersion: previous.version as string,
+		previousVersion,
 		...(legacyBinding ? { legacyBinding } : {}),
 	};
 }
@@ -112,7 +124,12 @@ export function hasLegacyAppSettings(binding: unknown): boolean {
  */
 export function withAgreedVocabulary(type: UnknownRecord): UnknownRecord {
 	try {
-		return reconcileTaskNotesMdbaseTypeVocabulary(type);
+		const modelType = forModel(type);
+		const reconciled = reconcileTaskNotesMdbaseTypeVocabulary(modelType);
+		if (reconciled === modelType) return type;
+		return taskNotesImplementation(type)
+			? withContractVersion(reconciled, MODEL_CONTRACT_VERSION, TASKNOTES_TASK_CONTRACT_VERSION)
+			: reconciled;
 	} catch {
 		return type;
 	}
@@ -135,7 +152,7 @@ export function validateCanonicalTaskType(source: UnknownRecord): CanonicalTypeV
 	}
 	if (!implementation) {
 		issues.push(
-			`implements must contain tasknotes.task ${TASKNOTES_CONTRACT_VERSION}`
+			`implements must contain tasknotes.task ${TASKNOTES_TASK_CONTRACT_VERSION}`
 		);
 	}
 	if (!extension) {
@@ -244,14 +261,15 @@ export function applyCanonicalTaskTypeToSettings(
 	sources: CanonicalAppSettingsSources = {}
 ): void {
 	const localAppSettings = appSettingsFromPluginSettings(settings);
+	const modelType = forModel(type);
 	const modelConfig = resolveTaskNotesModelConfigFromMdbaseType(
-		type,
+		modelType,
 		buildTaskNotesModelConfig(settings)
 	);
 	// Resolve all owned fields before mutating any settings. Unknown owned schemas
 	// must stop import, rather than becoming deletions on an unrelated later save.
 	modelConfig.userFields = resolveRetainedUserFields(type, settings.userFields ?? [], modelConfig.userFields, Object.values(modelConfig.fieldMapping));
-	const extension = asRecord(taskNotesImplementation(type)?.binding) ?? {};
+	const extension = asRecord(taskNotesImplementation(modelType, MODEL_CONTRACT_VERSION)?.binding) ?? {};
 	const title = asRecord(extension.title);
 	const appSettings = resolveTaskNotesAppSettings(sources.record, {
 		legacyBinding: sources.legacyBinding,
@@ -450,7 +468,8 @@ export function mergeCanonicalTaskTypeDocument(
 	const existingImplementations = Array.isArray(existingValue.implements)
 		? existingValue.implements.filter(isRecord)
 		: [];
-	const desiredImplementation = taskNotesImplementation(desired);
+	const desiredImplementation = taskNotesImplementation(desired)
+		?? taskNotesImplementation(desired, MODEL_CONTRACT_VERSION);
 	if (!desiredImplementation) {
 		throw new Error("The generated mdbase type has no TaskNotes implementation.");
 	}
@@ -521,7 +540,7 @@ function validateTaskIdentification(type: UnknownRecord, issues: string[]): void
 
 /** The copies of a status or priority list or default that still differ. */
 function vocabularyMirrorIssues(type: UnknownRecord, fieldRoles: UnknownRecord | null): string[] {
-	return taskNotesMdbaseTypeDisagreements(type).flatMap(({ list, part }) => {
+	return taskNotesMdbaseTypeDisagreements(forModel(type)).flatMap(({ list, part }) => {
 		const fieldName = typeof fieldRoles?.[list] === "string" ? fieldRoles[list] : list;
 		if (part === "schema-enum") return [`${list}.values contradicts schema enum for ${fieldName}`];
 		if (part === "schema-default") return [`${list}.default contradicts the schema default for ${fieldName}`];
@@ -647,14 +666,14 @@ function isTaskFilenameFormat(value: unknown): value is TaskNotesSettings["taskF
 	);
 }
 
-function taskNotesImplementation(type: UnknownRecord): UnknownRecord | null {
+function taskNotesImplementation(type: UnknownRecord, version = TASKNOTES_TASK_CONTRACT_VERSION): UnknownRecord | null {
 	if (!Array.isArray(type.implements)) return null;
 	return (
 		type.implements.find(
 			(value) =>
 				isRecord(value) &&
 				value.contract === "tasknotes.task" &&
-				value.version === TASKNOTES_CONTRACT_VERSION
+				value.version === version
 		) ?? null
 	);
 }

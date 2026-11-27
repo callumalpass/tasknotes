@@ -64,7 +64,7 @@ it.each(["v4-custom", "beta3-custom"])("upgrades %s on a no-clobber adapter in c
 	expect(h.plugin.fieldMapper).toBeUndefined();
 	await new MdbaseSpecService(h.plugin).initialize();
 	expect(YAML.parse(h.files.get("mdbase.yaml")!).spec_version).toBe("0.3.0");
-	expect((parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.6");
+	expect((parseMdbaseTaskTypeDocument(h.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.7");
 	for (const p of ["paper.md", "TaskNotes/Tasks/open.md", "TaskNotes/Tasks/cancelled.md"]) expect(h.files.get(p)).toBe(before[p]);
 	const after = Object.fromEntries(h.files);
 	await new MdbaseSpecService(h.plugin).initialize();
@@ -162,7 +162,7 @@ it.each(["v4-default", "beta3-custom"].flatMap((name) => ["before displacement",
 	const restarted = harness(interruptedFiles!);
 	restarted.plugin.settings = h.plugin.settings;
 	await new MdbaseSpecService(restarted.plugin).initialize();
-	expect((parseMdbaseTaskTypeDocument(restarted.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.6");
+	expect((parseMdbaseTaskTypeDocument(restarted.files.get("_types/task.md")!).type as any).implements[0].version).toBe("0.3.0-rc.7");
 	expect([...restarted.files.keys()].filter((p) => path.posix.dirname(p) === METADATA_SWAPS && p.endsWith(".json"))).toEqual([]);
 	expect([...restarted.files.keys()].filter((p) => p.endsWith("-pending.json"))).toEqual([]);
 });

@@ -4,22 +4,18 @@
  * Validates v0.3 generation and the retained v0.2 compatibility path.
  */
 
-import {
-	buildTaskNotesMdbaseResources,
-	TASKNOTES_MDBASE_TYPE_VERSION,
-	TASKNOTES_TASK_CONTRACT_VERSION,
-} from "@tasknotes/model/mdbase";
+import { buildTaskNotesMdbaseResources } from "@tasknotes/model/mdbase";
 import * as fs from "fs";
-import { TFile } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import * as path from "path";
 import YAML from "yaml";
 import { observeTranslation } from "../../helpers/real-i18n";
 
 import { MDBASE_README } from "../../../src/services/mdbase/folders";
-import { compileRecordSchema } from "../../../src/services/mdbase/contractValidation";
+import { compileRecordSchema, validateTaskRecord } from "../../../src/services/mdbase/contractValidation";
 import { FieldMapper } from "../../../src/services/FieldMapper";
 import { MdbaseSpecService } from "../../../src/services/MdbaseSpecService";
-import { canonicalTaskNotesResources } from "../../../src/services/canonicalTaskNotesPack";
+import { canonicalTaskNotesResources, TASKNOTES_MDBASE_TYPE_VERSION, TASKNOTES_TASK_CONTRACT_VERSION } from "../../../src/services/canonicalTaskNotesPack";
 import { appSettingsFromPluginSettings } from "../../../src/services/mdbaseCanonicalConfig";
 import {
 	DEFAULT_FIELD_MAPPING,
@@ -329,7 +325,7 @@ describe("MdbaseSpecService", () => {
 			});
 			await service.initialize();
 			expect(asObject(asObject(YAML.parse(files.get("mdbase.yaml")!)).settings).explicit_type_keys).toEqual([]);
-			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("contract_type: record");
+			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.7.md")).toContain("contract_type: record");
 			// The schemas are tasknotes.task type-pack resources: an app installs them.
 			expect(files.has("_schemas/tasknotes/tasknotes-task.schema.json")).toBe(false);
 			expect(files.has("_schemas/tasknotes/tasknotes-task-binding.schema.json")).toBe(false);
@@ -1122,16 +1118,12 @@ describe("MdbaseSpecService", () => {
 			expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
 			expect(schema.additionalProperties).toBe(true);
 			expect(schema.required).toEqual(["status", "dateCreated"]);
-			expect(asObject(properties.due)).toMatchObject({
-				anyOf: expect.arrayContaining([
-					expect.objectContaining({ type: "string", format: "date" }),
-					expect.objectContaining({ type: "string", format: "date-time" }),
-				]),
-			});
-			expect(asObject(properties.dateModified)).toMatchObject({
-				type: "string",
-				format: "date-time",
-			});
+			for (const name of ["due", "scheduled", "dateCreated", "dateModified"]) {
+				const formats = name === "due" || name === "scheduled"
+					? ["date", "date-time", "local-date-time"]
+					: ["date-time", "local-date-time"];
+				expect(properties[name]).toEqual({ anyOf: formats.map((format) => ({ type: "string", format })) });
+			}
 		});
 
 		it("requires the mapped title only when frontmatter owns the title", () => {
@@ -1497,16 +1489,119 @@ describe("MdbaseSpecService", () => {
 		});
 	});
 
+	describe("local-date-time validation", () => {
+		const validateLocalTime = compileRecordSchema({ type: "string", format: "local-date-time" });
+		it.each([
+			"2026-11-27T08:00", "2024-02-29T23:59:59.00123", "2000-02-29T00:00:00",
+		])("accepts %s in both schema validators", (value) => {
+			expect(validateLocalTime(value)).toBe(true);
+			expect(validateTaskRecord({ status: "open", due: value, scheduled: value, dateCreated: value, dateModified: value })).toBe(true);
+		});
+
+		it.each([
+			"2026-02-30T08:00", "2026-02-29T08:00", "1900-02-29T08:00", "2026-11-31T08:00",
+			"2026-00-10T08:00", "2026-11-00T08:00", "2026-11-27T24:00", "2026-11-27T08:60",
+			"2026-11-27T08:00:60", "2026-11-27T08:00.5", "2026-11-27T08:00:00.",
+			"2026-11-27T08:00:00.１", "2026-11-27t08:00", "2026-11-27 08:00",
+			"2026-11-27T08:00Z", "2026-11-27T08:00:00+11:00", "2026-11-27T08:00\n",
+		])("rejects %s as a local date-time", (value) => {
+			expect(validateLocalTime(value)).toBe(false);
+		});
+	});
+
+	describe("collection time zone", () => {
+		const config = [
+			"spec_version: 0.3.0",
+			"settings:",
+			"  # Keep this setting and comment",
+			"  record_extensions: [md, base]",
+			"x-obsidian:",
+			"  bases:",
+			'    include: ["TaskNotes/Views/**/*.base"]',
+			"x-other: preserve",
+			"",
+		].join("\n");
+		it.each(["", "local", "+05:00", "Fake/Zone"])("omits an invalid detected zone (%s)", (timeZone) => {
+			const resolved = Intl.DateTimeFormat().resolvedOptions();
+			jest.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").mockReturnValue({ ...resolved, timeZone });
+			const service = new MdbaseSpecService(createMockPlugin());
+			expect(YAML.parse(service.buildMdbaseYaml()).settings.timezone).toBeUndefined();
+		});
+
+		it.each(["use", "dismiss", "concurrent"])("handles the %s action once, only writing on consent", async (action) => {
+			const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+			const plugin = createMockPlugin();
+			let offerResolved = false;
+			plugin.app.loadLocalStorage = jest.fn(() => offerResolved);
+			plugin.app.saveLocalStorage = jest.fn(() => { offerResolved = true; });
+			const files = installMemoryVault(plugin, { "mdbase.yaml": config });
+			const containerEl = document.createElement("div");
+			const hide = jest.fn();
+			const notice = jest.mocked(Notice);
+			notice.mockClear();
+			notice.mockImplementationOnce((message?: string | DocumentFragment) => {
+				if (message) containerEl.append(message);
+				return { hide, containerEl } as unknown as Notice;
+			});
+			const service = new MdbaseSpecService(plugin);
+
+			await service.initialize();
+			await service.onSettingsChanged();
+			expect(files.get("mdbase.yaml")).toBe(config);
+			expect(notice).toHaveBeenCalledTimes(1);
+			const [useZone, dismiss] = containerEl.querySelectorAll("button");
+			expect(useZone.textContent).toBe(`Use ${zone}`);
+			expect(containerEl.textContent).toContain("Times without an offset will be read in that zone.");
+			if (action === "concurrent") {
+				files.set("mdbase.yaml", config.replace("  record_extensions", "  timezone: Pacific/Auckland\n  record_extensions"));
+			}
+			(action === "dismiss" ? dismiss : useZone).click();
+			await service.onSettingsChanged();
+			expect(hide).toHaveBeenCalledTimes(1);
+			expect(offerResolved).toBe(true);
+			const after = files.get("mdbase.yaml")!;
+			if (action === "dismiss") expect(after).toBe(config);
+			else expect(YAML.parse(after).settings.timezone).toBe(action === "use" ? zone : "Pacific/Auckland");
+			expect(after).toContain("  # Keep this setting and comment");
+			expect(after).toContain("x-other: preserve");
+			await new MdbaseSpecService(plugin).initialize();
+			expect(notice).toHaveBeenCalledTimes(1);
+		});
+
+		it("preserves a configured time zone without showing an offer", async () => {
+			const plugin = createMockPlugin();
+			const original = config.replace("  record_extensions", "  timezone: Asia/Tokyo\n  record_extensions");
+			const files = installMemoryVault(plugin, { "mdbase.yaml": original });
+			jest.mocked(Notice).mockClear();
+			await new MdbaseSpecService(plugin).initialize();
+			expect(Notice).not.toHaveBeenCalled();
+			expect(files.get("mdbase.yaml")).toBe(original);
+		});
+	});
+
 	describe("generate", () => {
-		it("repairs a mapped date while preserving custom constraints and YAML aliases", async () => {
+		it.each([
+			{ legacyCompatibility: false, post2706: false },
+			{ legacyCompatibility: false, post2706: true },
+			{ legacyCompatibility: true, post2706: false },
+			{ legacyCompatibility: true, post2706: true },
+		])("upgrades mapped dates and preserves custom rules and aliases (legacy: $legacyCompatibility, post-2706: $post2706)", async ({ legacyCompatibility, post2706 }) => {
 			const plugin = createMockPlugin();
 			const resources = buildTaskNotesMdbaseResources({
-				modelConfig: { fieldMapping: { due: "deadline", scheduled: "planned" } },
+				legacyCompatibility,
+				modelConfig: { fieldMapping: { due: "deadline", scheduled: "planned", dateCreated: "created", dateModified: "modified" } },
 			});
 			const type = parseFrontmatter(resources.typeDocument);
 			const properties = asObject(asObject(asObject(type.schema).value).properties);
-			const originalDue = properties.deadline;
+			const originalDue = asObject(properties.deadline);
+			const originalAlternatives = originalDue.anyOf as unknown[];
+			const branches = legacyCompatibility ? asObject(originalAlternatives[0]).anyOf as unknown[] : originalAlternatives;
+			if (post2706) branches.push({
+				type: "string",
+				pattern: "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$",
+			});
 			properties.custom_date = originalDue;
+			properties.custom_date_branch = originalAlternatives[0];
 			properties.planned = { ...asObject(properties.planned), description: "Collection's own rule" };
 			const markdown = `---\n${YAML.stringify(type)}---\nCustom body\n`;
 			const path = "_mdbase/types/task.md";
@@ -1519,7 +1614,15 @@ describe("MdbaseSpecService", () => {
 			expect(compileRecordSchema(adjusted.deadline)("2026-11-30T16:00")).toBe(true);
 			expect(adjusted.planned).toEqual(properties.planned);
 			expect(adjusted.custom_date).toEqual(originalDue);
-			expect(current.version).toBe(type.version);
+			expect(adjusted.custom_date_branch).toEqual(originalAlternatives[0]);
+			for (const name of ["deadline", "created", "modified"]) {
+				const formats = name === "deadline" ? ["date", "date-time", "local-date-time"] : ["date-time", "local-date-time"];
+				const anyOf: object[] = formats.map((format) => ({ type: "string", format }));
+				if (legacyCompatibility && name !== "created") anyOf.push({ type: "null" });
+				expect(adjusted[name]).toEqual({ anyOf });
+			}
+			expect(tasknotesImplementation(current).fields).toMatchObject({ due: "deadline", dateCreated: "created" });
+			expect(current.version).toBe(6);
 			expect(extractBody(migrated)).toBe("Custom body\n");
 			await new MdbaseSpecService(plugin).initialize();
 			expect(files.get(path)).toBe(migrated);
@@ -1622,9 +1725,10 @@ describe("MdbaseSpecService", () => {
 			await new MdbaseSpecService(plugin).initialize();
 			expect(YAML.parse(files.get("mdbase.yaml")!).settings).toMatchObject({
 				types_folder: "_mdbase/types", contracts_folder: "_mdbase/contracts",
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 			});
 			expect(files.get("_mdbase/README.md")).toBe(MDBASE_README);
-			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.22.json"), "utf8"));
+			const pack = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../vendor/mdbase-contracts/tasknotes.task-0.3.0-rc.23.json"), "utf8"));
 			let compared = 0;
 			for (const resource of pack.resources) {
 				const entry = pack.manifest.resources.find((entry: { source: string }) => entry.source === resource.source);
@@ -1657,7 +1761,7 @@ describe("MdbaseSpecService", () => {
 				expect(files.get("mdbase.yaml")).toBe(original);
 				expect(files.has("_mdbase/README.md")).toBe(false);
 				expect(files.has(`${settings.types_folder ?? "_types"}/task.md`)).toBe(true);
-				expect(files.has(`${settings.contracts_folder ?? "_contracts"}/tasknotes.task/0.3.0-rc.6.md`)).toBe(true);
+				expect(files.has(`${settings.contracts_folder ?? "_contracts"}/tasknotes.task/0.3.0-rc.7.md`)).toBe(true);
 			});
 
 		it("should create _mdbase/types folder if it does not exist", async () => {
@@ -1711,7 +1815,7 @@ describe("MdbaseSpecService", () => {
 
 			expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("_types");
 			expect(files.get("_types/task.md")).toContain("contract: tasknotes.task");
-			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("kind: mdbase.contract");
+			expect(files.get("_contracts/tasknotes.task/0.3.0-rc.7.md")).toContain("kind: mdbase.contract");
 			expect([...files.keys()].some((path) => path.startsWith("_schemas/"))).toBe(false);
 		});
 
@@ -1736,7 +1840,7 @@ describe("MdbaseSpecService", () => {
 
 			await service.generate();
 
-			expect(files.get("System/contracts/tasknotes.task/0.3.0-rc.6.md")).toContain("id: tasknotes.task");
+			expect(files.get("System/contracts/tasknotes.task/0.3.0-rc.7.md")).toContain("id: tasknotes.task");
 		});
 
 		it("does not overwrite unrecognized v0.2 metadata during generation", async () => {
@@ -2297,7 +2401,7 @@ describe("MdbaseSpecService", () => {
 			expect(
 				plugin.app.vault.create.mock.calls.some(([path]: [string]) => path === taskPath)
 			).toBe(false);
-			expect([...files.keys()]).toContain("_contracts/tasknotes.task/0.3.0-rc.6.md");
+			expect([...files.keys()]).toContain("_contracts/tasknotes.task/0.3.0-rc.7.md");
 			expect([...files.keys()].some((path) => path.startsWith("_schemas/"))).toBe(false);
 			const backupConfig = [...files.entries()].find(([path]) =>
 				path.endsWith("/mdbase.yaml.bak")
@@ -2503,7 +2607,7 @@ describe("MdbaseSpecService", () => {
 			expect(parseFrontmatter(files.get("_types/task.md") ?? "").kind).toBe("mdbase.type");
 
 			// A write killed while staging leaves its temporary file behind.
-			const stage = "_contracts/tasknotes.task/0.3.0-rc.6.md.tasknotes-stage-1-1-abc-def";
+			const stage = "_contracts/tasknotes.task/0.3.0-rc.7.md.tasknotes-stage-1-1-abc-def";
 			files.set(stage, "{}");
 			failRollback = false;
 			await new MdbaseSpecService(plugin).initialize();
@@ -2511,7 +2615,7 @@ describe("MdbaseSpecService", () => {
 			expect(files.has(stage)).toBe(false);
 			expect(files.has(".tasknotes/migrations/mdbase-v0.2-pending.json")).toBe(false);
 			expect(asObject(YAML.parse(files.get("mdbase.yaml") ?? "")).spec_version).toBe("0.3.0");
-			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(true);
+			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.7.md")).toBe(true);
 		});
 
 		it("does not overwrite a concurrent type edit while rolling back", async () => {
@@ -2557,7 +2661,7 @@ describe("MdbaseSpecService", () => {
 				},
 				{
 					failWrite: (path) => {
-						if (path === "_contracts/tasknotes.task/0.3.0-rc.6.md") {
+						if (path === "_contracts/tasknotes.task/0.3.0-rc.7.md") {
 							files.set("_types/task.md", concurrentType);
 						}
 						return false;
@@ -2860,7 +2964,7 @@ describe("MdbaseSpecService", () => {
 			expect(files.has(pendingPath)).toBe(false);
 			expect(files.get("mdbase.yaml")).toBe(oldConfig);
 			expect(files.get("_types/task.md")).toBe(oldType);
-			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.6.md")).toBe(false);
+			expect(files.has("_contracts/tasknotes.task/0.3.0-rc.7.md")).toBe(false);
 			expect(files.has(`${journal.backupFolder}/manifest.json`)).toBe(true);
 			expect(files.has(`${journal.backupFolder}/task.md.bak`)).toBe(true);
 			expect(restarted.getPendingV02MigrationRecovery()).toBeNull();
