@@ -24,10 +24,9 @@ import { PluginFactory, TaskFactory } from "../../helpers/mock-factories";
 
 /**
  * A weekly task whose next occurrence is Sunday 22 November, with the previous
- * Sunday completed and the following Sunday skipped. Moving it to Saturday 21
- * November would clear the skipped 29 November.
+ * Sunday completed and the following Sunday skipped.
  */
-function weeklyTask(): TaskInfo {
+function weeklyTask(overrides: Partial<TaskInfo>): TaskInfo {
 	return TaskFactory.createTask({
 		id: "weekly",
 		path: "Tasks/Weekly review.md",
@@ -36,11 +35,27 @@ function weeklyTask(): TaskInfo {
 		recurrence: "DTSTART:20261101;FREQ=WEEKLY",
 		complete_instances: ["2026-11-15"],
 		skipped_instances: ["2026-11-29"],
+		...overrides,
 	});
 }
 
-function harness(confirmed: boolean) {
-	const task = weeklyTask();
+/**
+ * A completion-anchored move clears every recorded instance on or after the new
+ * date, so moving this task to Saturday 21 November clears the skipped 29 November.
+ */
+function completionAnchoredTask(): TaskInfo {
+	return weeklyTask({ recurrence_anchor: "completion" });
+}
+
+/**
+ * A task synced to Google Calendar gets no `recurrence_original_date` when it moves,
+ * so a move clears the day it lands on if that day is already completed or skipped.
+ */
+function syncedTask(): TaskInfo {
+	return weeklyTask({ googleCalendarEventId: "gcal-1" });
+}
+
+function harness(task: TaskInfo, confirmed: boolean) {
 	const frontmatter: Record<string, unknown> = {
 		scheduled: task.scheduled,
 		recurrence: task.recurrence,
@@ -91,8 +106,8 @@ function dragNextOccurrence(task: TaskInfo): CalendarEventChange {
 	};
 }
 
-/** Drops the task on Saturday 21 November from outside the calendar, such as from a task link in a note. */
-async function dropFromOutside(plugin: TaskNotesPlugin, task: TaskInfo) {
+/** Drops the task on a day, Saturday 21 November by default, from outside the calendar, such as from a task link in a note. */
+async function dropFromOutside(plugin: TaskNotesPlugin, task: TaskInfo, startStr = "2026-11-21") {
 	const view = Object.assign(Object.create(CalendarView.prototype), {
 		plugin,
 		expectImmediateUpdate: jest.fn(),
@@ -104,7 +119,7 @@ async function dropFromOutside(plugin: TaskNotesPlugin, task: TaskInfo) {
 	} as unknown as DataTransfer;
 	await (view as unknown as {
 		handleExternalTaskDrop(arg: { dataTransfer: DataTransfer; startStr: string }): Promise<void>;
-	}).handleExternalTaskDrop({ dataTransfer, startStr: "2026-11-21" });
+	}).handleExternalTaskDrop({ dataTransfer, startStr });
 	return view;
 }
 
@@ -121,7 +136,7 @@ function mutationContext(plugin: TaskNotesPlugin): CalendarMutationContext {
 describe("calendar reschedules that would clear a recurring task's recorded instances", () => {
 	describe("dragging the next occurrence within the calendar", () => {
 		it("asks first, and Cancel reverts the drop and keeps the schedule and its history", async () => {
-			const { task, frontmatter, confirm, plugin } = harness(false);
+			const { task, frontmatter, confirm, plugin } = harness(completionAnchoredTask(), false);
 			const info = dragNextOccurrence(task);
 
 			await handleCalendarEventDrop(mutationContext(plugin), info);
@@ -138,7 +153,7 @@ describe("calendar reschedules that would clear a recurring task's recorded inst
 		});
 
 		it("clears the listed instances once confirmed", async () => {
-			const { task, frontmatter, confirm, plugin } = harness(true);
+			const { task, frontmatter, confirm, plugin } = harness(completionAnchoredTask(), true);
 			const info = dragNextOccurrence(task);
 
 			await handleCalendarEventDrop(mutationContext(plugin), info);
@@ -154,7 +169,7 @@ describe("calendar reschedules that would clear a recurring task's recorded inst
 
 	describe("dropping the task into the calendar from outside it", () => {
 		it("asks first, and Cancel keeps the schedule and its history", async () => {
-			const { task, frontmatter, confirm, plugin } = harness(false);
+			const { task, frontmatter, confirm, plugin } = harness(completionAnchoredTask(), false);
 
 			const view = await dropFromOutside(plugin, task);
 
@@ -170,7 +185,7 @@ describe("calendar reschedules that would clear a recurring task's recorded inst
 		});
 
 		it("clears the listed instances once confirmed", async () => {
-			const { task, frontmatter, confirm, plugin } = harness(true);
+			const { task, frontmatter, confirm, plugin } = harness(completionAnchoredTask(), true);
 
 			const view = await dropFromOutside(plugin, task);
 
@@ -180,6 +195,22 @@ describe("calendar reschedules that would clear a recurring task's recorded inst
 			expect(frontmatter.skipped_instances ?? []).toEqual([]);
 			expect(view.refreshAfterDirectCalendarTaskWrite).toHaveBeenCalledTimes(1);
 			expect(showTaskUndo).toHaveBeenCalledTimes(1);
+		});
+
+		it("asks before clearing the recorded day a move without recurrence_original_date lands on", async () => {
+			const { task, frontmatter, confirm, plugin } = harness(syncedTask(), false);
+
+			const view = await dropFromOutside(plugin, task, "2026-11-29");
+
+			expect(confirm).toHaveBeenCalledWith({ complete: [], skipped: ["2026-11-29"] });
+			expect(plugin.app.fileManager.processFrontMatter).not.toHaveBeenCalled();
+			expect(frontmatter).toMatchObject({
+				scheduled: "2026-11-22",
+				complete_instances: ["2026-11-15"],
+				skipped_instances: ["2026-11-29"],
+			});
+			expect(view.refreshAfterDirectCalendarTaskWrite).not.toHaveBeenCalled();
+			expect(showTaskUndo).not.toHaveBeenCalled();
 		});
 	});
 });
