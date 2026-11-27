@@ -13,7 +13,7 @@ import {
 	type TaskNotesAppSettingsValues,
 } from "@tasknotes/model/settings";
 import { TASKNOTES_SPEC_VERSION as TASKNOTES_CONTRACT_VERSION } from "@tasknotes/model";
-import YAML from "yaml";
+import YAML, { isSeq } from "yaml";
 import { validateContractMapping, validateTaskBinding, validationIssues, compileRecordSchema } from "./mdbase/contractValidation";
 import { preserveUnownedCanonicalSettings } from "./mdbase/preserveCanonical";
 import { requireFrontmatter as splitFrontmatter } from "./mdbase/frontmatter";
@@ -33,6 +33,7 @@ export type ParsedMdbaseTaskType = {
 export type CanonicalTypeValidationResult = { valid: true } | { valid: false; issues: string[] };
 
 const MANAGED_OPTIONAL_PATHS: DocumentPath[] = [
+	["schema", "value", "required"],
 	["x-tasknotes-generator", "omitted_collection_paths"],
 	["x-tasknotes-generator", "legacy_compatibility"],
 ];
@@ -554,6 +555,20 @@ function deleteStaleManagedFields(
 	);
 	const stale = previous.filter((field) => !next.has(field));
 	if (stale.length === 0) return;
+
+	const staleSet = new Set(stale);
+	const requiredNode = document.getIn(["schema", "value", "required"], true);
+	if (isSeq(requiredNode)) {
+		for (let index = requiredNode.items.length - 1; index >= 0; index--) {
+			const entry = requiredNode.get(index);
+			if (typeof entry === "string" && staleSet.has(entry)) {
+				requiredNode.delete(index);
+			}
+		}
+		if (requiredNode.items.length === 0) {
+			document.deleteIn(["schema", "value", "required"]);
+		}
+	}
 
 	const links = recordAt(existing, ["collection", "links"]) ?? {};
 	for (const field of stale) {

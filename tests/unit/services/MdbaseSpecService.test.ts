@@ -1525,6 +1525,97 @@ describe("MdbaseSpecService", () => {
 			expect(files.get(path)).toBe(migrated);
 		});
 
+		it("updates schema.value.required cleanly across one and two successive core property renames while keeping custom required properties", async () => {
+			const plugin = createMockPlugin();
+			const files = installMemoryVault(plugin, {});
+			const service = new MdbaseSpecService(plugin);
+			await service.initialize();
+
+			// Add a hand-authored custom required property to the generated type.
+			const typePath = "_mdbase/types/task.md";
+			const initial = parseFrontmatter(files.get(typePath)!);
+			const initialSchema = asObject(asObject(initial.schema).value);
+			asObject(initialSchema.properties).client_meta = {
+				type: "object",
+				properties: { code: { type: "string" } },
+			};
+			initialSchema.required = [...(initialSchema.required as string[]), "client_meta"];
+			files.set(typePath, `---\n${YAML.stringify(initial)}---\nCustom body\n`);
+
+			// Re-initialize so TaskNotes adopts the hand-edited type.
+			const synced = new MdbaseSpecService(plugin);
+			await synced.initialize();
+
+			// First rename: dateCreated -> created.
+			plugin.settings.fieldMapping.dateCreated = "created";
+			await synced.onSettingsChanged();
+			const afterFirst = parseFrontmatter(files.get(typePath)!);
+			const firstSchema = asObject(asObject(afterFirst.schema).value);
+			expect(firstSchema.required).toEqual(["status", "created", "client_meta"]);
+			expect(asObject(firstSchema.properties)).not.toHaveProperty("dateCreated");
+
+			// Second rename: created -> createdOn.
+			plugin.settings.fieldMapping.dateCreated = "createdOn";
+			await synced.onSettingsChanged();
+			const afterSecond = parseFrontmatter(files.get(typePath)!);
+			const secondSchema = asObject(asObject(afterSecond.schema).value);
+			expect(secondSchema.required).toEqual(["status", "createdOn", "client_meta"]);
+			expect(asObject(secondSchema.properties)).not.toHaveProperty("dateCreated");
+			expect(asObject(secondSchema.properties)).not.toHaveProperty("created");
+			expect(
+				compileRecordSchema(secondSchema)({
+					status: "open",
+					createdOn: "2026-11-27T10:00:00Z",
+					client_meta: { code: "A1" },
+				})
+			).toBe(true);
+			expect(
+				compileRecordSchema(secondSchema)({
+					status: "open",
+					createdOn: "2026-11-27T10:00:00Z",
+				})
+			).toBe(false);
+		});
+
+		it("repairs an already-polluted required list on sync without user action while keeping custom required properties", async () => {
+			const plugin = createMockPlugin();
+			const resources = buildTaskNotesMdbaseResources({
+				modelConfig: { fieldMapping: { dateCreated: "createdOn" } },
+			});
+			const polluted = parseFrontmatter(resources.typeDocument);
+			const schema = asObject(asObject(polluted.schema).value);
+			asObject(schema.properties).owner = {
+				type: "object",
+				properties: { handle: { type: "string" } },
+			};
+			schema.required = ["dateCreated", "status", "created", "createdOn", "owner"];
+			const markdown = `---\n${YAML.stringify(polluted)}---\nCustom body\n`;
+			const typePath = "_mdbase/types/task.md";
+			const files = installMemoryVault(plugin, {
+				"mdbase.yaml": resources.configDocument,
+				[typePath]: markdown,
+			});
+
+			await new MdbaseSpecService(plugin).initialize();
+
+			const repairedMarkdown = files.get(typePath)!;
+			const repaired = parseFrontmatter(repairedMarkdown);
+			const repairedSchema = asObject(asObject(repaired.schema).value);
+			expect(repairedSchema.required).toEqual(["status", "createdOn", "owner"]);
+			expect(extractBody(repairedMarkdown)).toBe("Custom body\n");
+			expect(
+				compileRecordSchema(repairedSchema)({
+					status: "open",
+					createdOn: "2026-11-27T10:00:00Z",
+					owner: { handle: "team" },
+				})
+			).toBe(true);
+
+			// Subsequent sync is idempotent.
+			await new MdbaseSpecService(plugin).initialize();
+			expect(files.get(typePath)).toBe(repairedMarkdown);
+		});
+
 		it("sets up a v4 vault with no config in the new layout using canonical support bytes", async () => {
 			const plugin = createMockPlugin();
 			const files = installMemoryVault(plugin, {});
