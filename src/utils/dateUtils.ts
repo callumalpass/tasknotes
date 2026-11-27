@@ -1401,6 +1401,17 @@ export function getCurrentDateTimeString(): string {
  */
 export function addDaysToDateTime(dateString: string, days: number): string {
 	try {
+		// Floating values are clock times: add calendar days and keep the clock time,
+		// even when the original or the result falls in a DST gap in the vault zone.
+		const floating = dateString
+			.trim()
+			.match(/^(\d{4})-(\d{2})-(\d{2})T((?:[01]\d|2[0-3]):[0-5]\d)(?::[0-5]\d(?:\.\d+)?)?$/);
+		if (floating) {
+			const [, year, month, day, clock] = floating;
+			const civil = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day) + days));
+			return `${civil.toISOString().slice(0, 10)}T${clock}`;
+		}
+
 		const parsed = parseDateToLocalInternal(dateString);
 		const result = addDaysFns(parsed, days);
 
