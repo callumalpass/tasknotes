@@ -1604,6 +1604,11 @@ msgid "API authentication token"
 msgstr "API认证令牌"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "API认证令牌已复制"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "API端口"
@@ -3190,6 +3195,11 @@ msgstr "复制标题"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "复制标题"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "复制令牌"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5287,6 +5297,7 @@ msgstr "复制到剪贴板失败"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "复制到剪贴板失败"
@@ -6369,6 +6380,11 @@ msgstr "在任务卡片中隐藏识别标签"
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "在文件列表中隐藏 mdbase 文件夹"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "隐藏令牌"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10570,6 +10586,11 @@ msgstr "显示今日高亮"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "突出显示今天"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "显示令牌"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"

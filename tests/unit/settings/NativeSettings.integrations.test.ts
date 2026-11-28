@@ -1,3 +1,4 @@
+import { Notice, Setting, type TextComponent } from "obsidian";
 import {
 	settingsFixture,
 	flattenSettings,
@@ -118,6 +119,92 @@ describe("Native integration settings", () => {
 		expect(control(definitions, "apiPort").control.type).toBe("number");
 		expect(JSON.stringify(definitions)).not.toContain("private-token");
 		expect(plugin.saveSettings).not.toHaveBeenCalled();
+	});
+
+	test("API authentication token row supports revealing, copying while masked, and empty-token state", async () => {
+		const { ctx, plugin } = settingsFixture();
+		plugin.settings.apiAuthToken = "secret-api-token";
+		const writeText = jest.fn().mockResolvedValue(undefined);
+		const originalClipboard = navigator.clipboard;
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: { writeText },
+		});
+		const noticeMock = Notice as unknown as jest.Mock;
+		noticeMock.mockClear();
+		try {
+			const apiPage = apiDefinitions(ctx);
+			const tokenDef = apiPage.items?.find(
+				(item) => "render" in item && item.aliases?.[0] === "apiAuthToken"
+			);
+			if (!tokenDef || !("render" in tokenDef)) throw new Error("Missing apiAuthToken setting");
+
+			const setting = new Setting(document.createElement("div"));
+			tokenDef.render(setting, {} as never);
+
+			const input = setting.controlEl.querySelector<HTMLInputElement>("input");
+			const revealBtn = setting.controlEl.querySelector<HTMLElement>('[aria-label="Show token"]');
+			const copyBtn = setting.controlEl.querySelector<HTMLElement>('[aria-label="Copy token"]');
+			expect(input).not.toBeNull();
+			expect(revealBtn).not.toBeNull();
+			expect(copyBtn).not.toBeNull();
+
+			// Masked by default; copy works even while masked.
+			expect(input!.type).toBe("password");
+			expect(input!.autocomplete).toBe("off");
+			expect(input!.value).toBe("secret-api-token");
+			expect(revealBtn!.getAttribute("aria-pressed")).toBe("false");
+			expect(copyBtn!.getAttribute("aria-disabled")).toBe("false");
+
+			copyBtn!.click();
+			await settle();
+			expect(writeText).toHaveBeenCalledWith("secret-api-token");
+			expect(noticeMock).toHaveBeenCalledWith("API authentication token copied");
+
+			// Toggle reveal and mask back.
+			revealBtn!.click();
+			expect(input!.type).toBe("text");
+			expect(revealBtn!.getAttribute("aria-label")).toBe("Hide token");
+			expect(revealBtn!.getAttribute("aria-pressed")).toBe("true");
+
+			revealBtn!.click();
+			expect(input!.type).toBe("password");
+			expect(revealBtn!.getAttribute("aria-label")).toBe("Show token");
+			expect(revealBtn!.getAttribute("aria-pressed")).toBe("false");
+
+			// Clearing the token disables copy; entering a new token re-enables copy.
+			const textComponent = setting.components[0] as TextComponent;
+			textComponent.setValue("");
+			expect(plugin.settings.apiAuthToken).toBe("");
+			expect(copyBtn!.getAttribute("aria-disabled")).toBe("true");
+			writeText.mockClear();
+			noticeMock.mockClear();
+			copyBtn!.click();
+			await settle();
+			expect(writeText).not.toHaveBeenCalled();
+			expect(noticeMock).not.toHaveBeenCalled();
+
+			textComponent.setValue("updated-token");
+			expect(plugin.settings.apiAuthToken).toBe("updated-token");
+			expect(copyBtn!.getAttribute("aria-disabled")).toBe("false");
+			copyBtn!.click();
+			await settle();
+			expect(writeText).toHaveBeenCalledWith("updated-token");
+			expect(noticeMock).toHaveBeenCalledWith("API authentication token copied");
+
+			// Clipboard rejection is handled cleanly without throwing.
+			noticeMock.mockClear();
+			writeText.mockRejectedValueOnce(new Error("Clipboard denied"));
+			copyBtn!.click();
+			await settle();
+			expect(writeText).toHaveBeenCalledTimes(2);
+			expect(noticeMock).toHaveBeenCalledWith("Failed to copy to clipboard");
+		} finally {
+			Object.defineProperty(navigator, "clipboard", {
+				configurable: true,
+				value: originalClipboard,
+			});
+		}
 	});
 
 	test("all generated action controls catch asynchronous errors", async () => {

@@ -1607,6 +1607,11 @@ msgid "API authentication token"
 msgstr "Токен аутентификации API"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "Токен аутентификации API скопирован"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "Порт API"
@@ -3193,6 +3198,11 @@ msgstr "Копировать название"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "Копировать названия"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "Копировать токен"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5290,6 +5300,7 @@ msgstr "Не удалось скопировать в буфер обмена"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "Не удалось скопировать в буфер обмена"
@@ -6372,6 +6383,11 @@ msgstr "Скрыть идентификационные теги в карточ
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Скрывать папки mdbase в проводнике файлов"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "Скрыть токен"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10573,6 +10589,11 @@ msgstr "Показать выделение сегодня"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "Выделить сегодня"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "Показать токен"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"

@@ -1606,6 +1606,11 @@ msgid "API authentication token"
 msgstr "Token de autenticação da API"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "Token de autenticação da API copiado"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "Porta da API"
@@ -3192,6 +3197,11 @@ msgstr "Copiar título"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "Copiar títulos"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "Copiar token"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5289,6 +5299,7 @@ msgstr "Falha ao copiar para a área de transferência"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "Falha ao copiar para a área de transferência"
@@ -6373,6 +6384,11 @@ msgstr "Ocultar etiquetas de identificação nos cartões de tarefa"
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Ocultar pastas do mdbase no explorador de arquivos"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "Ocultar token"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10574,6 +10590,11 @@ msgstr "Mostrar destaque de hoje"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "Mostrar destaque de hoje"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "Mostrar token"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"

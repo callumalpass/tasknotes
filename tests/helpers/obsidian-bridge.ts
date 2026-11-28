@@ -73,6 +73,26 @@ Runtime.ButtonComponent.prototype.setTooltip = function setTooltip(
 	this.buttonEl.setAttribute("data-tooltip", tooltip);
 	return result;
 };
+const runtimeExtraButtonOnClick = Runtime.ExtraButtonComponent.prototype.onClick;
+const runtimeExtraButtonSetDisabled = Runtime.ExtraButtonComponent.prototype.setDisabled;
+Runtime.ExtraButtonComponent.prototype.onClick = function onClick(
+	this: Runtime.ExtraButtonComponent,
+	callback: () => unknown
+) {
+	const result = runtimeExtraButtonOnClick.call(this, callback);
+	this.extraSettingsEl.addEventListener("click", () => {
+		if (!this.disabled) callback();
+	});
+	return result;
+};
+Runtime.ExtraButtonComponent.prototype.setDisabled = function setDisabled(
+	this: Runtime.ExtraButtonComponent,
+	disabled: boolean
+) {
+	const result = runtimeExtraButtonSetDisabled.call(this, disabled);
+	this.extraSettingsEl.classList.toggle("is-disabled", disabled);
+	return result;
+};
 
 function currentVault() {
 	const globalApp = (globalThis as { app?: unknown }).app;

@@ -1605,6 +1605,11 @@ msgid "API authentication token"
 msgstr "Jeton d''authentification API"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "Jeton d’authentification API copié"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "Port API"
@@ -3191,6 +3196,11 @@ msgstr "Copier le titre"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "Copier les titres"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "Copier le jeton"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5288,6 +5298,7 @@ msgstr "Impossible de copier dans le presse-papiers"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "Impossible de copier dans le presse-papiers"
@@ -6372,6 +6383,11 @@ msgstr "Masquer les étiquettes d''identification sur les cartes de tâches"
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Masquer les dossiers mdbase dans l’explorateur de fichiers"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "Masquer le jeton"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10573,6 +10589,11 @@ msgstr "Surligner aujourd''hui"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "Mettre en surbrillance aujourd''hui"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "Afficher le jeton"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
