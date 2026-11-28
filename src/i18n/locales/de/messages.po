@@ -1605,6 +1605,11 @@ msgid "API authentication token"
 msgstr "API-Authentifizierungstoken"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "API-Authentifizierungstoken kopiert"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "API-Port"
@@ -3191,6 +3196,11 @@ msgstr "Titel kopieren"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "Titel kopieren"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "Token kopieren"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5288,6 +5298,7 @@ msgstr "Kopieren in Zwischenablage fehlgeschlagen"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "Kopieren in Zwischenablage fehlgeschlagen"
@@ -6370,6 +6381,11 @@ msgstr "Identifikations-Tags in Aufgabenkarten ausblenden"
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "mdbase-Ordner im Datei-Explorer ausblenden"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "Token ausblenden"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10571,6 +10587,11 @@ msgstr "Heute-Hervorhebung anzeigen"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "Heute hervorheben"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "Token anzeigen"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"

@@ -455,13 +455,62 @@ export function apiDefinitions(ctx: SettingsContext): SettingDefinitionPage {
 				desc: t(msg({ message: "TaskNotes token, not your AI provider''s API key. To generate one, enable HTTP API, leave this field empty, and restart Obsidian. Then copy the generated token into your client''s bearer authentication settings. Update clients whenever this token changes.", context: "settings.integrations.httpApi.authToken.description" })),
 				aliases: ["apiAuthToken", "authentication", "password"],
 				render: (setting) => {
+					let revealed = false;
+					let inputEl: HTMLInputElement | undefined;
+					let syncCopyState = () => {};
 					setting.addText((text) => {
+						inputEl = text.inputEl;
 						text.inputEl.type = "password";
 						text.inputEl.autocomplete = "off";
 						text.setValue(s.apiAuthToken).onChange((value) => {
 							s.apiAuthToken = value;
+							syncCopyState();
 							ctx.save();
 						});
+					});
+					setting.addExtraButton((button) => {
+						const syncRevealState = () => {
+							const label = revealed
+								? t(msg({ message: "Hide token", context: "settings.integrations.httpApi.authToken.hide" }))
+								: t(msg({ message: "Show token", context: "settings.integrations.httpApi.authToken.show" }));
+							button.setIcon(revealed ? "eye-off" : "eye").setTooltip(label);
+							button.extraSettingsEl.setAttribute("aria-pressed", String(revealed));
+						};
+						syncRevealState();
+						button.onClick(() => {
+							revealed = !revealed;
+							if (inputEl) inputEl.type = revealed ? "text" : "password";
+							syncRevealState();
+						});
+					});
+					setting.addExtraButton((button) => {
+						syncCopyState = () => {
+							const disabled = !s.apiAuthToken;
+							button.setDisabled(disabled);
+							button.extraSettingsEl.setAttribute("aria-disabled", String(disabled));
+						};
+						button
+							.setIcon("copy")
+							.setTooltip(
+								t(msg({ message: "Copy token", context: "settings.integrations.httpApi.authToken.copy" }))
+							)
+							.onClick(() => {
+								const token = s.apiAuthToken;
+								if (!token) return;
+								void (async () => {
+									try {
+										await navigator.clipboard.writeText(token);
+										new Notice(
+											t(msg({ message: "API authentication token copied", context: "settings.integrations.httpApi.authToken.copied" }))
+										);
+									} catch {
+										new Notice(
+											t(msg({ message: "Failed to copy to clipboard", context: "contextMenus.task.notices.copyFailure" }))
+										);
+									}
+								})();
+							});
+						syncCopyState();
 					});
 				},
 			},

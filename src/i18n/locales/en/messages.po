@@ -1605,6 +1605,11 @@ msgid "API authentication token"
 msgstr "API authentication token"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "API authentication token copied"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "API port"
@@ -3191,6 +3196,11 @@ msgstr "Copy title"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "Copy titles"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "Copy token"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5288,6 +5298,7 @@ msgstr "Failed to copy to clipboard"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "Failed to copy to clipboard"
@@ -6372,6 +6383,11 @@ msgstr "Hide identification tags in task cards"
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "Hide mdbase folders in the file explorer"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "Hide token"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10573,6 +10589,11 @@ msgstr "Show today highlight"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "Show today highlight"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "Show token"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"

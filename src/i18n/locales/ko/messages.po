@@ -1604,6 +1604,11 @@ msgid "API authentication token"
 msgstr "API 인증 토큰"
 
 #: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copied"
+msgid "API authentication token copied"
+msgstr "API 인증 토큰을 복사했습니다"
+
+#: src/settings/native/integrations.ts
 msgctxt "settings.integrations.httpApi.port.name"
 msgid "API port"
 msgstr "API 포트"
@@ -3190,6 +3195,11 @@ msgstr "제목 복사"
 msgctxt "components/BatchContextMenu: BatchContextMenu.addCopyOptions title"
 msgid "Copy titles"
 msgstr "제목 복사"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.copy"
+msgid "Copy token"
+msgstr "토큰 복사"
 
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.copyUrl"
@@ -5287,6 +5297,7 @@ msgstr "클립보드에 복사 실패"
 #: src/bases/BasesViewBase.ts
 #: src/components/noteFileMenu.ts
 #: src/modals/TaskActionPaletteModal.ts
+#: src/settings/native/integrations.ts
 msgctxt "contextMenus.task.notices.copyFailure"
 msgid "Failed to copy to clipboard"
 msgstr "클립보드에 복사 실패"
@@ -6371,6 +6382,11 @@ msgstr "작업 카드에서 식별 태그 숨기기"
 msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "파일 탐색기에서 mdbase 폴더 숨기기"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.hide"
+msgid "Hide token"
+msgstr "토큰 숨기기"
 
 #: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
@@ -10572,6 +10588,11 @@ msgstr "오늘 강조 표시"
 msgctxt "views.basesCalendar.settings.layout.showTodayHighlight"
 msgid "Show today highlight"
 msgstr "오늘 강조 표시"
+
+#: src/settings/native/integrations.ts
+msgctxt "settings.integrations.httpApi.authToken.show"
+msgid "Show token"
+msgstr "토큰 표시"
 
 #: src/settings/native/appearance.ts
 msgctxt "settings.appearance.uiElements.showTrackedTasksInStatusBar.name"
