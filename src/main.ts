@@ -1299,7 +1299,7 @@ export default class TaskNotesPlugin extends Plugin {
 	 * reschedule would remove (the landing day for unmarked scheduled-anchored
 	 * moves, or instances on or after the new date for completion-anchored tasks).
 	 */
-	private async confirmClearRescheduledInstances(cleared: {
+	async confirmClearRescheduledInstances(cleared: {
 		complete: string[];
 		skipped: string[];
 	}): Promise<boolean> {

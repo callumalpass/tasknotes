@@ -2274,8 +2274,20 @@ export class CalendarView extends BasesViewBase {
 				return;
 			}
 			this.expectImmediateUpdate();
-			const receipt = await captureTaskUndo(this.plugin, task, () => this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr));
-			if (receipt.task) await this.refreshAfterDirectCalendarTaskWrite(receipt.task);
+			// Declining the clear leaves the task as it was, so there is nothing to refresh or undo.
+			let declined = false;
+			const receipt = await captureTaskUndo(this.plugin, task, async () => {
+				const updated = await this.plugin.taskService.updateProperty(task, "scheduled", arg.startStr, {
+					confirmClearInstances: async (cleared) => {
+						const proceed = await this.plugin.confirmClearRescheduledInstances(cleared);
+						declined = !proceed;
+						return proceed;
+					},
+				});
+				return declined ? null : updated;
+			});
+			if (!receipt.task) return;
+			await this.refreshAfterDirectCalendarTaskWrite(receipt.task);
 			showTaskUndo(receipt.undo ? [receipt.undo] : [], false, 1, this.plugin.app.vault, task.title);
 		} catch (error) {
 			tasknotesLogger.error("[TaskNotes][CalendarView] Error scheduling dropped task", {

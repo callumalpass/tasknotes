@@ -269,7 +269,7 @@ For **scheduled-anchored** recurring tasks, moving the next occurrence keeps its
 
 For **completion-anchored** recurring tasks, changing the scheduled date re-anchors the timeline and clears every completed and skipped instance dated **on or after** the new date, while keeping older instances as history.
 
-Whenever a reschedule would clear recorded instances from the context menu or the scheduled-date field, TaskNotes asks you to confirm first — listing the dates that will be cleared — and cancelling leaves both the schedule and the recorded instances untouched.
+Whenever a reschedule would clear recorded instances from the context menu, the scheduled-date field or the Calendar view (dragging the next occurrence to another day, or dropping the task onto the calendar from a note), TaskNotes asks you to confirm first — listing the dates that will be cleared — and cancelling leaves both the schedule and the recorded instances untouched.
 
 ## Flexible Scheduling
 
